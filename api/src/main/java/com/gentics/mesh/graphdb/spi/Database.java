@@ -143,7 +143,7 @@ public interface Database {
 						bc.complete();
 					} else {
 						try {
-							T ele = result.toBlocking().toFuture().get(20, TimeUnit.SECONDS);
+							T ele = result.toBlocking().toFuture().get(40, TimeUnit.SECONDS);
 							bc.complete(ele);
 						} catch (TimeoutException e2) {
 							log.error("Timeout while processing result of transaction handler.", e2);

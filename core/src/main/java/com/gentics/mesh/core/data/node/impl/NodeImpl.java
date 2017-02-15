@@ -1432,7 +1432,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Release release = ac.getRelease(getProject());
 		NodeGraphFieldContainer latestDraftVersion = getGraphFieldContainer(language, release, DRAFT);
 
-		// Check whether this is the first time that an update for the given language and release occures. In this case a new container must be created.
+		// Check whether this is the first time that an update for the given language and release occurs. In this case a new container must be created.
 		// This means that no conflict check can be performed. Conflict checks only occur for updates.
 		if (latestDraftVersion == null) {
 			// Create a new field container
@@ -1482,8 +1482,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Compare both sets of change sets
 			List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());
 
-			// Check whether the update was not based on the latest draft
-			// version. In that case a conflict check needs to occur.
+			// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
 			if (!latestDraftVersion.getVersion().equals(requestModel.getVersion().getNumber())) {
 
 				// Check whether a conflict has been detected

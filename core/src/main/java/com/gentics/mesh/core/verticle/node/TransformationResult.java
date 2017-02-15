@@ -4,22 +4,22 @@ import com.gentics.mesh.core.image.spi.ImageInfo;
 
 public class TransformationResult {
 
-	private String hash;
+	private String sha512sum;
 	private long size;
-	private ImageInfo info;
+	private ImageInfo imageInfo;
 
-	public TransformationResult(String hash, long size, ImageInfo info) {
-		this.hash = hash;
+	public TransformationResult(String sha512sum, long size, ImageInfo imageInfo) {
+		this.sha512sum = sha512sum;
 		this.size = size;
-		this.info = info;
+		this.imageInfo = imageInfo;
 	}
 
 	public String getHash() {
-		return hash;
+		return sha512sum;
 	}
 
-	public ImageInfo getInfo() {
-		return info;
+	public ImageInfo getImageInfo() {
+		return imageInfo;
 	}
 
 	public long getSize() {

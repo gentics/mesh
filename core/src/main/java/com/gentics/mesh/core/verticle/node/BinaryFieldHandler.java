@@ -14,7 +14,10 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -27,13 +30,19 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.diff.FieldChangeTypes;
+import com.gentics.mesh.core.data.diff.FieldContainerChange;
+import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -71,6 +80,10 @@ public class BinaryFieldHandler extends AbstractHandler {
 	private Lazy<BootstrapInitializer> boot;
 
 	private SearchQueue searchQueue;
+
+	public static void init(Database database) {
+		database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
+	}
 
 	@Inject
 	public BinaryFieldHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue) {
@@ -124,35 +137,91 @@ public class BinaryFieldHandler extends AbstractHandler {
 	public void handleUpdateBinaryField(InternalActionContext ac, String uuid, String fieldName, MultiMap attributes) {
 		validateParameter(uuid, "uuid");
 		validateParameter(fieldName, "fieldName");
+
+		String languageTag = attributes.get("language");
+		if (isEmpty(languageTag)) {
+			throw error(BAD_REQUEST, "upload_error_no_language");
+		}
+
+		String nodeVersion = attributes.get("version");
+		if (isEmpty(nodeVersion)) {
+			throw error(BAD_REQUEST, "upload_error_no_version");
+		}
+
+		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
+		Set<FileUpload> fileUploads = ac.getFileUploads();
+		if (fileUploads.isEmpty()) {
+			throw error(BAD_REQUEST, "node_error_no_binarydata_found");
+		}
+
+		// Check the file upload limit
+		if (fileUploads.size() > 1) {
+			throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
+		}
+		FileUpload ul = fileUploads.iterator().next();
+		long byteLimit = uploadOptions.getByteLimit();
+
+		if (ul.size() > byteLimit) {
+			if (log.isDebugEnabled()) {
+				log.debug("Upload size of {" + ul.size() + "} exeeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
+			}
+			String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
+			String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
+			throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
+		}
+
+		String contentType = ul.contentType();
+		String fileName = ul.fileName();
+
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
-			//			ContainerType containerType = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-
-			String languageTag = attributes.get("language");
-			if (isEmpty(languageTag)) {
-				throw error(BAD_REQUEST, "upload_error_no_language");
-			}
-
-			String nodeVersion = attributes.get("version");
-			if (isEmpty(nodeVersion)) {
-				throw error(BAD_REQUEST, "upload_error_no_version");
-			}
 
 			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
 
-			// Create new field container as clone of the existing
+			// Load the current latest draft
 			NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(language, release, ContainerType.DRAFT);
 
 			if (latestDraftVersion == null) {
-				// Create a new field container
-				// latestDraftVersion = node.createGraphFieldContainer(language,
-				// release, ac.getUser());
+				//latestDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser());
+				// TODO Maybe it would be better to just create a new field container for the language?
+				// In that case we would also need to:
+				// * check for segment field conflicts
+				// * update display name
+				// * fail if mandatory fields are missing
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			}
+
+			// Load the base version field container in order to create the diff
+			NodeGraphFieldContainer baseVersionContainer = node.findNextMatchingFieldContainer(Arrays.asList(languageTag), release.getUuid(),
+					nodeVersion);
+			if (baseVersionContainer == null) {
+				throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
+			}
+
+			List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
+			List<FieldContainerChange> requestVersionDiff = Arrays.asList(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+
+			// Compare both sets of change sets
+			List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());
+
+			// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
+			if (!latestDraftVersion.getVersion().equals(nodeVersion)) {
+
+				// Check whether a conflict has been detected
+				if (intersect.size() > 0) {
+					NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
+					conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
+					conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
+					for (FieldContainerChange fcc : intersect) {
+						conflictException.addConflict(fcc.getFieldCoordinates());
+					}
+					throw conflictException;
+				}
 			}
 
 			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
@@ -164,69 +233,50 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
 
-			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
-			BinaryGraphField field = newDraftVersion.createBinary(fieldName);
+			SearchQueueBatch batch = searchQueue.create();
+			return db.tx(() -> {
+				// Create a new node version field container to store the upload
+				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+				BinaryGraphField field = newDraftVersion.createBinary(fieldName);
+				String fieldUuid = field.getUuid();
 
-			MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-			Set<FileUpload> fileUploads = ac.getFileUploads();
-			if (fileUploads.isEmpty()) {
-				throw error(BAD_REQUEST, "node_error_no_binarydata_found");
-			}
-			if (fileUploads.size() > 1) {
-				throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
-			}
-			FileUpload ul = fileUploads.iterator().next();
-			long byteLimit = uploadOptions.getByteLimit();
-			if (ul.size() > byteLimit) {
-				if (log.isDebugEnabled()) {
-					log.debug("Upload size of {" + ul.size() + "} exeeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
-				}
-				String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
-				String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
-				throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
-			}
-			String contentType = ul.contentType();
-			String fileName = ul.fileName();
-			String fieldUuid = field.getUuid();
-			Single<ImageInfo> obsImage;
+				Single<ImageInfo> obsImage;
 
-			// Only gather image info for actual images. Otherwise return an empty image info object.
-			if (contentType.startsWith("image/")) {
-				try {
-					obsImage = imageManipulator.readImageInfo(new FileInputStream(ul.uploadedFileName()));
-				} catch (Exception e) {
-					log.error("Could not load schema for node {" + node.getUuid() + "}");
-					throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
-				}
-
-			} else {
-				obsImage = Single.just(new ImageInfo());
-			}
-
-			Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
-			return Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
-				SearchQueueBatch batch = searchQueue.create();
-				return db.tx(() -> {
-
-					field.setFileName(fileName);
-					field.setFileSize(ul.size());
-					field.setMimeType(contentType);
-					field.setSHA512Sum(sha512sum);
-					field.setImageDominantColor(imageInfo.getDominantColor());
-					field.setImageHeight(imageInfo.getHeight());
-					field.setImageWidth(imageInfo.getWidth());
-
-					// if the binary field is the segment field, we need to  update the webroot info in the node
-					if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-						newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
+				// 3. Only gather image info for actual images. Otherwise return an empty image info object.
+				if (contentType.startsWith("image/")) {
+					try {
+						obsImage = imageManipulator.readImageInfo(new FileInputStream(ul.uploadedFileName()));
+					} catch (Exception e) {
+						log.error("Could not load schema for node {" + node.getUuid() + "}");
+						throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
 					}
 
-					return batch.store(node, release.getUuid(), DRAFT, false);
-				}).processAsync().andThen(node.transformToRest(ac, 0));
+				} else {
+					obsImage = Single.just(new ImageInfo());
+				}
 
-			}).flatMap(x -> x);
+				// 4. Hash and store the file and update the field properties
+				Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
+				Single<TransformationResult> batchObs = Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
+					return new TransformationResult(sha512sum, 0, imageInfo);
+				});
+
+				// If the binary field is the segment field, we need to  update the webroot info in the node
+				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+					newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
+				}
+
+				TransformationResult info = batchObs.toBlocking().value();
+				field.setFileName(fileName);
+				field.setFileSize(ul.size());
+				field.setMimeType(contentType);
+				field.setSHA512Sum(info.getHash());
+				field.setImageDominantColor(info.getImageInfo().getDominantColor());
+				field.setImageHeight(info.getImageInfo().getHeight());
+				field.setImageWidth(info.getImageInfo().getWidth());
+				return batch.store(node, release.getUuid(), DRAFT, false);
+			}).processAsync().andThen(node.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
-
 	}
 
 	/**
@@ -316,8 +366,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 						// The resized image will always be a jpeg
 						field.setMimeType("image/jpeg");
 						// TODO should we rename the image, if the extension is wrong?
-						field.setImageHeight(info.getInfo().getHeight());
-						field.setImageWidth(info.getInfo().getWidth());
+						field.setImageHeight(info.getImageInfo().getHeight());
+						field.setImageWidth(info.getImageInfo().getWidth());
 						batch.store(container, node.getProject().getReleaseRoot().getLatestRelease().getUuid(), DRAFT, false);
 						return node;
 					});

@@ -128,7 +128,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 
 	private void addBinaryHandlers() {
 		Endpoint fieldUpdate = createEndpoint();
-		fieldUpdate.path("/:nodeUuid/upload/:fieldName");
+		fieldUpdate.path("/:nodeUuid/binary/:fieldName");
 		fieldUpdate.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		fieldUpdate.addUriParameter("fieldName", "Name of the field which should be created.", "stringField");
 		fieldUpdate.method(POST);
@@ -144,7 +144,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		});
 
 		Endpoint imageTransform = createEndpoint();
-		imageTransform.path("/:nodeUuid/transform/:fieldName");
+		imageTransform.path("/:nodeUuid/binaryTransform/:fieldName");
 		imageTransform.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		imageTransform.addUriParameter("language", "Language tag.", "en");
 		imageTransform.addUriParameter("fieldName", "Name of the field", "image");
@@ -161,7 +161,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		});
 
 		Endpoint fieldGet = createEndpoint();
-		fieldGet.path("/:nodeUuid/download/:fieldName");
+		fieldGet.path("/:nodeUuid/binary/:fieldName");
 		fieldGet.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		fieldGet.addUriParameter("fieldName", "Name of the binary field", "image");
 		fieldGet.method(GET);

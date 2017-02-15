@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field.binary;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -64,6 +65,26 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Override
 	public void testUpdateNodeFieldWithField() {
 		// TODO Auto-generated method stub
+	}
+
+	@Test
+	public void testVersionConflictUpload() {
+		//1. Upload a binary field
+		String uuid = db.noTx(() -> folder("2015").getUuid());
+		Buffer buffer = TestUtils.randomBuffer(1000);
+		VersionNumber version = db.noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+		NodeResponse responseA = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer,
+				"filename.txt", "application/binary"));
+
+		assertThat(responseA.getVersion().getNumber().toString()).doesNotMatch(version.toString());
+
+		// Upload again - A conflict should be detected since we provide the original outdated version
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
+				"application/binary"), CONFLICT, "node_error_conflict_detected");
+
+		// Now use the correct version and verify that the upload succeeds
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", responseA.getVersion().getNumber(), FIELD_NAME, buffer, "filename.txt",
+				"application/binary"));
 
 	}
 
