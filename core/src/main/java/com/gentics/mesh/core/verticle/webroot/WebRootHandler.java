@@ -45,14 +45,11 @@ public class WebRootHandler {
 
 	private Database db;
 
-	private HandlerUtilities utils;
-
 	@Inject
-	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootService webrootService, HandlerUtilities utils) {
+	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootService webrootService) {
 		this.db = database;
 		this.imageManipulator = imageManipulator;
 		this.webrootService = webrootService;
-		this.utils = utils;
 	}
 
 	/**

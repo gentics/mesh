@@ -420,11 +420,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
 		// Deleting of existing binary file
-		Completable obsDeleteExisting = fileSystem.deleteObservable(targetPath).toCompletable().doOnError(error -> {
+		Completable obsDeleteExisting = fileSystem.rxDelete(targetPath).toCompletable().doOnError(error -> {
 			log.error("Error while attempting to delete target file {" + targetPath + "}", error);
 		});
 
-		Single<Boolean> obsUploadExistsCheck = fileSystem.existsObservable(targetPath).toSingle().doOnError(error -> {
+		Single<Boolean> obsUploadExistsCheck = fileSystem.rxExists(targetPath).doOnError(error -> {
 			log.error("Unable to check existence of file at location {" + targetPath + "}");
 		});
 
@@ -467,7 +467,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 	protected Completable storeBuffer(Buffer buffer, String targetPath) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		return fileSystem.writeFileObservable(targetPath, buffer).toCompletable().doOnError(error -> {
+		return fileSystem.rxWriteFile(targetPath, buffer).toCompletable().doOnError(error -> {
 			log.error("Failed to save file to {" + targetPath + "}", error);
 			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
 		});
@@ -482,14 +482,14 @@ public class BinaryFieldHandler extends AbstractHandler {
 	protected Completable checkUploadFolderExists(File uploadFolder) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		Single<Boolean> obs = fileSystem.existsObservable(uploadFolder.getAbsolutePath()).doOnError(error -> {
+		Single<Boolean> obs = fileSystem.rxExists(uploadFolder.getAbsolutePath()).doOnError(error -> {
 			log.error("Could not check whether target directory {" + uploadFolder.getAbsolutePath() + "} exists.", error);
 			throw error(BAD_REQUEST, "node_error_upload_failed", error);
-		}).toSingle();
+		});
 
 		return RxUtil.andThenCompletable(obs, folderExists -> {
 			if (!folderExists) {
-				return fileSystem.mkdirsObservable(uploadFolder.getAbsolutePath()).toCompletable().doOnError(error -> {
+				return fileSystem.rxMkdirs(uploadFolder.getAbsolutePath()).toCompletable().doOnError(error -> {
 					log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}", error);
 					throw error(BAD_REQUEST, "node_error_upload_failed", error);
 				}).doOnCompleted(() -> {

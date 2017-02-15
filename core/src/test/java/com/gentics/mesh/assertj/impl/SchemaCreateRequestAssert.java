@@ -38,8 +38,8 @@ public class SchemaCreateRequestAssert extends AbstractMeshAssert<SchemaCreateRe
 		assertNotNull(schema);
 		assertNotNull(actual);
 
-		String creatorUuid = schema.getCreator().getUuid();
-		String editorUuid = schema.getEditor().getUuid();
+		//		String creatorUuid = schema.getCreator().getUuid();
+		//		String editorUuid = schema.getEditor().getUuid();
 		// assertEquals("Name does not match with the requested name.", schema.getName(), restSchema.getName());
 		// assertEquals("Description does not match with the requested description.", schema.getDescription(), restSchema.getDescription());
 		// assertEquals("Display names do not match.", schema.getDisplayName(), restSchema.getDisplayName());

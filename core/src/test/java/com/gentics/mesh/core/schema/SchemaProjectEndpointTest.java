@@ -71,7 +71,7 @@ public class SchemaProjectEndpointTest extends AbstractRestEndpointTest {
 			role().grantPermissions(schema, READ_PERM);
 			role().grantPermissions(extraProject, UPDATE_PERM);
 
-			Schema restSchema = call(() -> client().assignSchemaToProject(extraProject.getName(), schema.getUuid()));
+			call(() -> client().assignSchemaToProject(extraProject.getName(), schema.getUuid()));
 //			assertThat(restSchema).matches(schema);
 			extraProject.getSchemaContainerRoot().reload();
 			assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid()));

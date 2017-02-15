@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -66,19 +65,16 @@ public class SearchRestHandler {
 
 	private IndexHandlerRegistry registry;
 
-	private SearchQueue searchQueue;
-
 	private NodeIndexHandler nodeIndexHandler;
 
 	private HandlerUtilities utils;
 
 	@Inject
-	public SearchRestHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, SearchQueue searchQueue,
+	public SearchRestHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry,
 			NodeIndexHandler nodeIndexHandler, HandlerUtilities utils) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.registry = registry;
-		this.searchQueue = searchQueue;
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.utils = utils;
 	}

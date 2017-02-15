@@ -218,7 +218,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 			String contentType = "application/octet-stream";
 			String fileName = "somefile.dat";
 			int binaryLen = 10000;
-			NodeResponse response = call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
+			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
 			// Load the uploaded binary field and return the segment path to the field
 			node.reload();
