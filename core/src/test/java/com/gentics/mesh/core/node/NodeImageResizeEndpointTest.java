@@ -1,9 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,13 +21,11 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
 import com.gentics.mesh.util.VersionNumber;
 
@@ -47,14 +43,11 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100).setHeight(102);
-			MeshResponse<NodeDownloadResponse> downloadFuture = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params)
-					.invoke();
-			latchFor(downloadFuture);
-			assertSuccess(downloadFuture);
+			NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params));
 
 			// 3. Validate resize
 			node.reload();
-			validateResizeImage(downloadFuture.result(), node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 100, 102);
+			validateResizeImage(download, node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 100, 102);
 		}
 	}
 
@@ -83,13 +76,11 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 			// 2. Resize image
 			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth()).setHeight(102);
-			MeshResponse<NodeDownloadResponse> downloadFuture = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params)
-					.invoke();
-			latchFor(downloadFuture);
-			assertSuccess(downloadFuture);
+			NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params));
+
 			node.reload();
 			assertNotNull(node.getLatestDraftFieldContainer(english()));
-			validateResizeImage(downloadFuture.result(), node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 2048, 102);
+			validateResizeImage(download, node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 2048, 102);
 		}
 	}
 

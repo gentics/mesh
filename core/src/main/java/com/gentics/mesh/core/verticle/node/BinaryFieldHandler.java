@@ -13,12 +13,10 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Optional;
+import java.io.IOException;
 import java.util.Set;
 
 import javax.inject.Inject;
-
-import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -157,11 +155,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
 
-			Optional<FieldSchema> fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
-			if (!fieldSchema.isPresent()) {
+			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
+			if (fieldSchema == null) {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
-			if (!(fieldSchema.get() instanceof BinaryFieldSchema)) {
+			if (!(fieldSchema instanceof BinaryFieldSchema)) {
 				// TODO Add support for other field types
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
@@ -192,8 +190,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			String fieldUuid = field.getUuid();
 			Single<ImageInfo> obsImage;
 
-			// Only gather image info for actual images. Otherwise return an
-			// empty image info object.
+			// Only gather image info for actual images. Otherwise return an empty image info object.
 			if (contentType.startsWith("image/")) {
 				try {
 					obsImage = imageManipulator.readImageInfo(new FileInputStream(ul.uploadedFileName()));
@@ -219,8 +216,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					field.setImageHeight(imageInfo.getHeight());
 					field.setImageWidth(imageInfo.getWidth());
 
-					// if the binary field is the segment field, we need to
-					// update the webroot info in the node
+					// if the binary field is the segment field, we need to  update the webroot info in the node
 					if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
 						newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
 					}
@@ -292,38 +288,40 @@ public class BinaryFieldHandler extends AbstractHandler {
 				String fieldSegmentedPath = field.getSegmentedPath();
 
 				// Resize the image and store the result in the filesystem
-				Single<Tuple<String, Integer>> obsHashAndSize = imageManipulator
+				Single<TransformationResult> obsTransformation = imageManipulator
 						.handleResize(field.getFile(), field.getSHA512Sum(), imageManipulationParameter).flatMap(buffer -> {
-							return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).map(hash -> {
-								return Tuple.tuple(hash, buffer.length());
+							return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).flatMap(hash -> {
+								// The image was stored and hashed. Now we need to load the stored file again and check the image properties
+								return db.noTx(() -> {
+									try {
+										return imageManipulator.readImageInfo(new FileInputStream(field.getFilePath())).map(info -> {
+											// Return a pojo which hold all information that is needed to update the field
+											return new TransformationResult(hash, buffer.length(), info);
+										});
+									} catch (IOException e) {
+										throw new RuntimeException(e);
+									}
+								});
 							});
 						});
 
-				// TODO read the image information
-				//obsImage = imageManipulator.readImageInfo(new FileInputStream(ul.uploadedFileName()));
+				return obsTransformation.flatMap(info -> {
 
-				return obsHashAndSize.flatMap(hashAndSize -> {
-
-					// Finally update the binary field with the new information
+					// Update the binary field with the new information
 					SearchQueueBatch batch = searchQueue.create();
 					Node updatedNodeUuid = db.tx(() -> {
 
-						field.setSHA512Sum(hashAndSize.v1());
-						field.setFileSize(hashAndSize.v2());
-						// resized images will always be jpeg
+						field.setSHA512Sum(info.getHash());
+						field.setFileSize(info.getSize());
+						// The resized image will always be a jpeg
 						field.setMimeType("image/jpeg");
-
-						// TODO should we rename the image, if the extension is
-						// wrong?
-
-						// TODO handle image properties as well
-						// field.setBinaryImageDPI(dpi);
-						// field.setImageHeight(heigth);
-						// field.setImageWidth(200);
+						// TODO should we rename the image, if the extension is wrong?
+						field.setImageHeight(info.getInfo().getHeight());
+						field.setImageWidth(info.getInfo().getWidth());
 						batch.store(container, node.getProject().getReleaseRoot().getLatestRelease().getUuid(), DRAFT, false);
 						return node;
 					});
-					//					updatedNodeUuid.reload();
+					// Finally update the search index and return the updated node
 					return batch.processAsync().andThen(updatedNodeUuid.transformToRest(ac, 0));
 				});
 			} catch (GenericRestException e) {

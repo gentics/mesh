@@ -9,7 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
@@ -52,17 +51,6 @@ public interface FieldSchemaContainer extends RestModel {
 	 *            Container description
 	 */
 	void setDescription(String description);
-
-	/**
-	 * Return the field schema with the given name.
-	 * 
-	 * @param fieldName
-	 * @return
-	 * @deprecated
-	 */
-	default Optional<FieldSchema> getFieldSchema(String fieldName) {
-		return getFields().stream().filter(f -> f.getName().equals(fieldName)).findFirst();
-	}
 
 	/**
 	 * Return the field with the given name.
