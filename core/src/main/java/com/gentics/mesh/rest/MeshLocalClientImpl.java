@@ -865,7 +865,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
-			Buffer fileData, String fileName, String contentType) {
+			Buffer fileData, String fileName, String contentType, ParameterProvider... parameters) {
 
 		Vertx vertx = Mesh.vertx();
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class);

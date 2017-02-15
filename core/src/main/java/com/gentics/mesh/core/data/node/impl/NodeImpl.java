@@ -535,8 +535,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public NodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 
-		// Increment level for each node transformation to avoid stackoverflow
-		// situations
+		// Increment level for each node transformation to avoid stackoverflow situations
 		level = level + 1;
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 

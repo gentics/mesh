@@ -774,7 +774,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
-			Buffer fileData, String fileName, String contentType) {
+			Buffer fileData, String fileName, String contentType, ParameterProvider...parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(fileData, "fileData must not be null");
@@ -805,7 +805,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 		String bodyContentType = "multipart/form-data; boundary=" + boundary;
 
-		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey, NodeResponse.class,
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters), NodeResponse.class,
 				multiPartFormData, bodyContentType);
 	}
 

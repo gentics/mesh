@@ -61,6 +61,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -502,7 +503,7 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-		return client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldKey, buffer, fileName, contentType);
+		return client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldKey, buffer, fileName, contentType, new NodeParameters().setResolveLinks(LinkType.FULL));
 	}
 
 	protected NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {

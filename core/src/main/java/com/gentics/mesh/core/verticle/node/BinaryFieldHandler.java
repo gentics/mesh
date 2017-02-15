@@ -32,10 +32,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.diff.FieldChangeTypes;
 import com.gentics.mesh.core.data.diff.FieldContainerChange;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.image.spi.ImageInfo;
@@ -79,10 +77,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 	private Lazy<BootstrapInitializer> boot;
 
 	private SearchQueue searchQueue;
-
-	public static void init(Database database) {
-		database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
-	}
 
 	@Inject
 	public BinaryFieldHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue) {
@@ -256,16 +250,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 				// 4. Hash and store the file and update the field properties
 				Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
-				Single<TransformationResult> batchObs = Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
+				Single<TransformationResult> resultObs = Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
 					return new TransformationResult(sha512sum, 0, imageInfo);
 				});
 
-				// If the binary field is the segment field, we need to  update the webroot info in the node
-				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-					newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
-				}
-
-				TransformationResult info = batchObs.toBlocking().value();
+				TransformationResult info = resultObs.toBlocking().value();
 				field.setFileName(fileName);
 				field.setFileSize(ul.size());
 				field.setMimeType(contentType);
@@ -273,6 +262,12 @@ public class BinaryFieldHandler extends AbstractHandler {
 				field.setImageDominantColor(info.getImageInfo().getDominantColor());
 				field.setImageHeight(info.getImageInfo().getHeight());
 				field.setImageWidth(info.getImageInfo().getWidth());
+
+				// If the binary field is the segment field, we need to  update the webroot info in the node
+				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+					newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
+				}
+
 				return batch.store(node, release.getUuid(), DRAFT, false);
 			}).processAsync().andThen(node.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);

@@ -11,6 +11,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +30,8 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
@@ -171,6 +174,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 			// 2. Upload a non-image 
 			fileName = "somefile.dat";
 			mimeType = "application/octet-stream";
+			node.reload();
 			response = call(() -> uploadRandomData(node, "en", fieldKey, size, "application/octet-stream", "somefile.dat"));
 			assertNotNull(response);
 
@@ -269,28 +273,39 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 	}
 
 	@Test
-	public void testUploadWithConflict() throws IOException {
+	public void testUploadWithSegmentfieldConflict() throws IOException {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10;
 		String fileName = "somefile.dat";
 
+		// 1. Prepare the folder schema
 		try (NoTx noTrx = db.noTx()) {
 			Node folder2014 = folder("2014");
-			Node folder2015 = folder("2015");
 			prepareSchema(folder2014, "", "binary");
 
 			// make binary field the segment field
 			Schema schema = folder2014.getSchemaContainer().getLatestVersion().getSchema();
 			schema.setSegmentField("binary");
 			folder2014.getSchemaContainer().getLatestVersion().setSchema(schema);
+		}
 
+		// 2. Update node a
+		try (NoTx noTrx = db.noTx()) {
 			// upload file to folder 2014
+			Node folder2014 = folder("2014");
 			call(() -> uploadRandomData(folder2014, "en", "binary", binaryLen, contentType, fileName));
+		}
 
+		call(() -> client().findNodeByUuid(PROJECT_NAME, db.noTx(() -> folder("2014").getUuid()),
+				new NodeParameters().setResolveLinks(LinkType.FULL)));
+
+		try (NoTx noTrx = db.noTx()) {
 			// try to upload same file to folder 2015
+			Node folder2015 = folder("2015");
 			call(() -> uploadRandomData(folder2015, "en", "binary", binaryLen, contentType, fileName), CONFLICT,
 					"node_conflicting_segmentfield_upload", "binary", fileName);
 		}
+
 	}
 
 	@Test

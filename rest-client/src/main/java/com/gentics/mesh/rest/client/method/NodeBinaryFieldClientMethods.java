@@ -33,7 +33,7 @@ public interface NodeBinaryFieldClientMethods {
 	 * @return
 	 */
 	MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion,
-			String fieldKey, Buffer fileData, String fileName, String contentType);
+			String fieldKey, Buffer fileData, String fileName, String contentType, ParameterProvider... parameters);
 
 	/**
 	 * Download the binary field of the given node in the given project.
