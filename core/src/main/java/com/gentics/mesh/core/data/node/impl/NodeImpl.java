@@ -283,8 +283,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return getGraphFieldContainers(release.getUuid(), type);
 	}
 
-	// static Map<String, Object> map2 = new HashMap<>();
-
 	@Override
 	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, ContainerType type) {
 		// TODO ADD INDEX!

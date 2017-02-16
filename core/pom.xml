@@ -222,7 +222,6 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 			<version>1.10.19</version>
-			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>

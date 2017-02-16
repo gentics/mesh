@@ -466,6 +466,13 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		throw new NotImplementedException("Use toDocument(container, releaseUuid) instead");
 	}
 
+	/**
+	 * Transform the given container into a indexable document.
+	 * 
+	 * @param container
+	 * @param releaseUuid
+	 * @return
+	 */
 	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid) {
 		Node node = container.getParentNode();
 		JsonObject document = new JsonObject();
