@@ -25,6 +25,13 @@ import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
+import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -343,6 +350,43 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			TagFamilyResponse reloadedTagFamily = reloadedTagFut.result();
 			assertEquals(request.getName(), reloadedTagFamily.getName());
 			assertThat(reloadedTagFamily).matches(tagFamily("basic"));
+		}
+	}
+
+	@Test
+	public void testUpdateNodeIndex() {
+		try (NoTx noTx = db.noTx()) {
+			Project project = project();
+			Release release = project.getReleaseRoot().getLatestRelease();
+			TagFamily tagfamily = tagFamily("basic");
+
+			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+			request.setName("basicChanged");
+			call(() -> client().updateTagFamily(PROJECT_NAME, tagfamily.getUuid(), request));
+
+			// Multiple tags of the same family can be tagged on same node. This should still trigger only 1 update for that node.
+			HashSet<String> taggedNodes = new HashSet<>();
+			int storeCount = 0;
+			for (Tag tag : tagfamily.getTagRoot().findAll()) {
+				storeCount++;
+				for (Node node : tag.getNodes(release)) {
+					if (!taggedNodes.contains(node.getUuid())) {
+						taggedNodes.add(node.getUuid());
+						for (ContainerType containerType : new ContainerType[]{ContainerType.DRAFT, ContainerType.PUBLISHED}) {
+							for (NodeGraphFieldContainer fieldContainer: node.getGraphFieldContainers(release, containerType)) {
+								SchemaContainerVersion schema = node.getSchemaContainer().getLatestVersion();
+								storeCount++;
+								assertThat(dummySearchProvider).hasStore(
+									NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), schema.getUuid(), containerType),
+									NodeGraphFieldContainer.composeIndexType(),
+									NodeGraphFieldContainer.composeDocumentId(node.getUuid(), fieldContainer.getLanguage().getLanguageTag()));
+							}
+						}
+					}
+				}
+			}
+
+			assertThat(dummySearchProvider).hasEvents(storeCount + 1, 0, 0, 0);
 		}
 	}
 

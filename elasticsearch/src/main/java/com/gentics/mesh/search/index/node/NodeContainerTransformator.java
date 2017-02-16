@@ -28,6 +28,8 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -52,7 +54,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.search.index.AbstractTransformator;
-
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -434,8 +436,35 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 	}
 
 	/**
+	 * Transforms tags grouped by tag families
+	 * @param document
+	 * @param tags
+	 */
+	private void addTagFamilies(JsonObject document, List<? extends Tag> tags) {
+		JsonObject familiesObject = new JsonObject();
+
+		for (Tag tag: tags) {
+			TagFamily family = tag.getTagFamily();
+			JsonObject familyObject = familiesObject.getJsonObject(family.getName());
+			if (familyObject == null) {
+				familyObject = new JsonObject();
+				familyObject.put("uuid", family.getUuid());
+				familyObject.put("tags", new JsonArray());
+				familiesObject.put(family.getName(), familyObject);
+			}
+			familyObject.getJsonArray("tags").add(
+				new JsonObject()
+					.put("name", tag.getName())
+					.put("uuid", tag.getUuid())
+			);
+		}
+
+		document.put("tagFamilies", familiesObject);
+	}
+
+	/**
 	 * It is required to specify the releaseUuid in order to transform containers.
-	 * 
+	 *
 	 * @deprecated
 	 */
 	@Override
@@ -462,6 +491,7 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 
 		addProject(document, node.getProject());
 		addTags(document, node.getTags(node.getProject().getLatestRelease()));
+		addTagFamilies(document, node.getTags(node.getProject().getLatestRelease()));
 
 		// The basenode has no parent.
 		if (node.getParentNode(releaseUuid) != null) {
@@ -522,6 +552,12 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		tagsMapping.put("type", "nested");
 		tagsMapping.put("dynamic", true);
 		typeProperties.put("tags", tagsMapping);
+
+		// tagFamilies
+		JsonObject tagFamiliesMapping = new JsonObject();
+		tagFamiliesMapping.put("type", "nested");
+		tagFamiliesMapping.put("dynamic", true);
+		typeProperties.put("tagFamilies", tagFamiliesMapping);
 
 		// language
 		typeProperties.put("language", notAnalyzedType(STRING));

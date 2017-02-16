@@ -2,6 +2,8 @@
 
 == 0.8.0 (Pending)
 
+* __[Enhancement]__ Tags are now also indexed in the node document in the field `tagFamilies`, grouped by tag families.
+
 * __[Enhancement]__ Binary Endpoint Overhaul
 
 The field API endpoint `/api/v1/:projectName/nodes/:nodeUuid/languages/:language/fields/:field` was removed and replaced by the binary `/api/v1/:projectName/nodes/:nodeUuid/binary` endpoint.
