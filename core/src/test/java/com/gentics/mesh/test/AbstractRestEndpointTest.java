@@ -1,6 +1,6 @@
 package com.gentics.mesh.test;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -104,7 +104,7 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		port = com.gentics.mesh.test.performance.TestUtils.getRandomPort();
 		vertx = Mesh.vertx();
 
-		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);
+		routerStorage.addProjectRouter(TestFullDataProvider.PROJECT_NAME);
 		JsonObject config = new JsonObject();
 		config.put("port", port);
 

@@ -86,7 +86,7 @@ public abstract class AbstractDBTest {
 	@BeforeClass
 	public static void initMesh() throws Exception {
 		init(false);
-		initDagger();
+		initDagger(false);
 	}
 
 	/**
@@ -135,10 +135,14 @@ public abstract class AbstractDBTest {
 	/**
 	 * Initialise the mesh dagger context and inject the dependencies within the test.
 	 */
-	public static void initDagger() {
+	public static void initDagger(boolean tiny) {
 		log.info("Initializing dagger context");
 		meshDagger = MeshInternal.create();
-		dataProvider = new TestDataProvider(meshDagger.boot(), meshDagger.database());
+		if (tiny) {
+			dataProvider = new TestTinyDataProvider(meshDagger.boot(), meshDagger.database());
+		} else {
+			dataProvider = new TestFullDataProvider(meshDagger.boot(), meshDagger.database());
+		}
 		routerStorage = meshDagger.routerStorage();
 		if (meshDagger.searchProvider() instanceof DummySearchProvider) {
 			dummySearchProvider = meshDagger.dummySearchProvider();
@@ -331,7 +335,7 @@ public abstract class AbstractDBTest {
 	protected String getJson(Node node) throws Exception {
 		RoutingContext rc = Mocks.getMockedRoutingContext("lang=en&version=draft", user());
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestFullDataProvider.PROJECT_NAME);
 		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().value());
 	}
 

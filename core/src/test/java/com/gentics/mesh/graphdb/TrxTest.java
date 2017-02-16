@@ -17,7 +17,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -28,11 +27,12 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
+import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import rx.Single;
 
-public class TrxTest extends AbstractIsolatedBasicDBTest {
+public class TrxTest extends AbstractDBTest {
 
 	@Test
 	public void testReload() {

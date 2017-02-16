@@ -1,22 +1,24 @@
 package com.gentics.mesh.search.transformator;
 
-import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
+import java.util.HashSet;
+
+import org.junit.Test;
+
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.search.index.node.NodeContainerTransformator;
+import com.gentics.mesh.test.AbstractDBTest;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.junit.Test;
 
-import java.util.Arrays;
-import java.util.HashSet;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-public class NodeContainerTransformatorTest extends AbstractIsolatedBasicDBTest {
+public class NodeContainerTransformatorTest extends AbstractDBTest {
 
 	@Test
 	public void testNodeTagFamilyTransformator() {

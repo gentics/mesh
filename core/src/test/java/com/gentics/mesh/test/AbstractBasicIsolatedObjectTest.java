@@ -4,7 +4,6 @@ import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
@@ -12,7 +11,7 @@ import com.gentics.mesh.graphdb.Tx;
 
 import io.vertx.ext.web.RoutingContext;
 
-public abstract class AbstractBasicIsolatedObjectTest extends AbstractIsolatedBasicDBTest implements BasicObjectTestcases {
+public abstract class AbstractBasicIsolatedObjectTest extends AbstractDBTest implements BasicObjectTestcases {
 
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
 		RoutingContext rc = getMockedRoutingContext();

@@ -9,11 +9,11 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.AbstractDBTest;
 
-public class BootstrapInitializerTest extends AbstractIsolatedBasicDBTest {
+public class BootstrapInitializerTest extends AbstractDBTest {
 
 	@Test
 	public void testInitLanguages() throws JsonParseException, JsonMappingException, IOException {

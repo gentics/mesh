@@ -10,7 +10,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -21,9 +20,10 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.UUIDUtil;
 
-public class LinkRendererTest extends AbstractIsolatedBasicDBTest {
+public class LinkRendererTest extends AbstractDBTest {
 
 	private WebRootLinkReplacer replacer;
 

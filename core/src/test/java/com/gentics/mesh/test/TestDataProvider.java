@@ -1,623 +1,64 @@
 package com.gentics.mesh.test;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
-
-import javax.inject.Inject;
-import javax.inject.Singleton;
-
-import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
-import com.gentics.mesh.core.data.root.RoleRoot;
-import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
-import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.StringFieldSchema;
-import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.graphdb.Tx;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.json.MeshJsonException;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+public interface TestDataProvider {
 
-@Singleton
-public class TestDataProvider {
+	TagFamily getTagFamily(String key);
 
-	private static final Logger log = LoggerFactory.getLogger(TestDataProvider.class);
+	Project getProject();
 
-	public static final String PROJECT_NAME = "dummy";
-	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
-	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
+	Node getContent(String key);
 
-	private static TestDataProvider instance;
+	Node getFolder(String key);
 
-	public static TestDataProvider getInstance() {
-		return instance;
-	}
+	Map<String, User> getUsers();
 
-	private Database db;
+	Map<String, Role> getRoles();
 
-	private BootstrapInitializer boot;
+	Map<String, TagFamily> getTagFamilies();
 
-	// References to dummy data
+	Tag getTag(String key);
 
-	private Language english;
+	Map<String, ? extends Tag> getTags();
 
-	private Language german;
+	UserInfo getUserInfo();
 
-	private Project project;
+	SchemaContainer getSchemaContainer(String key);
 
-	private UserInfo userInfo;
+	void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException;
 
-	private MeshRoot root;
+	Language getGerman();
 
-	private Map<String, SchemaContainer> schemaContainers = new HashMap<>();
-	private Map<String, MicroschemaContainer> microschemaContainers = new HashMap<>();
-	private Map<String, TagFamily> tagFamilies = new HashMap<>();
-	private Map<String, Node> folders = new HashMap<>();
-	private Map<String, Node> contents = new HashMap<>();
-	private Map<String, Tag> tags = new HashMap<>();
-	private Map<String, User> users = new HashMap<>();
-	private Map<String, Role> roles = new HashMap<>();
-	private Map<String, Group> groups = new HashMap<>();
+	Language getEnglish();
 
-	@Inject
-	public TestDataProvider(BootstrapInitializer boot, Database database) {
-		this.boot = boot;
-		this.db = database;
-		instance = this;
-	}
+	int getNodeCount();
 
-	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException {
-		long start = System.currentTimeMillis();
+	Map<String, SchemaContainer> getSchemaContainers();
 
-		try (Tx tx = db.tx()) {
-			boot.initMandatoryData();
-			tx.getGraph().commit();
-			schemaContainers.clear();
-			microschemaContainers.clear();
-			tagFamilies.clear();
-			contents.clear();
-			folders.clear();
-			tags.clear();
-			users.clear();
-			roles.clear();
-			groups.clear();
+	Map<String, Group> getGroups();
 
-			root = boot.meshRoot();
-			english = boot.languageRoot().findByLanguageTag("en");
-			german = boot.languageRoot().findByLanguageTag("de");
+	Map<String, MicroschemaContainer> getMicroschemaContainers();
 
-			addBootstrappedData();
-			addSchemaContainers();
-			addUserGroupRoleProject();
-			addMicroschemaContainers();
+	MeshRoot getMeshRoot();
 
-			addTagFamilies();
-			addTags();
-			addFolderStructure();
-			addContents();
-			tx.getGraph().commit();
-
-			long startPerm = System.currentTimeMillis();
-			addPermissions(tagFamilies.values());
-			addPermissions(roles.values());
-			addPermissions(groups.values());
-			addPermissions(users.values());
-			addPermissions(folders.values());
-			addPermissions(contents.values());
-			addPermissions(tags.values());
-			addPermissions(schemaContainers.values());
-			addPermissions(microschemaContainers.values());
-			addPermissions(project);
-			addPermissions(project.getBaseNode());
-			addPermissions(project.getMicroschemaContainerRoot());
-			addPermissions(project.getSchemaContainerRoot());
-			addPermissions(project.getReleaseRoot());
-			addPermissions(project.getInitialRelease());
-			addPermissions(project.getTagFamilyRoot());
-			addPermissions(boot.projectRoot());
-			addPermissions(boot.userRoot());
-			addPermissions(boot.groupRoot());
-			addPermissions(boot.roleRoot());
-			addPermissions(boot.microschemaContainerRoot());
-			addPermissions(boot.schemaContainerRoot());
-			log.debug("Added BasicPermissions to nodes took {" + (System.currentTimeMillis() - startPerm) + "} ms.");
-			tx.getGraph().commit();
-		}
-
-		long duration = System.currentTimeMillis() - start;
-		log.debug("Setup took: {" + duration + "}");
-	}
-
-	private void addPermissions(MeshVertex vertex) {
-		addPermissions(Arrays.asList(vertex));
-	}
-
-	private void addPermissions(Collection<? extends MeshVertex> elements) {
-		Role role = userInfo.getRole();
-		for (MeshVertex meshVertex : elements) {
-			if (log.isTraceEnabled()) {
-				log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
-			}
-			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
-		}
-	}
-
-	/**
-	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (eg. admin groups, roles, users)
-	 */
-	private void addBootstrappedData() {
-		for (Group group : root.getGroupRoot().findAll()) {
-			groups.put(group.getName(), group);
-		}
-		for (User user : root.getUserRoot().findAll()) {
-			users.put(user.getUsername(), user);
-		}
-		for (Role role : root.getRoleRoot().findAll()) {
-			roles.put(role.getName(), role);
-		}
-	}
-
-	private void addContents() {
-
-		SchemaContainer contentSchema = schemaContainers.get("content");
-
-		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!", contentSchema);
-		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014", contentSchema);
-
-		addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht", contentSchema);
-
-		addContent(folders.get("deals"), "Super Special Deal 2015", "Buy two get nine!", "Kauf zwei und nimm neun mit!", contentSchema);
-		addContent(folders.get("deals"), "Special Deal June 2015", "Buy two get three!", "Kauf zwei und nimm drei mit!", contentSchema);
-
-		addContent(folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!", contentSchema);
-		addContent(folders.get("2015"), "News_2015", "News!", "Neuigkeiten!", contentSchema);
-
-		Node concorde = addContent(folders.get("products"), "Concorde",
-				"Aérospatiale-BAC Concorde is a turbojet-powered supersonic passenger jet airliner that was in service from 1976 to 2003.",
-				"Die Aérospatiale-BAC Concorde 101/102, kurz Concorde (französisch und englisch für Eintracht, Einigkeit), ist ein Überschall-Passagierflugzeug, das von 1976 bis 2003 betrieben wurde.",
-				contentSchema);
-		concorde.addTag(tags.get("plane"), project.getLatestRelease());
-		concorde.addTag(tags.get("twinjet"), project.getLatestRelease());
-		concorde.addTag(tags.get("red"), project.getLatestRelease());
-
-		Node hondaNR = addContent(folders.get("products"), "Honda NR",
-				"The Honda NR (New Racing) was a V-four motorcycle engine series started by Honda in 1979 with the 500cc NR500 Grand Prix racer that used oval pistons.",
-				"Die NR750 ist ein Motorrad mit Ovalkolben-Motor des japanischen Motorradherstellers Honda, von dem in den Jahren 1991 und 1992 300 Exemplare gebaut wurden.",
-				contentSchema);
-		hondaNR.addTag(tags.get("vehicle"), project.getLatestRelease());
-		hondaNR.addTag(tags.get("motorcycle"), project.getLatestRelease());
-		hondaNR.addTag(tags.get("green"), project.getLatestRelease());
-
-	}
-
-	private void addFolderStructure() {
-
-		Node baseNode = project.getBaseNode();
-		// rootNode.addProject(project);
-
-		Node news = addFolder(baseNode, "News", "Neuigkeiten");
-		Node news2015 = addFolder(news, "2015", null);
-		news2015.addTag(tags.get("car"), project.getLatestRelease());
-		news2015.addTag(tags.get("bike"), project.getLatestRelease());
-		news2015.addTag(tags.get("plane"), project.getLatestRelease());
-		news2015.addTag(tags.get("jeep"), project.getLatestRelease());
-
-		Node news2014 = addFolder(news, "2014", null);
-		addFolder(news2014, "March", "März");
-
-		addFolder(baseNode, "Products", "Produkte");
-		addFolder(baseNode, "Deals", "Angebote");
-
-	}
-
-	private void addTags() {
-
-		TagFamily colorTags = tagFamilies.get("colors");
-		TagFamily basicTags = tagFamilies.get("basic");
-
-		// Tags for categories
-		addTag("Vehicle", basicTags);
-		addTag("Car", basicTags);
-		addTag("Jeep", basicTags);
-		addTag("Bike", basicTags);
-		addTag("Motorcycle", basicTags);
-		addTag("Bus", basicTags);
-		addTag("Plane", basicTags);
-		addTag("JetFigther", basicTags);
-		addTag("Twinjet", basicTags);
-
-		// Tags for colors
-		addTag("red", colorTags);
-		addTag("blue", colorTags);
-		addTag("green", colorTags);
-
-	}
-
-	public UserInfo createUserInfo(String username, String firstname, String lastname) {
-
-		String password = "test123";
-		log.debug("Creating user with username: " + username + " and password: " + password);
-
-		String email = firstname.toLowerCase().substring(0, 1) + "." + lastname.toLowerCase() + "@spam.gentics.com";
-		User user = root.getUserRoot().create(username, null);
-		user.setPassword(password);
-		user.setFirstname(firstname);
-		user.setLastname(lastname);
-		user.setEmailAddress(email);
-
-		user.setCreator(user);
-		user.setCreationTimestamp();
-		user.setEditor(user);
-		user.setLastEditedTimestamp();
-		users.put(username, user);
-
-		String groupName = username + "_group";
-		Group group = root.getGroupRoot().create(groupName, user);
-		group.addUser(user);
-		group.setCreator(user);
-		group.setCreationTimestamp();
-		group.setEditor(user);
-		group.setLastEditedTimestamp();
-		groups.put(groupName, group);
-
-		String roleName = username + "_role";
-		Role role = root.getRoleRoot().create(roleName, user);
-		group.addRole(role);
-		role.grantPermissions(role, READ_PERM);
-		roles.put(roleName, role);
-
-		return new UserInfo(user, group, role, password);
-	}
-
-	private void addUserGroupRoleProject() {
-		// User, Groups, Roles
-		userInfo = createUserInfo("joe1", "Joe", "Doe");
-		UserRoot userRoot = getMeshRoot().getUserRoot();
-		GroupRoot groupRoot = getMeshRoot().getGroupRoot();
-		RoleRoot roleRoot = getMeshRoot().getRoleRoot();
-
-		project = root.getProjectRoot().create(PROJECT_NAME, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion());
-		project.addLanguage(getEnglish());
-		project.addLanguage(getGerman());
-		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("folder"));
-		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("content"));
-		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("binary-content"));
-
-		// Guest Group / Role
-		Group guestGroup = root.getGroupRoot().create("guests", userInfo.getUser());
-		groups.put("guests", guestGroup);
-
-		Role guestRole = root.getRoleRoot().create("guest_role", userInfo.getUser());
-		guestGroup.addRole(guestRole);
-		roles.put(guestRole.getName(), guestRole);
-
-		// Extra User
-		User user = userRoot.create("guest", userInfo.getUser());
-		user.addGroup(guestGroup);
-		user.setFirstname("Guest Firstname");
-		user.setLastname("Guest Lastname");
-		user.setEmailAddress("guest@spam.gentics.com");
-		users.put(user.getUsername(), user);
-
-		Group group = groupRoot.create("extra_group", userInfo.getUser());
-		groups.put(group.getName(), group);
-
-		Role role = roleRoot.create("extra_role", userInfo.getUser());
-		roles.put(role.getName(), role);
-
-		// Publish the project basenode
-		project.getBaseNode().publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
-
-	}
-
-	private void addTagFamilies() {
-		TagFamily basicTagFamily = getProject().getTagFamilyRoot().create("basic", userInfo.getUser());
-		basicTagFamily.setDescription("Description for basic tag family");
-		tagFamilies.put("basic", basicTagFamily);
-
-		TagFamily colorTagFamily = getProject().getTagFamilyRoot().create("colors", userInfo.getUser());
-		colorTagFamily.setDescription("Description for color tag family");
-		tagFamilies.put("colors", colorTagFamily);
-	}
-
-	private void addSchemaContainers() throws MeshSchemaException {
-		addBootstrapSchemas();
-	}
-
-	private void addBootstrapSchemas() {
-
-		// folder
-		SchemaContainer folderSchemaContainer = boot.schemaContainerRoot().findByName("folder");
-		schemaContainers.put("folder", folderSchemaContainer);
-
-		// content
-		SchemaContainer contentSchemaContainer = boot.schemaContainerRoot().findByName("content");
-		schemaContainers.put("content", contentSchemaContainer);
-
-		// binary-content
-		SchemaContainer binaryContentSchemaContainer = boot.schemaContainerRoot().findByName("binary-content");
-		schemaContainers.put("binary-content", binaryContentSchemaContainer);
-
-	}
-
-	/**
-	 * Add microschemas
-	 * 
-	 * @throws MeshJsonException
-	 */
-	private void addMicroschemaContainers() throws MeshJsonException {
-		addVCardMicroschema();
-		addCaptionedImageMicroschema();
-	}
-
-	/**
-	 * Add microschema "vcard" to db
-	 * 
-	 * @throws MeshJsonException
-	 */
-	private void addVCardMicroschema() throws MeshJsonException {
-		Microschema vcardMicroschema = new MicroschemaModel();
-		vcardMicroschema.setName("vcard");
-		vcardMicroschema.setDescription("Microschema for a vcard");
-
-		// firstname field
-		StringFieldSchema firstNameFieldSchema = new StringFieldSchemaImpl();
-		firstNameFieldSchema.setName("firstName");
-		firstNameFieldSchema.setLabel("First Name");
-		firstNameFieldSchema.setRequired(true);
-		vcardMicroschema.addField(firstNameFieldSchema);
-
-		// lastname field
-		StringFieldSchema lastNameFieldSchema = new StringFieldSchemaImpl();
-		lastNameFieldSchema.setName("lastName");
-		lastNameFieldSchema.setLabel("Last Name");
-		lastNameFieldSchema.setRequired(true);
-		vcardMicroschema.addField(lastNameFieldSchema);
-
-		// address field
-		StringFieldSchema addressFieldSchema = new StringFieldSchemaImpl();
-		addressFieldSchema.setName("address");
-		addressFieldSchema.setLabel("Address");
-		vcardMicroschema.addField(addressFieldSchema);
-
-		// postcode field
-		StringFieldSchema postcodeFieldSchema = new StringFieldSchemaImpl();
-		postcodeFieldSchema.setName("postcode");
-		postcodeFieldSchema.setLabel("Post Code");
-		vcardMicroschema.addField(postcodeFieldSchema);
-
-		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser());
-		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(vcardMicroschemaContainer);
-	}
-
-	/**
-	 * Add microschema "captionedImage" to db
-	 * 
-	 * @throws MeshJsonException
-	 */
-	private void addCaptionedImageMicroschema() throws MeshJsonException {
-		Microschema captionedImageMicroschema = new MicroschemaModel();
-		captionedImageMicroschema.setName("captionedImage");
-		captionedImageMicroschema.setDescription("Microschema for a captioned image");
-
-		// image field
-		NodeFieldSchema imageFieldSchema = new NodeFieldSchemaImpl();
-		imageFieldSchema.setName("image");
-		imageFieldSchema.setLabel("Image");
-		imageFieldSchema.setAllowedSchemas("image");
-		captionedImageMicroschema.addField(imageFieldSchema);
-
-		// caption field
-		StringFieldSchema captionFieldSchema = new StringFieldSchemaImpl();
-		captionFieldSchema.setName("caption");
-		captionFieldSchema.setLabel("Caption");
-		captionedImageMicroschema.addField(captionFieldSchema);
-
-		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser());
-		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
-	}
-
-	public Node addFolder(Node rootNode, String englishName, String germanName) {
-		SchemaContainerVersion schemaVersion = schemaContainers.get("folder").getLatestVersion();
-		Node folderNode = rootNode.create(userInfo.getUser(), schemaVersion, project);
-
-		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, project.getLatestRelease(), userInfo.getUser());
-			// germanContainer.createString("displayName").setString(germanName);
-			germanContainer.createString("name").setString(germanName);
-			germanContainer.updateDisplayFieldValue();
-			folderNode.publish(getGerman(), getProject().getLatestRelease(), getUserInfo().getUser());
-		}
-		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, project.getLatestRelease(), userInfo.getUser());
-			// englishContainer.createString("displayName").setString(englishName);
-			englishContainer.createString("name").setString(englishName);
-			englishContainer.updateDisplayFieldValue();
-			folderNode.publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
-		}
-
-		if (englishName == null || StringUtils.isEmpty(englishName)) {
-			throw new RuntimeException("Key for folder empty");
-		}
-		if (folders.containsKey(englishName.toLowerCase())) {
-			throw new RuntimeException("Collision of folders detected for key " + englishName.toLowerCase());
-		}
-
-		folders.put(englishName.toLowerCase(), folderNode);
-		return folderNode;
-	}
-
-	public Tag addTag(String name) {
-		return addTag(name, getTagFamily("demo"));
-	}
-
-	public Tag addTag(String name, TagFamily tagFamily) {
-		if (name == null || StringUtils.isEmpty(name)) {
-			throw new RuntimeException("Name for tag empty");
-		}
-		Tag tag = tagFamily.create(name, project, userInfo.getUser());
-		tags.put(name.toLowerCase(), tag);
-		return tag;
-	}
-
-	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
-		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
-		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, project.getLatestRelease(), userInfo.getUser());
-			englishContainer.createString("name").setString(name + "_english_name");
-			englishContainer.createString("title").setString(name + " english title");
-			englishContainer.createString("displayName").setString(name + " english displayName");
-			englishContainer.createString("filename").setString(name + ".en.html");
-			englishContainer.createHTML("content").setHtml(englishContent);
-			englishContainer.updateDisplayFieldValue();
-			node.publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
-		}
-
-		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, project.getLatestRelease(), userInfo.getUser());
-			germanContainer.createString("name").setString(name + " german");
-			germanContainer.createString("title").setString(name + " german title");
-			germanContainer.createString("displayName").setString(name + " german");
-			germanContainer.createString("filename").setString(name + ".de.html");
-			germanContainer.createHTML("content").setHtml(germanContent);
-			germanContainer.updateDisplayFieldValue();
-			node.publish(getGerman(), getProject().getLatestRelease(), getUserInfo().getUser());
-		}
-
-		if (contents.containsKey(name.toLowerCase())) {
-			throw new RuntimeException("Collision of contents detected for key " + name.toLowerCase());
-		}
-
-		contents.put(name.toLowerCase(), node);
-		return node;
-	}
-
-	/**
-	 * Returns the path to the tag for the given language.
-	 */
-	public String getPathForNews2015Tag(Language language) {
-
-		String name = folders.get("news").getLatestDraftFieldContainer(language).getString("name").getString();
-		String name2 = folders.get("2015").getLatestDraftFieldContainer(language).getString("name").getString();
-		return name + "/" + name2;
-	}
-
-	public Language getEnglish() {
-		return english;
-	}
-
-	public Language getGerman() {
-		return german;
-	}
-
-	public Project getProject() {
-		return project;
-	}
-
-	public UserInfo getUserInfo() {
-		return userInfo;
-	}
-
-	public Node getFolder(String name) {
-		return folders.get(name);
-	}
-
-	public TagFamily getTagFamily(String key) {
-		return tagFamilies.get(key);
-	}
-
-	public Node getContent(String name) {
-		return contents.get(name);
-	}
-
-	public Tag getTag(String name) {
-		return tags.get(name);
-	}
-
-	public SchemaContainer getSchemaContainer(String name) {
-		return schemaContainers.get(name);
-	}
-
-	public Map<String, Tag> getTags() {
-		return tags;
-	}
-
-	public Map<String, Node> getContents() {
-		return contents;
-	}
-
-	public Map<String, Node> getFolders() {
-		return folders;
-	}
-
-	public Map<String, User> getUsers() {
-		return users;
-	}
-
-	public Map<String, Group> getGroups() {
-		return groups;
-	}
-
-	public Map<String, Role> getRoles() {
-		return roles;
-	}
-
-	public Map<String, SchemaContainer> getSchemaContainers() {
-		return schemaContainers;
-	}
-
-	public Map<String, MicroschemaContainer> getMicroschemaContainers() {
-		return microschemaContainers;
-	}
-
-	public MeshRoot getMeshRoot() {
-		return root;
-	}
-
-	public int getNodeCount() {
-		// folders, contents + basenode
-		return folders.size() + contents.size() + 1;
-	}
-
-	public Map<String, TagFamily> getTagFamilies() {
-		return tagFamilies;
-	}
+	UserInfo createUserInfo(String string, String string2, String string3);
 
 }

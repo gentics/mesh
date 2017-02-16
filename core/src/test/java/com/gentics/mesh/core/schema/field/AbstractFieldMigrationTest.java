@@ -16,7 +16,6 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 
-import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
@@ -51,13 +50,14 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.test.AbstractDBTest;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 
 /**
  * Base class for all field migration tests
  */
-public abstract class AbstractFieldMigrationTest extends AbstractIsolatedBasicDBTest implements FieldMigrationTest {
+public abstract class AbstractFieldMigrationTest extends AbstractDBTest implements FieldMigrationTest {
 
 	protected final static String NEWFIELD = "New field";
 	protected final static String NEWFIELDVALUE = "New field value";

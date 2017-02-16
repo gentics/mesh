@@ -29,7 +29,7 @@ public abstract class AbstractSearchEndpointTest extends AbstractRestEndpointTes
 	@BeforeClass
 	public static void initMesh() throws Exception {
 		init(true);
-		initDagger();
+		initDagger(false);
 	}
 
 	@Before

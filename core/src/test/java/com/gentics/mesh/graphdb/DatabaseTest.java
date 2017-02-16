@@ -16,13 +16,13 @@ import org.junit.Test;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.error.MeshSchemaException;
+import com.gentics.mesh.test.AbstractDBTest;
 
-public class DatabaseTest extends AbstractIsolatedBasicDBTest {
+public class DatabaseTest extends AbstractDBTest {
 
 	private File outputDirectory;
 

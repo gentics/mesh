@@ -7,10 +7,10 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.AbstractDBTest;
 
-public class NodeIndexHandlerTest extends AbstractIsolatedBasicDBTest {
+public class NodeIndexHandlerTest extends AbstractDBTest {
 
 	@Test
 	public void testReindexAll() throws Exception {

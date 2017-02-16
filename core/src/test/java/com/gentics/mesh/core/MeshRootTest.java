@@ -7,12 +7,12 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.AbstractDBTest;
 
-public class MeshRootTest extends AbstractIsolatedBasicDBTest {
+public class MeshRootTest extends AbstractDBTest {
 
 	@Test
 	public void testResolvePath() throws InterruptedException {
