@@ -154,7 +154,6 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 					});
 					setDone(schemaUuid, statusMBeanName);
 					message.reply(null);
-
 				}
 			} catch (Exception e) {
 				message.fail(0, "Migration for schema {" + schemaUuid + "} failed: " + e.getLocalizedMessage());

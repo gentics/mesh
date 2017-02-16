@@ -94,7 +94,7 @@ public final class MeshAssert {
 	public static void failingLatch(CountDownLatch latch) throws Exception {
 		if (!latch.await(getTimeout(), TimeUnit.SECONDS)) {
 			printAllStackTraces();
-			fail("Latch timeout reached");
+			fail("Latch timeout reached {" + getTimeout() + "} seconds.");
 		}
 	}
 

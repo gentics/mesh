@@ -326,19 +326,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			return Completable.complete();
 		}
 		return Completable.create(sub -> {
-			// TODO Add trigram filter -
-			// https://www.elastic.co/guide/en/elasticsearch/guide/current/ngrams-compound-words.html
-			// UpdateSettingsRequestBuilder updateSettingsBuilder =
-			// searchProvider.getNode().client().admin().indices().prepareUpdateSettings(indexName);
-			// updateSettingsBuilder.set
-			// updateSettingsBuilder.execute();
-			org.elasticsearch.node.Node esNode = null;
-			if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
-				esNode = (org.elasticsearch.node.Node) searchProvider.getNode();
-			} else {
-				throw new RuntimeException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
-			}
-
+			org.elasticsearch.node.Node esNode = getESNode();
 			PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
 			mappingRequestBuilder.setType(type);
 
