@@ -66,6 +66,7 @@ public abstract class AbstractTransformator<T> implements Transformator<T> {
 		Map<String, List<String>> tagFields = new HashMap<>();
 		tagFields.put("uuid", tagUuids);
 		tagFields.put("name", tagNames);
+
 		document.put("tags", tagFields);
 	}
 
