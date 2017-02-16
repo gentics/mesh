@@ -105,6 +105,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		db.operateNoTx(() -> {
 			// 1. Load the user that should be used
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, CREATE_PERM);
+			//TODO why do we need another transaction?!
 			return db.noTx(() -> {
 				String token = TokenUtil.randomToken();
 				Long tokenTimestamp = System.currentTimeMillis();
