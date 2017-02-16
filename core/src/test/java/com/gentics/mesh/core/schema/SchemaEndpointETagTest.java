@@ -10,8 +10,8 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -40,13 +40,13 @@ public class SchemaEndpointETagTest extends AbstractETagTest {
 		try (NoTx noTx = db.noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 
-			MeshResponse<Schema> response = client().findSchemaByUuid(schema.getUuid()).invoke();
+			MeshResponse<SchemaResponse> response = client().findSchemaByUuid(schema.getUuid()).invoke();
 			latchFor(response);
 			String etag = schema.getETag(getMockedInternalActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<Schema> request = client().findSchemaByUuid(schema.getUuid());
+			MeshRequest<SchemaResponse> request = client().findSchemaByUuid(schema.getUuid());
 			assertThat(expect304(request, etag, true)).contains(etag);
 
 			// The node has no node reference and thus expanding will not affect the etag

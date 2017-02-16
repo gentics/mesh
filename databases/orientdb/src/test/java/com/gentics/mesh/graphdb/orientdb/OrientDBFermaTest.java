@@ -27,7 +27,6 @@ import io.vertx.core.Vertx;
 public class OrientDBFermaTest extends AbstractOrientDBTest {
 
 	private final static int nMembers = 2000;
-	private final static int nChecks = 4000;
 
 	private Database db = new OrientDBDatabase();
 

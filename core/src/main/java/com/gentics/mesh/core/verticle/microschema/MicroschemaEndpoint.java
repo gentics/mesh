@@ -43,7 +43,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		secureAll();
 		addDiffHandler();
 		addChangesHandler();
@@ -62,7 +62,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschema());
+		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaChangesListModel(), "Found difference between both microschemas.");
 		endpoint.description(
 				"Compare the provided schema with the schema which is currently stored and generate a set of changes that have been detected.");
@@ -109,7 +109,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		readOne.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
-		readOne.exampleResponse(OK, microschemaExamples.getGeolocationMicroschema(), "Loaded microschema.");
+		readOne.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Loaded microschema.");
 		readOne.description("Read the microschema with the given uuid.");
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("microschemaUuid");
@@ -156,8 +156,8 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.consumes(APPLICATION_JSON);
-		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschema());
-		endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschema(), "Updated microschema.");
+		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaUpdateRequest());
+		endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
 		endpoint.description("Update the microschema with the given uuid.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -173,7 +173,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.description("Create a new microschema.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
-		endpoint.exampleResponse(CREATED, microschemaExamples.getGeolocationMicroschema(), "Created microschema.");
+		endpoint.exampleResponse(CREATED, microschemaExamples.getGeolocationMicroschemaResponse(), "Created microschema.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			crudHandler.handleCreate(ac);

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.user;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 /**
@@ -13,6 +14,7 @@ public class UserReference {
 	@JsonPropertyDescription("Lastname of the user")
 	private String lastName;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Uuid of the user")
 	private String uuid;
 

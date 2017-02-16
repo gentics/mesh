@@ -26,7 +26,7 @@ import rx.exceptions.CompositeException;
 
 public class NodeFieldAPIHandlerTest extends AbstractDBTest {
 
-	private NodeFieldAPIHandler handler;
+	private BinaryFieldHandler handler;
 
 	private MeshUploadOptions uploadOptions;
 

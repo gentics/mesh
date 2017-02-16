@@ -27,11 +27,13 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -39,6 +41,8 @@ import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.performance.TestUtils;
+
+import io.vertx.core.json.JsonObject;
 
 public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
@@ -74,6 +78,24 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
+	public void testTrigramSearchQuery() throws Exception {
+		// 1. Index all existing contents
+		try (NoTx noTx = db.noTx()) {
+			recreateIndices();
+		}
+
+		JsonObject query = new JsonObject().put("min_score", 1.0).put("query",
+				new JsonObject().put("match_phrase", new JsonObject().put("fields.content", new JsonObject().put("query", "Hersteller"))));
+
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query.toString(),
+				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft(), new NodeParameters().setLanguages("de")));
+		assertEquals(1, response.getData().size());
+
+		String name = response.getData().get(0).getFields().getStringField("name").getString();
+		assertEquals("Honda NR german", name);
+	}
+
+	@Test
 	public void testSchemaMigrationNodeSearchTest() throws Exception {
 
 		// 1. Index all existing contents
@@ -91,11 +113,11 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 3. Prepare an updated schema
 		String schemaUuid;
-		Schema schema;
+		SchemaUpdateRequest schema;
 		try (NoTx noTx = db.noTx()) {
 			Node concorde = content("concorde");
 			SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
-			schema = schemaVersion.getSchema();
+			schema = JsonUtil.readValue(schemaVersion.getJson(), SchemaUpdateRequest.class);
 			schema.addField(FieldUtil.createStringFieldSchema("extraField"));
 			schemaUuid = concorde.getSchemaContainer().getUuid();
 		}
@@ -108,7 +130,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		expectResponseMessage(message, "migration_invoked", "content");
 
 		// 5. Assign the new schema version to the release
-		Schema updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
+		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, db.noTx(() -> project().getLatestRelease().getUuid()),
 				new SchemaReference().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
 

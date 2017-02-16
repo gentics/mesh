@@ -9,7 +9,6 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -30,8 +29,7 @@ public class NodeEndpointFieldAPIeTagTest extends AbstractETagTest {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
-			GenericMessageResponse message = call(() -> uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName));
-			expectResponseMessage(message, "node_binary_field_updated", "binary");
+			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
 			node.reload();
 

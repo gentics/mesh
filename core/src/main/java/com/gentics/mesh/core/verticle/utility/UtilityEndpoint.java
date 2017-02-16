@@ -35,7 +35,7 @@ public class UtilityEndpoint extends AbstractEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		secureAll();
 		addResolveLinkHandler();
 	}

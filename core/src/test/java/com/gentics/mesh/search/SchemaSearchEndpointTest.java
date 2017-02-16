@@ -13,8 +13,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -67,7 +67,7 @@ public class SchemaSearchEndpointTest extends AbstractSearchEndpointTest impleme
 	@Override
 	public void testDocumentCreation() throws Exception {
 		final String newName = "newschema";
-		Schema schema = createSchema(newName);
+		SchemaResponse schema = createSchema(newName);
 		try (NoTx noTx = db.noTx()) {
 			MeshAssert.assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
 		}
@@ -83,7 +83,7 @@ public class SchemaSearchEndpointTest extends AbstractSearchEndpointTest impleme
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		final String schemaName = "newschemaname";
-		Schema schema = createSchema(schemaName);
+		SchemaResponse schema = createSchema(schemaName);
 
 		MeshResponse<SchemaListResponse> future = client()
 				.searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
@@ -106,7 +106,7 @@ public class SchemaSearchEndpointTest extends AbstractSearchEndpointTest impleme
 
 		// 1. Create a new schema
 		final String schemaName = "newschemaname";
-		Schema schema = createSchema(schemaName);
+		SchemaResponse schema = createSchema(schemaName);
 
 		// 2. Setup latch for migration/schema update
 		String newSchemaName = "updatedschemaname";

@@ -31,16 +31,19 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 	private Buffer bodyData;
 
 	private String contentType;
+	
+	private String accepts;
 
 	private MeshRestClientAuthenticationProvider authentication;
 
 	public MeshHttpRequestImpl(HttpClientRequest request, MeshResponseHandler<T> handler, Buffer bodyData, String contentType,
-			MeshRestClientAuthenticationProvider authentication) {
+			MeshRestClientAuthenticationProvider authentication, String accepts) {
 		this.request = request;
 		this.handler = handler;
 		this.bodyData = bodyData;
 		this.contentType = contentType;
 		this.authentication = authentication;
+		this.accepts = accepts;
 	}
 
 	@Override
@@ -56,7 +59,7 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 
 		if (authentication != null) {
 			authentication.addAuthenticationInformation(request).subscribe(() -> {
-				request.headers().add("Accept", "application/json");
+				request.headers().add("Accept", accepts);
 
 				if (bodyData != null && bodyData.length() != 0) {
 					request.headers().add("content-length", String.valueOf(bodyData.length()));

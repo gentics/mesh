@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
@@ -33,7 +34,7 @@ import com.gentics.mesh.util.ETag;
 import rx.Single;
 
 public class MicroschemaContainerVersionImpl
-		extends AbstractGraphFieldSchemaContainerVersion<Microschema, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
+		extends AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, Microschema, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
 		implements MicroschemaContainerVersion {
 
 	public static void init(Database database) {
@@ -99,9 +100,9 @@ public class MicroschemaContainerVersionImpl
 	}
 
 	@Override
-	public Microschema transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+	public MicroschemaResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 		// Load the microschema and add/overwrite some properties
-		Microschema microschema = JsonUtil.readValue(getJson(), MicroschemaModel.class);
+		MicroschemaResponse microschema = JsonUtil.readValue(getJson(), MicroschemaResponse.class);
 		// Role permissions
 		MicroschemaContainer container = getSchemaContainer();
 		container.setRolePermissions(ac, microschema);
@@ -136,7 +137,7 @@ public class MicroschemaContainerVersionImpl
 	}
 
 	@Override
-	public Single<Microschema> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+	public Single<MicroschemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 		return MeshInternal.get().database().operateNoTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});

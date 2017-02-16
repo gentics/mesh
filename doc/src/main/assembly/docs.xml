@@ -14,6 +14,13 @@
 				<include>**/*</include>
 			</includes>
 		</fileSet>
+		<fileSet>
+			<outputDirectory>/</outputDirectory>
+			<directory>${basedir}/../</directory>
+			<includes>
+				<include>CHANGELOG.adoc</include>
+			</includes>
+		</fileSet>
 		<!-- Also include raml files -->
 		<fileSet>
 			<outputDirectory>/json</outputDirectory>

@@ -1,11 +1,8 @@
 package com.gentics.mesh.search.index.schema;
 
-import static com.gentics.mesh.search.index.MappingHelper.ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.DESCRIPTION_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
-import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+import static com.gentics.mesh.search.index.MappingHelper.trigramStringType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -34,8 +31,8 @@ public class SchemaTransformator extends AbstractTransformator<SchemaContainer> 
 	@Override
 	public JsonObject getMappingProperties() {
 		JsonObject props = new JsonObject();
-		props.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
-		props.put(DESCRIPTION_KEY, fieldType(STRING, ANALYZED));
+		props.put(NAME_KEY, trigramStringType());
+		props.put(DESCRIPTION_KEY, trigramStringType());
 		return props;
 	}
 

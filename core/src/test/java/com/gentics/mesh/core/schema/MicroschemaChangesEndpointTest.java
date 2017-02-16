@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
@@ -137,15 +137,14 @@ public class MicroschemaChangesEndpointTest extends AbstractRestEndpointTest {
 			assertNotNull(vcardContainer);
 
 			// 1. Setup new microschema
-			Microschema request = new MicroschemaModel();
+			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 			request.setName(name);
 
 			// 2. Setup eventbus bridged latch
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			// 3. Invoke migration
-			call(() -> client().updateMicroschema(vcardContainer.getUuid(), request,
-					new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
+			call(() -> client().updateMicroschema(vcardContainer.getUuid(), request, new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
 			Microschema microschema = call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()));
 			call(() -> client().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
 					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
@@ -165,7 +164,7 @@ public class MicroschemaChangesEndpointTest extends AbstractRestEndpointTest {
 			String originalSchemaName = "vcard";
 			MicroschemaContainer microschema = microschemaContainers().get(originalSchemaName);
 			assertNotNull(microschema);
-			Microschema request = new MicroschemaModel();
+			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 			request.setName(name);
 
 			call(() -> client().updateMicroschema(microschema.getUuid(), request), CONFLICT, "schema_conflicting_name", name);

@@ -1,7 +1,7 @@
 package com.gentics.mesh.rest.client.method;
 
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -9,9 +9,9 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import io.vertx.core.buffer.Buffer;
 
 /**
- * Interface for Node Field API specific rest API methods.
+ * Interface for Node Binary Field specific REST API methods.
  */
-public interface NodeFieldAPIClientMethods {
+public interface NodeBinaryFieldClientMethods {
 
 	/**
 	 * Update the binary field for the node with the given nodeUuid in the given project using the provided data buffer.
@@ -22,6 +22,8 @@ public interface NodeFieldAPIClientMethods {
 	 *            Uuid of the node
 	 * @param languageTag
 	 *            Language tag of the node
+	 * @param nodeVersion
+	 *            Node version
 	 * @param fieldKey
 	 *            Key of the field which holds the binary data
 	 * @param fileData
@@ -30,8 +32,8 @@ public interface NodeFieldAPIClientMethods {
 	 * @param contentType
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
-			Buffer fileData, String fileName, String contentType);
+	MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String nodeVersion,
+			String fieldKey, Buffer fileData, String fileName, String contentType, ParameterProvider... parameters);
 
 	/**
 	 * Download the binary field of the given node in the given project.
@@ -55,12 +57,14 @@ public interface NodeFieldAPIClientMethods {
 	 *            uuid of hte node
 	 * @param languageTag
 	 *            language tag
+	 * @param version
+	 *            Node version
 	 * @param fieldKey
 	 *            field key
 	 * @param imageManipulationParameter
 	 *            parameters for the image transformation
 	 * @return Mesh request
 	 */
-	MeshRequest<GenericMessageResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
-			ImageManipulationParameters imageManipulationParameter);
+	MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version,
+			String fieldKey, ImageManipulationParameters imageManipulationParameter);
 }

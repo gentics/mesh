@@ -1,11 +1,11 @@
 package com.gentics.mesh.search.index.user;
 
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
+import static com.gentics.mesh.search.index.MappingHelper.trigramStringType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,16 +78,16 @@ public class UserTransformator extends AbstractTransformator<User> {
 	@Override
 	public JsonObject getMappingProperties() {
 		JsonObject props = new JsonObject();
-		props.put(USERNAME_KEY, fieldType(STRING, NOT_ANALYZED));
-		props.put(LASTNAME_KEY, fieldType(STRING, NOT_ANALYZED));
-		props.put(FIRSTNAME_KEY, fieldType(STRING, NOT_ANALYZED));
-		props.put(EMAIL_KEY, fieldType(STRING, NOT_ANALYZED));
-		props.put(NODEREFERECE_KEY, fieldType(STRING, NOT_ANALYZED));
+		props.put(USERNAME_KEY, notAnalyzedType(STRING));
+		props.put(LASTNAME_KEY, trigramStringType());
+		props.put(FIRSTNAME_KEY, trigramStringType());
+		props.put(EMAIL_KEY, notAnalyzedType(STRING));
+		props.put(NODEREFERECE_KEY, notAnalyzedType(STRING));
 		props.put(GROUPS_KEY, new JsonObject()
 			.put("type", OBJECT)
 			.put("properties", new JsonObject()
-				.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED))
-				.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED))
+				.put(NAME_KEY, trigramStringType())
+				.put(UUID_KEY, notAnalyzedType(STRING))
 			)
 		);
 

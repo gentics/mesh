@@ -151,6 +151,7 @@ public class NodeParameters extends AbstractParameters {
 	 * Set the <code>{@value #RESOLVE_LINKS_QUERY_PARAM_KEY}</code> request parameter.
 	 * 
 	 * @param type
+	 * @return Fluent API
 	 */
 	public NodeParameters setResolveLinks(LinkType type) {
 		setParameter(RESOLVE_LINKS_QUERY_PARAM_KEY, type.name().toLowerCase());

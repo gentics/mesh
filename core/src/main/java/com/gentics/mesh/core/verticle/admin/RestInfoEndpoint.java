@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.admin;
 
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
@@ -13,15 +14,21 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.example.RestInfoExamples;
+import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.SearchProvider;
 
+import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.ext.web.Router;
 
 @Singleton
 public class RestInfoEndpoint extends AbstractEndpoint {
 
 	private SearchProvider searchProvider;
+
+	private RestInfoExamples examples = new RestInfoExamples();
 
 	private Database db;
 
@@ -32,15 +39,39 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 		this.db = db;
 	}
 
-	@Override
-	public String getDescription() {
-		return "Provides endpoints that return information about the currently used REST Api";
+	public RestInfoEndpoint(String path, RouterStorage storage) {
+		super(path, storage);
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
-		// Endpoint endpoint = createEndpoint();
-		routerStorage.getAPIRouter().route("/").method(GET).handler(rc -> {
+	public String getDescription() {
+		return "Provides endpoints that return information about the REST API.";
+	}
+
+	@Override
+	public void registerEndPoints() {
+
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/raml");
+		endpoint.method(GET);
+		endpoint.description("Endpoint which provides a RAML document for all registed endpoints.");
+		endpoint.displayName("RAML specification");
+		endpoint.exampleResponse(OK, "123");
+		endpoint.produces("text/vnd.yaml");
+		endpoint.handler(rc -> {
+			RAMLGenerator generator = new RAMLGenerator(null);
+			String raml = generator.generate();
+			rc.response().end(raml);
+		});
+
+		Endpoint infoEndpoint = createEndpoint();
+		infoEndpoint.path("/");
+		infoEndpoint.description("Endpoint which returns version information");
+		infoEndpoint.displayName("Version Information");
+		infoEndpoint.produces(APPLICATION_JSON);
+		infoEndpoint.exampleResponse(OK, examples.getInfoExample(), "JSON which contains version information");
+		infoEndpoint.method(GET);
+		infoEndpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshServerInfoModel info = new MeshServerInfoModel();
 			info.setDatabaseVendor(db.getVendorName());
@@ -49,7 +80,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 			info.setSearchVersion(searchProvider.getVersion());
 			info.setMeshVersion(Mesh.getPlainVersion());
 			info.setMeshNodeId(MeshNameProvider.getInstance().getName());
-			info.setVertxVersion(new io.vertx.core.Starter().getVersion());
+			info.setVertxVersion(new VersionCommand().getVersion());
 			ac.send(info, OK);
 		});
 	}
@@ -57,6 +88,11 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 	@Override
 	public Router setupLocalRouter() {
 		return Router.router(Mesh.vertx());
+	}
+
+	@Override
+	public Router getRouter() {
+		return routerStorage.getAPIRouter();
 	}
 
 }

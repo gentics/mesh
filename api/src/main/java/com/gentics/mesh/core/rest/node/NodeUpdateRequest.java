@@ -4,16 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 
 /**
  * POJO for a node update request.
  */
 public class NodeUpdateRequest implements RestModel, FieldContainer {
-
-	@JsonProperty(required = true)
-	@JsonPropertyDescription("Reference to the schema of the node.")
-	private SchemaReference schema;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("ISO 639-1 language tag of the node content.")
@@ -28,25 +23,6 @@ public class NodeUpdateRequest implements RestModel, FieldContainer {
 	private VersionReference version;
 
 	public NodeUpdateRequest() {
-	}
-
-	/**
-	 * Return the schema name.
-	 * 
-	 * @return Schema reference
-	 */
-	public SchemaReference getSchema() {
-		return schema;
-	}
-
-	/**
-	 * Set the schema name.
-	 * 
-	 * @param schema
-	 *            Schema reference
-	 */
-	public void setSchema(SchemaReference schema) {
-		this.schema = schema;
 	}
 
 	/**

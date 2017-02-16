@@ -42,7 +42,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		secureAll();
 		addReadHandlers();
 		addUpdateHandlers();
@@ -69,7 +69,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Add the microschema to the project.");
-		endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschema(), "Microschema was added to the project.");
+		endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Microschema was added to the project.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("microschemaUuid");

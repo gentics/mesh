@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.node;
 
+import static com.gentics.mesh.search.index.MappingHelper.ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
 import static com.gentics.mesh.search.index.MappingHelper.DOUBLE;
@@ -9,8 +10,10 @@ import static com.gentics.mesh.search.index.MappingHelper.NESTED;
 import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
+import static com.gentics.mesh.search.index.MappingHelper.TRIGRAM_ANALYZER;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
+import static com.gentics.mesh.search.index.MappingHelper.trigramStringType;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 
 import java.util.ArrayList;
@@ -25,6 +28,8 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -49,7 +54,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.search.index.AbstractTransformator;
-
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -318,10 +323,14 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		switch (type) {
 		case STRING:
 			fieldInfo.put("type", STRING);
+			fieldInfo.put("index", ANALYZED);
+			fieldInfo.put("analyzer", TRIGRAM_ANALYZER);
 			addRawInfo(fieldInfo, STRING);
 			break;
 		case HTML:
 			fieldInfo.put("type", STRING);
+			fieldInfo.put("index", ANALYZED);
+			fieldInfo.put("analyzer", TRIGRAM_ANALYZER);
 			addRawInfo(fieldInfo, STRING);
 			break;
 		case BOOLEAN:
@@ -337,41 +346,12 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 			JsonObject binaryProps = new JsonObject();
 			fieldInfo.put("properties", binaryProps);
 
-			// filename
-			JsonObject filenameInfo = new JsonObject();
-			filenameInfo.put("type", STRING);
-			filenameInfo.put("index", NOT_ANALYZED);
-			binaryProps.put("filename", filenameInfo);
-
-			// filesize
-			JsonObject filesizeInfo = new JsonObject();
-			filesizeInfo.put("type", LONG);
-			filesizeInfo.put("index", NOT_ANALYZED);
-			binaryProps.put("filesize", filesizeInfo);
-
-			// mimeType
-			JsonObject mimeTypeInfo = new JsonObject();
-			mimeTypeInfo.put("type", STRING);
-			mimeTypeInfo.put("index", NOT_ANALYZED);
-			binaryProps.put("mimeType", mimeTypeInfo);
-
-			// imageWidth
-			JsonObject imageWidthInfo = new JsonObject();
-			imageWidthInfo.put("type", LONG);
-			imageWidthInfo.put("index", NOT_ANALYZED);
-			binaryProps.put("width", imageWidthInfo);
-
-			// imageHeight
-			JsonObject imageHeightInfo = new JsonObject();
-			imageHeightInfo.put("type", LONG);
-			imageHeightInfo.put("index", NOT_ANALYZED);
-			binaryProps.put("height", imageHeightInfo);
-
-			// dominantColor
-			JsonObject dominantColorInfo = new JsonObject();
-			dominantColorInfo.put("type", STRING);
-			dominantColorInfo.put("index", NOT_ANALYZED);
-			binaryProps.put("dominantColor", dominantColorInfo);
+			binaryProps.put("filename", notAnalyzedType(STRING));
+			binaryProps.put("filesize", notAnalyzedType(LONG));
+			binaryProps.put("mimeType", notAnalyzedType(STRING));
+			binaryProps.put("width", notAnalyzedType(LONG));
+			binaryProps.put("height", notAnalyzedType(LONG));
+			binaryProps.put("dominantColor", notAnalyzedType(STRING));
 			break;
 		case NUMBER:
 			// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
@@ -426,8 +406,8 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 			micronodeMappingProperties.put("microschema", microschemaMapping);
 
 			JsonObject microschemaMappingProperties = new JsonObject();
-			microschemaMappingProperties.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
-			microschemaMappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
+			microschemaMappingProperties.put(NAME_KEY, trigramStringType());
+			microschemaMappingProperties.put(UUID_KEY, notAnalyzedType(STRING));
 			microschemaMapping.put("properties", microschemaMappingProperties);
 			fieldInfo.put("dynamic", true);
 			// TODO add version
@@ -456,8 +436,35 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 	}
 
 	/**
+	 * Transforms tags grouped by tag families
+	 * @param document
+	 * @param tags
+	 */
+	private void addTagFamilies(JsonObject document, List<? extends Tag> tags) {
+		JsonObject familiesObject = new JsonObject();
+
+		for (Tag tag: tags) {
+			TagFamily family = tag.getTagFamily();
+			JsonObject familyObject = familiesObject.getJsonObject(family.getName());
+			if (familyObject == null) {
+				familyObject = new JsonObject();
+				familyObject.put("uuid", family.getUuid());
+				familyObject.put("tags", new JsonArray());
+				familiesObject.put(family.getName(), familyObject);
+			}
+			familyObject.getJsonArray("tags").add(
+				new JsonObject()
+					.put("name", tag.getName())
+					.put("uuid", tag.getUuid())
+			);
+		}
+
+		document.put("tagFamilies", familiesObject);
+	}
+
+	/**
 	 * It is required to specify the releaseUuid in order to transform containers.
-	 * 
+	 *
 	 * @deprecated
 	 */
 	@Override
@@ -466,6 +473,13 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		throw new NotImplementedException("Use toDocument(container, releaseUuid) instead");
 	}
 
+	/**
+	 * Transform the given container into a indexable document.
+	 * 
+	 * @param container
+	 * @param releaseUuid
+	 * @return
+	 */
 	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid) {
 		Node node = container.getParentNode();
 		JsonObject document = new JsonObject();
@@ -477,6 +491,7 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 
 		addProject(document, node.getProject());
 		addTags(document, node.getTags(node.getProject().getLatestRelease()));
+		addTagFamilies(document, node.getTags(node.getProject().getLatestRelease()));
 
 		// The basenode has no parent.
 		if (node.getParentNode(releaseUuid) != null) {
@@ -527,8 +542,8 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		JsonObject projectMapping = new JsonObject();
 		projectMapping.put("type", OBJECT);
 		JsonObject projectMappingProps = new JsonObject();
-		projectMappingProps.put("name", fieldType(STRING, NOT_ANALYZED));
-		projectMappingProps.put("uuid", fieldType(STRING, NOT_ANALYZED));
+		projectMappingProps.put("name", trigramStringType());
+		projectMappingProps.put("uuid", notAnalyzedType(STRING));
 		projectMapping.put("properties", projectMappingProps);
 		typeProperties.put("project", projectMapping);
 
@@ -538,17 +553,22 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		tagsMapping.put("dynamic", true);
 		typeProperties.put("tags", tagsMapping);
 
+		// tagFamilies
+		JsonObject tagFamiliesMapping = new JsonObject();
+		tagFamiliesMapping.put("type", "nested");
+		tagFamiliesMapping.put("dynamic", true);
+		typeProperties.put("tagFamilies", tagFamiliesMapping);
+
 		// language
-		JsonObject languageMapping = fieldType(STRING, NOT_ANALYZED);
-		typeProperties.put("language", languageMapping);
+		typeProperties.put("language", notAnalyzedType(STRING));
 
 		// schema
 		JsonObject schemaMapping = new JsonObject();
 		schemaMapping.put("type", OBJECT);
 		JsonObject schemaMappingProperties = new JsonObject();
-		schemaMappingProperties.put("uuid", fieldType(STRING, NOT_ANALYZED));
-		schemaMappingProperties.put("name", fieldType(STRING, NOT_ANALYZED));
-		schemaMappingProperties.put("version", fieldType(LONG, NOT_ANALYZED));
+		schemaMappingProperties.put("uuid", notAnalyzedType(STRING));
+		schemaMappingProperties.put("name", trigramStringType());
+		schemaMappingProperties.put("version", notAnalyzedType(LONG));
 		schemaMapping.put("properties", schemaMappingProperties);
 		typeProperties.put("schema", schemaMapping);
 
@@ -556,8 +576,8 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		JsonObject displayFieldMapping = new JsonObject();
 		displayFieldMapping.put("type", OBJECT);
 		JsonObject displayFieldMappingProperties = new JsonObject();
-		displayFieldMappingProperties.put("key", fieldType(STRING, NOT_ANALYZED));
-		displayFieldMappingProperties.put("value", fieldType(STRING, NOT_ANALYZED));
+		displayFieldMappingProperties.put("key", notAnalyzedType(STRING));
+		displayFieldMappingProperties.put("value", notAnalyzedType(STRING));
 		displayFieldMapping.put("properties", displayFieldMappingProperties);
 		typeProperties.put("displayField", displayFieldMapping);
 
@@ -565,7 +585,7 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		JsonObject parentNodeMapping = new JsonObject();
 		parentNodeMapping.put("type", OBJECT);
 		JsonObject parentNodeMappingProperties = new JsonObject();
-		parentNodeMappingProperties.put("uuid", fieldType(STRING, NOT_ANALYZED));
+		parentNodeMappingProperties.put("uuid", notAnalyzedType(STRING));
 		parentNodeMapping.put("properties", parentNodeMappingProperties);
 		typeProperties.put("parentNode", parentNodeMapping);
 

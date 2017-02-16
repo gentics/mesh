@@ -38,7 +38,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 
 		// Only secure /me
 		getRouter().route("/me").handler(authHandler);

@@ -14,7 +14,6 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.graphdb.NoTx;
@@ -76,8 +75,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 			String fileName = "somefile.dat";
 
 			// 2. Update the binary data
-			GenericMessageResponse message = call(()-> uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName));
-			expectResponseMessage(message, "node_binary_field_updated", "binary");
+			call(()-> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";

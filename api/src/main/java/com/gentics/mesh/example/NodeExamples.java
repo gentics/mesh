@@ -23,6 +23,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.raml.model.ParamType;
+import org.raml.model.parameter.FormParameter;
 
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -240,7 +245,6 @@ public class NodeExamples extends AbstractExamples {
 	public NodeUpdateRequest getNodeUpdateRequest2() {
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
-		nodeUpdateRequest.setSchema(new SchemaReference().setName("vehicle"));
 		nodeUpdateRequest.getFields().put("weight", new NumberFieldImpl().setNumber(1230));
 		return nodeUpdateRequest;
 	}
@@ -259,7 +263,6 @@ public class NodeExamples extends AbstractExamples {
 	public NodeUpdateRequest getNodeUpdateRequest() {
 		NodeUpdateRequest nodeUpdate = new NodeUpdateRequest();
 		nodeUpdate.setLanguage("en");
-		nodeUpdate.setSchema(getSchemaReference("content"));
 
 		FieldMap fields = nodeUpdate.getFields();
 		fields.put("filename", createStringField("index-renamed.en.html"));
@@ -288,6 +291,30 @@ public class NodeExamples extends AbstractExamples {
 		list.getData().add(getNodeResponse2());
 		setPaging(list, 1, 10, 2, 20);
 		return list;
+	}
+
+	public Map<String, List<FormParameter>> getExampleBinaryUploadFormParameters() {
+		Map<String, List<FormParameter>> parameters = new HashMap<>();
+		FormParameter versionParameter = new FormParameter();
+		versionParameter.setExample("1.0");
+		versionParameter.setType(ParamType.STRING);
+		versionParameter.setDescription("Version of the node which should be updated. This information is used to determine conflicting updates.");
+		versionParameter.setRequired(true);
+		parameters.put("version", Arrays.asList(versionParameter));
+
+		FormParameter languageParameter = new FormParameter();
+		languageParameter.setExample("en");
+		languageParameter.setType(ParamType.STRING);
+		languageParameter.setDescription("Language of the node content which contains the binary field which should be updated.");
+		languageParameter.setRequired(true);
+		parameters.put("language", Arrays.asList(languageParameter));
+
+		FormParameter binaryParameter = new FormParameter();
+		binaryParameter.setDescription("Single binary file part.");
+		binaryParameter.setRequired(true);
+		binaryParameter.setType(ParamType.FILE);
+		parameters.put("binary", Arrays.asList(binaryParameter));
+		return parameters;
 	}
 
 }

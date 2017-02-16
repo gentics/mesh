@@ -17,6 +17,7 @@ import org.mockito.Mockito;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -74,6 +75,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
+import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -90,6 +92,7 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.HttpQueryUtils;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
@@ -190,6 +193,15 @@ public final class Mocks {
 			when(user.getEditor()).thenReturn(creator);
 		}
 		return user;
+	}
+
+	public static UpdateDocumentEntry mockUpdateDocumentEntry() {
+		UpdateDocumentEntry entry = mock(UpdateDocumentEntry.class);
+		HandleContext context = new HandleContext();
+		context.setProjectUuid(UUIDUtil.randomUUID());
+		when(entry.getContext()).thenReturn(context);
+		when(entry.getElementUuid()).thenReturn(randomUUID());
+		return entry;
 	}
 
 	public static TagFamily mockTagFamily(String name, User user, Project project) {
@@ -298,6 +310,7 @@ public final class Mocks {
 
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 		SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
+		when(latestVersion.getUuid()).thenReturn(randomUUID());
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		when(node.getCreator()).thenReturn(user);
 		when(node.getUuid()).thenReturn(randomUUID());

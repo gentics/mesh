@@ -1,16 +1,26 @@
 package com.gentics.mesh.core.rest.schema;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
+import java.util.Set;
 
-import com.gentics.mesh.core.rest.common.GenericRestResponse;
+import org.apache.commons.lang.StringUtils;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 
 /**
  * A field schema container is a named container that contains field schemas. Typical containers are {@link Schema} or {@link Microschema}.
  */
-public interface FieldSchemaContainer extends GenericRestResponse {
+public interface FieldSchemaContainer extends RestModel {
 
 	/**
 	 * Return the name of the container.
@@ -43,21 +53,14 @@ public interface FieldSchemaContainer extends GenericRestResponse {
 	void setDescription(String description);
 
 	/**
-	 * Return the field schema with the given name.
-	 * 
-	 * @param fieldName
-	 * @return
-	 * @deprecated
-	 */
-	Optional<FieldSchema> getFieldSchema(String fieldName);
-
-	/**
 	 * Return the field with the given name.
 	 * 
 	 * @param fieldName
 	 * @return
 	 */
-	FieldSchema getField(String fieldName);
+	default FieldSchema getField(String fieldName) {
+		return (FieldSchema) getFields().stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null);
+	}
 
 	/**
 	 * Return the field schema with the given name.
@@ -66,14 +69,21 @@ public interface FieldSchemaContainer extends GenericRestResponse {
 	 * @param classOfT
 	 * @return
 	 */
-	<T> T getField(String fieldName, Class<T> classOfT);
+	default <T> T getField(String fieldName, Class<T> classOfT) {
+		return (T) getFields().stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null);
+	}
 
 	/**
 	 * Removes the field with the given name.
 	 * 
 	 * @param name
 	 */
-	void removeField(String name);
+	default void removeField(String name) {
+		if (name == null) {
+			return;
+		}
+		getFields().removeIf(field -> name.equals(field.getName()));
+	}
 
 	/**
 	 * Return the list of field schemas.
@@ -87,14 +97,25 @@ public interface FieldSchemaContainer extends GenericRestResponse {
 	 * 
 	 * @return
 	 */
-	Map<String, FieldSchema> getFieldsAsMap();
+	@JsonIgnore
+	default Map<String, FieldSchema> getFieldsAsMap() {
+		Map<String, FieldSchema> map = new HashMap<>();
+		for (FieldSchema field : getFields()) {
+			map.put(field.getName(), field);
+		}
+		return map;
+	}
 
 	/**
 	 * Add the given field schema to the list of field schemas.
 	 * 
 	 * @param fieldSchema
 	 */
-	void addField(FieldSchema fieldSchema);
+	default void addField(FieldSchema fieldSchema) {
+		Objects.requireNonNull(fieldSchema, "The field schema must not be null");
+		Objects.requireNonNull(fieldSchema.getName(), "The field schema must have a valid name");
+		getFields().add(fieldSchema);
+	}
 
 	/**
 	 * Add the given field schema to the list of field schemas after the field with the given name. The field will be added to the end of the list if the insert
@@ -105,7 +126,22 @@ public interface FieldSchemaContainer extends GenericRestResponse {
 	 * @param afterFieldName
 	 *            Field name that identifies the position after which the field will be inserted
 	 */
-	void addField(FieldSchema fieldSchema, String afterFieldName);
+	default void addField(FieldSchema fieldSchema, String afterFieldName) {
+		List<FieldSchema> fields = getFields();
+		int index = fields.size();
+		if (afterFieldName != null) {
+			for (int i = 0; i < fields.size(); i++) {
+				if (afterFieldName.equals(fields.get(i).getName())) {
+					index = i;
+					break;
+				}
+			}
+		}
+		if (index < fields.size()) {
+			index = index + 1;
+		}
+		fields.add(index, fieldSchema);
+	}
 
 	/**
 	 * Set the list of schema fields.
@@ -131,12 +167,43 @@ public interface FieldSchemaContainer extends GenericRestResponse {
 	/**
 	 * Validate the schema for correctness.
 	 */
-	void validate();
+	default void validate() {
+		if (StringUtils.isEmpty(getName())) {
+			throw error(BAD_REQUEST, "schema_error_no_name");
+		}
+
+		Set<String> fieldLabels = new HashSet<>();
+		Set<String> fieldNames = new HashSet<>();
+
+		for (FieldSchema field : getFields()) {
+			if (field.getName() != null) {
+				if (!fieldNames.add(field.getName())) {
+					throw error(BAD_REQUEST, "schema_error_duplicate_field_name", field.getName());
+				}
+			}
+
+			if (field.getLabel() != null) {
+				if (!fieldLabels.add(field.getLabel())) {
+					throw error(BAD_REQUEST, "schema_error_duplicate_field_label", field.getName(), field.getLabel());
+				}
+			}
+			field.validate();
+		}
+	}
+
 
 	/**
 	 * Assert that the field map does not contain any fields which are not specified by the schema.
 	 * 
 	 * @param fieldMap
 	 */
-	void assertForUnhandledFields(FieldMap fieldMap);
+	default void assertForUnhandledFields(FieldMap fieldMap) {
+		Set<String> allFieldsOfRequest = new HashSet<>(fieldMap.keySet());
+		for (FieldSchema fieldSchema : getFields()) {
+			allFieldsOfRequest.remove(fieldSchema.getName());
+		}
+		if (allFieldsOfRequest.size() > 0) {
+			throw error(BAD_REQUEST, "node_unhandled_fields", getName(), Arrays.toString(allFieldsOfRequest.toArray()));
+		}
+	}
 }

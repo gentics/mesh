@@ -69,7 +69,7 @@
 								<argument>clone</argument>
 								<argument>-b</argument>
 								<argument>master</argument>
-								<argument>git@github.com:gentics/mesh-angular-demo.git</argument>
+								<argument>git@github.com:gentics/mesh-angular-example.git</argument>
 								<argument>target/mesh-angular-demo</argument>
 							</arguments>
 						</configuration>

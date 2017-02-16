@@ -342,7 +342,7 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * 
 	 * @return schema container version
 	 */
-	GraphFieldSchemaContainerVersion<?, ?, ?, ?> getSchemaContainerVersion();
+	GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> getSchemaContainerVersion();
 
 	/**
 	 * Set the schema container version used by this container
@@ -350,5 +350,5 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 * @param version
 	 *            schema container version
 	 */
-	void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?> version);
+	void setSchemaContainerVersion(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> version);
 }

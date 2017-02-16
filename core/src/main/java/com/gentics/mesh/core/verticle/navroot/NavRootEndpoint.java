@@ -39,7 +39,7 @@ public class NavRootEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		secureAll();
 		addPathHandler();
 	}

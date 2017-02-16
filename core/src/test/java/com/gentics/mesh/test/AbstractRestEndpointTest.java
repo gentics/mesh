@@ -29,6 +29,9 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -39,10 +42,12 @@ import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -56,6 +61,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
@@ -64,6 +70,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestClientHttpException;
+import com.gentics.mesh.util.VersionNumber;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.DeploymentOptions;
@@ -359,9 +366,8 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		call(() -> client().deleteProject(uuid));
 	}
 
-	// Schema
-	protected Schema createSchema(String schemaName) {
-		Schema schema = FieldUtil.createMinimalValidSchema();
+	protected SchemaResponse createSchema(String schemaName) {
+		SchemaCreateRequest schema = FieldUtil.createSchemaCreateRequest();
 		schema.setName(schemaName);
 		return call(() -> client().createSchema(schema));
 	}
@@ -371,7 +377,7 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 	}
 
 	protected GenericMessageResponse updateSchema(String uuid, String schemaName, SchemaUpdateParameters... updateParameters) {
-		Schema schema = FieldUtil.createMinimalValidSchema();
+		SchemaUpdateRequest schema = new SchemaUpdateRequest();
 		schema.setName(schemaName);
 		return call(() -> client().updateSchema(uuid, schema, updateParameters));
 	}
@@ -380,16 +386,14 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		call(() -> client().deleteSchema(uuid));
 	}
 
-	// Microschema
-
-	protected Microschema createMicroschema(String microschemaName) {
-		Microschema microschema = FieldUtil.createMinimalValidMicroschema();
+	protected MicroschemaResponse createMicroschema(String microschemaName) {
+		MicroschemaCreateRequest microschema = new MicroschemaCreateRequest();
 		microschema.setName(microschemaName);
 		return call(() -> client().createMicroschema(microschema));
 	}
 
 	protected GenericMessageResponse updateMicroschema(String uuid, String microschemaName, SchemaUpdateParameters... parameters) {
-		Microschema microschema = FieldUtil.createMinimalValidMicroschema();
+		MicroschemaUpdateRequest microschema = FieldUtil.createMinimalValidMicroschemaUpdateRequest();
 		microschema.setName(microschemaName);
 		return call(() -> client().updateMicroschema(uuid, microschema, parameters));
 	}
@@ -492,15 +496,17 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
-	protected MeshRequest<GenericMessageResponse> uploadRandomData(String uuid, String languageTag, String fieldKey, int binaryLen,
-			String contentType, String fileName) {
+	protected MeshRequest<NodeResponse> uploadRandomData(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
+			String fileName) {
+
+		VersionNumber version = node.getGraphFieldContainer("en").getVersion();
 
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldKey, buffer, fileName, contentType);
+		return client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldKey, buffer, fileName, contentType, new NodeParameters().setResolveLinks(LinkType.FULL));
 	}
 
-	protected void uploadImage(Node node, String languageTag, String fieldName) throws IOException {
+	protected NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {
 		String contentType = "image/jpeg";
 		String fileName = "blume.jpg";
 		prepareSchema(node, "image/.*", fieldName);
@@ -508,8 +514,10 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
+		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
 
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, fieldName, buffer, fileName, contentType));
+		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldName, buffer, fileName,
+				contentType));
 	}
 
 }

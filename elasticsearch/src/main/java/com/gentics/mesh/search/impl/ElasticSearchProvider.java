@@ -5,7 +5,6 @@ import static org.elasticsearch.client.Requests.refreshRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -42,6 +41,7 @@ import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.search.SearchProvider;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -81,8 +81,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				.put("plugin.types", DeleteByQueryPlugin.class.getName())
 
 				.put("node.local", true)
-				
-//				.put("index.store.type", "mmapfs")
+
+				//				.put("index.store.type", "mmapfs")
 
 				.put("index.max_result_window", Integer.MAX_VALUE)
 
@@ -161,16 +161,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				log.debug("Creating ES Index {" + indexName + "}");
 			}
 			CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
-			Map<String, Object> indexSettings = new HashMap<>();
-			Map<String, Object> analysisSettings = new HashMap<>();
-			Map<String, Object> analyserSettings = new HashMap<>();
-			Map<String, Object> defaultAnalyserSettings = new HashMap<>();
 
-			indexSettings.put("analysis", analysisSettings);
-			analysisSettings.put("analyzer", analyserSettings);
-			analyserSettings.put("default", defaultAnalyserSettings);
-			defaultAnalyserSettings.put("type", "standard");
-			createIndexRequestBuilder.setSettings(indexSettings);
+			createIndexRequestBuilder.setSettings(createDefaultIndexSettings().toString());
 			createIndexRequestBuilder.execute(new ActionListener<CreateIndexResponse>() {
 
 				@Override
@@ -193,6 +185,33 @@ public class ElasticSearchProvider implements SearchProvider {
 
 			});
 		});
+	}
+
+	private JsonObject createDefaultIndexSettings() {
+		JsonObject settings = new JsonObject();
+		JsonObject analysis = new JsonObject();
+
+		// filter
+		JsonObject filter = new JsonObject();
+		JsonObject trigramsFilter = new JsonObject();
+		trigramsFilter.put("type", "ngram");
+		trigramsFilter.put("min_gram", 3);
+		trigramsFilter.put("max_gram", 3);
+		filter.put("trigrams_filter", trigramsFilter);
+
+		// analyzer
+		JsonObject analyzer = new JsonObject();
+		analyzer.put("default", new JsonObject().put("type", "standard"));
+		JsonObject trigrams = new JsonObject();
+		trigrams.put("type", "custom");
+		trigrams.put("tokenizer", "standard");
+		trigrams.put("filter", new JsonArray().add("lowercase").add("trigrams_filter"));
+		analyzer.put("trigrams", trigrams);
+		analysis.put("filter", filter);
+		analysis.put("analyzer", analyzer);
+
+		settings.put("analysis", analysis);
+		return settings;
 	}
 
 	@Override

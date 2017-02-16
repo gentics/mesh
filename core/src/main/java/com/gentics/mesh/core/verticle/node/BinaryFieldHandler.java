@@ -3,23 +3,23 @@ package com.gentics.mesh.core.verticle.node;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-
-import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -30,14 +30,16 @@ import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.diff.FieldChangeTypes;
+import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.error.NodeVersionConflictException;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -50,6 +52,7 @@ import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
 
 import dagger.Lazy;
+import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
@@ -63,9 +66,9 @@ import rx.Single;
 /**
  * Handler which contains field API specific request handlers.
  */
-public class NodeFieldAPIHandler extends AbstractHandler {
+public class BinaryFieldHandler extends AbstractHandler {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeFieldAPIHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(BinaryFieldHandler.class);
 
 	private ImageManipulator imageManipulator;
 
@@ -76,29 +79,30 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	private SearchQueue searchQueue;
 
 	@Inject
-	public NodeFieldAPIHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue) {
+	public BinaryFieldHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue) {
 		this.imageManipulator = imageManipulator;
 		this.db = db;
 		this.boot = boot;
 		this.searchQueue = searchQueue;
 	}
 
-	public void handleReadField(RoutingContext rc, String uuid, String languageTag, String fieldName) {
+	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
-			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
-			if (language == null) {
-				throw error(NOT_FOUND, "error_language_not_found", languageTag);
-			}
+			//			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
+			//			if (language == null) {
+			//				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			//			}
 
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
-			if (container == null) {
-				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+			Release release = ac.getRelease(node.getProject());
+			NodeGraphFieldContainer fieldContainer = node.findNextMatchingFieldContainer(ac.getNodeParameters().getLanguageList(), release.getUuid(),
+					ac.getVersioningParameters().getVersion());
+			if (fieldContainer == null) {
+				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
 			}
-
-			BinaryGraphField binaryField = container.getBinary(fieldName);
+			BinaryGraphField binaryField = fieldContainer.getBinary(fieldName);
 			if (binaryField == null) {
 				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 			}
@@ -118,183 +122,155 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param ac
 	 * @param uuid
 	 *            Uuid of the node which should be updated
-	 * @param languageTag
-	 *            Language tag of the node language which should be modified
 	 * @param fieldName
 	 *            Name of the field which should be created
+	 * @param attributes
+	 *            Additional form data attributes
 	 */
-	public void handleCreateField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
+	public void handleUpdateBinaryField(InternalActionContext ac, String uuid, String fieldName, MultiMap attributes) {
 		validateParameter(uuid, "uuid");
-		validateParameter(languageTag, "languageTag");
 		validateParameter(fieldName, "fieldName");
+
+		String languageTag = attributes.get("language");
+		if (isEmpty(languageTag)) {
+			throw error(BAD_REQUEST, "upload_error_no_language");
+		}
+
+		String nodeVersion = attributes.get("version");
+		if (isEmpty(nodeVersion)) {
+			throw error(BAD_REQUEST, "upload_error_no_version");
+		}
+
+		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
+		Set<FileUpload> fileUploads = ac.getFileUploads();
+		if (fileUploads.isEmpty()) {
+			throw error(BAD_REQUEST, "node_error_no_binarydata_found");
+		}
+
+		// Check the file upload limit
+		if (fileUploads.size() > 1) {
+			throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
+		}
+		FileUpload ul = fileUploads.iterator().next();
+		long byteLimit = uploadOptions.getByteLimit();
+
+		if (ul.size() > byteLimit) {
+			if (log.isDebugEnabled()) {
+				log.debug("Upload size of {" + ul.size() + "} exeeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
+			}
+			String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
+			String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
+			throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
+		}
+
+		String contentType = ul.contentType();
+		String fileName = ul.fileName();
+
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+
 			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
 
-			// Create new field container as clone of the existing
+			// Load the current latest draft
 			NodeGraphFieldContainer latestDraftVersion = node.getGraphFieldContainer(language, release, ContainerType.DRAFT);
 
 			if (latestDraftVersion == null) {
-				// Create a new field container
-				// latestDraftVersion = node.createGraphFieldContainer(language,
-				// release, ac.getUser());
+				//latestDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser());
+				// TODO Maybe it would be better to just create a new field container for the language?
+				// In that case we would also need to:
+				// * check for segment field conflicts
+				// * update display name
+				// * fail if mandatory fields are missing
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
 
-			Optional<FieldSchema> fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
-			if (!fieldSchema.isPresent()) {
+			// Load the base version field container in order to create the diff
+			NodeGraphFieldContainer baseVersionContainer = node.findNextMatchingFieldContainer(Arrays.asList(languageTag), release.getUuid(),
+					nodeVersion);
+			if (baseVersionContainer == null) {
+				throw error(BAD_REQUEST, "node_error_draft_not_found", nodeVersion, languageTag);
+			}
+
+			List<FieldContainerChange> baseVersionDiff = baseVersionContainer.compareTo(latestDraftVersion);
+			List<FieldContainerChange> requestVersionDiff = Arrays.asList(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
+
+			// Compare both sets of change sets
+			List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());
+
+			// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
+			if (!latestDraftVersion.getVersion().equals(nodeVersion)) {
+
+				// Check whether a conflict has been detected
+				if (intersect.size() > 0) {
+					NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
+					conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
+					conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
+					for (FieldContainerChange fcc : intersect) {
+						conflictException.addConflict(fcc.getFieldCoordinates());
+					}
+					throw conflictException;
+				}
+			}
+
+			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
+			if (fieldSchema == null) {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
-			if (!(fieldSchema.get() instanceof BinaryFieldSchema)) {
+			if (!(fieldSchema instanceof BinaryFieldSchema)) {
 				// TODO Add support for other field types
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
 
-			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
-			BinaryGraphField field = newDraftVersion.createBinary(fieldName);
+			SearchQueueBatch batch = searchQueue.create();
+			return db.tx(() -> {
+				// Create a new node version field container to store the upload
+				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+				BinaryGraphField field = newDraftVersion.createBinary(fieldName);
+				String fieldUuid = field.getUuid();
 
-			MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-			Set<FileUpload> fileUploads = ac.getFileUploads();
-			if (fileUploads.isEmpty()) {
-				throw error(BAD_REQUEST, "node_error_no_binarydata_found");
-			}
-			if (fileUploads.size() > 1) {
-				throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
-			}
-			FileUpload ul = fileUploads.iterator().next();
-			long byteLimit = uploadOptions.getByteLimit();
-			if (ul.size() > byteLimit) {
-				if (log.isDebugEnabled()) {
-					log.debug("Upload size of {" + ul.size() + "} exeeds limit of {" + byteLimit + "} by {" + (ul.size() - byteLimit) + "} bytes.");
-				}
-				String humanReadableFileSize = org.apache.commons.io.FileUtils.byteCountToDisplaySize(ul.size());
-				String humanReadableUploadLimit = org.apache.commons.io.FileUtils.byteCountToDisplaySize(byteLimit);
-				throw error(BAD_REQUEST, "node_error_uploadlimit_reached", humanReadableFileSize, humanReadableUploadLimit);
-			}
-			String contentType = ul.contentType();
-			String fileName = ul.fileName();
-			String fieldUuid = field.getUuid();
-			Single<ImageInfo> obsImage;
+				Single<ImageInfo> obsImage;
 
-			// Only gather image info for actual images. Otherwise return an
-			// empty image info object.
-			if (contentType.startsWith("image/")) {
-				try {
-					obsImage = imageManipulator.readImageInfo(new FileInputStream(ul.uploadedFileName()));
-				} catch (Exception e) {
-					log.error("Could not load schema for node {" + node.getUuid() + "}");
-					throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
-				}
-
-			} else {
-				obsImage = Single.just(new ImageInfo());
-			}
-
-			Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
-			return Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
-				SearchQueueBatch batch = searchQueue.create();
-				return db.tx(() -> {
-
-					field.setFileName(fileName);
-					field.setFileSize(ul.size());
-					field.setMimeType(contentType);
-					field.setSHA512Sum(sha512sum);
-					field.setImageDominantColor(imageInfo.getDominantColor());
-					field.setImageHeight(imageInfo.getHeight());
-					field.setImageWidth(imageInfo.getWidth());
-
-					// if the binary field is the segment field, we need to
-					// update the webroot info in the node
-					if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-						newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
+				// 3. Only gather image info for actual images. Otherwise return an empty image info object.
+				if (contentType.startsWith("image/")) {
+					try {
+						obsImage = imageManipulator.readImageInfo(new FileInputStream(ul.uploadedFileName()));
+					} catch (Exception e) {
+						log.error("Could not load schema for node {" + node.getUuid() + "}");
+						throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
 					}
 
-					return batch.store(node, release.getUuid(), DRAFT, false);
-				}).processAsync().andThen(Single.just(message(ac, "node_binary_field_updated", fieldName)));
+				} else {
+					obsImage = Single.just(new ImageInfo());
+				}
 
-			}).flatMap(x -> x);
+				// 4. Hash and store the file and update the field properties
+				Single<String> obsHash = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
+				Single<TransformationResult> resultObs = Single.zip(obsImage, obsHash, (imageInfo, sha512sum) -> {
+					return new TransformationResult(sha512sum, 0, imageInfo);
+				});
+
+				TransformationResult info = resultObs.toBlocking().value();
+				field.setFileName(fileName);
+				field.setFileSize(ul.size());
+				field.setMimeType(contentType);
+				field.setSHA512Sum(info.getHash());
+				field.setImageDominantColor(info.getImageInfo().getDominantColor());
+				field.setImageHeight(info.getImageInfo().getHeight());
+				field.setImageWidth(info.getImageInfo().getWidth());
+
+				// If the binary field is the segment field, we need to  update the webroot info in the node
+				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+					newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
+				}
+
+				return batch.store(node, release.getUuid(), DRAFT, false);
+			}).processAsync().andThen(node.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
-
-	}
-
-	/**
-	 * Update a specific node field.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 *            Node uuid
-	 * @param languageTag
-	 *            Language which should be handled
-	 * @param fieldName
-	 *            Field which should be updated
-	 */
-	public void handleUpdateField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		handleCreateField(ac, uuid, languageTag, fieldName);
-	}
-
-	/**
-	 * Remove the field with the given name from the node language.
-	 * 
-	 * @param ac
-	 * @param uuid
-	 * @param languageTag
-	 * @param fieldName
-	 */
-	public void handleRemoveField(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		validateParameter(uuid, "uuid");
-		validateParameter(languageTag, "languageTag");
-		validateParameter(fieldName, "fieldName");
-
-		db.operateNoTx(() -> {
-			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			// TODO Update SQB
-			return Single.just(new GenericMessageResponse("Not yet implemented"));
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
-	}
-
-	public void handleRemoveFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		// TODO validation
-		db.operateNoTx(() -> {
-			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			// TODO Update SQB
-			return Single.just(new GenericMessageResponse("Not yet implemented"));
-		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
-	}
-
-	public void handleUpdateFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		// TODO validation
-		db.operateNoTx(() -> {
-			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			// TODO Update SQB
-			return Single.just(new GenericMessageResponse("Not yet implemented"));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
-	}
-
-	public void handleReadFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		// TODO validation
-		db.operateNoTx(() -> {
-			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
-			return Single.just(new GenericMessageResponse("Not yet implemented"));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
-	}
-
-	public void handleMoveFieldItem(InternalActionContext ac, String uuid, String languageTag, String fieldName) {
-		// TODO validation
-		db.operateNoTx(() -> {
-			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			// TODO Update SQB
-			return Single.just(new GenericMessageResponse("Not yet implemented"));
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -303,28 +279,35 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	 * @param rc
 	 *            routing context
 	 */
-	public void handleTransformImage(RoutingContext rc, String uuid, String languageTag, String fieldName) {
-		// TODO validation
+	public void handleTransformImage(RoutingContext rc, String uuid, String fieldName) {
+		validateParameter(uuid, "uuid");
+		validateParameter(fieldName, "fieldName");
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
+		if (isEmpty(transformation.getLanguage())) {
+			throw error(BAD_REQUEST, "image_error_language_not_set");
+		}
 
 		db.operateNoTx(() -> {
+			// 1. Load needed elements
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			// TODO Update SQB
-			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
+
+			Language language = boot.get().languageRoot().findByLanguageTag(transformation.getLanguage());
 			if (language == null) {
-				throw error(NOT_FOUND, "error_language_not_found", languageTag);
-			}
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
-			if (container == null) {
-				throw error(NOT_FOUND, "error_language_not_found", languageTag);
+				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 			}
 
-			Optional<FieldSchema> fieldSchema = container.getSchemaContainerVersion().getSchema().getFieldSchema(fieldName);
-			if (!fieldSchema.isPresent()) {
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
+			if (container == null) {
+				throw error(NOT_FOUND, "error_language_not_found", language.getLanguageTag());
+			}
+
+			FieldSchema fieldSchema = container.getSchemaContainerVersion().getSchema().getField(fieldName);
+			if (fieldSchema == null) {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
-			if (!(fieldSchema.get() instanceof BinaryFieldSchema)) {
+			if (!(fieldSchema instanceof BinaryFieldSchema)) {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
 
@@ -338,7 +321,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			}
 
 			try {
-				BinaryFieldTransformRequest transformation = JsonUtil.readValue(ac.getBodyAsString(), BinaryFieldTransformRequest.class);
+				// Prepare the imageManipulationParameter using the transformation request as source
 				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParameters().setWidth(transformation.getWidth())
 						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
 						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
@@ -348,34 +331,42 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 				String fieldUuid = field.getUuid();
 				String fieldSegmentedPath = field.getSegmentedPath();
 
-				Single<Tuple<String, Integer>> obsHashAndSize = imageManipulator
+				// Resize the image and store the result in the filesystem
+				Single<TransformationResult> obsTransformation = imageManipulator
 						.handleResize(field.getFile(), field.getSHA512Sum(), imageManipulationParameter).flatMap(buffer -> {
-							return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).map(hash -> {
-								return Tuple.tuple(hash, buffer.length());
+							return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).flatMap(hash -> {
+								// The image was stored and hashed. Now we need to load the stored file again and check the image properties
+								return db.noTx(() -> {
+									try {
+										return imageManipulator.readImageInfo(new FileInputStream(field.getFilePath())).map(info -> {
+											// Return a pojo which hold all information that is needed to update the field
+											return new TransformationResult(hash, buffer.length(), info);
+										});
+									} catch (IOException e) {
+										throw new RuntimeException(e);
+									}
+								});
 							});
 						});
 
-				return obsHashAndSize.flatMap(hashAndSize -> {
+				return obsTransformation.flatMap(info -> {
+
+					// Update the binary field with the new information
 					SearchQueueBatch batch = searchQueue.create();
-					String updatedNodeUuid = db.tx(() -> {
+					Node updatedNodeUuid = db.tx(() -> {
 
-						field.setSHA512Sum(hashAndSize.v1());
-						field.setFileSize(hashAndSize.v2());
-						// resized images will always be jpeg
+						field.setSHA512Sum(info.getHash());
+						field.setFileSize(info.getSize());
+						// The resized image will always be a jpeg
 						field.setMimeType("image/jpeg");
-
-						// TODO should we rename the image, if the extension is
-						// wrong?
-
-						// TODO handle image properties as well
-						// node.setBinaryImageDPI(dpi);
-						// node.setBinaryImageHeight(heigth);
-						// node.setBinaryImageWidth(width);
+						// TODO should we rename the image, if the extension is wrong?
+						field.setImageHeight(info.getImageInfo().getHeight());
+						field.setImageWidth(info.getImageInfo().getWidth());
 						batch.store(container, node.getProject().getReleaseRoot().getLatestRelease().getUuid(), DRAFT, false);
-						return node.getUuid();
+						return node;
 					});
-
-					return batch.processAsync().toSingleDefault(message(ac, "node_binary_field_updated", updatedNodeUuid));
+					// Finally update the search index and return the updated node
+					return batch.processAsync().andThen(updatedNodeUuid.transformToRest(ac, 0));
 				});
 			} catch (GenericRestException e) {
 				throw e;
@@ -385,24 +376,6 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 			}
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
-
-	// // TODO abstract rc away
-	// public void handleDownload(RoutingContext rc) {
-	// InternalActionContext ac = InternalActionContext.create(rc);
-	// BinaryFieldResponseHandler binaryHandler = new
-	// BinaryFieldResponseHandler(rc, imageManipulator);
-	// db.asyncNoTrx(() -> {
-	// Project project = ac.getProject();
-	// return project.getNodeRoot().loadObject(ac, "uuid", READ_PERM).map(node->
-	// {
-	// db.noTrx(()-> {
-	// Node node = rh.result();
-	// binaryHandler.handle(node);
-	// });
-	// });
-	// }).subscribe(binaryField -> {
-	// }, ac::fail);
-	// }
 
 	/**
 	 * Hash the file upload data and move the temporary uploaded file to its final destination.
@@ -491,11 +464,11 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
 		// Deleting of existing binary file
-		Completable obsDeleteExisting = fileSystem.deleteObservable(targetPath).toCompletable().doOnError(error -> {
+		Completable obsDeleteExisting = fileSystem.rxDelete(targetPath).toCompletable().doOnError(error -> {
 			log.error("Error while attempting to delete target file {" + targetPath + "}", error);
 		});
 
-		Single<Boolean> obsUploadExistsCheck = fileSystem.existsObservable(targetPath).toSingle().doOnError(error -> {
+		Single<Boolean> obsUploadExistsCheck = fileSystem.rxExists(targetPath).doOnError(error -> {
 			log.error("Unable to check existence of file at location {" + targetPath + "}");
 		});
 
@@ -517,7 +490,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	protected Completable moveUploadIntoPlace(FileUpload fileUpload, String targetPath) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		return fileSystem.moveObservable(fileUpload.uploadedFileName(), targetPath).toCompletable().doOnError(error -> {
+		return fileSystem.rxMove(fileUpload.uploadedFileName(), targetPath).toCompletable().doOnError(error -> {
 			log.error("Failed to move upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}", error);
 		}).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
@@ -538,7 +511,7 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	protected Completable storeBuffer(Buffer buffer, String targetPath) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		return fileSystem.writeFileObservable(targetPath, buffer).toCompletable().doOnError(error -> {
+		return fileSystem.rxWriteFile(targetPath, buffer).toCompletable().doOnError(error -> {
 			log.error("Failed to save file to {" + targetPath + "}", error);
 			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
 		});
@@ -553,14 +526,14 @@ public class NodeFieldAPIHandler extends AbstractHandler {
 	protected Completable checkUploadFolderExists(File uploadFolder) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		Single<Boolean> obs = fileSystem.existsObservable(uploadFolder.getAbsolutePath()).doOnError(error -> {
+		Single<Boolean> obs = fileSystem.rxExists(uploadFolder.getAbsolutePath()).doOnError(error -> {
 			log.error("Could not check whether target directory {" + uploadFolder.getAbsolutePath() + "} exists.", error);
 			throw error(BAD_REQUEST, "node_error_upload_failed", error);
-		}).toSingle();
+		});
 
 		return RxUtil.andThenCompletable(obs, folderExists -> {
 			if (!folderExists) {
-				return fileSystem.mkdirsObservable(uploadFolder.getAbsolutePath()).toCompletable().doOnError(error -> {
+				return fileSystem.rxMkdirs(uploadFolder.getAbsolutePath()).toCompletable().doOnError(error -> {
 					log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}", error);
 					throw error(BAD_REQUEST, "node_error_upload_failed", error);
 				}).doOnCompleted(() -> {

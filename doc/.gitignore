@@ -1,4 +1,5 @@
 node
+mesh.yml
 node_modules
 /data
 /target/

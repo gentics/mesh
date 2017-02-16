@@ -28,6 +28,8 @@ import rx.Single;
  * {@link SchemaContainerImpl}, {@link MicroschemaContainerImpl}).
  * 
  * @param <R>
+ *            Field container rest model response type
+ * @param <RM>
  *            Field container rest model type
  * @param <RE>
  *            Field container rest model reference type
@@ -36,8 +38,8 @@ import rx.Single;
  * @param <SCV>
  *            Graph vertex version type
  */
-public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>, SCV extends GraphFieldSchemaContainerVersion<R, RE, SCV, SC>>
-		extends AbstractMeshCoreVertex<R, SC> implements GraphFieldSchemaContainer<R, RE, SC, SCV> , IndexableElement {
+public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>>
+		extends AbstractMeshCoreVertex<R, SC> implements GraphFieldSchemaContainer<R, RE, SC, SCV>, IndexableElement {
 
 	/**
 	 * Return the class that is used to construct new containers.
@@ -109,7 +111,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	@Override
 	public void delete(SearchQueueBatch batch) {
 		// TODO should all references be updated to a new fallback schema?
-		batch.delete(this,  true);
+		batch.delete(this, true);
 		getElement().remove();
 		// TODO delete versions and nodes as well
 	}

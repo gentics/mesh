@@ -36,7 +36,6 @@ import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
@@ -337,7 +336,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
 
-			Microschema microschemaA = new MicroschemaModel();
+			MicroschemaModel microschemaA = new MicroschemaModel();
 			microschemaA.setName("migratedSchema");
 			microschemaA.setVersion(1);
 			FieldSchema oldField = FieldUtil.createStringFieldSchema(fieldName);
@@ -349,7 +348,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			// create version 2 of the microschema (with the field renamed)
 			MicroschemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			versionB.setSchemaContainer(container);
-			Microschema microschemaB = new MicroschemaModel();
+			MicroschemaModel microschemaB = new MicroschemaModel();
 			microschemaB.setName("migratedSchema");
 			microschemaB.setVersion(2);
 			FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
@@ -440,7 +439,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
 
-			Microschema microschemaA = new MicroschemaModel();
+			MicroschemaModel microschemaA = new MicroschemaModel();
 			microschemaA.setName("migratedSchema");
 			microschemaA.setVersion(1);
 			FieldSchema oldField = FieldUtil.createStringFieldSchema(fieldName);
@@ -452,7 +451,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			// create version 2 of the microschema (with the field renamed)
 			MicroschemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			versionB.setSchemaContainer(container);
-			Microschema microschemaB = new MicroschemaModel();
+			MicroschemaModel microschemaB = new MicroschemaModel();
 			microschemaB.setName("migratedSchema");
 			microschemaB.setVersion(2);
 			FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
@@ -563,7 +562,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
 
-			Microschema microschemaA = new MicroschemaModel();
+			MicroschemaModel microschemaA = new MicroschemaModel();
 			microschemaA.setName("migratedSchema");
 			microschemaA.setVersion(1);
 			FieldSchema oldField = FieldUtil.createStringFieldSchema(fieldName);
@@ -575,7 +574,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			// create version 2 of the microschema (with the field renamed)
 			MicroschemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			versionB.setSchemaContainer(container);
-			Microschema microschemaB = new MicroschemaModel();
+			MicroschemaModel microschemaB = new MicroschemaModel();
 			microschemaB.setName("migratedSchema");
 			microschemaB.setVersion(2);
 			FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);

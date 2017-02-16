@@ -48,7 +48,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		secureAll();
 		addReadHandlers();
 
@@ -103,7 +103,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaCreateRequest());
-		endpoint.exampleResponse(CREATED, schemaExamples.getSchema(), "Created schema.");
+		endpoint.exampleResponse(CREATED, schemaExamples.getSchemaResponse(), "Created schema.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			crudHandler.handleCreate(ac);
@@ -118,7 +118,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		diffEndpoint.description("Compare the given schema with the stored schema and create a changeset.");
 		diffEndpoint.consumes(APPLICATION_JSON);
 		diffEndpoint.produces(APPLICATION_JSON);
-		diffEndpoint.exampleRequest(schemaExamples.getSchema());
+		diffEndpoint.exampleRequest(schemaExamples.getSchemaResponse());
 		diffEndpoint.exampleResponse(OK, schemaExamples.getSchemaChangesListModel(),
 				"List of schema changes that were detected by comparing the posted schema and the current version.");
 		diffEndpoint.handler(rc -> {
@@ -138,7 +138,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.addQueryParameters(SchemaUpdateParameters.class);
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
-		endpoint.exampleResponse(OK, schemaExamples.getSchema(), "Updated schema.");
+		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated schema.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("schemaUuid");
@@ -167,7 +167,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		readOne.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		readOne.method(GET);
 		readOne.description("Load the schema with the given uuid.");
-		readOne.exampleResponse(OK, schemaExamples.getSchema(), "Loaded schema.");
+		readOne.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Loaded schema.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("schemaUuid");

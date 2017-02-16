@@ -45,7 +45,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
+import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -63,14 +63,14 @@ import rx.Completable;
 @SuppressWarnings("restriction")
 public class NodeMigrationHandler extends AbstractHandler {
 
-	private NodeFieldAPIHandler nodeFieldAPIHandler;
+	private BinaryFieldHandler nodeFieldAPIHandler;
 
 	private Database db;
 
 	private SearchQueue searchQueue;
 
 	@Inject
-	public NodeMigrationHandler(NodeFieldAPIHandler nodeFieldAPIHandler, Database db, SearchQueue searchQueue) {
+	public NodeMigrationHandler(BinaryFieldHandler nodeFieldAPIHandler, Database db, SearchQueue searchQueue) {
 		this.db = db;
 		this.nodeFieldAPIHandler = nodeFieldAPIHandler;
 		this.searchQueue = searchQueue;
@@ -401,7 +401,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 * @throws Exception
 	 */
 	protected <T extends FieldContainer> void migrate(NodeMigrationActionContextImpl ac, GraphFieldContainer container, RestModel restModel,
-			GraphFieldSchemaContainerVersion<?, ?, ?, ?> newVersion, Set<String> touchedFields,
+			GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> newVersion, Set<String> touchedFields,
 			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Class<T> clazz) throws Exception {
 		// collect the files for all binary fields (keys are the sha512sums,
 		// values are filepaths to the binary files)
@@ -529,7 +529,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 *            Set of touched fields (will be modified)
 	 * @throws IOException
 	 */
-	protected void prepareMigration(GraphFieldSchemaContainerVersion<?, ?, ?, ?> fromVersion,
+	protected void prepareMigration(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
 			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Set<String> touchedFields) throws IOException {
 		SchemaChange<?> change = fromVersion.getNextChange();
 		while (change != null) {

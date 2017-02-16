@@ -24,6 +24,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
@@ -225,9 +226,8 @@ public class MeshImpl implements Mesh {
 	 * 
 	 * @return
 	 */
-	@SuppressWarnings("deprecation")
 	private String getVertxVersion() {
-		return new io.vertx.core.Starter().getVersion();
+		return new VersionCommand().getVersion();
 	}
 
 	private static String infoLine(String text) {

@@ -51,7 +51,6 @@ public class BasicNodeFieldEndpointTest extends AbstractRestEndpointTest {
 
 			// 3. Update node
 			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
-			nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));
 			nodeUpdateRequest.setLanguage("en");
 			nodeUpdateRequest.setVersion(new VersionReference().setNumber("0.1"));
 

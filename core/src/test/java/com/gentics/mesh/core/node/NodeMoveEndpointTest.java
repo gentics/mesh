@@ -16,9 +16,9 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.LinkType;
@@ -114,13 +114,13 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 		try (NoTx noTx = db.noTx()) {
 
 			//1. Create new schema which does not have a segmentfield defined
-			SchemaModel schema = new SchemaModel();
-			schema.setName("test");
-			schema.setDescription("Some test schema");
-			schema.setDisplayField("stringField");
-			schema.getFields().add(FieldUtil.createStringFieldSchema("stringField"));
-			schema.validate();
-			Schema schemaResponse = call(() -> client().createSchema(schema));
+			SchemaCreateRequest createRequest = new SchemaCreateRequest();
+			createRequest.setName("test");
+			createRequest.setDescription("Some test schema");
+			createRequest.setDisplayField("stringField");
+			createRequest.getFields().add(FieldUtil.createStringFieldSchema("stringField"));
+			createRequest.validate();
+			SchemaResponse schemaResponse = call(() -> client().createSchema(createRequest));
 
 			// 2. Add schema to project
 			call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));

@@ -13,11 +13,14 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.codehaus.jettison.json.JSONObject;
 import org.raml.model.MimeType;
 import org.raml.model.Response;
+import org.raml.model.parameter.FormParameter;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 
@@ -56,7 +59,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 
 	private String[] traits = new String[] {};
 
-	private Object exampleRequest = null;
+	private HashMap<String, MimeType> exampleRequestMap = null;
 
 	private String pathRegex;
 
@@ -137,7 +140,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 			log.error("Endpoint {" + getRamlPath() + "} has no example response.");
 			throw new RuntimeException("Endpoint {" + getRamlPath() + "} has no example responses.");
 		}
-		if ((consumes.contains(APPLICATION_JSON) || consumes.contains(APPLICATION_JSON_UTF8)) && exampleRequest == null) {
+		if ((consumes.contains(APPLICATION_JSON) || consumes.contains(APPLICATION_JSON_UTF8)) && exampleRequestMap == null) {
 			log.error("Endpoint {" + getPath() + "} has no example request.");
 			throw new RuntimeException("Endpoint has no example request.");
 		}
@@ -323,23 +326,80 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 		response.setBody(map);
 
 		MimeType mimeType = new MimeType();
-		String json = JsonUtil.toJson(model);
-		mimeType.setExample(json);
-		mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
-		map.put("application/json", mimeType);
+		if (model instanceof RestModel) {
+			String json = JsonUtil.toJson(model);
+			mimeType.setExample(json);
+			mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
+			map.put("application/json", mimeType);
+		} else {
+			mimeType.setExample(model.toString());
+			map.put("text/plain", mimeType);
+		}
 
 		exampleResponses.put(status.code(), response);
 		return this;
 	}
 
 	/**
-	 * Set the endpoint example request.
+	 * Set the endpoint request example via a plain text body.
+	 * 
+	 * @param bodyText
+	 * @return Fluent API
+	 */
+	public Endpoint exampleRequest(String bodyText) {
+		HashMap<String, MimeType> bodyMap = new HashMap<>();
+		MimeType mimeType = new MimeType();
+		mimeType.setExample(bodyText);
+		bodyMap.put("text/plain", mimeType);
+		this.exampleRequestMap = bodyMap;
+		return this;
+	}
+
+	/**
+	 * Set the endpoint request example via a form parameter list.
+	 * 
+	 * @param parameters
+	 * @return Fluent API
+	 */
+	public Endpoint exampleRequest(Map<String, List<FormParameter>> parameters) {
+		HashMap<String, MimeType> bodyMap = new HashMap<>();
+		MimeType mimeType = new MimeType();
+		mimeType.setFormParameters(parameters);
+		bodyMap.put("multipart/form-data", mimeType);
+		this.exampleRequestMap = bodyMap;
+		return this;
+	}
+
+	/**
+	 * Set the endpoint example request via a JSON example model. The json schema will automatically be generated.
 	 * 
 	 * @param model
 	 * @return Fluent API
 	 */
-	public Endpoint exampleRequest(Object model) {
-		this.exampleRequest = model;
+	public Endpoint exampleRequest(RestModel model) {
+		HashMap<String, MimeType> bodyMap = new HashMap<>();
+		MimeType mimeType = new MimeType();
+		String json = JsonUtil.toJson(model);
+		mimeType.setExample(json);
+		mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
+		bodyMap.put("application/json", mimeType);
+		this.exampleRequestMap = bodyMap;
+		return this;
+	}
+
+	/**
+	 * Set the endpoint json example request via the provided json object. The JSON schema will not be generated.
+	 * 
+	 * @param jsonObject
+	 * @return Fluent API
+	 */
+	public Endpoint exampleRequest(JSONObject jsonObject) {
+		HashMap<String, MimeType> bodyMap = new HashMap<>();
+		MimeType mimeType = new MimeType();
+		String json = jsonObject.toString();
+		mimeType.setExample(json);
+		bodyMap.put("application/json", mimeType);
+		this.exampleRequestMap = bodyMap;
 		return this;
 	}
 
@@ -373,12 +433,12 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	}
 
 	/**
-	 * Return the endpoint HTTP example request body.
+	 * Return the endpoint HTTP example request map.
 	 * 
 	 * @return
 	 */
-	public Object getExampleRequest() {
-		return exampleRequest;
+	public HashMap<String, MimeType> getExampleRequestMap() {
+		return exampleRequestMap;
 	}
 
 	/**

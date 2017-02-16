@@ -147,7 +147,6 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
-			update.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			update.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			future = client().updateNode(PROJECT_NAME, uuid, update).invoke();
 			latchFor(future);
@@ -180,7 +179,6 @@ public class NodeWebRootConflictEndpointTest extends AbstractRestEndpointTest {
 			// translate the content
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
-			update.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			update.getFields().put("title", FieldUtil.createStringField("Irgendein Titel"));
 			update.getFields().put("name", FieldUtil.createStringField("Irgendein Name"));
 			update.getFields().put("filename", FieldUtil.createStringField(conflictingName));

@@ -72,12 +72,12 @@ public class RxTest {
 	public void testRXFs() {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		fileSystem.existsObservable("/tmp").doOnError(error -> {
+		fileSystem.rxExists("/tmp").doOnError(error -> {
 			System.out.println("errör");
 			throw error(BAD_REQUEST, "node_error_upload_failed", error);
 		}).flatMap(e -> {
 			System.out.println("blar");
-			return Observable.empty();
+			return Single.just(false);
 		}).subscribe();
 	}
 

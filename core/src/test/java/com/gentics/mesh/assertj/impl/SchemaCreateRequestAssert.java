@@ -6,15 +6,17 @@ import static org.junit.Assert.assertNotNull;
 import com.gentics.mesh.assertj.AbstractMeshAssert;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.json.JsonUtil;
 
-public class SchemaAssert extends AbstractMeshAssert<SchemaAssert, Schema> {
+public class SchemaCreateRequestAssert extends AbstractMeshAssert<SchemaCreateRequestAssert, SchemaCreateRequest> {
 
-	public SchemaAssert(Schema actual) {
-		super(actual, SchemaAssert.class);
+	public SchemaCreateRequestAssert(SchemaCreateRequest actual) {
+		super(actual, SchemaCreateRequestAssert.class);
 	}
 
-	public SchemaAssert matches(Schema schema) {
+	public SchemaCreateRequestAssert matches(SchemaCreateRequest schema) {
 		assertNotNull(schema);
 		assertNotNull(actual);
 		assertEquals("The name of the schemas do not match.", actual.getName(), schema.getName());
@@ -25,23 +27,19 @@ public class SchemaAssert extends AbstractMeshAssert<SchemaAssert, Schema> {
 		return this;
 	}
 
-	public SchemaAssert isValid() {
+	public SchemaCreateRequestAssert isValid() {
 		actual.validate();
 		return this;
 	}
 
-	public SchemaAssert matches(SchemaContainer schema) {
+	public SchemaCreateRequestAssert matches(SchemaContainer schema) {
 		// TODO make schemas extends generic nodes?
 		// assertGenericNode(schema, restSchema);
 		assertNotNull(schema);
 		assertNotNull(actual);
 
-		String creatorUuid = schema.getCreator().getUuid();
-		String editorUuid = schema.getEditor().getUuid();
-		assertEquals("The editor of the schema did not match up.", editorUuid, actual.getEditor().getUuid());
-		assertEquals("The creator of the schema did not match up.", creatorUuid, actual.getCreator().getUuid());
-		assertEquals("The creation date did not match up", schema.getCreationDate(), actual.getCreated());
-		assertEquals("The edited date did not match up", schema.getLastEditedDate(), actual.getEdited());
+		//		String creatorUuid = schema.getCreator().getUuid();
+		//		String editorUuid = schema.getEditor().getUuid();
 		// assertEquals("Name does not match with the requested name.", schema.getName(), restSchema.getName());
 		// assertEquals("Description does not match with the requested description.", schema.getDescription(), restSchema.getDescription());
 		// assertEquals("Display names do not match.", schema.getDisplayName(), restSchema.getDisplayName());
@@ -49,14 +47,25 @@ public class SchemaAssert extends AbstractMeshAssert<SchemaAssert, Schema> {
 		return this;
 	}
 
-	public SchemaAssert matches(SchemaContainerVersion version) {
+	public SchemaCreateRequestAssert matches(SchemaContainerVersion version) {
 		assertNotNull(version);
 		assertNotNull(actual);
 
-		Schema storedSchema = version.getSchema();
+		SchemaCreateRequest storedSchema = JsonUtil.readValue(version.getJson(), SchemaCreateRequest.class);
 		matches(storedSchema);
 		SchemaContainer container = version.getSchemaContainer();
 		matches(container);
+		return this;
+	}
+
+	public SchemaCreateRequestAssert matches(SchemaResponse response) {
+		assertNotNull(response);
+		assertNotNull(actual);
+		assertEquals("The name of the schemas do not match.", actual.getName(), response.getName());
+		assertEquals("The description of the schemas do not match.", actual.getDescription(), response.getDescription());
+		assertEquals("The displayField of the schemas do not match.", actual.getDisplayField(), response.getDisplayField());
+		assertEquals("The segmentField of the schemas do not match.", actual.getSegmentField(), response.getSegmentField());
+		// TODO assert for schema properties
 		return this;
 	}
 

@@ -27,7 +27,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -64,8 +63,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 			String fileName = "somefile.dat";
 
 			// 2. Update the binary data
-			GenericMessageResponse message = call(() -> uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName));
-			expectResponseMessage(message, "node_binary_field_updated", "binary");
+			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";

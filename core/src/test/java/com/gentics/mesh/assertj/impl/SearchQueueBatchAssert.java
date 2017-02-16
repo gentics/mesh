@@ -36,7 +36,6 @@ public class SearchQueueBatchAssert extends AbstractAssert<SearchQueueBatchAsser
 	 * @return Fluent API
 	 */
 	public SearchQueueBatchAssert containsEntries(Map<String, ElementEntry> expectedEntries) {
-		long nExpectedBatchEntries = 0;
 
 		// Check each expected elements
 		for (String key : expectedEntries.keySet()) {
@@ -97,15 +96,7 @@ public class SearchQueueBatchAssert extends AbstractAssert<SearchQueueBatchAsser
 								.isNotNull();
 						assertEquals("The created batch entry for {" + key + "} language {" + language + "} did not use the expected action",
 								entry.getAction(), foundMatch.getElementAction());
-						nExpectedBatchEntries++;
 					}
-				} else {
-					//					Optional<? extends SearchQueueEntry> batchEntry = batch.findEntryByUuid(entry.getUuid());
-					//					assertThat(batchEntry).as("Entry for {" + key + "}/{" + entry.getUuid() + "}").isPresent();
-					//					SearchQueueEntry batchEntryValue = batchEntry.get();
-					//					assertEquals("The created batch entry for {" + key + "} did not use the expected action", entry.getAction(),
-					//							batchEntryValue.getElementAction());
-					//					nExpectedBatchEntries++;
 				}
 			}
 		}

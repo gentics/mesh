@@ -7,6 +7,7 @@ import java.util.regex.Pattern;
  * Implementation for Version Numbers in the form [major].[minor]
  */
 public class VersionNumber implements Comparable<VersionNumber> {
+
 	private final static Pattern pattern = Pattern.compile("([0-9]+)\\.([0-9]+)");
 
 	private int major;

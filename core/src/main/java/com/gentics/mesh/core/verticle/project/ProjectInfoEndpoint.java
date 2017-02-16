@@ -32,7 +32,7 @@ public class ProjectInfoEndpoint extends AbstractEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		secureAll();
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:project");
