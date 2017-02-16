@@ -75,4 +75,27 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
+	@Test
+	public void testSearchTagFamilies() throws Exception {
+		try (NoTx noTx = db.noTx()) {
+			recreateIndices();
+		}
+
+		String query = "{\n" +
+				"  \"query\": {\n" +
+				"    \"nested\": {\n" +
+				"      \"path\": \"tagFamilies\",\n" +
+				"      \"query\": {\n" +
+				"        \"match\": {\n" +
+				"          \"tagFamilies.colors.tags.name\": \"red\"\n" +
+				"        }\n" +
+				"      }\n" +
+				"    }\n" +
+				"  }\n" +
+				"}";
+
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query));
+		assertThat(response.getData()).isNotEmpty();
+	}
+
 }

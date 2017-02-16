@@ -27,23 +27,23 @@ public class NodeContainerTransformatorTest extends AbstractIsolatedBasicDBTest 
 			JsonObject document = transformator.toDocument(node, release.getUuid());
 			JsonObject families = document.getJsonObject("tagFamilies");
 
-			HashSet<String> tagNames = new HashSet<>(Arrays.asList("Plane", "Twinjet"));
+			HashSet<String> basicNames = new HashSet<>(Arrays.asList("Plane", "Twinjet"));
 			HashSet<String> colorNames = new HashSet<>(Arrays.asList("red"));
 
-			JsonArray tagArray = families.getJsonObject("basic").getJsonArray("tags");
+			JsonArray basicArray = families.getJsonObject("basic").getJsonArray("tags");
 			JsonArray colorArray = families.getJsonObject("colors").getJsonArray("tags");
 
-			assertEquals("Incorrect count of tags", tagNames.size(), tagArray.size());
+			assertEquals("Incorrect count of basic tags", basicNames.size(), basicArray.size());
 			assertEquals("Incorrect count of colors", colorNames.size(), colorArray.size());
 
-			boolean allTagsContained = tagArray.stream()
+			boolean allTagsContained = basicArray.stream()
 				.map(obj -> ((JsonObject)obj).getString("name"))
-				.allMatch(name -> tagNames.contains(name));
+				.allMatch(name -> basicNames.contains(name));
 			boolean allColorsContained = colorArray.stream()
 				.map(obj -> ((JsonObject)obj).getString("name"))
 				.allMatch(name -> colorNames.contains(name));
 
-			assertTrue("Could not find all tags", allTagsContained);
+			assertTrue("Could not find all basic tags", allTagsContained);
 			assertTrue("Could not find all colors", allColorsContained);
 		}
 	}
