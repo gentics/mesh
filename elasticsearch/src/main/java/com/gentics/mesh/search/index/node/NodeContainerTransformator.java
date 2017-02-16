@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.node;
 
+import static com.gentics.mesh.search.index.MappingHelper.ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
 import static com.gentics.mesh.search.index.MappingHelper.DOUBLE;
@@ -9,8 +10,10 @@ import static com.gentics.mesh.search.index.MappingHelper.NESTED;
 import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
+import static com.gentics.mesh.search.index.MappingHelper.TRIGRAM_ANALYZER;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
+import static com.gentics.mesh.search.index.MappingHelper.trigramStringType;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 
 import java.util.ArrayList;
@@ -318,10 +321,14 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		switch (type) {
 		case STRING:
 			fieldInfo.put("type", STRING);
+			fieldInfo.put("index", ANALYZED);
+			fieldInfo.put("analyzer", TRIGRAM_ANALYZER);
 			addRawInfo(fieldInfo, STRING);
 			break;
 		case HTML:
 			fieldInfo.put("type", STRING);
+			fieldInfo.put("index", ANALYZED);
+			fieldInfo.put("analyzer", TRIGRAM_ANALYZER);
 			addRawInfo(fieldInfo, STRING);
 			break;
 		case BOOLEAN:
@@ -337,41 +344,12 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 			JsonObject binaryProps = new JsonObject();
 			fieldInfo.put("properties", binaryProps);
 
-			// filename
-			JsonObject filenameInfo = new JsonObject();
-			filenameInfo.put("type", STRING);
-			filenameInfo.put("index", NOT_ANALYZED);
-			binaryProps.put("filename", filenameInfo);
-
-			// filesize
-			JsonObject filesizeInfo = new JsonObject();
-			filesizeInfo.put("type", LONG);
-			filesizeInfo.put("index", NOT_ANALYZED);
-			binaryProps.put("filesize", filesizeInfo);
-
-			// mimeType
-			JsonObject mimeTypeInfo = new JsonObject();
-			mimeTypeInfo.put("type", STRING);
-			mimeTypeInfo.put("index", NOT_ANALYZED);
-			binaryProps.put("mimeType", mimeTypeInfo);
-
-			// imageWidth
-			JsonObject imageWidthInfo = new JsonObject();
-			imageWidthInfo.put("type", LONG);
-			imageWidthInfo.put("index", NOT_ANALYZED);
-			binaryProps.put("width", imageWidthInfo);
-
-			// imageHeight
-			JsonObject imageHeightInfo = new JsonObject();
-			imageHeightInfo.put("type", LONG);
-			imageHeightInfo.put("index", NOT_ANALYZED);
-			binaryProps.put("height", imageHeightInfo);
-
-			// dominantColor
-			JsonObject dominantColorInfo = new JsonObject();
-			dominantColorInfo.put("type", STRING);
-			dominantColorInfo.put("index", NOT_ANALYZED);
-			binaryProps.put("dominantColor", dominantColorInfo);
+			binaryProps.put("filename", notAnalyzedType(STRING));
+			binaryProps.put("filesize", notAnalyzedType(LONG));
+			binaryProps.put("mimeType", notAnalyzedType(STRING));
+			binaryProps.put("width", notAnalyzedType(LONG));
+			binaryProps.put("height", notAnalyzedType(LONG));
+			binaryProps.put("dominantColor", notAnalyzedType(STRING));
 			break;
 		case NUMBER:
 			// Note: Lucene does not support BigDecimal/Decimal. It is not possible to store such values. ES will fallback to string in those cases.
@@ -426,8 +404,8 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 			micronodeMappingProperties.put("microschema", microschemaMapping);
 
 			JsonObject microschemaMappingProperties = new JsonObject();
-			microschemaMappingProperties.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
-			microschemaMappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
+			microschemaMappingProperties.put(NAME_KEY, trigramStringType());
+			microschemaMappingProperties.put(UUID_KEY, notAnalyzedType(STRING));
 			microschemaMapping.put("properties", microschemaMappingProperties);
 			fieldInfo.put("dynamic", true);
 			// TODO add version
@@ -534,8 +512,8 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		JsonObject projectMapping = new JsonObject();
 		projectMapping.put("type", OBJECT);
 		JsonObject projectMappingProps = new JsonObject();
-		projectMappingProps.put("name", fieldType(STRING, NOT_ANALYZED));
-		projectMappingProps.put("uuid", fieldType(STRING, NOT_ANALYZED));
+		projectMappingProps.put("name", trigramStringType());
+		projectMappingProps.put("uuid", notAnalyzedType(STRING));
 		projectMapping.put("properties", projectMappingProps);
 		typeProperties.put("project", projectMapping);
 
@@ -546,16 +524,15 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		typeProperties.put("tags", tagsMapping);
 
 		// language
-		JsonObject languageMapping = fieldType(STRING, NOT_ANALYZED);
-		typeProperties.put("language", languageMapping);
+		typeProperties.put("language", notAnalyzedType(STRING));
 
 		// schema
 		JsonObject schemaMapping = new JsonObject();
 		schemaMapping.put("type", OBJECT);
 		JsonObject schemaMappingProperties = new JsonObject();
-		schemaMappingProperties.put("uuid", fieldType(STRING, NOT_ANALYZED));
-		schemaMappingProperties.put("name", fieldType(STRING, NOT_ANALYZED));
-		schemaMappingProperties.put("version", fieldType(LONG, NOT_ANALYZED));
+		schemaMappingProperties.put("uuid", notAnalyzedType(STRING));
+		schemaMappingProperties.put("name", trigramStringType());
+		schemaMappingProperties.put("version", notAnalyzedType(LONG));
 		schemaMapping.put("properties", schemaMappingProperties);
 		typeProperties.put("schema", schemaMapping);
 
@@ -563,8 +540,8 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		JsonObject displayFieldMapping = new JsonObject();
 		displayFieldMapping.put("type", OBJECT);
 		JsonObject displayFieldMappingProperties = new JsonObject();
-		displayFieldMappingProperties.put("key", fieldType(STRING, NOT_ANALYZED));
-		displayFieldMappingProperties.put("value", fieldType(STRING, NOT_ANALYZED));
+		displayFieldMappingProperties.put("key", notAnalyzedType(STRING));
+		displayFieldMappingProperties.put("value", notAnalyzedType(STRING));
 		displayFieldMapping.put("properties", displayFieldMappingProperties);
 		typeProperties.put("displayField", displayFieldMapping);
 
@@ -572,7 +549,7 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		JsonObject parentNodeMapping = new JsonObject();
 		parentNodeMapping.put("type", OBJECT);
 		JsonObject parentNodeMappingProperties = new JsonObject();
-		parentNodeMappingProperties.put("uuid", fieldType(STRING, NOT_ANALYZED));
+		parentNodeMappingProperties.put("uuid", notAnalyzedType(STRING));
 		parentNodeMapping.put("properties", parentNodeMappingProperties);
 		typeProperties.put("parentNode", parentNodeMapping);
 

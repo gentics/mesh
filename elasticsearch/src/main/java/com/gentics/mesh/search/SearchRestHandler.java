@@ -70,8 +70,8 @@ public class SearchRestHandler {
 	private HandlerUtilities utils;
 
 	@Inject
-	public SearchRestHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry,
-			NodeIndexHandler nodeIndexHandler, HandlerUtilities utils) {
+	public SearchRestHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, NodeIndexHandler nodeIndexHandler,
+			HandlerUtilities utils) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.registry = registry;
@@ -127,7 +127,7 @@ public class SearchRestHandler {
 
 		/*
 		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
-		 * to be written that deals with Document Level Permissions/Security (common known as DLS)
+		 * to be written that deals with Document Level Permissions/Security (commonly known as DLS)
 		 */
 		SearchRequestBuilder builder = null;
 		try {
@@ -179,9 +179,9 @@ public class SearchRestHandler {
 					Observable.merge(obs).collect(() -> {
 						return new ArrayList<Tuple<T, String>>();
 					}, (x, y) -> {
+						boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags.isEmpty() || requestedLanguageTags.contains(y.v2());
 						// Check permissions and language
-						if (y != null && requestUser.hasPermission(y.v1(), permission)
-								&& (y.v2() == null || requestedLanguageTags.contains(y.v2()))) {
+						if (y != null && matchesRequestedLang && requestUser.hasPermission(y.v1(), permission)) {
 							x.add(y);
 						}
 					}).subscribe(list -> {
@@ -270,7 +270,7 @@ public class SearchRestHandler {
 						return false;
 						// }
 					}).await();
-					
+
 					handler.reindexAll().await();
 				}
 				return Single.just(message(ac, "search_admin_reindex_invoked"));

@@ -20,10 +20,8 @@
 		</encoder>
 	</appender>
 	<logger name="com.gentics.mesh" level="INFO"/>
-	<logger name="com.gentics.mesh.core.verticle.node.NodeMigrationVerticle" level="DEBUG" />
-	<logger name="com.gentics.mesh.core.data.node.handler.NodeMigrationHandler" level="DEBUG" />
 
-	<root level="DEBUG">
+	<root level="ERROR">
 		<appender-ref ref="STDOUT"/>
 	</root>
 </configuration>

@@ -42,6 +42,8 @@ import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.performance.TestUtils;
 
+import io.vertx.core.json.JsonObject;
+
 public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
@@ -73,6 +75,24 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				}
 			}
 		}
+	}
+
+	@Test
+	public void testTrigramSearchQuery() throws Exception {
+		// 1. Index all existing contents
+		try (NoTx noTx = db.noTx()) {
+			recreateIndices();
+		}
+
+		JsonObject query = new JsonObject().put("min_score", 1.0).put("query",
+				new JsonObject().put("match_phrase", new JsonObject().put("fields.content", new JsonObject().put("query", "Hersteller"))));
+
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query.toString(),
+				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft(), new NodeParameters().setLanguages("de")));
+		assertEquals(1, response.getData().size());
+
+		String name = response.getData().get(0).getFields().getStringField("name").getString();
+		assertEquals("Honda NR german", name);
 	}
 
 	@Test

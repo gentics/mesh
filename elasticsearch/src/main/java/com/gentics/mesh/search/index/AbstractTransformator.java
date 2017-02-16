@@ -1,10 +1,9 @@
 package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
-import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -106,9 +105,9 @@ public abstract class AbstractTransformator<T> implements Transformator<T> {
 
 		// Enhance mappings with generic/common field types
 		JsonObject mappingProperties = getMappingProperties();
-		mappingProperties.put(UUID_KEY, fieldType(STRING, NOT_ANALYZED));
-		mappingProperties.put("created", fieldType(DATE, NOT_ANALYZED));
-		mappingProperties.put("edited", fieldType(DATE, NOT_ANALYZED));
+		mappingProperties.put(UUID_KEY, notAnalyzedType(STRING));
+		mappingProperties.put("created", notAnalyzedType(DATE));
+		mappingProperties.put("edited", notAnalyzedType(DATE));
 		mappingProperties.put("editor", getUserReferenceMapping());
 		mappingProperties.put("creator", getUserReferenceMapping());
 
@@ -128,7 +127,7 @@ public abstract class AbstractTransformator<T> implements Transformator<T> {
 		JsonObject mapping = new JsonObject();
 		mapping.put("type", "object");
 		JsonObject userProps = new JsonObject();
-		userProps.put("uuid", fieldType(STRING, NOT_ANALYZED));
+		userProps.put("uuid", notAnalyzedType(STRING));
 		mapping.put("properties", userProps);
 		return mapping;
 	}
