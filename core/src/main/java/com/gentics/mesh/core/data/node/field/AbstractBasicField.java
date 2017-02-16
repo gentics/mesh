@@ -6,12 +6,10 @@ import com.gentics.mesh.handler.ActionContext;
 import com.syncleus.ferma.AbstractVertexFrame;
 
 /**
- * Abstract class for basic fields. All basic fields should implement this class in order to provide various methods that can be used to access basic field
- * values.
+ * Abstract class for basic fields. All basic fields should implement this class in order to provide various methods that can be used to access basic field values.
  * 
- * A basic graph field is a field which is not stored within its own vertex or edge. Instead the field properties are stored next to it's parent container. A
- * node string field for example are stored within the {@link NodeGraphFieldContainer} vertex. This way no additional graph traversal is needed to load such
- * basic fields.
+ * A basic graph field is a field which is not stored within its own vertex or edge. Instead the field properties are stored next to it's parent container. A node string field for
+ * example are stored within the {@link NodeGraphFieldContainer} vertex. This way no additional graph traversal is needed to load such basic fields.
  */
 public abstract class AbstractBasicField<T extends Field> implements BasicGraphField<T> {
 
@@ -36,7 +34,7 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 	/**
 	 * Return the parent container which holds the properties for the field.
 	 * 
-	 * @return
+	 * @return Parent container (micronode container or node graph field container)
 	 */
 	public AbstractVertexFrame getParentContainer() {
 		return parentContainer;
@@ -66,6 +64,7 @@ public abstract class AbstractBasicField<T extends Field> implements BasicGraphF
 	 * Transform the field into the rest response model.
 	 * 
 	 * @param ac
+	 *            Action context
 	 */
 	abstract public T transformToRest(ActionContext ac);
 

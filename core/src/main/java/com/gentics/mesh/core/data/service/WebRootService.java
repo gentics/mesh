@@ -26,8 +26,10 @@ public class WebRootService {
 	 * Find the element that corresponds to the given project webroot path.
 	 * 
 	 * @param ac
+	 *            Action context
 	 * @param path
-	 * @return
+	 *            Path string
+	 * @return Resolved path object
 	 */
 	public Path findByProjectPath(InternalActionContext ac, String path) {
 		Project project = ac.getProject();

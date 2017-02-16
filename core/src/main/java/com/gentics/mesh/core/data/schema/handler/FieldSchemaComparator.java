@@ -14,8 +14,10 @@ public class FieldSchemaComparator {
 	 * Compare two field schemas and return a schema change if both schemas don't match to each other.
 	 * 
 	 * @param fieldSchemaA
+	 *            First field schema
 	 * @param fieldSchemaB
-	 * @return
+	 *            Second field schema
+	 * @return Detected changes
 	 */
 	public SchemaChangeModel compare(FieldSchema fieldSchemaA, FieldSchema fieldSchemaB) {
 		if (fieldSchemaA != null && fieldSchemaB != null) {
@@ -30,7 +32,8 @@ public class FieldSchemaComparator {
 			change.loadMigrationScript();
 			return change;
 		} else if (fieldSchemaA == null && fieldSchemaB != null) {
-			return SchemaChangeModel.createAddFieldChange(fieldSchemaB.getName(), fieldSchemaB.getType(), fieldSchemaB.getLabel());
+			return SchemaChangeModel.createAddFieldChange(fieldSchemaB.getName(), fieldSchemaB.getType(),
+					fieldSchemaB.getLabel());
 		}
 
 		return null;

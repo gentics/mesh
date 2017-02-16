@@ -54,21 +54,21 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	/**
 	 * Return the class that is used for container versions.
 	 * 
-	 * @return
+	 * @return Class of the container version
 	 */
 	protected abstract Class<? extends SCV> getContainerVersionClass();
 
 	/**
 	 * Return the class that is used for containers.
 	 * 
-	 * @return
+	 * @return Class of the container
 	 */
 	protected abstract Class<? extends SC> getContainerClass();
 
 	/**
 	 * Return the eventbus migration verticle address.
 	 * 
-	 * @return
+	 * @return Eventbus address
 	 */
 	protected abstract String getMigrationAddress();
 

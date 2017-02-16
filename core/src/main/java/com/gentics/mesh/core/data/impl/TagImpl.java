@@ -134,7 +134,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		}
 		batch.delete(this, true);
 
-		// Nodes which used this tag must be updated in the search index  for all releases
+		// Nodes which used this tag must be updated in the search index for all releases
 		for (Release release : getProject().getReleaseRoot().findAll()) {
 			String releaseUuid = release.getUuid();
 			for (Node node : getNodes(release)) {
@@ -145,8 +145,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, ContainerType type,
-			PagingParameters pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags,
+			ContainerType type, PagingParameters pagingInfo) throws InvalidArgumentException {
 
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(requestUser, release, languageTags, type);
 		Page<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, pagingInfo, NodeImpl.class);
@@ -162,17 +162,22 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	 * </ol>
 	 * 
 	 * @param requestUser
+	 *            User to be used to check for read permissions
 	 * @param release
+	 *            Release to be used for finding nodes
 	 * @param languageTags
+	 *            List of language tags used to filter containers which should be included in the traversal
 	 * @param type
-	 * @return
+	 *            Type of the node containers to be located
+	 * @return Traversal which can be used to locate the nodes
 	 */
-	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(MeshAuthUser requestUser, Release release, List<String> languageTags,
-			ContainerType type) {
+	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(MeshAuthUser requestUser, Release release,
+			List<String> languageTags, ContainerType type) {
 
-		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release).mark().in(READ_PERM.label())
-				.out(HAS_ROLE).in(HAS_USER).retain(requestUser).back().mark().outE(HAS_FIELD_CONTAINER)
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid()).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release)
+				.mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser).back().mark()
+				.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
+				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 
 		traversal = GraphFieldContainerEdgeImpl.filterLanguages(traversal, languageTags);
 		return traversal.outV().back();
@@ -190,8 +195,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 			// Check for conflicts
 			Tag foundTagWithSameName = tagFamily.getTagRoot().findByName(newTagName);
 			if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
-				throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName,
-						tagFamily.getName());
+				throw conflict(foundTagWithSameName.getUuid(), newTagName,
+						"tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName());
 			}
 
 			setEditor(ac.getUser());
@@ -227,7 +232,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/" + encodeFragment(getProject().getName()) + "/tagFamilies/" + getTagFamily().getUuid() + "/tags/" + getUuid();
+		return "/api/v1/" + encodeFragment(getProject().getName()) + "/tagFamilies/" + getTagFamily().getUuid()
+				+ "/tags/" + getUuid();
 	}
 
 	@Override

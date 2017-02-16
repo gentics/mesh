@@ -107,8 +107,7 @@ public class RouterStorage {
 	}
 
 	/**
-	 * Initialise the Root API router and add common handlers to the router. The API router is used to attach subrouters for routes like
-	 * /api/v1/[groups|users|roles]
+	 * Initialise the Root API router and add common handlers to the router. The API router is used to attach subrouters for routes like /api/v1/[groups|users|roles]
 	 */
 	private void initAPIRouter(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler) {
 		Router router = getAPIRouter();
@@ -188,7 +187,7 @@ public class RouterStorage {
 	 * 
 	 * @param name
 	 *            Name of the project router
-	 * @return
+	 * @return true if the project router could be removed. Otherwise false
 	 */
 	public boolean removeProjectRouter(String name) {
 		Router projectRouter = projectRouters.get(name);
@@ -258,7 +257,8 @@ public class RouterStorage {
 	 */
 	public void mountRouterInProjects(Router localRouter, String mountPoint) {
 		for (Entry<String, Router> projectRouterEntry : projectRouters.entrySet()) {
-			log.info("Mounting router onto project router {" + projectRouterEntry.getKey() + "} with mountpoint {" + mountPoint + "}");
+			log.info("Mounting router onto project router {" + projectRouterEntry.getKey() + "} with mountpoint {"
+					+ mountPoint + "}");
 			projectRouterEntry.getValue().mountSubRouter("/" + mountPoint, localRouter);
 		}
 	}
@@ -279,6 +279,13 @@ public class RouterStorage {
 		return router;
 	}
 
+	/**
+	 * Return custom sub router
+	 * 
+	 * @param name
+	 *            Name of the custom sub router
+	 * @return Found or created router
+	 */
 	public Router getCustomSubRouter(String name) {
 		Router router = customRouters.get(name);
 		if (router == null) {

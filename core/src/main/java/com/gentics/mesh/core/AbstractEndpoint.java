@@ -81,14 +81,14 @@ public abstract class AbstractEndpoint {
 	/**
 	 * Description of the endpoints in a broader scope.
 	 * 
-	 * @return
+	 * @return Descripton of the endpoint
 	 */
 	public abstract String getDescription();
 
 	/**
 	 * Setup the router for this endpoint using the endpoint basepath.
 	 * 
-	 * @return
+	 * @return Router
 	 */
 	public Router setupLocalRouter() {
 		return routerStorage.getAPISubRouter(basePath);
@@ -97,7 +97,7 @@ public abstract class AbstractEndpoint {
 	/**
 	 * Return the created local router.
 	 * 
-	 * @return
+	 * @return Router
 	 */
 	public Router getRouter() {
 		return localRouter;
@@ -107,7 +107,8 @@ public abstract class AbstractEndpoint {
 	 * Wrapper for getRouter().route(path)
 	 * 
 	 * @param path
-	 * @return
+	 *            Path of the route
+	 * @return Route
 	 */
 	protected Route route(String path) {
 		Route route = getRouter().route(path);
@@ -125,7 +126,7 @@ public abstract class AbstractEndpoint {
 	/**
 	 * Create a new endpoint. Internally a new route will be wrapped.
 	 * 
-	 * @return
+	 * @return Created endpoint
 	 */
 	protected Endpoint createEndpoint() {
 		Endpoint endpoint = new Endpoint(getRouter());
@@ -136,7 +137,7 @@ public abstract class AbstractEndpoint {
 	/**
 	 * Return a list of all endpoints that have been registered within this endpoint.
 	 * 
-	 * @return
+	 * @return List of created endpoint
 	 */
 	public List<Endpoint> getEndpoints() {
 		return endpoints;
@@ -145,7 +146,7 @@ public abstract class AbstractEndpoint {
 	/**
 	 * Return the endpoint basepath.
 	 * 
-	 * @return
+	 * @return Basepath
 	 */
 	public String getBasePath() {
 		return basePath;

@@ -64,7 +64,8 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			if (editor != null) {
 				model.setEditor(editor.transformToReference());
 			} else {
-				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no editor. Omitting editor field");
+				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid()
+						+ "} has no editor. Omitting editor field");
 			}
 
 			String date = edited.getLastEditedDate();
@@ -77,7 +78,8 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			if (creator != null) {
 				model.setCreator(creator.transformToReference());
 			} else {
-				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
+				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid()
+						+ "} has no creator. Omitting creator field");
 			}
 
 			String date = created.getCreationDate();
@@ -95,7 +97,9 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 * Compare both string values in order to determine whether the graph value should be updated.
 	 * 
 	 * @param restValue
+	 *            Rest model string value
 	 * @param graphValue
+	 *            Graph string value
 	 * @return true if restValue is not empty or null and the restValue is not equal to the graph value. Otherwise false.
 	 */
 	protected boolean shouldUpdate(String restValue, String graphValue) {

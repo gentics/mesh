@@ -22,9 +22,12 @@ public class I18NUtil {
 	 * Return the i18n string for the given bundle, local and i18n key.
 	 * 
 	 * @param bundleName
+	 *            Bundle to check for i18n entries
 	 * @param locale
+	 *            Locale used to determine the language
 	 * @param key
-	 * @return
+	 *            I18n key
+	 * @return Localized string
 	 */
 	public static String get(String bundleName, Locale locale, String key) {
 
@@ -39,8 +42,10 @@ public class I18NUtil {
 	 * Return the i18n string for the given locale and key.
 	 * 
 	 * @param locale
+	 *            Locale used to determine the language
 	 * @param key
-	 * @return
+	 *            I18n key
+	 * @return Translated i18n message
 	 */
 	public static String get(Locale locale, String key) {
 		return get(MESH_CORE_BUNDLENAME, locale, key);
@@ -50,9 +55,12 @@ public class I18NUtil {
 	 * Return the i18n string for the given locale and parameters.
 	 * 
 	 * @param locale
+	 *            Local used to determine the language
 	 * @param key
+	 *            I18n string key
 	 * @param parameters
-	 * @return
+	 *            I18n parameters
+	 * @return Translated i18n message
 	 */
 	public static String get(Locale locale, String key, String... parameters) {
 		return get(MESH_CORE_BUNDLENAME, locale, key, parameters);
@@ -93,9 +101,12 @@ public class I18NUtil {
 	 * Return the i18n string for the i18n string and parameters. The locale information will be extracted from the action context.
 	 * 
 	 * @param ac
+	 *            Action context which contains the locale information used to pick the right language
 	 * @param key
+	 *            I18n key
 	 * @param parameters
-	 * @return
+	 *            I18n parameters
+	 * @return Translated i18n string
 	 */
 	public static String get(ActionContext ac, String key, String... parameters) {
 		return get(MESH_CORE_BUNDLENAME, ac.getLocale(), key, parameters);
@@ -105,10 +116,14 @@ public class I18NUtil {
 	 * Return the i18n string for the i18n string, parameters and bundle. The locale information will be extracted from the action context.
 	 * 
 	 * @param bundleName
+	 *            Bundle to query for i18n entries
 	 * @param ac
+	 *            Action context
 	 * @param key
+	 *            I18n key
 	 * @param parameters
-	 * @return
+	 *            I18n parameters
+	 * @return Translated i18n string
 	 */
 	public static String get(String bundleName, ActionContext ac, String key, String... parameters) {
 		return get(bundleName, ac.getLocale(), key, parameters);

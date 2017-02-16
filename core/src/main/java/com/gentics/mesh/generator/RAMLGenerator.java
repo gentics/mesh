@@ -69,8 +69,6 @@ public class RAMLGenerator {
 	/**
 	 * Run the RAML generation.
 	 * 
-	 * @param writeFiles
-	 * @throws Exception
 	 * @return Generated RAML
 	 */
 	public String generate() {
@@ -104,7 +102,8 @@ public class RAMLGenerator {
 	 *            Endpoint which provides endpoints
 	 * @throws IOException
 	 */
-	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractEndpoint verticle) throws IOException {
+	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractEndpoint verticle)
+			throws IOException {
 
 		String ramlPath = basePath + "/" + verticle.getBasePath();
 		// Check whether the resource was already added. Maybe we just need to extend it
@@ -131,7 +130,7 @@ public class RAMLGenerator {
 			for (Entry<Integer, Response> entry : endpoint.getExampleResponses().entrySet()) {
 				String key = String.valueOf(entry.getKey());
 				Response response = entry.getValue();
-				//write example response to dedicated file
+				// write example response to dedicated file
 				String filename = "response/" + fullPath + "/" + key + "/example.json";
 				if (response.getBody() != null && response.getBody().get("application/json") != null) {
 					String json = response.getBody().get("application/json").getExample();
@@ -147,11 +146,11 @@ public class RAMLGenerator {
 				for (String mimeType : endpoint.getExampleRequestMap().keySet()) {
 					String body = endpoint.getExampleRequestMap().get(mimeType).getExample();
 					if (mimeType.equalsIgnoreCase("application/json")) {
-						//write example request to dedicated file
+						// write example request to dedicated file
 						String filename = "request/" + fullPath + "/request-body.json";
 						writeFile(filename, body);
 					} else if (mimeType.equalsIgnoreCase("text/plain")) {
-						//write example request to dedicated file
+						// write example request to dedicated file
 						String filename = "request/" + fullPath + "/request-body.txt";
 						writeFile(filename, body);
 					}
@@ -160,8 +159,8 @@ public class RAMLGenerator {
 
 			String path = endpoint.getRamlPath();
 			if (path == null) {
-				throw new RuntimeException(
-						"Could not determine path for endpoint of verticle " + verticle.getClass() + " " + endpoint.getPathRegex());
+				throw new RuntimeException("Could not determine path for endpoint of verticle " + verticle.getClass()
+						+ " " + endpoint.getPathRegex());
 			}
 			Resource pathResource = verticleResource.getResources().get(path);
 			if (pathResource == null) {
@@ -182,7 +181,9 @@ public class RAMLGenerator {
 	 * Save the string content to the given file in the output folder.
 	 * 
 	 * @param filename
+	 *            Name of the file to be written to
 	 * @param content
+	 *            Content to be written
 	 * @throws IOException
 	 */
 	public void writeFile(String filename, String content) throws IOException {

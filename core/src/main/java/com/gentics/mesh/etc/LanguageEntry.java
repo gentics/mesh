@@ -14,7 +14,7 @@ public class LanguageEntry {
 	/**
 	 * Return the name of the language (eg. German)
 	 * 
-	 * @return
+	 * @return Name of the language
 	 */
 	public String getName() {
 		return name;
@@ -24,6 +24,7 @@ public class LanguageEntry {
 	 * Set the name of the language.
 	 * 
 	 * @param name
+	 *            Name of the language
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -32,16 +33,17 @@ public class LanguageEntry {
 	/**
 	 * Return the language native name (eg. Deutsch)
 	 * 
-	 * @return
+	 * @return Native language name
 	 */
 	public String getNativeName() {
 		return nativeName;
 	}
 
 	/**
-	 * Set the langugage native name.
+	 * Set the language native name.
 	 * 
 	 * @param nativeName
+	 *            Native language name
 	 */
 	public void setNativeName(String nativeName) {
 		this.nativeName = nativeName;

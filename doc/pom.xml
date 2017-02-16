@@ -56,7 +56,7 @@
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath />
-								<argument>com.gentics.mesh.generator.RAMLGenerator</argument>
+								<argument>com.gentics.mesh.generator.MeshRAMLGeneratorRunner</argument>
 							</arguments>
 						</configuration>
 					</execution>
