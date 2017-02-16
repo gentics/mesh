@@ -2,6 +2,8 @@
 
 == 0.8.0 (Pending)
 
+* __[Enhancement]__ Names, string fields and html field values will now be indexed using the https://www.elastic.co/guide/en/elasticsearch/guide/current/ngrams-compound-words.html[trigram analyzer].
+
 * __[Enhancement]__ Tags are now also indexed in the node document in the field `tagFamilies`, grouped by tag families.
 
 * __[Enhancement]__ Binary Endpoint Overhaul
