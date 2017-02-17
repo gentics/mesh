@@ -47,7 +47,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node newsNode = folder("news");
 			Node node = folder("2015");
 			prepareNode(node, NODE_LIST, "node");
@@ -64,7 +64,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Create node field
 			Node node = noTx.getGraph().addFramedVertex(NodeImpl.class);
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
@@ -101,7 +101,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = noTx.getGraph().addFramedVertex(NodeImpl.class);
 
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
@@ -120,7 +120,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldList fieldA = container.createNodeList("fieldA");
 			NodeGraphFieldList fieldB = container.createNodeList("fieldB");
@@ -138,7 +138,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldList fieldA = container.createNodeList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
@@ -149,7 +149,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			String dummyKey = "test123";
 
@@ -179,7 +179,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestTestcase(NODE_LIST, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -187,7 +187,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(NODE_LIST, FETCH);
 		}
 	}
@@ -195,7 +195,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeRemoveFieldViaNullTestcase(NODE_LIST, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, NODE_LIST, null);
@@ -206,7 +206,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(NODE_LIST, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, NODE_LIST, null);
@@ -217,7 +217,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(NODE_LIST, FILL, (container) -> {
 				NodeFieldListImpl field = new NodeFieldListImpl();

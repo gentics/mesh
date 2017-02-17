@@ -21,7 +21,8 @@ import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
-import com.gentics.mesh.graphdb.NoTx;import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {

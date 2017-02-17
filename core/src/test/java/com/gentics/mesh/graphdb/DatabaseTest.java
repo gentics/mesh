@@ -18,11 +18,12 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
-import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class DatabaseTest extends AbstractDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+public class DatabaseTest extends AbstractMeshTest {
 
 	private File outputDirectory;
 
@@ -31,7 +32,7 @@ public class DatabaseTest extends AbstractDBTest {
 		outputDirectory = new File("target", "tmp_" + System.currentTimeMillis());
 		outputDirectory.mkdirs();
 		Mesh.mesh().getOptions().getStorageOptions().setDirectory(new File(outputDirectory, "graphdb").getAbsolutePath());
-		// db.reset();
+		// db().reset();
 		// setupData();
 	}
 
@@ -42,57 +43,57 @@ public class DatabaseTest extends AbstractDBTest {
 
 	@Test
 	public void testIndex() {
-		try (NoTx noTrx = db.noTx()) {
-			GroupRootImpl.init(db);
-			GroupRootImpl.init(db);
-			db.addVertexIndex(LanguageImpl.class, true, "languageTag");
-			db.addEdgeIndex(GraphRelationships.ASSIGNED_TO_ROLE, false, false, true);
+		try (NoTx noTrx = db().noTx()) {
+//			GroupRootImpl.init(db);
+//			GroupRootImpl.init(db);
+			db().addVertexIndex(LanguageImpl.class, true, "languageTag");
+			db().addEdgeIndex(GraphRelationships.ASSIGNED_TO_ROLE, false, false, true);
 		}
 	}
 
 	@Test
 	public void testExport() throws IOException {
-		db.exportGraph(outputDirectory.getAbsolutePath());
+		db().exportGraph(outputDirectory.getAbsolutePath());
 	}
 
 	@Test
 	public void testImport() throws IOException {
-		db.exportGraph(outputDirectory.getAbsolutePath());
+		db().exportGraph(outputDirectory.getAbsolutePath());
 		File[] fileArray = outputDirectory.listFiles();
 		if (fileArray != null) {
 			List<File> files = Arrays.asList(fileArray);
 			File importFile = files.iterator().next();
-			db.importGraph(importFile.getAbsolutePath());
+			db().importGraph(importFile.getAbsolutePath());
 		}
 	}
 
 	@Test
 	@Ignore
 	public void testBackup() throws IOException {
-		db.backupGraph(outputDirectory.getAbsolutePath());
+		db().backupGraph(outputDirectory.getAbsolutePath());
 	}
 
 	@Test
 	@Ignore
 	public void testRestore() throws IOException {
 		String name = "username";
-		try (Tx tx = db.tx()) {
+		try (Tx tx = db().tx()) {
 			user().setUsername(name);
 			tx.success();
 		}
-		try (Tx tx = db.tx()) {
+		try (Tx tx = db().tx()) {
 			assertEquals(name, user().getUsername());
 		}
-		db.backupGraph(outputDirectory.getAbsolutePath());
-		try (Tx tx = db.tx()) {
+		db().backupGraph(outputDirectory.getAbsolutePath());
+		try (Tx tx = db().tx()) {
 			user().setUsername("changed");
 			tx.success();
 		}
-		try (Tx tx = db.tx()) {
+		try (Tx tx = db().tx()) {
 			assertEquals("changed", user().getUsername());
 		}
-		db.restoreGraph(outputDirectory.listFiles()[0].getAbsolutePath());
-		try (Tx tx = db.tx()) {
+		db().restoreGraph(outputDirectory.listFiles()[0].getAbsolutePath());
+		try (Tx tx = db().tx()) {
 			assertEquals("username", user().getUsername());
 		}
 

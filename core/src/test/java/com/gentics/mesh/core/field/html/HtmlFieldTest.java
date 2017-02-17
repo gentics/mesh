@@ -30,7 +30,9 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 
 	private static final String HTML_FIELD = "htmlField";
@@ -47,7 +49,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Create field
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphField htmlField = container.createHTML(HTML_FIELD);
@@ -74,7 +76,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 
 			// Add html field schema to the schema
@@ -105,7 +107,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphField fieldA = container.createHTML("fieldA");
 			HtmlGraphField fieldB = container.createHTML("fieldB");
@@ -123,7 +125,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphField fieldA = container.createHTML("htmlField1");
 			assertFalse(fieldA.equals((Field) null));
@@ -134,7 +136,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphField fieldA = container.createHTML("htmlField1");
 
@@ -158,7 +160,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphField htmlField = container.createHTML(HTML_FIELD);
 			htmlField.setHtml("<i>HTML</i>");
@@ -173,7 +175,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeRemoveFieldViaNullTestcase(HTML_FIELD, FETCH, FILLTEXT, (node) -> {
 				updateContainer(ac, node, HTML_FIELD, null);
@@ -184,7 +186,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestTestcase(HTML_FIELD, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -192,7 +194,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(HTML_FIELD, FETCH);
 		}
 	}
@@ -200,7 +202,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(HTML_FIELD, FETCH, FILLTEXT, (container) -> {
 				updateContainer(ac, container, HTML_FIELD, null);
@@ -211,7 +213,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(HTML_FIELD, FILLTEXT, (container) -> {
 				HtmlField field = new HtmlFieldImpl();

@@ -23,17 +23,19 @@ import javax.script.ScriptException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.string.StringFieldTestHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class StringFieldMigrationTest extends AbstractFieldMigrationTest implements StringFieldTestHelper {
 
-	@Override
 	@Test
+	@Override
 	public void testRemove() throws Exception {
 		removeField(CREATESTRING, FILLTEXT, FETCH);
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testRename() throws Exception {
 		renameField(CREATESTRING, FILLTEXT, FETCH, (container, name) -> {
 			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
@@ -41,16 +43,16 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToBinary() throws Exception {
 		changeType(CREATESTRING, FILLTEXT, FETCH, CREATEBINARY, (container, name) -> {
 			assertThat(container.getBinary(name)).as(NEWFIELD).isNull();
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToBoolean() throws Exception {
 		changeType(CREATESTRING, FILLTRUE, FETCH, CREATEBOOLEAN, (container, name) -> {
 			assertThat(container.getBoolean(name)).as(NEWFIELD).isNotNull();
@@ -77,8 +79,8 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToBooleanList() throws Exception {
 		changeType(CREATESTRING, FILLTRUE, FETCH, CREATEBOOLEANLIST, (container, name) -> {
 			assertThat(container.getBooleanList(name)).as(NEWFIELD).isNotNull();
@@ -105,8 +107,8 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToDate() throws Exception {
 		changeType(CREATESTRING, FILL_DATE, FETCH, CREATEDATE, (container, name) -> {
 			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
@@ -129,8 +131,8 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToDateList() throws Exception {
 		changeType(CREATESTRING, FILL0, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
@@ -162,44 +164,45 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 	public void testChangeToHtmlList() throws Exception {
 		changeType(CREATESTRING, FILLTEXT, FETCH, CREATEHTMLLIST, (container, name) -> {
 			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELDVALUE).containsExactly("<b>HTML</b> content");
+			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELDVALUE)
+					.containsExactly("<b>HTML</b> content");
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToMicronode() throws Exception {
 		changeType(CREATESTRING, FILLTEXT, FETCH, CREATEMICRONODE, (container, name) -> {
 			assertThat(container.getMicronode(name)).as(NEWFIELD).isNull();
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToMicronodeList() throws Exception {
 		changeType(CREATESTRING, FILLTEXT, FETCH, CREATEMICRONODELIST, (container, name) -> {
 			assertThat(container.getMicronodeList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToNode() throws Exception {
 		changeType(CREATESTRING, FILLTEXT, FETCH, CREATENODE, (container, name) -> {
 			assertThat(container.getNode(name)).as(NEWFIELD).isNull();
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToNodeList() throws Exception {
 		changeType(CREATESTRING, FILLTEXT, FETCH, CREATENODELIST, (container, name) -> {
 			assertThat(container.getNodeList(name)).as(NEWFIELD).isNull();
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToNumber() throws Exception {
 		changeType(CREATESTRING, FILL0, FETCH, CREATENUMBER, (container, name) -> {
 			assertThat(container.getNumber(name)).as(NEWFIELD).isNotNull();
@@ -216,8 +219,8 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToNumberList() throws Exception {
 		changeType(CREATESTRING, FILL0, FETCH, CREATENUMBERLIST, (container, name) -> {
 			assertThat(container.getNumberList(name)).as(NEWFIELD).isNotNull();
@@ -234,8 +237,8 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToString() throws Exception {
 		changeType(CREATESTRING, FILLTEXT, FETCH, CREATESTRING, (container, name) -> {
 			assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
@@ -243,23 +246,25 @@ public class StringFieldMigrationTest extends AbstractFieldMigrationTest impleme
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testChangeToStringList() throws Exception {
 		changeType(CREATESTRING, FILLTEXT, FETCH, CREATESTRINGLIST, (container, name) -> {
 			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly("<b>HTML</b> content");
+			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE)
+					.containsExactly("<b>HTML</b> content");
 		});
 	}
 
-	@Override
 	@Test
+	@Override
 	public void testCustomMigrationScript() throws Exception {
 		customMigrationScript(CREATESTRING, FILLTEXT, FETCH,
 				"function migrate(node, fieldname) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}",
 				(container, name) -> {
 					assertThat(container.getString(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getString(name).getString()).as(NEWFIELDVALUE).isEqualTo("modified <b>HTML</b> content");
+					assertThat(container.getString(name).getString()).as(NEWFIELDVALUE)
+							.isEqualTo("modified <b>HTML</b> content");
 				});
 	}
 

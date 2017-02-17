@@ -21,16 +21,18 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 /**
  * Test {@link UpdateSchemaChangeImpl} methods
  */
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			assertNull("Initially no container flag value should be set.", change.getContainerFlag());
 			change.setContainerFlag(true);
@@ -55,7 +57,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApply() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			Schema schema = new SchemaModel();
 			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
@@ -76,7 +78,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testFieldOrderChange() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// 1. Create the schema container
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
@@ -103,7 +105,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testUpdateSchemaSegmentFieldToNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
@@ -125,7 +127,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testUpdateSchema() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
@@ -151,7 +153,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaChangeModel model = new SchemaChangeModel();
 			model.setMigrationScript("custom");
 			model.setProperty(SchemaChangeModel.REQUIRED_KEY, true);
@@ -178,7 +180,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			assertNull("Update field changes have no auto migation script.", change.getAutoMigrationScript());
 
@@ -191,7 +193,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			SchemaChangeModel model = change.transformToRest();
 			assertNotNull(model);

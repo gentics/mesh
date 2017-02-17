@@ -8,9 +8,11 @@ import java.util.MissingResourceException;
 import org.junit.Test;
 
 import com.gentics.mesh.context.AbstractActionContext;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class I18NTest extends AbstractDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+public class I18NTest extends AbstractMeshTest {
 
 	@Test
 	public void testGerman() {

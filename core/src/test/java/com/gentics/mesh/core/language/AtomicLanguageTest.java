@@ -10,21 +10,23 @@ import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class AtomicLanguageTest extends AbstractDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
+public class AtomicLanguageTest extends AbstractMeshTest {
 
 	@Test
 	public void testLanguageIndex() {
-		try (NoTx notx = db.noTx()) {
-			MeshRoot meshRoot = boot.meshRoot();
+		try (NoTx notx = db().noTx()) {
+			MeshRoot meshRoot = boot().meshRoot();
 			LanguageRoot languageRoot = meshRoot.getLanguageRoot();
-			try (Tx tx = db.tx()) {
+			try (Tx tx = db().tx()) {
 				assertNotNull(languageRoot);
 				Language lang = languageRoot.create("Deutsch", "de");
-				db.setVertexType(lang.getElement(), LanguageImpl.class);
+				db().setVertexType(lang.getElement(), LanguageImpl.class);
 				lang = languageRoot.create("English", "en");
-				db.setVertexType(lang.getElement(), LanguageImpl.class);
+				db().setVertexType(lang.getElement(), LanguageImpl.class);
 				tx.success();
 			}
 

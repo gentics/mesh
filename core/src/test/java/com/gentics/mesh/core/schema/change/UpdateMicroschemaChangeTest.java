@@ -16,13 +16,15 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UpdateMicroschemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.setDescription("test");
 			assertEquals("test", change.getDescription());
@@ -32,7 +34,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testApply() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			MicroschemaModel schema = new MicroschemaModel();
 
@@ -55,7 +57,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaChangeModel model = SchemaChangeModel.createUpdateMicroschemaChange();
 			model.setProperty(SchemaChangeModel.NAME_KEY, "someName");
 
@@ -68,7 +70,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UpdateMicroschemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			assertNull("Update microschema changes have a auto migation script.", change.getAutoMigrationScript());
 
@@ -81,7 +83,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UpdateMicroschemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.setCustomMigrationScript("testScript");
 			change.setName("vcard");

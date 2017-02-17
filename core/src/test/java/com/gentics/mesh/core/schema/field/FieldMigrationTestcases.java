@@ -3,7 +3,7 @@ package com.gentics.mesh.core.schema.field;
 /**
  * Interface for tests for field migrations
  */
-public interface FieldMigrationTest {
+public interface FieldMigrationTestcases {
 	/**
 	 * Test removing the field
 	 * 

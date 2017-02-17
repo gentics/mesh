@@ -23,7 +23,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.field.number.NumberListFieldTestHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest implements NumberListFieldTestHelper {
 
 	@Override

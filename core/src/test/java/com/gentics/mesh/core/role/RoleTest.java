@@ -33,24 +33,25 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.RoleRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 
 import io.vertx.ext.web.RoutingContext;
 
-public class RoleTest extends AbstractBasicIsolatedObjectTest {
+public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			RoleReference reference = role().transformToReference();
 			assertNotNull(reference);
 			assertEquals(role().getUuid(), reference.getUuid());
@@ -61,13 +62,13 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String roleName = "test";
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role createdRole = root.create(roleName, user());
 			assertNotNull(createdRole);
 			String uuid = createdRole.getUuid();
-			Role role = boot.roleRoot().findByUuid(uuid);
+			Role role = boot().roleRoot().findByUuid(uuid);
 			assertNotNull(role);
 			assertEquals(roleName, role.getName());
 		}
@@ -75,7 +76,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGrantPermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Role role = role();
 			Node node = content("news overview");
 			role.grantPermissions(node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
@@ -100,7 +101,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGrantDuplicates() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Role role = meshRoot().getRoleRoot().create("testRole", user());
 			group().addRole(role);
 			NodeImpl extraNode = noTx.getGraph().addFramedVertex(NodeImpl.class);
@@ -125,7 +126,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testIsPermitted() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			User user = user();
 			int nRuns = 2000;
 			for (int i = 0; i < nRuns; i++) {
@@ -136,7 +137,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGrantPermissionTwice() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Role role = role();
 			Node node = content("news overview");
 
@@ -154,7 +155,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGetPermissions() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Role role = role();
 			Node node = content("news overview");
 			assertEquals(6, role.getPermissions(node).size());
@@ -163,7 +164,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testRevokePermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Role role = role();
 			Node node = content("news overview");
 			role.revokePermissions(node, CREATE_PERM);
@@ -179,7 +180,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testRevokePermissionOnGroupRoot() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			role().revokePermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 			User user = user();
 			assertFalse("The create permission to the groups root node should have been revoked.",
@@ -190,7 +191,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			int nRolesBefore = root.findAll().size();
 
@@ -204,7 +205,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testRoleAddCrudPermissions() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MeshAuthUser requestUser = user().reframe(MeshAuthUserImpl.class);
 			// userRoot.findMeshAuthUserByUsername(requestUser.getUsername())
 			Node parentNode = folder("2015");
@@ -227,7 +228,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 			ac.data().clear();
 			assertEquals(6, requestUser.getPermissions(node).size());
 
-			try (Tx tx = db.tx()) {
+			try (Tx tx = db().tx()) {
 				for (Role role : roles().values()) {
 					for (GraphPermission permission : GraphPermission.values()) {
 						assertTrue(
@@ -243,7 +244,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	public void testRolesOfGroup() throws InvalidArgumentException {
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", user());
 			group().addRole(extraRole);
@@ -269,14 +270,14 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			Page<? extends Role> page = boot.roleRoot().findAll(ac, new PagingParametersImpl(1, 5));
+			Page<? extends Role> page = boot().roleRoot().findAll(ac, new PagingParametersImpl(1, 5));
 			assertEquals(roles().size(), page.getTotalElements());
 			assertEquals(4, page.getSize());
 
-			page = boot.roleRoot().findAll(ac, new PagingParametersImpl(1, 15));
+			page = boot().roleRoot().findAll(ac, new PagingParametersImpl(1, 15));
 			assertEquals(roles().size(), page.getTotalElements());
 			assertEquals(4, page.getSize());
 		}
@@ -285,19 +286,19 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (NoTx noTx = db.noTx()) {
-			assertNotNull(boot.roleRoot().findByName(role().getName()));
-			assertNull(boot.roleRoot().findByName("bogus"));
+		try (NoTx noTx = db().noTx()) {
+			assertNotNull(boot().roleRoot().findByName(role().getName()));
+			assertNull(boot().roleRoot().findByName("bogus"));
 		}
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		try (NoTx noTx = db.noTx()) {
-			Role role = boot.roleRoot().findByUuid(role().getUuid());
+		try (NoTx noTx = db().noTx()) {
+			Role role = boot().roleRoot().findByUuid(role().getUuid());
 			assertNotNull(role);
-			role = boot.roleRoot().findByUuid("bogus");
+			role = boot().roleRoot().findByUuid("bogus");
 			assertNull(role);
 		}
 	}
@@ -305,7 +306,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Role role = role();
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -321,17 +322,17 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String roleName = "test";
 			RoleRoot root = meshRoot().getRoleRoot();
 
 			Role role = root.create(roleName, user());
 			String uuid = role.getUuid();
-			role = boot.roleRoot().findByUuid(uuid);
+			role = boot().roleRoot().findByUuid(uuid);
 			assertNotNull(role);
 			SearchQueueBatch batch = createBatch();
 			role.delete(batch);
-			Role foundRole = boot.roleRoot().findByUuid(uuid);
+			Role foundRole = boot().roleRoot().findByUuid(uuid);
 			assertNull(foundRole);
 		}
 
@@ -340,7 +341,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = getMockedInternalActionContext();
 			Role role = root.getRoleRoot().create("SuperUser", user());
@@ -354,8 +355,8 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (NoTx noTx = db.noTx()) {
-			List<? extends Role> roles = boot.roleRoot().findAll();
+		try (NoTx noTx = db().noTx()) {
+			List<? extends Role> roles = boot().roleRoot().findAll();
 			assertNotNull(roles);
 			assertEquals(roles().size(), roles.size());
 		}
@@ -364,7 +365,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Role role = role();
 			assertEquals("joe1_role", role.getName());
 			assertNotNull(role.getUuid());
@@ -380,16 +381,16 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String uuid;
 			SearchQueueBatch batch = createBatch();
-			try (Tx tx = db.tx()) {
+			try (Tx tx = db().tx()) {
 				Role role = role();
 				uuid = role.getUuid();
 				role.delete(batch);
 				tx.success();
 			}
-			assertElement(boot.roleRoot(), uuid, false);
+			assertElement(boot().roleRoot(), uuid, false);
 
 			// Check role entry
 //			Optional<? extends SearchQueueEntry> roleEntry = batch.findEntryByUuid(uuid);
@@ -407,7 +408,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Role role = role();
 			role.setName("newName");
 			assertEquals("newName", role.getName());
@@ -419,7 +420,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			testPermission(GraphPermission.READ_PERM, role());
 		}
 	}
@@ -427,7 +428,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			testPermission(GraphPermission.DELETE_PERM, role());
 		}
 	}
@@ -435,7 +436,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			testPermission(GraphPermission.UPDATE_PERM, role());
 		}
 	}
@@ -443,7 +444,7 @@ public class RoleTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			testPermission(GraphPermission.CREATE_PERM, role());
 		}
 	}

@@ -27,16 +27,18 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import rx.Single;
 
-public class TrxTest extends AbstractDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class TrxTest extends AbstractMeshTest {
 
 	@Test
 	public void testReload() {
-		try (Tx tx = db.tx()) {
+		try (Tx tx = db().tx()) {
 			user().reload();
 		}
 	}
@@ -46,33 +48,33 @@ public class TrxTest extends AbstractDBTest {
 		AtomicInteger i = new AtomicInteger(0);
 
 		UserRoot root;
-		try (Tx tx = db.tx()) {
+		try (Tx tx = db().tx()) {
 			root = meshRoot().getUserRoot();
 		}
 		int e = i.incrementAndGet();
-		try (Tx tx = db.tx()) {
+		try (Tx tx = db().tx()) {
 			assertNotNull(root.create("testuser" + e, user()));
-			assertNotNull(boot.userRoot().findByUsername("testuser" + e));
+			assertNotNull(boot().userRoot().findByUsername("testuser" + e));
 			tx.success();
 		}
-		try (Tx tx = db.tx()) {
-			assertNotNull(boot.userRoot().findByUsername("testuser" + e));
+		try (Tx tx = db().tx()) {
+			assertNotNull(boot().userRoot().findByUsername("testuser" + e));
 		}
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
-			try (Tx tx = db.tx()) {
+			try (Tx tx = db().tx()) {
 				assertNotNull(root.create("testuser" + u, user()));
-				assertNotNull(boot.userRoot().findByUsername("testuser" + u));
+				assertNotNull(boot().userRoot().findByUsername("testuser" + u));
 				tx.failure();
 			}
-			assertNull(boot.userRoot().findByUsername("testuser" + u));
+			assertNull(boot().userRoot().findByUsername("testuser" + u));
 
 		};
 		Thread t = new Thread(task);
 		t.start();
 		t.join();
-		try (Tx tx = db.tx()) {
-			assertNull(boot.userRoot().findByUsername("testuser" + u));
+		try (Tx tx = db().tx()) {
+			assertNull(boot().userRoot().findByUsername("testuser" + u));
 			System.out.println("RUN: " + i.get());
 		}
 
@@ -80,24 +82,24 @@ public class TrxTest extends AbstractDBTest {
 
 	@Test
 	public void testMultiThreadedModifications() throws InterruptedException {
-		User user = db.noTx(() -> user());
+		User user = db().noTx(() -> user());
 
 		Runnable task2 = () -> {
-			try (Tx tx = db.tx()) {
+			try (Tx tx = db().tx()) {
 				user.setUsername("test2");
-				assertNotNull(boot.userRoot().findByUsername("test2"));
+				assertNotNull(boot().userRoot().findByUsername("test2"));
 				tx.success();
 			}
-			assertNotNull(boot.userRoot().findByUsername("test2"));
+			assertNotNull(boot().userRoot().findByUsername("test2"));
 
 			Runnable task = () -> {
-				try (Tx tx = db.tx()) {
+				try (Tx tx = db().tx()) {
 					user.setUsername("test3");
-					assertNotNull(boot.userRoot().findByUsername("test3"));
+					assertNotNull(boot().userRoot().findByUsername("test3"));
 					tx.failure();
 				}
-				assertNotNull(boot.userRoot().findByUsername("test2"));
-				assertNull(boot.userRoot().findByUsername("test3"));
+				assertNotNull(boot().userRoot().findByUsername("test2"));
+				assertNull(boot().userRoot().findByUsername("test3"));
 
 			};
 			Thread t = new Thread(task);
@@ -111,9 +113,9 @@ public class TrxTest extends AbstractDBTest {
 		Thread t2 = new Thread(task2);
 		t2.start();
 		t2.join();
-		try (Tx tx = db.tx()) {
-			assertNull(boot.userRoot().findByUsername("test3"));
-			assertNotNull("The user with username test2 could not be found.", boot.userRoot().findByUsername("test2"));
+		try (Tx tx = db().tx()) {
+			assertNull(boot().userRoot().findByUsername("test3"));
+			assertNotNull("The user with username test2 could not be found.", boot().userRoot().findByUsername("test2"));
 		}
 
 	}
@@ -121,7 +123,7 @@ public class TrxTest extends AbstractDBTest {
 	@Test(expected = RuntimeException.class)
 	public void testAsyncNoTrxWithError() throws Throwable {
 		CompletableFuture<Throwable> cf = new CompletableFuture<>();
-		db.operateNoTx(() -> {
+		db().operateNoTx(() -> {
 			throw new RuntimeException("error");
 		}).toBlocking().value();
 		assertEquals("error", cf.get().getMessage());
@@ -130,7 +132,7 @@ public class TrxTest extends AbstractDBTest {
 
 	@Test
 	public void testAsyncNoTrxNestedAsync() throws InterruptedException, ExecutionException {
-		String result = db.operateNoTx(() -> {
+		String result = db().operateNoTx(() -> {
 			TestUtils.run(() -> {
 				TestUtils.sleep(1000);
 			});
@@ -141,7 +143,7 @@ public class TrxTest extends AbstractDBTest {
 
 	@Test
 	public void testAsyncNoTrxSuccess() throws Throwable {
-		String result = db.operateNoTx(() -> {
+		String result = db().operateNoTx(() -> {
 			return Single.just("OK");
 		}).toBlocking().value();
 		assertEquals("OK", result);
@@ -174,7 +176,7 @@ public class TrxTest extends AbstractDBTest {
 
 					for (int retry = 0; retry < maxRetry; retry++) {
 						try {
-							try (Tx tx = db.tx()) {
+							try (Tx tx = db().tx()) {
 
 								if (retry == 0) {
 									try {
@@ -225,7 +227,7 @@ public class TrxTest extends AbstractDBTest {
 				currentThread.join();
 			}
 			// Thread.sleep(1000);
-			try (Tx tx = db.tx()) {
+			try (Tx tx = db().tx()) {
 				int expect = nThreads * (r + 1);
 				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
 				// node.reload();

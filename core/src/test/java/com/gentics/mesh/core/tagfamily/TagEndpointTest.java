@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -36,16 +37,16 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.vertx.ext.web.RoutingContext;
 
-public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
+public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			TagFamilyReference reference = tagFamily.transformToReference();
 			assertNotNull(reference);
@@ -56,7 +57,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testTagFamilyProject() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			assertNotNull(tagFamily.getProject());
 			assertEquals(project(), tagFamily.getProject());
@@ -66,7 +67,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 			root.findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 10));
 		}
@@ -75,7 +76,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 			List<? extends TagFamily> families = root.findAll();
 			assertNotNull(families);
@@ -96,7 +97,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			int nProjectsBefore = root.findAll().size();
 			assertNotNull(root.create("test1234556", user()));
@@ -108,7 +109,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 			assertNotNull(root);
 			assertNotNull(root.findByName("colors"));
@@ -118,7 +119,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = tagFamily("colors");
 
@@ -130,7 +131,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRead() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			assertNotNull(tagFamily.getName());
 			assertEquals("colors", tagFamily.getName());
@@ -142,7 +143,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily family = root.create("test", user());
 			TagFamily family2 = root.findByName(family.getName());
@@ -155,10 +156,10 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDelete() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SearchQueueBatch batch = createBatch();
 			Map<String, ElementEntry> affectedElements = new HashMap<>();
-			try (Tx tx = db.tx()) {
+			try (Tx tx = db().tx()) {
 				TagFamily tagFamily = tagFamily("colors");
 				affectedElements.put("tagFamily", new ElementEntry(DELETE_ACTION, tagFamily.getUuid()));
 
@@ -201,7 +202,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			tagFamily.setName("new Name");
 			assertEquals("new Name", tagFamily.getName());
@@ -211,7 +212,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
 			testPermission(GraphPermission.READ_PERM, tagFamily);
 		}
@@ -220,7 +221,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
 			testPermission(GraphPermission.DELETE_PERM, tagFamily);
 		}
@@ -229,7 +230,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
 			testPermission(GraphPermission.UPDATE_PERM, tagFamily);
 		}
@@ -238,7 +239,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
 			testPermission(GraphPermission.CREATE_PERM, tagFamily);
 		}
@@ -247,7 +248,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -261,7 +262,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = root.create("test123", user());
 			assertNotNull(tagFamily);
@@ -280,7 +281,7 @@ public class TagEndpointTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = root.create("test123", user());
 			assertFalse(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));

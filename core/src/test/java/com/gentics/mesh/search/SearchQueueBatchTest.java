@@ -11,9 +11,11 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class SearchQueueBatchTest extends AbstractDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
+public class SearchQueueBatchTest extends AbstractMeshTest {
 
 	@Test
 	public void testQueueLimit() throws InterruptedException {
@@ -32,7 +34,8 @@ public class SearchQueueBatchTest extends AbstractDBTest {
 
 		batches.iterator().next().processSync();
 		Thread.sleep(1000);
-		assertFalse("The queue lock should have been released and the thread should have been terminated by now", t.isAlive());
+		assertFalse("The queue lock should have been released and the thread should have been terminated by now",
+				t.isAlive());
 
 		Thread t2 = new Thread(() -> {
 			for (SearchQueueBatch batch : batches) {

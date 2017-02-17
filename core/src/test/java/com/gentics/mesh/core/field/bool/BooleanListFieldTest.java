@@ -43,7 +43,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			prepareNode(node, BOOLEAN_LIST, "boolean");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
@@ -62,7 +62,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphFieldList list = container.createBooleanList("dummyList");
 			list.createBoolean(true);
@@ -81,7 +81,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphFieldList testField = container.createBooleanList("testField");
 			testField.createBoolean(true);
@@ -97,7 +97,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphFieldList fieldA = container.createBooleanList("fieldA");
 			BooleanGraphFieldList fieldB = container.createBooleanList("fieldB");
@@ -115,7 +115,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphFieldList fieldA = container.createBooleanList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
@@ -126,7 +126,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			Boolean dummyValue = true;
 
@@ -156,7 +156,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestTestcase(BOOLEAN_LIST, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -164,7 +164,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(BOOLEAN_LIST, FETCH);
 		}
 	}
@@ -172,7 +172,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext("", user());
 			invokeRemoveFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, BOOLEAN_LIST, null);
@@ -183,7 +183,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext("", user());
 			invokeRemoveRequiredFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, BOOLEAN_LIST, null);
@@ -194,7 +194,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext("", user());
 			invokeUpdateFromRestValidSimpleValueTestcase(BOOLEAN_LIST, FILL, (container) -> {
 				BooleanFieldListImpl field = new BooleanFieldListImpl();

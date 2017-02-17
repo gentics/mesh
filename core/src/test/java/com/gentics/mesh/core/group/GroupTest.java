@@ -23,21 +23,22 @@ import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.vertx.ext.web.RoutingContext;
 
-public class GroupTest extends AbstractBasicIsolatedObjectTest {
+public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			GroupReference reference = group().transformToReference();
 			assertNotNull(reference);
 			assertEquals(group().getUuid(), reference.getUuid());
@@ -47,7 +48,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testUserGroup() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			GroupRoot groupRoot = meshRoot().getGroupRoot();
 
@@ -67,15 +68,15 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			Page<? extends Group> page = boot.groupRoot().findAll(ac, new PagingParametersImpl(1, 19));
+			Page<? extends Group> page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 19));
 
 			assertEquals(groups().size(), page.getTotalElements());
 			assertEquals(groups().size(), page.getSize());
 
-			page = boot.groupRoot().findAll(ac, new PagingParametersImpl(1, 3));
+			page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 3));
 			assertEquals(groups().size(), page.getTotalElements());
 			assertEquals(3, page.getSize());
 		}
@@ -84,8 +85,8 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAll() {
-		try (NoTx noTx = db.noTx()) {
-			List<? extends Group> groups = boot.groupRoot().findAll();
+		try (NoTx noTx = db().noTx()) {
+			List<? extends Group> groups = boot().groupRoot().findAll();
 			assertEquals(groups().size(), groups.size());
 		}
 	}
@@ -93,7 +94,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			GroupRoot root = meshRoot().getGroupRoot();
 			int nGroupsBefore = root.findAll().size();
 			GroupRoot groupRoot = meshRoot().getGroupRoot();
@@ -107,16 +108,16 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (NoTx noTx = db.noTx()) {
-			assertNotNull(boot.groupRoot().findByName("guests"));
+		try (NoTx noTx = db().noTx()) {
+			assertNotNull(boot().groupRoot().findByName("guests"));
 		}
 	}
 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		try (NoTx noTx = db.noTx()) {
-			Group group = boot.groupRoot().findByUuid(group().getUuid());
+		try (NoTx noTx = db().noTx()) {
+			Group group = boot().groupRoot().findByUuid(group().getUuid());
 			assertNotNull(group);
 		}
 	}
@@ -124,7 +125,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
@@ -139,7 +140,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Group group = meshRoot().getGroupRoot().create("newGroup", user());
 			SearchQueueBatch batch = createBatch();
 			assertNotNull(group);
@@ -153,7 +154,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MeshRoot root = meshRoot();
 			User user = user();
 			InternalActionContext ac = getMockedInternalActionContext();
@@ -168,7 +169,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Group group = group();
 			assertEquals("joe1_group", group.getName());
 			assertNotNull(group.getUsers());
@@ -180,7 +181,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Group group = meshRoot().getGroupRoot().create("newGroup", user());
 			assertNotNull(group);
 			assertEquals("newGroup", group.getName());
@@ -190,7 +191,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Group group = meshRoot().getGroupRoot().create("newGroup", user());
 
 			assertNotNull(group);
@@ -212,7 +213,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			group().setName("changed");
 			assertEquals("changed", group().getName());
 		}
@@ -221,7 +222,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			testPermission(GraphPermission.READ_PERM, group());
 		}
 	}
@@ -229,7 +230,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			testPermission(GraphPermission.DELETE_PERM, group());
 		}
 	}
@@ -237,7 +238,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			testPermission(GraphPermission.UPDATE_PERM, group());
 		}
 	}
@@ -245,7 +246,7 @@ public class GroupTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			testPermission(GraphPermission.CREATE_PERM, group());
 		}
 	}

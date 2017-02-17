@@ -67,7 +67,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setName("new_role");
 
 		RoleResponse restRole = call(() -> client().createRole(request));
-		assertThat(dummySearchProvider()).hasStore(Role.composeIndexName(), Role.composeIndexType(), restRole.getUuid());
+		assertThat(dummySearchProvider()).hasStore(Role.composeIndexName(), Role.composeIndexType(),
+				restRole.getUuid());
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 
 		try (NoTx noTx = db().noTx()) {
@@ -133,7 +134,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 
 		try (NoTx noTx = db().noTx()) {
-			call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid());
+			call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm",
+					meshRoot().getRoleRoot().getUuid());
 		}
 	}
 
@@ -188,7 +190,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Role role = role();
 			String uuid = role.getUuid();
 
-			RoleResponse restRole = call(() -> client().findRoleByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
+			RoleResponse restRole = call(
+					() -> client().findRoleByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
 			assertNotNull(restRole.getRolePerms());
 			assertThat(restRole.getRolePerms()).hasPerm(Permission.values());
 		}
@@ -205,7 +208,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			role().revokePermissions(extraRole, READ_PERM);
 
 			assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
-			call(() -> client().findRoleByUuid(extraRole.getUuid()), FORBIDDEN, "error_missing_perm", extraRole.getUuid());
+			call(() -> client().findRoleByUuid(extraRole.getUuid()), FORBIDDEN, "error_missing_perm",
+					extraRole.getUuid());
 		}
 
 	}
@@ -253,16 +257,20 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			int perPage = 11;
 			final int currentPage = 1;
 			restResponse = call(() -> client().findRoles(new PagingParametersImpl(currentPage, perPage)));
-			assertEquals("The amount of items for page {" + currentPage + "} does not match the expected amount.", 11, restResponse.getData().size());
+			assertEquals("The amount of items for page {" + currentPage + "} does not match the expected amount.", 11,
+					restResponse.getData().size());
 
 			// created roles + test data role
 			// TODO fix this assertion. Actually we would need to add 1 since the own role must also be included in the list
 			int totalRoles = nRoles + data().getRoles().size();
 			int totalPages = (int) Math.ceil(totalRoles / (double) perPage);
-			assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+			assertEquals("The response did not contain the correct amount of items", perPage,
+					restResponse.getData().size());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-			assertEquals("The total pages could does not match. We expect {" + totalRoles + "} total roles and {" + perPage
-					+ "} roles per page. Thus we expect {" + totalPages + "} pages", totalPages, restResponse.getMetainfo().getPageCount());
+			assertEquals(
+					"The total pages could does not match. We expect {" + totalRoles + "} total roles and {" + perPage
+							+ "} roles per page. Thus we expect {" + totalPages + "} pages",
+					totalPages, restResponse.getMetainfo().getPageCount());
 			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
 			for (RoleResponse role : restResponse.getData()) {
 				System.out.println(role.getName());
@@ -278,12 +286,15 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals("Somehow not all roles were loaded when loading all pages.", totalRoles, allRoles.size());
 
 			// Verify that extra role is not part of the response
-			List<RoleResponse> filteredUserList = allRoles.parallelStream().filter(restRole -> restRole.getName().equals(noPermRoleName))
-					.collect(Collectors.toList());
-			assertTrue("Extra role should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
+			List<RoleResponse> filteredUserList = allRoles.parallelStream()
+					.filter(restRole -> restRole.getName().equals(noPermRoleName)).collect(Collectors.toList());
+			assertTrue("Extra role should not be part of the list since no permissions were added.",
+					filteredUserList.size() == 0);
 
-			call(() -> client().findRoles(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
-			call(() -> client().findRoles(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
+			call(() -> client().findRoles(new PagingParametersImpl(-1, perPage)), BAD_REQUEST,
+					"error_page_parameter_must_be_positive", "-1");
+			call(() -> client().findRoles(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter",
+					"-1");
 			RoleListResponse response = call(() -> client().findRoles(new PagingParametersImpl(4242, 25)));
 
 			assertEquals(0, response.getData().size());
@@ -413,7 +424,8 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			dummySearchProvider().clear();
 			call(() -> client().deleteRole(roleUuid));
-			assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), group().getUuid());
+			assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(),
+					group().getUuid());
 			assertThat(dummySearchProvider()).hasDelete(Role.composeIndexName(), Role.composeIndexType(), roleUuid);
 			assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0);
 			meshRoot().getRoleRoot().reload();

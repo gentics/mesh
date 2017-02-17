@@ -5,7 +5,9 @@ import com.gentics.mesh.core.data.fieldhandler.AbstractComparatorStringTest;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class MicroschemaComparatorStringTest extends AbstractComparatorStringTest<Microschema> {
 
 	@Override

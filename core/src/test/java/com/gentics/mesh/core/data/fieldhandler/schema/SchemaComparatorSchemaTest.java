@@ -23,9 +23,9 @@ import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 
-public class SchemaComparatorSchemaTest extends AbstractDBTest {
+public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 
 	private SchemaComparator comparator = new SchemaComparator();
 
