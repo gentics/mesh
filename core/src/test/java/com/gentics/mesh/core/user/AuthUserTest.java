@@ -11,13 +11,15 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.mock.Mocks;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class AuthUserTest extends AbstractDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+public class AuthUserTest extends AbstractMeshTest {
 
 	@Test
 	public void testAuthorization() throws Exception {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
 			MeshAuthUser requestUser = ac.getUser();
 			Node targetNode = content();

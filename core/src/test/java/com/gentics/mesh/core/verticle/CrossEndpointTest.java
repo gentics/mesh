@@ -6,9 +6,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 
-public class CrossEndpointTest extends AbstractRestEndpointTest {
+public class CrossEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAccessNewProjectRoute() {

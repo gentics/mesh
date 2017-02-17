@@ -10,6 +10,7 @@ import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
@@ -71,17 +72,20 @@ import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
 	public void testCreateNodeWithNoLanguageCode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			SchemaReference schemaReference = new SchemaReference();
 			schemaReference.setName("content");
@@ -93,17 +97,17 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			request.setSchema(schemaReference);
 			request.setParentNodeUuid(folder("news").getUuid());
 
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_no_languagecode_specified");
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 		}
 	}
 
 	@Test
 	public void testCreateNodeWithBogusLanguageCode() throws GenericRestException, Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			SchemaReference schemaReference = new SchemaReference();
 			schemaReference.setName("content");
@@ -116,15 +120,15 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			request.setSchema(schemaReference);
 			request.setParentNodeUuid(folder("news").getUuid());
 
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 			call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "language_not_found", "BOGUS");
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 		}
 	}
 
 	@Test
 	public void testCreateNodeInBaseNode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setSchema(new SchemaReference().setVersion(1).setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
@@ -134,16 +138,16 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(project().getBaseNode().getUuid());
 
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
 			assertThat(restNode).matches(request);
-			assertThat(dummySearchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider()).recordedStoreEvents(1);
 		}
 	}
 
 	@Test
 	public void testCreateFolder() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -155,17 +159,17 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
 			request.setParentNodeUuid(uuid);
 
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
 			assertThat(restNode).matches(request);
-			assertThat(dummySearchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider()).recordedStoreEvents(1);
 		}
 	}
 
 	@Test
 	public void testCreateMultiple() {
 		// TODO migrate test to performance tests
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -173,7 +177,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 			long start = System.currentTimeMillis();
 			for (int i = 1; i < 100; i++) {
-				dummySearchProvider.reset();
+				dummySearchProvider().reset();
 				NodeCreateRequest request = new NodeCreateRequest();
 				request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 				request.setLanguage("en");
@@ -196,7 +200,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testCreate() throws Exception {
 
-		String parentNodeUuid = db.noTx(() -> folder("news").getUuid());
+		String parentNodeUuid = db().noTx(() -> folder("news").getUuid());
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReference().setName("content"));
 		request.setLanguage("en");
@@ -206,19 +210,19 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(parentNodeUuid);
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
 			assertThat(restNode).matches(request);
-			assertThat(dummySearchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider()).recordedStoreEvents(1);
 		}
 	}
 
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
 
-		String parentNodeUuid = db.noTx(() -> folder("news").getUuid());
+		String parentNodeUuid = db().noTx(() -> folder("news").getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReference().setName("content"));
@@ -229,7 +233,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(parentNodeUuid);
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			role().revokePermissions(meshRoot().getNodeRoot(), CREATE_PERM);
 		}
 
@@ -239,7 +243,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateForReleaseByName() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release initialRelease = project.getReleaseRoot().getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -270,7 +274,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateForReleaseByUuid() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release initialRelease = project.getReleaseRoot().getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -301,7 +305,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateForLatestRelease() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release initialRelease = project.getReleaseRoot().getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -333,7 +337,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateForBogusRelease() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			project.getReleaseRoot().create("newrelease", user());
 
@@ -362,7 +366,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse restNode2;
 
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -378,10 +382,10 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(folder("news").getUuid());
 
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 			NodeResponse restNode = call(
 					() -> client().createNode(PROJECT_NAME, request, new NodeParameters().setLanguages("de"), new VersioningParameters().draft()));
-			assertThat(dummySearchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider()).recordedStoreEvents(1);
 			assertThat(restNode).matches(request);
 
 			Node node = meshRoot().getNodeRoot().findByUuid(restNode.getUuid());
@@ -405,7 +409,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateNodeWithMissingParentNodeUuid() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			SchemaReference schemaReference = new SchemaReference();
 			schemaReference.setName("node");
@@ -423,7 +427,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateNodeWithMissingSchemaPermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			String uuid = node.getUuid();
 			role().revokePermissions(schemaContainer("content"), READ_PERM);
@@ -447,12 +451,12 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testCreateNodeWithMissingPermission() throws Exception {
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Revoke create perm
 			role().revokePermissions(folder("news"), CREATE_PERM);
 		}
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			String uuid = node.getUuid();
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -465,11 +469,11 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
 
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 		}
 	}
 
@@ -492,7 +496,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadMultipleAndAssertOrder() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node parentNode = folder("2015");
 			int nNodes = 20;
 			for (int i = 0; i < nNodes; i++) {
@@ -518,7 +522,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node parentNode = folder("2015");
 			// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
 			Node noPermNode = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
@@ -612,7 +616,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadNodesForRelease() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -644,12 +648,13 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadPublishedNodes() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// 1. Take all nodes offline
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 
 			// 2. Assert that all nodes are offline. The findNodes method should not find any node because it searches for published nodes by default.
-			NodeListResponse listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParameters().published(), new PagingParametersImpl(1, 1000)));
+			NodeListResponse listResponse = call(
+					() -> client().findNodes(PROJECT_NAME, new VersioningParameters().published(), new PagingParametersImpl(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
 
 			List<Node> nodes = Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015"));
@@ -668,15 +673,16 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testReadPublishedNodesNoPermission() {
 
-		String baseNodeUuid = db.noTx(() -> project().getBaseNode().getUuid());
+		String baseNodeUuid = db().noTx(() -> project().getBaseNode().getUuid());
 
 		// Take all nodes offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParameters().setRecursive(true)));
 
-		NodeListResponse listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParameters().published(), new PagingParametersImpl(1, 1000)));
+		NodeListResponse listResponse = call(
+				() -> client().findNodes(PROJECT_NAME, new VersioningParameters().published(), new PagingParametersImpl(1, 1000)));
 		assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
 
-		List<Node> nodes = db.noTx(() -> {
+		List<Node> nodes = db().noTx(() -> {
 			ArrayList<Node> list = new ArrayList<>(Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015")));
 			list.stream().forEach(node -> call(() -> client().publishNode(PROJECT_NAME, node.getUuid())));
 			return list;
@@ -685,14 +691,14 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 		// revoke permission on one folder after the other
 		while (!nodes.isEmpty()) {
 			Node folder = nodes.remove(0);
-			db.tx(() -> {
+			db().tx(() -> {
 				role().revokePermissions(folder, READ_PUBLISHED_PERM);
 				return null;
 			});
 
 			// Load all nodes and check whether they are published
 			List<NodeResponse> publishedNodes = nodes.stream().map(node -> {
-				String uuid = db.noTx(() -> node.getUuid());
+				String uuid = db().noTx(() -> node.getUuid());
 				return call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().published()));
 			}).collect(Collectors.toList());
 			assertThat(publishedNodes).hasSize(nodes.size());
@@ -718,7 +724,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 		Logger log = LoggerFactory.getLogger(NodeEndpointTest.class);
 
 		int nJobs = 200;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			CountDownLatch latch = new CountDownLatch(nJobs);
 
 			Node parentNode = folder("news");
@@ -798,7 +804,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testCreateMultithreaded() throws InterruptedException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -847,9 +853,9 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testUpdateMultithreaded() throws InterruptedException {
 
 		final String newName = "english renamed name";
-		String uuid = db.noTx(() -> folder("2015").getUuid());
-		assertEquals("2015", db.noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getString("name").getString()));
-		VersionNumber version = db.noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getVersion());
+		String uuid = db().noTx(() -> folder("2015").getUuid());
+		assertEquals("2015", db().noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getString("name").getString()));
+		VersionNumber version = db().noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getVersion());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		request.setLanguage("en");
@@ -868,7 +874,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			request.getFields().put("name", FieldUtil.createStringField(newName + ":" + i));
 			set.add(client().updateNode(PROJECT_NAME, uuid, request, parameters).invoke());
 			//			version = version.nextDraft();
-			//			VersionNumber currentVersion = db.noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getVersion());
+			//			VersionNumber currentVersion = db().noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getVersion());
 			//			System.out.println("CurrentVersion: " + currentVersion.getFullVersion());
 		}
 
@@ -885,7 +891,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testDeleteByUUIDMultithreaded() {
 
-		String uuid = db.noTx(() -> folder("2015").getUuid());
+		String uuid = db().noTx(() -> folder("2015").getUuid());
 		int nJobs = 6;
 
 		// CyclicBarrier barrier = new CyclicBarrier(nJobs);
@@ -905,7 +911,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 50;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParameters().draft()).invoke());
@@ -921,7 +927,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
 		int nJobs = 200;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParameters().draft()).invoke());
@@ -936,7 +942,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -949,7 +955,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node node = folder("2015");
 			String uuid = node.getUuid();
@@ -968,7 +974,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadVersionByNumber() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1041,7 +1047,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadBogusVersion() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1052,7 +1058,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadInexistentVersion() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1063,15 +1069,15 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadPublishedVersion() {
-		String uuid = db.noTx(() -> folder("2015").getUuid());
-		String releaseUuid = db.noTx(() -> project().getLatestRelease().getUuid());
+		String uuid = db().noTx(() -> folder("2015").getUuid());
+		String releaseUuid = db().noTx(() -> project().getLatestRelease().getUuid());
 
 		// 1. Take node offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, uuid, new PublishParameters().setRecursive(true)));
 
 		// 2. Load node using default options. By default the scope published is active. Thus the node can't be found.
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().published()), NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", uuid,
-				releaseUuid);
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().published()), NOT_FOUND,
+				"node_error_published_not_found_for_uuid_release_version", uuid, releaseUuid);
 
 		// 3. Publish the node again.
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
@@ -1083,7 +1089,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadNodeForRelease() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			Project project = project();
@@ -1105,7 +1111,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadNodeVersionForRelease() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			Project project = project();
@@ -1155,7 +1161,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	 */
 	@Test
 	public void testReadByUUIDWithLinkPathsAndNoSegmentFieldRef() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			// Update the schema
 			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -1173,7 +1179,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadByUUIDWithLinkPaths() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft(),
 					new NodeParameters().setResolveLinks(LinkType.FULL)));
@@ -1185,7 +1191,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadBreadcrumbWithLangfallback() {
-		String baseNodeUuid = db.noTx(() -> project().getBaseNode().getUuid());
+		String baseNodeUuid = db().noTx(() -> project().getBaseNode().getUuid());
 
 		// level 0
 		NodeCreateRequest request = new NodeCreateRequest();
@@ -1219,7 +1225,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadByUUIDBreadcrumb() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content("news_2014");
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(),
 					new NodeParameters().setResolveLinks(LinkType.FULL), new VersioningParameters().draft()));
@@ -1244,7 +1250,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadBaseNode() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 
@@ -1263,13 +1269,13 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadNodeByUUIDLanguageFallback() {
-		try (Tx tx = db.tx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("products");
 			SearchQueueBatch batch = createBatch();
 			node.getLatestDraftFieldContainer(english()).delete(batch);
 		}
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("products");
 			String uuid = node.getUuid();
 
@@ -1290,7 +1296,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadNodeByUUIDSingleLanguage() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("products");
 			String uuid = node.getUuid();
 
@@ -1308,7 +1314,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadNodeByUUIDNoLanguage() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Create node with nl language
 			Node parentNode = folder("products");
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
@@ -1335,7 +1341,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadNodeWithBogusLanguageCode() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 
 			Node node = folder("2015");
 			String uuid = node.getUuid();
@@ -1346,18 +1352,18 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			parameters.setLanguages("blabla", "edgsdg");
 			VersioningParameters versionParams = new VersioningParameters().draft();
 
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = client().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_language_not_found", "blabla");
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 		}
 	}
 
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
@@ -1386,14 +1392,14 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 		final String newName = "english renamed name";
 
 		// 1. Load Ids / Objects
-		String uuid = db.noTx(() -> content("concorde").getUuid());
-		final Node node = db.noTx(() -> content("concorde"));
-		NodeGraphFieldContainer origContainer = db.noTx(() -> {
+		String uuid = db().noTx(() -> content("concorde").getUuid());
+		final Node node = db().noTx(() -> content("concorde"));
+		NodeGraphFieldContainer origContainer = db().noTx(() -> {
 			Node prod = content("concorde");
 			NodeGraphFieldContainer container = prod.getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", container.getString("name").getString());
 			assertEquals("Concorde english title", container.getString("title").getString());
-			UserInfo userInfo = dataProvider.createUserInfo("dummy", "Dummy Firstname", "Dummy Lastname");
+			UserInfo userInfo = data().createUserInfo("dummy", "Dummy Firstname", "Dummy Lastname");
 			group().addUser(userInfo.getUser());
 			return container;
 		});
@@ -1410,27 +1416,27 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 		request.getFields().put("name", FieldUtil.createStringField(newName));
 
 		// 3. Invoke update
-		searchProvider.clear();
+		searchProvider().clear();
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParameters().setLanguages("en", "de")));
 		// Assert updater information
 		assertEquals("Dummy Firstname", restNode.getEditor().getFirstName());
 		assertEquals("Dummy Lastname", restNode.getEditor().getLastName());
 
-		String projectUuid = db.noTx(() -> project().getUuid());
-		String releaseUuid = db.noTx(() -> project().getLatestRelease().getUuid());
-		String schemaContainerVersionUuid = db.noTx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+		String projectUuid = db().noTx(() -> project().getUuid());
+		String releaseUuid = db().noTx(() -> project().getLatestRelease().getUuid());
+		String schemaContainerVersionUuid = db().noTx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
-		assertThat(dummySearchProvider).hasStore(
+		assertThat(dummySearchProvider()).hasStore(
 				NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, ContainerType.DRAFT),
 				NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(uuid, "en"));
-		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
 		assertThat(restNode).as("update response").isNotNull().hasLanguage("en").hasVersion("1.1").hasStringField("name", newName)
 				.hasStringField("title", "Concorde english title");
 
 		// 5. Assert graph changes
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			node.reload();
 			origContainer.reload();
 
@@ -1456,8 +1462,8 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 					origContainer.getSchemaContainerVersion().getUuid(), ContainerType.DRAFT);
 			String indexType = NodeGraphFieldContainer.composeIndexType();
 			String documentId = NodeGraphFieldContainer.composeDocumentId(uuid, "en");
-			assertThat(dummySearchProvider).hasStore(indexName, indexType, documentId);
-			assertThat(dummySearchProvider).recordedStoreEvents(1);
+			assertThat(dummySearchProvider()).hasStore(indexName, indexType, documentId);
+			assertThat(dummySearchProvider()).recordedStoreEvents(1);
 		}
 
 	}
@@ -1465,33 +1471,33 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testUpdateCreateLanguage() {
 		final String germanName = "Zweitausendfünfzehn";
-		final Node node = db.noTx(() -> folder("2015"));
-		final String uuid = db.noTx(() -> folder("2015").getUuid());
+		final Node node = db().noTx(() -> folder("2015"));
+		final String uuid = db().noTx(() -> folder("2015").getUuid());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		request.setLanguage("de");
 		request.setVersion(new VersionReference(null, "0.1"));
 		request.getFields().put("name", FieldUtil.createStringField(germanName));
 
-		String projectUuid = db.noTx(() -> project().getUuid());
-		String releaseUuid = db.noTx(() -> project().getLatestRelease().getUuid());
-		String schemaContainerVersionUuid = db.noTx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+		String projectUuid = db().noTx(() -> project().getUuid());
+		String releaseUuid = db().noTx(() -> project().getLatestRelease().getUuid());
+		String schemaContainerVersionUuid = db().noTx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
-		searchProvider.clear();
+		searchProvider().clear();
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParameters().setLanguages("de")));
 		assertEquals("de", restNode.getLanguage());
 		// Only the new language container is stored in the index. The existing one does not need to be updated since it does not reference other languages
-		assertThat(dummySearchProvider).hasStore(
+		assertThat(dummySearchProvider()).hasStore(
 				NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, ContainerType.DRAFT),
 				NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(uuid, "de"));
 
-		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 	}
 
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			role().revokePermissions(node, UPDATE_PERM);
 			String uuid = node.getUuid();
@@ -1506,7 +1512,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeUpdateRequest request = new NodeUpdateRequest();
 			request.setLanguage("en");
 
@@ -1519,7 +1525,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateNodeWithExtraField() throws UnknownHostException, InterruptedException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -1542,7 +1548,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateNodeWithMissingRequiredField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -1563,7 +1569,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateNodeWithMissingField() throws UnknownHostException, InterruptedException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -1585,7 +1591,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testUpdateNodeWithExtraField2() throws GenericRestException, Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1611,7 +1617,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testDeleteBaseNode() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 
@@ -1625,20 +1631,20 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content("concorde");
 			String uuid = node.getUuid();
 			call(() -> client().deleteNode(PROJECT_NAME, uuid));
 
 			assertElement(meshRoot().getNodeRoot(), uuid, false);
 			// Delete Events after node delete. We expect 4 since both languages have draft and publish version.
-			assertThat(dummySearchProvider).hasEvents(0, 4, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(0, 4, 0, 0);
 		}
 	}
 
 	@Test
 	public void testDeleteForRelease() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// 1. get the node
 			Node node = content("concorde");
 			String uuid = node.getUuid();
@@ -1649,7 +1655,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 3. migrate nodes
-			meshDagger.nodeMigrationHandler().migrateNodes(newRelease).await();
+			meshDagger().nodeMigrationHandler().migrateNodes(newRelease).await();
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(initialRelease.getUuid())));
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(newRelease.getUuid())));
 
@@ -1666,7 +1672,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testDeletePublishedForRelease() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// 1. get the node
 			Node node = content("concorde");
 			String uuid = node.getUuid();
@@ -1681,7 +1687,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 4. migrate nodes
-			meshDagger.nodeMigrationHandler().migrateNodes(newRelease).await();
+			meshDagger().nodeMigrationHandler().migrateNodes(newRelease).await();
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(initialRelease.getUuid())));
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft().setRelease(newRelease.getUuid())));
 
@@ -1702,7 +1708,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			role().revokePermissions(node, DELETE_PERM);
@@ -1717,7 +1723,7 @@ public class NodeEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testConflictByUpdateAdditionalLanguage() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 

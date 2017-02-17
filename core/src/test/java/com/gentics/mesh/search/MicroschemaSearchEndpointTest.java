@@ -4,9 +4,12 @@ import org.codehaus.jettison.json.JSONException;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 
-public class MicroschemaSearchEndpointTest extends AbstractSearchEndpointTest implements BasicSearchCrudTestcases {
+@MeshTestSetting(useElasticsearch = true, useTinyDataset = false, startServer = true)
+public class MicroschemaSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test
 	@Override

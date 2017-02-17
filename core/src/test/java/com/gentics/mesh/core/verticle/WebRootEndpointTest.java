@@ -45,14 +45,16 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.URIUtils;
 
-public class WebRootEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = content("news_2015");
 
 			// 1. Transform the node into a binary content
@@ -80,7 +82,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadFolderByPath() throws Exception {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node folder = folder("2015");
 			String path = "/News/2015";
 
@@ -91,7 +93,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadFolderByPathAndResolveLinks() {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node content = content("news_2015");
 
 			content.getLatestDraftFieldContainer(english()).getHtml("content")
@@ -115,7 +117,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 		WebRootResponse restNode = call(
 				() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = content("news_2015");
 			assertThat(restNode.getNodeResponse()).is(node).hasLanguage("en");
 		}
@@ -124,7 +126,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testReadContentWithNodeRefByPath() throws Exception {
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node parentNode = folder("2015");
 			// Update content schema and add node field
 			SchemaContainer folderSchema = schemaContainer("folder");
@@ -192,8 +194,8 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	public void testPathWithPlus() throws Exception {
 		//Test RFC3986 subdelims and an additional space and questionmark
 		String newName = "20!$&'()*+,;=%3F? 15";
-		String uuid = db.noTx(() -> folder("2015").getUuid());
-		try (NoTx noTx = db.noTx()) {
+		String uuid = db().noTx(() -> folder("2015").getUuid());
+		try (NoTx noTx = db().noTx()) {
 			Node folder = folder("2015");
 			folder.getGraphFieldContainer("en").getString("name").setString(newName);
 		}
@@ -224,7 +226,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	public void testReadProjectBaseNode() {
 		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, "/", new VersioningParameters().draft()));
 		assertFalse(response.isDownload());
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 		}
 	}
@@ -233,7 +235,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	public void testReadDoubleSlashes() {
 		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, "//", new VersioningParameters().draft()));
 		assertFalse(response.isDownload());
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 		}
 	}
@@ -260,7 +262,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	public void testReadFolderByPathWithoutPerm() throws Exception {
 		String englishPath = "/News/2015";
 		String uuid;
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node newsFolder = folder("2015");
 			uuid = newsFolder.getUuid();
 			role().revokePermissions(newsFolder, READ_PERM);
@@ -295,7 +297,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	public void testRead404Node() {
 		String notFoundPath = "/error/404";
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			NodeCreateRequest createErrorFolder = new NodeCreateRequest();
 			createErrorFolder.setSchema(new SchemaReference().setName("folder"));
 			createErrorFolder.setParentNodeUuid(project().getBaseNode().getUuid());
@@ -323,23 +325,23 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 	public void testReadPublished() {
 		String path = "/News/2015";
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
 		}
 		// 1. Assert that published path cannot be found
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().published()), NOT_FOUND, "node_not_found_for_path", path);
 		}
 
 		// 2. Publish nodes
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SearchQueueBatch batch = createBatch();
 			folder("news").publish(getMockedInternalActionContext(user()), batch).await();
 			folder("2015").publish(getMockedInternalActionContext(user()), batch).await();
 		}
 
 		// 3. Assert that published path can be found
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new NodeParameters()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("2.0").hasLanguage("en");
 		}
@@ -351,7 +353,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 		String draftPath = "/News_draft/2015_draft";
 
 		// 1. Publish nodes
-		db.noTx(() -> {
+		db().noTx(() -> {
 			SearchQueueBatch batch = createBatch();
 			folder("news").publish(getMockedInternalActionContext(), batch).await();
 			folder("2015").publish(getMockedInternalActionContext(), batch).await();
@@ -359,35 +361,35 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 		});
 
 		// 2. Change names
-		db.noTx(() -> {
+		db().noTx(() -> {
 			updateName(folder("news"), "en", "News_draft");
 			updateName(folder("2015"), "en", "2015_draft");
 			return null;
 		});
 
 		// 3. Assert published path in published
-		db.noTx(() -> {
+		db().noTx(() -> {
 			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParameters().published()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 			return null;
 		});
 
 		// 4. Assert published path in draft
-		db.noTx(() -> {
+		db().noTx(() -> {
 			call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParameters().draft()), NOT_FOUND, "node_not_found_for_path",
 					publishedPath);
 			return null;
 		});
 
 		// 5. Assert draft path in draft
-		db.noTx(() -> {
+		db().noTx(() -> {
 			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParameters().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.1").hasLanguage("en");
 			return null;
 		});
 
 		// 6. Assert draft path in published
-		db.noTx(() -> {
+		db().noTx(() -> {
 			call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParameters().published()), NOT_FOUND, "node_not_found_for_path",
 					draftPath);
 			return null;
@@ -401,28 +403,28 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 		String newPath = "/News_new/2015_new";
 
 		// 1. create new release and migrate node
-		db.noTx(() -> {
+		db().noTx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
-			meshDagger.nodeMigrationHandler().migrateNodes(newRelease).await();
+			meshDagger().nodeMigrationHandler().migrateNodes(newRelease).await();
 			return null;
 		});
 
 		// 2. update nodes in new release
-		db.noTx(() -> {
+		db().noTx(() -> {
 			updateName(folder("news"), "en", "News_new");
 			updateName(folder("2015"), "en", "2015_new");
 			return null;
 		});
 
 		// 3. Assert new names in new release
-		db.noTx(() -> {
+		db().noTx(() -> {
 			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, newPath, new VersioningParameters().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.1").hasLanguage("en");
 			return null;
 		});
 
 		// 4. Assert new names in initial release
-		db.noTx(() -> {
+		db().noTx(() -> {
 			call(() -> client().webroot(PROJECT_NAME, newPath,
 					new VersioningParameters().draft().setRelease(project().getInitialRelease().getUuid())), NOT_FOUND, "node_not_found_for_path",
 					newPath);
@@ -430,7 +432,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 		});
 
 		// 5. Assert old names in initial release
-		db.noTx(() -> {
+		db().noTx(() -> {
 			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, initialPath,
 					new VersioningParameters().draft().setRelease(project().getInitialRelease().getUuid())));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
@@ -438,7 +440,7 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 		});
 
 		// 6. Assert old names in new release
-		db.noTx(() -> {
+		db().noTx(() -> {
 			call(() -> client().webroot(PROJECT_NAME, initialPath, new VersioningParameters().draft()), NOT_FOUND, "node_not_found_for_path",
 					initialPath);
 			return null;

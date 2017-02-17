@@ -29,14 +29,16 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.TestUtils;
 
-public class MicroschemaChangesEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveField() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// 1. Setup eventbus bridge latch
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
@@ -102,7 +104,7 @@ public class MicroschemaChangesEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddField() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// 1. Setup changes
 			MicroschemaContainer container = microschemaContainer("vcard");
 			MicroschemaContainerVersion currentVersion = container.getLatestVersion();
@@ -131,7 +133,7 @@ public class MicroschemaChangesEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testUpdateName() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String name = "new-name";
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			MicroschemaContainerVersion currentVersion = vcardContainer.getLatestVersion();
@@ -160,7 +162,7 @@ public class MicroschemaChangesEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testUpdateWithConflictingName() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String name = "captionedImage";
 			String originalSchemaName = "vcard";
 			MicroschemaContainer microschema = microschemaContainers().get(originalSchemaName);

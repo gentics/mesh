@@ -8,6 +8,10 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
+import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateSet;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -27,18 +31,18 @@ import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
+import org.junit.Ignore;
+import org.junit.Test;
+
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -50,14 +54,17 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.definition.BasicRestTestcases;
 
-public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
 	@Override
 	public void testReadByUUID() throws UnknownHostException, InterruptedException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			assertNotNull(tagFamily);
 
@@ -74,7 +81,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			String uuid = tagFamily.getUuid();
 
@@ -89,7 +96,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Role role = role();
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			String uuid = tagFamily.getUuid();
@@ -104,7 +111,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadMultiple2() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			String uuid = tagFamily.getUuid();
 			MeshResponse<TagListResponse> future = client().findTags(PROJECT_NAME, uuid).invoke();
@@ -116,7 +123,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws UnknownHostException, InterruptedException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily noPermTagFamily = project().getTagFamilyRoot().create("noPermTagFamily", user());
 			String noPermTagUUID = noPermTagFamily.getUuid();
@@ -132,11 +139,11 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 			TagFamilyListResponse restResponse = future.result();
 			assertEquals(25, restResponse.getMetainfo().getPerPage());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-			assertEquals("The response did not contain the correct amount of items", tagFamilies().size(), restResponse.getData().size());
+			assertEquals("The response did not contain the correct amount of items", data().getTagFamilies().size(), restResponse.getData().size());
 
 			int perPage = 4;
 			// Extra Tags + permitted tag
-			int totalTagFamilies = tagFamilies().size();
+			int totalTagFamilies = data().getTagFamilies().size();
 			int totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
 			List<TagFamilyResponse> allTagFamilies = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
@@ -222,8 +229,8 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testCreateWithNoPerm() {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("newTagFamily");
-		String tagFamilyRootUuid = db.noTx(() -> project().getTagFamilyRoot().getUuid());
-		try (NoTx noTx = db.noTx()) {
+		String tagFamilyRootUuid = db().noTx(() -> project().getTagFamilyRoot().getUuid());
+		try (NoTx noTx = db().noTx()) {
 			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
 		}
 		call(() -> client().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", tagFamilyRootUuid);
@@ -250,7 +257,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateWithoutPerm() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName("SuperDoll");
@@ -273,7 +280,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily basicTagFamily = tagFamily("basic");
 			String uuid = basicTagFamily.getUuid();
 			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid));
@@ -286,7 +293,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily basicTagFamily = tagFamily("basic");
 			Role role = role();
 			role.revokePermissions(basicTagFamily, DELETE_PERM);
@@ -302,7 +309,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testUpdateWithConflictingName() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String newName = "colors";
 			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 			request.setName(newName);
@@ -316,7 +323,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testUpdate() throws UnknownHostException, InterruptedException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			String uuid = tagFamily.getUuid();
 			String name = tagFamily.getName();
@@ -357,7 +364,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testUpdateNodeIndex() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release release = project.getReleaseRoot().getLatestRelease();
 			TagFamily tagfamily = tagFamily("basic");
@@ -374,21 +381,22 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 				for (Node node : tag.getNodes(release)) {
 					if (!taggedNodes.contains(node.getUuid())) {
 						taggedNodes.add(node.getUuid());
-						for (ContainerType containerType : new ContainerType[]{ContainerType.DRAFT, ContainerType.PUBLISHED}) {
-							for (NodeGraphFieldContainer fieldContainer: node.getGraphFieldContainers(release, containerType)) {
+						for (ContainerType containerType : new ContainerType[] { ContainerType.DRAFT, ContainerType.PUBLISHED }) {
+							for (NodeGraphFieldContainer fieldContainer : node.getGraphFieldContainers(release, containerType)) {
 								SchemaContainerVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
-								assertThat(dummySearchProvider).hasStore(
-									NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), schema.getUuid(), containerType),
-									NodeGraphFieldContainer.composeIndexType(),
-									NodeGraphFieldContainer.composeDocumentId(node.getUuid(), fieldContainer.getLanguage().getLanguageTag()));
+								assertThat(dummySearchProvider()).hasStore(
+										NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), schema.getUuid(),
+												containerType),
+										NodeGraphFieldContainer.composeIndexType(),
+										NodeGraphFieldContainer.composeDocumentId(node.getUuid(), fieldContainer.getLanguage().getLanguageTag()));
 							}
 						}
 					}
 				}
 			}
 
-			assertThat(dummySearchProvider).hasEvents(storeCount + 1, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(storeCount + 1, 0, 0, 0);
 		}
 	}
 
@@ -406,7 +414,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			String uuid = tagFamily.getUuid();
 			String name = tagFamily.getName();
@@ -432,7 +440,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName("New Name");
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
@@ -447,7 +455,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Ignore("Not yet supported")
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String uuid = tagFamily("colors").getUuid();
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<?>> set = new HashSet<>();
@@ -463,7 +471,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Ignore("Not yet supported")
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String uuid = project().getUuid();
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<Void>> set = new HashSet<>();
@@ -493,7 +501,7 @@ public class TagFamilyEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			int nJobs = 200;
 			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {

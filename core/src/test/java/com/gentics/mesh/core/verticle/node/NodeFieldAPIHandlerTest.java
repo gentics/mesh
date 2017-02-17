@@ -18,13 +18,15 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.FileUpload;
 import rx.exceptions.CompositeException;
 
-public class NodeFieldAPIHandlerTest extends AbstractDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 
 	private BinaryFieldHandler handler;
 
@@ -37,7 +39,7 @@ public class NodeFieldAPIHandlerTest extends AbstractDBTest {
 	@Before
 	public void setup() throws Exception {
 		uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-		handler = meshDagger.nodeFieldAPIHandler();
+		handler = meshDagger().nodeFieldAPIHandler();
 	}
 
 	@Test

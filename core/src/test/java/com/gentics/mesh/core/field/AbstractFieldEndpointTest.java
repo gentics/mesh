@@ -17,11 +17,11 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-public abstract class AbstractFieldEndpointTest extends AbstractRestEndpointTest implements FieldEndpointTestcases {
+public abstract class AbstractFieldEndpointTest extends AbstractMeshTest implements FieldEndpointTestcases {
 
 	protected NodeResponse readNode(Node node, String... expandedFieldNames) {
 		NodeParameters parameters = new NodeParameters();

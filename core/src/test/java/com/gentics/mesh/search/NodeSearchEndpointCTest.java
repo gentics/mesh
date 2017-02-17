@@ -31,7 +31,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchNumberRange() throws Exception {
 		int numberValue = 1200;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
 			recreateIndices();
 		}
@@ -45,7 +45,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchNumberRange2() throws Exception {
 		int numberValue = 1200;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
 			content().getLatestDraftFieldContainer(english()).createNumber("speed").setNumber(92.1535f);
 			recreateIndices();
@@ -60,7 +60,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchBinaryField() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node nodeA = content("concorde");
 			Node nodeB = content();
 			Schema schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
@@ -106,7 +106,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchNumberRange3() throws Exception {
 		int numberValue = 1200;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
 			recreateIndices();
 		}
@@ -119,7 +119,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchMicronode() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			addMicronodeField();
 			recreateIndices();
 		}
@@ -130,7 +130,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			for (NodeResponse nodeResponse : response.getData()) {
 				assertNotNull("Returned node must not be null", nodeResponse);
 				assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
@@ -140,7 +140,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchStringFieldRaw() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
@@ -151,14 +151,14 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchStringFieldRawAfterReindex() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
 		// Add the user to the admin group - this way the user is in fact an admin.
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			user().addGroup(groups().get("admin"));
-			searchProvider.refreshIndex();
+			searchProvider().refreshIndex();
 		}
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());
@@ -171,12 +171,12 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentUpdate() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
 		String newString = "ABCDEFGHI";
-		String nodeUuid = db.noTx(() -> content("concorde").getUuid());
+		String nodeUuid = db().noTx(() -> content("concorde").getUuid());
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
 				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft()));
@@ -199,7 +199,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchContentResolveLinksAndLangFallback() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
@@ -216,7 +216,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchContentResolveLinks() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 

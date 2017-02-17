@@ -28,22 +28,25 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.ext.web.RoutingContext;
 
-public class ProjectTest extends AbstractBasicIsolatedObjectTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
+public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			ProjectReference reference = project().transformToReference();
 			assertNotNull(reference);
 			assertEquals(project().getUuid(), reference.getUuid());
@@ -54,7 +57,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			Project project = projectRoot.create("test", user(), schemaContainer("folder").getLatestVersion());
 			Project project2 = projectRoot.findByName(project.getName());
@@ -68,11 +71,11 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Override
 	public void testDelete() throws Exception {
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String uuid = project().getUuid();
 
 			Map<String, ElementEntry> batchEnttries = new HashMap<>();
-			
+
 			// The project
 			batchEnttries.put("project", new ElementEntry(DELETE_ACTION, uuid));
 
@@ -108,7 +111,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			int nProjectsBefore = projectRoot.findAll().size();
 			assertNotNull(projectRoot.create("test1234556", user(), schemaContainer("folder").getLatestVersion()));
@@ -120,7 +123,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Page<? extends Project> page = meshRoot().getProjectRoot().findAll(getMockedInternalActionContext(user()),
 					new PagingParametersImpl(1, 25));
 			assertNotNull(page);
@@ -130,7 +133,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAll() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			List<? extends Project> projects = meshRoot().getProjectRoot().findAll();
 			assertNotNull(projects);
 			assertEquals(1, projects.size());
@@ -140,7 +143,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			assertNull(meshRoot().getProjectRoot().findByName("bogus"));
 			assertNotNull(meshRoot().getProjectRoot().findByName("dummy"));
 		}
@@ -149,7 +152,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = meshRoot().getProjectRoot().findByUuid(project().getUuid());
 			assertNotNull(project);
 			project = meshRoot().getProjectRoot().findByUuid("bogus");
@@ -160,7 +163,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			RoutingContext rc = getMockedRoutingContext(user());
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -174,7 +177,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			assertNotNull(project);
 			String uuid = project.getUuid();
@@ -191,7 +194,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = getMockedInternalActionContext();
 			Project project = root.getProjectRoot().create("TestProject", user(), schemaContainer("folder").getLatestVersion());
@@ -205,7 +208,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRead() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			assertNotNull(project.getName());
 			assertEquals("dummy", project.getName());
@@ -219,7 +222,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			project.setName("new Name");
 			assertEquals("new Name", project.getName());
@@ -232,7 +235,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project newProject;
 			newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.READ_PERM, newProject);
@@ -242,7 +245,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project newProject;
 			newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.DELETE_PERM, newProject);
@@ -252,7 +255,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.UPDATE_PERM, newProject);
 		}
@@ -261,7 +264,7 @@ public class ProjectTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.CREATE_PERM, newProject);
 		}

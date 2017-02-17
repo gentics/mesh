@@ -183,6 +183,10 @@ public abstract class AbstractDBTest {
 			dummySearchProvider.reset();
 		}
 	}
+	
+	public TestDataProvider data() {
+		return dataProvider;
+	}
 
 	@Before
 	public void addTestData() throws Exception {
@@ -230,6 +234,10 @@ public abstract class AbstractDBTest {
 		Tag tag = dataProvider.getTag(key);
 		tag.reload();
 		return tag;
+	}
+	
+	public Database db() {
+		return meshDagger.database();
 	}
 
 	public TagFamily tagFamily(String key) {

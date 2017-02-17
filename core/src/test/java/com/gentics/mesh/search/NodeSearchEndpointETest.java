@@ -23,14 +23,14 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentDeletion() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"),
 				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft()));
 		assertEquals(1, response.getData().size());
-		deleteNode(PROJECT_NAME, db.noTx(() -> content("concorde").getUuid()));
+		deleteNode(PROJECT_NAME, db().noTx(() -> content("concorde").getUuid()));
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new PagingParametersImpl().setPage(1).setPerPage(2),
 				new VersioningParameters().draft()));
@@ -45,7 +45,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testCustomQuery() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
@@ -58,11 +58,11 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchForChildNodes() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
-		String parentNodeUuid = db.noTx(() -> folder("news").getUuid());
+		String parentNodeUuid = db().noTx(() -> folder("news").getUuid());
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("parentNode.uuid", parentNodeUuid),
 				new VersioningParameters().draft()));
@@ -77,7 +77,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentCreation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
@@ -102,10 +102,10 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 		// create a new folder named "bla"
 		NodeCreateRequest create = new NodeCreateRequest();
-		create.setSchema(new SchemaReference().setName("folder").setUuid(db.noTx(() -> schemaContainer("folder").getUuid())));
+		create.setSchema(new SchemaReference().setName("folder").setUuid(db().noTx(() -> schemaContainer("folder").getUuid())));
 		create.setLanguage("en");
 		create.getFields().put("name", FieldUtil.createStringField("bla"));
-		create.setParentNodeUuid(db.noTx(() -> folder("2015").getUuid()));
+		create.setParentNodeUuid(db().noTx(() -> folder("2015").getUuid()));
 
 		call(() -> client().createNode(PROJECT_NAME, create));
 

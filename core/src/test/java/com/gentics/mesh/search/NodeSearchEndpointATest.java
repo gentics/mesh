@@ -22,7 +22,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testReindexNodeIndex() throws Exception {
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
@@ -32,7 +32,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent)));
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
-		String uuid = db.noTx(() -> content("concorde").getUuid());
+		String uuid = db().noTx(() -> content("concorde").getUuid());
 
 		// publish the Concorde
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
@@ -43,12 +43,12 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
 		// // Add the user to the admin group - this way the user is in fact an admin.
-		try (NoTx noTrx = db.noTx()) {
-			user().addGroup(groups().get("admin"));
+		try (NoTx noTrx = db().noTx()) {
+			user().addGroup(data().getGroups().get("admin"));
 		}
 
 		// Now clear all data
-		searchProvider.clear();
+		searchProvider().clear();
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());
 		expectResponseMessage(message, "search_admin_reindex_invoked");
@@ -60,7 +60,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchPublishedNodes() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
@@ -70,7 +70,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent)));
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
-		String uuid = db.noTx(() -> content("concorde").getUuid());
+		String uuid = db().noTx(() -> content("concorde").getUuid());
 
 		// publish the Concorde
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
@@ -94,7 +94,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
 		// publish content "urschnell"
-		call(() -> client().publishNode(PROJECT_NAME, db.noTx(() -> content("concorde").getUuid())));
+		call(() -> client().publishNode(PROJECT_NAME, db().noTx(() -> content("concorde").getUuid())));
 
 		// "supersonic" no longer found, but "urschnell" found in published nodes
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));

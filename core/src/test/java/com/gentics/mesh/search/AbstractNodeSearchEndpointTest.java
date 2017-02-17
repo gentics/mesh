@@ -31,8 +31,9 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 
-public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpointTest {
+public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 
 	/**
 	 * Do the search with the given set of expected languages and assert correctness of the result.
@@ -42,11 +43,11 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpo
 	 * @throws JSONException
 	 */
 	protected void searchWithLanguages(String... expectedLanguages) throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
-		String uuid = db.noTx(() -> content("concorde").getUuid());
+		String uuid = db().noTx(() -> content("concorde").getUuid());
 
 		NodeListResponse response = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("concorde"), new PagingParametersImpl().setPage(1).setPerPage(100),
@@ -111,7 +112,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpo
 		schema.addField(vcardListFieldSchema);
 
 		// Set the mapping for the schema
-		meshDagger.nodeContainerIndexHandler().updateNodeIndexMapping(schema).await();
+		meshDagger().nodeContainerIndexHandler().updateNodeIndexMapping(schema).await();
 
 		MicronodeGraphFieldList vcardListField = node.getLatestDraftFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
@@ -140,7 +141,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractSearchEndpo
 		schema.addField(nodeListFieldSchema);
 
 		// Set the mapping for the schema
-		meshDagger.nodeContainerIndexHandler().updateNodeIndexMapping(schema).await();
+		meshDagger().nodeContainerIndexHandler().updateNodeIndexMapping(schema).await();
 
 		// create a non-empty list for the english version
 		NodeGraphFieldList nodeListField = node.getLatestDraftFieldContainer(english()).createNodeList("nodelist");

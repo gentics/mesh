@@ -64,15 +64,19 @@ public class MeshTestContext extends TestWatcher {
 	protected void starting(Description description) {
 		try {
 			MeshTestSetting settings = getSettings(description);
-			removeDataDirectory();
-			init(settings.useElasticsearch());
-			initDagger(settings.useTinyDataset());
-			setupData();
-			if (settings.useElasticsearch()) {
-				setupIndexHandlers();
-			}
-			if (settings.startServer()) {
-				setupRestEndpoints();
+			// Setup the dagger context and orientdb,es once
+			if (description.isSuite()) {
+				removeDataDirectory();
+				init(settings.useElasticsearch());
+				initDagger(settings.useTinyDataset());
+			} else {
+				setupData();
+				if (settings.useElasticsearch()) {
+					setupIndexHandlers();
+				}
+				if (settings.startServer()) {
+					setupRestEndpoints();
+				}
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -83,18 +87,21 @@ public class MeshTestContext extends TestWatcher {
 	protected void finished(Description description) {
 		try {
 			MeshTestSetting settings = getSettings(description);
-			cleanupFolders();
-			if (settings.startServer()) {
-				undeployAndReset();
-				closeClient();
-			}
-			if (settings.useElasticsearch()) {
-				meshDagger.searchProvider().clear();
+			if (description.isSuite()) {
 				removeDataDirectory();
 			} else {
-				meshDagger.dummySearchProvider().clear();
+				cleanupFolders();
+				if (settings.startServer()) {
+					undeployAndReset();
+					closeClient();
+				}
+				if (settings.useElasticsearch()) {
+					meshDagger.searchProvider().clear();
+				} else {
+					meshDagger.dummySearchProvider().clear();
+				}
+				resetDatabase();
 			}
-			resetDatabase();
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -173,6 +180,10 @@ public class MeshTestContext extends TestWatcher {
 
 	public int getPort() {
 		return port;
+	}
+
+	public Vertx getVertx() {
+		return vertx;
 	}
 
 	/**

@@ -14,8 +14,10 @@ import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class NodeEndpointFieldAPIeTagTest extends AbstractETagTest {
 
 	@Test
@@ -26,7 +28,7 @@ public class NodeEndpointFieldAPIeTagTest extends AbstractETagTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 

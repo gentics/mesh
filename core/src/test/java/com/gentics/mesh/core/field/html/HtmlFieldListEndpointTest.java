@@ -23,7 +23,9 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Override
@@ -34,7 +36,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -49,7 +51,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -61,7 +63,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -73,7 +75,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			assertThat(response.getFields().getHtmlFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
 		}
@@ -82,7 +84,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -99,7 +101,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// 1. Update an existing node
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
@@ -117,7 +119,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testHtmlList() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -132,7 +134,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 
 			List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
@@ -173,7 +175,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			HtmlFieldListImpl list = new HtmlFieldListImpl();
 			list.add("A");
 			list.add("B");
@@ -201,7 +203,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			HtmlFieldListImpl list = new HtmlFieldListImpl();
 			list.add("A");
 			list.add("B");

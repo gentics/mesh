@@ -19,16 +19,18 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class NavRootEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NavRootEndpointTest extends AbstractMeshTest {
 
 	/**
 	 * Test reading a navigation concurrently.
 	 */
 	@Test
 	public void testReadMultithreaded() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			int nJobs = 200;
 			String path = "/";
 
@@ -50,7 +52,7 @@ public class NavRootEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadNavWithValidPath() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String path = "/News/2015";
 			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10)).invoke();
 			latchFor(future);
@@ -64,7 +66,7 @@ public class NavRootEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadNavWithValidPath2() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String path = "/News/2015/";
 			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10)).invoke();
 			latchFor(future);
@@ -78,7 +80,7 @@ public class NavRootEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadNavForBasenode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 
 			// for (NodeGraphFieldContainer container : project().getBaseNode().getGraphFieldContainers()) {
 			// System.out.println(container.isPublished(project().getLatestRelease().getUuid()));
@@ -98,7 +100,7 @@ public class NavRootEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadNavWithInvalidPath() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String path = "/blub";
 			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path).invoke();
 			latchFor(future);
@@ -111,7 +113,7 @@ public class NavRootEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadNavWithPathToContent() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String path = "/News/2015/News_2015.en.html";
 			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NodeParameters().setLanguages("en", "de")).invoke();
 			latchFor(future);

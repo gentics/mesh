@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -25,13 +26,15 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class WebRootEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testResizeImage() throws IOException {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			String path = "/News/2015/blume.jpg";
 			Node node = content("news_2015");
 
@@ -54,8 +57,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 			expect304(client().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft")), etag, false);
 
 			params.setHeight(103);
-			String newETag = expectNo304(client().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft")), etag,
-					false);
+			String newETag = expectNo304(client().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft")), etag, false);
 			expect304(client().webroot(PROJECT_NAME, path, params, new VersioningParameters().setVersion("draft")), newETag, false);
 
 		}
@@ -63,7 +65,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = content("news_2015");
 
 			// 1. Transform the node into a binary content
@@ -76,7 +78,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 			String fileName = "somefile.dat";
 
 			// 2. Update the binary data
-			call(()-> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
+			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";
@@ -98,7 +100,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadOne() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String path = "/News/2015/News_2015.en.html";
 			Node node = content("news_2015");
 

@@ -6,17 +6,21 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -51,16 +55,22 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.test.core.TestUtils;
 
 public interface TestHelperMethods {
@@ -86,6 +96,47 @@ public interface TestHelperMethods {
 	TagFamily tagFamily(String key);
 
 	SchemaContainer schemaContainer(String key);
+
+	Database db();
+
+	TestDataProvider data();
+
+	default public Language english() {
+		Language language = data().getEnglish();
+		language.reload();
+		return language;
+	}
+
+	default public Language german() {
+		Language language = data().getGerman();
+		language.reload();
+		return language;
+	}
+
+	default public Map<String, Group> groups() {
+		return data().getGroups();
+	}
+
+	default public Map<String, MicroschemaContainer> microschemaContainers() {
+		return data().getMicroschemaContainers();
+	}
+
+	default public MicroschemaContainer microschemaContainer(String key) {
+		MicroschemaContainer container = data().getMicroschemaContainers().get(key);
+		container.reload();
+		return container;
+	}
+
+	/**
+	 * Returns the news overview node which has no tags.
+	 * 
+	 * @return
+	 */
+	default public Node content() {
+		Node content = data().getContent("news overview");
+		content.reload();
+		return content;
+	}
 
 	default public UserResponse readUser(String uuid) {
 		return call(() -> client().findUserByUuid(uuid));
@@ -349,4 +400,24 @@ public interface TestHelperMethods {
 		return call(() -> client().createUser(request));
 	}
 
+	default MeshComponent meshDagger() {
+		return MeshInternal.get();
+	}
+
+	default SearchProvider searchProvider() {
+		return meshDagger().searchProvider();
+	}
+
+	default public int getNodeCount() {
+		return data().getNodeCount();
+	}
+	
+
+	default public HttpClient createHttpClient() {
+		HttpClientOptions options = new HttpClientOptions();
+		options.setDefaultHost("localhost");
+		options.setDefaultPort(port());
+		HttpClient client = Mesh.vertx().createHttpClient(options);
+		return client;
+	}
 }

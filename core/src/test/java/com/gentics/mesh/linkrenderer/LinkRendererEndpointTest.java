@@ -4,13 +4,15 @@ import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
+
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonObject;
@@ -18,14 +20,15 @@ import io.vertx.core.json.JsonObject;
 /**
  * Test cases for link rendering using the Utility Verticle
  */
-public class LinkRendererEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class LinkRendererEndpointTest extends AbstractMeshTest {
 
 	/**
 	 * Test rendering valid link with link type "OFF" (expects no link rendering)
 	 */
 	@Test
 	public void testLinkReplacerTypeOff() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node newsNode = content("news overview");
 			testSimpleLink(newsNode, LinkType.OFF, "{{mesh.link('" + newsNode.getUuid() + "')}}");
 		}
@@ -36,7 +39,7 @@ public class LinkRendererEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testLinkReplacerTypeShort() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node newsNode = content("news overview");
 			testSimpleLink(newsNode, LinkType.SHORT, "/News/News%20Overview.en.html");
 		}
@@ -47,7 +50,7 @@ public class LinkRendererEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testLinkReplacerTypeMedium() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node newsNode = content("news overview");
 			testSimpleLink(newsNode, LinkType.MEDIUM, "/dummy/News/News%20Overview.en.html");
 		}
@@ -58,7 +61,7 @@ public class LinkRendererEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testLinkReplacerTypeFull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node newsNode = content("news overview");
 			testSimpleLink(newsNode, LinkType.FULL, "/api/v1/dummy/webroot/News/News%20Overview.en.html");
 		}
@@ -69,7 +72,7 @@ public class LinkRendererEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testLinkInJson() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node newsNode = content("news overview");
 
 			JsonObject jsonObject = new JsonObject().put("quotes", "prefix {{mesh.link('" + newsNode.getUuid() + "')}} postfix")
@@ -93,7 +96,7 @@ public class LinkRendererEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testInvalidLink() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			testRenderContent("{{mesh.link('" + UUIDUtil.randomUUID() + "')}}", LinkType.FULL, "/api/v1/project/webroot/error/404");
 		}
 	}
@@ -109,7 +112,7 @@ public class LinkRendererEndpointTest extends AbstractRestEndpointTest {
 	 *            expected result
 	 */
 	private void testSimpleLink(Node node, LinkType linkType, String expectedResult) {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			testRenderContent("{{mesh.link('" + node.getUuid() + "')}}", linkType, expectedResult);
 		}
 	}

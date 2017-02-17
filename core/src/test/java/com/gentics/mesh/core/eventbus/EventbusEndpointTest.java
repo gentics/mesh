@@ -9,11 +9,13 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 
-public class EventbusEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class EventbusEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testExternalEventbusMessage() throws Exception {

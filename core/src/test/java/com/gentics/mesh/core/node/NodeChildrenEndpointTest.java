@@ -30,13 +30,15 @@ import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadChildrenOfBaseNode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MeshResponse<NodeListResponse> future = client().findNodeChildren(PROJECT_NAME, project().getBaseNode().getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
@@ -45,7 +47,7 @@ public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testNodeHierarchy() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node baseNode = project().getBaseNode();
 			String parentNodeUuid = baseNode.getUuid();
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParameters().draft()));
@@ -79,7 +81,7 @@ public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -98,7 +100,7 @@ public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildrenPermissions() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -120,7 +122,7 @@ public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren2() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content("concorde");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -134,7 +136,7 @@ public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadNodeChildren() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -151,7 +153,7 @@ public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadNodeChildrenWithoutChildPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -169,7 +171,7 @@ public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadNodeChildrenWithNoPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -185,7 +187,7 @@ public class NodeChildrenEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadReleaseChildren() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			Node firstChild = node.getChildren().get(0);
 			int childrenSize = node.getChildren().size();

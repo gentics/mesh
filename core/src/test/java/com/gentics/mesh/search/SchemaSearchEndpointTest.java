@@ -20,34 +20,37 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.MeshAssert;
 
 import io.vertx.core.DeploymentOptions;
 
-public class SchemaSearchEndpointTest extends AbstractSearchEndpointTest implements BasicSearchCrudTestcases {
+@MeshTestSetting(useElasticsearch = true, useTinyDataset = false, startServer = true)
+public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Before
 	public void setupWorkerVerticle() throws Exception {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
-		vertx.deployVerticle(meshDagger.nodeMigrationVerticle(), options);
+		vertx().deployVerticle(meshDagger().nodeMigrationVerticle(), options);
 	}
 
 	@After
 	public void setopWorkerVerticle() throws Exception {
-		meshDagger.nodeMigrationVerticle().stop();
+		meshDagger().nodeMigrationVerticle().stop();
 	}
 
 	@Test
 	public void testSearchSchema() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
-		MeshResponse<SchemaListResponse> future = client().searchSchemas(getSimpleQuery("folder"), new PagingParametersImpl().setPage(1).setPerPage(2))
-				.invoke();
+		MeshResponse<SchemaListResponse> future = client()
+				.searchSchemas(getSimpleQuery("folder"), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaListResponse response = future.result();
@@ -71,8 +74,8 @@ public class SchemaSearchEndpointTest extends AbstractSearchEndpointTest impleme
 	public void testDocumentCreation() throws Exception {
 		final String newName = "newschema";
 		SchemaResponse schema = createSchema(newName);
-		try (NoTx noTx = db.noTx()) {
-			MeshAssert.assertElement(boot.schemaContainerRoot(), schema.getUuid(), true);
+		try (NoTx noTx = db().noTx()) {
+			MeshAssert.assertElement(boot().schemaContainerRoot(), schema.getUuid(), true);
 		}
 		MeshResponse<SchemaListResponse> future = client()
 				.searchSchemas(getSimpleTermQuery("name", newName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();

@@ -7,10 +7,12 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
-public class GroupEndpointPerformanceTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class GroupEndpointPerformanceTest extends AbstractMeshTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
@@ -26,7 +28,7 @@ public class GroupEndpointPerformanceTest extends AbstractRestEndpointTest {
 	public void testPerformance() {
 		addGroups();
 
-		String uuid = db.noTx(() -> group().getUuid());
+		String uuid = db().noTx(() -> group().getUuid());
 
 		loggingStopWatch(logger, "group.read-page-100", 200, (step) -> {
 			call(() -> client().findGroups(new PagingParametersImpl().setPerPage(100)));

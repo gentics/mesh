@@ -11,10 +11,12 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
-public class UserEndpointPerformanceTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class UserEndpointPerformanceTest extends AbstractMeshTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
@@ -30,7 +32,7 @@ public class UserEndpointPerformanceTest extends AbstractRestEndpointTest {
 	@Test
 	public void testPermissionPerformance() {
 		loggingStopWatch(logger, "user.hasPermission", 100000, (step) -> {
-			try (NoTx noTx = db.noTx()) {
+			try (NoTx noTx = db().noTx()) {
 				user().hasPermission(content(), GraphPermission.READ_PERM);
 			}
 		});
@@ -38,10 +40,10 @@ public class UserEndpointPerformanceTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testPermissionInfoPerformance() {
-		User user = db.noTx(() -> user());
-		Node content = db.noTx(() -> content());
+		User user = db().noTx(() -> user());
+		Node content = db().noTx(() -> content());
 		loggingStopWatch(logger, "user.getPermissionInfo", 70000, (step) -> {
-			try (NoTx noTx = db.noTx()) {
+			try (NoTx noTx = db().noTx()) {
 				user.getPermissionInfo(content);
 			}
 		});
@@ -52,7 +54,7 @@ public class UserEndpointPerformanceTest extends AbstractRestEndpointTest {
 	public void testPerformance() {
 		addUsers();
 
-		String uuid = db.noTx(() -> user().getUuid());
+		String uuid = db().noTx(() -> user().getUuid());
 
 		loggingStopWatch(logger, "user.read-page-100", 200, (step) -> {
 			call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100)));

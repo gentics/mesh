@@ -4,10 +4,14 @@ import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Map;
+
+import org.junit.ClassRule;
 import org.junit.Rule;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -20,6 +24,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -28,28 +33,14 @@ import com.gentics.mesh.search.DummySearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.test.TestDataProvider;
 
+import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
 
 public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	@Rule
-	public MeshTestContext testContext = new MeshTestContext();
-
-	protected Database db() {
-		return MeshInternal.get().database();
-	}
-
-	protected BootstrapInitializer boot() {
-		return MeshInternal.get().boot();
-	}
-
-	protected TestDataProvider data() {
-		return testContext.getData();
-	}
-
-	public Role role() {
-		return data().role();
-	}
+	@ClassRule
+	public static MeshTestContext testContext = new MeshTestContext();
 
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
 		RoutingContext rc = getMockedRoutingContext();
@@ -81,6 +72,23 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 			assertFalse("The user {" + getRequestUser().getUsername() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {"
 					+ element.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
 		}
+	}
+
+	@Override
+	public Database db() {
+		return MeshInternal.get().database();
+	}
+
+	protected BootstrapInitializer boot() {
+		return MeshInternal.get().boot();
+	}
+
+	public TestDataProvider data() {
+		return testContext.getData();
+	}
+
+	public Role role() {
+		return data().role();
 	}
 
 	public User getRequestUser() {
@@ -142,6 +150,16 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	}
 
 	@Override
+	public Language english() {
+		return data().getEnglish();
+	}
+
+	@Override
+	public Language german() {
+		return data().getGerman();
+	}
+
+	@Override
 	public SchemaContainer schemaContainer(String key) {
 		SchemaContainer container = data().getSchemaContainer(key);
 		container.reload();
@@ -164,6 +182,18 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 		for (IndexHandler handler : registry.getHandlers()) {
 			handler.reindexAll().await();
 		}
+	}
+
+	public Vertx vertx() {
+		return testContext.getVertx();
+	}
+
+	public SearchQueueBatch createBatch() {
+		return MeshInternal.get().searchQueue().create();
+	}
+
+	public Map<String, User> users() {
+		return data().getUsers();
 	}
 
 }

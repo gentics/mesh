@@ -34,9 +34,11 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class NodePublishEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	/**
 	 * Folder /news/2015 is not published. A new node will be created in folder 2015. Publishing the created folder should fail since the parent folder
@@ -48,7 +50,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 		// 1. Take the parent folder offline
 		String parentFolderUuid;
 		String subFolderUuid;
-		try (NoTx notrx = db.noTx()) {
+		try (NoTx notrx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext("recursive=true", user());
 			Node subFolder = folder("2015");
 			Node parentFolder = folder("news");
@@ -72,9 +74,9 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 		NodeResponse nodeA = call(() -> client().createNode(PROJECT_NAME, requestA));
 
 		// 3. Publish the created node - It should fail since the parentfolder is not published
-		dummySearchProvider.clear();
+		dummySearchProvider().clear();
 		call(() -> client().publishNode(PROJECT_NAME, nodeA.getUuid()), BAD_REQUEST, "node_error_parent_containers_not_published", subFolderUuid);
-		assertThat(dummySearchProvider).hasEvents(0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
 
 		// 4. Publish the parent folder
 		call(() -> client().publishNode(PROJECT_NAME, subFolderUuid));
@@ -86,7 +88,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testGetPublishStatusForEmptyLanguage() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("products");
 			call(() -> client().getNodeLanguagePublishStatus(PROJECT_NAME, node.getUuid(), "fr"), NOT_FOUND, "error_language_not_found", "fr");
 		}
@@ -94,28 +96,28 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testPublishNode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
-			String projectUuid = db.noTx(() -> project().getUuid());
-			String releaseUuid = db.noTx(() -> project().getLatestRelease().getUuid());
-			String schemaContainerVersionUuid = db.noTx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+			String projectUuid = db().noTx(() -> project().getUuid());
+			String releaseUuid = db().noTx(() -> project().getLatestRelease().getUuid());
+			String schemaContainerVersionUuid = db().noTx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
 			PublishStatusResponse statusResponse = call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 			assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "1.0");
 
-			assertThat(dummySearchProvider).hasStore(
+			assertThat(dummySearchProvider()).hasStore(
 					NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, PUBLISHED),
 					NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
-			assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 
 		}
 	}
 
 	@Test
 	public void testGetPublishStatus() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 
@@ -141,7 +143,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testGetPublishStatusForRelease() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -169,7 +171,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testGetPublishStatusNoPermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
@@ -186,7 +188,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testGetPublishStatusForLanguage() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("products");
 
 			// 1. Take everything offline
@@ -205,7 +207,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testPublishNodeWithNoSegmentPathValue() {
-		String uuid = db.noTx(() -> folder("news").getUuid());
+		String uuid = db().noTx(() -> folder("news").getUuid());
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setLanguage("en");
 		request.setParentNodeUuid(uuid);
@@ -218,7 +220,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testPublishNodeForRelease() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			project.getReleaseRoot().create("newrelease", user());
@@ -239,7 +241,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testPublishNodeNoPermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, PUBLISH_PERM);
@@ -256,7 +258,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testRepublishUnchanged() {
-		String nodeUuid = db.noTx(() -> folder("2015").getUuid());
+		String nodeUuid = db().noTx(() -> folder("2015").getUuid());
 		PublishStatusResponse statusResponse = call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "1.0");
 
@@ -270,18 +272,18 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testMoveConsistency() {
 		// 1. Take the target folder offline
-		String newsFolderUuid = db.noTx(() -> folder("news").getUuid());
+		String newsFolderUuid = db().noTx(() -> folder("news").getUuid());
 		call(() -> client().takeNodeOffline(PROJECT_NAME, newsFolderUuid, new PublishParameters().setRecursive(true)));
 
 		// 2. Move the published node into the offline target node
-		String publishedNode = db.noTx(() -> content("concorde").getUuid());
+		String publishedNode = db().noTx(() -> content("concorde").getUuid());
 		call(() -> client().moveNode(PROJECT_NAME, publishedNode, newsFolderUuid), BAD_REQUEST, "node_error_parent_containers_not_published",
 				newsFolderUuid);
 	}
 
 	@Test
 	public void testPublishLanguage() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 
@@ -295,23 +297,24 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 			update.getFields().put("name", FieldUtil.createStringField("changed-de"));
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"), new VersioningParameters().published())).getAvailableLanguages())
-					.containsOnly("en");
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"),
+					new VersioningParameters().published())).getAvailableLanguages()).containsOnly("en");
 
 			// Take english language offline
 			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, node.getUuid(), "en"));
 
 			// The node should not be loadable since both languages are offline
-			call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"), new VersioningParameters().published()), NOT_FOUND,
-					"node_error_published_not_found_for_uuid_release_version", nodeUuid, project().getLatestRelease().getUuid());
+			call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"),
+					new VersioningParameters().published()), NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", nodeUuid,
+					project().getLatestRelease().getUuid());
 
 			// Publish german version
 			PublishStatusModel publishStatus = call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
 			assertThat(publishStatus).as("Publish status").isPublished().hasVersion("1.0");
 
 			// Assert that german is published and english is offline
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"), new VersioningParameters().published())).getAvailableLanguages())
-					.containsOnly("de");
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"),
+					new VersioningParameters().published())).getAvailableLanguages()).containsOnly("de");
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isPublished("de")
 					.hasVersion("de", "1.0").isNotPublished("en").hasVersion("en", "2.0");
 		}
@@ -319,7 +322,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testPublishEmptyLanguage() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found", "de");
@@ -328,7 +331,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testPublishLanguageForRelease() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -363,7 +366,7 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testPublishLanguageNoPermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, PUBLISH_PERM);
@@ -374,21 +377,21 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testPublishInOfflineContainer() {
-		String nodeUuid = db.noTx(() -> folder("2015").getUuid());
+		String nodeUuid = db().noTx(() -> folder("2015").getUuid());
 
 		// 1. Take a node subtree offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
 
 		// 2. Try to publish a node from within that subtree structure
-		String contentUuid = db.noTx(() -> content("news_2015").getUuid());
+		String contentUuid = db().noTx(() -> content("news_2015").getUuid());
 		call(() -> client().publishNode(PROJECT_NAME, contentUuid), BAD_REQUEST, "node_error_parent_containers_not_published", nodeUuid);
 
 	}
 
 	@Test
 	public void testPublishRecursively() {
-		String nodeUuid = db.noTx(() -> project().getBaseNode().getUuid());
-		String contentUuid = db.noTx(() -> content("news_2015").getUuid());
+		String nodeUuid = db().noTx(() -> project().getBaseNode().getUuid());
+		String contentUuid = db().noTx(() -> content("news_2015").getUuid());
 
 		// 1. Check initial status
 		assertPublishStatus("Node should be published.", nodeUuid, true);
@@ -407,8 +410,8 @@ public class NodePublishEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testPublishNoRecursion() {
-		String nodeUuid = db.noTx(() -> project().getBaseNode().getUuid());
-		String contentUuid = db.noTx(() -> content("news_2015").getUuid());
+		String nodeUuid = db().noTx(() -> project().getBaseNode().getUuid());
+		String contentUuid = db().noTx(() -> content("news_2015").getUuid());
 
 		// 1. Check initial status
 		assertPublishStatus("Node should be published.", nodeUuid, true);

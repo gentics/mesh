@@ -62,7 +62,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchMicronodeResolveLinks() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			addMicronodeField();
 			recreateIndices();
 		}
@@ -74,7 +74,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			for (NodeResponse nodeResponse : response.getData()) {
 				assertNotNull("Returned node must not be null", nodeResponse);
 				assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
@@ -84,7 +84,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfMicronodes() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			addMicronodeListField();
 			recreateIndices();
 		}
@@ -102,7 +102,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 					assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 					for (NodeResponse nodeResponse : response.getData()) {
 						assertNotNull("Returned node must not be null", nodeResponse);
-						assertEquals("Check result uuid", db.noTx(() -> content("concorde").getUuid()), nodeResponse.getUuid());
+						assertEquals("Check result uuid", db().noTx(() -> content("concorde").getUuid()), nodeResponse.getUuid());
 					}
 				} else {
 					assertEquals("Check returned search results", 0, response.getData().size());
@@ -114,7 +114,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfNodes() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			addNodeListField();
 			recreateIndices();
 		}
@@ -124,12 +124,12 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchDraftInRelease() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
 		NodeResponse concorde = call(
-				() -> client().findNodeByUuid(PROJECT_NAME, db.noTx(() -> content("concorde").getUuid()), new VersioningParameters().draft()));
+				() -> client().findNodeByUuid(PROJECT_NAME, db().noTx(() -> content("concorde").getUuid()), new VersioningParameters().draft()));
 
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
@@ -141,7 +141,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParameters().draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
-		String releaseName = db.noTx(() -> project().getInitialRelease().getName());
+		String releaseName = db().noTx(() -> project().getInitialRelease().getName());
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
 				new VersioningParameters().setRelease(releaseName).draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);

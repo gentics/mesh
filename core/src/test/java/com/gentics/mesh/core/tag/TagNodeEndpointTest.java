@@ -15,13 +15,15 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class TagNodeEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class TagNodeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodesForTag() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 					new VersioningParameters().draft()));
 			NodeResponse concorde = new NodeResponse();
@@ -32,13 +34,13 @@ public class TagNodeEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadPublishedNodesForTag() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
-			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(), new VersioningParameters().published()));
+			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
+					new VersioningParameters().published()));
 			assertThat(nodeList.getData()).as("Published tagged nodes").isNotNull().isEmpty();
 
-			
 			// publish the node and its parent
 			InternalActionContext ac = getMockedInternalActionContext(user());
 			SearchQueueBatch batch = createBatch();
@@ -54,7 +56,7 @@ public class TagNodeEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadNodesForTagInRelease() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse concorde = new NodeResponse();
 			concorde.setUuid(content("concorde").getUuid());
 

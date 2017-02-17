@@ -31,14 +31,16 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.TestUtils;
 
-public class NodeTagEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodeTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeTags() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -54,21 +56,23 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddTagToNode() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			Tag tag = tag("red");
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 
-			assertThat(dummySearchProvider).recordedStoreEvents(0);
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
-			assertThat(dummySearchProvider)
+			assertThat(dummySearchProvider())
 					.as("Recorded store events after node update occured. Published and draft of the node should have been updated.")
 					.recordedStoreEvents(2);
 			// node-[:nodeUuid]-[draft/published]-[schemaname]-[schemaversion]-[release_uuid]
-			dummySearchProvider.getStoreEvents().containsKey("node-" + node.getUuid() + "-published-folder-1-" + project().getLatestRelease().getUuid());
-			dummySearchProvider.getStoreEvents().containsKey("node-" + node.getUuid() + "-draft-folder-1-" + project().getLatestRelease().getUuid());
+			dummySearchProvider().getStoreEvents()
+					.containsKey("node-" + node.getUuid() + "-published-folder-1-" + project().getLatestRelease().getUuid());
+			dummySearchProvider().getStoreEvents()
+					.containsKey("node-" + node.getUuid() + "-draft-folder-1-" + project().getLatestRelease().getUuid());
 
 			future = client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
 			latchFor(future);
@@ -85,7 +89,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddTagToNoPermNode() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			Tag tag = tag("red");
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
@@ -100,7 +104,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddNoPermTagToNode() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			Tag tag = tag("red");
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
@@ -116,7 +120,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testRemoveTagFromNode() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
@@ -133,7 +137,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testRemoveBogusTagFromNode() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -143,14 +147,14 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testRemoveTagFromNoPermNode() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(node, UPDATE_PERM);
 
-			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()), FORBIDDEN,
-					"error_missing_perm", node.getUuid());
+			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()), FORBIDDEN, "error_missing_perm",
+					node.getUuid());
 
 			assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
 		}
@@ -163,7 +167,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 		// 1. Create release v1
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
 			request.setName(releaseOne);
 			ReleaseResponse releaseResponse = call(() -> client().createRelease(PROJECT_NAME, request));
@@ -172,14 +176,14 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 		failingLatch(latch);
 
 		// 2. Tag a node in release v1 with tag "red"
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			Tag tag = tag("red");
 			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 		}
 
 		// Assert that the node is tagged with red in release one
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
@@ -204,7 +208,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 		// 3. Create release v2
 		latch = TestUtils.latchForMigrationCompleted(client());
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
 			request.setName(releaseTwo);
 			ReleaseResponse releaseResponse = call(() -> client().createRelease(PROJECT_NAME, request));
@@ -213,14 +217,14 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 		failingLatch(latch);
 		// 4. Tag a node in release v2 with tag "blue"
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			Tag tag = tag("blue");
 			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 		}
 
 		// Assert that the node is tagged with both tags in releaseTwo
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
@@ -254,14 +258,14 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 		}
 
 		// 5. Remove the tag "red" in release v1
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			Tag tag = tag("red");
 			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 		}
 
 		// Assert that the node is still tagged with both tags in releaseTwo
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
@@ -295,7 +299,7 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 		}
 
 		// Assert that the node is tagged with no tag in release one
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
@@ -320,13 +324,13 @@ public class NodeTagEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testRemoveNoPermTagFromNode() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(tag, READ_PERM);
-			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()), FORBIDDEN,
-					"error_missing_perm", tag.getUuid());
+			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()), FORBIDDEN, "error_missing_perm",
+					tag.getUuid());
 
 			assertTrue("The tag should not have been removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
 		}

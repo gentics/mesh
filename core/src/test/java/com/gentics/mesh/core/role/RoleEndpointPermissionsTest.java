@@ -21,13 +21,15 @@ import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 	@Test
 	public void testRevokeAllPermissionFromProject() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
@@ -43,7 +45,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddPermissionToProjectTagFamily() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
@@ -63,7 +65,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddPermissionToMicroschema() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
@@ -92,7 +94,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddPermissionsOnGroup() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String pathToElement = "groups";
 
 			RolePermissionRequest request = new RolePermissionRequest();
@@ -111,7 +113,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadPermissionsOnProjectTagFamily() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
@@ -125,7 +127,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddPermissionToNode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			role().revokePermissions(node, GraphPermission.UPDATE_PERM);
 			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, node));
@@ -147,7 +149,7 @@ public class RoleEndpointPermissionsTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddPermissionToNonExistingProject() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.getPermissions().add(READ);
 			String path = "projects/bogus1234/nodes";

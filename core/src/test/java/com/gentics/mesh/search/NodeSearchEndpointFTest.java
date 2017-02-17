@@ -25,7 +25,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchAndSort() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
@@ -62,7 +62,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchContent() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
@@ -85,7 +85,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	 */
 	@Test
 	public void testSearchMissingVertex() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 
 			Node node = content("honda nr");

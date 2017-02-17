@@ -23,11 +23,13 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.test.core.TestUtils;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	private static final String FIELD_NAME = "binaryField";
@@ -43,7 +45,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	}
 
 	private void setSchema(boolean isRequired) {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 
 			// add non restricted string field
@@ -71,9 +73,9 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testVersionConflictUpload() {
 		//1. Upload a binary field
-		String uuid = db.noTx(() -> folder("2015").getUuid());
+		String uuid = db().noTx(() -> folder("2015").getUuid());
 		Buffer buffer = TestUtils.randomBuffer(1000);
-		VersionNumber version = db.noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+		VersionNumber version = db().noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 		NodeResponse responseA = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer,
 				"filename.txt", "application/binary"));
 
@@ -92,11 +94,11 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			//1. Upload a binary field
-			String uuid = db.noTx(() -> folder("2015").getUuid());
+			String uuid = db().noTx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			VersionNumber version = db.noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+			VersionNumber version = db().noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 					"application/binary"));
 
@@ -115,10 +117,10 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			//1. Upload a binary field
-			String uuid = db.noTx(() -> folder("2015").getUuid());
-			VersionNumber version = db.noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+			String uuid = db().noTx(() -> folder("2015").getUuid());
+			VersionNumber version = db().noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 			String filename = "filename.txt";
 			Buffer buffer = TestUtils.randomBuffer(1000);
 
@@ -152,11 +154,11 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			//1. Upload a binary field
-			String uuid = db.noTx(() -> folder("2015").getUuid());
+			String uuid = db().noTx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			VersionNumber version = db.noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+			VersionNumber version = db().noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 					"application/binary"));
 
@@ -173,11 +175,11 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testUpdateSetEmptyFilename() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			//1. Upload a binary field
-			String uuid = db.noTx(() -> folder("2015").getUuid());
+			String uuid = db().noTx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			VersionNumber version = db.noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+			VersionNumber version = db().noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 					"application/binary"));
 

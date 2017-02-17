@@ -25,13 +25,15 @@ import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeIntoNonFolderNode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = content("concorde");
@@ -45,7 +47,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testMoveNodesSame() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
@@ -57,7 +59,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testMoveNodeIntoChildNode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = folder("2015");
@@ -73,7 +75,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testMoveNodeWithoutPerm() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("deals");
 			Node targetNode = folder("2015");
@@ -89,7 +91,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testMoveNodeWithPerm() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("deals");
 			Node targetNode = folder("2015");
@@ -98,12 +100,12 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()));
 
 			sourceNode.reload();
-			try (Tx tx = db.tx()) {
+			try (Tx tx = db().tx()) {
 				assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
 						sourceNode.getParentNode(releaseUuid).getUuid());
 				assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
 						targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-				assertEquals("A store event for each language variation per version should occure", 4, dummySearchProvider.getStoreEvents().size());
+				assertEquals("A store event for each language variation per version should occure", 4, dummySearchProvider().getStoreEvents().size());
 			}
 			// TODO assert entries
 		}
@@ -112,7 +114,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testMoveNodeWithNoSegmentFieldDefined() {
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 
 			//1. Create new schema which does not have a segmentfield defined
 			SchemaCreateRequest createRequest = new SchemaCreateRequest();
@@ -154,7 +156,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testMoveInRelease() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Node movedNode = folder("deals");
 			Node targetNode = folder("2015");
