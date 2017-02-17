@@ -10,6 +10,8 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -26,12 +28,16 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.search.DummySearchProvider;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.test.TestDataProvider;
+import com.gentics.mesh.test.TestFullDataProvider;
 
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
@@ -194,6 +200,13 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	public Map<String, User> users() {
 		return data().getUsers();
+	}
+	
+	public String getJson(Node node) throws Exception {
+		RoutingContext rc = Mocks.getMockedRoutingContext("lang=en&version=draft", user());
+		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestFullDataProvider.PROJECT_NAME);
+		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().value());
 	}
 
 }
