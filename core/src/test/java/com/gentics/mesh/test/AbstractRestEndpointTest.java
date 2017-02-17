@@ -100,7 +100,6 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 	public void setupVerticleTest() throws Exception {
 		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
-		setupData();
 		port = com.gentics.mesh.test.performance.TestUtils.getRandomPort();
 		vertx = Mesh.vertx();
 
@@ -150,11 +149,10 @@ public abstract class AbstractRestEndpointTest extends AbstractDBTest {
 	}
 
 	@After
-	public void cleanup() throws Exception {
+	public void undeployAndReset() throws Exception {
 		for (String id : deploymentIds) {
 			vertx.undeploy(id);
 		}
-		resetDatabase();
 	}
 
 	@After

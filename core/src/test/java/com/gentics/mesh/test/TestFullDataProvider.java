@@ -54,9 +54,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
-public class TestFullDataProvider  implements TestDataProvider {
+public class TestFullDataProvider implements TestDataProvider {
 
-	private static final Logger log = LoggerFactory.getLogger(TestFullDataProvider.class);
+	private static final Logger log = LoggerFactory.getLogger(TestDataProvider.class);
 
 	public static final String PROJECT_NAME = "dummy";
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";

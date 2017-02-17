@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 
 import com.gentics.mesh.Mesh;
@@ -177,6 +178,16 @@ public abstract class AbstractDBTest {
 		if (dummySearchProvider != null) {
 			dummySearchProvider.reset();
 		}
+	}
+
+	@Before
+	public void addTestData() throws Exception {
+		setupData();
+	}
+
+	@After
+	public void cleanup() {
+		resetDatabase();
 	}
 
 	/**
