@@ -17,14 +17,16 @@ import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class AtomicTagTest extends AbstractDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
+public class AtomicTagTest extends AbstractMeshTest {
 
 	@Test
 	public void testTagCreation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
-			MeshRoot meshRoot = boot.meshRoot();
+		try (NoTx noTx = db().noTx()) {
+			MeshRoot meshRoot = boot().meshRoot();
 			User user = meshRoot.getUserRoot().create("test", null);
 			LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 			assertNotNull(languageRoot);
@@ -49,7 +51,7 @@ public class AtomicTagTest extends AbstractDBTest {
 			tag.setName("renamed tag");
 			assertEquals("renamed tag", tag.getName());
 
-			Tag reloadedTag = boot.tagRoot().findByUuid(uuid);
+			Tag reloadedTag = boot().tagRoot().findByUuid(uuid);
 			assertNotNull(reloadedTag);
 			assertEquals("renamed tag", reloadedTag.getName());
 		}

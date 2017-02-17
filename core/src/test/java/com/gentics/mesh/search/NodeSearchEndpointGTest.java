@@ -18,8 +18,10 @@ import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.TestUtils;
 
+@MeshTestSetting(useElasticsearch = true, useTinyDataset = false, startServer = true)
 public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 	@Test

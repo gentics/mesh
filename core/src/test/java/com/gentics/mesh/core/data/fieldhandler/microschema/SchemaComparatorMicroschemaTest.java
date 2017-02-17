@@ -12,9 +12,11 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class SchemaComparatorMicroschemaTest extends AbstractDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+public class SchemaComparatorMicroschemaTest extends AbstractMeshTest {
 
 	@Test
 	public void testEmptyMicroschema() throws IOException {

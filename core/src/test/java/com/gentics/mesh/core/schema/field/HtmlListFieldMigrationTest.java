@@ -23,7 +23,9 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.field.html.HtmlListFieldHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class HtmlListFieldMigrationTest extends AbstractFieldMigrationTest implements HtmlListFieldHelper {
 
 	@Test

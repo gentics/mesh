@@ -62,7 +62,7 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 		response = future.result();
 		assertEquals(0, response.getData().size());
 
-		future = client().searchSchemas(getSimpleTermQuery("name", "folder"), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
+		future = client().searchSchemas(getSimpleTermQuery("name.raw", "folder"), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		response = future.result();
@@ -78,7 +78,7 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 			MeshAssert.assertElement(boot().schemaContainerRoot(), schema.getUuid(), true);
 		}
 		MeshResponse<SchemaListResponse> future = client()
-				.searchSchemas(getSimpleTermQuery("name", newName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
+				.searchSchemas(getSimpleTermQuery("name.raw", newName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		SchemaListResponse response = future.result();
@@ -92,13 +92,13 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 		SchemaResponse schema = createSchema(schemaName);
 
 		MeshResponse<SchemaListResponse> future = client()
-				.searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
+				.searchSchemas(getSimpleTermQuery("name.raw", schemaName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(1, future.result().getData().size());
 
 		deleteSchema(schema.getUuid());
-		future = client().searchSchemas(getSimpleTermQuery("name", schemaName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
+		future = client().searchSchemas(getSimpleTermQuery("name.raw", schemaName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
 		latchFor(future);
 		assertSuccess(future);
 		assertEquals(0, future.result().getData().size());

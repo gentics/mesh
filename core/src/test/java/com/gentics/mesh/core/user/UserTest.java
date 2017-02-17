@@ -108,7 +108,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			}
 			long duration = System.currentTimeMillis() - start;
 			System.out.println("Duration: " + duration);
-			System.out.println("Duration per check: " + ((double) duration / (double) (nChecks * runs)));
+			System.out.println("Duration per check: 	" + ((double) duration / (double) (nChecks * runs)));
 		}
 	}
 

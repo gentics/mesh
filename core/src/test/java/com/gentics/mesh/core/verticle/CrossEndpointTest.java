@@ -7,7 +7,9 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class CrossEndpointTest extends AbstractMeshTest {
 
 	@Test

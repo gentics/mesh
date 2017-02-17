@@ -22,7 +22,9 @@ import javax.script.ScriptException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.bool.BooleanFieldTestHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class BooleanFieldMigrationTest extends AbstractFieldMigrationTest implements BooleanFieldTestHelper {
 
 	@Override

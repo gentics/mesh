@@ -5,12 +5,12 @@ import java.io.IOException;
 import com.gentics.mesh.core.data.schema.SchemaChange;
 import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 
 /**
  * Abstract test class for schema change implementation tests.
  */
-public abstract class AbstractChangeTest extends AbstractDBTest {
+public abstract class AbstractChangeTest extends AbstractMeshTest {
 
 	protected FieldSchemaContainerMutator mutator = new FieldSchemaContainerMutator();
 

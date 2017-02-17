@@ -24,7 +24,9 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.field.bool.BooleanListFieldHelper;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest implements BooleanListFieldHelper {
 
 	@Override
@@ -192,7 +194,7 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invalidMigrationScript(CREATEBOOLEANLIST, FILL, KILLERSCRIPT);
 		}
 	}

@@ -18,7 +18,9 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = true, useTinyDataset = false, startServer = true)
 public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test

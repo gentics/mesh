@@ -19,13 +19,15 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class RemoveFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 
 			change.setFieldName("someField");
@@ -36,7 +38,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testApply() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema with field
@@ -60,7 +62,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaChangeModel model = new SchemaChangeModel();
 			model.setMigrationScript("test");
 			model.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "someField");
@@ -74,7 +76,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			assertNotNull("Remove Type changes have a auto migation script.", change.getAutoMigrationScript());
 
@@ -87,7 +89,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			assertEquals(RemoveFieldChange.OPERATION, change.transformToRest().getOperation());
 			change.setCustomMigrationScript("test");

@@ -21,7 +21,6 @@ import com.gentics.mesh.test.AbstractETagTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
 
-
 @MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class TagFamilyEndpointETagTest extends AbstractETagTest {
 

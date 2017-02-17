@@ -17,10 +17,10 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.syncleus.ferma.FramedGraph;
 
-public class AbstractFieldContainerDiffTest extends AbstractDBTest {
+public class AbstractFieldContainerDiffTest extends AbstractMeshTest {
 
 	protected NodeGraphFieldContainer createContainer(FieldSchema field) {
 		FramedGraph graph = Database.getThreadLocalGraph();

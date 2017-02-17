@@ -25,7 +25,9 @@ import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = true, useTinyDataset = false, startServer = true)
 public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test

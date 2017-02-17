@@ -30,15 +30,17 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
-public class RestModelTest extends AbstractDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+public class RestModelTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeResponse() throws JsonParseException, JsonMappingException, IOException {
 
-		meshDagger.serverSchemaStorage().addSchema(getDummySchema());
+		meshDagger().serverSchemaStorage().addSchema(getDummySchema());
 		NodeResponse response = new NodeResponse();
 		StringField stringField = new StringFieldImpl();
 		stringField.setString("some text");
@@ -115,7 +117,7 @@ public class RestModelTest extends AbstractDBTest {
 
 	@Test
 	public void testNodeList() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Schema folderSchema = schemaContainer("folder").getLatestVersion().getSchema();
 			Schema contentSchema = schemaContainer("content").getLatestVersion().getSchema();
 

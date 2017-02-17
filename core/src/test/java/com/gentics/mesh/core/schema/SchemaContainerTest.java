@@ -21,6 +21,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
@@ -30,14 +31,16 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+public class SchemaContainerTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainer schema = schemaContainer("folder");
 			SchemaReference reference = schema.getLatestVersion().transformToReference();
 			assertNotNull(reference);
@@ -49,7 +52,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testGetRoot() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content");
 			RootVertex<SchemaContainer> root = schemaContainer.getRoot();
 			assertNotNull(root);
@@ -59,7 +62,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByName() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content");
 			assertNotNull(schemaContainer);
 			assertEquals("content", schemaContainer.getLatestVersion().getSchema().getName());
@@ -70,7 +73,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRootNode() throws MeshSchemaException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
 			int nSchemasBefore = root.findAll().size();
 			Schema schema = FieldUtil.createMinimalValidSchema();
@@ -82,7 +85,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testDefaultSchema() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
 			assertEquals(schemaContainers().size(), root.findAll().size());
 		}
@@ -90,10 +93,10 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testSchemaStorage() {
-		try (NoTx noTx = db.noTx()) {
-			meshDagger.serverSchemaStorage().clear();
-			meshDagger.serverSchemaStorage().init();
-			Schema schema = meshDagger.serverSchemaStorage().getSchema("folder");
+		try (NoTx noTx = db().noTx()) {
+			meshDagger().serverSchemaStorage().clear();
+			meshDagger().serverSchemaStorage().init();
+			Schema schema = meshDagger().serverSchemaStorage().getSchema("folder");
 			assertNotNull(schema);
 			assertEquals("folder", schema.getName());
 		}
@@ -102,7 +105,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Page<? extends SchemaContainer> page = meshRoot().getSchemaContainerRoot().findAll(getMockedInternalActionContext(user()),
 					new PagingParametersImpl(1, 25));
 			assertNotNull(page);
@@ -112,7 +115,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			List<? extends SchemaContainer> schemaContainers = meshRoot().getSchemaContainerRoot().findAll();
 			assertNotNull(schemaContainers);
 			assertEquals(schemaContainers().size(), schemaContainers.size());
@@ -122,7 +125,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String uuid = getSchemaContainer().getUuid();
 			assertNotNull("The schema could not be found", meshRoot().getSchemaContainerRoot().findByUuid(uuid));
 		}
@@ -131,7 +134,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		try (Tx tx = db.tx()) {
+		try (Tx tx = db().tx()) {
 			SearchQueueBatch batch = createBatch();
 			String uuid = getSchemaContainer().getUuid();
 			for (Node node : getSchemaContainer().getNodes()) {
@@ -145,7 +148,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainer container = getSchemaContainer();
 			Schema schema = container.getLatestVersion().getSchema();
 			assertNotNull(schema);
@@ -159,7 +162,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Schema schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			assertNotNull(newContainer);
@@ -173,7 +176,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCRUDPermissions() throws MeshSchemaException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Schema schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
@@ -187,7 +190,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRead() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			assertNotNull(getSchemaContainer().getLatestVersion().getSchema());
 		}
 	}
@@ -195,7 +198,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			assertNotNull(getSchemaContainer().getLatestVersion().getSchema());
 			assertEquals("The schema container and schema rest model version must always be in sync",
 					getSchemaContainer().getLatestVersion().getVersion(), getSchemaContainer().getLatestVersion().getSchema().getVersion());
@@ -205,7 +208,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdate() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content");
 			SchemaContainerVersion currentVersion = schemaContainer.getLatestVersion();
 			Schema schema = currentVersion.getSchema();
@@ -236,7 +239,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() throws MeshSchemaException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainer newContainer;
 			Schema schema = FieldUtil.createMinimalValidSchema();
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
@@ -247,7 +250,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() throws MeshSchemaException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainer newContainer;
 			Schema schema = FieldUtil.createMinimalValidSchema();
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
@@ -258,7 +261,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdatePermission() throws MeshSchemaException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainer newContainer;
 			Schema schema = FieldUtil.createMinimalValidSchema();
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
@@ -269,7 +272,7 @@ public class SchemaContainerTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreatePermission() throws MeshSchemaException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainer newContainer;
 			Schema schema = FieldUtil.createMinimalValidSchema();
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
