@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
@@ -41,7 +42,6 @@ import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.ElasticSearchOptions;
 import com.gentics.mesh.search.SearchProvider;
 
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -59,6 +59,17 @@ public class ElasticSearchProvider implements SearchProvider {
 	private Node node;
 
 	private ElasticSearchOptions options;
+
+	public static final String DEFAULT_INDEX_SETTINGS_FILENAME = "default-es-index-settings.json";
+
+	public static String DEFAULT_INDEX_SETTINGS;
+	static {
+		try {
+			DEFAULT_INDEX_SETTINGS = IOUtils.toString(ElasticSearchProvider.class.getResourceAsStream("/" + DEFAULT_INDEX_SETTINGS_FILENAME));
+		} catch (IOException e) {
+			throw new RuntimeException("Could not load default index settings", e);
+		}
+	}
 
 	@Override
 	public void start() {
@@ -187,30 +198,17 @@ public class ElasticSearchProvider implements SearchProvider {
 		});
 	}
 
+	/**
+	 * Create the default index settings.
+	 * 
+	 * @return
+	 */
 	private JsonObject createDefaultIndexSettings() {
-		JsonObject settings = new JsonObject();
-		JsonObject analysis = new JsonObject();
-
-		// filter
-		JsonObject filter = new JsonObject();
-		JsonObject trigramsFilter = new JsonObject();
-		trigramsFilter.put("type", "ngram");
-		trigramsFilter.put("min_gram", 3);
-		trigramsFilter.put("max_gram", 3);
-		filter.put("trigrams_filter", trigramsFilter);
-
-		// analyzer
-		JsonObject analyzer = new JsonObject();
-		analyzer.put("default", new JsonObject().put("type", "standard"));
-		JsonObject trigrams = new JsonObject();
-		trigrams.put("type", "custom");
-		trigrams.put("tokenizer", "standard");
-		trigrams.put("filter", new JsonArray().add("lowercase").add("trigrams_filter"));
-		analyzer.put("trigrams", trigrams);
-		analysis.put("filter", filter);
-		analysis.put("analyzer", analyzer);
-
-		settings.put("analysis", analysis);
+		JsonObject settings = new JsonObject(DEFAULT_INDEX_SETTINGS);
+		if (log.isDebugEnabled()) {
+			log.debug("Using index settings: ");
+			log.debug(settings.encodePrettily());
+		}
 		return settings;
 	}
 
