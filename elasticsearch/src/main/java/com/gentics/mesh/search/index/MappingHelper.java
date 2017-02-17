@@ -53,7 +53,25 @@ public final class MappingHelper {
 	 * @return
 	 */
 	public static JsonObject trigramStringType() {
-		return fieldType(STRING, ANALYZED, TRIGRAM_ANALYZER);
+		return addRawInfo(fieldType(STRING, ANALYZED, TRIGRAM_ANALYZER), STRING);
+	}
+
+	/**
+	 * Add the raw field info to the given mapping element.
+	 *
+	 * @param fieldInfo
+	 * @param mappingType
+	 *
+	 * @return The modified field info object
+	 */
+	public static JsonObject addRawInfo(JsonObject fieldInfo, String mappingType) {
+		JsonObject rawInfo = new JsonObject();
+		rawInfo.put("type", mappingType);
+		rawInfo.put("index", "not_analyzed");
+		JsonObject rawFieldInfo = new JsonObject();
+		rawFieldInfo.put("raw", rawInfo);
+		fieldInfo.put("fields", rawFieldInfo);
+		return fieldInfo;
 	}
 
 	/**

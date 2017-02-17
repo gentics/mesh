@@ -12,6 +12,7 @@ import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.TRIGRAM_ANALYZER;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
+import static com.gentics.mesh.search.index.MappingHelper.addRawInfo;
 import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
 import static com.gentics.mesh.search.index.MappingHelper.trigramStringType;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
@@ -291,21 +292,6 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		}
 		document.put(fieldKey, fieldsMap);
 
-	}
-
-	/**
-	 * Add the raw field info to the given mapping element.
-	 * 
-	 * @param fieldInfo
-	 * @param mappingType
-	 */
-	private void addRawInfo(JsonObject fieldInfo, String mappingType) {
-		JsonObject rawInfo = new JsonObject();
-		rawInfo.put("type", mappingType);
-		rawInfo.put("index", "not_analyzed");
-		JsonObject rawFieldInfo = new JsonObject();
-		rawFieldInfo.put("raw", rawInfo);
-		fieldInfo.put("fields", rawFieldInfo);
 	}
 
 	/**
