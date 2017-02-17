@@ -2,7 +2,15 @@
   "analysis": {
     "analyzer": {
       "trigrams": {
-        "tokenizer": "my_ngram_tokenizer"
+        "tokenizer": "my_ngram_tokenizer",
+        "filter" : [ "lowercase", "trigrams_filter" ]
+      }
+    },
+    "filter" : {
+      "trigrams_filter" : {
+        "type" : "ngram",
+        "min_gram" : 3,
+        "max_gram" : 3
       }
     },
     "tokenizer": {
