@@ -10,6 +10,8 @@ import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -281,9 +283,7 @@ public class TagEndpointTest extends AbstractBasicCrudEndpointTest {
 			String uuid = tag.getUuid();
 			TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 
-			MeshResponse<TagResponse> updatedTagFut = client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, tagUpdateRequest).invoke();
-			latchFor(updatedTagFut);
-			expectException(updatedTagFut, BAD_REQUEST, "tag_name_not_set");
+			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid, tagUpdateRequest), BAD_REQUEST, "tag_name_not_set");
 		}
 	}
 

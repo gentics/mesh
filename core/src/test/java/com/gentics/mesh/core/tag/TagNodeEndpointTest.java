@@ -2,6 +2,7 @@ package com.gentics.mesh.core.tag;
 
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.Test;

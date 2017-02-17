@@ -3,7 +3,7 @@ package com.gentics.mesh.core.group;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
@@ -23,7 +23,6 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractRestEndpointTest;
 
 public class GroupRolesEndpointTest extends AbstractRestEndpointTest {
@@ -86,9 +85,7 @@ public class GroupRolesEndpointTest extends AbstractRestEndpointTest {
 			assertEquals(1, group().getRoles().size());
 			uuid = group().getUuid();
 
-			MeshResponse<GroupResponse> future = client().addRoleToGroup(uuid, "bogus").invoke();
-			latchFor(future);
-			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			call(() -> client().addRoleToGroup(uuid, "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		}
 	}
 
@@ -103,9 +100,7 @@ public class GroupRolesEndpointTest extends AbstractRestEndpointTest {
 			assertEquals(1, group().getRoles().size());
 			groupUuid = group().getUuid();
 
-			MeshResponse<GroupResponse> future = client().addRoleToGroup(groupUuid, roleUuid).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", roleUuid);
+			call(() -> client().addRoleToGroup(groupUuid, roleUuid), FORBIDDEN, "error_missing_perm", roleUuid);
 
 			Group group = group();
 			assertEquals(1, group.getRoles().size());

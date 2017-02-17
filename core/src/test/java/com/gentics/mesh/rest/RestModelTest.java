@@ -115,7 +115,6 @@ public class RestModelTest extends AbstractDBTest {
 
 	@Test
 	public void testNodeList() throws Exception {
-		setupData();
 		try (NoTx noTx = db.noTx()) {
 			Schema folderSchema = schemaContainer("folder").getLatestVersion().getSchema();
 			Schema contentSchema = schemaContainer("content").getLatestVersion().getSchema();

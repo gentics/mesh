@@ -4,12 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
-import org.codehaus.jettison.json.JSONException;
-import org.codehaus.jettison.json.JSONObject;
-import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.RangeQueryBuilder;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -49,50 +43,6 @@ public abstract class AbstractSearchEndpointTest extends AbstractRestEndpointTes
 	@AfterClass
 	public static void clean() throws IOException {
 		FileUtils.deleteDirectory(new File("data"));
-	}
-
-	protected String getSimpleQuery(String text) throws JSONException {
-		QueryBuilder qb = QueryBuilders.queryStringQuery(text);
-		JSONObject request = new JSONObject();
-		request.put("query", new JSONObject(qb.toString()));
-		String query = request.toString();
-		if (log.isDebugEnabled()) {
-			log.debug(query);
-		}
-		return query;
-	}
-
-	protected String getSimpleTermQuery(String key, String value) throws JSONException {
-		QueryBuilder qb = QueryBuilders.termQuery(key, value);
-		BoolQueryBuilder bqb = QueryBuilders.boolQuery();
-		bqb.must(qb);
-
-		JSONObject request = new JSONObject();
-		request.put("query", new JSONObject(bqb.toString()));
-		String query = request.toString();
-		if (log.isDebugEnabled()) {
-			log.debug(query);
-		}
-		return query;
-	}
-
-	protected String getSimpleWildCardQuery(String key, String value) throws JSONException {
-		QueryBuilder qb = QueryBuilders.wildcardQuery(key, value);
-		BoolQueryBuilder bqb = QueryBuilders.boolQuery();
-		bqb.must(qb);
-
-		JSONObject request = new JSONObject();
-		request.put("query", new JSONObject(bqb.toString()));
-		String query = request.toString();
-		if (log.isDebugEnabled()) {
-			log.debug(query);
-		}
-		return query;
-	}
-
-	protected String getRangeQuery(String fieldName, double from, double to) throws JSONException {
-		RangeQueryBuilder range = QueryBuilders.rangeQuery(fieldName).from(from).to(to);
-		return "{ \"query\": " + range.toString() + "}";
 	}
 
 	/**

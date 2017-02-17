@@ -1,5 +1,6 @@
 package com.gentics.mesh.core;
 
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

@@ -45,6 +45,9 @@ public class TestTinyDataProvider implements TestDataProvider {
 	public static TestTinyDataProvider getInstance() {
 		return instance;
 	}
+	
+	private Map<String, SchemaContainer> schemaContainers = new HashMap<>();
+
 
 	private Database db;
 
@@ -88,6 +91,7 @@ public class TestTinyDataProvider implements TestDataProvider {
 			german = boot.languageRoot().findByLanguageTag("de");
 
 			addBootstrappedData();
+			addBootstrapSchemas();
 			addUserGroupRoleProject();
 
 			tx.getGraph().commit();
@@ -110,6 +114,22 @@ public class TestTinyDataProvider implements TestDataProvider {
 		for (Role role : root.getRoleRoot().findAll()) {
 			roles.put(role.getName(), role);
 		}
+	}
+	
+	private void addBootstrapSchemas() {
+
+		// folder
+		SchemaContainer folderSchemaContainer = boot.schemaContainerRoot().findByName("folder");
+		schemaContainers.put("folder", folderSchemaContainer);
+
+		// content
+		SchemaContainer contentSchemaContainer = boot.schemaContainerRoot().findByName("content");
+		schemaContainers.put("content", contentSchemaContainer);
+
+		// binary-content
+		SchemaContainer binaryContentSchemaContainer = boot.schemaContainerRoot().findByName("binary-content");
+		schemaContainers.put("binary-content", binaryContentSchemaContainer);
+
 	}
 
 	public UserInfo createUserInfo(String username, String firstname, String lastname) {
@@ -244,12 +264,12 @@ public class TestTinyDataProvider implements TestDataProvider {
 
 	@Override
 	public SchemaContainer getSchemaContainer(String key) {
-		return null;
+		return schemaContainers.get(key);
 	}
 
 	@Override
 	public Map<String, SchemaContainer> getSchemaContainers() {
-		return null;
+		return schemaContainers;
 	}
 
 	@Override

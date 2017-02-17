@@ -4,6 +4,8 @@ import org.codehaus.jettison.json.JSONException;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
+
 public class MicroschemaSearchEndpointTest extends AbstractSearchEndpointTest implements BasicSearchCrudTestcases {
 
 	@Test

@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.field.number;
 
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -29,7 +29,6 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.rest.client.MeshResponse;
 
 public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 
@@ -71,10 +70,8 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 			nodeCreateRequest.setLanguage("en");
 			nodeCreateRequest.getFields().put(fieldKey, field);
 
-			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en"))
-					.invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "field_number_error_invalid_type", fieldKey, "text");
+			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en")),
+					BAD_REQUEST, "field_number_error_invalid_type", fieldKey, "text");
 		}
 	}
 

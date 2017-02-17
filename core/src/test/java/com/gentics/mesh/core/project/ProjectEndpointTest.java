@@ -11,6 +11,8 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -250,22 +252,15 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 					.filter(restProject -> restProject.getName().equals(noPermProjectName)).collect(Collectors.toList());
 			assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
 
-			future = client().findProjects(new PagingParametersImpl(-1, perPage)).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+			call(() -> client().findProjects(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = client().findProjects(new PagingParametersImpl(1, -1)).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
+			call(() -> client().findProjects(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = client().findProjects(new PagingParametersImpl(4242, 25)).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			ProjectListResponse listResponse = call(() -> client().findProjects(new PagingParametersImpl(4242, 25)));
 
-			String response = JsonUtil.toJson(future.result());
+			String response = JsonUtil.toJson(listResponse);
 			assertNotNull(response);
 
-			ProjectListResponse listResponse = future.result();
 			assertEquals(4242, listResponse.getMetainfo().getCurrentPage());
 			assertEquals(25, listResponse.getMetainfo().getPerPage());
 			assertEquals(143, listResponse.getMetainfo().getTotalCount());

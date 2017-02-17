@@ -4,6 +4,8 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.expectFailureMessage;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -264,35 +266,25 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 			role().revokePermissions(newsFolder, READ_PERM);
 		}
 
-		MeshResponse<WebRootResponse> future = client().webroot(PROJECT_NAME, englishPath, new VersioningParameters().draft()).invoke();
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().webroot(PROJECT_NAME, englishPath, new VersioningParameters().draft()), FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
 	public void testReadContentByInvalidPath() throws Exception {
 		String invalidPath = "/News/2015/no-valid-content.html";
-
-		MeshResponse<WebRootResponse> future = client().webroot(PROJECT_NAME, invalidPath).invoke();
-		latchFor(future);
-		expectException(future, NOT_FOUND, "node_not_found_for_path", invalidPath);
+		call(() -> client().webroot(PROJECT_NAME, invalidPath), NOT_FOUND, "node_not_found_for_path", invalidPath);
 	}
 
 	@Test
 	public void testReadContentByInvalidPath2() throws Exception {
 		String invalidPath = "/News/no-valid-folder/no-valid-content.html";
-		MeshResponse<WebRootResponse> future = client().webroot(PROJECT_NAME, invalidPath).invoke();
-		latchFor(future);
-		expectException(future, NOT_FOUND, "node_not_found_for_path", invalidPath);
+		call(() -> client().webroot(PROJECT_NAME, invalidPath), NOT_FOUND, "node_not_found_for_path", invalidPath);
 	}
 
 	@Test
 	public void testRead404Page() {
 		String notFoundPath = "/error/404";
-
-		MeshResponse<WebRootResponse> future = client().webroot(PROJECT_NAME, notFoundPath).invoke();
-		latchFor(future);
-		expectException(future, NOT_FOUND, "node_not_found_for_path", notFoundPath);
+		call(() -> client().webroot(PROJECT_NAME, notFoundPath), NOT_FOUND, "node_not_found_for_path", notFoundPath);
 	}
 
 	/**
@@ -396,7 +388,8 @@ public class WebRootEndpointTest extends AbstractRestEndpointTest {
 
 		// 6. Assert draft path in published
 		db.noTx(() -> {
-			call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParameters().published()), NOT_FOUND, "node_not_found_for_path", draftPath);
+			call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParameters().published()), NOT_FOUND, "node_not_found_for_path",
+					draftPath);
 			return null;
 		});
 	}

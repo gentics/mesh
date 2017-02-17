@@ -78,7 +78,7 @@ public class UserTransformator extends AbstractTransformator<User> {
 	@Override
 	public JsonObject getMappingProperties() {
 		JsonObject props = new JsonObject();
-		props.put(USERNAME_KEY, notAnalyzedType(STRING));
+		props.put(USERNAME_KEY, trigramStringType());
 		props.put(LASTNAME_KEY, trigramStringType());
 		props.put(FIRSTNAME_KEY, trigramStringType());
 		props.put(EMAIL_KEY, notAnalyzedType(STRING));

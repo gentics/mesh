@@ -179,7 +179,11 @@ public class SearchRestHandler {
 					Observable.merge(obs).collect(() -> {
 						return new ArrayList<Tuple<T, String>>();
 					}, (x, y) -> {
-						boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags.isEmpty() || requestedLanguageTags.contains(y.v2());
+						if (y == null) {
+							return;
+						}
+						boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags == null || requestedLanguageTags.isEmpty()
+								|| requestedLanguageTags.contains(y.v2());
 						// Check permissions and language
 						if (y != null && matchesRequestedLang && requestUser.hasPermission(y.v1(), permission)) {
 							x.add(y);

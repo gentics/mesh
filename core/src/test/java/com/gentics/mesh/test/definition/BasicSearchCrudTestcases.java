@@ -1,4 +1,4 @@
-package com.gentics.mesh.search;
+package com.gentics.mesh.test.definition;
 
 public interface BasicSearchCrudTestcases {
 

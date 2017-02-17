@@ -11,6 +11,12 @@ import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
+import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateSet;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -47,12 +53,15 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.definition.BasicRestTestcases;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	private static final Logger log = LoggerFactory.getLogger(GroupEndpointTest.class);
 
@@ -65,12 +74,12 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 		GroupResponse restGroup = call(() -> client().createGroup(request));
 		assertThat(restGroup).matches(request);
 
-		assertThat(dummySearchProvider).hasStore(Group.composeIndexName(), Group.composeIndexType(), restGroup.getUuid());
-		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
-		dummySearchProvider.clear();
+		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), restGroup.getUuid());
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		dummySearchProvider().clear();
 
-		try (NoTx noTx = db.noTx()) {
-			assertElement(boot.groupRoot(), restGroup.getUuid(), true);
+		try (NoTx noTx = db().noTx()) {
+			assertElement(boot().groupRoot(), restGroup.getUuid(), true);
 		}
 	}
 
@@ -79,9 +88,9 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testCreateWithNoPerm() throws Exception {
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName("test12345");
-		String groupRootUuid = db.noTx(() -> meshRoot().getGroupRoot().getUuid());
+		String groupRootUuid = db().noTx(() -> meshRoot().getGroupRoot().getUuid());
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			role().revokePermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 		}
 
@@ -90,7 +99,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testBatchCreation() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			for (int i = 0; i < 10; i++) {
 				System.out.println(i);
 				final String name = "test_" + i;
@@ -112,7 +121,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 		GroupCreateRequest request = new GroupCreateRequest();
 		request.setName(name);
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 			MeshResponse<GroupResponse> future = client().createGroup(request).invoke();
 			latchFor(future);
@@ -120,7 +129,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 			GroupResponse restGroup = future.result();
 			assertThat(restGroup).matches(request);
 
-			assertElement(boot.groupRoot(), restGroup.getUuid(), true);
+			assertElement(boot().groupRoot(), restGroup.getUuid(), true);
 			future = client().createGroup(request).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "group_conflicting_name", name);
@@ -130,7 +139,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Create the group
 			final String name = "test12345";
 			GroupCreateRequest request = new GroupCreateRequest();
@@ -142,7 +151,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 			GroupResponse restGroup = future.result();
 			assertThat(restGroup).matches(request);
 
-			Group foundGroup = boot.groupRoot().findByUuid(restGroup.getUuid());
+			Group foundGroup = boot().groupRoot().findByUuid(restGroup.getUuid());
 			assertNotNull("Group should have been created.", foundGroup);
 
 			MeshResponse<GroupResponse> readFuture = client().findGroupByUuid(restGroup.getUuid()).invoke();
@@ -158,19 +167,17 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateGroupWithMissingName() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			role().grantPermissions(group(), CREATE_PERM);
 		}
 		GroupCreateRequest request = new GroupCreateRequest();
-		MeshResponse<GroupResponse> future = client().createGroup(request).invoke();
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_name_must_be_set");
+		call(() -> client().createGroup(request), BAD_REQUEST, "error_name_must_be_set");
 
 	}
 
 	@Test
 	public void testCreateGroupWithNoPerm() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			final String name = "test12345";
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName(name);
@@ -179,10 +186,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 			role().revokePermissions(root, CREATE_PERM);
 			User user = user();
 			assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(root, CREATE_PERM));
-
-			MeshResponse<GroupResponse> future = client().createGroup(request).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", rootUuid);
+			call(() -> client().createGroup(request), FORBIDDEN, "error_missing_perm", rootUuid);
 		}
 
 	}
@@ -192,7 +196,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			int totalGroups = 0;
 			String extraGroupName = "no_perm_group";
 			GroupRoot root = meshRoot().getGroupRoot();
@@ -204,7 +208,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 				role().grantPermissions(group, READ_PERM);
 			}
 
-			totalGroups = nGroups + groups().size();
+			totalGroups = nGroups + data().getGroups().size();
 			// Test default paging parameters
 			MeshResponse<GroupListResponse> future = client().findGroups().invoke();
 			latchFor(future);
@@ -275,7 +279,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Group group = group();
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
 
@@ -287,8 +291,8 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		String uuid = db.noTx(() -> group().getUuid());
-		String roleUuid = db.noTx(() -> role().getUuid());
+		String uuid = db().noTx(() -> group().getUuid());
+		String roleUuid = db().noTx(() -> role().getUuid());
 		GroupResponse response = call(() -> client().findGroupByUuid(uuid, new RolePermissionParameters().setRoleUuid(roleUuid)));
 		assertNotNull(response.getRolePerms());
 		assertThat(response.getRolePerms()).hasPerm(READ, READ_PUBLISHED, PUBLISH, UPDATE, DELETE, CREATE);
@@ -297,7 +301,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Group group = group();
 			role().revokePermissions(group, READ_PERM);
 			assertNotNull("The UUID of the group must not be null.", group.getUuid());
@@ -315,19 +319,19 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testUpdate() throws GenericRestException, Exception {
 		final String name = "New Name";
-		String uuid = db.noTx(() -> group().getUuid());
-		String userUuid = db.noTx(() -> user().getUuid());
+		String uuid = db().noTx(() -> group().getUuid());
+		String userUuid = db().noTx(() -> user().getUuid());
 
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
 		GroupResponse restGroup = call(() -> client().updateGroup(uuid, request));
-		assertThat(dummySearchProvider).hasStore(Group.composeIndexName(), Group.composeIndexType(), uuid);
-		assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), userUuid);
-		assertThat(dummySearchProvider).hasEvents(2, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), uuid);
+		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), userUuid);
+		assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0);
 
-		try (Tx tx = db.tx()) {
+		try (Tx tx = db().tx()) {
 			assertThat(restGroup).matches(request);
-			Group reloadedGroup = boot.groupRoot().findByUuid(uuid);
+			Group reloadedGroup = boot().groupRoot().findByUuid(uuid);
 			assertEquals("The group should have been updated", name, reloadedGroup.getName());
 		}
 	}
@@ -335,10 +339,10 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			role().revokePermissions(group(), UPDATE_PERM);
 		}
-		String uuid = db.noTx(() -> group().getUuid());
+		String uuid = db().noTx(() -> group().getUuid());
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName("new Name");
 		call(() -> client().updateGroup(uuid, request), FORBIDDEN, "error_missing_perm", uuid);
@@ -346,7 +350,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testUpdateGroupWithEmptyName() throws GenericRestException, Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 
 			Group group = group();
 
@@ -359,14 +363,14 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_name_must_be_set");
 
-			Group reloadedGroup = boot.groupRoot().findByUuid(group.getUuid());
+			Group reloadedGroup = boot().groupRoot().findByUuid(group.getUuid());
 			assertEquals("The group should not have been updated", group.getName(), reloadedGroup.getName());
 		}
 	}
 
 	@Test
 	public void testUpdateGroupWithConflictingName() throws GenericRestException, Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			final String alreadyUsedName = "extraGroup";
 			GroupRoot groupRoot = meshRoot().getGroupRoot();
 			// Create a group which occupies the name
@@ -389,7 +393,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 	 */
 	@Test
 	public void testReadWithRolePermsSync() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Create a lot of groups
 			int groupCount = 100;
 			GroupCreateRequest createReq = new GroupCreateRequest();
@@ -428,23 +432,23 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String groupUuid = db.noTx(() -> group().getUuid());
-		String userUuid = db.noTx(() -> user().getUuid());
+		String groupUuid = db().noTx(() -> group().getUuid());
+		String userUuid = db().noTx(() -> user().getUuid());
 
 		call(() -> client().deleteGroup(groupUuid));
-		assertThat(dummySearchProvider).hasDelete(Group.composeIndexName(), Group.composeIndexType(), groupUuid);
-		assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), userUuid);
-		assertThat(dummySearchProvider).hasEvents(1, 1, 0, 0);
+		assertThat(dummySearchProvider()).hasDelete(Group.composeIndexName(), Group.composeIndexType(), groupUuid);
+		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), userUuid);
+		assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0);
 
-		try (NoTx noTx = db.noTx()) {
-			assertElement(boot.groupRoot(), groupUuid, false);
+		try (NoTx noTx = db().noTx()) {
+			assertElement(boot().groupRoot(), groupUuid, false);
 		}
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Group group = group();
 			String uuid = group.getUuid();
 			assertNotNull(uuid);
@@ -452,7 +456,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 			role().revokePermissions(group, DELETE_PERM);
 
 			call(() -> client().deleteGroup(uuid), FORBIDDEN, "error_missing_perm", group.getUuid());
-			assertElement(boot.groupRoot(), group.getUuid(), true);
+			assertElement(boot().groupRoot(), group.getUuid(), true);
 		}
 	}
 
@@ -524,7 +528,7 @@ public class GroupEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
 		Set<MeshResponse<GroupResponse>> set = new HashSet<>();
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			int nJobs = 200;
 			for (int i = 0; i < nJobs; i++) {
 				log.debug("Invoking findGroupByUuid REST call");

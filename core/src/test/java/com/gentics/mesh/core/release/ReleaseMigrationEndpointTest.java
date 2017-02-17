@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.release;
 
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 

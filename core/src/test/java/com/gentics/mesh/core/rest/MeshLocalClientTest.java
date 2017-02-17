@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest;
 
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;

@@ -15,6 +15,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.definition.CrudEndpointTestCases;
 import com.gentics.mesh.test.definition.MultithreadingTestCases;
 
+@Deprecated
 public abstract class AbstractBasicCrudEndpointTest extends AbstractRestEndpointTest implements MultithreadingTestCases, CrudEndpointTestCases {
 
 	protected void validateDeletion(Set<MeshResponse<Void>> set, CyclicBarrier barrier) {

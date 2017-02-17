@@ -43,6 +43,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.search.DummySearchProvider;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -53,7 +54,10 @@ import io.vertx.ext.web.RoutingContext;
 
 /**
  * Central abstract class for all mesh unit tests which access dagger or the mesh test database graph.
+ * 
+ * @deprecated Use {@link AbstractMeshTest} instead
  */
+@Deprecated
 public abstract class AbstractDBTest {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractDBTest.class);
