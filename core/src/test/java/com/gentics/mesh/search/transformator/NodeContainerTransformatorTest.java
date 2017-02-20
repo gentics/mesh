@@ -13,17 +13,19 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.search.index.node.NodeContainerTransformator;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-public class NodeContainerTransformatorTest extends AbstractDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+public class NodeContainerTransformatorTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeTagFamilyTransformator() {
 		NodeContainerTransformator transformator = new NodeContainerTransformator();
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Release release = project().getLatestRelease();
 			NodeGraphFieldContainer node = content("concorde").getGraphFieldContainer(english(), release, ContainerType.PUBLISHED);
 			JsonObject document = transformator.toDocument(node, release.getUuid());

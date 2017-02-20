@@ -23,7 +23,9 @@ import javax.script.ScriptException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.date.DateFieldTestHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class DateFieldMigrationTest extends AbstractFieldMigrationTest implements DateFieldTestHelper {
 
 	@Override

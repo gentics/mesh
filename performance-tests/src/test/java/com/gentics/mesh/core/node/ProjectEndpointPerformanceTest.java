@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 
 import org.junit.Test;
@@ -7,10 +8,12 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
-public class ProjectEndpointPerformanceTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class ProjectEndpointPerformanceTest extends AbstractMeshTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
@@ -27,7 +30,7 @@ public class ProjectEndpointPerformanceTest extends AbstractRestEndpointTest {
 	public void testPerformance() {
 		addProjects();
 
-		String uuid = db.noTx(() -> project().getUuid());
+		String uuid = db().noTx(() -> project().getUuid());
 
 		loggingStopWatch(logger, "project.read-page-100", 200, (step) -> {
 			call(() -> client().findProjects(new PagingParametersImpl().setPerPage(100)));

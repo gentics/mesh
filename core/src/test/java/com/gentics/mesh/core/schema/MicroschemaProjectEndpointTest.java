@@ -3,6 +3,7 @@ package com.gentics.mesh.core.schema;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -21,13 +22,15 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)	
+public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadProjectMicroschemas() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaListResponse list = call(() -> client().findMicroschemas(PROJECT_NAME));
 			assertEquals(2, list.getData().size());
 
@@ -43,7 +46,7 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testAddMicroschemaToExtraProject() {
 		final String name = "test12345";
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -58,7 +61,7 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddMicroschemaToProjectWithPerm() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 
@@ -86,7 +89,7 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 		String projectUuid;
 		String microschemaUuid;
 		Project extraProject;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			microschemaUuid = microschema.getUuid();
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
@@ -103,7 +106,7 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 		call(() -> client().assignMicroschemaToProject("extraProject", microschemaUuid), FORBIDDEN, "error_missing_perm",
 				projectUuid);
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Reload the microschema and check for expected changes
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 
@@ -115,7 +118,7 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 	// Microschema Project Testcases - DELETE / Remove
 	@Test
 	public void testRemoveMicroschemaFromProjectWithPerm() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Project project = project();
 			assertTrue("The microschema should be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
@@ -133,7 +136,7 @@ public class MicroschemaProjectEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testRemoveMicroschemaFromProjectWithoutPerm() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Project project = project();
 

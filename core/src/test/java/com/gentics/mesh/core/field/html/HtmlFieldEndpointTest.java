@@ -21,14 +21,16 @@ import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	private static final String FIELD_NAME = "htmlField";
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 			htmlFieldSchema.setName(FIELD_NAME);
@@ -41,7 +43,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(null, (Field) null);
 			HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
 			assertNull("The response should not contain the field because it should still be null", htmlField);
@@ -51,7 +53,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			for (int i = 0; i < 20; i++) {
 				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
@@ -74,7 +76,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -86,7 +88,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -113,7 +115,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -133,7 +135,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(FIELD_NAME, new HtmlFieldImpl().setHTML("Some<b>html"));
 			HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
 			assertEquals("Some<b>html", htmlField.getHTML());
@@ -143,7 +145,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createHTML(FIELD_NAME).setHtml("some<b>html");

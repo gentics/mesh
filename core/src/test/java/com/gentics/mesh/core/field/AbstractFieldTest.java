@@ -31,11 +31,11 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import rx.functions.Action1;
 
-public abstract class AbstractFieldTest<FS extends FieldSchema> extends AbstractDBTest implements FieldTestcases {
+public abstract class AbstractFieldTest<FS extends FieldSchema> extends AbstractMeshTest implements FieldTestcases {
 
 	abstract protected FS createFieldSchema(boolean isRequired);
 

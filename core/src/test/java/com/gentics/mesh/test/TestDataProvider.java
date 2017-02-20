@@ -61,4 +61,15 @@ public interface TestDataProvider {
 
 	UserInfo createUserInfo(String string, String string2, String string3);
 
+	default Role role() {
+		return getUserInfo().getRole();
+	}
+
+	default User user() {
+		return getUserInfo().getUser();
+	}
+
+	default Group group() {
+		return getUserInfo().getGroup();
+	}
 }

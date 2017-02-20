@@ -3,6 +3,7 @@ package com.gentics.mesh.core.node;
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -27,13 +28,15 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class NodeEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MeshResponse<NodeListResponse> response = client().findNodes(PROJECT_NAME).invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
@@ -47,7 +50,7 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadNodeTags() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			String nodeUuid = node.getUuid();
 
@@ -70,7 +73,7 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadChildren() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String uuid = project().getBaseNode().getUuid();
 			MeshResponse<NodeListResponse> response = client().findNodeChildren(PROJECT_NAME, uuid).invoke();
 			latchFor(response);
@@ -101,7 +104,7 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadOne() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 
 			// Inject the reference node field

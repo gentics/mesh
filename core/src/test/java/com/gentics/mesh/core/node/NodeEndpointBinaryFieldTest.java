@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
@@ -13,9 +14,11 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class NodeEndpointBinaryFieldTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 
 	@Test
 	public void testDownloadBinaryField() throws IOException {
@@ -25,7 +28,7 @@ public class NodeEndpointBinaryFieldTest extends AbstractRestEndpointTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 

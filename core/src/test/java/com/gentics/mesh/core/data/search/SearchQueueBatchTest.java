@@ -3,15 +3,17 @@ package com.gentics.mesh.core.data.search;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class SearchQueueBatchTest extends AbstractDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
+public class SearchQueueBatchTest extends AbstractMeshTest {
 
 	@Test
 	public void testDependency() {
-		SearchQueueBatch batch = meshDagger.searchQueue().create();
+		SearchQueueBatch batch = meshDagger().searchQueue().create();
 		System.out.println(batch);
-		batch = meshDagger.searchQueue().create();
+		batch = meshDagger().searchQueue().create();
 		System.out.println(batch);
 		batch.createIndex(null, null, User.class);
 	}

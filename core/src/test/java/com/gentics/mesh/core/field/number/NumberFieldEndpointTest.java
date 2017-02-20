@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.field.number;
 
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -29,15 +29,16 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	private static final String FIELD_NAME = "numberField";
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 			numberFieldSchema.setName(FIELD_NAME);
@@ -51,7 +52,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			NumberFieldImpl field = response.getFields().getNumberField(FIELD_NAME);
 			assertNull("The field should be null since we did not specify a field when executing the creation call", field);
@@ -60,7 +61,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testCreateNodeWithWrongFieldType() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String fieldKey = FIELD_NAME;
 			StringField field = new StringFieldImpl().setString("text");
 
@@ -71,17 +72,15 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 			nodeCreateRequest.setLanguage("en");
 			nodeCreateRequest.getFields().put(fieldKey, field);
 
-			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en"))
-					.invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "field_number_error_invalid_type", fieldKey, "text");
+			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en")),
+					BAD_REQUEST, "field_number_error_invalid_type", fieldKey, "text");
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			for (int i = 0; i < 20; i++) {
 				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
@@ -103,7 +102,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
 			String oldNumber = firstResponse.getVersion().getNumber();
 
@@ -115,7 +114,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -145,7 +144,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Number fields can't be set to empty - The rest model will generate a null field for the update request json. Thus the field will be deleted.
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl());
 			assertThat(firstResponse.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNull();
@@ -155,7 +154,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(FIELD_NAME, new NumberFieldImpl().setNumber(1.21));
 			NumberFieldImpl numberField = response.getFields().getNumberField(FIELD_NAME);
 			assertEquals(1.21, numberField.getNumber());
@@ -165,7 +164,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());

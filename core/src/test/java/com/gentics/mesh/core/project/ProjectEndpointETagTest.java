@@ -17,13 +17,15 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class ProjectEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MeshResponse<ProjectListResponse> response = client().findProjects().invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
@@ -36,7 +38,7 @@ public class ProjectEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadOne() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			MeshResponse<ProjectResponse> response = client().findProjectByUuid(project.getUuid()).invoke();
 			latchFor(response);

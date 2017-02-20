@@ -83,6 +83,9 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 
 	/**
 	 * Set the route path.
+	 * 
+	 * @param path
+	 * @return Vert.x route for path
 	 */
 	public Route path(String path) {
 		return route.path(path);
@@ -162,7 +165,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	/**
 	 * Parse the RAML path and return a list of all segment name variables.
 	 * 
-	 * @return
+	 * @return List of path segments
 	 */
 	public List<String> getNamedSegments() {
 		List<String> allMatches = new ArrayList<String>();
@@ -230,7 +233,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	 * Convert the provided vertx path to a RAML path.
 	 * 
 	 * @param path
-	 * @return
+	 * @return RAML Path which contains '{}' instead of ':' characters
 	 */
 	private String convertPath(String path) {
 		StringBuilder builder = new StringBuilder();
@@ -255,7 +258,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	 * Set the endpoint display name.
 	 * 
 	 * @param name
-	 * @return
+	 * @return Fluent API
 	 */
 	public Endpoint displayName(String name) {
 		this.displayName = name;
@@ -276,7 +279,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	/**
 	 * Return the endpoint description.
 	 * 
-	 * @return
+	 * @return Endpoint description
 	 */
 	public String getDescription() {
 		return description;
@@ -285,7 +288,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	/**
 	 * Return the display name for the endpoint.
 	 * 
-	 * @return
+	 * @return Endpoint display name
 	 */
 	public String getDisplayName() {
 		return displayName;
@@ -373,7 +376,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	/**
 	 * Set the endpoint example request via a JSON example model. The json schema will automatically be generated.
 	 * 
-	 * @param model
+	 * @param model Example Rest Model
 	 * @return Fluent API
 	 */
 	public Endpoint exampleRequest(RestModel model) {
@@ -406,7 +409,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	/**
 	 * Set the traits information.
 	 * 
-	 * @param traits
+	 * @param traits Traits which the endpoint should inherit
 	 * @return Fluent API
 	 */
 	public Endpoint traits(String... traits) {
@@ -472,14 +475,13 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	 * Add a query parameter provider to the endpoint. The query parameter provider will in turn provide examples, descriptions for all query parameters which
 	 * the parameter provider provides.
 	 * 
-	 * @param clazz
+	 * @param clazz Class which provides the parameters
 	 */
 	public void addQueryParameters(Class<? extends ParameterProvider> clazz) {
 		try {
 			ParameterProvider provider = clazz.newInstance();
 			parameters.putAll(provider.getRAMLParameters());
 		} catch (InstantiationException | IllegalAccessException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -496,7 +498,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	/**
 	 * Return the uri parameters for the endpoint.
 	 * 
-	 * @return
+	 * @return Map with uri parameters
 	 */
 	public Map<String, UriParameter> getUriParameters() {
 		return uriParameters;
@@ -508,7 +510,7 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	 * @param key
 	 *            Key of the endpoint (e.g.: query, perPage)
 	 * @param description
-	 * @param example
+	 * @param example Example URI parameter value
 	 */
 	public void addUriParameter(String key, String description, String example) {
 		UriParameter param = new UriParameter(key);

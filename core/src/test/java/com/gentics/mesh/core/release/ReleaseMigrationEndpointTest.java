@@ -1,8 +1,9 @@
 package com.gentics.mesh.core.release;
 
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -30,27 +31,27 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParameters;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 
-public class ReleaseMigrationEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
-	@Override
 	@Before
 	public void setupVerticleTest() throws Exception {
-		super.setupVerticleTest();
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
-		vertx.deployVerticle(meshDagger.nodeMigrationVerticle(), options);
+		vertx().deployVerticle(meshDagger().nodeMigrationVerticle(), options);
 	}
 
 	@Test
 	public void testStartReleaseMigration() throws Throwable {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			assertThat(project.getInitialRelease().isMigrated()).as("Initial release migration status").isEqualTo(true);
 
@@ -116,7 +117,7 @@ public class ReleaseMigrationEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testStartForInitial() throws Throwable {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 
@@ -129,7 +130,7 @@ public class ReleaseMigrationEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testStartAgain() throws Throwable {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
@@ -145,7 +146,7 @@ public class ReleaseMigrationEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testStartOrder() throws Throwable {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 			Release newestRelease = project.getReleaseRoot().create("newestrelease", user());
@@ -166,7 +167,7 @@ public class ReleaseMigrationEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testBigData() throws Throwable {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			int numThreads = 1;
 			int numFolders = 1000;
 			Project project = project();
@@ -227,7 +228,7 @@ public class ReleaseMigrationEndpointTest extends AbstractRestEndpointTest {
 		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
 		options.addHeader(NodeMigrationVerticle.UUID_HEADER, releaseUuid);
 		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-		vertx.eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options, (rh) -> {
+		vertx().eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options, (rh) -> {
 			future.complete(rh);
 		});
 

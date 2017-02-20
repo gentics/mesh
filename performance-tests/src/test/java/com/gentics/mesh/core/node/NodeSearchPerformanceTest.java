@@ -2,6 +2,7 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 import static org.junit.Assert.assertEquals;
 
@@ -15,13 +16,15 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.search.AbstractSearchEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
+@MeshTestSetting(useElasticsearch = true, useTinyDataset = false, startServer = true)
+public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeSearchPerformanceTest.class);
 
@@ -29,12 +32,12 @@ public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
 
 	@Test
 	public void testES() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
 		String lastNodeUuid = null;
-		String uuid = db.noTx(() -> folder("news").getUuid());
+		String uuid = db().noTx(() -> folder("news").getUuid());
 		int total = 600;
 		for (int i = 0; i < total; i++) {
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -52,8 +55,8 @@ public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
 		}
 
 		// Revoke all but one permission
-		try (NoTx noTx = db.noTx()) {
-			for (Node node : boot.nodeRoot().findAll()) {
+		try (NoTx noTx = db().noTx()) {
+			for (Node node : boot().nodeRoot().findAll()) {
 				if (!node.getUuid().equals(lastNodeUuid)) {
 					role().revokePermissions(node, READ_PERM);
 				}
@@ -67,7 +70,7 @@ public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
 		json += "	    \"query\":{";
 		json += "	        \"bool\" : {";
 		json += "	            \"must\" : {";
-		json += "	                \"term\" : { \"schema.name\" : \"content\" }";
+		json += "	                \"term\" : { \"schema.name.raw\" : \"content\" }";
 		json += "	            }";
 		json += "	        }";
 		json += "	    }";
@@ -83,11 +86,11 @@ public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
 
 	@Test
 	public void testSearchAndSort() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
-		String uuid = db.noTx(() -> folder("news").getUuid());
+		String uuid = db().noTx(() -> folder("news").getUuid());
 		int total = 2000;
 		for (int i = 0; i < total; i++) {
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -110,7 +113,7 @@ public class NodeSearchPerformanceTest extends AbstractSearchEndpointTest {
 		json += "			    \"query\":{";
 		json += "			        \"bool\" : {";
 		json += "			            \"must\" : {";
-		json += "			                \"term\" : { \"schema.name\" : \"content\" }";
+		json += "			                \"term\" : { \"schema.name.raw\" : \"content\" }";
 		json += "			            }";
 		json += "			        }";
 		json += "			    }";

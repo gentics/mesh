@@ -1,11 +1,11 @@
 package com.gentics.mesh.graphdb.orientdb;
 
+import static com.gentics.mesh.graphdb.orientdb.ThreadUtils.runAndWait;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.gentics.mesh.graphdb.orientdb.ThreadUtils.*;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
@@ -29,7 +29,7 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 		try (Tx tx = db.tx()) {
 			String name = "SomeName";
 			p = addPersonWithFriends(tx.getGraph(), name);
-//			tx.getGraph().commit();
+			// tx.getGraph().commit();
 			tx.success();
 			runAndWait(() -> {
 				try (Tx tx2 = db.tx()) {
@@ -51,14 +51,15 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 	@Test
 	public void testMultithreading() {
 
-		//		fg.commit();
+		// fg.commit();
 		runAndWait(() -> {
 			Person reloaded;
 			try (Tx tx = db.tx()) {
 				manipulatePerson(tx.getGraph(), p);
 				String name = "newName";
 				p.setName(name);
-				reloaded = tx.getGraph().v().has(Person.class).has("name", name).nextOrDefaultExplicit(Person.class, null);
+				reloaded = tx.getGraph().v().has(Person.class).has("name", name).nextOrDefaultExplicit(Person.class,
+						null);
 				System.out.println(reloaded.getName());
 				assertNotNull(reloaded);
 				manipulatePerson(tx.getGraph(), reloaded);

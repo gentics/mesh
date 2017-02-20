@@ -26,7 +26,9 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	private static final String STRING_LIST = "stringList";
@@ -43,7 +45,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			prepareNode(node, "stringList", "string");
 
@@ -60,7 +62,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			StringGraphFieldList list = container.createStringList("dummyList");
 
@@ -88,7 +90,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			StringGraphFieldList testField = container.createStringList("testField");
 			testField.createString("one");
@@ -105,7 +107,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			StringGraphFieldList fieldA = container.createStringList("fieldA");
 			StringGraphFieldList fieldB = container.createStringList("fieldB");
@@ -123,7 +125,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			StringGraphFieldList fieldA = container.createStringList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
@@ -134,7 +136,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			String dummyValue = "test123";
 
@@ -164,7 +166,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestTestcase(STRING_LIST, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -172,7 +174,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(STRING_LIST, FETCH);
 		}
 	}
@@ -180,7 +182,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeRemoveFieldViaNullTestcase(STRING_LIST, FETCH, FILLTEXT, (node) -> {
 				updateContainer(ac, node, STRING_LIST, null);
@@ -191,7 +193,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(STRING_LIST, FETCH, FILLTEXT, (container) -> {
 				updateContainer(ac, container, STRING_LIST, null);
@@ -201,7 +203,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(STRING_LIST, FILLTEXT, (container) -> {
 				StringFieldListImpl field = new StringFieldListImpl();

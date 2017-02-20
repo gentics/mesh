@@ -1,6 +1,8 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -18,12 +20,14 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = true, useTinyDataset = false, startServer = true)
 public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchAndSort() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
@@ -34,7 +38,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 		json += "			    \"query\":{";
 		json += "			        \"bool\" : {";
 		json += "			            \"must\" : {";
-		json += "			                \"term\" : { \"schema.name\" : \"content\" }";
+		json += "			                \"term\" : { \"schema.name.raw\" : \"content\" }";
 		json += "			            }";
 		json += "			        }";
 		json += "			    }";
@@ -60,7 +64,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchContent() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
@@ -83,7 +87,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	 */
 	@Test
 	public void testSearchMissingVertex() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 
 			Node node = content("honda nr");

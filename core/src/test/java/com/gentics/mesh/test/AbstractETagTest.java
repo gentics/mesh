@@ -9,9 +9,10 @@ import static org.junit.Assert.assertNull;
 
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.ETag;
 
-public abstract class AbstractETagTest extends AbstractRestEndpointTest {
+public abstract class AbstractETagTest extends AbstractMeshTest {
 
 	/**
 	 * Set the if-none-match header with the given etag and assert that the response contains the full response instead of an 304 response with no body.

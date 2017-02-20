@@ -28,7 +28,9 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	private static final String DATE_LIST = "dateList";
@@ -45,7 +47,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			prepareNode(node, "dateList", "date");
 
@@ -62,7 +64,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphFieldList list = container.createDateList("dummyList");
 			assertNotNull(list);
@@ -79,23 +81,25 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphFieldList testField = container.createDateList("testField");
 			testField.createDate(47L);
 			testField.createDate(11L);
 
-			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph()
+					.addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getDateList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
+			assertThat(otherContainer.getDateList("testField")).as("cloned field")
+					.isEqualToComparingFieldByField(testField);
 		}
 	}
 
 	@Test
 	@Override
 	public void testEquals() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphFieldList fieldA = container.createDateList("fieldA");
 			DateGraphFieldList fieldB = container.createDateList("fieldB");
@@ -113,7 +117,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphFieldList fieldA = container.createDateList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
@@ -124,7 +128,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			Long dummyValue = 4200L;
 
@@ -154,7 +158,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestTestcase(DATE_LIST, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -162,7 +166,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(DATE_LIST, FETCH);
 		}
 	}
@@ -170,7 +174,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeRemoveFieldViaNullTestcase(DATE_LIST, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, DATE_LIST, null);
@@ -181,7 +185,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(DATE_LIST, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, DATE_LIST, null);
@@ -192,7 +196,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(DATE_LIST, FILL, (container) -> {
 				DateFieldListImpl field = new DateFieldListImpl();
@@ -203,8 +207,10 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 				DateGraphFieldList field = container.getDateList(DATE_LIST);
 				assertNotNull("The graph field {" + DATE_LIST + "} could not be found.", field);
 				assertEquals("The list of the field was not updated.", 2, field.getList().size());
-				assertEquals("The list item of the field was not updated.", 42000L, field.getList().get(0).getDate().longValue());
-				assertEquals("The list item of the field was not updated.", 43000L, field.getList().get(1).getDate().longValue());
+				assertEquals("The list item of the field was not updated.", 42000L,
+						field.getList().get(0).getDate().longValue());
+				assertEquals("The list item of the field was not updated.", 43000L,
+						field.getList().get(1).getDate().longValue());
 			});
 		}
 	}

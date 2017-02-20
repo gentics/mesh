@@ -1,6 +1,10 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -40,15 +44,17 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.json.JsonObject;
 
+@MeshTestSetting(useElasticsearch = true, startServer = true, useTinyDataset = false)
 public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfMicronodesResolveLinks() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			addMicronodeListField();
 			recreateIndices();
 		}
@@ -67,7 +73,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 					assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 					for (NodeResponse nodeResponse : response.getData()) {
 						assertNotNull("Returned node must not be null", nodeResponse);
-						assertEquals("Check result uuid", db.noTx(() -> content("concorde").getUuid()), nodeResponse.getUuid());
+						assertEquals("Check result uuid", db().noTx(() -> content("concorde").getUuid()), nodeResponse.getUuid());
 					}
 				} else {
 					assertEquals("Check returned search results", 0, response.getData().size());
@@ -80,10 +86,11 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testTrigramSearchQuery() throws Exception {
 		// 1. Index all existing contents
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
+		//TODO this test should work once the lowercase filter has been applied
 		JsonObject query = new JsonObject().put("min_score", 1.0).put("query",
 				new JsonObject().put("match_phrase", new JsonObject().put("fields.content", new JsonObject().put("query", "Hersteller"))));
 
@@ -99,12 +106,12 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testSchemaMigrationNodeSearchTest() throws Exception {
 
 		// 1. Index all existing contents
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
 		// 2. Assert that the the en, de variant of the node could be found in the search index
-		String uuid = db.noTx(() -> content("concorde").getUuid());
+		String uuid = db().noTx(() -> content("concorde").getUuid());
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		NodeListResponse response = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid), new PagingParametersImpl().setPage(1).setPerPage(10),
@@ -114,7 +121,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		// 3. Prepare an updated schema
 		String schemaUuid;
 		SchemaUpdateRequest schema;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node concorde = content("concorde");
 			SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 			schema = JsonUtil.readValue(schemaVersion.getJson(), SchemaUpdateRequest.class);
@@ -131,13 +138,13 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 5. Assign the new schema version to the release
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
-		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, db.noTx(() -> project().getLatestRelease().getUuid()),
+		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, db().noTx(() -> project().getLatestRelease().getUuid()),
 				new SchemaReference().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
 
 		// Wait for migration to complete
 		failingLatch(latch);
 
-		searchProvider.refreshIndex();
+		searchProvider().refreshIndex();
 
 		// 6. Assert that the two migrated language variations can be found
 		response = call(
@@ -148,7 +155,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchManyNodesWithMicronodes() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			int numAdditionalNodes = 99;
 			addMicronodeField();
@@ -187,11 +194,11 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	 */
 	@Test
 	public void testTagCount() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content("concorde");
 			int previousTagCount = node.getTags(project().getLatestRelease()).size();
 			// Create tags:
@@ -215,11 +222,11 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testGlobalNodeSearch() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse oldNode = call(
 					() -> client().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
 
@@ -253,7 +260,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testTakeDraftOffline() throws Exception {
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
@@ -281,7 +288,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
 		// 5. Invoke the take offline action on the project base node
-		String baseUuid = db.noTx(() -> project().getBaseNode().getUuid());
+		String baseUuid = db().noTx(() -> project().getBaseNode().getUuid());
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseUuid, new PublishParameters().setRecursive(true)));
 
 		// 6. The node should still be found because it is still a draft
@@ -296,7 +303,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testGlobalPublishedNodeSearch() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
 
@@ -327,7 +334,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
 		// 6. Invoke the take offline action on the project base node
-		String baseUuid = db.noTx(() -> project().getBaseNode().getUuid());
+		String baseUuid = db().noTx(() -> project().getBaseNode().getUuid());
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseUuid, new PublishParameters().setRecursive(true)));
 
 		// 7. search globally for published version and assert that the node could be found

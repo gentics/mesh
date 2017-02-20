@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -26,16 +27,18 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.vertx.core.buffer.Buffer;
 
-public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testImageResize() throws Exception {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 
 			// 1. Upload image
@@ -53,7 +56,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testImageResizeOverLimit() throws Exception {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
 			// 1. Upload image
@@ -68,7 +71,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testImageExactLimit() throws Exception {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
 			// 1. Upload image
@@ -86,7 +89,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTransformImage() throws Exception {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			// 1. Upload image
 			NodeResponse response = uploadImage(node, "en", "image");
@@ -107,7 +110,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTransformImageNoParameters() throws Exception {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			// 1. Upload image
 			NodeResponse response = uploadImage(node, "en", "image");
@@ -121,7 +124,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTransformNonBinary() throws Exception {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			String version = node.getGraphFieldContainer("en").getVersion().toString();
 
@@ -134,7 +137,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTransformNonImage() throws Exception {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 
 			prepareSchema(node, "*/*", "image");
@@ -151,7 +154,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTransformEmptyField() throws Exception {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 
 			prepareSchema(node, "image/.*", "image");
@@ -180,7 +183,7 @@ public class NodeImageResizeEndpointTest extends AbstractRestEndpointTest {
 		assertEquals(expectedHeight, img.getHeight());
 
 		if (binaryField != null) {
-			File cacheFile = meshDagger.imageManipulator().getCacheFile(binaryField.getSHA512Sum(), params);
+			File cacheFile = meshDagger().imageManipulator().getCacheFile(binaryField.getSHA512Sum(), params);
 			assertTrue("The cache file could not be found in the cache directory. {" + cacheFile.getAbsolutePath() + "}", cacheFile.exists());
 		}
 	}

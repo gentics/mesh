@@ -3,12 +3,14 @@ package com.gentics.mesh.core.node;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
+
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -20,14 +22,16 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeNodeOffline() {
 
-		String nodeUuid = db.noTx(() -> {
+		String nodeUuid = db().noTx(() -> {
 			Node node = folder("products");
 			String uuid = node.getUuid();
 
@@ -38,7 +42,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 		});
 
 		// assert that the containers have both webrootpath properties set
-		try (NoTx noTx1 = db.noTx()) {
+		try (NoTx noTx1 = db().noTx()) {
 			for (String language : Arrays.asList("en", "de")) {
 				for (String property : Arrays.asList(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY,
 						NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY)) {
@@ -49,11 +53,10 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 		}
 
 		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
-		assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
-				.isNotPublished("de");
+		assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en").isNotPublished("de");
 
 		// assert that the containers have only the draft webrootpath properties set
-		try (NoTx noTx2 = db.noTx()) {
+		try (NoTx noTx2 = db().noTx()) {
 			for (String language : Arrays.asList("en", "de")) {
 				String property = NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY;
 				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
@@ -70,7 +73,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTakeNodeLanguageOffline() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -85,8 +88,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en");
 
 			// 4. Assert status
-			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
-					.isPublished("de");
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en").isPublished("de");
 
 			// 5. Take also de offline
 			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"));
@@ -100,13 +102,13 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTakeNodeOfflineNoPermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
-			db.tx(() -> {
+			db().tx(() -> {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
@@ -116,13 +118,13 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTakeNodeLanguageOfflineNoPermission() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
-			db.tx(() -> {
+			db().tx(() -> {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
@@ -132,7 +134,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTakeOfflineNodeOffline() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -148,7 +150,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTakeOfflineNodeLanguageOffline() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -169,7 +171,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTakeOfflineEmptyLanguage() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -179,7 +181,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTakeOfflineWithOnlineChild() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node news = folder("news");
 			Node news2015 = folder("2015");
 
@@ -192,8 +194,8 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTakeOfflineLastLanguageWithOnlineChild() {
-		String newsUuid = db.noTx(() -> folder("news").getUuid());
-		String news2015Uuid = db.noTx(() -> folder("2015").getUuid());
+		String newsUuid = db().noTx(() -> folder("news").getUuid());
+		String news2015Uuid = db().noTx(() -> folder("2015").getUuid());
 
 		call(() -> client().publishNode(PROJECT_NAME, newsUuid));
 		call(() -> client().publishNode(PROJECT_NAME, news2015Uuid));
@@ -207,7 +209,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testTakeOfflineForRelease() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -231,9 +233,9 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
 					new VersioningParameters().setRelease(initialRelease.getName())))).as("Initial release publish status").isNotPublished("en")
 							.isNotPublished("de");
-			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
-					new VersioningParameters().setRelease(newRelease.getName())))).as("New release publish status").isPublished("en")
-							.doesNotContain("de");
+			assertThat(call(
+					() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(newRelease.getName()))))
+							.as("New release publish status").isPublished("en").doesNotContain("de");
 
 		}
 	}
@@ -245,7 +247,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 	public void testTakeNodeOfflineConsistency() {
 
 		//1. Publish /news  & /news/2015
-		db.noTx(() -> {
+		db().noTx(() -> {
 			System.out.println(project().getBaseNode().getUuid());
 			System.out.println(folder("news").getUuid());
 			System.out.println(folder("2015").getUuid());
@@ -253,7 +255,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 		});
 
 		// 2. Take folder /news offline - This should fail since folder /news/2015 is still published
-		db.noTx(() -> {
+		db().noTx(() -> {
 			// 1. Take folder offline
 			Node node = folder("news");
 			call(() -> client().takeNodeOffline(PROJECT_NAME, node.getUuid()), BAD_REQUEST, "node_error_children_containers_still_published");
@@ -261,7 +263,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 		});
 
 		//3. Take sub nodes offline
-		db.noTx(() -> {
+		db().noTx(() -> {
 			call(() -> client().takeNodeOffline(PROJECT_NAME, content("news overview").getUuid(), new PublishParameters().setRecursive(false)));
 			call(() -> client().takeNodeOffline(PROJECT_NAME, folder("2015").getUuid(), new PublishParameters().setRecursive(true)));
 			call(() -> client().takeNodeOffline(PROJECT_NAME, folder("2014").getUuid(), new PublishParameters().setRecursive(true)));
@@ -269,7 +271,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractRestEndpointTest {
 		});
 
 		// 4. Take folder /news offline - It should work since all child nodes have been taken offline
-		db.noTx(() -> {
+		db().noTx(() -> {
 			// 1. Take folder offline
 			Node node = folder("news");
 			call(() -> client().takeNodeOffline(PROJECT_NAME, node.getUuid()));

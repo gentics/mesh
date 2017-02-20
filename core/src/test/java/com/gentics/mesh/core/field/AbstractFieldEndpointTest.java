@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field;
 
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
@@ -16,11 +17,11 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
-public abstract class AbstractFieldEndpointTest extends AbstractRestEndpointTest implements FieldEndpointTestcases {
+public abstract class AbstractFieldEndpointTest extends AbstractMeshTest implements FieldEndpointTestcases {
 
 	protected NodeResponse readNode(Node node, String... expandedFieldNames) {
 		NodeParameters parameters = new NodeParameters();

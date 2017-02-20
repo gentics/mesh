@@ -18,16 +18,18 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 /**
  * Test {@link UpdateFieldChangeImpl} methods.
  */
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
 public class UpdateFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			change.setLabel("testLabel");
 			assertEquals("testLabel", change.getLabel());
@@ -37,7 +39,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testApply() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			SchemaModel schema = new SchemaModel("test");
@@ -57,7 +59,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaChangeModel model = new SchemaChangeModel(UPDATEFIELD, "someField");
 			UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			change.updateFromRest(model);
@@ -68,7 +70,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			assertNull("Update field changes have no auto migation script.", change.getAutoMigrationScript());
 
@@ -81,7 +83,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			change.setFieldName("fieldName");
 

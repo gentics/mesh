@@ -1,11 +1,13 @@
 package com.gentics.mesh.core.field.node;
 
 import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
+
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
@@ -21,13 +23,15 @@ import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class BasicNodeFieldEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateNodeAndOmitRequiredField() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// 1. create required field
 			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();

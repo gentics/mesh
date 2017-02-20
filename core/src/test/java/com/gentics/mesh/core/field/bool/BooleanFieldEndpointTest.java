@@ -23,14 +23,16 @@ import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	private static final String FIELD_NAME = "booleanField";
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 			BooleanFieldSchema booleanFieldSchema = new BooleanFieldSchemaImpl();
 			booleanFieldSchema.setName(FIELD_NAME);
@@ -43,7 +45,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createBoolean(FIELD_NAME).setBoolean(true);
@@ -57,7 +59,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			for (int i = 0; i < 20; i++) {
 				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
@@ -90,7 +92,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -102,7 +104,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -149,7 +151,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
 			assertNull(field);
@@ -159,7 +161,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
 			BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
 			assertTrue(field.getValue());

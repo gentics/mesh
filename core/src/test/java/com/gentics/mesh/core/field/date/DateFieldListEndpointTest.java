@@ -23,7 +23,9 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Override
@@ -34,7 +36,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			DateFieldListImpl listField = new DateFieldListImpl();
 			String dateA = toISO8601(4200L);
 			String dateB = toISO8601(4100L);
@@ -50,7 +52,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			DateFieldListImpl listField = new DateFieldListImpl();
 			listField.add(toISO8601(4200L));
 			listField.add(toISO8601(4100L));
@@ -62,7 +64,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			DateFieldListImpl listField = new DateFieldListImpl();
 			String dateA = toISO8601(4200L);
 			String dateB = toISO8601(4100L);
@@ -76,7 +78,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			assertThat(response.getFields().getDateFieldList(FIELD_NAME)).as("List field in response should be null").isNull();
 		}
@@ -85,7 +87,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			DateFieldListImpl listField = new DateFieldListImpl();
 			listField.add(toISO8601(4200L));
 			listField.add(toISO8601(4100L));
@@ -101,7 +103,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// 1. Update an existing node
 			DateFieldListImpl listField = new DateFieldListImpl();
 			listField.add(toISO8601(4200L));
@@ -119,7 +121,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 
 			List<List<String>> valueCombinations = Arrays.asList(Arrays.asList(toISO8601(1000L), toISO8601(2000L), toISO8601(3000L)),
@@ -150,7 +152,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			DateFieldListImpl list = new DateFieldListImpl();
 			String dateA = toISO8601(42000L);
 			String dateB = toISO8601(41000L);
@@ -183,7 +185,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			DateFieldListImpl list = new DateFieldListImpl();
 			String dateA = toISO8601(4200L);
 			String dateB = toISO8601(4100L);

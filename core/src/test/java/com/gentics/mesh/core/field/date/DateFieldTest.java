@@ -32,8 +32,10 @@ import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.mock.Mocks;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.DateUtils;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 
 	private static final String DATE_FIELD = "dateField";
@@ -49,7 +51,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 
 	@Test
 	public void testSimpleDate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Long nowEpoch = System.currentTimeMillis() / 1000;
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphFieldImpl field = new DateGraphFieldImpl("test", container);
@@ -66,7 +68,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Long nowEpoch = System.currentTimeMillis() / 1000;
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphField dateField = container.createDate(DATE_FIELD);
@@ -82,7 +84,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Long nowEpoch = System.currentTimeMillis() / 1000;
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphField dateField = container.createDate(DATE_FIELD);
@@ -100,7 +102,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 
 			// Add html field schema to the schema
@@ -128,7 +130,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			Long date = System.currentTimeMillis();
 			DateGraphField fieldA = container.createDate(DATE_FIELD);
@@ -142,7 +144,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphField fieldA = container.createDate(DATE_FIELD);
 			DateGraphField fieldB = container.createDate(DATE_FIELD + "_2");
@@ -153,7 +155,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			Long date = System.currentTimeMillis();
 
@@ -180,7 +182,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestTestcase(DATE_FIELD, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -188,7 +190,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(DATE_FIELD, FETCH);
 		}
 	}
@@ -196,7 +198,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext("", null);
 			invokeRemoveFieldViaNullTestcase(DATE_FIELD, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, DATE_FIELD, null);
@@ -207,7 +209,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext("", null);
 			invokeRemoveRequiredFieldViaNullTestcase(DATE_FIELD, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, DATE_FIELD, null);
@@ -218,7 +220,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext("", null);
 			invokeUpdateFromRestValidSimpleValueTestcase(DATE_FIELD, FILL, (container) -> {
 				DateField field = new DateFieldImpl();

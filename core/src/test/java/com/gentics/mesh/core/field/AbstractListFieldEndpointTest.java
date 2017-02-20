@@ -17,7 +17,7 @@ public abstract class AbstractListFieldEndpointTest extends AbstractFieldEndpoin
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			setSchema(getListFieldType());
 		}
 	}

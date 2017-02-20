@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.release.ReleaseReference;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
@@ -36,16 +37,18 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.test.AbstractBasicIsolatedObjectTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.ext.web.RoutingContext;
 
-public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Release release = project().getInitialRelease();
 			ReleaseReference reference = release.transformToReference();
 			assertThat(reference).isNotNull();
@@ -57,7 +60,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAllVisible() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			Release initialRelease = releaseRoot.getInitialRelease();
@@ -76,7 +79,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindAll() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			Release initialRelease = releaseRoot.getInitialRelease();
@@ -92,7 +95,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testRootNode() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			assertThat(releaseRoot).as("Release Root of Project").isNotNull();
@@ -107,7 +110,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByName() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			Release foundRelease = releaseRoot.findByName(project.getName());
@@ -118,7 +121,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			Release initialRelease = project.getInitialRelease();
@@ -136,7 +139,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			Release initialRelease = releaseRoot.getInitialRelease();
@@ -170,7 +173,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			initialRelease.setName("New Release Name");
@@ -184,7 +187,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testReadPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Release newRelease = project().getReleaseRoot().create("New Release", user());
 			testPermission(GraphPermission.READ_PERM, newRelease);
 		}
@@ -193,7 +196,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testDeletePermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Release newRelease = project().getReleaseRoot().create("New Release", user());
 			testPermission(GraphPermission.DELETE_PERM, newRelease);
 		}
@@ -202,7 +205,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testUpdatePermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Release newRelease = project().getReleaseRoot().create("New Release", user());
 			testPermission(GraphPermission.UPDATE_PERM, newRelease);
 		}
@@ -211,7 +214,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testCreatePermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Release newRelease = project().getReleaseRoot().create("New Release", user());
 			testPermission(GraphPermission.CREATE_PERM, newRelease);
 		}
@@ -220,7 +223,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Release release = project().getInitialRelease();
 
 			RoutingContext rc = getMockedRoutingContext(user());
@@ -245,7 +248,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testReadSchemaVersions() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			List<SchemaContainerVersion> versions = project.getSchemaContainerRoot().findAll().stream().map(SchemaContainer::getLatestVersion)
 					.collect(Collectors.toList());
@@ -265,8 +268,8 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	 */
 	@Test
 	public void testAssignSchema() throws Exception {
-		try (NoTx noTx = db.noTx()) {
-			SchemaContainer schemaContainer = createSchema("bla");
+		try (NoTx noTx = db().noTx()) {
+			SchemaContainer schemaContainer = createSchemaDirect("bla");
 			updateSchema(schemaContainer, "newfield");
 			SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
 
@@ -303,7 +306,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	 */
 	@Test
 	public void testUnassignSchema() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			List<? extends SchemaContainer> schemas = project.getSchemaContainerRoot().findAll();
 			SchemaContainer schemaContainer = schemas.get(0);
@@ -323,10 +326,10 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testReleaseSchemaVersion() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 
-			SchemaContainer schemaContainer = createSchema("bla");
+			SchemaContainer schemaContainer = createSchemaDirect("bla");
 			SchemaContainerVersion firstVersion = schemaContainer.getLatestVersion();
 
 			// assign the schema to the project
@@ -348,7 +351,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testReadMicroschemaVersions() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			List<MicroschemaContainerVersion> versions = project.getMicroschemaContainerRoot().findAll().stream()
 					.map(MicroschemaContainer::getLatestVersion).collect(Collectors.toList());
@@ -368,8 +371,8 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	 */
 	@Test
 	public void testAssignMicroschema() throws Exception {
-		try (NoTx noTx = db.noTx()) {
-			MicroschemaContainer microschemaContainer = createMicroschema("bla");
+		try (NoTx noTx = db().noTx()) {
+			MicroschemaContainer microschemaContainer = createMicroschemaDirect("bla");
 			updateMicroschema(microschemaContainer, "newfield");
 			MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
 
@@ -406,7 +409,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	 */
 	@Test
 	public void testUnassignMicroschema() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			List<? extends MicroschemaContainer> microschemas = project.getMicroschemaContainerRoot().findAll();
 			MicroschemaContainer microschemaContainer = microschemas.get(0);
@@ -427,10 +430,10 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 
 	@Test
 	public void testReleaseMicroschemaVersion() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 
-			MicroschemaContainer microschemaContainer = createMicroschema("bla");
+			MicroschemaContainer microschemaContainer = createMicroschemaDirect("bla");
 			MicroschemaContainerVersion firstVersion = microschemaContainer.getLatestVersion();
 
 			// assign the microschema to the project
@@ -458,7 +461,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	 * @return schema container
 	 * @throws Exception
 	 */
-	protected SchemaContainer createSchema(String name) throws Exception {
+	protected SchemaContainer createSchemaDirect(String name) throws Exception {
 		Schema schema = new SchemaModel();
 		schema.setName(name);
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
@@ -501,7 +504,7 @@ public class ReleaseTest extends AbstractBasicIsolatedObjectTest {
 	 * @return microschema container
 	 * @throws Exception
 	 */
-	protected MicroschemaContainer createMicroschema(String name) throws Exception {
+	protected MicroschemaContainer createMicroschemaDirect(String name) throws Exception {
 		MicroschemaModel microschema = new MicroschemaModel();
 		microschema.setName(name);
 		microschema.addField(FieldUtil.createStringFieldSchema("name"));

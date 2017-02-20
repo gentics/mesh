@@ -22,7 +22,9 @@ import javax.script.ScriptException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.number.NumberFieldTestHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class NumberFieldMigrationTest extends AbstractFieldMigrationTest implements NumberFieldTestHelper {
 
 	@Override

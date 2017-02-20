@@ -1,5 +1,6 @@
 package com.gentics.mesh.core;
 
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -8,12 +9,14 @@ import org.junit.Test;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.orientechnologies.orient.core.OConstants;
 
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 
-public class RestInfoEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class RestInfoEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetInfo() {

@@ -61,6 +61,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.MeshJsonException;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
 
@@ -68,6 +69,7 @@ import io.vertx.core.json.JsonObject;
  * Test cases for fields of type "micronode"
  */
 // TODO: add tests for all types of fields that can be put into a micronode
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> {
 
 	private static final String MICRONODE_FIELD = "micronodeField";
@@ -97,7 +99,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 		stringFieldSchema.setLabel("String Field");
 		dummyMicroschema.addField(stringFieldSchema);
 
-		return boot.microschemaContainerRoot().create(dummyMicroschema, getRequestUser());
+		return boot().microschemaContainerRoot().create(dummyMicroschema, getRequestUser());
 	}
 
 	/**
@@ -107,7 +109,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 
 	@Before
 	public void addDummySchema() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			dummyMicroschema = createDummyMicroschema();
 		}
 	}
@@ -115,7 +117,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node newOverview = content("news overview");
 			Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
 
@@ -137,7 +139,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			fullMicroschema.addField(new NumberFieldSchemaImpl().setName("numberfield").setLabel("Number Field"));
 			fullMicroschema.addField(new StringFieldSchemaImpl().setName("stringfield").setLabel("String Field"));
 
-			MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(fullMicroschema, getRequestUser());
+			MicroschemaContainer microschemaContainer = boot().microschemaContainerRoot().create(fullMicroschema, getRequestUser());
 
 			Node node = folder("2015");
 			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -219,7 +221,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	 */
 	@Test
 	public void testCreateMicronodeField() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
 			MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
@@ -247,7 +249,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 
 	@Test
 	public void testMicronodeUpdateFromRest() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
 			MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
@@ -272,7 +274,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testClone() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 
@@ -288,7 +290,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
 			MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
@@ -316,7 +318,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testEquals() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			MicronodeGraphField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
 			MicronodeGraphField fieldB = container.createMicronode("fieldB", microschemaContainer("vcard").getLatestVersion());
@@ -334,7 +336,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			MicronodeGraphField fieldA = container.createMicronode("fieldA", microschemaContainer("vcard").getLatestVersion());
 			assertFalse(fieldA.equals((Field) null));
@@ -345,7 +347,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			// Create microschema for the micronode
 			MicroschemaContainerVersion containerVersion = noTx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
@@ -382,7 +384,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestTestcase(MICRONODE_FIELD, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -390,7 +392,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(MICRONODE_FIELD, FETCH);
 		}
 	}
@@ -398,7 +400,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeRemoveFieldViaNullTestcase(MICRONODE_FIELD, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, MICRONODE_FIELD, null);
@@ -409,7 +411,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(MICRONODE_FIELD, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, MICRONODE_FIELD, null);
@@ -420,7 +422,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(MICRONODE_FIELD, FILL, (container) -> {
 				MicronodeResponse field = new MicronodeResponse();
