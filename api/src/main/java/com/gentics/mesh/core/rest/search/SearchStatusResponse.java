@@ -7,5 +7,4 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class SearchStatusResponse implements RestModel {
 
-
 }

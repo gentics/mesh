@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.schema.impl;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -10,6 +11,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 public class MicronodeFieldSchemaImpl extends AbstractFieldSchema implements MicronodeFieldSchema {
 
 	@JsonProperty("allow")
+	@JsonPropertyDescription("Array of names of allowed microschemas.")
 	private String[] allowedMicroSchemas;
 
 	@Override

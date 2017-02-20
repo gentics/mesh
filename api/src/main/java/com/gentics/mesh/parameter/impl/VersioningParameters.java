@@ -39,7 +39,7 @@ public class VersioningParameters extends AbstractParameters {
 	}
 
 	public String getVersion() {
-		String version = "published";
+		String version = "draft";
 		String versionParameter = getParameter(VERSION_QUERY_PARAM_KEY);
 		if (versionParameter != null) {
 			if ("draft".equalsIgnoreCase(versionParameter) || "published".equalsIgnoreCase(versionParameter)) {
@@ -77,6 +77,15 @@ public class VersioningParameters extends AbstractParameters {
 		return setVersion("draft");
 	}
 
+	/**
+	 * Request the published version. Alias for setVersion("published")
+	 * 
+	 * @return fluent API
+	 */
+	public VersioningParameters published() {
+		return setVersion("published");
+	}
+
 	public String getRelease() {
 		return getParameter(RELEASE_QUERY_PARAM_KEY);
 	}
@@ -101,7 +110,7 @@ public class VersioningParameters extends AbstractParameters {
 
 		// version
 		QueryParameter versionParameter = new QueryParameter();
-		versionParameter.setDefaultValue("published");
+		versionParameter.setDefaultValue("draft");
 		versionParameter.setDescription("Specifies the version to be loaded. Can either be published/draft or version number.");
 		versionParameter.setExample("1.1");
 		versionParameter.setRequired(false);

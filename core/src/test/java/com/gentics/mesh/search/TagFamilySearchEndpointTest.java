@@ -1,8 +1,8 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
 
 import org.codehaus.jettison.json.JSONException;
@@ -10,9 +10,12 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
-import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 
-public class TagFamilySearchEndpointTest extends AbstractSearchEndpointTest implements BasicSearchCrudTestcases {
+@MeshTestSetting(useElasticsearch = true, startServer = true, useTinyDataset = false)
+public class TagFamilySearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test
 	@Override
@@ -20,10 +23,8 @@ public class TagFamilySearchEndpointTest extends AbstractSearchEndpointTest impl
 		String tagFamilyName = "newtagfamily";
 		createTagFamily(PROJECT_NAME, tagFamilyName);
 
-		MeshResponse<TagFamilyListResponse> searchFuture = client().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName)).invoke();
-		latchFor(searchFuture);
-		assertSuccess(searchFuture);
-		assertEquals(1, searchFuture.result().getData().size());
+		TagFamilyListResponse list = call(() -> client().searchTagFamilies(getSimpleTermQuery("name.raw", tagFamilyName)));
+		assertEquals(1, list.getData().size());
 	}
 
 	@Test
@@ -32,16 +33,12 @@ public class TagFamilySearchEndpointTest extends AbstractSearchEndpointTest impl
 		String tagFamilyName = "newtagfamily";
 		TagFamilyResponse tagFamilyResponse = createTagFamily(PROJECT_NAME, tagFamilyName);
 
-		MeshResponse<TagFamilyListResponse> searchFuture = client().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName)).invoke();
-		latchFor(searchFuture);
-		assertSuccess(searchFuture);
-		assertEquals(1, searchFuture.result().getData().size());
+		TagFamilyListResponse list = call(() -> client().searchTagFamilies(getSimpleTermQuery("name.raw", tagFamilyName)));
+		assertEquals(1, list.getData().size());
 
 		deleteTagFamily(PROJECT_NAME, tagFamilyResponse.getUuid());
-		searchFuture = client().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName)).invoke();
-		latchFor(searchFuture);
-		assertSuccess(searchFuture);
-		assertEquals(0, searchFuture.result().getData().size());
+		list = call(() -> client().searchTagFamilies(getSimpleTermQuery("name.raw", tagFamilyName)));
+		assertEquals(0, list.getData().size());
 	}
 
 	@Test
@@ -55,20 +52,15 @@ public class TagFamilySearchEndpointTest extends AbstractSearchEndpointTest impl
 		updateTagFamily(PROJECT_NAME, tagFamily.getUuid(), newTagFamilyName);
 
 		// Check that the new tag family name is now stored in the search index
-		MeshResponse<TagFamilyListResponse> searchFuture = client().searchTagFamilies(getSimpleTermQuery("name", newTagFamilyName)).invoke();
-		latchFor(searchFuture);
-		assertSuccess(searchFuture);
-		assertEquals("The simple term query for name {" + newTagFamilyName + "} did not find the updated tag family entry", 1,
-				searchFuture.result().getData().size());
+		TagFamilyListResponse list = call(() -> client().searchTagFamilies(getSimpleTermQuery("name.raw", newTagFamilyName)));
+		assertEquals("The simple term query for name {" + newTagFamilyName + "} did not find the updated tag family entry", 1, list.getData().size());
 
 		// Check that old tag family name is no longer stored in the search index
-		searchFuture = client().searchTagFamilies(getSimpleTermQuery("name", tagFamilyName)).invoke();
-		latchFor(searchFuture);
-		assertSuccess(searchFuture);
+		list = call(() -> client().searchTagFamilies(getSimpleTermQuery("name.raw", tagFamilyName)));
 		assertEquals(
 				"The simple term query for name {" + tagFamilyName
 						+ "}did find tag families using the old name. Those documents should have been removed from the search index since we updated the tag family name.",
-				0, searchFuture.result().getData().size());
+				0, list.getData().size());
 	}
 
 }

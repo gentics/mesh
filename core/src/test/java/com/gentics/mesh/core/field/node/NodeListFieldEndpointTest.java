@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.node;
 
+import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +31,9 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Override
@@ -41,7 +44,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(null, (Field) null);
 			NodeFieldList nodeField = response.getFields().getNodeFieldList(FIELD_NAME);
 			assertNull(nodeField);
@@ -51,7 +54,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(null);
 			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
@@ -61,7 +64,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(null);
 			updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
@@ -70,7 +73,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testBogusNodeList() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(new NodeFieldListItemImpl("bogus"));
 
@@ -82,7 +85,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testValidNodeList() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(new NodeFieldListItemImpl(content().getUuid()));
 			listField.add(new NodeFieldListItemImpl(folder("news").getUuid()));
@@ -99,7 +102,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			Node targetNode = folder("news");
 			Node targetNode2 = folder("deals");
@@ -133,7 +136,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node targetNode = folder("news");
 			Node targetNode2 = folder("deals");
 
@@ -151,7 +154,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node targetNode = folder("news");
 			Node targetNode2 = folder("deals");
 
@@ -184,7 +187,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node targetNode = folder("news");
 			Node targetNode2 = folder("deals");
 
@@ -211,7 +214,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(folder("news").getUuid());
 			listField.add(item);
@@ -224,7 +227,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
@@ -239,7 +242,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedListWithNoPermOnItem() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node referencedNode = folder("news");
 			role().revokePermissions(referencedNode, GraphPermission.READ_PERM);
 			Node node = folder("2015");
@@ -269,7 +272,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeListWithExistingField() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node newsNode = folder("news");
 			Node node = folder("2015");
 

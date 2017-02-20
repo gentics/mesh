@@ -1,9 +1,13 @@
 package com.gentics.mesh.core.rest.project;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 public class ProjectUpdateRequest implements RestModel {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("New name of the project")
 	private String name;
 
 	public ProjectUpdateRequest() {

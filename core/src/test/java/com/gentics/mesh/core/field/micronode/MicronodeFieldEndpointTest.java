@@ -40,14 +40,16 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	protected final static String FIELD_NAME = "micronodeField";
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 			microschemaFieldSchema.setName(FIELD_NAME);
@@ -61,7 +63,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			MicronodeField field = response.getFields().getMicronodeField(FIELD_NAME);
 			assertNull(field);
@@ -71,7 +73,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 
 			MicronodeResponse field = new MicronodeResponse();
@@ -114,7 +116,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			field.setMicroschema(new MicroschemaReference().setName("vcard"));
 			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
@@ -130,7 +132,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			field.setMicroschema(new MicroschemaReference().setName("vcard"));
 			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
@@ -162,7 +164,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			field.setMicroschema(new MicroschemaReference().setName("vcard"));
 			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
@@ -191,7 +193,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			MicroschemaReference microschema = new MicroschemaReference();
 			microschema.setName("vcard");
@@ -216,7 +218,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testCreateNodeWithInvalidMicroschema() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			MicroschemaReference microschema = new MicroschemaReference();
 			microschema.setName("notexisting");
@@ -228,7 +230,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testCreateNodeWithNotAllowedMicroschema() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			MicroschemaReference microschema = new MicroschemaReference();
 			microschema.setName("captionedImage");
@@ -242,7 +244,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainerVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
 			Node node = folder("2015");
 
@@ -268,7 +270,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	 */
 	@Test
 	public void testExpandAllCyclicMicronodeWithNodeReference() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 
 			// 1. Create microschema noderef with nodefield
@@ -306,7 +308,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	 */
 	@Test
 	public void testUpdateFieldTypes() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Long date = System.currentTimeMillis();
 			Node newsOverview = content("news overview");
 			Node newsFolder = folder("news");

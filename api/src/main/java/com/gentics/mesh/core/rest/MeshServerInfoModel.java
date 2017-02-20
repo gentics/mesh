@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -7,15 +8,25 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class MeshServerInfoModel implements RestModel {
 
+	@JsonPropertyDescription("Gentics Mesh Version string.")
 	private String meshVersion;
+
+	@JsonPropertyDescription("NodeId of the Gentics Mesh instance.")
 	private String meshNodeId;
 
+	@JsonPropertyDescription("Used database implementation vendor name.")
 	private String databaseVendor;
+
+	@JsonPropertyDescription("Used database implementation version.")
 	private String databaseVersion;
 
+	@JsonPropertyDescription("Used search implementation vendor name.")
 	private String searchVendor;
+
+	@JsonPropertyDescription("Used search implementation version.")
 	private String searchVersion;
 
+	@JsonPropertyDescription("Used vert.x version.")
 	private String vertxVersion;
 
 	public MeshServerInfoModel() {

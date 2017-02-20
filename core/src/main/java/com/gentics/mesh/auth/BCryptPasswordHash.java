@@ -20,7 +20,9 @@ public class BCryptPasswordHash {
 	 * Create a new bcrypt password hash.
 	 * 
 	 * @param passwordHash
+	 *            Hashed password
 	 * @param passwordEncoder
+	 *            Password encoder
 	 */
 	public BCryptPasswordHash(String passwordHash, BCryptPasswordEncoder passwordEncoder) {
 		// TODO inject securityConfiguration

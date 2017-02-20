@@ -56,7 +56,8 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * @param requestParameters
 	 *            Query parameters which will form the complete query string
 	 */
-	public LocalActionContextImpl(MeshAuthUser user, Class<? extends T> classOfResponse, ParameterProvider... requestParameters) {
+	public LocalActionContextImpl(MeshAuthUser user, Class<? extends T> classOfResponse,
+			ParameterProvider... requestParameters) {
 		this.query = getQuery(requestParameters);
 		this.user = user;
 		this.classOfResponse = classOfResponse;
@@ -78,6 +79,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * Set the query parameter for the request.
 	 * 
 	 * @param query
+	 *            Query parameter
 	 */
 	public void setQuery(String query) {
 		this.query = query;

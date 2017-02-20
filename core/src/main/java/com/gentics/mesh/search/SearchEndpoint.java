@@ -46,8 +46,6 @@ public class SearchEndpoint extends AbstractEndpoint {
 
 	private SearchRestHandler searchHandler;
 
-	private IndexHandlerRegistry registry;
-
 	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
@@ -78,11 +76,9 @@ public class SearchEndpoint extends AbstractEndpoint {
 	MicroschemaContainerIndexHandler microschemaContainerIndexHandler;
 
 	@Inject
-	public SearchEndpoint(RouterStorage routerStorage, SearchRestHandler searchHandler, IndexHandlerRegistry registry,
-			Lazy<BootstrapInitializer> boot) {
+	public SearchEndpoint(RouterStorage routerStorage, SearchRestHandler searchHandler, Lazy<BootstrapInitializer> boot) {
 		super("search", routerStorage);
 		this.searchHandler = searchHandler;
-		this.registry = registry;
 		this.boot = boot;
 	}
 
@@ -96,7 +92,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		secureAll();
 		addSearchEndpoints();
 	}

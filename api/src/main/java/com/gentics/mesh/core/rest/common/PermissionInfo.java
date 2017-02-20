@@ -8,25 +8,34 @@ import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 /**
  * Permission information
  */
 public class PermissionInfo implements RestModel {
 
+	@JsonPropertyDescription("Flag which indicates whether the create permission is granted.")
 	private Boolean create;
 
+	@JsonPropertyDescription("Flag which indicates whether the read permission is granted.")
 	private Boolean read;
 
+	@JsonPropertyDescription("Flag which indicates whether the update permission is granted.")
 	private Boolean update;
 
+	@JsonPropertyDescription("Flag which indicates whether the delete permission is granted.")
 	private Boolean delete;
 
+	@JsonPropertyDescription("Flag which indicates whether the publish permission is granted.")
 	private Boolean publish;
 
+	@JsonPropertyDescription("Flag which indicates whether the read published permission is granted.")
 	private Boolean readPublished;
 
 	public Boolean getRead() {
@@ -195,4 +204,63 @@ public class PermissionInfo implements RestModel {
 		return map;
 	}
 
+	/**
+	 * Return the permissions as a set.
+	 *
+	 * @return
+	 */
+	public Set<Permission> asSet() {
+		Set<Permission> set = new HashSet<>();
+		if (create) {
+			set.add(CREATE);
+		}
+		if (read) {
+			set.add(READ);
+		}
+		if (update) {
+			set.add(UPDATE);
+		}
+		if (delete) {
+			set.add(DELETE);
+		}
+		if (publish) {
+			set.add(PUBLISH);
+		}
+		if (readPublished) {
+			set.add(READ_PUBLISHED);
+		}
+		return set;
+	}
+
+	/**
+	 * Set the permissions from an iterable.
+	 * @param iterable
+	 */
+	public void fromIterable(Iterable<Permission> iterable) {
+		create = false;
+		read = false;
+		update = false;
+		delete = false;
+		publish = false;
+		readPublished = false;
+		for (Permission permission: iterable) {
+			set(permission, true);
+		}
+	}
+
+	/**
+	 * Set the permissions from an iterable.
+	 * @param iterable
+	 */
+	public void fromArray(Permission... iterable) {
+		create = false;
+		read = false;
+		update = false;
+		delete = false;
+		publish = false;
+		readPublished = false;
+		for (Permission permission: iterable) {
+			set(permission, true);
+		}
+	}
 }

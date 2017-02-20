@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.node;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -34,17 +35,20 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	final String FIELD_NAME = "nodeField";
 
 	@Before
 	public void updateSchema() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 			nodeFieldSchema.setName(FIELD_NAME);
@@ -58,7 +62,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			List<Node> targetNodes = Arrays.asList(folder("news"), folder("deals"));
 			for (int i = 0; i < 20; i++) {
@@ -83,7 +87,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node target = folder("news");
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 			String oldNumber = firstResponse.getVersion().getNumber();
@@ -96,7 +100,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node target = folder("news");
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 			String oldVersion = firstResponse.getVersion().getNumber();
@@ -123,7 +127,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node target = folder("news");
 			updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 			updateNodeFailure(FIELD_NAME, new NodeFieldImpl(), BAD_REQUEST, "node_error_field_property_missing", "uuid", FIELD_NAME);
@@ -132,7 +136,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testUpdateNodeFieldWithNodeResponseJson() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			Node node2 = folder("deals");
 
@@ -165,13 +169,12 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Ignore("Field deletion is currently not implemented.")
 	public void testCreateDeleteNodeField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
 			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertEquals(folder("news").getUuid(), field.getUuid());
 
 			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
-			nodeUpdateRequest.setSchema(new SchemaReference().setName("folder"));
 			nodeUpdateRequest.setLanguage("en");
 			nodeUpdateRequest.getFields().put(FIELD_NAME, null);
 
@@ -188,7 +191,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
 			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertEquals(folder("news").getUuid(), field.getUuid());
@@ -198,7 +201,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node newsNode = folder("news");
 			Node node = folder("2015");
 
@@ -212,9 +215,34 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	}
 
 	@Test
+	public void testReadNodeWithResolveLinks() {
+		try (NoTx noTx = db().noTx()) {
+			Node newsNode = folder("news");
+			Node node = folder("2015");
+
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			container.createNode(FIELD_NAME, newsNode);
+
+			// Read the node
+			NodeParameters parameters = new NodeParameters();
+			parameters.setLanguages("en");
+			parameters.setResolveLinks(LinkType.FULL);
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParameters().draft()));
+
+			// Check whether the field contains the languagePath
+			NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
+			assertNotNull(deserializedNodeField);
+			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
+			assertNotNull(deserializedNodeField.getPath());
+			assertNotNull(deserializedNodeField.getLanguagePaths());
+			assertThat(deserializedNodeField.getLanguagePaths()).containsKeys("en", "de");
+		}
+	}
+
+	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertNull(
@@ -225,7 +253,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadNodeExpandAll() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node referencedNode = folder("news");
 			Node node = folder("2015");
 
@@ -248,7 +276,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadNodeExpandAllNoPerm() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Revoke the permission to the referenced node
 			Node referencedNode = folder("news");
 			role().revokePermissions(referencedNode, GraphPermission.READ_PERM);
@@ -271,7 +299,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeWithExistingField() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node newsNode = folder("news");
 			Node node = folder("2015");
 
@@ -308,7 +336,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeWithLanguageFallback() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node folder = folder("2015");
 
 			// add a node in german and english
@@ -324,7 +352,6 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeResponse germanTarget = createGermanFuture.result();
 
 			NodeUpdateRequest createEnglishNode = new NodeUpdateRequest();
-			createEnglishNode.setSchema(new SchemaReference().setName("folder"));
 			createEnglishNode.setLanguage("en");
 			createEnglishNode.getFields().put("name", FieldUtil.createStringField("English Target"));
 

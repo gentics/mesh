@@ -139,6 +139,7 @@ public class MeshModule {
 		handler.setBodyLimit(Mesh.mesh().getOptions().getUploadOptions().getByteLimit());
 		// TODO check for windows issues
 		handler.setUploadsDirectory(tempDirectory);
+		handler.setMergeFormAttributes(false);
 		return handler;
 	}
 

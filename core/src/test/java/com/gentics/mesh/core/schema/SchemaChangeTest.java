@@ -7,7 +7,6 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -23,12 +22,15 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class SchemaChangeTest extends AbstractIsolatedBasicDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class SchemaChangeTest extends AbstractMeshTest{
 
 	@Test
 	public void testDomainModel() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
 			SchemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
@@ -62,7 +64,7 @@ public class SchemaChangeTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testMicroschemaChanges() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
 
 			MicroschemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
@@ -75,7 +77,7 @@ public class SchemaChangeTest extends AbstractIsolatedBasicDBTest {
 
 	@Test
 	public void testChangeChain() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 			SchemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			SchemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);

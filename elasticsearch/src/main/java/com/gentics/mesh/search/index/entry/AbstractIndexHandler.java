@@ -165,15 +165,16 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 */
 	public Completable updateMapping(String indexName, String documentType) {
 
+		final String normalizedDocumentType = documentType.toLowerCase();
 		if (searchProvider.getNode() != null) {
 			return Completable.create(sub -> {
 
 				org.elasticsearch.node.Node node = getESNode();
 				PutMappingRequestBuilder mappingRequestBuilder = node.client().admin().indices().preparePutMapping(indexName);
-				mappingRequestBuilder.setType(documentType);
+				mappingRequestBuilder.setType(normalizedDocumentType);
 
 				// Generate the mapping for the specific type
-				JsonObject mapping = getTransformator().getMapping(documentType);
+				JsonObject mapping = getTransformator().getMapping(normalizedDocumentType);
 				mappingRequestBuilder.setSource(mapping.toString());
 
 				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
@@ -247,9 +248,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			// Iterate over all document types of the found index and add
 			// completables which will create/update the mapping
 			String documentType = indexInfo.get(indexName);
-			Set<Completable> mappingObs = new HashSet<>();
-			mappingObs.add(updateMapping(indexName, documentType));
-			return searchProvider.createIndex(indexName).andThen(Completable.merge(mappingObs));
+			Set<Completable> obs = new HashSet<>();
+			obs.add(updateMapping(indexName, documentType));
+			return searchProvider.createIndex(indexName).andThen(Completable.merge(obs));
 		} else {
 			throw error(INTERNAL_SERVER_ERROR, "error_index_unknown", indexName);
 		}

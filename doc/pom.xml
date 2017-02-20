@@ -46,23 +46,6 @@
 				<version>1.5.0</version>
 				<executions>
 					<execution>
-						<id>changelog-generation</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>package</phase>
-						<configuration>
-							<executable>changelog2html</executable>
-							<arguments>
-								<argument>-t</argument>
-								<argument>${project.basedir}/src/main/changelog/template.adoc</argument>
-								<argument>-o</argument>
-								<argument>${project.basedir}/src/main/docs/changelog.asciidoc</argument>
-								<argument>${project.basedir}/src/main/changelog/changes</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<execution>
 						<id>Generate RAML</id>
 						<goals>
 							<goal>exec</goal>
@@ -73,7 +56,7 @@
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath />
-								<argument>com.gentics.mesh.generator.RAMLGenerator</argument>
+								<argument>com.gentics.mesh.generator.MeshRAMLGeneratorRunner</argument>
 							</arguments>
 						</configuration>
 					</execution>

@@ -12,7 +12,6 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -23,21 +22,23 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 
 public class SchemaExamples extends AbstractExamples {
 
-	public Schema getSchemaUpdateRequest() {
-		Schema schema = new SchemaModel();
+	public SchemaUpdateRequest getSchemaUpdateRequest() {
+		SchemaUpdateRequest schema = new SchemaUpdateRequest();
 		// TODO should i allow changing the name?
 		schema.setName("extended-content");
 		schema.setDescription("New description");
 		return schema;
 	}
 
-	public Schema getSchemaCreateRequest() {
-		Schema schemaUpdateRequest = new SchemaModel();
+	public SchemaCreateRequest getSchemaCreateRequest() {
+		SchemaCreateRequest schemaUpdateRequest = new SchemaCreateRequest();
 		schemaUpdateRequest.setContainer(true);
 		schemaUpdateRequest.setDescription("Some description text");
 		schemaUpdateRequest.setDisplayField("name");
@@ -49,8 +50,8 @@ public class SchemaExamples extends AbstractExamples {
 		return schemaUpdateRequest;
 	}
 
-	public Schema getSchema() {
-		Schema schema = new SchemaModel();
+	public SchemaResponse getSchemaResponse() {
+		SchemaResponse schema = new SchemaResponse();
 		schema.setUuid(randomUUID());
 		schema.setName("Example Schema");
 		schema.setSegmentField("name");
@@ -110,8 +111,8 @@ public class SchemaExamples extends AbstractExamples {
 
 	public SchemaListResponse getSchemaListResponse() {
 		SchemaListResponse schemaList = new SchemaListResponse();
-		schemaList.getData().add(getSchema());
-		schemaList.getData().add(getSchema());
+		schemaList.getData().add(getSchemaResponse());
+		schemaList.getData().add(getSchemaResponse());
 		setPaging(schemaList, 1, 10, 2, 20);
 		return schemaList;
 	}

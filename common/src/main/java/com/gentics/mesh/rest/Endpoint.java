@@ -13,11 +13,14 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.codehaus.jettison.json.JSONObject;
 import org.raml.model.MimeType;
 import org.raml.model.Response;
+import org.raml.model.parameter.FormParameter;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 
@@ -33,7 +36,7 @@ import io.vertx.ext.web.RoutingContext;
 /**
  * Simple wrapper for vert.x routes. The wrapper is commonly used to generate RAML descriptions for the route.
  */
-public class Endpoint implements Route {
+public class Endpoint implements Route, Comparable<Endpoint> {
 
 	private static final Logger log = LoggerFactory.getLogger(Endpoint.class);
 
@@ -55,7 +58,7 @@ public class Endpoint implements Route {
 
 	private String[] traits = new String[] {};
 
-	private Object exampleRequest = null;
+	private HashMap<String, MimeType> exampleRequestMap = null;
 
 	private String pathRegex;
 
@@ -79,6 +82,9 @@ public class Endpoint implements Route {
 
 	/**
 	 * Set the route path.
+	 * 
+	 * @param path
+	 * @return Vert.x route for path
 	 */
 	public Route path(String path) {
 		return route.path(path);
@@ -136,7 +142,7 @@ public class Endpoint implements Route {
 			log.error("Endpoint {" + getRamlPath() + "} has no example response.");
 			throw new RuntimeException("Endpoint {" + getRamlPath() + "} has no example responses.");
 		}
-		if ((consumes.contains(APPLICATION_JSON) || consumes.contains(APPLICATION_JSON_UTF8)) && exampleRequest == null) {
+		if ((consumes.contains(APPLICATION_JSON) || consumes.contains(APPLICATION_JSON_UTF8)) && exampleRequestMap == null) {
 			log.error("Endpoint {" + getPath() + "} has no example request.");
 			throw new RuntimeException("Endpoint has no example request.");
 		}
@@ -156,9 +162,9 @@ public class Endpoint implements Route {
 	}
 
 	/**
-	 * Parse the raml path and return a list of all segment name variables.
+	 * Parse the RAML path and return a list of all segment name variables.
 	 * 
-	 * @return
+	 * @return List of path segments
 	 */
 	public List<String> getNamedSegments() {
 		List<String> allMatches = new ArrayList<String>();
@@ -226,7 +232,7 @@ public class Endpoint implements Route {
 	 * Convert the provided vertx path to a RAML path.
 	 * 
 	 * @param path
-	 * @return
+	 * @return RAML Path which contains '{}' instead of ':' characters
 	 */
 	private String convertPath(String path) {
 		StringBuilder builder = new StringBuilder();
@@ -251,7 +257,7 @@ public class Endpoint implements Route {
 	 * Set the endpoint display name.
 	 * 
 	 * @param name
-	 * @return
+	 * @return Fluent API
 	 */
 	public Endpoint displayName(String name) {
 		this.displayName = name;
@@ -272,7 +278,7 @@ public class Endpoint implements Route {
 	/**
 	 * Return the endpoint description.
 	 * 
-	 * @return
+	 * @return Endpoint description
 	 */
 	public String getDescription() {
 		return description;
@@ -281,7 +287,7 @@ public class Endpoint implements Route {
 	/**
 	 * Return the display name for the endpoint.
 	 * 
-	 * @return
+	 * @return Endpoint display name
 	 */
 	public String getDisplayName() {
 		return displayName;
@@ -322,29 +328,87 @@ public class Endpoint implements Route {
 		response.setBody(map);
 
 		MimeType mimeType = new MimeType();
-		String json = JsonUtil.toJson(model);
-		mimeType.setExample(json);
-		map.put("application/json", mimeType);
+		if (model instanceof RestModel) {
+			String json = JsonUtil.toJson(model);
+			mimeType.setExample(json);
+			mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
+			map.put("application/json", mimeType);
+		} else {
+			mimeType.setExample(model.toString());
+			map.put("text/plain", mimeType);
+		}
 
 		exampleResponses.put(status.code(), response);
 		return this;
 	}
 
 	/**
-	 * Set the endpoint example request.
+	 * Set the endpoint request example via a plain text body.
 	 * 
-	 * @param model
+	 * @param bodyText
 	 * @return Fluent API
 	 */
-	public Endpoint exampleRequest(Object model) {
-		this.exampleRequest = model;
+	public Endpoint exampleRequest(String bodyText) {
+		HashMap<String, MimeType> bodyMap = new HashMap<>();
+		MimeType mimeType = new MimeType();
+		mimeType.setExample(bodyText);
+		bodyMap.put("text/plain", mimeType);
+		this.exampleRequestMap = bodyMap;
+		return this;
+	}
+
+	/**
+	 * Set the endpoint request example via a form parameter list.
+	 * 
+	 * @param parameters
+	 * @return Fluent API
+	 */
+	public Endpoint exampleRequest(Map<String, List<FormParameter>> parameters) {
+		HashMap<String, MimeType> bodyMap = new HashMap<>();
+		MimeType mimeType = new MimeType();
+		mimeType.setFormParameters(parameters);
+		bodyMap.put("multipart/form-data", mimeType);
+		this.exampleRequestMap = bodyMap;
+		return this;
+	}
+
+	/**
+	 * Set the endpoint example request via a JSON example model. The json schema will automatically be generated.
+	 * 
+	 * @param model Example Rest Model
+	 * @return Fluent API
+	 */
+	public Endpoint exampleRequest(RestModel model) {
+		HashMap<String, MimeType> bodyMap = new HashMap<>();
+		MimeType mimeType = new MimeType();
+		String json = JsonUtil.toJson(model);
+		mimeType.setExample(json);
+		mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
+		bodyMap.put("application/json", mimeType);
+		this.exampleRequestMap = bodyMap;
+		return this;
+	}
+
+	/**
+	 * Set the endpoint json example request via the provided json object. The JSON schema will not be generated.
+	 * 
+	 * @param jsonObject
+	 * @return Fluent API
+	 */
+	public Endpoint exampleRequest(JSONObject jsonObject) {
+		HashMap<String, MimeType> bodyMap = new HashMap<>();
+		MimeType mimeType = new MimeType();
+		String json = jsonObject.toString();
+		mimeType.setExample(json);
+		bodyMap.put("application/json", mimeType);
+		this.exampleRequestMap = bodyMap;
 		return this;
 	}
 
 	/**
 	 * Set the traits information.
 	 * 
-	 * @param traits
+	 * @param traits Traits which the endpoint should inherit
 	 * @return Fluent API
 	 */
 	public Endpoint traits(String... traits) {
@@ -371,12 +435,12 @@ public class Endpoint implements Route {
 	}
 
 	/**
-	 * Return the endpoint HTTP example request body.
+	 * Return the endpoint HTTP example request map.
 	 * 
 	 * @return
 	 */
-	public Object getExampleRequest() {
-		return exampleRequest;
+	public HashMap<String, MimeType> getExampleRequestMap() {
+		return exampleRequestMap;
 	}
 
 	/**
@@ -410,14 +474,13 @@ public class Endpoint implements Route {
 	 * Add a query parameter provider to the endpoint. The query parameter provider will in turn provide examples, descriptions for all query parameters which
 	 * the parameter provider provides.
 	 * 
-	 * @param clazz
+	 * @param clazz Class which provides the parameters
 	 */
 	public void addQueryParameters(Class<? extends ParameterProvider> clazz) {
 		try {
 			ParameterProvider provider = clazz.newInstance();
 			parameters.putAll(provider.getRAMLParameters());
 		} catch (InstantiationException | IllegalAccessException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -434,7 +497,7 @@ public class Endpoint implements Route {
 	/**
 	 * Return the uri parameters for the endpoint.
 	 * 
-	 * @return
+	 * @return Map with uri parameters
 	 */
 	public Map<String, UriParameter> getUriParameters() {
 		return uriParameters;
@@ -446,13 +509,18 @@ public class Endpoint implements Route {
 	 * @param key
 	 *            Key of the endpoint (e.g.: query, perPage)
 	 * @param description
-	 * @param example
+	 * @param example Example URI parameter value
 	 */
 	public void addUriParameter(String key, String description, String example) {
 		UriParameter param = new UriParameter(key);
 		param.setDescription(description);
 		param.setExample(example);
 		uriParameters.put(key, param);
+	}
+
+	@Override
+	public int compareTo(Endpoint o) {
+		return getRamlPath().compareTo(o.getRamlPath());
 	}
 
 }

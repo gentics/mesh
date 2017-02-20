@@ -3,12 +3,14 @@ package com.gentics.mesh.core.rest.schema.impl;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 
 public class BinaryFieldSchemaImpl extends AbstractFieldSchema implements BinaryFieldSchema {
 
 	@JsonProperty("allow")
+	@JsonPropertyDescription("Array of allowed mimetypes")
 	private String[] allowedMimeTypes;
 
 	@Override

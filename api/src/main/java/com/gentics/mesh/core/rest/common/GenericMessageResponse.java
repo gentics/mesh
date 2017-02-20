@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.common;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.handler.ActionContext;
 
 /**
@@ -9,10 +10,13 @@ import com.gentics.mesh.handler.ActionContext;
  */
 public class GenericMessageResponse implements RestModel {
 
+	@JsonPropertyDescription("Enduser friendly translated message. Translation depends on the 'Accept-Language' header value")
 	private String message;
 
+	@JsonPropertyDescription("Internal developer friendly message")
 	private String internalMessage;
 
+	@JsonPropertyDescription("Map of i18n properties which were used to construct the provided message")
 	private Map<String, Object> properties;
 
 	/**

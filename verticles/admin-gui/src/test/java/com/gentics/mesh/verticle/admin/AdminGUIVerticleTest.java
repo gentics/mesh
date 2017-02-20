@@ -19,14 +19,16 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonObject;
 
-public class AdminGUIVerticleTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class AdminGUIVerticleTest extends AbstractMeshTest {
 
 	private AdminGUIVerticle adminGuiVerticle;
 
@@ -34,7 +36,7 @@ public class AdminGUIVerticleTest extends AbstractRestEndpointTest {
 	public void setupVerticle() throws Exception {
 		adminGuiVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorage());
 		JsonObject config = new JsonObject();
-		config.put("port", getPort());
+		config.put("port", port());
 		CountDownLatch latch = new CountDownLatch(1);
 		Mesh.vertx().deployVerticle(adminGuiVerticle, new DeploymentOptions().setConfig(config), dh -> {
 			latch.countDown();

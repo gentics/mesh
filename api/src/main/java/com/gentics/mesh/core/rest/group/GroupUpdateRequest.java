@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.group;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -7,6 +9,8 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class GroupUpdateRequest implements RestModel {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("New name of the group")
 	private String name;
 
 	public GroupUpdateRequest() {

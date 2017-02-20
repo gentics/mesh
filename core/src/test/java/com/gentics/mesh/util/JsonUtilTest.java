@@ -7,10 +7,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -38,12 +38,18 @@ public class JsonUtilTest {
 	}
 
 	@Test
+	public void testSchema() throws JsonProcessingException {
+		String json = JsonUtil.getJsonSchema(NodeResponse.class);
+		assertNotNull(json);
+	}
+
+	@Test
 	public void testPermMap() {
 		UserResponse group = new UserResponse();
 		group.getPermissions().setOthers(false);
 		group.getPermissions().set(READ, true);
 		group.getPermissions().setCreate(true);
-		JsonUtil.toJson(group);
+		assertNotNull(JsonUtil.toJson(group));
 	}
 
 	@Test

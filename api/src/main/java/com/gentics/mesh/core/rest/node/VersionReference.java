@@ -1,11 +1,14 @@
 package com.gentics.mesh.core.rest.node;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 
 /**
  * REST Model for the Version Reference of a NodeResponse
  */
 public class VersionReference extends AbstractResponse {
+
+	@JsonPropertyDescription("Version number")
 	private String number;
 
 	/**

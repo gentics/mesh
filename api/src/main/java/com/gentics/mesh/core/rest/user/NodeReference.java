@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.rest.user;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 
 /**
  * A node reference contains the bare minimum of useful information which identifies a node. Various field in the {@link NodeResponse} utilize these references
@@ -9,10 +12,25 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
  */
 public class NodeReference implements ExpandableNode {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Name of the project to which the node belongs")
 	private String projectName;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Uuid of the node")
 	private String uuid;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Optional display name of the node. A display field must be set in the schema in order to populate this property.")
 	private String displayName;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Webroot path of the node. The path property will only be provided if the "
+			+ NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY + " query parameter has been set.")
 	private String path;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Reference to the schema of the node")
 	private SchemaReference schema;
 
 	@Override

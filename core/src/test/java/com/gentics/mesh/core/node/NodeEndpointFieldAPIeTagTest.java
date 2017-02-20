@@ -1,7 +1,8 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertNotNull;
@@ -9,13 +10,14 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class NodeEndpointFieldAPIeTagTest extends AbstractETagTest {
 
 	@Test
@@ -26,12 +28,11 @@ public class NodeEndpointFieldAPIeTagTest extends AbstractETagTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
-			GenericMessageResponse message = call(() -> uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName));
-			expectResponseMessage(message, "node_binary_field_updated", "binary");
+			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
 			node.reload();
 

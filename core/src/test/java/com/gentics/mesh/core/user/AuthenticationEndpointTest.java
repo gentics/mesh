@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.user;
 
+import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.junit.Assert.assertEquals;
@@ -16,23 +17,23 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 import rx.Single;
 
-public class AuthenticationEndpointTest extends AbstractRestEndpointTest {
-
-	// Read Tests
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class AuthenticationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRestClient() throws Exception {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			User user = user();
 			String username = user.getUsername();
 			String uuid = user.getUuid();
 
-			MeshRestClient client = MeshRestClient.create("localhost", getPort(), Mesh.vertx());
-			client.setLogin(username, password());
+			MeshRestClient client = MeshRestClient.create("localhost", port(), Mesh.vertx());
+			client.setLogin(username, data().getUserInfo().getPassword());
 			Single<GenericMessageResponse> future = client.login();
 
 			GenericMessageResponse loginResponse = future.toBlocking().value();
@@ -58,12 +59,12 @@ public class AuthenticationEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testLoginAndDisableUser() {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			User user = user();
 			String username = user.getUsername();
 
-			MeshRestClient client = MeshRestClient.create("localhost", getPort(), Mesh.vertx());
-			client.setLogin(username, password());
+			MeshRestClient client = MeshRestClient.create("localhost", port(), Mesh.vertx());
+			client.setLogin(username, data().getUserInfo().getPassword());
 			Single<GenericMessageResponse> future = client.login();
 
 			GenericMessageResponse loginResponse = future.toBlocking().value();
@@ -80,12 +81,12 @@ public class AuthenticationEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAutomaticTokenRefresh() throws InterruptedException {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			User user = user();
 			String username = user.getUsername();
 
-			MeshRestClient client = MeshRestClient.create("localhost", getPort(), Mesh.vertx());
-			client.setLogin(username, password());
+			MeshRestClient client = MeshRestClient.create("localhost", port(), Mesh.vertx());
+			client.setLogin(username, data().getUserInfo().getPassword());
 			Single<GenericMessageResponse> future = client.login();
 
 			GenericMessageResponse loginResponse = future.toBlocking().value();

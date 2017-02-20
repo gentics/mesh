@@ -1,23 +1,30 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import org.apache.commons.lang.StringUtils;
-
-import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 
 /**
  * @see Schema
  */
-public class SchemaModel extends AbstractFieldSchemaContainer implements Schema {
+public class SchemaModel implements RestModel, Schema {
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Name of the display field.")
 	private String displayField;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Name of the segment field. This field is used to construct the webroot path to the node.")
 	private String segmentField;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
 	private boolean container = false;
 
 	/**
@@ -26,20 +33,56 @@ public class SchemaModel extends AbstractFieldSchemaContainer implements Schema 
 	 * @param name
 	 */
 	public SchemaModel(String name) {
-		super(name);
+		setName(name);
 	}
 
 	public SchemaModel() {
 	}
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Version of the schema")
+	private int version;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Description of the schema")
+	private String description;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Name of the schema")
+	private String name;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("List of schema fields")
+	private List<FieldSchema> fields = new ArrayList<>();
+
 	@Override
-	public String getDisplayField() {
-		return displayField;
+	public int getVersion() {
+		return version;
 	}
 
 	@Override
-	public void setDisplayField(String displayField) {
-		this.displayField = displayField;
+	public void setVersion(int version) {
+		this.version = version;
+	}
+
+	@Override
+	public String getDescription() {
+		return description;
+	}
+
+	@Override
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	@Override
@@ -53,6 +96,16 @@ public class SchemaModel extends AbstractFieldSchemaContainer implements Schema 
 	}
 
 	@Override
+	public List<FieldSchema> getFields() {
+		return fields;
+	}
+
+	@Override
+	public void setFields(List<FieldSchema> fields) {
+		this.fields = fields;
+	}
+
+	@Override
 	public boolean isContainer() {
 		return container;
 	}
@@ -63,39 +116,19 @@ public class SchemaModel extends AbstractFieldSchemaContainer implements Schema 
 	}
 
 	@Override
-	public void validate() {
-		super.validate();
-		// TODO make sure that the display name field only maps to string fields since NodeImpl can currently only deal with string field values for
-		// displayNames
-		if (!StringUtils.isEmpty(getDisplayField())) {
-			if (!getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getDisplayField()))) {
-				throw error(BAD_REQUEST, "schema_error_displayfield_invalid", getDisplayField());
-			}
-
-			// TODO maybe we should also allow other field types
-			if (!(getField(getDisplayField()) instanceof StringFieldSchema)) {
-				throw error(BAD_REQUEST, "schema_error_displayfield_type_invalid", getDisplayField());
-			}
-		}
-
-		FieldSchema segmentFieldSchema = getField(getSegmentField());
-		if (segmentFieldSchema != null
-				&& (!((segmentFieldSchema instanceof StringFieldSchema) || (segmentFieldSchema instanceof BinaryFieldSchema)))) {
-			throw error(BAD_REQUEST, "schema_error_segmentfield_type_invalid", segmentFieldSchema.getType());
-		}
-
-		if (getSegmentField() != null && !getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getSegmentField()))) {
-			throw error(BAD_REQUEST, "schema_error_segmentfield_invalid", getSegmentField());
-		}
+	public String getDisplayField() {
+		return displayField;
 	}
 
 	@Override
-	public SchemaReference toReference() {
-		SchemaReference reference = new SchemaReference();
-		reference.setUuid(getUuid());
-		reference.setVersion(getVersion());
-		reference.setName(getName());
-		return reference;
+	public void setDisplayField(String displayField) {
+		this.displayField = displayField;
+	}
+
+	@Override
+	public String toString() {
+		String fields = getFields().stream().map(field -> field.getName()).collect(Collectors.joining(","));
+		return getName() + " fields: {" + fields + "}";
 	}
 
 }

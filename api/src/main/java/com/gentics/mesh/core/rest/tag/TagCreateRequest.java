@@ -1,9 +1,13 @@
 package com.gentics.mesh.core.rest.tag;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 public class TagCreateRequest implements RestModel {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Name of the tag which will be created.")
 	private String name;
 
 	public TagCreateRequest() {
@@ -22,9 +26,12 @@ public class TagCreateRequest implements RestModel {
 	 * Set the name of the tag.
 	 * 
 	 * @param name
+	 *            Name of the tag
+	 * @return Fluent API
 	 */
-	public void setName(String name) {
+	public TagCreateRequest setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 }

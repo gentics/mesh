@@ -39,20 +39,22 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 /**
  * Test for common mutator operations on a field containers.
  */
-public class FieldSchemaContainerMutatorTest extends AbstractDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 	private FieldSchemaContainerMutator mutator = new FieldSchemaContainerMutator();
 
 	@Test
 	public void testNullOperation() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			version.setSchema(schema);
 			Schema updatedSchema = mutator.apply(version);
 			assertNotNull(updatedSchema);
@@ -62,11 +64,11 @@ public class FieldSchemaContainerMutatorTest extends AbstractDBTest {
 
 	@Test
 	public void testUpdateTypeAndAllowProperty() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel("testschema");
+			SchemaModel schema = new SchemaModel("testschema");
 
 			NumberFieldSchema numberField = new NumberFieldSchemaImpl();
 			numberField.setName("testField");
@@ -93,11 +95,11 @@ public class FieldSchemaContainerMutatorTest extends AbstractDBTest {
 
 	@Test
 	public void testUpdateLabel() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel("testschema");
+			SchemaModel schema = new SchemaModel("testschema");
 
 			StringFieldSchema stringField = new StringFieldSchemaImpl();
 			stringField.setAllowedValues("blub");
@@ -124,11 +126,11 @@ public class FieldSchemaContainerMutatorTest extends AbstractDBTest {
 
 	@Test
 	public void testAUpdateFields() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel("testschema");
+			SchemaModel schema = new SchemaModel("testschema");
 
 			BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
 			binaryField.setName("binaryField");

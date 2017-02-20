@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperatio
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -44,10 +45,13 @@ public class SchemaChangeModel implements RestModel {
 
 	public static final String CONTAINER_FLAG_KEY = "container";
 
+	@JsonPropertyDescription("Uuid of the change entry")
 	private String uuid;
 
+	@JsonPropertyDescription("Type of operation for this change")
 	private SchemaChangeOperation operation;
 
+	@JsonPropertyDescription("Optional migation script")
 	private String migrationScript;
 
 	private Map<String, Object> properties = new HashMap<>();
@@ -200,9 +204,12 @@ public class SchemaChangeModel implements RestModel {
 	/**
 	 * Create a add field change.
 	 * 
-	 * @param fieldName Field key
-	 * @param type  Field type
-	 * @param label Field label
+	 * @param fieldName
+	 *            Field key
+	 * @param type
+	 *            Field type
+	 * @param label
+	 *            Field label
 	 * @return
 	 */
 	public static SchemaChangeModel createAddFieldChange(String fieldName, String type, String label) {

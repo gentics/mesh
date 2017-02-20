@@ -305,17 +305,12 @@ public class FieldMapImpl implements FieldMap {
 
 		ObjectMapper mapper = JsonUtil.getMapper();
 		if (expand) {
-			NodeResponse expandedField = JsonUtil.readValue(jsonNode.toString(), NodeResponse.class);
-			return expandedField;
+			return JsonUtil.readValue(jsonNode.toString(), NodeResponse.class);
 		} else {
 			if (jsonNode.isNull()) {
 				return null;
 			}
-			NodeFieldImpl collapsedField = mapper.treeToValue(jsonNode, NodeFieldImpl.class);
-			NodeResponse restNode = new NodeResponse();
-			restNode.setUuid(collapsedField.getUuid());
-			restNode.setPath(collapsedField.getPath());
-			return restNode;
+			return mapper.treeToValue(jsonNode, NodeFieldImpl.class);
 		}
 	}
 
@@ -570,7 +565,7 @@ public class FieldMapImpl implements FieldMap {
 			return true;
 		}
 		if (field.isPojo()) {
-			return ((POJONode)field).getPojo() instanceof NodeResponse;
+			return ((POJONode) field).getPojo() instanceof NodeResponse;
 		}
 		return false;
 	}

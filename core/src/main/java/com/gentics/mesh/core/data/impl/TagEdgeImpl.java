@@ -29,7 +29,7 @@ public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
 	 * 
 	 * @param vertex
 	 * @param release
-	 * @return
+	 * @return Traversal
 	 */
 	public static VertexTraversal<?, ?, ?> getTagTraversal(VertexFrame vertex, Release release) {
 		return vertex.outE(HAS_TAG).has(RELEASE_UUID_KEY, release.getUuid()).inV().has(TagImpl.class);
@@ -38,9 +38,9 @@ public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
 	/**
 	 * Get the traversal for nodes that have been tagged with the given tag in the given release
 	 * 
-	 * @param tag
+	 * @param tag 
 	 * @param release
-	 * @return
+	 * @return Traversal
 	 */
 	public static VertexTraversal<?, ?, ?> getNodeTraversal(Tag tag, Release release) {
 		return tag.inE(HAS_TAG).has(RELEASE_UUID_KEY, release.getUuid()).outV().has(NodeImpl.class);

@@ -1,7 +1,8 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -23,23 +24,25 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodeNavigationEndpointTest extends AbstractMeshTest {
 
 	/**
 	 * Test reading a node with a maxDepth value of zero
 	 */
 	@Test
 	public void testReadChildrenDepthZero() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(0),
-					new VersioningParameters().draft()));
+			NavigationResponse response = call(
+					() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(0), new VersioningParameters().draft()));
 			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
 			assertThat(response).hasDepth(0).isValid(1);
 		}
@@ -50,7 +53,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadNodeWithNoChildren() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -68,7 +71,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadNavigationWithNoParameters() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = project().getBaseNode();
 			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 			assertThat(response).hasDepth(3).isValid(7);
@@ -80,7 +83,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadNavigationWithNegativeDepth() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationParameters().setMaxDepth(-10),
 					new VersioningParameters().draft()), BAD_REQUEST, "navigation_error_invalid_max_depth");
@@ -92,7 +95,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadNoContainerNode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			assertFalse("The node must not be a container.", node.getSchemaContainer().getLatestVersion().getSchema().isContainer());
 			call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationParameters().setMaxDepth(1),
@@ -105,14 +108,14 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadChildrenDepthOne() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(1),
-					new VersioningParameters().draft()));
+			NavigationResponse response = call(
+					() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(1), new VersioningParameters().draft()));
 
 			assertThat(response).hasDepth(1).isValid(4);
 			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
@@ -124,14 +127,14 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadChildrenDepthTwo() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(2),
-					new VersioningParameters().draft()));
+			NavigationResponse response = call(
+					() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParameters().setMaxDepth(2), new VersioningParameters().draft()));
 			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
 			assertThat(response).hasDepth(2).isValid(6);
 		}
@@ -144,7 +147,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadChildrenDepthTwoIncludeAll() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -172,7 +175,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadChildrenDepthTwoIncludeAllDisabled() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -198,7 +201,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testReadChildrenHighDepth() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -213,7 +216,7 @@ public class NodeNavigationEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testNavigationForRelease() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Node baseNode = project.getBaseNode();
 			String baseNodeUuid = baseNode.getUuid();

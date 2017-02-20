@@ -10,6 +10,7 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -20,8 +21,10 @@ public class ListFieldSchemaImpl extends AbstractFieldSchema implements ListFiel
 	//	private Integer max;
 
 	@JsonProperty("allow")
+	@JsonPropertyDescription("List of allowed schemas (Only applies to node lists)")
 	private String[] allowedSchemas;
 
+	@JsonPropertyDescription("Type of the list (e.g: node, string, date..).")
 	private String listType;
 
 	@Override

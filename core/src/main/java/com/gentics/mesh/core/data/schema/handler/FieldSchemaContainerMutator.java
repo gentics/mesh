@@ -21,9 +21,9 @@ public class FieldSchemaContainerMutator {
 	 *            Graph element that provides the chain of changes and the field container that should be mutated
 	 * @return
 	 */
-	public <R extends FieldSchemaContainer> R apply(GraphFieldSchemaContainerVersion<R, ?, ?, ?> containerVersion) {
+	public <RM extends FieldSchemaContainer> RM apply(GraphFieldSchemaContainerVersion<?, RM, ?, ?, ?> containerVersion) {
 
-		R oldSchema = containerVersion.getSchema();
+		RM oldSchema = containerVersion.getSchema();
 		MeshInternal.get().serverSchemaStorage().remove(oldSchema);
 		SchemaChange<?> change = containerVersion.getNextChange();
 		while (change != null) {

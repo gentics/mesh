@@ -1,17 +1,20 @@
 package com.gentics.mesh.core.graphql;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 
 import org.json.JSONException;
 import org.junit.Test;
 
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.MeshJSONAssert;
 
 import io.vertx.core.json.JsonObject;
 
-public class GraphQLEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class GraphQLEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testSimpleQuery() throws JSONException {
@@ -21,7 +24,7 @@ public class GraphQLEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testNodeQuery() throws JSONException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + content().getUuid() + "\"){uuid}}"));
 			MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + content().getUuid() + "'}}}", response);
 

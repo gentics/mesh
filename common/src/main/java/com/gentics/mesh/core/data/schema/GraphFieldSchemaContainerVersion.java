@@ -14,6 +14,8 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
  * A {@link GraphFieldSchemaContainerVersion} stores the versioned data for a {@link GraphFieldSchemaContainer} element.
  * 
  * @param <R>
+ *            Rest model response type
+ * @param <RM><
  *            Rest model type
  * @param <RE>
  *            Reference model type
@@ -22,7 +24,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
  * @param <SC>
  *            Schema container type
  */
-public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
+public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
 		extends MeshCoreVertex<R, SCV>, ReferenceableElement<RE> {
 
 	/**
@@ -33,18 +35,18 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	int getVersion();
 
 	/**
-	 * Return the schema that is stored within the container.
+	 * Return the schema model that is stored within the container.
 	 * 
 	 * @return
 	 */
-	R getSchema();
+	RM getSchema();
 
 	/**
-	 * Set the schema for the container.
+	 * Set the schema model for the container.
 	 * 
 	 * @param schema
 	 */
-	void setSchema(R schema);
+	void setSchema(RM schema);
 
 	/**
 	 * Return the change for the previous version of the schema. Normally the previous change was used to build the schema.
@@ -155,5 +157,19 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * @return Found release or null of this version was not assigned to any release
 	 */
 	Release getRelease();
+
+	/**
+	 * Load the stored schema JSON data.
+	 * 
+	 * @return
+	 */
+	String getJson();
+
+	/**
+	 * Update the stored schema JSON data.
+	 * 
+	 * @param json
+	 */
+	void setJson(String json);
 
 }

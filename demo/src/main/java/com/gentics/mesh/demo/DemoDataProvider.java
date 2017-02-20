@@ -34,14 +34,15 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -75,7 +76,7 @@ public class DemoDataProvider {
 	private MeshLocalClientImpl client;
 
 	private Map<String, ProjectResponse> projects = new HashMap<>();
-	private Map<String, Schema> schemas = new HashMap<>();
+	private Map<String, SchemaResponse> schemas = new HashMap<>();
 	private Map<String, TagFamilyResponse> tagFamilies = new HashMap<>();
 	private Map<String, NodeResponse> nodes = new HashMap<>();
 	private Map<String, TagResponse> tags = new HashMap<>();
@@ -121,7 +122,7 @@ public class DemoDataProvider {
 	 */
 	private void publishAllNodes() throws InterruptedException {
 		for (ProjectResponse project : projects.values()) {
-			call(() -> client.publishNode(PROJECT_NAME, project.getRootNodeUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client.publishNode(PROJECT_NAME, project.getRootNode().getUuid(), new PublishParameters().setRecursive(true)));
 		}
 	}
 
@@ -273,7 +274,7 @@ public class DemoDataProvider {
 
 		MeshResponse<SchemaListResponse> schemasFuture = client.findSchemas().invoke();
 		latchFor(schemasFuture);
-		for (Schema schema : schemasFuture.result().getData()) {
+		for (SchemaResponse schema : schemasFuture.result().getData()) {
 			schemas.put(schema.getName(), schema);
 		}
 	}
@@ -293,16 +294,16 @@ public class DemoDataProvider {
 			String schemaName = nodeJson.getString("schema");
 			String parentNodeName = nodeJson.getString("parent");
 			String name = nodeJson.getString("name");
-			Schema schema = getSchemaModel(schemaName);
+			SchemaResponse schema = getSchemaModel(schemaName);
 			NodeResponse parentNode = (nodeJson.getString("project") + ".basenode").equals(parentNodeName) ? null : getNode(parentNodeName);
 
 			log.info("Creating node {" + name + "} for schema {" + schemaName + "}");
 			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 			nodeCreateRequest.setLanguage("en");
 			if (parentNode != null) {
-				nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
+				nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNode.getUuid()));
 			} else {
-				nodeCreateRequest.setParentNodeUuid(project.getRootNodeUuid());
+				nodeCreateRequest.setParentNode(project.getRootNode());
 			}
 			nodeCreateRequest.setSchema(new SchemaReference().setUuid(schema.getUuid()));
 			nodeCreateRequest.getFields().put("name", FieldUtil.createStringField(name));
@@ -345,7 +346,7 @@ public class DemoDataProvider {
 				byte[] bytes = IOUtils.toByteArray(ins);
 				Buffer fileData = Buffer.buffer(bytes);
 
-				call(() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", "image", fileData, filenName, contentType));
+				call(() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", createdNode.getVersion().toString(), "image", fileData, filenName, contentType));
 
 			}
 
@@ -436,8 +437,8 @@ public class DemoDataProvider {
 			InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");
 			if (ins != null) {
 				IOUtils.copy(ins, writer, Charsets.UTF_8.name());
-				Schema schema = JsonUtil.readValue(writer.toString(), SchemaModel.class);
-				Schema schemaResponse = call(() -> client.createSchema(schema));
+				SchemaCreateRequest schema = JsonUtil.readValue(writer.toString(), SchemaCreateRequest.class);
+				SchemaResponse schemaResponse = call(() -> client.createSchema(schema));
 				schemas.put(schemaName, schemaResponse);
 			}
 
@@ -446,7 +447,7 @@ public class DemoDataProvider {
 			for (int e = 0; e < projectsArray.size(); e++) {
 				String projectName = projectsArray.getString(e);
 				ProjectResponse project = getProject(projectName);
-				for (Schema schema : schemas.values()) {
+				for (SchemaResponse schema : schemas.values()) {
 					call(() -> client.assignSchemaToProject(project.getName(), schema.getUuid()));
 				}
 			}
@@ -486,8 +487,8 @@ public class DemoDataProvider {
 		return tag;
 	}
 
-	private Schema getSchemaModel(String name) {
-		Schema model = schemas.get(name);
+	private SchemaResponse getSchemaModel(String name) {
+		SchemaResponse model = schemas.get(name);
 		Objects.requireNonNull(model, "Schema container with name {" + name + "} could not be found.");
 		return model;
 	}

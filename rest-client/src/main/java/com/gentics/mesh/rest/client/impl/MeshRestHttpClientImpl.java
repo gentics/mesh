@@ -17,7 +17,9 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
@@ -26,6 +28,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -51,7 +54,9 @@ import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
@@ -72,10 +77,12 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshRestRequestUtil;
 import com.gentics.mesh.rest.client.handler.MeshResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshBinaryResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshJsonObjectResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshWebrootResponseHandler;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -295,10 +302,10 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<Schema> assignSchemaToProject(String projectName, String schemaUuid) {
+	public MeshRequest<SchemaResponse> assignSchemaToProject(String projectName, String schemaUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(schemaUuid, "schemaUuid must not be null");
-		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/schemas/" + schemaUuid, Schema.class);
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/schemas/" + schemaUuid, SchemaResponse.class);
 	}
 
 	@Override
@@ -315,10 +322,10 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<Microschema> assignMicroschemaToProject(String projectName, String microschemaUuid) {
+	public MeshRequest<MicroschemaResponse> assignMicroschemaToProject(String projectName, String microschemaUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(microschemaUuid, "microschemaUuid must not be null");
-		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/microschemas/" + microschemaUuid, Microschema.class);
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/microschemas/" + microschemaUuid, MicroschemaResponse.class);
 	}
 
 	@Override
@@ -581,8 +588,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<Schema> createSchema(Schema request) {
-		return prepareRequest(POST, "/schemas", SchemaModel.class, request);
+	public MeshRequest<SchemaResponse> createSchema(SchemaCreateRequest request) {
+		return prepareRequest(POST, "/schemas", SchemaResponse.class, request);
 	}
 
 	@Override
@@ -591,13 +598,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<Schema> findSchemaByUuid(String uuid, ParameterProvider... parameters) {
+	public MeshRequest<SchemaResponse> findSchemaByUuid(String uuid, ParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return prepareRequest(GET, "/schemas/" + uuid + getQuery(parameters), SchemaModel.class);
+		return prepareRequest(GET, "/schemas/" + uuid + getQuery(parameters), SchemaResponse.class);
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateSchema(String uuid, Schema request, ParameterProvider... parameters) {
+	public MeshRequest<GenericMessageResponse> updateSchema(String uuid, SchemaUpdateRequest request, ParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(POST, "/schemas/" + uuid + getQuery(parameters), GenericMessageResponse.class, request);
 	}
@@ -631,7 +638,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 			request.headers().add("Accept", "*/*");
 		});
 
-		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication);
+		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
 
 	}
 
@@ -769,19 +776,31 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
-			Buffer fileData, String fileName, String contentType) {
+	public MeshRequest<NodeResponse> updateNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version, String fieldKey,
+			Buffer fileData, String fileName, String contentType, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(fileData, "fileData must not be null");
 		Objects.requireNonNull(fileName, "fileName must not be null");
+		Objects.requireNonNull(version, "version must not be null");
 		Objects.requireNonNull(contentType, "contentType must not be null");
 
 		// TODO handle escaping of filename
-		String boundary = "dLV9Wyq26L_-JQxk6ferf-RT153LhOO";
+		String boundary = "--------" + UUIDUtil.randomUUID();
 		Buffer multiPartFormData = Buffer.buffer(fileData.length());
+
 		multiPartFormData.appendString("--" + boundary + "\r\n");
-		multiPartFormData.appendString("Content-Disposition: form-data; name=\"" + "someName" + "\"; filename=\"" + fileName + "\"\r\n");
+		multiPartFormData.appendString("Content-Disposition: form-data; name=\"version\"\r\n");
+		multiPartFormData.appendString("\r\n");
+		multiPartFormData.appendString(version + "\r\n");
+
+		multiPartFormData.appendString("--" + boundary + "\r\n");
+		multiPartFormData.appendString("Content-Disposition: form-data; name=\"language\"\r\n");
+		multiPartFormData.appendString("\r\n");
+		multiPartFormData.appendString(languageTag + "\r\n");
+
+		multiPartFormData.appendString("--" + boundary + "\r\n");
+		multiPartFormData.appendString("Content-Disposition: form-data; name=\"" + UUIDUtil.randomUUID() + "\"; filename=\"" + fileName + "\"\r\n");
 		multiPartFormData.appendString("Content-Type: " + contentType + "\r\n");
 		multiPartFormData.appendString("Content-Transfer-Encoding: binary\r\n" + "\r\n");
 		multiPartFormData.appendBuffer(fileData);
@@ -789,8 +808,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 		String bodyContentType = "multipart/form-data; boundary=" + boundary;
 
-		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/fields/" + fieldKey,
-				GenericMessageResponse.class, multiPartFormData, bodyContentType);
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters),
+				NodeResponse.class, multiPartFormData, bodyContentType);
 	}
 
 	@Override
@@ -799,8 +818,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 
-		String path = "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/fields/" + fieldKey
-				+ getQuery(parameters);
+		String path = "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters);
 		String uri = BASEURI + path;
 
 		MeshBinaryResponseHandler handler = new MeshBinaryResponseHandler(GET, uri);
@@ -808,25 +826,25 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "application/json");
 		});
-		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication);
+		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String fieldKey,
-			ImageManipulationParameters imageManipulationParameter) {
+	public MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version,
+			String fieldKey, ImageManipulationParameters imageManipulationParameter) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "language must not be null");
+		Objects.requireNonNull(version, "version must not be null");
 		Objects.requireNonNull(fieldKey, "field key must not be null");
 
 		BinaryFieldTransformRequest transformRequest = new BinaryFieldTransformRequest().setWidth(imageManipulationParameter.getWidth())
 				.setHeight(imageManipulationParameter.getHeight()).setCropx(imageManipulationParameter.getStartx())
 				.setCropy(imageManipulationParameter.getStarty()).setCroph(imageManipulationParameter.getCroph())
-				.setCropw(imageManipulationParameter.getCropw());
+				.setCropw(imageManipulationParameter.getCropw()).setLanguage(languageTag).setVersion(new VersionReference().setNumber(version));
 
-		return prepareRequest(POST,
-				"/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/fields/" + fieldKey + "/transform",
-				GenericMessageResponse.class, transformRequest);
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binaryTransform/" + fieldKey, NodeResponse.class,
+				transformRequest);
 	}
 
 	@Override
@@ -845,14 +863,14 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<Microschema> createMicroschema(Microschema request) {
-		return prepareRequest(POST, "/microschemas", MicroschemaModel.class, request);
+	public MeshRequest<MicroschemaResponse> createMicroschema(MicroschemaCreateRequest request) {
+		return prepareRequest(POST, "/microschemas", MicroschemaResponse.class, request);
 	}
 
 	@Override
-	public MeshRequest<Microschema> findMicroschemaByUuid(String uuid, ParameterProvider... parameters) {
+	public MeshRequest<MicroschemaResponse> findMicroschemaByUuid(String uuid, ParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return prepareRequest(GET, "/microschemas/" + uuid + getQuery(parameters), MicroschemaModel.class);
+		return prepareRequest(GET, "/microschemas/" + uuid + getQuery(parameters), MicroschemaResponse.class);
 	}
 
 	@Override
@@ -861,7 +879,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, Microschema request, ParameterProvider... parameters) {
+	public MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request, ParameterProvider... parameters) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		return prepareRequest(POST, "/microschemas/" + uuid + getQuery(parameters), GenericMessageResponse.class, request);
 	}
@@ -931,6 +949,11 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	@Override
 	public MeshRequest<MeshServerInfoModel> getApiInfo() {
 		return prepareRequest(GET, "/", MeshServerInfoModel.class);
+	}
+
+	@Override
+	public MeshRequest<String> getRAML() {
+		return MeshRestRequestUtil.prepareRequest(GET, "/raml", String.class, null, null, client, authentication, "text/vnd.yaml");
 	}
 
 	@Override
@@ -1006,7 +1029,6 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "application/json");
 		});
-		return new MeshHttpRequestImpl<>(request, handler, buffer, "application/json", authentication);
-		
+		return new MeshHttpRequestImpl<>(request, handler, buffer, "application/json", authentication, "application/json");
 	}
 }

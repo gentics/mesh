@@ -1,7 +1,8 @@
 package com.gentics.mesh.core.field.binary;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -14,6 +15,7 @@ import static org.junit.Assert.assertNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -22,21 +24,25 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
+import com.gentics.mesh.util.VersionNumber;
 
 import io.vertx.core.buffer.Buffer;
 
-public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUploadWithNoPerm() throws IOException {
@@ -44,14 +50,12 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 			role().revokePermissions(node, UPDATE_PERM);
 
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
+			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName), FORBIDDEN, "error_missing_perm", node.getUuid());
 		}
 	}
 
@@ -63,14 +67,13 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			String whitelistRegex = "image/.*";
 			prepareSchema(node, whitelistRegex, "binary");
 
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_error_invalid_mimetype", contentType, whitelistRegex);
+			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName), BAD_REQUEST, "node_error_invalid_mimetype",
+					contentType, whitelistRegex);
 		}
 	}
 
@@ -79,7 +82,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
@@ -92,7 +95,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 				}
 				String newFileName = "somefile" + i + ".dat";
 
-				call(() -> uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, newFileName));
+				call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, newFileName));
 				node.reload();
 				container.reload();
 
@@ -118,7 +121,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 
 			// Add a schema called nonBinary
@@ -126,10 +129,8 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 			schema.addField(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "nonBinary", binaryLen, contentType, fileName)
-					.invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_found_field_is_not_binary", "nonBinary");
+			call(() -> uploadRandomData(node, "en", "nonBinary", binaryLen, contentType, fileName), BAD_REQUEST, "error_found_field_is_not_binary",
+					"nonBinary");
 		}
 	}
 
@@ -138,13 +139,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "nonBinary", binaryLen, contentType, fileName)
-					.invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_schema_definition_not_found", "nonBinary");
+			call(() -> uploadRandomData(node, "en", "nonBinary", binaryLen, contentType, fileName), BAD_REQUEST, "error_schema_definition_not_found",
+					"nonBinary");
 		}
 	}
 
@@ -160,7 +159,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 		String fieldKey = "image";
 		String fileName = "somefile.png";
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", fieldKey);
 
@@ -168,7 +167,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 			String originalVersion = response.getVersion().getNumber();
 
 			// 1. Upload the image
-			int size = uploadImage(node.getUuid(), "en", fieldKey, fileName, mimeType);
+			int size = uploadImage(node, "en", fieldKey, fileName, mimeType);
 
 			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 			assertNotEquals(originalVersion, response.getVersion().getNumber());
@@ -177,8 +176,9 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 			// 2. Upload a non-image 
 			fileName = "somefile.dat";
 			mimeType = "application/octet-stream";
-			GenericMessageResponse message = call(() -> uploadRandomData(node.getUuid(), "en", fieldKey, size, "application/octet-stream", "somefile.dat"));
-			expectResponseMessage(message, "node_binary_field_updated", fieldKey);
+			node.reload();
+			response = call(() -> uploadRandomData(node, "en", fieldKey, size, "application/octet-stream", "somefile.dat"));
+			assertNotNull(response);
 
 			node.reload();
 			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
@@ -204,19 +204,18 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 		String contentType = "application/octet-stream";
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_error_uploadlimit_reached", "9 KB", "9 KB");
+			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName), BAD_REQUEST, "node_error_uploadlimit_reached",
+					"9 KB", "9 KB");
 		}
 	}
 
 	@Test
 	public void testPathSegmentation() throws IOException {
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			node.setUuid(UUIDUtil.randomUUID());
 
@@ -225,9 +224,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 			String contentType = "application/octet-stream";
 			String fileName = "somefile.dat";
 			int binaryLen = 10000;
-			MeshResponse<GenericMessageResponse> future = uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
 			// Load the uploaded binary field and return the segment path to the field
 			node.reload();
@@ -246,16 +243,14 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
-			GenericMessageResponse message = call(() -> uploadRandomData(node.getUuid(), "en", "binary", binaryLen, contentType, fileName));
-			expectResponseMessage(message, "node_binary_field_updated", "binary");
-
+			NodeResponse response = call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 			node.reload();
 
-			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
 			BinaryField binaryField = response.getFields().getBinaryField("binary");
 
 			assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
@@ -266,8 +261,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 			assertNull("The data did contain image information.", binaryField.getWidth());
 			assertNull("The data did contain image information.", binaryField.getHeight());
 
-			MeshResponse<NodeDownloadResponse> downloadFuture = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary")
-					.invoke();
+			MeshResponse<NodeDownloadResponse> downloadFuture = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary").invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 			NodeDownloadResponse downloadResponse = downloadFuture.result();
@@ -281,32 +275,39 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 	}
 
 	@Test
-	public void testUploadWithConflict() throws IOException {
+	public void testUploadWithSegmentfieldConflict() throws IOException {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10;
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db.noTx()) {
+		// 1. Prepare the folder schema
+		try (NoTx noTrx = db().noTx()) {
 			Node folder2014 = folder("2014");
-			Node folder2015 = folder("2015");
 			prepareSchema(folder2014, "", "binary");
 
 			// make binary field the segment field
 			Schema schema = folder2014.getSchemaContainer().getLatestVersion().getSchema();
 			schema.setSegmentField("binary");
 			folder2014.getSchemaContainer().getLatestVersion().setSchema(schema);
-
-			// upload file to folder 2014
-			MeshResponse<GenericMessageResponse> uploadFuture = uploadRandomData(folder2014.getUuid(), "en", "binary", binaryLen, contentType,
-					fileName).invoke();
-			latchFor(uploadFuture);
-			assertSuccess(uploadFuture);
-
-			// try to upload same file to folder 2015
-			uploadFuture = uploadRandomData(folder2015.getUuid(), "en", "binary", binaryLen, contentType, fileName).invoke();
-			latchFor(uploadFuture);
-			expectException(uploadFuture, CONFLICT, "node_conflicting_segmentfield_upload", "binary", fileName);
 		}
+
+		// 2. Update node a
+		try (NoTx noTrx = db().noTx()) {
+			// upload file to folder 2014
+			Node folder2014 = folder("2014");
+			call(() -> uploadRandomData(folder2014, "en", "binary", binaryLen, contentType, fileName));
+		}
+
+		call(() -> client().findNodeByUuid(PROJECT_NAME, db().noTx(() -> folder("2014").getUuid()),
+				new NodeParameters().setResolveLinks(LinkType.FULL)));
+
+		try (NoTx noTrx = db().noTx()) {
+			// try to upload same file to folder 2015
+			Node folder2015 = folder("2015");
+			call(() -> uploadRandomData(folder2015, "en", "binary", binaryLen, contentType, fileName), CONFLICT,
+					"node_conflicting_segmentfield_upload", "binary", fileName);
+		}
+
 	}
 
 	@Test
@@ -315,11 +316,11 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 		String fieldName = "image";
 		String fileName = "somefile.png";
 
-		try (NoTx noTrx = db.noTx()) {
+		try (NoTx noTrx = db().noTx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", fieldName);
 
-			int size = uploadImage(node.getUuid(), "en", fieldName, fileName, contentType);
+			int size = uploadImage(node, "en", fieldName, fileName, contentType);
 
 			node.reload();
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
@@ -333,8 +334,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 			assertEquals("The data did not contain correct image width information.", 1160, binaryField.getWidth().intValue());
 			assertEquals("The data did not contain correct image height information.", 1376, binaryField.getHeight().intValue());
 
-			MeshResponse<NodeDownloadResponse> downloadFuture = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName)
-					.invoke();
+			MeshResponse<NodeDownloadResponse> downloadFuture = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", fieldName).invoke();
 			latchFor(downloadFuture);
 			assertSuccess(downloadFuture);
 			NodeDownloadResponse downloadResponse = downloadFuture.result();
@@ -347,14 +347,15 @@ public class BinaryFieldUploadEndpointTest extends AbstractRestEndpointTest {
 		}
 	}
 
-	private int uploadImage(String uuid, String languageTag, String fieldname, String filename, String contentType) throws IOException {
+	private int uploadImage(Node node, String languageTag, String fieldname, String filename, String contentType) throws IOException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
-		GenericMessageResponse message = call(
-				() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, fieldname, buffer, filename, contentType));
-
-		expectResponseMessage(message, "node_binary_field_updated", fieldname);
+		String uuid = node.getUuid();
+		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
+		NodeResponse response = call(
+				() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldname, buffer, filename, contentType));
+		assertNotNull(response);
 		return bytes.length;
 
 	}

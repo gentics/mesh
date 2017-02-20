@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
-import com.gentics.mesh.core.verticle.node.NodeFieldAPIHandler;
+import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -88,7 +88,7 @@ public interface MeshComponent {
 
 	TagFamilyIndexHandler tagFamilyIndexHandler();
 
-	NodeFieldAPIHandler nodeFieldAPIHandler();
+	BinaryFieldHandler nodeFieldAPIHandler();
 
 	ImageManipulator imageManipulator();
 

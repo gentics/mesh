@@ -23,7 +23,6 @@ import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -45,14 +44,11 @@ public class WebRootHandler {
 
 	private Database db;
 
-	private HandlerUtilities utils;
-
 	@Inject
-	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootService webrootService, HandlerUtilities utils) {
+	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootService webrootService) {
 		this.db = database;
 		this.imageManipulator = imageManipulator;
 		this.webrootService = webrootService;
-		this.utils = utils;
 	}
 
 	/**

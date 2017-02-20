@@ -11,6 +11,11 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateSet;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -56,14 +61,19 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
-public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
 	public void testCreateNoSchemaReference() {
@@ -94,7 +104,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		assertEquals("The name of the project did not match.", name, restProject.getName());
 
 		NodeResponse response = call(
-				() -> client().findNodeByUuid(name, restProject.getRootNodeUuid(), new VersioningParameters().setVersion("draft")));
+				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParameters().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		// Test slashes
@@ -126,11 +136,11 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		ProjectResponse restProject = call(() -> client().createProject(request));
 
 		NodeResponse response = call(
-				() -> client().findNodeByUuid(name, restProject.getRootNodeUuid(), new VersioningParameters().setVersion("draft")));
+				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParameters().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		assertThat(restProject).matches(request);
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 			Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid());
 			assertNotNull(project);
@@ -151,18 +161,18 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		request.setName(name);
 		request.setSchema(new SchemaReference().setName("folder"));
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			role().revokePermissions(meshRoot().getProjectRoot(), CREATE_PERM);
 		}
 
-		String projectRootUuid = db.noTx(() -> meshRoot().getProjectRoot().getUuid());
+		String projectRootUuid = db().noTx(() -> meshRoot().getProjectRoot().getUuid());
 		call(() -> client().createProject(request), FORBIDDEN, "error_missing_perm", projectRootUuid);
 	}
 
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
@@ -174,7 +184,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		request.setName(name);
 		request.setSchema(new SchemaReference().setName("folder"));
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Create a new project
 			ProjectResponse restProject = call(() -> client().createProject(request));
 			assertThat(restProject).matches(request);
@@ -194,10 +204,10 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			role().grantPermissions(project(), READ_PERM);
 		}
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			final int nProjects = 142;
 			String noPermProjectName;
 			for (int i = 0; i < nProjects; i++) {
@@ -248,22 +258,15 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 					.filter(restProject -> restProject.getName().equals(noPermProjectName)).collect(Collectors.toList());
 			assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
 
-			future = client().findProjects(new PagingParametersImpl(-1, perPage)).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+			call(() -> client().findProjects(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = client().findProjects(new PagingParametersImpl(1, -1)).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
+			call(() -> client().findProjects(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = client().findProjects(new PagingParametersImpl(4242, 25)).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			ProjectListResponse listResponse = call(() -> client().findProjects(new PagingParametersImpl(4242, 25)));
 
-			String response = JsonUtil.toJson(future.result());
+			String response = JsonUtil.toJson(listResponse);
 			assertNotNull(response);
 
-			ProjectListResponse listResponse = future.result();
 			assertEquals(4242, listResponse.getMetainfo().getCurrentPage());
 			assertEquals(25, listResponse.getMetainfo().getPerPage());
 			assertEquals(143, listResponse.getMetainfo().getTotalCount());
@@ -311,19 +314,20 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
 			role().grantPermissions(project, READ_PERM, UPDATE_PERM);
 
-			MeshResponse<ProjectResponse> future = client().findProjectByUuid(uuid).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			ProjectResponse restProject = future.result();
-			assertThat(restProject).matches(project());
+			ProjectResponse response = call(() -> client().findProjectByUuid(uuid));
+			assertThat(response).matches(project());
+			System.out.println(response.getRootNode().getDisplayName());
 
-			PermissionInfo permissions = restProject.getPermissions();
+			response = call(() -> client().findProjectByUuid(uuid, new NodeParameters().setResolveLinks(LinkType.FULL)));
+			assertNotNull(response.getRootNode().getPath());
+
+			PermissionInfo permissions = response.getPermissions();
 			assertTrue(permissions.hasPerm(CREATE));
 			assertTrue(permissions.hasPerm(READ));
 			assertTrue(permissions.hasPerm(UPDATE));
@@ -333,7 +337,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 
@@ -346,7 +350,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
@@ -360,7 +364,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testUpdateWithBogusNames() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", user(), schemaContainer("folder").getLatestVersion());
 
 			String uuid = project().getUuid();
@@ -381,7 +385,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testUpdateWithEndpointName() {
 		List<String> names = Arrays.asList("users", "groups", "projects");
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			for (String name : names) {
 				Project project = project();
 				String uuid = project.getUuid();
@@ -395,7 +399,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			role().grantPermissions(project, UPDATE_PERM);
@@ -403,7 +407,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("New Name");
 
-			assertThat(dummySearchProvider).hasNoStoreEvents();
+			assertThat(dummySearchProvider()).hasNoStoreEvents();
 			ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
 			project.reload();
 			assertThat(restProject).matches(project);
@@ -415,8 +419,8 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			expectedCount += project.getTagRoot().findAll().size();
 			expectedCount += project.getTagFamilyRoot().findAll().size();
 
-			assertThat(dummySearchProvider).hasStore(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
-			assertThat(dummySearchProvider).hasEvents(expectedCount, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasStore(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
+			assertThat(dummySearchProvider()).hasEvents(expectedCount, 0, 0, 0);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			reloadedProject.reload();
@@ -436,7 +440,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws JsonProcessingException, Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			String name = project.getName();
@@ -456,11 +460,11 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			role().grantPermissions(project(), DELETE_PERM);
 		}
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 
@@ -482,13 +486,13 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 			call(() -> client().deleteProject(uuid));
 
 			//3. Assert that the indices have been dropped and the project has been deleted from the project index
-			assertThat(dummySearchProvider).hasDelete(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
-			assertThat(dummySearchProvider).hasDrop(TagFamily.composeIndexName(uuid));
-			assertThat(dummySearchProvider).hasDrop(Tag.composeIndexName(uuid));
+			assertThat(dummySearchProvider()).hasDelete(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
+			assertThat(dummySearchProvider()).hasDrop(TagFamily.composeIndexName(uuid));
+			assertThat(dummySearchProvider()).hasDrop(Tag.composeIndexName(uuid));
 			for (String index : indices) {
-				assertThat(dummySearchProvider).hasDrop(index);
+				assertThat(dummySearchProvider()).hasDrop(index);
 			}
-			assertThat(dummySearchProvider).hasEvents(0, 1, 2 + indices.size(), 0);
+			assertThat(dummySearchProvider()).hasEvents(0, 1, 2 + indices.size(), 0);
 
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
 			// TODO check for removed routers?
@@ -498,12 +502,12 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			role().revokePermissions(project, DELETE_PERM);
 			call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid);
-			assertThat(dummySearchProvider).hasEvents(0, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
 			project = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNotNull("The project should not have been deleted", project);
 		}
@@ -513,7 +517,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	@Ignore("not yet enabled")
 	public void testUpdateMultithreaded() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			int nJobs = 5;
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("New Name");
@@ -531,7 +535,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String uuid = project().getUuid();
 			// CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<?>> set = new HashSet<>();
@@ -572,7 +576,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 		}
 		validateCreation(set, null);
 
-		try (Tx tx = db.tx()) {
+		try (Tx tx = db().tx()) {
 			long n = StreamSupport
 					.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName()).spliterator(), true)
 					.count();
@@ -585,7 +589,7 @@ public class ProjectEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			int nJobs = 200;
 			Set<MeshResponse<ProjectResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {

@@ -129,7 +129,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	@Override
 	public Locale getLocale() {
 		return (Locale) data().computeIfAbsent(LOCALE_MAP_DATA_KEY, map -> {
-			String header = rc.request().headers().get("Accept-Language");
+			String header = rc.request().headers().get(HttpHeaders.ACCEPT_LANGUAGE);
 			return getLocale(header);
 		});
 	}

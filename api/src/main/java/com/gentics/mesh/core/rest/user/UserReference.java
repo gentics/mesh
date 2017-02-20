@@ -1,12 +1,21 @@
 package com.gentics.mesh.core.rest.user;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+
 /**
  * A user reference is a basic rest model POJO that contains a reference to a user in form of the firstname/lastname and the user uuid.
  */
 public class UserReference {
 
-	private String lastName;
+	@JsonPropertyDescription("Firstname of the user")
 	private String firstName;
+
+	@JsonPropertyDescription("Lastname of the user")
+	private String lastName;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Uuid of the user")
 	private String uuid;
 
 	/**

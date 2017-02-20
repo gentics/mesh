@@ -1,6 +1,9 @@
 package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -15,7 +18,7 @@ public interface MicroschemaClientMethods {
 	 *            create request
 	 * @return future for the microschema response
 	 */
-	MeshRequest<Microschema> createMicroschema(Microschema request);
+	MeshRequest<MicroschemaResponse> createMicroschema(MicroschemaCreateRequest request);
 
 	/**
 	 * Load the microschema with the given UUID.
@@ -24,7 +27,7 @@ public interface MicroschemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<Microschema> findMicroschemaByUuid(String uuid, ParameterProvider... parameters);
+	MeshRequest<MicroschemaResponse> findMicroschemaByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
 	 * Update the microschema with the given request.
@@ -36,7 +39,7 @@ public interface MicroschemaClientMethods {
 	 * @param parameters
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, Microschema request, ParameterProvider... parameters);
+	MeshRequest<GenericMessageResponse> updateMicroschema(String uuid, MicroschemaUpdateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Delete the given microschema.

@@ -10,8 +10,9 @@ import static com.gentics.mesh.mock.Mocks.mockRole;
 import static com.gentics.mesh.mock.Mocks.mockSchemaContainer;
 import static com.gentics.mesh.mock.Mocks.mockTag;
 import static com.gentics.mesh.mock.Mocks.mockTagFamily;
+import static com.gentics.mesh.mock.Mocks.mockUpdateDocumentEntry;
 import static com.gentics.mesh.mock.Mocks.mockUser;
-import static org.mockito.Mockito.mock;
+import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -24,8 +25,8 @@ import org.mockito.Mockito;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
@@ -50,7 +51,6 @@ import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonObject;
 
@@ -137,9 +137,8 @@ public class SearchModelGenerator {
 		Node node = mockNode(parentNode, project, user, language, tagA, tagB);
 
 		NodeIndexHandler nodeIndexHandler = meshDagger.nodeContainerIndexHandler();
-		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), null, null).toCompletable().await();
+		nodeIndexHandler.storeContainer(node.getLatestDraftFieldContainer(language), randomUUID(), ContainerType.PUBLISHED).toCompletable().await();
 		writeStoreEvent("node.search");
-
 	}
 
 	private void writeProjectDocumentExample() throws Exception {
@@ -147,7 +146,7 @@ public class SearchModelGenerator {
 		User user = mockUser("joe1", "Joe", "Doe", creator);
 		Project project = mockProject(user);
 		ProjectIndexHandler projectIndexHandler = meshDagger.projectIndexHandler();
-		projectIndexHandler.store(project, null).await();
+		projectIndexHandler.store(project, mockUpdateDocumentEntry()).await();
 		writeStoreEvent("project.search");
 	}
 
@@ -155,7 +154,7 @@ public class SearchModelGenerator {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Group group = mockGroup("adminGroup", user);
 		GroupIndexHandler groupIndexHandler = meshDagger.groupIndexHandler();
-		groupIndexHandler.store(group, null).await();
+		groupIndexHandler.store(group, mockUpdateDocumentEntry()).await();
 		writeStoreEvent("group.search");
 	}
 
@@ -163,7 +162,7 @@ public class SearchModelGenerator {
 		User user = mockUser("joe1", "Joe", "Doe");
 		Role role = mockRole("adminRole", user);
 		RoleIndexHandler roleIndexHandler = meshDagger.roleIndexHandler();
-		roleIndexHandler.store(role, null).await();
+		roleIndexHandler.store(role, mockUpdateDocumentEntry()).await();
 		writeStoreEvent("role.search");
 	}
 
@@ -174,7 +173,7 @@ public class SearchModelGenerator {
 		Group groupB = mockGroup("superEditors", user);
 		Mockito.<List<? extends Group>> when(user.getGroups()).thenReturn(Arrays.asList(groupA, groupB));
 		UserIndexHandler userIndexHandler = meshDagger.userIndexHandler();
-		userIndexHandler.store(user, null).await();
+		userIndexHandler.store(user, mockUpdateDocumentEntry()).await();
 		writeStoreEvent("user.search");
 	}
 
@@ -190,10 +189,8 @@ public class SearchModelGenerator {
 			return tagList;
 		});
 		TagFamilyIndexHandler tagFamilyIndexHandler = meshDagger.tagFamilyIndexHandler();
-		UpdateDocumentEntry entry = mock(UpdateDocumentEntry.class);
-		HandleContext context = new HandleContext();
-		context.setProjectUuid(UUIDUtil.randomUUID());
-		when(entry.getContext()).thenReturn(context);
+		UpdateDocumentEntry entry = mockUpdateDocumentEntry();
+
 		tagFamilyIndexHandler.store(tagFamily, entry).await();
 		writeStoreEvent("tagFamily.search");
 	}
@@ -203,7 +200,7 @@ public class SearchModelGenerator {
 		SchemaContainer schemaContainer = mockSchemaContainer("content", user);
 
 		SchemaContainerIndexHandler searchIndexHandler = meshDagger.schemaContainerIndexHandler();
-		searchIndexHandler.store(schemaContainer, null).await();
+		searchIndexHandler.store(schemaContainer, mockUpdateDocumentEntry()).await();
 		writeStoreEvent("schema.search");
 	}
 
@@ -212,7 +209,7 @@ public class SearchModelGenerator {
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer("geolocation", user);
 
 		MicroschemaContainerIndexHandler searchIndexHandler = meshDagger.microschemaContainerIndexHandler();
-		searchIndexHandler.store(microschemaContainer, null).await();
+		searchIndexHandler.store(microschemaContainer, mockUpdateDocumentEntry()).await();
 		writeStoreEvent("microschema.search");
 	}
 
@@ -222,10 +219,7 @@ public class SearchModelGenerator {
 		TagFamily tagFamily = mockTagFamily("colors", user, project);
 		Tag tag = mockTag("red", user, tagFamily, project);
 		TagIndexHandler tagIndexHandler = meshDagger.tagIndexHandler();
-		UpdateDocumentEntry entry = mock(UpdateDocumentEntry.class);
-		HandleContext context = new HandleContext();
-		context.setProjectUuid(UUIDUtil.randomUUID());
-		when(entry.getContext()).thenReturn(context);
+		UpdateDocumentEntry entry = mockUpdateDocumentEntry();
 		tagIndexHandler.store(tag, entry).await();
 		writeStoreEvent("tag.search");
 	}

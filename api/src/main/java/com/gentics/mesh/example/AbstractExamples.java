@@ -9,6 +9,7 @@ import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
 
 /**
@@ -71,6 +72,17 @@ public abstract class AbstractExamples {
 
 	public MicroschemaReference getMicroschemaReference(String name, int version) {
 		return new MicroschemaReference().setName(name).setUuid(randomUUID()).setVersion(version);
+	}
+
+	/**
+	 * Create a node reference.
+	 * 
+	 * @return
+	 */
+	public NodeReference createNodeReference() {
+		NodeReference reference = new NodeReference();
+		reference.setUuid(randomUUID());
+		return reference;
 	}
 
 }

@@ -2,27 +2,23 @@ package com.gentics.mesh.core;
 
 import static org.junit.Assert.assertNotNull;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.graphdb.Tx;
-import com.gentics.mesh.test.AbstractDBTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class MultithreadGraphTest extends AbstractDBTest {
-
-	@Before
-	public void cleanup() {
-		resetDatabase();
-	}
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+public class MultithreadGraphTest extends AbstractMeshTest {
 
 	@Test
 	public void testMultithreading() throws InterruptedException {
 
 		runAndWait(() -> {
-			try (Tx tx = db.tx()) {
-				MeshRoot meshRoot = boot.meshRoot();
+			try (Tx tx = db().tx()) {
+				MeshRoot meshRoot = boot().meshRoot();
 				User user = meshRoot.getUserRoot().create("test", null);
 				assertNotNull(user);
 				tx.success();
@@ -31,21 +27,21 @@ public class MultithreadGraphTest extends AbstractDBTest {
 		});
 
 		runAndWait(() -> {
-			try (Tx tx = db.tx()) {
+			try (Tx tx = db().tx()) {
 				// fg.getEdges();
 				runAndWait(() -> {
-					User user = boot.meshRoot().getUserRoot().findByUsername("test");
+					User user = boot().meshRoot().getUserRoot().findByUsername("test");
 					assertNotNull(user);
 				});
-				User user = boot.meshRoot().getUserRoot().findByUsername("test");
+				User user = boot().meshRoot().getUserRoot().findByUsername("test");
 				assertNotNull(user);
 				System.out.println("Read user");
 
 			}
 		});
 
-		try (Tx tx = db.tx()) {
-			User user = boot.meshRoot().getUserRoot().findByUsername("test");
+		try (Tx tx = db().tx()) {
+			User user = boot().meshRoot().getUserRoot().findByUsername("test");
 			assertNotNull(user);
 		}
 	}

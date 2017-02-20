@@ -12,4 +12,10 @@ public interface ApiInfoClientMethods {
 	 */
 	MeshRequest<MeshServerInfoModel> getApiInfo();
 
+	/**
+	 * Load the mesh server RAML
+	 * 
+	 * @return
+	 */
+	MeshRequest<String> getRAML();
 }

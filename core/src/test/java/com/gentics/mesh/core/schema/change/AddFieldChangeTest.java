@@ -28,13 +28,15 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setCustomMigrationScript("1234");
 			assertEquals("1234", change.getMigrationScript());
@@ -53,9 +55,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testApply() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("name");
 			change.setType("html");
@@ -68,7 +70,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplayStringFieldAtEndPosition() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			Schema schema = new SchemaModel();
 			schema.addField(FieldUtil.createStringFieldSchema("firstField"));
@@ -92,9 +94,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyStringFieldAtPosition() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			schema.addField(FieldUtil.createStringFieldSchema("firstField"));
 			schema.addField(FieldUtil.createStringFieldSchema("secondField"));
 			schema.addField(FieldUtil.createStringFieldSchema("thirdField"));
@@ -116,9 +118,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyStringField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("stringField");
 			change.setType("string");
@@ -132,9 +134,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyNodeField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("nodeField");
 			change.setType("node");
@@ -149,9 +151,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyMicronodeField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("micronodeField");
 			change.setType("micronode");
@@ -166,9 +168,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyDateField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("dateField");
 			change.setType("date");
@@ -182,9 +184,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyNumberField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("numberField");
 			change.setType("number");
@@ -198,9 +200,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyBinaryField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("binaryField");
 			change.setType("binary");
@@ -214,9 +216,9 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApplyListField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("listField");
 			change.setType("list");
@@ -234,7 +236,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaChangeModel model = SchemaChangeModel.createAddFieldChange("testField", "html", "test123");
 			model.setMigrationScript("custom");
 
@@ -249,7 +251,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			change.setFieldName("name");
 			change.setType("html");
@@ -267,7 +269,7 @@ public class AddFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			AddFieldChange change = Database.getThreadLocalGraph().addFramedVertex(AddFieldChangeImpl.class);
 			assertNull("Add field changes have no auto migation script.", change.getAutoMigrationScript());
 

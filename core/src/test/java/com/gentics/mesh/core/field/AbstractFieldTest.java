@@ -10,7 +10,6 @@ import static org.junit.Assert.fail;
 import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
@@ -32,10 +31,11 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import rx.functions.Action1;
 
-public abstract class AbstractFieldTest<FS extends FieldSchema> extends AbstractIsolatedBasicDBTest implements FieldTestcases {
+public abstract class AbstractFieldTest<FS extends FieldSchema> extends AbstractMeshTest implements FieldTestcases {
 
 	abstract protected FS createFieldSchema(boolean isRequired);
 

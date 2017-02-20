@@ -32,13 +32,20 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 	 * Construct a new page
 	 * 
 	 * @param wrappedList
+	 *            List which yields the element within the page
 	 * @param totalElements
+	 *            Total element which could be found
 	 * @param pageNumber
+	 *            Number of the page
 	 * @param totalPages
+	 *            Total amount of pages
 	 * @param numberOfElements
+	 *            Number of element within this page
 	 * @param perPage
+	 *            Number of element per page
 	 */
-	public PageImpl(List<? extends T> wrappedList, long totalElements, int pageNumber, int totalPages, int numberOfElements, int perPage) {
+	public PageImpl(List<? extends T> wrappedList, long totalElements, int pageNumber, int totalPages,
+			int numberOfElements, int perPage) {
 		this.wrappedList = wrappedList;
 		this.totalElements = totalElements;
 		this.pageNumber = pageNumber;

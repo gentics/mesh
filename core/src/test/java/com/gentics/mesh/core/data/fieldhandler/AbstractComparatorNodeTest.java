@@ -13,6 +13,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 public abstract class AbstractComparatorNodeTest<C extends FieldSchemaContainer> extends AbstractSchemaComparatorTest<NodeFieldSchema, C> {
 

@@ -5,8 +5,9 @@ import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
@@ -22,8 +23,8 @@ public class MicroschemaExamples extends AbstractExamples {
 		return microschemas;
 	}
 
-	public Microschema getGeolocationMicroschema() {
-		Microschema microschema = new MicroschemaModel();
+	public MicroschemaResponse getGeolocationMicroschemaResponse() {
+		MicroschemaResponse microschema = new MicroschemaResponse();
 		microschema.setName("geolocation");
 		microschema.setDescription("Microschema for Geolocations");
 		microschema.setVersion(1);
@@ -52,14 +53,14 @@ public class MicroschemaExamples extends AbstractExamples {
 
 	public MicroschemaListResponse getMicroschemaListResponse() {
 		MicroschemaListResponse microschemaList = new MicroschemaListResponse();
-		microschemaList.getData().add(getGeolocationMicroschema());
-		microschemaList.getData().add(getGeolocationMicroschema());
+		microschemaList.getData().add(getGeolocationMicroschemaResponse());
+		microschemaList.getData().add(getGeolocationMicroschemaResponse());
 		setPaging(microschemaList, 1, 10, 2, 20);
 		return microschemaList;
 	}
 
-	public Microschema getGeolocationMicroschemaCreateRequest() {
-		Microschema createRequest = new MicroschemaModel();
+	public MicroschemaCreateRequest getGeolocationMicroschemaCreateRequest() {
+		MicroschemaCreateRequest createRequest = new MicroschemaCreateRequest();
 		createRequest.setName("geolocation");
 		createRequest.setDescription("Microschema for Geolocations");
 		NumberFieldSchema longitudeFieldSchema = new NumberFieldSchemaImpl();
@@ -79,5 +80,11 @@ public class MicroschemaExamples extends AbstractExamples {
 		createRequest.addField(latitudeFieldSchema);
 
 		return createRequest;
+	}
+
+	public MicroschemaUpdateRequest getGeolocationMicroschemaUpdateRequest() {
+		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
+		request.setName("geolocation-renamed");
+		return request;
 	}
 }

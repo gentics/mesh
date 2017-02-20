@@ -123,6 +123,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 					return;
 				} else {
 					db.noTx(() -> {
+						// Load the identified elements
 						Project project = boot.get().projectRoot().findByUuid(projectUuid);
 						if (project == null) {
 							throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
@@ -146,13 +147,13 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.schema);
 						setRunning(statusBean, statusMBeanName);
+
 						// Invoke the migration using the located elements
 						nodeMigrationHandler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
 						return null;
 					});
 					setDone(schemaUuid, statusMBeanName);
 					message.reply(null);
-
 				}
 			} catch (Exception e) {
 				message.fail(0, "Migration for schema {" + schemaUuid + "} failed: " + e.getLocalizedMessage());

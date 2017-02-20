@@ -8,20 +8,22 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 
-public class MeshRestAPITest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = true)
+public class MeshRestAPITest extends AbstractMeshTest {
 
 	@Test
 	public void test404Response() throws Exception {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost("localhost");
-		options.setDefaultPort(port);
+		options.setDefaultPort(port());
 
 		HttpClient client = Mesh.vertx().createHttpClient(options);
 		CompletableFuture<String> future = new CompletableFuture<>();

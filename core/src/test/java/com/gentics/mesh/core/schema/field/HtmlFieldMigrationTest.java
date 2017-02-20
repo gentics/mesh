@@ -22,7 +22,9 @@ import javax.script.ScriptException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.field.html.HtmlFieldTestHelper;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implements HtmlFieldTestHelper {
 
 	@Test
@@ -114,7 +116,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 		changeType(CREATEHTML, FILL1, FETCH, CREATEDATE, (container, name) -> {
 			assertThat(container.getDate(name)).as(NEWFIELD).isNotNull();
-			//Internally timestamps are stored in miliseconds
+			// Internally timestamps are stored in miliseconds
 			assertThat(container.getDate(name).getDate()).as(NEWFIELDVALUE).isEqualTo(1000L);
 		});
 
@@ -133,7 +135,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 		changeType(CREATEHTML, FILL1, FETCH, CREATEDATELIST, (container, name) -> {
 			assertThat(container.getDateList(name)).as(NEWFIELD).isNotNull();
-			//Internally timestamps are stored in miliseconds
+			// Internally timestamps are stored in miliseconds
 			assertThat(container.getDateList(name).getValues()).as(NEWFIELDVALUE).containsExactly(1000L);
 		});
 
@@ -156,7 +158,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 	public void testChangeToHtmlList() throws Exception {
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATEHTMLLIST, (container, name) -> {
 			assertThat(container.getHTMLList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELDVALUE).containsExactly("<b>HTML</b> content");
+			assertThat(container.getHTMLList(name).getValues()).as(NEWFIELDVALUE)
+					.containsExactly("<b>HTML</b> content");
 		});
 	}
 
@@ -242,7 +245,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 	public void testChangeToStringList() throws Exception {
 		changeType(CREATEHTML, FILLTEXT, FETCH, CREATESTRINGLIST, (container, name) -> {
 			assertThat(container.getStringList(name)).as(NEWFIELD).isNotNull();
-			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE).containsExactly("<b>HTML</b> content");
+			assertThat(container.getStringList(name).getValues()).as(NEWFIELDVALUE)
+					.containsExactly("<b>HTML</b> content");
 		});
 	}
 
@@ -253,7 +257,8 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 				"function migrate(node, fieldname) {node.fields[fieldname] = 'modified ' + node.fields[fieldname]; return node;}",
 				(container, name) -> {
 					assertThat(container.getHtml(name)).as(NEWFIELD).isNotNull();
-					assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE).isEqualTo("modified <b>HTML</b> content");
+					assertThat(container.getHtml(name).getHTML()).as(NEWFIELDVALUE)
+							.isEqualTo("modified <b>HTML</b> content");
 				});
 	}
 

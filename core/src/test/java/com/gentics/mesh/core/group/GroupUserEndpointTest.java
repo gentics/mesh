@@ -4,6 +4,8 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -31,15 +33,17 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class GroupUserEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	// Group User Testcases - PUT / Add
 
 	@Test
 	public void testGetUsersByGroup() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", user());
 			group().addUser(extraUser);
@@ -68,7 +72,7 @@ public class GroupUserEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", user());
 			String userUuid = extraUser.getUuid();
@@ -82,7 +86,7 @@ public class GroupUserEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddUserToGroupWithPerm() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 
 			User extraUser = userRoot.create("extraUser", user());
@@ -92,11 +96,11 @@ public class GroupUserEndpointTest extends AbstractRestEndpointTest {
 
 			GroupResponse restGroup = call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()));
 			assertThat(restGroup).matches(group());
-			assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), user().getUuid());
-			assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), extraUser.getUuid());
-			assertThat(dummySearchProvider).hasStore(Group.composeIndexName(), Group.composeIndexType(), group().getUuid());
-			assertThat(dummySearchProvider).hasEvents(3, 0, 0, 0);
-			dummySearchProvider.clear();
+			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), user().getUuid());
+			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), extraUser.getUuid());
+			assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), group().getUuid());
+			assertThat(dummySearchProvider()).hasEvents(3, 0, 0, 0);
+			dummySearchProvider().clear();
 
 			group().reload();
 			assertTrue("User should be member of the group.", group().hasUser(extraUser));
@@ -106,7 +110,7 @@ public class GroupUserEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddUserToGroupWithoutPermOnGroup() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Group group = group();
 			String groupUuid = group.getUuid();
 			UserRoot userRoot = meshRoot().getUserRoot();
@@ -124,7 +128,7 @@ public class GroupUserEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", user());
 			role().grantPermissions(extraUser, DELETE_PERM);
@@ -139,7 +143,7 @@ public class GroupUserEndpointTest extends AbstractRestEndpointTest {
 	// Group User Testcases - DELETE / Remove
 	@Test
 	public void testRemoveUserFromGroupWithoutPerm() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			User user = user();
 			Group group = group();
 			assertTrue("User should be a member of the group.", group.hasUser(user));
@@ -151,7 +155,7 @@ public class GroupUserEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testRemoveUserFromGroupWithPerm() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			call(() -> client().removeUserFromGroup(group().getUuid(), user().getUuid()));
 			assertFalse("User should not be member of the group.", group().hasUser(user()));
 		}
@@ -165,7 +169,7 @@ public class GroupUserEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testRemoveUserFromLastGroupWithPerm() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			call(() -> client().removeUserFromGroup(group().getUuid(), user().getUuid()));
 			assertFalse("User should no longer be member of the group.", group().hasUser(user()));
 		}
@@ -173,7 +177,7 @@ public class GroupUserEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testRemoveUserFromGroupWithBogusUserUuid() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			call(() -> client().removeUserFromGroup(group().getUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 			assertTrue("User should still be member of the group.", group().hasUser(user()));
 		}

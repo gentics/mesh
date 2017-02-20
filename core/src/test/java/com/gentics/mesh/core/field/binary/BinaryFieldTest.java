@@ -29,7 +29,9 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 	private static final String BINARY_FIELD = "binaryField";
@@ -46,7 +48,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 
 			// Update the schema and add a binary field
@@ -79,7 +81,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
 			BinaryGraphField field = container.createBinary(BINARY_FIELD);
@@ -115,7 +117,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
 			BinaryGraphField field = container.createBinary(BINARY_FIELD);
@@ -142,7 +144,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BinaryGraphField fieldA = container.createBinary("fieldA");
 			BinaryGraphField fieldB = container.createBinary("fieldB");
@@ -160,7 +162,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BinaryGraphField fieldA = container.createBinary(BINARY_FIELD);
 			assertFalse(fieldA.equals((Field) null));
@@ -171,7 +173,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BinaryGraphField fieldA = container.createBinary("fieldA");
 
@@ -195,7 +197,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestTestcase(BINARY_FIELD, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -203,7 +205,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(BINARY_FIELD, FETCH, false);
 		}
 	}
@@ -211,7 +213,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeRemoveFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (node) -> {
 				updateContainer(ac, node, BINARY_FIELD, null);
@@ -222,7 +224,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(BINARY_FIELD, FETCH, FILL_BASIC, (container) -> {
 				updateContainer(ac, container, BINARY_FIELD, null);
@@ -233,7 +235,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			InternalActionContext ac = getMockedInternalActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(BINARY_FIELD, FILL_BASIC, (container) -> {
 				BinaryField field = new BinaryFieldImpl();

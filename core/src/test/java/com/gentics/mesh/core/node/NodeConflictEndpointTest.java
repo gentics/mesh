@@ -1,7 +1,8 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -29,7 +30,6 @@ import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -37,10 +37,12 @@ import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientHttpException;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.Tuple;
 
-public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 	private Node getTestNode() {
 		Node node = content("concorde");
@@ -49,10 +51,6 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 
 	private NodeUpdateRequest prepareNameFieldUpdateRequest(String nameFieldValue, String baseVersion) {
 		NodeUpdateRequest request = new NodeUpdateRequest();
-		SchemaReference schemaReference = new SchemaReference();
-		schemaReference.setName("content");
-		schemaReference.setUuid(schemaContainer("content").getUuid());
-		request.setSchema(schemaReference);
 		request.setLanguage("en");
 		// Only update the name field
 		request.getFields().put("name", FieldUtil.createStringField(nameFieldValue));
@@ -65,7 +63,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testNoConflictUpdate() {
 
-		try (Tx trx = db.tx()) {
+		try (Tx trx = db().tx()) {
 
 			Node node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");
@@ -92,7 +90,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testConflictDetection() {
 
-		try (Tx trx = db.tx()) {
+		try (Tx trx = db().tx()) {
 
 			// Invoke an initial update on the node - Update Version 1.0 Name -> 1.1
 			Node node = getTestNode();
@@ -132,7 +130,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testDeduplicationDuringUpdate() {
 
-		try (Tx trx = db.tx()) {
+		try (Tx trx = db().tx()) {
 			updateSchema();
 			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", origContainer.getString("name").getString());
@@ -155,7 +153,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 
 	private void initialRequest() {
 
-		try (Tx tx = db.tx()) {
+		try (Tx tx = db().tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer oldContainer = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.0");
@@ -190,7 +188,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 	}
 
 	private NodeUpdateRequest modifingRequest() {
-		try (Tx trx = db.tx()) {
+		try (Tx trx = db().tx()) {
 			Node node = getTestNode();
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
@@ -221,7 +219,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 	 * @param request
 	 */
 	private void repeatRequest(NodeUpdateRequest request) {
-		try (Tx trx = db.tx()) {
+		try (Tx trx = db().tx()) {
 			Node node = getTestNode();
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
@@ -231,7 +229,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 			assertThat(restNode).hasVersion("1.3");
 		}
 
-		try (Tx trx = db.tx()) {
+		try (Tx trx = db().tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer createdVersion = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.3");
@@ -260,7 +258,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 	}
 
 	private void deletingRequest() {
-		try (Tx trx = db.tx()) {
+		try (Tx trx = db().tx()) {
 			Node node = getTestNode();
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
@@ -270,7 +268,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 			NodeResponse restNode4 = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request4, parameters));
 			assertThat(restNode4).hasVersion("1.4");
 		}
-		try (Tx trx = db.tx()) {
+		try (Tx trx = db().tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer createdVersion = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.4");
@@ -304,7 +302,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 	 */
 	@Test
 	public void testConflictInMicronode() {
-		try (Tx trx = db.tx()) {
+		try (Tx trx = db().tx()) {
 			updateSchema();
 			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", origContainer.getString("name").getString());
@@ -316,7 +314,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 		initialRequest();
 
 		// Modify 1.1 and update micronode
-		try (Tx trx = db.tx()) {
+		try (Tx trx = db().tx()) {
 			Node node = getTestNode();
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
@@ -338,7 +336,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 		}
 
 		// Another update request based on 1.1 which also updates the micronode - A conflict should be detected
-		try (Tx trx = db.tx()) {
+		try (Tx trx = db().tx()) {
 			Node node = getTestNode();
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
@@ -368,7 +366,7 @@ public class NodeConflictEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testBogusVersionNumber() {
-		try (Tx trx = db.tx()) {
+		try (Tx trx = db().tx()) {
 
 			Node node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "42.1");

@@ -29,7 +29,7 @@ node('dockerRoot') {
 			if (v) {
 				echo "Building version ${v}"
 			}
-			sh "${mvnHome}/bin/mvn -B versions:set -DgenerateBackupPoms=false -DnewVersion=${v}"
+			sh "${mvnHome}/bin/mvn -B -U versions:set -DgenerateBackupPoms=false -DnewVersion=${v}"
 			//TODO only add pom.xml files
 			sh 'git add .'
 			sh "git commit -m 'Raise version'"
@@ -63,7 +63,7 @@ node('dockerRoot') {
 						sh "mv includes-${postfix} inclusions.txt"
 						sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
 							try {
-								sh "${mvnHome}/bin/mvn -e -pl '!demo,!doc,!server,!performance-tests' -B clean test"
+								sh "${mvnHome}/bin/mvn -B -U -e -pl '!demo,!doc,!server,!performance-tests' clean test"
 							} finally {
 								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 							}
@@ -110,7 +110,7 @@ node('dockerRoot') {
 				checkout scm
 				//checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]], extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
 				try {
-					sh "${mvnHome}/bin/mvn -B clean package -pl '!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false"
+					sh "${mvnHome}/bin/mvn -B -U clean package -pl '!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false"
 				} finally {
 					//step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 					step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
@@ -143,9 +143,11 @@ node('dockerRoot') {
 			}
 			sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
 				sh "${mvnHome}/bin/mvn -B -DskipTests clean deploy"
-				def gitCommit = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
-				sh "git push origin " + gitCommit
-				sh "git push origin ${v}"
+				if (Boolean.valueOf(runReleaseBuild)) {
+					def gitCommit = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
+					sh "git push origin " + gitCommit
+					sh "git push origin ${v}"
+				}
 			}
 		} else {
 			echo "Deploy/Push skipped.."

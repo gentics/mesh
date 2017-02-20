@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.field.bool;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -22,7 +22,9 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.BooleanFieldListImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Override
@@ -33,7 +35,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			BooleanFieldListImpl listField = new BooleanFieldListImpl();
 			listField.add(true);
 			listField.add(false);
@@ -47,7 +49,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			BooleanFieldListImpl listField = new BooleanFieldListImpl();
 			listField.add(true);
 			listField.add(false);
@@ -59,7 +61,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			BooleanFieldListImpl listField = new BooleanFieldListImpl();
 			listField.add(true);
 			listField.add(false);
@@ -71,7 +73,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			assertThat(response.getFields().getBooleanFieldList(FIELD_NAME)).as("List field in response should be null").isNull();
 		}
@@ -80,7 +82,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			BooleanFieldListImpl listField = new BooleanFieldListImpl();
 			listField.add(true);
 			listField.add(false);
@@ -96,7 +98,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// 1. Update an existing node
 			BooleanFieldListImpl listField = new BooleanFieldListImpl();
 			listField.add(true);
@@ -114,7 +116,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 
 			List<List<Boolean>> valueCombinations = Arrays.asList(Arrays.asList(true, false, false), Arrays.asList(false, false, true),
@@ -144,7 +146,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			BooleanFieldListImpl list = new BooleanFieldListImpl();
 			list.add(true);
 			list.add(false);
@@ -174,7 +176,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			BooleanFieldListImpl list = new BooleanFieldListImpl();
 			list.add(true);
 			list.add(false);

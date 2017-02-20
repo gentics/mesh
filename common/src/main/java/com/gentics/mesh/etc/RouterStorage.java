@@ -198,7 +198,7 @@ public class RouterStorage {
 	 * 
 	 * @param name
 	 *            Name of the project router
-	 * @return
+	 * @return true if the project router could be removed. Otherwise false
 	 */
 	public boolean removeProjectRouter(String name) {
 		Router projectRouter = projectRouters.get(name);
@@ -291,6 +291,13 @@ public class RouterStorage {
 		return router;
 	}
 
+	/**
+	 * Return custom sub router
+	 * 
+	 * @param name
+	 *            Name of the custom sub router
+	 * @return Found or created router
+	 */
 	public Router getCustomSubRouter(String name) {
 		Router router = customRouters.get(name);
 		if (router == null) {

@@ -1,17 +1,22 @@
 package com.gentics.mesh.core.rest.release;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
-import com.gentics.mesh.core.rest.common.Permission;
 
 /**
  * POJO for a release response.
  */
 public class ReleaseResponse extends AbstractGenericRestResponse {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Name of the release")
 	private String name;
 
 	// private boolean active;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Flag which indicates whether any active node migration for this release is still running or whether all nodes have been migrated to this release")
 	private boolean migrated;
 
 	public ReleaseResponse() {

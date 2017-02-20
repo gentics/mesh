@@ -19,12 +19,17 @@ import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
 
 public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphField {
+
+	public static void init(Database database) {
+		database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
+	}
 
 	public static FieldTransformator<BinaryField> BINARY_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);

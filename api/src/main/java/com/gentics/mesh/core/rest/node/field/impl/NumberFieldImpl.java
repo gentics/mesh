@@ -1,10 +1,15 @@
 package com.gentics.mesh.core.rest.node.field.impl;
 
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.NumberField;
 
+/**
+ * @see NumberField
+ */
 public class NumberFieldImpl implements NumberField {
 
+	@JsonPropertyDescription("Number field value")
 	private Number number;
 
 	@Override

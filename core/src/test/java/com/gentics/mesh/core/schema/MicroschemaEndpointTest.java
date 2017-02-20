@@ -9,7 +9,12 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
+import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateSet;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -34,18 +39,24 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.definition.BasicRestTestcases;
 
-public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Ignore("Not yet implemented")
 	@Test
@@ -58,7 +69,7 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
@@ -83,7 +94,7 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
-		Microschema request = new MicroschemaModel();
+		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
 		request.setName("new microschema name");
 
 		CyclicBarrier barrier = prepareBarrier(nJobs);
@@ -98,16 +109,16 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
-			Set<MeshResponse<Microschema>> set = new HashSet<>();
+			Set<MeshResponse<MicroschemaResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(client().findMicroschemaByUuid(uuid).invoke());
 			}
-			for (MeshResponse<Microschema> future : set) {
+			for (MeshResponse<MicroschemaResponse> future : set) {
 				latchFor(future);
 				assertSuccess(future);
 			}
@@ -117,13 +128,13 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		Microschema request = new MicroschemaModel();
+		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
 		request.setName("new microschema name");
 		request.setDescription("microschema description");
 
-		assertThat(dummySearchProvider).recordedStoreEvents(0);
-		Microschema microschemaResponse = call(() -> client().createMicroschema(request));
-		assertThat(dummySearchProvider).recordedStoreEvents(1);
+		assertThat(dummySearchProvider()).recordedStoreEvents(0);
+		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(request));
+		assertThat(dummySearchProvider()).recordedStoreEvents(1);
 		assertThat(microschemaResponse.getPermissions()).hasPerm(READ, CREATE, DELETE, UPDATE);
 		assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(request, "name", "description");
 	}
@@ -131,12 +142,12 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
-		Microschema request = new MicroschemaModel();
+		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
 		request.setName("new microschema name");
 		request.setDescription("microschema description");
 
-		String microschemaRootUuid = db.noTx(() -> meshRoot().getMicroschemaContainerRoot().getUuid());
-		try (NoTx noTx = db.noTx()) {
+		String microschemaRootUuid = db().noTx(() -> meshRoot().getMicroschemaContainerRoot().getUuid());
+		try (NoTx noTx = db().noTx()) {
 			role().revokePermissions(meshRoot().getMicroschemaContainerRoot(), CREATE_PERM);
 		}
 		call(() -> client().createMicroschema(request), FORBIDDEN, "error_missing_perm", microschemaRootUuid);
@@ -153,13 +164,10 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
-			MeshResponse<Microschema> future = client().findMicroschemaByUuid(vcardContainer.getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			Microschema microschemaResponse = future.result();
+			MicroschemaResponse microschemaResponse = call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()));
 			assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getLatestVersion().getSchema(), "name",
 					"description");
 		}
@@ -168,12 +176,13 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
 
-			Microschema microschema = call(() -> client().findMicroschemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
+			MicroschemaResponse microschema = call(
+					() -> client().findMicroschemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
 			assertNotNull(microschema.getRolePerms());
 			assertThat(microschema.getRolePerms()).hasPerm(Permission.values());
 		}
@@ -182,7 +191,7 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 
@@ -191,9 +200,7 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 			role().grantPermissions(vcardContainer, CREATE_PERM);
 			role().revokePermissions(vcardContainer, READ_PERM);
 
-			MeshResponse<Microschema> future = client().findMicroschemaByUuid(vcardContainer.getUuid()).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", vcardContainer.getUuid());
+			call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()), FORBIDDEN, "error_missing_perm", vcardContainer.getUuid());
 		}
 	}
 
@@ -214,12 +221,12 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
 			assertNotNull(microschema);
 			role().revokePermissions(microschema, UPDATE_PERM);
 
-			Microschema request = new MicroschemaModel();
+			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 			request.setName("new-name");
 
 			MeshResponse<GenericMessageResponse> future = client().updateMicroschema(microschema.getUuid(), request).invoke();
@@ -231,18 +238,16 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
 			assertNotNull(microschema);
 			String oldName = microschema.getName();
-			Microschema request = new MicroschemaModel();
+			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 			request.setName("new-name");
 
-			MeshResponse<GenericMessageResponse> future = client().updateMicroschema("bogus", request).invoke();
-			latchFor(future);
-			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			call(() -> client().updateMicroschema("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
-			MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid());
+			MicroschemaContainer reloaded = boot().microschemaContainerRoot().findByUuid(microschema.getUuid());
 			assertEquals("The name should not have been changed.", oldName, reloaded.getName());
 		}
 	}
@@ -250,27 +255,27 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
-			MicroschemaContainer microschema = microschemaContainers().get("vcard");
-			assertNotNull(microschema);
-			call(() -> client().deleteMicroschema(microschema.getUuid()));
+		String uuid = db().noTx(() -> microschemaContainers().get("vcard").getUuid());
 
-			// schema_delete_still_in_use
+		call(() -> client().deleteMicroschema(uuid));
 
-			MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschema.getUuid());
+		// schema_delete_still_in_use
+
+		try (NoTx noTx = db().noTx()) {
+			MicroschemaContainer reloaded = boot().microschemaContainerRoot().findByUuid(uuid);
 			assertNull("The microschema should have been deleted.", reloaded);
 		}
 	}
 
 	@Test
 	public void testDeleteByUUIDWhileInUse() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer microschemaContainer = microschemaContainers().get("vcard");
 
 			// 1. Create a new schema which uses the vcard microschema
-			Schema schema = FieldUtil.createMinimalValidSchema();
+			SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 			schema.addField(FieldUtil.createMicronodeFieldSchema("vcardtest").setAllowedMicroSchemas("vcard"));
-			Schema response = call(() -> client().createSchema(schema));
+			SchemaResponse response = call(() -> client().createSchema(schema));
 
 			// 2. Assign the new schema to the project
 			call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
@@ -292,7 +297,7 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 			call(() -> client().deleteMicroschema(microschemaContainer.getUuid()), BAD_REQUEST, "microschema_delete_still_in_use",
 					microschemaContainer.getUuid());
 
-			MicroschemaContainer reloaded = boot.microschemaContainerRoot().findByUuid(microschemaContainer.getUuid());
+			MicroschemaContainer reloaded = boot().microschemaContainerRoot().findByUuid(microschemaContainer.getUuid());
 			assertNotNull("The microschema should not have been deleted.", reloaded);
 		}
 	}
@@ -300,14 +305,14 @@ public class MicroschemaEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
 			assertNotNull(microschema);
 
 			role().revokePermissions(microschema, DELETE_PERM);
 			call(() -> client().deleteMicroschema(microschema.getUuid()), FORBIDDEN, "error_missing_perm", microschema.getUuid());
 
-			assertElement(boot.microschemaContainerRoot(), microschema.getUuid(), true);
+			assertElement(boot().microschemaContainerRoot(), microschema.getUuid(), true);
 		}
 	}
 

@@ -283,8 +283,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return getGraphFieldContainers(release.getUuid(), type);
 	}
 
-	// static Map<String, Object> map2 = new HashMap<>();
-
 	@Override
 	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, ContainerType type) {
 		// TODO ADD INDEX!
@@ -535,8 +533,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public NodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 
-		// Increment level for each node transformation to avoid stackoverflow
-		// situations
+		// Increment level for each node transformation to avoid stackoverflow situations
 		level = level + 1;
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 
@@ -604,8 +601,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			requestedLanguageTags = nodeParameters.getLanguageList();
 		}
 
-		// First check whether the NGFC for the requested language,release and
-		// version could be found.
+		// First check whether the NGFC for the requested language,release and version could be found.
 		NodeGraphFieldContainer fieldContainer = findNextMatchingFieldContainer(requestedLanguageTags, release.getUuid(),
 				versioiningParameters.getVersion());
 		if (fieldContainer == null) {
@@ -805,17 +801,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (current.getUuid().equals(this.getProject().getBaseNode().getUuid())) {
 				break;
 			}
-			NodeReference reference = new NodeReference();
-			reference.setUuid(current.getUuid());
-			reference.setDisplayName(current.getDisplayName(ac));
-
-			if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
-				ContainerType type = forVersion(ac.getVersioningParameters().getVersion());
-				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
-						getProject().getName(), ac.getNodeParameters().getLanguages());
-				reference.setPath(url);
-			}
+			NodeReference reference = current.transformToReference(ac);
+			//			NodeReference reference = new NodeReference();
+			//			reference.setUuid(current.getUuid());
+			//			reference.setDisplayName(current.getDisplayName(ac));
+			//
+			//			if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+			//				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
+			//				ContainerType type = forVersion(ac.getVersioningParameters().getVersion());
+			//				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
+			//						getProject().getName(), ac.getNodeParameters().getLanguages());
+			//				reference.setPath(url);
+			//			}
 			breadcrumb.add(reference);
 			current = current.getParentNode(releaseUuid);
 		}
@@ -841,8 +838,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return Single.error(new NotModifiedException());
 			} else {
 				NavigationResponse response = new NavigationResponse();
-				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response,
-						ac.getRelease(getProject()).getUuid(), forVersion(ac.getVersioningParameters().getVersion()));
+				return buildNavigationResponse(ac, this, parameters.getMaxDepth(), 0, response, response, ac.getRelease(getProject()).getUuid(),
+						forVersion(ac.getVersioningParameters().getVersion()));
 			}
 		});
 	}
@@ -952,11 +949,20 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public NodeReference transformToReference(InternalActionContext ac) {
+		Release release = ac.getRelease(getProject());
+
 		NodeReference nodeReference = new NodeReference();
 		nodeReference.setUuid(getUuid());
 		nodeReference.setDisplayName(getDisplayName(ac));
 		nodeReference.setSchema(getSchemaContainer().transformToReference());
 		nodeReference.setProjectName(getProject().getName());
+		if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
+			WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
+			ContainerType type = forVersion(ac.getVersioningParameters().getVersion());
+			String url = linkReplacer.resolve(release.getUuid(), type, this, ac.getNodeParameters().getResolveLinks(),
+					ac.getNodeParameters().getLanguages());
+			nodeReference.setPath(url);
+		}
 		return nodeReference;
 	}
 
@@ -1423,7 +1429,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Release release = ac.getRelease(getProject());
 		NodeGraphFieldContainer latestDraftVersion = getGraphFieldContainer(language, release, DRAFT);
 
-		// Check whether this is the first time that an update for the given language and release occures. In this case a new container must be created.
+		// Check whether this is the first time that an update for the given language and release occurs. In this case a new container must be created.
 		// This means that no conflict check can be performed. Conflict checks only occur for updates.
 		if (latestDraftVersion == null) {
 			// Create a new field container
@@ -1473,8 +1479,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// Compare both sets of change sets
 			List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());
 
-			// Check whether the update was not based on the latest draft
-			// version. In that case a conflict check needs to occur.
+			// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
 			if (!latestDraftVersion.getVersion().equals(requestModel.getVersion().getNumber())) {
 
 				// Check whether a conflict has been detected

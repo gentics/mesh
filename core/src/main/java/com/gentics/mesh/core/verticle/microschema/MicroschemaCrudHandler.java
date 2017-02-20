@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
@@ -38,7 +39,7 @@ import dagger.Lazy;
 import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Single;
 
-public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaContainer, Microschema> {
+public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaContainer, MicroschemaResponse> {
 
 	private MicroschemaComparator comparator;
 

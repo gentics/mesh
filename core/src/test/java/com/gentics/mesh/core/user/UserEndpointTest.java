@@ -11,7 +11,13 @@ import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
+import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
+import static com.gentics.mesh.test.context.MeshTestHelper.validateSet;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -66,18 +72,21 @@ import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractBasicCrudEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.definition.BasicRestTestcases;
 
 import io.vertx.core.http.HttpHeaders;
 
-public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		String uuid = db.noTx(() -> user().getUuid());
+		String uuid = db().noTx(() -> user().getUuid());
 		UserResponse restUser = call(() -> client().findUserByUuid(uuid));
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			assertThat(restUser).matches(user());
 		}
 		// TODO assert groups
@@ -86,18 +95,18 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testUpdateUsingExpiredToken() {
-		String uuid = db.noTx(() -> user().getUuid());
-		String oldHash = db.noTx(() -> user().getPasswordHash());
-		assertNull("Initially the token code should be null", db.noTx(() -> user().getResetToken()));
-		assertNull("Initially the token issue timestamp should be null", db.noTx(() -> user().getResetTokenIssueTimestamp()));
+		String uuid = db().noTx(() -> user().getUuid());
+		String oldHash = db().noTx(() -> user().getPasswordHash());
+		assertNull("Initially the token code should be null", db().noTx(() -> user().getResetToken()));
+		assertNull("Initially the token issue timestamp should be null", db().noTx(() -> user().getResetTokenIssueTimestamp()));
 
 		// 1. Get new token
 		UserTokenResponse response = call(() -> client().getUserToken(uuid));
-		assertNotNull("The user token code should now be set to a non-null value but it was not.", db.noTx(() -> user().getResetToken()));
-		assertNotNull("The token code issue timestamp should be set.", db.noTx(() -> user().getResetTokenIssueTimestamp()));
+		assertNotNull("The user token code should now be set to a non-null value but it was not.", db().noTx(() -> user().getResetToken()));
+		assertNotNull("The token code issue timestamp should be set.", db().noTx(() -> user().getResetTokenIssueTimestamp()));
 
 		// 2. Fake an old issue timestamp
-		db.noTx(() -> user().setResetTokenIssueTimestamp(System.currentTimeMillis() - 1000 * 60 * 60));
+		db().noTx(() -> user().setResetTokenIssueTimestamp(System.currentTimeMillis() - 1000 * 60 * 60));
 
 		// 2. Logout the current client user
 		client().logout().toBlocking().value();
@@ -109,23 +118,23 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 				"user_error_provided_token_invalid");
 
 		// 4. Assert that the password was not updated
-		String newHash = db.noTx(() -> user().getPasswordHash());
+		String newHash = db().noTx(() -> user().getPasswordHash());
 		assertEquals("The password hash has not been updated.", oldHash, newHash);
-		assertNull("The token code should have been set to null since it has expired.", db.noTx(() -> user().getResetToken()));
+		assertNull("The token code should have been set to null since it has expired.", db().noTx(() -> user().getResetToken()));
 		assertNull("The token issue timestamp should have been set to null since it has expired",
-				db.noTx(() -> user().getResetTokenIssueTimestamp()));
+				db().noTx(() -> user().getResetTokenIssueTimestamp()));
 
 	}
 
 	@Test
 	public void testUpdateUsingToken() {
-		String uuid = db.noTx(() -> user().getUuid());
-		String oldHash = db.noTx(() -> user().getPasswordHash());
-		assertNull("Initially the token code should have been set to null", db.noTx(() -> user().getResetToken()));
+		String uuid = db().noTx(() -> user().getUuid());
+		String oldHash = db().noTx(() -> user().getPasswordHash());
+		assertNull("Initially the token code should have been set to null", db().noTx(() -> user().getResetToken()));
 
 		// 1. Get new token
 		UserTokenResponse response = call(() -> client().getUserToken(uuid));
-		assertNotNull("The user token code should now be set to a non-null value but it was not", db.noTx(() -> user().getResetToken()));
+		assertNotNull("The user token code should now be set to a non-null value but it was not", db().noTx(() -> user().getResetToken()));
 
 		// 2. Logout the current client user
 		client().logout().toBlocking().value();
@@ -136,17 +145,17 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		call(() -> client().updateUser(uuid, request, new UserParametersImpl(response.getToken())));
 
 		// 4. Assert that the password was updated
-		String newHash = db.noTx(() -> user().getPasswordHash());
-		assertNull("The token code should have been set to null since it is now used up", db.noTx(() -> user().getResetToken()));
+		String newHash = db().noTx(() -> user().getPasswordHash());
+		assertNull("The token code should have been set to null since it is now used up", db().noTx(() -> user().getResetToken()));
 
 		assertNotEquals("The password hash has not been updated.", oldHash, newHash);
 	}
 
 	@Test
 	public void testUpdateUsingBogusToken() {
-		String uuid = db.noTx(() -> user().getUuid());
-		String oldHash = db.noTx(() -> user().getPasswordHash());
-		assertNull("Initially the token code should have been set to null", db.noTx(() -> user().getResetToken()));
+		String uuid = db().noTx(() -> user().getUuid());
+		String oldHash = db().noTx(() -> user().getPasswordHash());
+		assertNull("Initially the token code should have been set to null", db().noTx(() -> user().getResetToken()));
 
 		// 1. Get new token
 		call(() -> client().getUserToken(uuid));
@@ -160,16 +169,16 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		call(() -> client().updateUser(uuid, request, new UserParametersImpl("bogusToken")), UNAUTHORIZED, "user_error_provided_token_invalid");
 
 		// 4. Assert that the password was not updated
-		String newHash = db.noTx(() -> user().getPasswordHash());
+		String newHash = db().noTx(() -> user().getPasswordHash());
 		assertEquals("The password hash should not have been updated.", oldHash, newHash);
 
 	}
 
 	@Test
 	public void testUpdateWithNoToken() {
-		String uuid = db.noTx(() -> user().getUuid());
-		String oldHash = db.noTx(() -> user().getPasswordHash());
-		assertNull("Initially the token code should have been set to null", db.noTx(() -> user().getResetToken()));
+		String uuid = db().noTx(() -> user().getUuid());
+		String oldHash = db().noTx(() -> user().getPasswordHash());
+		assertNull("Initially the token code should have been set to null", db().noTx(() -> user().getResetToken()));
 
 		// 1. Get new token
 		call(() -> client().getUserToken(uuid));
@@ -183,17 +192,17 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		call(() -> client().updateUser(uuid, request), UNAUTHORIZED, "error_not_authorized");
 
 		// 4. Assert that the password was not updated
-		String newHash = db.noTx(() -> user().getPasswordHash());
+		String newHash = db().noTx(() -> user().getPasswordHash());
 		assertEquals("The password hash should not have been updated.", oldHash, newHash);
 	}
 
 	@Test
 	public void testFetchUserToken() {
-		String uuid = db.noTx(() -> user().getUuid());
+		String uuid = db().noTx(() -> user().getUuid());
 
 		UserTokenResponse response = call(() -> client().getUserToken(uuid));
 		assertThat(response.getToken()).isNotEmpty();
-		String storedToken = db.noTx(() -> user().getResetToken());
+		String storedToken = db().noTx(() -> user().getResetToken());
 		assertEquals("The token that is currently stored did not match up with the returned token by the api", storedToken, response.getToken());
 	}
 
@@ -202,9 +211,9 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		TagFamily tagFamily;
 		User user;
 		String pathToElement;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			user = user();
-			tagFamily = tagFamily("colors");
+			tagFamily = data().getTagFamily("colors");
 
 			// Add permission on own role
 			role().grantPermissions(tagFamily, GraphPermission.UPDATE_PERM);
@@ -212,18 +221,18 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily.getUuid();
 		}
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UserPermissionResponse response = call(() -> client().readUserPermissions(user.getUuid(), pathToElement));
 			assertNotNull(response);
 			assertThat(response).hasPerm(Permission.values());
 		}
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Revoke single permission and check again
 			role().revokePermissions(tagFamily, GraphPermission.UPDATE_PERM);
 			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
 		}
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UserPermissionResponse response  = call(() -> client().readUserPermissions(user.getUuid(), pathToElement));
 			assertNotNull(response);
 			assertThat(response).hasPerm(READ, CREATE, DELETE, PUBLISH, READ_PUBLISHED);
@@ -232,7 +241,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			User user = user();
 			String uuid = user.getUuid();
 
@@ -244,7 +253,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadUserWithMultipleGroups() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			User user = user();
 			assertEquals(1, user.getGroups().size());
 
@@ -262,7 +271,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreaded() throws InterruptedException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			int nJobs = 10;
 			String uuid = user().getUuid();
 			// CyclicBarrier barrier = prepareBarrier(nJobs);
@@ -277,7 +286,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			int nJobs = 200;
 			Set<MeshResponse<UserResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
@@ -293,7 +302,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			User user = user();
 			String uuid = user.getUuid();
 			assertNotNull("The username of the user must not be null.", user.getUsername());
@@ -306,7 +315,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UserRoot root = meshRoot().getUserRoot();
 
 			int nUsers = 20;
@@ -404,7 +413,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testUpdateMultithreaded() throws InterruptedException {
-		String uuid = db.noTx(() -> user().getUuid());
+		String uuid = db().noTx(() -> user().getUuid());
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
 		updateRequest.setFirstname("Tony Awesome");
@@ -427,8 +436,8 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		String oldName = db.tx(() -> user().getUsername());
-		String uuid = db.noTx(() -> user().getUuid());
+		String oldName = db().tx(() -> user().getUsername());
+		String uuid = db().noTx(() -> user().getUuid());
 
 		UserUpdateRequest updateRequest = new UserUpdateRequest();
 		updateRequest.setEmailAddress("t.stark@stark-industries.com");
@@ -437,14 +446,14 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		updateRequest.setUsername("dummy_user_changed");
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 
-		assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), uuid);
-		assertThat(dummySearchProvider).hasEvents(1, 0, 0, 0);
-		dummySearchProvider.clear();
+		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), uuid);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		dummySearchProvider().clear();
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			assertThat(restUser).matches(updateRequest);
-			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldName));
-			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
+			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot().findByUsername(oldName));
+			User reloadedUser = boot().userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
@@ -455,8 +464,8 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testUpdateWithSpecialCharacters() throws Exception {
-		String uuid = db.noTx(() -> user().getUuid());
-		String oldUsername = db.noTx(() -> user().getUsername());
+		String uuid = db().noTx(() -> user().getUuid());
+		String oldUsername = db().noTx(() -> user().getUsername());
 
 		final char c = '\u2665';
 		String email = "t.stark@stärk-industries.com" + c;
@@ -474,9 +483,9 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		assertSuccess(future);
 		UserResponse restUser = future.result();
 		assertThat(restUser).matches(updateRequest);
-		try (Tx tx = db.tx()) {
-			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(oldUsername));
-			User reloadedUser = boot.userRoot().findByUsername(username);
+		try (Tx tx = db().tx()) {
+			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot().findByUsername(oldUsername));
+			User reloadedUser = boot().userRoot().findByUsername(username);
 			assertNotNull(reloadedUser);
 			assertEquals(lastname, reloadedUser.getLastname());
 			assertEquals(firstname, reloadedUser.getFirstname());
@@ -497,7 +506,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testUpdateUserAndSetNodeReference() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String nodeUuid = folder("2015").getUuid();
 			User user = user();
 			String username = user.getUsername();
@@ -522,8 +531,8 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertEquals(PROJECT_NAME, ((NodeReference) restUser.getNodeReference()).getProjectName());
 			assertEquals(nodeUuid, restUser.getNodeReference().getUuid());
 			assertThat(restUser).matches(updateRequest);
-			assertNull("The user node should have been updated and thus no user should be found.", boot.userRoot().findByUsername(username));
-			User reloadedUser = boot.userRoot().findByUsername("dummy_user_changed");
+			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot().findByUsername(username));
+			User reloadedUser = boot().userRoot().findByUsername("dummy_user_changed");
 			assertNotNull(reloadedUser);
 			assertEquals("Epic Stark", reloadedUser.getLastname());
 			assertEquals("Tony Awesome", reloadedUser.getFirstname());
@@ -535,7 +544,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateUserWithNodeReference() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			assertTrue(user().hasPermission(node, READ_PERM));
 
@@ -559,7 +568,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testReadUserListWithExpandedNodeReference() {
-		UserResponse userCreateResponse = db.noTx(() -> {
+		UserResponse userCreateResponse = db().noTx(() -> {
 			Node node = folder("2015");
 
 			NodeReference reference = new NodeReference();
@@ -577,7 +586,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			return future.result();
 		});
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			UserListResponse userResponse = call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100),
 					new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en")));
@@ -595,7 +604,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	public void testReadUserWithExpandedNodeReference() {
 		String folderUuid;
 		UserCreateRequest newUser;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			folderUuid = node.getUuid();
 
@@ -628,9 +637,10 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	}
 
+
 	@Test
 	public void testCreateUserWithBogusProjectNameInNodeReference() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 
 			NodeReference reference = new NodeReference();
@@ -649,7 +659,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateUserWithBogusUuidInNodeReference() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeReference reference = new NodeReference();
 			reference.setProjectName(PROJECT_NAME);
 			reference.setUuid("bogus_uuid");
@@ -666,7 +676,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateUserWithMissingProjectNameInNodeReference() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeReference reference = new NodeReference();
 			reference.setUuid("bogus_uuid");
 
@@ -683,7 +693,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	public void testCreateUserWithMissingUuidNameInNodeReference() {
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			NodeReference reference = new NodeReference();
 			reference.setProjectName(PROJECT_NAME);
 			UserCreateRequest newUser = new UserCreateRequest();
@@ -701,7 +711,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	// String uuid;
 	// String oldHash;
 	//
-	// try (NoTx noTx = db.noTx()) {
+	// try (NoTx noTx = db().noTx()) {
 	// uuid = user().getUuid();
 	// oldHash = user().getPasswordHash();
 	// }
@@ -713,7 +723,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	// call(() -> getClient().updateUser(uuid, updateRequest), BAD_REQUEST,
 	// "user_error_missing_old_password");
 	//
-	// try (NoTx noTx = db.noTx()) {
+	// try (NoTx noTx = db().noTx()) {
 	// User reloadedUser = boot.userRoot().findByUuid(uuid);
 	// assertEquals("The hash should not be different since the password should
 	// not have been updated.", oldHash,
@@ -726,7 +736,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	// String uuid;
 	// String oldHash;
 	//
-	// try (NoTx noTx = db.noTx()) {
+	// try (NoTx noTx = db().noTx()) {
 	// uuid = user().getUuid();
 	// oldHash = user().getPasswordHash();
 	// }
@@ -738,7 +748,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	// call(() -> getClient().updateUser(uuid, updateRequest), BAD_REQUEST,
 	// "user_error_password_check_failed");
 	//
-	// try (NoTx noTx = db.noTx()) {
+	// try (NoTx noTx = db().noTx()) {
 	// User reloadedUser = boot.userRoot().findByUuid(uuid);
 	// assertEquals("The hash should not be different since the password should
 	// not have been updated.", oldHash,
@@ -752,7 +762,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		String uuid;
 		String oldHash;
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			user().setPasswordHash(null);
 			uuid = user().getUuid();
 			oldHash = user().getPasswordHash();
@@ -764,8 +774,8 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 		assertThat(restUser).matches(updateRequest);
 
-		try (NoTx noTx = db.noTx()) {
-			User reloadedUser = boot.userRoot().findByUuid(uuid);
+		try (NoTx noTx = db().noTx()) {
+			User reloadedUser = boot().userRoot().findByUuid(uuid);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
 
@@ -776,7 +786,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		String username;
 		String uuid;
 		String oldHash;
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			User user = user();
 			username = user.getUsername();
 			uuid = user.getUuid();
@@ -789,15 +799,15 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 		assertThat(restUser).matches(updateRequest);
 
-		try (NoTx noTx = db.noTx()) {
-			User reloadedUser = boot.userRoot().findByUsername(username);
+		try (NoTx noTx = db().noTx()) {
+			User reloadedUser = boot().userRoot().findByUsername(username);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
 	}
 
 	@Test
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			User user = user();
 			String oldHash = user.getPasswordHash();
 			role().revokePermissions(user, UPDATE_PERM);
@@ -806,7 +816,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			request.setPassword("new_password");
 			call(() -> client().updateUser(user.getUuid(), request), FORBIDDEN, "error_missing_perm", user.getUuid());
 
-			User reloadedUser = boot.userRoot().findByUuid(user.getUuid());
+			User reloadedUser = boot().userRoot().findByUuid(user.getUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		}
 	}
@@ -814,7 +824,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			User user = user();
 			String oldHash = user.getPasswordHash();
 			role().revokePermissions(user, UPDATE_PERM);
@@ -828,7 +838,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			MeshResponse<UserResponse> future = client().updateUser(user.getUuid(), updatedUser).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
-			User reloadedUser = boot.userRoot().findByUuid(user.getUuid());
+			User reloadedUser = boot().userRoot().findByUuid(user.getUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 			assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
 			assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
@@ -837,7 +847,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testUpdateUserWithConflictingUsername() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Create an user with a conflicting username
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("existing_username", user());
@@ -855,7 +865,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testUpdateUserWithSameUsername() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			User user = user();
 
 			UserUpdateRequest request = new UserUpdateRequest();
@@ -869,7 +879,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateUserWithConflictingUsername() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Create an user with a conflicting username
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("existing_username", user());
@@ -892,7 +902,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateUserWithNoPassword() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
 			newUser.setFirstname("Joe");
@@ -908,7 +918,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateUserWithNoUsername() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
 			newUser.setFirstname("Joe");
@@ -953,7 +963,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testCreateUpdate() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			// Create a user with minimal properties
 			UserCreateRequest request = new UserCreateRequest();
 			request.setEmailAddress("n.user@spam.gentics.com");
@@ -988,7 +998,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		String groupUuid = db.noTx(() -> group().getUuid());
+		String groupUuid = db().noTx(() -> group().getUuid());
 		UserCreateRequest request = new UserCreateRequest();
 		request.setEmailAddress("n.user@spam.gentics.com");
 		request.setFirstname("Joe");
@@ -999,10 +1009,10 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 		UserResponse restUser = call(() -> client().createUser(request));
 
-		try (NoTx noTx2 = db.noTx()) {
+		try (NoTx noTx2 = db().noTx()) {
 			assertThat(restUser).matches(request);
 
-			User user = boot.userRoot().findByUuid(restUser.getUuid());
+			User user = boot().userRoot().findByUuid(restUser.getUuid());
 			assertThat(restUser).matches(user);
 		}
 	}
@@ -1017,11 +1027,11 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		request.setUsername("new_user");
 		request.setPassword("test123456");
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			role().revokePermissions(meshRoot().getUserRoot(), CREATE_PERM);
 		}
 
-		String userRootUuid = db.noTx(() -> meshRoot().getUserRoot().getUuid());
+		String userRootUuid = db().noTx(() -> meshRoot().getUserRoot().getUuid());
 		call(() -> client().createUser(request), FORBIDDEN, "error_missing_perm", userRootUuid);
 	}
 
@@ -1054,7 +1064,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		String groupUuid = db.noTx(() -> group().getUuid());
+		String groupUuid = db().noTx(() -> group().getUuid());
 
 		UserCreateRequest request = new UserCreateRequest();
 		request.setEmailAddress("n.user@spam.gentics.com");
@@ -1088,8 +1098,8 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTx noTx = db.noTx()) {
-			dummySearchProvider.clear();
+		try (NoTx noTx = db().noTx()) {
+			dummySearchProvider().clear();
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
 			newUser.setFirstname("Joe");
@@ -1099,9 +1109,9 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			newUser.setGroupUuid(group().getUuid());
 
 			UserResponse restUser = call(() -> client().createUser(newUser));
-			assertThat(dummySearchProvider).hasStore(User.composeIndexName(), User.composeIndexType(), restUser.getUuid());
-			assertThat(dummySearchProvider).hasEvents(2, 0, 0, 0);
-			dummySearchProvider.clear();
+			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), restUser.getUuid());
+			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0);
+			dummySearchProvider().clear();
 
 			assertTrue(restUser.getEnabled());
 			String uuid = restUser.getUuid();
@@ -1110,16 +1120,16 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			latchFor(future);
 			assertSuccess(future);
 
-			try (Tx tx = db.tx()) {
-				User loadedUser = boot.userRoot().findByUuid(uuid);
+			try (Tx tx = db().tx()) {
+				User loadedUser = boot().userRoot().findByUuid(uuid);
 				assertNull("The user should have been deleted.", loadedUser);
 			}
 
 			// Load the user again and check whether it is disabled
 			call(() -> client().findUserByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
-			assertThat(dummySearchProvider).hasDelete(User.composeIndexName(), User.composeIndexType(), uuid);
-			assertThat(dummySearchProvider).hasEvents(0, 1, 0, 0);
+			assertThat(dummySearchProvider()).hasDelete(User.composeIndexName(), User.composeIndexType(), uuid);
+			assertThat(dummySearchProvider()).hasEvents(0, 1, 0, 0);
 		}
 
 	}
@@ -1141,7 +1151,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("extraUser", user());
 			user.addGroup(group());
@@ -1174,7 +1184,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 
 	@Test
 	public void testDeleteByUUID2() throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String name = "extraUser";
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create(name, user());
@@ -1195,7 +1205,7 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 			assertNull("The user was not deleted.", userRoot.findByUuid(uuid));
 
 			// // Check whether the user was correctly disabled
-			// try (NoTrx noTx = db.noTrx()) {
+			// try (NoTrx noTx = db().noTrx()) {
 			// User user2 = userRoot.findByUuidBlocking(uuid);
 			// user2.reload();
 			// assertNotNull(user2);
@@ -1224,13 +1234,13 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		MeshResponse<UserResponse> response = client().createUser(request).invoke();
 		latchFor(response);
 		assertSuccess(response);
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			meshRoot().getUserRoot().reload();
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getResponse().statusCode());
 			String location = response.getResponse().getHeader(HttpHeaders.LOCATION);
-			assertEquals("Location header value did not match", "http://localhost:" + getPort() + "/api/v1/users/" + user.getUuid(), location);
+			assertEquals("Location header value did not match", "http://localhost:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
 	}
 
@@ -1243,17 +1253,17 @@ public class UserEndpointTest extends AbstractBasicCrudEndpointTest {
 		userRequest.setPassword("bla");
 
 		MeshRequest<UserResponse> request = client().createUser(userRequest);
-		request.getRequest().putHeader(HttpHeaders.HOST, "jotschi.de:" + getPort());
+		request.getRequest().putHeader(HttpHeaders.HOST, "jotschi.de:" + port());
 		MeshResponse<UserResponse> response = request.invoke();
 		latchFor(response);
 		assertSuccess(response);
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			meshRoot().getUserRoot().reload();
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getResponse().statusCode());
 			String location = response.getResponse().getHeader(HttpHeaders.LOCATION);
-			assertEquals("Location header value did not match", "http://jotschi.de:" + getPort() + "/api/v1/users/" + user.getUuid(), location);
+			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
 	}
 }

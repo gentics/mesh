@@ -16,7 +16,6 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserTokenResponse;
@@ -105,6 +104,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		db.operateNoTx(() -> {
 			// 1. Load the user that should be used
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, CREATE_PERM);
+			//TODO why do we need another transaction?!
 			return db.noTx(() -> {
 				String token = TokenUtil.randomToken();
 				Long tokenTimestamp = System.currentTimeMillis();

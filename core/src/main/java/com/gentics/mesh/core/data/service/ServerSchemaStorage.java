@@ -20,8 +20,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * Central schema storage system which is used to buffer/cache JSON schema data. Storing the schema pojo's in memory is not expensive and help peformance a lot
- * since it is not required to load the schema from the graph everytime it is needed.
+ * Central schema storage system which is used to buffer/cache JSON schema data. Storing the schema pojo's in memory is not expensive and help peformance a lot since it is not
+ * required to load the schema from the graph everytime it is needed.
  */
 @Singleton
 public class ServerSchemaStorage implements SchemaStorage {
@@ -47,7 +47,8 @@ public class ServerSchemaStorage implements SchemaStorage {
 		boot.schemaContainerRoot().findAll().stream().forEach(container -> {
 			for (SchemaContainerVersion version : container.findAll()) {
 				Schema restSchema = version.getSchema();
-				schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(), restSchema);
+				schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(),
+						restSchema);
 			}
 		});
 
@@ -55,7 +56,8 @@ public class ServerSchemaStorage implements SchemaStorage {
 		boot.microschemaContainerRoot().findAll().stream().forEach(container -> {
 			for (MicroschemaContainerVersion version : container.findAll()) {
 				Microschema restMicroschema = version.getSchema();
-				microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>()).put(restMicroschema.getVersion(), restMicroschema);
+				microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>())
+						.put(restMicroschema.getVersion(), restMicroschema);
 			}
 		});
 	}
@@ -147,9 +149,11 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	@Override
 	public void addMicroschema(Microschema microschema) {
-		Map<Integer, Microschema> microschemaMap = microschemas.computeIfAbsent(microschema.getName(), k -> new HashMap<>());
+		Map<Integer, Microschema> microschemaMap = microschemas.computeIfAbsent(microschema.getName(),
+				k -> new HashMap<>());
 		if (microschemaMap.containsKey(microschema.getVersion())) {
-			log.error("Microschema " + microschema.getName() + ", version " + microschema.getVersion() + " is already stored.");
+			log.error("Microschema " + microschema.getName() + ", version " + microschema.getVersion()
+					+ " is already stored.");
 			return;
 		} else {
 			microschemaMap.put(microschema.getVersion(), microschema);
@@ -173,6 +177,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 	 * Remove the given container from the storage.
 	 * 
 	 * @param container
+	 *            Schema or microschema container which is used to identify the elements which should be removed from the storage
 	 */
 	public void remove(FieldSchemaContainer container) {
 		if (container instanceof Schema) {

@@ -26,7 +26,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
  * @param <VV>
  *            Container version type
  */
-public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, V extends GraphFieldSchemaContainer<R, RE, V, VV>, VV extends GraphFieldSchemaContainerVersion<?, ?, ?, ?>>
+public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, V extends GraphFieldSchemaContainer<R, RE, V, VV>, VV extends GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?>>
 		extends MeshCoreVertex<R, V>, ReferenceableElement<RE>, UserTrackingVertex, IndexableElement {
 
 	/**

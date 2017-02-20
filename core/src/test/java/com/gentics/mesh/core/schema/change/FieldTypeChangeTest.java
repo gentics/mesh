@@ -20,13 +20,15 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
 public class FieldTypeChangeTest extends AbstractChangeTest {
 
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			change.setFieldName("name");
 			assertEquals("name", change.getFieldName());
@@ -36,11 +38,11 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testApply() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			schema.setName("testschema");
 
 			StringFieldSchema stringField = new StringFieldSchemaImpl();
@@ -64,11 +66,11 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testChangeFieldTypeToList() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModel();
 			schema.setName("testschema");
 
 			StringFieldSchema stringField = new StringFieldSchemaImpl();
@@ -98,7 +100,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaChangeModel model = SchemaChangeModel.createChangeFieldTypeChange("testField", "list");
 			model.setMigrationScript("test");
 			model.setProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
@@ -115,7 +117,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			assertNotNull("Field Type changes have a auto migation script.", change.getAutoMigrationScript());
 
@@ -128,7 +130,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			change.setFieldName("test");
 			change.setCustomMigrationScript("script");

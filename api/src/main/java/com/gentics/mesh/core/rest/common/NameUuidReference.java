@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.common;
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 /**
  * Base class for named references. A named reference is a reference to a element within mesh that can be identified by uuid and name.
@@ -11,7 +12,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public abstract class NameUuidReference<T> {
 
+	@JsonPropertyDescription("Name of the referenced element")
 	private String name;
+
+	@JsonPropertyDescription("Uuid of the referenced element")
 	private String uuid;
 
 	public NameUuidReference() {

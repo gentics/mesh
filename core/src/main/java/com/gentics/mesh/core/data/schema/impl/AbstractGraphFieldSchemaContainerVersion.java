@@ -36,8 +36,8 @@ import com.gentics.mesh.json.JsonUtil;
  * @param <SC>
  *            Schema container type
  */
-public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
-		extends AbstractMeshCoreVertex<R, SCV> implements GraphFieldSchemaContainerVersion<R, RE, SCV, SC> {
+public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
+		extends AbstractMeshCoreVertex<R, SCV> implements GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC> {
 
 	public static final String VERSION_PROPERTY_KEY = "version";
 
@@ -54,21 +54,21 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	/**
 	 * Return the class that is used for container versions.
 	 * 
-	 * @return
+	 * @return Class of the container version
 	 */
 	protected abstract Class<? extends SCV> getContainerVersionClass();
 
 	/**
 	 * Return the class that is used for containers.
 	 * 
-	 * @return
+	 * @return Class of the container
 	 */
 	protected abstract Class<? extends SC> getContainerClass();
 
 	/**
 	 * Return the eventbus migration verticle address.
 	 * 
-	 * @return
+	 * @return Eventbus address
 	 */
 	protected abstract String getMigrationAddress();
 
@@ -154,21 +154,13 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 	}
 
-	/**
-	 * Load the stored schema JSON data.
-	 * 
-	 * @return
-	 */
-	protected String getJson() {
+	@Override
+	public String getJson() {
 		return getProperty("json");
 	}
 
-	/**
-	 * Update the stored schema JSON data.
-	 * 
-	 * @param json
-	 */
-	protected void setJson(String json) {
+	@Override
+	public void setJson(String json) {
 		setProperty("json", json);
 	}
 
@@ -195,7 +187,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 			}
 		}
 
-		R resultingSchema = new FieldSchemaContainerMutator().apply(this);
+		RM resultingSchema = new FieldSchemaContainerMutator().apply(this);
 		resultingSchema.validate();
 
 		// Increment version of the schema

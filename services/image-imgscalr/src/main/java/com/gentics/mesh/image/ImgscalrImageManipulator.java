@@ -122,7 +122,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 		// 1. Check the cache file directory
 		if (cacheFile.exists()) {
-			return vertx.fileSystem().readFileObservable(cacheFile.getAbsolutePath()).toSingle();
+			return vertx.fileSystem().rxReadFile(cacheFile.getAbsolutePath());
 		}
 
 		// 2. Read the image
@@ -148,7 +148,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		}
 
 		// 5. Return buffer to written cache file
-		return vertx.fileSystem().readFileObservable(cacheFile.getAbsolutePath()).toSingle();
+		return vertx.fileSystem().rxReadFile(cacheFile.getAbsolutePath());
 	}
 
 	@Override

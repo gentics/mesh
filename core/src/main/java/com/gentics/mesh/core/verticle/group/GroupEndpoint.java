@@ -41,7 +41,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		secureAll();
 
 		addGroupUserHandlers();

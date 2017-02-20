@@ -10,8 +10,8 @@ import com.gentics.mesh.rest.client.method.GroupClientMethods;
 import com.gentics.mesh.rest.client.method.MicroschemaClientMethods;
 import com.gentics.mesh.rest.client.method.NavRootClientMethods;
 import com.gentics.mesh.rest.client.method.NavigationClientMethods;
+import com.gentics.mesh.rest.client.method.NodeBinaryFieldClientMethods;
 import com.gentics.mesh.rest.client.method.NodeClientMethods;
-import com.gentics.mesh.rest.client.method.NodeFieldAPIClientMethods;
 import com.gentics.mesh.rest.client.method.ProjectClientMethods;
 import com.gentics.mesh.rest.client.method.ReleaseClientMethods;
 import com.gentics.mesh.rest.client.method.RoleClientMethods;
@@ -28,7 +28,7 @@ import io.vertx.core.http.HttpClient;
 
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 		SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
-		MicroschemaClientMethods, NodeFieldAPIClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods,
+		MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods,
 		EventbusClientMethods, ReleaseClientMethods, ApiInfoClientMethods, GraphQLClientMethods {
 
 	/**

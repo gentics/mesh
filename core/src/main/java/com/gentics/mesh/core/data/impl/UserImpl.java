@@ -426,7 +426,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	/**
 	 * Encode the given password and set the generated hash.
 	 * 
-	 * @param password
+	 * @param password Plain password to be hashed and set
+	 * @return Fluent API
 	 */
 	@Override
 	public User setPassword(String password) {

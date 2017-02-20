@@ -2,7 +2,8 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -19,19 +20,23 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class NodeEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MeshResponse<NodeListResponse> response = client().findNodes(PROJECT_NAME).invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
@@ -45,7 +50,7 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadNodeTags() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			String nodeUuid = node.getUuid();
 
@@ -68,7 +73,7 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadChildren() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String uuid = project().getBaseNode().getUuid();
 			MeshResponse<NodeListResponse> response = client().findNodeChildren(PROJECT_NAME, uuid).invoke();
 			latchFor(response);
@@ -82,13 +87,13 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			// Create a new node in the parent folder
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setLanguage("en");
-			request.setParentNodeUuid(uuid);
+			request.setParentNode(new NodeReference().setUuid(uuid));
 			request.setSchema(new SchemaReference().setName("content"));
 			request.getFields().put("name", FieldUtil.createStringField("someName"));
 			NodeResponse createdNode = call(() -> client().createNode(PROJECT_NAME, request));
 
 			// We added another node but it has not yet been published
-			expect304(client().findNodeChildren(PROJECT_NAME, uuid), etag, true);
+			expect304(client().findNodeChildren(PROJECT_NAME, uuid, new VersioningParameters().published()), etag, true);
 
 			call(() -> client().publishNode(PROJECT_NAME, createdNode.getUuid()));
 
@@ -99,7 +104,7 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadOne() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 
 			// Inject the reference node field

@@ -13,12 +13,14 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 public interface FieldSchemaContainerComparator<FC extends FieldSchemaContainer> {
 
 	/**
-	 * Compare the two field containers. The implementor should invoke {@link #diff(FieldSchemaContainer, FieldSchemaContainer, Class)} and specify the actual
-	 * field container class.
+	 * Compare the two field containers. The implementor should invoke {@link #diff(FieldSchemaContainer, FieldSchemaContainer, Class)} and specify the actual field container
+	 * class.
 	 * 
 	 * @param containerA
+	 *            First container
 	 * @param containerB
-	 * @return
+	 *            Second container
+	 * @return List of detected changed
 	 */
 	List<SchemaChangeModel> diff(FC containerA, FC containerB);
 

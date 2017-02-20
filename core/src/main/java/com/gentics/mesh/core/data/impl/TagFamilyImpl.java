@@ -14,6 +14,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -21,12 +22,14 @@ import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -209,6 +212,21 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			HandleContext context = new HandleContext();
 			context.setProjectUuid(tag.getProject().getUuid());
 			action.call(tag, context);
+
+			// To prevent nodes from being handled multiple times
+			HashSet<String> handledNodes = new HashSet<>();
+
+			for (Release release : tag.getProject().getReleaseRoot().findAll()) {
+				for (Node node : tag.getNodes(release)){
+					if (!handledNodes.contains(node.getUuid())) {
+						handledNodes.add(node.getUuid());
+						HandleContext nodeContext = new HandleContext();
+						context.setReleaseUuid(release.getUuid());
+						context.setProjectUuid(node.getProject().getUuid());
+						action.call(node, nodeContext);
+					}
+				}
+			}
 		}
 	}
 

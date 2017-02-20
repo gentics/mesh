@@ -168,7 +168,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		String body = ac.getBodyAsString();
 		NodeCreateRequest requestModel = JsonUtil.readValue(body, NodeCreateRequest.class);
-		if (isEmpty(requestModel.getParentNodeUuid())) {
+		if (requestModel.getParentNode() ==null || isEmpty(requestModel.getParentNode().getUuid())) {
 			throw error(BAD_REQUEST, "node_missing_parentnode_field");
 		}
 		if (isEmpty(requestModel.getLanguage())) {
@@ -176,7 +176,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		}
 
 		// Load the parent node in order to create the node
-		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNodeUuid(), CREATE_PERM);
+		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNode().getUuid(), CREATE_PERM);
 		Release release = ac.getRelease(project);
 		Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project, release);
 

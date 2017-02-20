@@ -1,7 +1,9 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
+
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -12,15 +14,17 @@ import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NavigationParameters;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.StopWatchLogger;
 
-public class NodeEndpointPerformanceTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
 	public void addNodes() {
-		String uuid = db.noTx(() -> folder("news").getUuid());
+		String uuid = db().noTx(() -> folder("news").getUuid());
 		for (int i = 0; i < 500; i++) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setLanguage("en");
@@ -36,7 +40,7 @@ public class NodeEndpointPerformanceTest extends AbstractRestEndpointTest {
 	@Test
 	public void testReadNav() {
 		addNodes();
-		String baseUuid = db.noTx(() -> project().getBaseNode().getUuid());
+		String baseUuid = db().noTx(() -> project().getBaseNode().getUuid());
 		loggingStopWatch(logger, "node.read-nav-expanded-full-4", 200, (step) -> {
 			call(() -> client().loadNavigation(PROJECT_NAME, baseUuid, new NodeParameters().setExpandAll(true).setResolveLinks(LinkType.FULL),
 					new NavigationParameters().setMaxDepth(4)));
@@ -57,7 +61,7 @@ public class NodeEndpointPerformanceTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testReadSingle() {
-		String uuid = db.noTx(() -> folder("news").getUuid());
+		String uuid = db().noTx(() -> folder("news").getUuid());
 		loggingStopWatch(logger, "node.read-by-uuid", 7000, (step) -> {
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 		});
@@ -69,7 +73,7 @@ public class NodeEndpointPerformanceTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testCreate() {
-		String uuid = db.noTx(() -> folder("news").getUuid());
+		String uuid = db().noTx(() -> folder("news").getUuid());
 		loggingStopWatch(logger, "node.create", 200, (step) -> {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setSchema(new SchemaReference().setName("content"));

@@ -22,7 +22,7 @@ public class ProjectExamples extends AbstractExamples {
 		project.setEdited(getTimestamp());
 		project.setEditor(getUserReference());
 		project.setPermissions(READ, DELETE, CREATE);
-		project.setRootNodeUuid(randomUUID());
+		project.setRootNode(createNodeReference());
 		return project;
 	}
 
@@ -35,7 +35,7 @@ public class ProjectExamples extends AbstractExamples {
 		project2.setEdited(getTimestamp());
 		project2.setEditor(getUserReference());
 		project2.setPermissions(READ, DELETE, CREATE);
-		project2.setRootNodeUuid(randomUUID());
+		project2.setRootNode(createNodeReference());
 		return project2;
 	}
 

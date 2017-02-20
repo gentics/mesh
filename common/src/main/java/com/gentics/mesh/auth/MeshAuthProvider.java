@@ -88,7 +88,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			}
 		}
 
-		JsonObject config = new JsonObject().put("keyStore", new JsonObject().put("path", keyStorePath).put("type", type).put("password", secret));
+		JsonObject config = new JsonObject().put("keyStore",
+				new JsonObject().put("path", keyStorePath).put("type", type).put("password", secret));
 		jwtProvider = JWTAuth.create(Mesh.vertx(), config);
 
 	}
@@ -129,8 +130,11 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 * Authenticates the user and returns a JWToken if successful.
 	 *
 	 * @param username
+	 *            Username
 	 * @param password
+	 *            Password
 	 * @param resultHandler
+	 *            Handler to be invoked with the created JWToken
 	 */
 	public void generateToken(String username, String password, Handler<AsyncResult<String>> resultHandler) {
 		authenticate(username, password, rh -> {
@@ -139,8 +143,9 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			} else {
 				User user = rh.result();
 				JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, user.principal().getString("uuid"));
-				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData,
-						new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
+				resultHandler.handle(Future
+						.succeededFuture(jwtProvider.generateToken(tokenData, new JWTOptions().setExpiresInSeconds(
+								Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
 			}
 		});
 	}
@@ -149,8 +154,11 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 * Load the user with the given username and use the bcrypt encoder to compare the user password with the provided password.
 	 *
 	 * @param username
+	 *            Username
 	 * @param password
-	 * @param resultHandler Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
+	 *            Password
+	 * @param resultHandler
+	 *            Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
 	 */
 	private void authenticate(String username, String password, Handler<AsyncResult<User>> resultHandler) {
 		try (NoTx noTx = db.noTx()) {
@@ -190,19 +198,21 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 * Generates a new JWToken with the user.
 	 *
 	 * @param user
+	 *            User
 	 * @return The new token
 	 */
 	public String generateToken(User user) {
 		JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, user.principal().getString("uuid"));
-		return jwtProvider.generateToken(tokenData,
-				new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()));
+		return jwtProvider.generateToken(tokenData, new JWTOptions()
+				.setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()));
 	}
 
 	/**
 	 * Gets the {@link MeshAuthUser} by JWT token.
 	 *
 	 * @param vertxUser
-	 * @return
+	 *            Vert.x user
+	 * @return Mesh user
 	 * @throws Exception
 	 */
 	private User getUserByJWT(User vertxUser) throws Exception {
@@ -227,8 +237,11 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 * Handle the login action and set a token cookie if the credentials are valid.
 	 *
 	 * @param ac
+	 *            Action context used to add token cookie
 	 * @param username
+	 *            Username
 	 * @param password
+	 *            Password
 	 */
 	public void login(InternalActionContext ac, String username, String password) {
 		generateToken(username, password, rh -> {

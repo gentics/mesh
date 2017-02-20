@@ -1,11 +1,17 @@
 package com.gentics.mesh.core.rest.user;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 public class UserTokenResponse implements RestModel {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("JSON Web Token which was issued by the API.")
 	private String token;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("ISO8601 date of the creation date for the provided token")
 	private String created;
 
 	/**

@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -66,19 +65,16 @@ public class SearchRestHandler {
 
 	private IndexHandlerRegistry registry;
 
-	private SearchQueue searchQueue;
-
 	private NodeIndexHandler nodeIndexHandler;
 
 	private HandlerUtilities utils;
 
 	@Inject
-	public SearchRestHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, SearchQueue searchQueue,
-			NodeIndexHandler nodeIndexHandler, HandlerUtilities utils) {
+	public SearchRestHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, NodeIndexHandler nodeIndexHandler,
+			HandlerUtilities utils) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.registry = registry;
-		this.searchQueue = searchQueue;
 		this.nodeIndexHandler = nodeIndexHandler;
 		this.utils = utils;
 	}
@@ -131,7 +127,7 @@ public class SearchRestHandler {
 
 		/*
 		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
-		 * to be written that deals with Document Level Permissions/Security (common known as DLS)
+		 * to be written that deals with Document Level Permissions/Security (commonly known as DLS)
 		 */
 		SearchRequestBuilder builder = null;
 		try {
@@ -183,9 +179,13 @@ public class SearchRestHandler {
 					Observable.merge(obs).collect(() -> {
 						return new ArrayList<Tuple<T, String>>();
 					}, (x, y) -> {
+						if (y == null) {
+							return;
+						}
+						boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags == null || requestedLanguageTags.isEmpty()
+								|| requestedLanguageTags.contains(y.v2());
 						// Check permissions and language
-						if (y != null && requestUser.hasPermission(y.v1(), permission)
-								&& (y.v2() == null || requestedLanguageTags.contains(y.v2()))) {
+						if (y != null && matchesRequestedLang && requestUser.hasPermission(y.v1(), permission)) {
 							x.add(y);
 						}
 					}).subscribe(list -> {
@@ -274,7 +274,7 @@ public class SearchRestHandler {
 						return false;
 						// }
 					}).await();
-					
+
 					handler.reindexAll().await();
 				}
 				return Single.just(message(ac, "search_admin_reindex_invoked"));

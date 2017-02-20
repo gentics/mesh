@@ -1,8 +1,11 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 
 import org.codehaus.jettison.json.JSONException;
@@ -11,8 +14,12 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 
-public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implements BasicSearchCrudTestcases {
+@MeshTestSetting(useElasticsearch = true, startServer = true, useTinyDataset = false)
+public class GroupSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test
 	@Override
@@ -20,10 +27,24 @@ public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implemen
 		String groupName = "testgroup42a";
 		createGroup(groupName);
 
-		MeshResponse<GroupListResponse> searchFuture = client().searchGroups(getSimpleTermQuery("name", groupName)).invoke();
+		MeshResponse<GroupListResponse> searchFuture = client().searchGroups(getSimpleTermQuery("name.raw", groupName)).invoke();
 		latchFor(searchFuture);
 		assertSuccess(searchFuture);
 		assertEquals(1, searchFuture.result().getData().size());
+	}
+
+	@Test
+	public void testBogusQuery() {
+		String groupName = "testgroup42a";
+		String uuid = createGroup(groupName).getUuid();
+
+		// 1. Search with bogus query
+		call(() -> client().searchGroups("HudriWudri"), BAD_REQUEST, "search_query_not_parsable");
+
+		// 2. Assert that search still works
+		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("uuid", uuid)));
+		assertThat(result.getData()).hasSize(1);
+		assertEquals(uuid, result.getData().get(0).getUuid());
 	}
 
 	@Test
@@ -41,7 +62,7 @@ public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implemen
 		String groupName = "test-grou  %!p42a";
 		String uuid = createGroup(groupName).getUuid();
 
-		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name", groupName)));
+		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName)));
 		assertThat(result.getData()).hasSize(1);
 		assertEquals(uuid, result.getData().get(0).getUuid());
 	}
@@ -54,7 +75,7 @@ public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implemen
 		GroupResponse group = createGroup(groupName);
 		deleteGroup(group.getUuid());
 
-		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name", groupName)));
+		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName)));
 		assertThat(result.getData()).hasSize(0);
 	}
 
@@ -67,10 +88,10 @@ public class GroupSearchEndpointTest extends AbstractSearchEndpointTest implemen
 		String newGroupName = "testgrouprenamed";
 		updateGroup(group.getUuid(), newGroupName);
 
-		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name", groupName)));
+		GroupListResponse result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", groupName)));
 		assertThat(result.getData()).hasSize(0);
 
-		result = call(() -> client().searchGroups(getSimpleTermQuery("name", newGroupName)));
+		result = call(() -> client().searchGroups(getSimpleTermQuery("name.raw", newGroupName)));
 		assertThat(result.getData()).hasSize(1);
 	}
 

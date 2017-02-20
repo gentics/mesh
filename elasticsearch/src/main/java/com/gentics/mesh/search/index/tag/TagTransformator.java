@@ -1,11 +1,11 @@
 package com.gentics.mesh.search.index.tag;
 
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.NOT_ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.fieldType;
+import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
+import static com.gentics.mesh.search.index.MappingHelper.trigramStringType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -52,14 +52,14 @@ public class TagTransformator extends AbstractTransformator<Tag> {
 	@Override
 	public JsonObject getMappingProperties() {
 		JsonObject props = new JsonObject();
-		props.put(NAME_KEY, fieldType(STRING, NOT_ANALYZED));
+		props.put(NAME_KEY, trigramStringType());
 
 		// tagFamily
 		JsonObject tagFamilyMapping = new JsonObject();
 		tagFamilyMapping.put("type", OBJECT);
 		JsonObject schemaMappingProperties = new JsonObject();
-		schemaMappingProperties.put("uuid", fieldType(STRING, NOT_ANALYZED));
-		schemaMappingProperties.put("name", fieldType(STRING, NOT_ANALYZED));
+		schemaMappingProperties.put("uuid", notAnalyzedType(STRING));
+		schemaMappingProperties.put("name", trigramStringType());
 		tagFamilyMapping.put("properties", schemaMappingProperties);
 		props.put("tagFamily", tagFamilyMapping);
 
@@ -67,8 +67,8 @@ public class TagTransformator extends AbstractTransformator<Tag> {
 		JsonObject projectMapping = new JsonObject();
 		projectMapping.put("type", OBJECT);
 		JsonObject projectMappingProps = new JsonObject();
-		projectMappingProps.put("name", fieldType(STRING, NOT_ANALYZED));
-		projectMappingProps.put("uuid", fieldType(STRING, NOT_ANALYZED));
+		projectMappingProps.put("name", trigramStringType());
+		projectMappingProps.put("uuid", notAnalyzedType(STRING));
 		projectMapping.put("properties", projectMappingProps);
 		props.put("project", projectMapping);
 

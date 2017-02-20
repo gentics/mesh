@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.NodeField;
@@ -16,41 +17,58 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 
 /**
  * POJO for the node rest response model.
  */
 public class NodeResponse extends AbstractGenericRestResponse implements NodeField, NodeFieldListItem, ExpandableNode {
 
+	@JsonPropertyDescription("ISO 639-1 language tag of the node content.")
 	private String language;
 
+	@JsonPropertyDescription("List of languages for which content is available.")
 	private List<String> availableLanguages;
 
+	@JsonPropertyDescription("Map of webroot paths per language. This property will only be populated if the "
+			+ NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY + " query parameter has been set accordingly.")
 	private Map<String, String> languagePaths;
 
+	@JsonPropertyDescription("Reference to the parent node. Note that the root node of the project has no parent node.")
 	private NodeReference parentNode;
 
+	@JsonPropertyDescription("Map of tag family names and their group information.")
 	private Map<String, TagFamilyTagGroup> tags = new HashMap<>();
 
+	@JsonPropertyDescription("Reference to the project of the node.")
 	private ProjectResponse project;
 
 	/**
 	 * Key: Schema name, Value: Node information
 	 */
+	@JsonPropertyDescription("Object which contains information about child elements.")
 	private Map<String, NodeChildrenInfo> childrenInfo = new HashMap<>();
 
+	@JsonPropertyDescription("Reference to the schema of the node.")
 	private SchemaReference schema;
 
+	@JsonPropertyDescription("Flag which indicates whether the node is a container and can contain nested elements.")
 	private boolean isContainer;
 
+	@JsonPropertyDescription("Display field value of the node. May not be retured if the node schema has no display field value")
 	private String displayField;
 
+	@JsonPropertyDescription("Dynamic map with fields of the node content.")
 	private FieldMap fields = new FieldMapImpl();
 
+	@JsonPropertyDescription("Webroot path to the node content. Will only be provided if the " + NodeParameters.RESOLVE_LINKS_QUERY_PARAM_KEY
+			+ " query parameter has been set accordingly.")
 	private String path;
 
+	@JsonPropertyDescription("List of nodes which construct the breadcrumb. Note that the start node will not be included in the list.")
 	private Deque<NodeReference> breadcrumb = new ArrayDeque<>();
 
+	@JsonPropertyDescription("Reference to the version of the node content.")
 	private VersionReference version;
 
 	public NodeResponse() {

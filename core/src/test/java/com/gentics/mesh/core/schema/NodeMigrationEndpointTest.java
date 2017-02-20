@@ -2,7 +2,8 @@ package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -36,7 +37,6 @@ import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
@@ -45,7 +45,8 @@ import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PublishParameters;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.AsyncResult;
@@ -53,18 +54,19 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 
-public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Before
 	public void deployWorkerVerticle() throws Exception {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
-		vertx.deployVerticle(meshDagger.nodeMigrationVerticle(), options);
+		vertx().deployVerticle(meshDagger().nodeMigrationVerticle(), options);
 	}
 
 	@Test
 	public void testEmptyMigration() throws Throwable {
-		try (NoTx tx = db.noTx()) {
+		try (NoTx tx = db().noTx()) {
 
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
@@ -80,7 +82,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 
 			// Trigger migration by sending a event
-			vertx.eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+			vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				latch.countDown();
 			});
 
@@ -92,7 +94,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testStartSchemaMigration() throws Throwable {
-		try (NoTx tx = db.noTx()) {
+		try (NoTx tx = db().noTx()) {
 
 			String fieldName = "changedfield";
 
@@ -131,13 +133,13 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 			assertThat(secondNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value")
 					.isEqualTo("modified second content");
-			assertThat(dummySearchProvider).hasEvents(2, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0);
 		}
 	}
 
 	@Test
 	public void testMigrateAgain() throws Throwable {
-		try (NoTx tx = db.noTx()) {
+		try (NoTx tx = db().noTx()) {
 
 			String fieldName = "changedfield";
 
@@ -172,7 +174,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testMigratePublished() throws Throwable {
-		try (NoTx tx = db.noTx()) {
+		try (NoTx tx = db().noTx()) {
 
 			String fieldName = "changedfield";
 
@@ -207,7 +209,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 		SchemaContainerVersion versionB = null;
 		SchemaContainer container = null;
 
-		try (NoTx tx = db.noTx()) {
+		try (NoTx tx = db().noTx()) {
 			container = createDummySchemaWithChanges(fieldName);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
@@ -220,13 +222,13 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			englishContainer.createString("name").setString("someName");
 			englishContainer.createString(fieldName).setString("content");
 		}
-		try (NoTx tx = db.noTx()) {
+		try (NoTx tx = db().noTx()) {
 			node.reload();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(user()));
 			node.publish(ac, "en").await();
 		}
 
-		try (NoTx tx = db.noTx()) {
+		try (NoTx tx = db().noTx()) {
 			node.reload();
 			NodeGraphFieldContainer updatedEnglishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
 			updatedEnglishContainer.getString(fieldName).setString("new content");
@@ -243,7 +245,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 	private SchemaContainer createDummySchemaWithChanges(String fieldName) {
 
 		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
-		boot.schemaContainerRoot().addSchemaContainer(container);
+		boot().schemaContainerRoot().addSchemaContainer(container);
 
 		// create version 1 of the schema
 		SchemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
@@ -287,7 +289,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 		// Link everything together
 		container.setLatestVersion(versionB);
 		versionA.setNextVersion(versionB);
-		boot.schemaContainerRoot().addSchemaContainer(container);
+		boot().schemaContainerRoot().addSchemaContainer(container);
 		return container;
 
 	}
@@ -311,7 +313,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 		options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-		vertx.eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+		vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 			future.complete(rh);
 		});
 
@@ -324,7 +326,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testStartMicroschemaMigration() throws Throwable {
 
-		try (NoTx tx = db.noTx()) {
+		try (NoTx tx = db().noTx()) {
 
 			String fieldName = "changedfield";
 			String micronodeFieldName = "micronodefield";
@@ -337,26 +339,26 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
 
-			Microschema microschemaA = new MicroschemaModel();
+			MicroschemaModel microschemaA = new MicroschemaModel();
 			microschemaA.setName("migratedSchema");
 			microschemaA.setVersion(1);
 			FieldSchema oldField = FieldUtil.createStringFieldSchema(fieldName);
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot.microschemaContainerRoot().addMicroschema(container);
+			boot().microschemaContainerRoot().addMicroschema(container);
 
 			// create version 2 of the microschema (with the field renamed)
 			MicroschemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			versionB.setSchemaContainer(container);
-			Microschema microschemaB = new MicroschemaModel();
+			MicroschemaModel microschemaB = new MicroschemaModel();
 			microschemaB.setName("migratedSchema");
 			microschemaB.setVersion(2);
 			FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
 			microschemaB.addField(newField);
 			versionB.setName("migratedSchema");
 			versionB.setSchema(microschemaB);
-			// boot.microschemaContainerRoot().addMicroschema(container);
+			// boot().microschemaContainerRoot().addMicroschema(container);
 
 			// link the schemas with the changes in between
 			UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
@@ -393,7 +395,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-			vertx.eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+			vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
 			});
 
@@ -432,7 +434,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 		String fieldName = "changedfield";
 		String micronodeFieldName = "micronodefield";
 
-		try (NoTx tx = db.noTx()) {
+		try (NoTx tx = db().noTx()) {
 
 			// create version 1 of the microschema
 			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
@@ -440,26 +442,26 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
 
-			Microschema microschemaA = new MicroschemaModel();
+			MicroschemaModel microschemaA = new MicroschemaModel();
 			microschemaA.setName("migratedSchema");
 			microschemaA.setVersion(1);
 			FieldSchema oldField = FieldUtil.createStringFieldSchema(fieldName);
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot.microschemaContainerRoot().addMicroschema(container);
+			boot().microschemaContainerRoot().addMicroschema(container);
 
 			// create version 2 of the microschema (with the field renamed)
 			MicroschemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			versionB.setSchemaContainer(container);
-			Microschema microschemaB = new MicroschemaModel();
+			MicroschemaModel microschemaB = new MicroschemaModel();
 			microschemaB.setName("migratedSchema");
 			microschemaB.setVersion(2);
 			FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
 			microschemaB.addField(newField);
 			versionB.setName("migratedSchema");
 			versionB.setSchema(microschemaB);
-			// boot.microschemaContainerRoot().addMicroschema(container);
+			// boot().microschemaContainerRoot().addMicroschema(container);
 
 			// link the schemas with the changes in between
 			UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
@@ -504,7 +506,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-			vertx.eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+			vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
 			});
 
@@ -556,33 +558,33 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 		String fieldName = "changedfield";
 		String micronodeFieldName = "micronodefield";
 
-		try (NoTx tx = db.noTx()) {
+		try (NoTx tx = db().noTx()) {
 			// create version 1 of the microschema
 			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			MicroschemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			container.setLatestVersion(versionA);
 			versionA.setSchemaContainer(container);
 
-			Microschema microschemaA = new MicroschemaModel();
+			MicroschemaModel microschemaA = new MicroschemaModel();
 			microschemaA.setName("migratedSchema");
 			microschemaA.setVersion(1);
 			FieldSchema oldField = FieldUtil.createStringFieldSchema(fieldName);
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot.microschemaContainerRoot().addMicroschema(container);
+			boot().microschemaContainerRoot().addMicroschema(container);
 
 			// create version 2 of the microschema (with the field renamed)
 			MicroschemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			versionB.setSchemaContainer(container);
-			Microschema microschemaB = new MicroschemaModel();
+			MicroschemaModel microschemaB = new MicroschemaModel();
 			microschemaB.setName("migratedSchema");
 			microschemaB.setVersion(2);
 			FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
 			microschemaB.addField(newField);
 			versionB.setName("migratedSchema");
 			versionB.setSchema(microschemaB);
-			// boot.microschemaContainerRoot().addMicroschema(container);
+			// boot().microschemaContainerRoot().addMicroschema(container);
 
 			// link the schemas with the changes in between
 			UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
@@ -621,7 +623,7 @@ public class NodeMigrationEndpointTest extends AbstractRestEndpointTest {
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-			vertx.eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+			vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
 			});
 

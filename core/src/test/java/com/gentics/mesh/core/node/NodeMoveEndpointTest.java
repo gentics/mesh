@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -16,21 +17,23 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.test.AbstractRestEndpointTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeIntoNonFolderNode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = content("concorde");
@@ -44,7 +47,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testMoveNodesSame() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
@@ -56,7 +59,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testMoveNodeIntoChildNode() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = folder("2015");
@@ -72,7 +75,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testMoveNodeWithoutPerm() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("deals");
 			Node targetNode = folder("2015");
@@ -88,7 +91,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testMoveNodeWithPerm() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("deals");
 			Node targetNode = folder("2015");
@@ -97,12 +100,12 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()));
 
 			sourceNode.reload();
-			try (Tx tx = db.tx()) {
+			try (Tx tx = db().tx()) {
 				assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
 						sourceNode.getParentNode(releaseUuid).getUuid());
 				assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
 						targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-				assertEquals("A store event for each language variation per version should occure", 4, dummySearchProvider.getStoreEvents().size());
+				assertEquals("A store event for each language variation per version should occure", 4, dummySearchProvider().getStoreEvents().size());
 			}
 			// TODO assert entries
 		}
@@ -111,16 +114,16 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 	@Test
 	public void testMoveNodeWithNoSegmentFieldDefined() {
 
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 
 			//1. Create new schema which does not have a segmentfield defined
-			SchemaModel schema = new SchemaModel();
-			schema.setName("test");
-			schema.setDescription("Some test schema");
-			schema.setDisplayField("stringField");
-			schema.getFields().add(FieldUtil.createStringFieldSchema("stringField"));
-			schema.validate();
-			Schema schemaResponse = call(() -> client().createSchema(schema));
+			SchemaCreateRequest createRequest = new SchemaCreateRequest();
+			createRequest.setName("test");
+			createRequest.setDescription("Some test schema");
+			createRequest.setDisplayField("stringField");
+			createRequest.getFields().add(FieldUtil.createStringFieldSchema("stringField"));
+			createRequest.validate();
+			SchemaResponse schemaResponse = call(() -> client().createSchema(createRequest));
 
 			// 2. Add schema to project
 			call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
@@ -153,7 +156,7 @@ public class NodeMoveEndpointTest extends AbstractRestEndpointTest {
 
 	@Test
 	public void testMoveInRelease() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Node movedNode = folder("deals");
 			Node targetNode = folder("2015");

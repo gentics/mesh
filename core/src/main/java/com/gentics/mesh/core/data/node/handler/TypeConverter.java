@@ -52,7 +52,8 @@ public class TypeConverter {
 			return null;
 		}
 		if (isJSArray(value)) {
-			String combined = getJSArray(value).stream().map(e -> toString(e)).filter(s -> s != null).collect(Collectors.joining(","));
+			String combined = getJSArray(value).stream().map(e -> toString(e)).filter(s -> s != null)
+					.collect(Collectors.joining(","));
 			return combined.length() > 0 ? combined : null;
 		} else {
 			return value.toString();
@@ -63,7 +64,8 @@ public class TypeConverter {
 	 * Convert the given value to a string array
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be converted
+	 * @return String array
 	 */
 	public String[] toStringList(Object value) {
 		if (value == null || isJSObject(value)) {
@@ -71,7 +73,8 @@ public class TypeConverter {
 		}
 
 		if (isJSArray(value)) {
-			List<String> list = getJSArray(value).stream().map(e -> toString(e)).filter(s -> s != null).collect(Collectors.toList());
+			List<String> list = getJSArray(value).stream().map(e -> toString(e)).filter(s -> s != null)
+					.collect(Collectors.toList());
 			return list.toArray(new String[list.size()]);
 		} else {
 			String stringValue = toString(value);
@@ -87,7 +90,8 @@ public class TypeConverter {
 	 * Convert the given value to a boolean.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be converted
+	 * @return Boolean value
 	 */
 	public Boolean toBoolean(Object value) {
 		if (value == null || isJSObject(value)) {
@@ -109,7 +113,8 @@ public class TypeConverter {
 	 * Convert the given value to a boolean array.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be converted
+	 * @return Boolean array
 	 */
 	public Boolean[] toBooleanList(Object value) {
 		if (value == null || isJSObject(value)) {
@@ -117,7 +122,8 @@ public class TypeConverter {
 		}
 
 		if (isJSArray(value)) {
-			List<Boolean> list = getJSArray(value).stream().map(e -> toBoolean(e)).filter(b -> b != null).collect(Collectors.toList());
+			List<Boolean> list = getJSArray(value).stream().map(e -> toBoolean(e)).filter(b -> b != null)
+					.collect(Collectors.toList());
 			return list.toArray(new Boolean[list.size()]);
 		} else {
 			Boolean booleanValue = toBoolean(value);
@@ -133,7 +139,8 @@ public class TypeConverter {
 	 * Convert the given value to a date.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be converted
+	 * @return Date string or null if the value could not be converted
 	 */
 	public String toDate(Object value) {
 		if (value == null || isJSObject(value)) {
@@ -149,7 +156,8 @@ public class TypeConverter {
 			// 1. Try to parse value as with ISO-8601 format
 			try {
 				Date date = Date.from(Instant.parse(value.toString()));
-				return Instant.from(date.toInstant()).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_INSTANT);
+				return Instant.from(date.toInstant()).atZone(ZoneId.systemDefault())
+						.format(DateTimeFormatter.ISO_INSTANT);
 			} catch (DateTimeException e) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not convert to time {" + value.toString() + "}", e);
@@ -170,7 +178,8 @@ public class TypeConverter {
 	 * Convert the given value to a date array.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be converted
+	 * @return String array of dates or null if the value could not be converted
 	 */
 	public String[] toDateList(Object value) {
 		if (value == null || isJSObject(value)) {
@@ -178,7 +187,8 @@ public class TypeConverter {
 		}
 
 		if (isJSArray(value)) {
-			List<String> list = getJSArray(value).stream().map(e -> toDate(e)).filter(d -> d != null).collect(Collectors.toList());
+			List<String> list = getJSArray(value).stream().map(e -> toDate(e)).filter(d -> d != null)
+					.collect(Collectors.toList());
 			return list.toArray(new String[list.size()]);
 		} else {
 			String dateValue = toDate(value);
@@ -194,7 +204,8 @@ public class TypeConverter {
 	 * Convert the given value to a number.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be converted
+	 * @return Number or null if the number could not be converted
 	 */
 	public Number toNumber(Object value) {
 		if (value == null || isJSObject(value)) {
@@ -232,7 +243,8 @@ public class TypeConverter {
 	 * Convert the given value to a number array.
 	 *
 	 * @param value
-	 * @return Array of numbers
+	 *            Value to be converted
+	 * @return Array of numbers or null if the value could not be converted
 	 */
 	public Number[] toNumberList(Object value) {
 		if (value == null || isJSObject(value)) {
@@ -240,7 +252,8 @@ public class TypeConverter {
 		}
 
 		if (isJSArray(value)) {
-			List<Number> list = getJSArray(value).stream().map(e -> toNumber(e)).filter(n -> n != null).collect(Collectors.toList());
+			List<Number> list = getJSArray(value).stream().map(e -> toNumber(e)).filter(n -> n != null)
+					.collect(Collectors.toList());
 			return list.toArray(new Number[list.size()]);
 		} else {
 			Number numberValue = toNumber(value);
@@ -256,13 +269,15 @@ public class TypeConverter {
 	 * Convert the given value into a micronode.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be converted
+	 * @return Micronode object or null if the value could not be converted
 	 */
 	public Object toMicronode(Object value) {
 		if (isMicronode(value)) {
 			return ScriptUtils.unwrap(value);
 		} else if (isJSArray(value)) {
-			return getJSArray(value).stream().findFirst().filter(o -> isMicronode(o)).map(o -> ScriptUtils.unwrap(o)).orElse(null);
+			return getJSArray(value).stream().findFirst().filter(o -> isMicronode(o)).map(o -> ScriptUtils.unwrap(o))
+					.orElse(null);
 		} else {
 			return null;
 		}
@@ -272,13 +287,15 @@ public class TypeConverter {
 	 * Convert the given value into a list of micronodes.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be converted
+	 * @return List of micronodes or null if the value could not be converted
 	 */
 	public Object[] toMicronodeList(Object value) {
 		if (isMicronode(value)) {
 			return new Object[] { ScriptUtils.unwrap(value) };
 		} else if (isJSArray(value) && getJSArray(value).stream().anyMatch(o -> isMicronode(o))) {
-			List<Object> list = getJSArray(value).stream().map(e -> toMicronode(e)).filter(s -> s != null).collect(Collectors.toList());
+			List<Object> list = getJSArray(value).stream().map(e -> toMicronode(e)).filter(s -> s != null)
+					.collect(Collectors.toList());
 			return list.toArray(new Object[list.size()]);
 		} else {
 			return null;
@@ -289,13 +306,15 @@ public class TypeConverter {
 	 * Convert the given value into a node.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be converted
+	 * @return Node or null if the value could not be converted
 	 */
 	public Object toNode(Object value) {
 		if (isNode(value)) {
 			return ScriptUtils.unwrap(value);
 		} else if (isJSArray(value)) {
-			return getJSArray(value).stream().findFirst().filter(o -> isNode(o)).map(o -> ScriptUtils.unwrap(o)).orElse(null);
+			return getJSArray(value).stream().findFirst().filter(o -> isNode(o)).map(o -> ScriptUtils.unwrap(o))
+					.orElse(null);
 		} else {
 			return null;
 		}
@@ -305,13 +324,15 @@ public class TypeConverter {
 	 * Convert the given value into a list of nodes.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be converted
+	 * @return Array of nodes or null if the value could not be converted
 	 */
 	public Object[] toNodeList(Object value) {
 		if (isNode(value)) {
 			return new Object[] { ScriptUtils.unwrap(value) };
 		} else if (isJSArray(value) && getJSArray(value).stream().anyMatch(o -> isNode(o))) {
-			List<Object> list = getJSArray(value).stream().map(e -> toNode(e)).filter(s -> s != null).collect(Collectors.toList());
+			List<Object> list = getJSArray(value).stream().map(e -> toNode(e)).filter(s -> s != null)
+					.collect(Collectors.toList());
 			return list.toArray(new Object[list.size()]);
 		} else {
 			return null;
@@ -322,7 +343,8 @@ public class TypeConverter {
 	 * Check whether the object represents a javascript array.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to check
+	 * @return true, if the provided value is an javascript array. Otherwise false.
 	 */
 	protected boolean isJSArray(Object value) {
 		if (value instanceof ScriptObjectMirror) {
@@ -336,7 +358,8 @@ public class TypeConverter {
 	 * Check whether the object represents a javascript object.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be checked
+	 * @return true if the provided value is an javascript object. Otherwise false.
 	 */
 	protected boolean isJSObject(Object value) {
 		if (value instanceof ScriptObjectMirror) {
@@ -350,7 +373,8 @@ public class TypeConverter {
 	 * Get array values as list.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be checked
+	 * @return List of javascript objects or empty list if the value could not be converted
 	 */
 	protected List<Object> getJSArray(Object value) {
 		if (isJSArray(value)) {
@@ -365,7 +389,8 @@ public class TypeConverter {
 	 * Check whether the given object is a binary.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be checked
+	 * @return true if the provided value is a binary field. Otherwise false.
 	 */
 	protected boolean isBinary(Object value) {
 		if (!isJSObject(value)) {
@@ -380,7 +405,8 @@ public class TypeConverter {
 	 * Check whether the given object is a node.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be checked
+	 * @return true if the value is a node. Otherwise false.
 	 */
 	protected boolean isNode(Object value) {
 		if (!isJSObject(value)) {
@@ -395,7 +421,8 @@ public class TypeConverter {
 	 * Check whether the given object is a micronode.
 	 *
 	 * @param value
-	 * @return
+	 *            Value to be checked
+	 * @return true if the provided value is a micronode. Otherwise false.
 	 */
 	protected boolean isMicronode(Object value) {
 		if (!isJSObject(value)) {

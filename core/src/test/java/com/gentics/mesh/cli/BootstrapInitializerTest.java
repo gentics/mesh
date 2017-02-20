@@ -9,17 +9,19 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.mesh.core.data.AbstractIsolatedBasicDBTest;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 
-public class BootstrapInitializerTest extends AbstractIsolatedBasicDBTest {
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
+public class BootstrapInitializerTest extends AbstractMeshTest {
 
 	@Test
 	public void testInitLanguages() throws JsonParseException, JsonMappingException, IOException {
-		try (NoTx noTx = db.noTx()) {
-			boot.initLanguages(meshRoot().getLanguageRoot());
-			Language language = boot.languageRoot().findByLanguageTag("de");
+		try (NoTx noTx = db().noTx()) {
+			boot().initLanguages(meshRoot().getLanguageRoot());
+			Language language = boot().languageRoot().findByLanguageTag("de");
 			assertNotNull(language);
 			assertEquals("German", language.getName());
 			assertEquals("Deutsch", language.getNativeName());

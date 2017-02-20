@@ -3,12 +3,13 @@ package com.gentics.mesh.rest;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Map.Entry;
+import java.util.Optional;
 
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
+
 
 public class ClientSchemaStorage implements SchemaStorage {
 

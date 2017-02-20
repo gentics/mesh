@@ -5,12 +5,12 @@ import static org.elasticsearch.client.Requests.refreshRequest;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
@@ -60,6 +60,17 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private ElasticSearchOptions options;
 
+	public static final String DEFAULT_INDEX_SETTINGS_FILENAME = "default-es-index-settings.json";
+
+	public static String DEFAULT_INDEX_SETTINGS;
+	static {
+		try {
+			DEFAULT_INDEX_SETTINGS = IOUtils.toString(ElasticSearchProvider.class.getResourceAsStream("/" + DEFAULT_INDEX_SETTINGS_FILENAME));
+		} catch (IOException e) {
+			throw new RuntimeException("Could not load default index settings", e);
+		}
+	}
+
 	@Override
 	public void start() {
 		if (log.isDebugEnabled()) {
@@ -81,8 +92,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				.put("plugin.types", DeleteByQueryPlugin.class.getName())
 
 				.put("node.local", true)
-				
-//				.put("index.store.type", "mmapfs")
+
+				//				.put("index.store.type", "mmapfs")
 
 				.put("index.max_result_window", Integer.MAX_VALUE)
 
@@ -161,16 +172,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				log.debug("Creating ES Index {" + indexName + "}");
 			}
 			CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
-			Map<String, Object> indexSettings = new HashMap<>();
-			Map<String, Object> analysisSettings = new HashMap<>();
-			Map<String, Object> analyserSettings = new HashMap<>();
-			Map<String, Object> defaultAnalyserSettings = new HashMap<>();
 
-			indexSettings.put("analysis", analysisSettings);
-			analysisSettings.put("analyzer", analyserSettings);
-			analyserSettings.put("default", defaultAnalyserSettings);
-			defaultAnalyserSettings.put("type", "standard");
-			createIndexRequestBuilder.setSettings(indexSettings);
+			createIndexRequestBuilder.setSettings(createDefaultIndexSettings().toString());
 			createIndexRequestBuilder.execute(new ActionListener<CreateIndexResponse>() {
 
 				@Override
@@ -193,6 +196,20 @@ public class ElasticSearchProvider implements SearchProvider {
 
 			});
 		});
+	}
+
+	/**
+	 * Create the default index settings.
+	 * 
+	 * @return
+	 */
+	private JsonObject createDefaultIndexSettings() {
+		JsonObject settings = new JsonObject(DEFAULT_INDEX_SETTINGS);
+		if (log.isDebugEnabled()) {
+			log.debug("Using index settings: ");
+			log.debug(settings.encodePrettily());
+		}
+		return settings;
 	}
 
 	@Override

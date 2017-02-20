@@ -10,21 +10,23 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
 
+@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
 public class SchemaEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			MeshResponse<SchemaListResponse> response = client().findSchemas().invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
@@ -37,16 +39,16 @@ public class SchemaEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadOne() {
-		try (NoTx noTx = db.noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			SchemaContainer schema = schemaContainer("content");
 
-			MeshResponse<Schema> response = client().findSchemaByUuid(schema.getUuid()).invoke();
+			MeshResponse<SchemaResponse> response = client().findSchemaByUuid(schema.getUuid()).invoke();
 			latchFor(response);
 			String etag = schema.getETag(getMockedInternalActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<Schema> request = client().findSchemaByUuid(schema.getUuid());
+			MeshRequest<SchemaResponse> request = client().findSchemaByUuid(schema.getUuid());
 			assertThat(expect304(request, etag, true)).contains(etag);
 
 			// The node has no node reference and thus expanding will not affect the etag
