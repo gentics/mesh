@@ -2,6 +2,9 @@
   "analysis": {
     "analyzer": {
       "trigrams": {
+        "filter": [
+          "lowercase"
+        ],
         "tokenizer": "my_ngram_tokenizer"
       }
     },
