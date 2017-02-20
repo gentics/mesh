@@ -31,7 +31,7 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Override
-	public void registerEndPoints() throws Exception {
+	public void registerEndPoints() {
 		secureAll();
 		Endpoint queryEndpoint = createEndpoint();
 		queryEndpoint.method(POST);
