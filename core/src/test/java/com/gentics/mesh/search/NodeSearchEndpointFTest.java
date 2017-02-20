@@ -38,7 +38,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 		json += "			    \"query\":{";
 		json += "			        \"bool\" : {";
 		json += "			            \"must\" : {";
-		json += "			                \"term\" : { \"schema.name\" : \"content\" }";
+		json += "			                \"term\" : { \"schema.name.raw\" : \"content\" }";
 		json += "			            }";
 		json += "			        }";
 		json += "			    }";

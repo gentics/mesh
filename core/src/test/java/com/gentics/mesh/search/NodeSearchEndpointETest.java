@@ -52,7 +52,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 		}
 
 		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name", "content"), new VersioningParameters().draft()));
+				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name.raw", "content"), new VersioningParameters().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 

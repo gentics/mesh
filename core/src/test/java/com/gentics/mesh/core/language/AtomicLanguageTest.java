@@ -23,14 +23,14 @@ public class AtomicLanguageTest extends AbstractMeshTest {
 			LanguageRoot languageRoot = meshRoot.getLanguageRoot();
 			try (Tx tx = db().tx()) {
 				assertNotNull(languageRoot);
-				Language lang = languageRoot.create("Deutsch", "de");
+				Language lang = languageRoot.create("Deutsch1", "de1");
 				db().setVertexType(lang.getElement(), LanguageImpl.class);
-				lang = languageRoot.create("English", "en");
+				lang = languageRoot.create("English1", "en1");
 				db().setVertexType(lang.getElement(), LanguageImpl.class);
 				tx.success();
 			}
 
-			assertNotNull(languageRoot.findByLanguageTag("en"));
+			assertNotNull(languageRoot.findByLanguageTag("en1"));
 		}
 	}
 

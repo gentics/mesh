@@ -125,7 +125,9 @@ public interface TestHelperMethods {
 	}
 
 	default public User user() {
-		return data().user();
+		User user = data().user();
+//		user.reload();
+		return user;
 	}
 
 	default public MeshRoot meshRoot() {

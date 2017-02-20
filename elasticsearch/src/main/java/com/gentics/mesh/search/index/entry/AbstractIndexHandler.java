@@ -165,15 +165,16 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	 */
 	public Completable updateMapping(String indexName, String documentType) {
 
+		final String normalizedDocumentType = documentType.toLowerCase();
 		if (searchProvider.getNode() != null) {
 			return Completable.create(sub -> {
 
 				org.elasticsearch.node.Node node = getESNode();
 				PutMappingRequestBuilder mappingRequestBuilder = node.client().admin().indices().preparePutMapping(indexName);
-				mappingRequestBuilder.setType(documentType);
+				mappingRequestBuilder.setType(normalizedDocumentType);
 
 				// Generate the mapping for the specific type
-				JsonObject mapping = getTransformator().getMapping(documentType);
+				JsonObject mapping = getTransformator().getMapping(normalizedDocumentType);
 				mappingRequestBuilder.setSource(mapping.toString());
 
 				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
