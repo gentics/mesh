@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.project;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DROP_INDEX;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
@@ -197,11 +199,16 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 		try (NoTx noTx = db().noTx()) {
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = getMockedInternalActionContext();
+			// 1. Give the user create on the project root
+			role().grantPermissions(meshRoot().getProjectRoot(), CREATE_PERM);
+			// 2. Create the project
 			Project project = root.getProjectRoot().create("TestProject", user(), schemaContainer("folder").getLatestVersion());
-			assertFalse("The user should not have create permissions on the project.", user().hasPermission(project, GraphPermission.CREATE_PERM));
-			user().addCRUDPermissionOnRole(root.getProjectRoot(), GraphPermission.CREATE_PERM, project);
+			assertFalse("The user should not have create permissions on the project.", user().hasPermission(project, CREATE_PERM));
+			user().addCRUDPermissionOnRole(root.getProjectRoot(), CREATE_PERM, project);
+			// 3. Assert that the crud permissions (eg. CREATE) was inherited
 			ac.data().clear();
-			assertTrue(user().hasPermission(project, GraphPermission.CREATE_PERM));
+			assertTrue("The users role should have inherited the initial permission on the project root.",
+					user().hasPermission(project, CREATE_PERM));
 		}
 	}
 

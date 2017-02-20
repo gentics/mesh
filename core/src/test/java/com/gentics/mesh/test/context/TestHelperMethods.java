@@ -133,7 +133,9 @@ public interface TestHelperMethods {
 	}
 
 	default public Group group() {
-		return data().getUserInfo().getGroup();
+		Group group = data().getUserInfo().getGroup();
+		group.reload();
+		return group;
 	}
 
 	default public MeshRestClient client() {
@@ -153,7 +155,9 @@ public interface TestHelperMethods {
 	}
 
 	default public Node folder(String key) {
-		return data().getFolder(key);
+		Node node = data().getFolder(key);
+		node.reload();
+		return node;
 	}
 
 	default public Node content(String key) {
@@ -171,14 +175,6 @@ public interface TestHelperMethods {
 		tag.reload();
 		return tag;
 	}
-
-	// default public Language english() {
-	// return data().getEnglish();
-	// }
-	//
-	// default public Language german() {
-	// return data().getGerman();
-	// }
 
 	default public SchemaContainer schemaContainer(String key) {
 		SchemaContainer container = data().getSchemaContainer(key);
@@ -377,11 +373,10 @@ public interface TestHelperMethods {
 	 *            target release name
 	 * @return migrated node
 	 */
-	default public NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName,
-			String targetReleaseName) {
+	default public NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
 		// read node from source release
-		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(projectName, uuid,
-				new VersioningParameters().setRelease(sourceReleaseName).draft()));
+		NodeResponse nodeResponse = call(
+				() -> client().findNodeByUuid(projectName, uuid, new VersioningParameters().setRelease(sourceReleaseName).draft()));
 
 		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 
@@ -389,10 +384,8 @@ public interface TestHelperMethods {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(nodeResponse.getLanguage());
 
-		nodeResponse.getFields().keySet().forEach(
-				key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
-		return call(() -> client().updateNode(projectName, uuid, update,
-				new VersioningParameters().setRelease(targetReleaseName)));
+		nodeResponse.getFields().keySet().forEach(key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
+		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParameters().setRelease(targetReleaseName)));
 	}
 
 	default public ProjectResponse createProject(String projectName) {
@@ -426,8 +419,7 @@ public interface TestHelperMethods {
 		return call(() -> client().findSchemaByUuid(uuid));
 	}
 
-	default public GenericMessageResponse updateSchema(String uuid, String schemaName,
-			SchemaUpdateParameters... updateParameters) {
+	default public GenericMessageResponse updateSchema(String uuid, String schemaName, SchemaUpdateParameters... updateParameters) {
 		SchemaUpdateRequest schema = new SchemaUpdateRequest();
 		schema.setName(schemaName);
 		return call(() -> client().updateSchema(uuid, schema, updateParameters));
@@ -443,8 +435,7 @@ public interface TestHelperMethods {
 		return call(() -> client().createMicroschema(microschema));
 	}
 
-	default public GenericMessageResponse updateMicroschema(String uuid, String microschemaName,
-			SchemaUpdateParameters... parameters) {
+	default public GenericMessageResponse updateMicroschema(String uuid, String microschemaName, SchemaUpdateParameters... parameters) {
 		MicroschemaUpdateRequest microschema = FieldUtil.createMinimalValidMicroschemaUpdateRequest();
 		microschema.setName(microschemaName);
 		return call(() -> client().updateMicroschema(uuid, microschema, parameters));
@@ -461,22 +452,21 @@ public interface TestHelperMethods {
 	default public void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
 		// Update the schema and enable binary support for folders
 		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
-		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName)
-				.setLabel("Binary content"));
+		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		MeshInternal.get().serverSchemaStorage().clear();
 		// node.getSchemaContainer().setSchema(schema);
 	}
 
-	default public MeshRequest<NodeResponse> uploadRandomData(Node node, String languageTag, String fieldKey,
-			int binaryLen, String contentType, String fileName) {
+	default public MeshRequest<NodeResponse> uploadRandomData(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
+			String fileName) {
 
 		VersionNumber version = node.getGraphFieldContainer("en").getVersion();
 
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-		return client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldKey,
-				buffer, fileName, contentType, new NodeParameters().setResolveLinks(LinkType.FULL));
+		return client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldKey, buffer, fileName, contentType,
+				new NodeParameters().setResolveLinks(LinkType.FULL));
 	}
 
 	default public NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {
@@ -489,8 +479,8 @@ public interface TestHelperMethods {
 		Buffer buffer = Buffer.buffer(bytes);
 		VersionNumber version = node.getGraphFieldContainer(languageTag).getVersion();
 
-		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(),
-				fieldName, buffer, fileName, contentType));
+		return call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldName, buffer, fileName,
+				contentType));
 	}
 
 	default public UserResponse createUser(String username) {
