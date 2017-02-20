@@ -17,6 +17,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -126,7 +127,7 @@ public interface TestHelperMethods {
 
 	default public User user() {
 		User user = data().user();
-//		user.reload();
+		//		user.reload();
 		return user;
 	}
 
@@ -231,6 +232,15 @@ public interface TestHelperMethods {
 		Node content = data().getContent("news overview");
 		content.reload();
 		return content;
+	}
+
+	/**
+	 * Return the lastest release of the dummy project
+	 * 
+	 * @return
+	 */
+	default public Release release() {
+		return project().getLatestRelease();
 	}
 
 	default public UserResponse readUser(String uuid) {

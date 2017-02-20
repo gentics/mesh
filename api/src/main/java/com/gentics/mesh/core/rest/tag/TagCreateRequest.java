@@ -26,9 +26,12 @@ public class TagCreateRequest implements RestModel {
 	 * Set the name of the tag.
 	 * 
 	 * @param name
+	 *            Name of the tag
+	 * @return Fluent API
 	 */
-	public void setName(String name) {
+	public TagCreateRequest setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 }

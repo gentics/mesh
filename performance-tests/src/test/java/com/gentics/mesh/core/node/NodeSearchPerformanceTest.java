@@ -70,7 +70,7 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 		json += "	    \"query\":{";
 		json += "	        \"bool\" : {";
 		json += "	            \"must\" : {";
-		json += "	                \"term\" : { \"schema.name\" : \"content\" }";
+		json += "	                \"term\" : { \"schema.name.raw\" : \"content\" }";
 		json += "	            }";
 		json += "	        }";
 		json += "	    }";
@@ -113,7 +113,7 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 		json += "			    \"query\":{";
 		json += "			        \"bool\" : {";
 		json += "			            \"must\" : {";
-		json += "			                \"term\" : { \"schema.name\" : \"content\" }";
+		json += "			                \"term\" : { \"schema.name.raw\" : \"content\" }";
 		json += "			            }";
 		json += "			        }";
 		json += "			    }";
