@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.tag;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 /**
@@ -11,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 public class TagFamilyTagGroup {
 
 	@JsonPropertyDescription("Uuid of the tag family.")
+	@JsonProperty(required = true)
 	private String uuid;
 
 	@JsonPropertyDescription("List of tags that belong to the tag family in reference form.")
