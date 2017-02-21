@@ -543,11 +543,6 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		typeProperties.put("tags", tagsMapping);
 
 		// tagFamilies
-//		typeProperties
-//		.put("tagFamilies", new JsonObject()
-//			.put("dynamic", true)
-//			.put("type", "nested")
-//		);
 		typeProperties
 		.put("tagFamilies", new JsonObject()
 			.put("type", "object")
