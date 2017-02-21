@@ -214,7 +214,7 @@ public class DemoDataProvider {
 			latch.countDown();
 		});
 		try {
-			if (!latch.await(11135, TimeUnit.SECONDS)) {
+			if (!latch.await(35, TimeUnit.SECONDS)) {
 				throw new RuntimeException("Timeout reached");
 			}
 		} catch (InterruptedException e) {

@@ -1,19 +1,25 @@
 package com.gentics.mesh.graphql;
 
-import graphql.schema.*;
+import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLArgument.newArgument;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLInterfaceType.newInterface;
+import static graphql.schema.GraphQLObjectType.newObject;
+import static graphql.schema.GraphQLUnionType.newUnionType;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import static graphql.schema.GraphQLArgument.newArgument;
 
-import static graphql.Scalars.GraphQLBoolean;
-import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLInterfaceType.newInterface;
-import static graphql.schema.GraphQLObjectType.newObject;
-import static graphql.schema.GraphQLUnionType.newUnionType;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLInterfaceType;
+import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLSchema;
+import graphql.schema.GraphQLUnionType;
+import graphql.schema.TypeResolver;
 
 public class GarfieldSchema {
 
