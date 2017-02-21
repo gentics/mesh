@@ -242,12 +242,12 @@
 		<repository>
 			<id>lan.releases</id>
 			<name>Gentics Releases Repository</name>
-			<url>http://artifactory.office/repository/lan.releases</url>
+			<url>http://artifactory.office/repository/lan.releases.staging.mesh</url>
 		</repository>
 		<snapshotRepository>
 			<id>lan.snapshots</id>
 			<name>Gentics Snapshots Repository</name>
-			<url>http://artifactory.office/repository/lan.snapshots</url>
+			<url>http://artifactory.office/repository/lan.snapshots.mesh</url>
 		</snapshotRepository>
 	</distributionManagement>
 </project>
