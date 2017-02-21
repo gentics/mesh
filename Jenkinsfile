@@ -12,6 +12,7 @@ properties([disableConcurrentBuilds(),[$class: 'ParametersDefinitionProperty', p
 node('dockerRoot') {
 
 	def mvnHome = tool 'M3'
+	def version = null
 	stage("Checkout") {
 		sh "rm -rf *"
 		sh "rm -rf .git"
@@ -25,15 +26,15 @@ node('dockerRoot') {
 			def major = originalV[1];
 			def minor = originalV[2];
 			def patch  = Integer.parseInt(originalV[3]) + 1;
-			def v = "${major}.${minor}.${patch}"
-			if (v) {
-				echo "Building version ${v}"
+			version = "${major}.${minor}.${patch}"
+			if (version) {
+				echo "Building version ${version}"
 			}
-			sh "${mvnHome}/bin/mvn -B -U versions:set -DgenerateBackupPoms=false -DnewVersion=${v}"
+			sh "${mvnHome}/bin/mvn -B -U versions:set -DgenerateBackupPoms=false -DnewVersion=${version}"
 			//TODO only add pom.xml files
 			sh 'git add .'
 			sh "git commit -m 'Raise version'"
-			sh "git tag ${v}"
+			sh "git tag ${version}"
 		}
 	}
 
@@ -123,7 +124,7 @@ node('dockerRoot') {
 
 	stage("Integration Tests") {
 		if (Boolean.valueOf(runIntegrationTests)) {
-			withEnv(['DOCKER_HOST=tcp://gemini.office:2375', "MESH_VERSION=${v}"]) {
+			withEnv(['DOCKER_HOST=tcp://gemini.office:2375', "MESH_VERSION=${version}"]) {
 				sh "integration-tests/test.sh"
 			}
 		} else {
@@ -146,7 +147,7 @@ node('dockerRoot') {
 				if (Boolean.valueOf(runReleaseBuild)) {
 					def gitCommit = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
 					sh "git push origin " + gitCommit
-					sh "git push origin ${v}"
+					sh "git push origin ${version}"
 				}
 			}
 		} else {
