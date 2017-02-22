@@ -2,7 +2,6 @@ package com.gentics.mesh.core.project;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DROP_INDEX;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
@@ -92,14 +91,14 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			batchEnttries.put("project node index " + i, new ElementEntry(DROP_INDEX, project().getUuid()));
 			i++;
 
-			// Project tags
-			for (Tag tag : project().getTagRoot().findAll()) {
-				batchEnttries.put("project tag " + tag.getName(), new ElementEntry(DROP_INDEX, tag.getUuid()));
-			}
-
 			// Project tagFamilies
 			for (TagFamily tagFamily : project().getTagFamilyRoot().findAll()) {
 				batchEnttries.put("project tagfamily " + tagFamily.getName(), new ElementEntry(DROP_INDEX, tagFamily.getUuid()));
+
+				// tags
+				for (Tag tag : tagFamily.findAll()) {
+					batchEnttries.put("project tag " + tag.getName(), new ElementEntry(DROP_INDEX, tag.getUuid()));
+				}
 			}
 
 			SearchQueueBatch batch = createBatch();

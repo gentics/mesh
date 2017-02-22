@@ -56,4 +56,9 @@ public class TagResponse extends AbstractGenericRestResponse {
 		this.name = name;
 	}
 
+	@Override
+	public String toString() {
+		return "tag: " + getName() + "/" + getUuid() + " of family " + getTagFamily().getName();
+	}
+
 }

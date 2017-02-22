@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.node;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +15,7 @@ import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.impl.NodeParameters;
@@ -37,8 +38,8 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	@JsonPropertyDescription("Reference to the parent node. Note that the root node of the project has no parent node.")
 	private NodeReference parentNode;
 
-	@JsonPropertyDescription("Map of tag family names and their group information.")
-	private Map<String, TagFamilyTagGroup> tags = new HashMap<>();
+	@JsonPropertyDescription("List of tags.")
+	private List<TagReference> tags = new ArrayList<>();
 
 	@JsonPropertyDescription("Reference to the project of the node.")
 	private ProjectResponse project;
@@ -99,7 +100,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @return
 	 */
-	public Map<String, TagFamilyTagGroup> getTags() {
+	public List<TagReference> getTags() {
 		return tags;
 	}
 

@@ -214,8 +214,8 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			assertEquals("Expect to only get one search result", 1, response.getMetainfo().getTotalCount());
 
 			// assert tag count
-			int nColorTags = response.getData().get(0).getTags().get("colors").getItems().size();
-			int nBasicTags = response.getData().get(0).getTags().get("basic").getItems().size();
+			long nColorTags = response.getData().get(0).getTags().stream().filter(ref -> ref.getTagFamily().equals("colors")).count();
+			long nBasicTags = response.getData().get(0).getTags().stream().filter(ref -> ref.getTagFamily().equals("basic")).count();
 			assertEquals("Expect correct tag count", previousTagCount + tagCount, nColorTags + nBasicTags);
 		}
 	}

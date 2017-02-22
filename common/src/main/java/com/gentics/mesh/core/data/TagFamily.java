@@ -4,8 +4,8 @@ import java.util.Objects;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -18,8 +18,8 @@ import com.gentics.mesh.parameter.PagingParameters;
  * A tag family is the parent element for multiple tags. A typical tag family would be "colors" for tags "red", "blue", "green". Tag families are bound to
  * projects via the {@link TagFamilyRootImpl} class.
  */
-public interface TagFamily
-		extends MeshCoreVertex<TagFamilyResponse, TagFamily>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex, IndexableElement {
+public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>, ReferenceableElement<TagFamilyReference>, UserTrackingVertex,
+		IndexableElement, RootVertex<Tag> {
 
 	/**
 	 * Type Value: {@value #TYPE}
@@ -80,8 +80,8 @@ public interface TagFamily
 	void setDescription(String description);
 
 	/**
-	 * Create a new tag with the given name and creator. Note that this method will not check for any tag name collisions. Internally the connected tag root
-	 * will be used to link the created tag to this tag family.
+	 * Create a new tag with the given name and creator. Note that this method will not check for any tag name collisions. Note that the created tag will also
+	 * be assigned to the global root vertex.
 	 * 
 	 * @param name
 	 *            Name of the new tag.
@@ -125,20 +125,6 @@ public interface TagFamily
 	void setProject(Project project);
 
 	/**
-	 * Set the tag root element for the tag family.
-	 * 
-	 * @param tagRoot
-	 */
-	void setTagRoot(TagRoot tagRoot);
-
-	/**
-	 * Return the tag root for the tag family.
-	 * 
-	 * @return
-	 */
-	TagRoot getTagRoot();
-
-	/**
 	 * Create a new tag using the information from the action context.
 	 * 
 	 * @param ac
@@ -146,5 +132,21 @@ public interface TagFamily
 	 * @return
 	 */
 	Tag create(InternalActionContext ac, SearchQueueBatch batch);
+
+	/**
+	 * Add the given tag to the aggregation vertex.
+	 * 
+	 * @param tag
+	 *            Tag to be added
+	 */
+	void addTag(Tag tag);
+
+	/**
+	 * Remove the tag from the aggregation vertex.
+	 * 
+	 * @param tag
+	 *            Tag to be removed
+	 */
+	void removeTag(Tag tag);
 
 }

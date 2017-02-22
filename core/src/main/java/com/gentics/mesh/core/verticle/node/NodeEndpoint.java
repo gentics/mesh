@@ -226,6 +226,20 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			crudHandler.readTags(ac, uuid);
 		});
 
+		Endpoint bulkUpdate = createEndpoint();
+		bulkUpdate.path("/:nodeUuid/tags");
+		bulkUpdate.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
+		bulkUpdate.method(POST);
+		bulkUpdate.produces(APPLICATION_JSON);
+		bulkUpdate.description("Update the list of assigned tags");
+		bulkUpdate.exampleRequest(tagExamples.getTagListUpdateRequest());
+		bulkUpdate.exampleResponse(OK, tagExamples.getTagListResponse(), "Updated tag list.");
+		bulkUpdate.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String nodeUuid = ac.getParameter("nodeUuid");
+			crudHandler.handleBulkTagUpdate(ac, nodeUuid);
+		});
+
 		Endpoint addTag = createEndpoint();
 		addTag.path("/:nodeUuid/tags/:tagUuid");
 		addTag.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());

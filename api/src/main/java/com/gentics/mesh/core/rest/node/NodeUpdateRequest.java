@@ -1,13 +1,9 @@
 package com.gentics.mesh.core.rest.node;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 
 /**
  * POJO for a node update request.

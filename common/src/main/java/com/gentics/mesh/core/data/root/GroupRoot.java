@@ -1,11 +1,7 @@
 package com.gentics.mesh.core.data.root;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.error.InvalidArgumentException;
-import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * Aggregation vertex for groups.
@@ -24,11 +20,6 @@ public interface GroupRoot extends RootVertex<Group> {
 	 * @return Created group
 	 */
 	Group create(String name, User user);
-
-	/**
-	 * Find all groups that are visible to the given user and match the paging parameters.
-	 */
-	Page<? extends Group> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException;
 
 	/**
 	 * Add the group to the aggregation vertex.

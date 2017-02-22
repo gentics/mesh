@@ -130,9 +130,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			assertThat(restGroup).matches(request);
 
 			assertElement(boot().groupRoot(), restGroup.getUuid(), true);
-			future = client().createGroup(request).invoke();
-			latchFor(future);
-			expectException(future, CONFLICT, "group_conflicting_name", name);
+			call(() -> client().createGroup(request), CONFLICT, "group_conflicting_name", name);
 		}
 	}
 
@@ -154,14 +152,10 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			Group foundGroup = boot().groupRoot().findByUuid(restGroup.getUuid());
 			assertNotNull("Group should have been created.", foundGroup);
 
-			MeshResponse<GroupResponse> readFuture = client().findGroupByUuid(restGroup.getUuid()).invoke();
-			latchFor(readFuture);
-			assertSuccess(readFuture);
+			call(() -> client().findGroupByUuid(restGroup.getUuid()));
 
 			// Now delete the group
-			MeshResponse<Void> deleteFuture = client().deleteGroup(restGroup.getUuid()).invoke();
-			latchFor(deleteFuture);
-			assertSuccess(deleteFuture);
+			call(() -> client().deleteGroup(restGroup.getUuid()));
 		}
 	}
 
@@ -190,8 +184,6 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		}
 
 	}
-
-	// Read Tests
 
 	@Test
 	@Override

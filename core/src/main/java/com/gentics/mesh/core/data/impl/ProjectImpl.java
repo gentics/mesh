@@ -11,7 +11,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_REL
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROOT_NODE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -46,13 +45,11 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.NodeRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectMicroschemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ProjectSchemaContainerRootImpl;
 import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
-import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -145,16 +142,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	@Override
 	public Node getBaseNode() {
 		return out(HAS_ROOT_NODE).nextOrDefaultExplicit(NodeImpl.class, null);
-	}
-
-	@Override
-	public TagRoot getTagRoot() {
-		TagRoot root = out(HAS_TAG_ROOT).nextOrDefaultExplicit(TagRootImpl.class, null);
-		if (root == null) {
-			root = getGraph().addFramedVertex(TagRootImpl.class);
-			linkOut(root, HAS_TAG_ROOT);
-		}
-		return root;
 	}
 
 	@Override
@@ -321,9 +308,13 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		for (Node node : getNodeRoot().findAll()) {
 			action.call(node, new HandleContext());
 		}
-		for (Tag tag : getTagRoot().findAll()) {
-			action.call(tag, new HandleContext().setProjectUuid(getUuid()));
+
+		for (TagFamily family : getTagFamilyRoot().findAll()) {
+			for (Tag tag : family.findAll()) {
+				action.call(tag, new HandleContext().setProjectUuid(getUuid()));
+			}
 		}
+
 		for (TagFamily tagFamily : getTagFamilyRoot().findAll()) {
 			action.call(tagFamily, new HandleContext().setProjectUuid(getUuid()));
 		}

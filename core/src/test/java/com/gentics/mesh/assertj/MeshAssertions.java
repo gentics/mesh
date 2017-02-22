@@ -27,6 +27,7 @@ import com.gentics.mesh.assertj.impl.SchemaCreateRequestAssert;
 import com.gentics.mesh.assertj.impl.SchemaResponseAssert;
 import com.gentics.mesh.assertj.impl.SearchQueueBatchAssert;
 import com.gentics.mesh.assertj.impl.TagFamilyResponseAssert;
+import com.gentics.mesh.assertj.impl.TagListResponseAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -52,6 +53,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
+import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.search.DummySearchProvider;
@@ -171,5 +173,9 @@ public class MeshAssertions extends Assertions {
 
 	public static PermissionInfoAssert assertThat(PermissionInfo actual) {
 		return new PermissionInfoAssert(actual);
+	}
+	
+	public static TagListResponseAssert assertThat(TagListResponse actual) {
+		return new TagListResponseAssert(actual);
 	}
 }

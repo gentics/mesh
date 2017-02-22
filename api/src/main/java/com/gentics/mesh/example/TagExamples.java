@@ -9,6 +9,8 @@ import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
+import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 
@@ -65,6 +67,21 @@ public class TagExamples extends AbstractExamples {
 		TagCreateRequest request = new TagCreateRequest();
 		//tagCreate.setTagFamily(tagFamilyReference);
 		request.setName(name);
+		return request;
+	}
+
+	public TagReference getTagReference(String name, String tagFamilyName) {
+		TagReference reference = new TagReference();
+		reference.setName(name);
+		reference.setTagFamily(tagFamilyName);
+		reference.setUuid(randomUUID());
+		return reference;
+	}
+
+	public TagListUpdateRequest getTagListUpdateRequest() {
+		TagListUpdateRequest request = new TagListUpdateRequest();
+		request.getTags().add(getTagReference("green", "colors"));
+		request.getTags().add(getTagReference("yellow", "colors"));
 		return request;
 	}
 }

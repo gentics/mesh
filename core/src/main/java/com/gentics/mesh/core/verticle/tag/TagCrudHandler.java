@@ -64,7 +64,7 @@ public class TagCrudHandler extends AbstractHandler {
 		db.operateNoTx(() -> {
 			PagingParametersImpl pagingParams = ac.getPagingParameters();
 			NodeParameters nodeParams = ac.getNodeParameters();
-			Tag tag = getTagFamily(ac, tagFamilyUuid).getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
+			Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
 			// try {
 			Page<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(null), nodeParams.getLanguageList(),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
@@ -85,7 +85,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
 		utils.readElementList(ac, () -> {
-			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
+			return getTagFamily(ac, tagFamilyUuid);
 		});
 	}
 
@@ -137,7 +137,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagUuid, "tagUuid");
 
 		utils.updateElement(ac, tagUuid, () -> {
-			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
+			return getTagFamily(ac, tagFamilyUuid);
 		});
 
 	}
@@ -156,7 +156,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagUuid, "tagUuid");
 
 		utils.readElement(ac, tagUuid, () -> {
-			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
+			return getTagFamily(ac, tagFamilyUuid);
 		});
 
 	}
@@ -175,7 +175,7 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagUuid, "tagUuid");
 
 		utils.deleteElement(ac, () -> {
-			return getTagFamily(ac, tagFamilyUuid).getTagRoot();
+			return getTagFamily(ac, tagFamilyUuid);
 		}, tagUuid);
 
 	}

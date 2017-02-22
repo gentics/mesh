@@ -73,7 +73,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
 			String noPermTagUUID = noPermTag.getUuid();
 			// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
-			basicTagFamily.getTagRoot().addTag(noPermTag);
+			basicTagFamily.addTag(noPermTag);
 			assertNotNull(noPermTag.getUuid());
 
 			// Test default paging parameters
@@ -436,8 +436,6 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		try (NoTx noTx = db().noTx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.",
 					meshRoot().getTagRoot().findByUuid(response.getUuid()));
-			assertNotNull("The tag could not be found within the project.tagRoot node.",
-					project().getTagRoot().findByUuid(response.getUuid()));
 		}
 
 		String uuid = response.getUuid();

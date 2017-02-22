@@ -7,6 +7,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
+import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 
@@ -148,6 +149,18 @@ public interface NodeClientMethods {
 	 * @return
 	 */
 	MeshRequest<TagListResponse> findTagsForNode(String projectName, String nodeUuid, ParameterProvider... parameters);
+
+	/**
+	 * Update the assigned tags of the given node using the list of tag references within the request.
+	 * 
+	 * @param projectName
+	 * @param nodeUuid
+	 * @param request
+	 * @param parameters
+	 * @return
+	 */
+	MeshRequest<TagListResponse> updateTagsForNode(String projectName, String nodeUuid, TagListUpdateRequest request,
+			ParameterProvider... parameters);
 
 	/**
 	 * Get the publish status of a node

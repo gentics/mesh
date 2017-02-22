@@ -67,8 +67,6 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -213,8 +211,6 @@ public final class Mocks {
 		when(tagFamily.getName()).thenReturn(name);
 		when(tagFamily.getUuid()).thenReturn(randomUUID());
 		when(tagFamily.getProject()).thenReturn(project);
-		TagRoot tagRoot = mock(TagRootImpl.class);
-		when(tagFamily.getTagRoot()).thenReturn(tagRoot);
 		return tagFamily;
 	}
 

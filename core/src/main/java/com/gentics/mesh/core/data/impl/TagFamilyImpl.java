@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_FAMILY;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG_ROOT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
@@ -33,9 +32,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.TagRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
-import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
@@ -60,8 +57,20 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	private static final Logger log = LoggerFactory.getLogger(TagFamilyImpl.class);
 
+	/**
+	 * Initialise the indices and type.
+	 * 
+	 * @param database
+	 */
 	public static void init(Database database) {
 		database.addVertexType(TagFamilyImpl.class, MeshVertexImpl.class);
+		database.addEdgeIndex(HAS_TAG, TagEdgeImpl.RELEASE_UUID_KEY);
+		database.addEdgeIndex(HAS_TAG, true, false, true);
+	}
+
+	@Override
+	public Database database() {
+		return MeshInternal.get().database();
 	}
 
 	@Override
@@ -72,16 +81,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	@Override
 	public TagFamilyRoot getTagFamilyRoot() {
 		return in(HAS_TAG_FAMILY).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
-	}
-
-	@Override
-	public TagRoot getTagRoot() {
-		return out(HAS_TAG_ROOT).has(TagRootImpl.class).nextOrDefaultExplicit(TagRootImpl.class, null);
-	}
-
-	@Override
-	public void setTagRoot(TagRoot tagRoot) {
-		linkOut(tagRoot, HAS_TAG_ROOT);
 	}
 
 	@Override
@@ -122,12 +121,6 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Tag create(String name, Project project, User creator) {
-		Tag tag = getTagRoot().create(name, project, this, creator);
-		return tag;
-	}
-
-	@Override
 	public Tag create(InternalActionContext ac, SearchQueueBatch batch) {
 		Project project = ac.getProject();
 		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
@@ -141,15 +134,14 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			throw error(FORBIDDEN, "error_missing_perm", getUuid());
 		}
 
-		Tag conflictingTag = getTagRoot().findByName(tagName);
+		Tag conflictingTag = findByName(tagName);
 		if (conflictingTag != null) {
 			throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, getName());
 		}
 
 		Tag newTag = create(requestModel.getName(), project, requestUser);
 		ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
-		MeshInternal.get().boot().meshRoot().getTagRoot().addTag(newTag);
-		getTagRoot().addTag(newTag);
+		addTag(newTag);
 
 		batch.store(newTag, true);
 		return newTag;
@@ -171,9 +163,13 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamily {" + getName() + "}");
 		}
-		getTagRoot().delete(batch);
-		// Remove the tag family from the index
+
+		// Delete all the tags of the tag root
+		for (Tag tag : findAll()) {
+			tag.delete(batch);
+		}
 		batch.delete(this, false);
+		// Now delete the tag root element
 		getElement().remove();
 	}
 
@@ -199,7 +195,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	@Override
 	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
-			for (Tag tag : getTagRoot().findAll()) {
+			for (Tag tag : findAll()) {
 				tag.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
 		}
@@ -208,7 +204,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void handleRelatedEntries(HandleElementAction action) {
-		for (Tag tag : getTagRoot().findAll()) {
+		for (Tag tag : findAll()) {
 			HandleContext context = new HandleContext();
 			context.setProjectUuid(tag.getProject().getUuid());
 			action.call(tag, context);
@@ -217,7 +213,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			HashSet<String> handledNodes = new HashSet<>();
 
 			for (Release release : tag.getProject().getReleaseRoot().findAll()) {
-				for (Node node : tag.getNodes(release)){
+				for (Node node : tag.getNodes(release)) {
 					if (!handledNodes.contains(node.getUuid())) {
 						handledNodes.add(node.getUuid());
 						HandleContext nodeContext = new HandleContext();
@@ -256,4 +252,47 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
+
+	@Override
+	public Class<? extends Tag> getPersistanceClass() {
+		return TagImpl.class;
+	}
+
+	@Override
+	public String getRootLabel() {
+		return HAS_TAG;
+	}
+
+	@Override
+	public void addTag(Tag tag) {
+		addItem(tag);
+	}
+
+	@Override
+	public void removeTag(Tag tag) {
+		removeItem(tag);
+	}
+
+	@Override
+	public Tag findByName(String name) {
+		return out(getRootLabel()).mark().has(TagImpl.TAG_VALUE_KEY, name).back().nextOrDefaultExplicit(TagImpl.class, null);
+	}
+
+	@Override
+	public Tag create(String name, Project project, User creator) {
+		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
+		tag.setName(name);
+		tag.setCreated(creator);
+		tag.setProject(project);
+
+		// Add the tag to the global tag root
+		MeshInternal.get().boot().meshRoot().getTagRoot().addTag(tag);
+		// And to the tag family
+		addTag(tag);
+
+		// Set the tag family for the tag
+		tag.setTagFamily(this);
+		return tag;
+	}
+
 }

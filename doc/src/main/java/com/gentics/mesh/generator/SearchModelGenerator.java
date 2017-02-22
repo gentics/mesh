@@ -185,7 +185,7 @@ public class SearchModelGenerator {
 		tagList.add(mockTag("red", user, tagFamily, project));
 		tagList.add(mockTag("green", user, tagFamily, project));
 
-		when(tagFamily.getTagRoot().findAll()).then(answer -> {
+		when(tagFamily.findAll()).then(answer -> {
 			return tagList;
 		});
 		TagFamilyIndexHandler tagFamilyIndexHandler = meshDagger.tagFamilyIndexHandler();

@@ -29,7 +29,7 @@ public class TagFamilyTransformator extends AbstractTransformator<TagFamily> {
 		JsonObject jsonObject = new JsonObject();
 		jsonObject.put(NAME_KEY, tagFamily.getName());
 		addBasicReferences(jsonObject, tagFamily);
-		addTags(jsonObject, tagFamily.getTagRoot().findAll());
+		addTags(jsonObject, tagFamily.findAll());
 		addProject(jsonObject, tagFamily.getProject());
 		return jsonObject;
 	}

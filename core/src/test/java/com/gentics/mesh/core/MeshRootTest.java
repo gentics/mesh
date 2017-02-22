@@ -31,7 +31,7 @@ public class MeshRootTest extends AbstractMeshTest {
 			expectSuccess("projects/" + project().getUuid() + "/nodes", project().getNodeRoot());
 			expectSuccess("projects/" + project().getUuid() + "/nodes/" + folder("2015").getUuid(), folder("2015"));
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags",
-					tagFamily("colors").getTagRoot());
+					tagFamily("colors"));
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags/"
 					+ tag("red").getUuid(), tag("red"));
 

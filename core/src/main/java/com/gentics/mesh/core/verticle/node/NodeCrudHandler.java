@@ -18,6 +18,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -52,10 +53,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	private SearchQueue searchQueue;
 
+	private BootstrapInitializer boot;
+
 	@Inject
-	public NodeCrudHandler(Database db, SearchQueue searchQueue, HandlerUtilities utils) {
+	public NodeCrudHandler(Database db, SearchQueue searchQueue, HandlerUtilities utils, BootstrapInitializer boot) {
 		super(db, utils);
 		this.searchQueue = searchQueue;
+		this.boot = boot;
 	}
 
 	@Override
@@ -76,7 +80,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
-				node.deleteFromRelease(ac.getRelease(null), batch , false);
+				node.deleteFromRelease(ac.getRelease(null), batch, false);
 				return batch;
 			}).processSync();
 			return null;
@@ -233,7 +237,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Tag tag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
+			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
 			SearchQueueBatch batch = searchQueue.create();
@@ -265,7 +269,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease(null);
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Tag tag = project.getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
+			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
@@ -422,6 +426,20 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			HttpResponseStatus code = HttpResponseStatus.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
 			ac.send(model, code);
 		});
+
+	}
+
+	public void handleBulkTagUpdate(InternalActionContext ac, String nodeUuid) {
+		validateParameter(nodeUuid, "nodeUuid");
+
+		db.operateNoTx(() -> {
+			Project project = ac.getProject();
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
+
+			SearchQueueBatch batch = searchQueue.create();
+			Page<? extends Tag> tags = node.updateTags(ac, batch);
+			return batch.processAsync().andThen(tags.transformToRest(ac, 0));
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 }

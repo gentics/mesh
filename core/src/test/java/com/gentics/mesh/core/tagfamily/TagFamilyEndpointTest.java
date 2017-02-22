@@ -340,23 +340,13 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			// 2. Update the tagfamily
 			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 			request.setName("new Name");
-			TagFamilyUpdateRequest tagUpdateRequest = new TagFamilyUpdateRequest();
-			final String newName = "new Name";
-			tagUpdateRequest.setName(newName);
-			assertEquals(newName, tagUpdateRequest.getName());
 
 			// 3. Send the request to the server
-			MeshResponse<TagFamilyResponse> updatedTagFut = client().updateTagFamily(PROJECT_NAME, uuid, tagUpdateRequest).invoke();
-			latchFor(updatedTagFut);
-			assertSuccess(updatedTagFut);
-			TagFamilyResponse tagFamily2 = updatedTagFut.result();
+			TagFamilyResponse tagFamily2 = call(() -> client().updateTagFamily(PROJECT_NAME, uuid, request));
 			assertThat(tagFamily2).matches(tagFamily("basic"));
 
 			// 4. read the tag again and verify that it was changed
-			MeshResponse<TagFamilyResponse> reloadedTagFut = client().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
-			latchFor(reloadedTagFut);
-			assertSuccess(reloadedTagFut);
-			TagFamilyResponse reloadedTagFamily = reloadedTagFut.result();
+			TagFamilyResponse reloadedTagFamily = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid));
 			assertEquals(request.getName(), reloadedTagFamily.getName());
 			assertThat(reloadedTagFamily).matches(tagFamily("basic"));
 		}
@@ -376,7 +366,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			// Multiple tags of the same family can be tagged on same node. This should still trigger only 1 update for that node.
 			HashSet<String> taggedNodes = new HashSet<>();
 			int storeCount = 0;
-			for (Tag tag : tagfamily.getTagRoot().findAll()) {
+			for (Tag tag : tagfamily.findAll()) {
 				storeCount++;
 				for (Node node : tag.getNodes(release)) {
 					if (!taggedNodes.contains(node.getUuid())) {

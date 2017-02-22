@@ -98,9 +98,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setParentNodeUuid(folder("news").getUuid());
 
 			assertThat(dummySearchProvider()).recordedStoreEvents(0);
-			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "node_no_languagecode_specified");
+			call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "node_no_languagecode_specified");
 			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 		}
 	}

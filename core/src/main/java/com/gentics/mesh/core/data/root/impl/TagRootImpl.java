@@ -88,12 +88,6 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 			globalTagRoot.addTag(tag);
 		}
 
-		// Add tag to project list of tags
-		TagRoot projectTagRoot = project.getTagRoot();
-		if (this != projectTagRoot) {
-			projectTagRoot.addTag(tag);
-		}
-
 		// Set the tag family for the tag
 		tag.setTagFamily(tagFamily);
 		return tag;

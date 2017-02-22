@@ -195,7 +195,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			NodeResponse response = call(
 					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("red")).count());
+					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag = tag("red");
@@ -238,9 +238,9 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			NodeResponse response = call(
 					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("red")).count());
+					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("blue")).count());
+					response.getTags().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
@@ -279,9 +279,9 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			NodeResponse response = call(
 					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("red")).count());
+					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("blue")).count());
+					response.getTags().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
