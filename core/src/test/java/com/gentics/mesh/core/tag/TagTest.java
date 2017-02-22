@@ -315,19 +315,18 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (NoTx noTx = db().noTx()) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily basicTagFamily = tagFamily("basic");
+			int beforeCount = basicTagFamily.findAll().size();
 			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
 			basicTagFamily.addTag(noPermTag);
 			assertNotNull(noPermTag.getUuid());
-			assertEquals(tags().size() + 1, basicTagFamily.findAll().size());
+			assertEquals(beforeCount + 1, basicTagFamily.findAll().size());
 
-			Page<? extends Tag> tagfamilyTagpage = basicTagFamily.findAll(getMockedInternalActionContext(user()),
-					new PagingParametersImpl(1, 20));
-			assertPage(tagfamilyTagpage, tags().size());
-
+			Page<? extends Tag> tagfamilyTagpage = basicTagFamily.findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 20));
+			assertPage(tagfamilyTagpage, beforeCount);
 
 			role().grantPermissions(noPermTag, READ_PERM);
 			Page<? extends Tag> globalTagPage = basicTagFamily.findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 20));
-			assertPage(globalTagPage, tags().size() + 1);
+			assertPage(globalTagPage, beforeCount + 1);
 		}
 	}
 
