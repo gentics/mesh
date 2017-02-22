@@ -61,8 +61,9 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public void setVersion(int version) {
+	public SchemaModel setVersion(int version) {
 		this.version = version;
+		return this;
 	}
 
 	@Override
@@ -71,8 +72,9 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public void setDescription(String description) {
+	public SchemaModel setDescription(String description) {
 		this.description = description;
+		return this;
 	}
 
 	@Override
@@ -81,8 +83,9 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public void setName(String name) {
+	public SchemaModel setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	@Override
@@ -91,8 +94,9 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public void setSegmentField(String segmentField) {
+	public SchemaModel setSegmentField(String segmentField) {
 		this.segmentField = segmentField;
+		return this;
 	}
 
 	@Override
@@ -101,8 +105,9 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public void setFields(List<FieldSchema> fields) {
+	public SchemaModel setFields(List<FieldSchema> fields) {
 		this.fields = fields;
+		return this;
 	}
 
 	@Override
@@ -111,8 +116,9 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public void setContainer(boolean flag) {
+	public SchemaModel setContainer(boolean flag) {
 		this.container = flag;
+		return this;
 	}
 
 	@Override
@@ -121,8 +127,9 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public void setDisplayField(String displayField) {
+	public SchemaModel setDisplayField(String displayField) {
 		this.displayField = displayField;
+		return this;
 	}
 
 	@Override

@@ -32,8 +32,9 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	}
 
 	@Override
-	public void setVersion(int version) {
+	public MicroschemaResponse setVersion(int version) {
 		this.version = version;
+		return this;
 	}
 
 	@Override
@@ -42,8 +43,9 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	}
 
 	@Override
-	public void setDescription(String description) {
+	public MicroschemaResponse setDescription(String description) {
 		this.description = description;
+		return this;
 	}
 
 	@Override
@@ -52,8 +54,9 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	}
 
 	@Override
-	public void setName(String name) {
+	public MicroschemaResponse setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	@Override
@@ -62,8 +65,9 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	}
 
 	@Override
-	public void setFields(List<FieldSchema> fields) {
+	public MicroschemaResponse setFields(List<FieldSchema> fields) {
 		this.fields = fields;
+		return this;
 	}
 
 	@Override

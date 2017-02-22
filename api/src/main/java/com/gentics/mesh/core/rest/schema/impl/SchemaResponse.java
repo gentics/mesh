@@ -47,8 +47,9 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public void setName(String name) {
+	public SchemaResponse setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	@Override
@@ -57,8 +58,9 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public void setFields(List<FieldSchema> fields) {
+	public SchemaResponse setFields(List<FieldSchema> fields) {
 		this.fields = fields;
+		return this;
 	}
 
 	@Override
@@ -67,8 +69,9 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public void setSegmentField(String segmentField) {
+	public SchemaResponse setSegmentField(String segmentField) {
 		this.segmentField = segmentField;
+		return this;
 	}
 
 	@Override
@@ -77,8 +80,9 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public void setDescription(String description) {
+	public SchemaResponse setDescription(String description) {
 		this.description = description;
+		return this;
 	}
 
 	@Override
@@ -87,8 +91,9 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public void setContainer(boolean flag) {
+	public SchemaResponse setContainer(boolean flag) {
 		this.container = flag;
+		return this;
 	}
 
 	@Override
@@ -97,8 +102,9 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public void setVersion(int version) {
+	public SchemaResponse setVersion(int version) {
 		this.version = version;
+		return this;
 	}
 
 	@Override
@@ -107,8 +113,9 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public void setDisplayField(String displayField) {
+	public SchemaResponse setDisplayField(String displayField) {
 		this.displayField = displayField;
+		return this;
 	}
 
 	/**
