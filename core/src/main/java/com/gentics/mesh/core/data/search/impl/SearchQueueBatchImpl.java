@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.search.DropIndexEntry;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.index.common.CreateIndexEntryImpl;
@@ -75,10 +76,11 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch createNodeIndex(String projectUuid, String releaseUuid, String versionUuid, ContainerType type) {
+	public SearchQueueBatch createNodeIndex(String projectUuid, String releaseUuid, String versionUuid, ContainerType type, Schema schema) {
 		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, versionUuid, type);
 		String indexType = NodeGraphFieldContainer.composeIndexType();
 		CreateIndexEntry entry = new CreateIndexEntryImpl(nodeContainerIndexHandler, indexName, indexType);
+		entry.setSchema(schema);
 		addEntry(entry);
 		return this;
 	}

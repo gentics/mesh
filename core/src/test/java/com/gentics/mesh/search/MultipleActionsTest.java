@@ -1,5 +1,14 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static org.junit.Assert.assertEquals;
+
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.codehaus.jettison.json.JSONException;
+import org.junit.Test;
+
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -8,33 +17,24 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import org.codehaus.jettison.json.JSONException;
-import org.junit.Test;
+
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
 import rx.functions.Func1;
-import rx.singles.BlockingSingle;
-
-import java.util.concurrent.atomic.AtomicReference;
-
-import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static org.junit.Assert.assertEquals;
 
 @MeshTestSetting(useElasticsearch = true, useTinyDataset = false, startServer = true)
 public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	public static final String SCHEMA_NAME = "content";
 
 	@Test
-	public void MultipleActionsTest() throws Exception {
+	public void testActions() throws Exception {
 		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
-		final int nodeCount = 3;
+		final int nodeCount = 1;
 
 		AtomicReference<SchemaResponse> newSchema = new AtomicReference<>();
 		AtomicReference<NodeReference> rootNodeReference = new AtomicReference<>();
@@ -51,7 +51,7 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 			.compose(flatMapSingle(unused -> createEmptyNode(newSchema.get(), rootNodeReference.get())))
 			.toCompletable();
 
-		NodeListResponse searchResult = actions.andThen(client().searchNodes(getSimpleTermQuery("schema.name.raw", SCHEMA_NAME)).toSingle()).toBlocking().value();
+		NodeListResponse searchResult = actions.andThen(Single.defer(() -> client().searchNodes(getSimpleTermQuery("schema.name.raw", SCHEMA_NAME)).toSingle())).toBlocking().value();
 		assertEquals("Check search result after actions", nodeCount, searchResult.getMetainfo().getTotalCount());
 	}
 
