@@ -45,8 +45,9 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.RoutingContext;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = true, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class MicroschemaContainerTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test

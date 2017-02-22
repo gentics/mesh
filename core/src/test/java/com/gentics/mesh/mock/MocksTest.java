@@ -14,8 +14,9 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.MultiMap;
 import io.vertx.ext.web.RoutingContext;
+import static com.gentics.mesh.test.TestSize.PROJECT;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
 public class MocksTest extends AbstractMeshTest {
 
 	@Test

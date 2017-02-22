@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema.change;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -23,7 +24,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 /**
  * Test {@link UpdateFieldChangeImpl} methods.
  */
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
 public class UpdateFieldChangeTest extends AbstractChangeTest {
 
 	@Test
@@ -40,7 +41,8 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (NoTx noTx = db().noTx()) {
-			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = Database.getThreadLocalGraph()
+					.addFramedVertex(SchemaContainerVersionImpl.class);
 
 			SchemaModel schema = new SchemaModel("test");
 			schema.addField(FieldUtil.createStringFieldSchema("name"));
@@ -52,7 +54,8 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 			version.setNextChange(change);
 
 			FieldSchemaContainer updatedSchema = mutator.apply(version);
-			assertEquals("The field label was not updated by the mutator.", "updated", updatedSchema.getField("name").getLabel());
+			assertEquals("The field label was not updated by the mutator.", "updated",
+					updatedSchema.getField("name").getLabel());
 		}
 	}
 

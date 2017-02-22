@@ -2,6 +2,7 @@ package com.gentics.mesh.core.project;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -20,7 +21,7 @@ import com.gentics.mesh.test.AbstractETagTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class ProjectEndpointETagTest extends AbstractETagTest {
 
 	@Test
@@ -50,11 +51,15 @@ public class ProjectEndpointETagTest extends AbstractETagTest {
 			assertEquals(etag, expect304(request, etag, true));
 
 			// The node has no node reference and thus expanding will not affect the etag
-			assertEquals(etag, expect304(client().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(true)), etag, true));
+			assertEquals(etag,
+					expect304(client().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(true)),
+							etag, true));
 
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(client().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);
-			expect304(client().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(true)), etag, true);
+			expect304(client().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(false)), etag,
+					true);
+			expect304(client().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(true)), etag,
+					true);
 		}
 
 	}

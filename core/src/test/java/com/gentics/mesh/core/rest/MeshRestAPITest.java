@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest;
 
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.CompletableFuture;
@@ -16,7 +17,7 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class MeshRestAPITest extends AbstractMeshTest {
 
 	@Test
@@ -35,7 +36,8 @@ public class MeshRestAPITest extends AbstractMeshTest {
 		request.end();
 
 		String response = future.get(1, TimeUnit.SECONDS);
-		assertTrue("The response string should not contain any html specific characters but it was {" + response + "} ", response.indexOf("<") != 0);
+		assertTrue("The response string should not contain any html specific characters but it was {" + response + "} ",
+				response.indexOf("<") != 0);
 	}
 
 }

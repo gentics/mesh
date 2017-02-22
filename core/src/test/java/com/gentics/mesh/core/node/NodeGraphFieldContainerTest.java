@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.test.TestSize.FULL;
+
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -10,7 +12,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class NodeGraphFieldContainerTest extends AbstractMeshTest {
 
 	@Test(expected = ORecordDuplicatedException.class)

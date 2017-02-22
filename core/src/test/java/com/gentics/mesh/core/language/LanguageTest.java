@@ -23,8 +23,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.tinkerpop.blueprints.Vertex;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Ignore("test test not apply")

@@ -11,7 +11,8 @@ import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
@@ -78,7 +79,7 @@ import com.gentics.mesh.test.definition.BasicRestTestcases;
 
 import io.vertx.core.http.HttpHeaders;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT_AND_NODE, startServer = true)
 public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
@@ -213,7 +214,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String pathToElement;
 		try (NoTx noTx = db().noTx()) {
 			user = user();
+			data().addTagFamilies();
 			tagFamily = data().getTagFamily("colors");
+			role().grantPermissions(tagFamily, GraphPermission.values());
 
 			// Add permission on own role
 			role().grantPermissions(tagFamily, GraphPermission.UPDATE_PERM);
@@ -335,7 +338,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			invisibleUser.setEmailAddress("should_not_be_listed");
 			invisibleUser.addGroup(group());
 
-			assertEquals("We did not find the expected count of users attached to the user root vertex.", 3 + nUsers + 1, root.findAll().size());
+			assertEquals("We did not find the expected count of users attached to the user root vertex.", 2 + nUsers + 1, root.findAll().size());
 
 			// Test default paging parameters
 			MeshResponse<UserListResponse> future = client().findUsers().invoke();
@@ -345,11 +348,11 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals(25, restResponse.getMetainfo().getPerPage());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 			// Admin User + Guest User + Dummy User = 3
-			assertEquals(3 + nUsers, restResponse.getMetainfo().getTotalCount());
-			assertEquals(3 + nUsers, restResponse.getData().size());
+			assertEquals(2 + nUsers, restResponse.getMetainfo().getTotalCount());
+			assertEquals(2 + nUsers, restResponse.getData().size());
 
 			int perPage = 2;
-			int totalUsers = 3 + nUsers;
+			int totalUsers = 2 + nUsers;
 			int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
 			future = client().findUsers(new PagingParametersImpl(3, perPage)).invoke();
 			latchFor(future);
@@ -393,7 +396,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 					future.result().getData().size());
 			assertEquals("The requested page should be set in the response but it was not", 4242, future.result().getMetainfo().getCurrentPage());
 			assertEquals("The page count value was not correct.", 1, future.result().getMetainfo().getPageCount());
-			assertEquals("We did not find the correct total count value in the response", nUsers + 3, future.result().getMetainfo().getTotalCount());
+			assertEquals("We did not find the correct total count value in the response", nUsers + 2, future.result().getMetainfo().getTotalCount());
 			assertEquals(25, future.result().getMetainfo().getPerPage());
 		}
 	}
@@ -507,7 +510,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateUserAndSetNodeReference() throws Exception {
 		try (NoTx noTx = db().noTx()) {
-			String nodeUuid = folder("2015").getUuid();
+			String nodeUuid = folder("news").getUuid();
 			User user = user();
 			String username = user.getUsername();
 			UserUpdateRequest updateRequest = new UserUpdateRequest();
@@ -545,7 +548,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testCreateUserWithNodeReference() {
 		try (NoTx noTx = db().noTx()) {
-			Node node = folder("2015");
+			Node node = folder("news");
 			assertTrue(user().hasPermission(node, READ_PERM));
 
 			NodeReference reference = new NodeReference();
@@ -569,7 +572,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadUserListWithExpandedNodeReference() {
 		UserResponse userCreateResponse = db().noTx(() -> {
-			Node node = folder("2015");
+			Node node = folder("news");
 
 			NodeReference reference = new NodeReference();
 			reference.setUuid(node.getUuid());
@@ -587,7 +590,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		});
 
 		try (NoTx noTx = db().noTx()) {
-			Node node = folder("2015");
+			Node node = folder("news");
 			UserListResponse userResponse = call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100),
 					new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en")));
 			assertNotNull(userResponse);
@@ -605,7 +608,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid;
 		UserCreateRequest newUser;
 		try (NoTx noTx = db().noTx()) {
-			Node node = folder("2015");
+			Node node = folder("news");
 			folderUuid = node.getUuid();
 
 			NodeReference reference = new NodeReference();
@@ -641,7 +644,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testCreateUserWithBogusProjectNameInNodeReference() {
 		try (NoTx noTx = db().noTx()) {
-			Node node = folder("2015");
+			Node node = folder("news");
 
 			NodeReference reference = new NodeReference();
 			reference.setProjectName("bogus_name");

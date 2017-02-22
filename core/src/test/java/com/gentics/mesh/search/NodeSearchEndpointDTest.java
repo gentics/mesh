@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
@@ -49,7 +50,7 @@ import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = true, startServer = true, useTinyDataset = false)
+@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
 public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test

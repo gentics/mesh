@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.fieldhandler.schema;
 
+import static com.gentics.mesh.test.TestSize.FULL;
+
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.fieldhandler.AbstractComparatorNodeTest;
 import com.gentics.mesh.core.data.schema.handler.AbstractFieldSchemaContainerComparator;
@@ -7,7 +9,7 @@ import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class SchemaComparatorNodeTest extends AbstractComparatorNodeTest<Schema> {
 
 	@Override

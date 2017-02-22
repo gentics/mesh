@@ -1,5 +1,6 @@
 package com.gentics.mesh.verticle.admin;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static io.vertx.core.http.HttpMethod.GET;
 import static org.junit.Assert.assertEquals;
@@ -27,7 +28,7 @@ import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class AdminGUIVerticleTest extends AbstractMeshTest {
 
 	private AdminGUIVerticle adminGuiVerticle;

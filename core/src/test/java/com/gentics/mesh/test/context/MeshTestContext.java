@@ -30,8 +30,7 @@ import com.gentics.mesh.rest.RestAPIVerticle;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.search.DummySearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
-import com.gentics.mesh.test.TestFullDataProvider;
-import com.gentics.mesh.test.TestTinyDataProvider;
+import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.performance.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -68,7 +67,7 @@ public class MeshTestContext extends TestWatcher {
 			if (description.isSuite()) {
 				removeDataDirectory();
 				init(settings.useElasticsearch());
-				initDagger(settings.useTinyDataset());
+				initDagger(settings.testSize());
 			} else {
 				setupData();
 				if (settings.useElasticsearch()) {
@@ -137,7 +136,7 @@ public class MeshTestContext extends TestWatcher {
 		port = com.gentics.mesh.test.performance.TestUtils.getRandomPort();
 		vertx = Mesh.vertx();
 
-		routerStorage.addProjectRouter(TestFullDataProvider.PROJECT_NAME);
+		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);
 		JsonObject config = new JsonObject();
 		config.put("port", port);
 
@@ -288,21 +287,17 @@ public class MeshTestContext extends TestWatcher {
 	/**
 	 * Initialise the mesh dagger context and inject the dependencies within the test.
 	 */
-	public void initDagger(boolean tiny) {
+	public void initDagger(TestSize size) {
 		log.info("Initializing dagger context");
 		meshDagger = MeshInternal.create();
-		if (tiny) {
-			dataProvider = new TestTinyDataProvider(meshDagger.boot(), meshDagger.database());
-		} else {
-			dataProvider = new TestFullDataProvider(meshDagger.boot(), meshDagger.database());
-		}
+		dataProvider = new TestDataProvider(size, meshDagger.boot(), meshDagger.database());
 		routerStorage = meshDagger.routerStorage();
 		if (meshDagger.searchProvider() instanceof DummySearchProvider) {
 			dummySearchProvider = meshDagger.dummySearchProvider();
 		}
-		//		searchProvider = meshDagger.searchProvider();
-		//		schemaStorage = meshDagger.serverSchemaStorage();
-		//		boot = meshDagger.boot();
+		// searchProvider = meshDagger.searchProvider();
+		// schemaStorage = meshDagger.serverSchemaStorage();
+		// boot = meshDagger.boot();
 		Database db = meshDagger.database();
 		new DatabaseHelper(db).init();
 	}

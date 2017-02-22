@@ -24,8 +24,9 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.FileUpload;
 import rx.exceptions.CompositeException;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 
 	private BinaryFieldHandler handler;

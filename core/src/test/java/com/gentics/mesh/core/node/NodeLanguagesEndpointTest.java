@@ -2,7 +2,8 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
-import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -24,7 +25,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -35,13 +36,14 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 			int nLanguagesBefore = node.getAvailableLanguageNames().size();
 			assertThat(node.getAvailableLanguageNames()).contains("en", "de");
 
-			// Delete the english version 
+			// Delete the english version
 			MeshResponse<Void> future = client().deleteNode(PROJECT_NAME, node.getUuid(), "en").invoke();
 			latchFor(future);
 			assertSuccess(future);
 
 			// Loading is still be possible but the node will contain no fields
-			MeshResponse<NodeResponse> response = client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en")).invoke();
+			MeshResponse<NodeResponse> response = client()
+					.findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en")).invoke();
 			latchFor(response);
 			assertSuccess(response);
 			assertThat(response.result().getAvailableLanguages()).contains("de");
@@ -67,7 +69,8 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 			latchFor(future);
 			assertThat(dummySearchProvider()).recordedDeleteEvents(2 + 2);
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().published()), NOT_FOUND,
-					"node_error_published_not_found_for_uuid_release_version", uuid, project().getLatestRelease().getUuid());
+					"node_error_published_not_found_for_uuid_release_version", uuid,
+					project().getLatestRelease().getUuid());
 		}
 
 	}
@@ -76,7 +79,8 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 	public void testDeleteBogusLanguage() {
 		try (NoTx noTx = db().noTx()) {
 			Node node = content();
-			call(() -> client().deleteNode(PROJECT_NAME, node.getUuid(), "blub"), NOT_FOUND, "error_language_not_found", "blub");
+			call(() -> client().deleteNode(PROJECT_NAME, node.getUuid(), "blub"), NOT_FOUND, "error_language_not_found",
+					"blub");
 		}
 	}
 
@@ -85,7 +89,8 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			role().revokePermissions(node, DELETE_PERM);
-			call(() -> client().deleteNode(PROJECT_NAME, node.getUuid(), "en"), FORBIDDEN, "error_missing_perm", node.getUuid());
+			call(() -> client().deleteNode(PROJECT_NAME, node.getUuid(), "en"), FORBIDDEN, "error_missing_perm",
+					node.getUuid());
 		}
 	}
 }

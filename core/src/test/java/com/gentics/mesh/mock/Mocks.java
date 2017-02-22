@@ -88,7 +88,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.test.TestFullDataProvider;
+import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.HttpQueryUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -413,7 +413,7 @@ public final class Mocks {
 
 	public static InternalActionContext getMockedVoidInternalActionContext(String query, User user) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, true, user, null));
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestFullDataProvider.PROJECT_NAME);
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return ac;
 	}
 
@@ -431,7 +431,7 @@ public final class Mocks {
 
 	public static InternalActionContext getMockedInternalActionContext(String query, User user) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, false, user, null));
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestFullDataProvider.PROJECT_NAME);
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return ac;
 	}
 

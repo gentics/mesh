@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.field.string.StringFieldTestHelper.CREATE_EM
 import static com.gentics.mesh.core.field.string.StringFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.string.StringFieldTestHelper.FILLTEXT;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -31,7 +32,7 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 
 	private static final String STRING_FIELD = "stringField";

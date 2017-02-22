@@ -11,6 +11,7 @@ import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
@@ -60,7 +61,7 @@ import com.gentics.mesh.test.definition.BasicRestTestcases;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	private static final Logger log = LoggerFactory.getLogger(GroupEndpointTest.class);
@@ -208,7 +209,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupListResponse restResponse = future.result();
 			assertEquals(25, restResponse.getMetainfo().getPerPage());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-			assertEquals(25, restResponse.getData().size());
+			assertEquals(23, restResponse.getData().size());
 
 			int perPage = 6;
 			future = client().findGroups(new PagingParametersImpl(3, perPage)).invoke();
@@ -254,8 +255,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 			assertEquals(0, future.result().getData().size());
 			assertEquals(4242, future.result().getMetainfo().getCurrentPage());
-			assertEquals(25, future.result().getMetainfo().getPageCount());
-			assertEquals(25, future.result().getMetainfo().getTotalCount());
+			assertEquals(23, future.result().getMetainfo().getPageCount());
+			assertEquals(23, future.result().getMetainfo().getTotalCount());
 			assertEquals(1, future.result().getMetainfo().getPerPage());
 		}
 	}

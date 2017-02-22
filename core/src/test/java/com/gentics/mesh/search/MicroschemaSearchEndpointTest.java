@@ -1,5 +1,7 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.test.TestSize.FULL;
+
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -8,7 +10,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 
-@MeshTestSetting(useElasticsearch = true, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class MicroschemaSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.bool;
 
 import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.CREATE_EMPTY;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.FILL;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
@@ -28,7 +29,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	private static final String BOOLEAN_LIST = "booleanList";

@@ -34,8 +34,9 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.DateUtils;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 
 	private static final String DATE_FIELD = "dateField";

@@ -19,7 +19,7 @@ import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.search.IndexHandlerRegistry;
-import com.gentics.mesh.test.TestFullDataProvider;
+import com.gentics.mesh.test.TestDataProvider;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -55,7 +55,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	public String getJson(Node node) throws Exception {
 		RoutingContext rc = Mocks.getMockedRoutingContext("lang=en&version=draft", user());
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestFullDataProvider.PROJECT_NAME);
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().value());
 	}
 

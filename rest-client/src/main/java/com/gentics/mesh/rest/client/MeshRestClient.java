@@ -1,6 +1,5 @@
 package com.gentics.mesh.rest.client;
 
-import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
 import com.gentics.mesh.rest.client.method.AdminClientMethods;
 import com.gentics.mesh.rest.client.method.ApiInfoClientMethods;

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.group;
 
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -34,7 +35,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.ext.web.RoutingContext;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
 public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
@@ -80,7 +81,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 
 			page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 3));
 			assertEquals(groups().size(), page.getTotalElements());
-			assertEquals(3, page.getSize());
+			assertEquals(2, page.getSize());
 		}
 	}
 
@@ -111,7 +112,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testFindByName() {
 		try (NoTx noTx = db().noTx()) {
-			assertNotNull(boot().groupRoot().findByName("guests"));
+			assertNotNull(boot().groupRoot().findByName(group().getName()));
 		}
 	}
 
