@@ -2,6 +2,8 @@ package com.gentics.mesh.search.index.node;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +29,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -275,6 +278,21 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String languageTag = container.getLanguage().getLanguageTag();
 		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
 		return searchProvider.storeDocument(indexName, NodeGraphFieldContainer.composeIndexType(), documentId, doc).andThen(Single.just(indexName));
+	}
+
+	@Override
+	public Completable createIndex(CreateIndexEntry entry) {
+		String indexName = entry.getIndexName();
+		Map<String, String> indexInfo = getIndices();
+		if (indexInfo.containsKey(indexName)) {
+			// Iterate over all document types of the found index and add
+			// completables which will create/update the mapping
+			Set<Completable> obs = new HashSet<>();
+			obs.add(updateNodeIndexMapping(indexName, entry.getSchema()));
+			return searchProvider.createIndex(indexName).andThen(Completable.merge(obs));
+		} else {
+			throw error(INTERNAL_SERVER_ERROR, "error_index_unknown", indexName);
+		}
 	}
 
 	/**

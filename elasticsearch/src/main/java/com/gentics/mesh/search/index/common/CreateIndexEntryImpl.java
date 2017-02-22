@@ -8,6 +8,7 @@ import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.search.index.entry.AbstractEntry;
 
 import rx.Completable;
@@ -18,6 +19,7 @@ import rx.Completable;
 public class CreateIndexEntryImpl extends AbstractEntry implements CreateIndexEntry {
 
 	private String indexName;
+	private Schema schema;
 	private String indexType;
 	private IndexHandler indexHandler;
 	private HandleContext context = new HandleContext();
@@ -38,6 +40,17 @@ public class CreateIndexEntryImpl extends AbstractEntry implements CreateIndexEn
 	@Override
 	public String getIndexType() {
 		return this.indexType;
+	}
+
+	@Override
+	public Schema getSchema() {
+		return schema;
+	}
+
+	@Override
+	public CreateIndexEntry setSchema(Schema schema) {
+		this.schema = schema;
+		return this;
 	}
 
 	@Override

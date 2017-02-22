@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.schema.Schema;
 
 import rx.Completable;
 
@@ -54,7 +55,7 @@ public interface SearchQueueBatch {
 	 * @return Fluent API
 	 */
 	default SearchQueueBatch addNodeIndex(Project project, Release release, SchemaContainerVersion version, ContainerType type) {
-		return createNodeIndex(project.getUuid(), release.getUuid(), version.getUuid(), type);
+		return createNodeIndex(project.getUuid(), release.getUuid(), version.getUuid(), type, version.getSchema());
 	}
 
 	/**
@@ -64,10 +65,11 @@ public interface SearchQueueBatch {
 	 * @param projectUuid
 	 * @param releaseUuid
 	 * @param versionUuid
+	 * @param schema
 	 * @param type
 	 * @return Fluent API
 	 */
-	SearchQueueBatch createNodeIndex(String projectUuid, String releaseUuid, String versionUuid, ContainerType type);
+	SearchQueueBatch createNodeIndex(String projectUuid, String releaseUuid, String versionUuid, ContainerType type, Schema schema);
 
 	/**
 	 * Add the tag family index to the search database. See {@link TagFamilyEntry#composeIndexName(String)} for details.

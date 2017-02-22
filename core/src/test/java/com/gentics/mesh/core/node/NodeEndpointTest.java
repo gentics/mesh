@@ -217,6 +217,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 	}
 
+	@Test
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
 
@@ -232,10 +233,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setParentNodeUuid(parentNodeUuid);
 
 		try (NoTx noTx = db().noTx()) {
-			role().revokePermissions(meshRoot().getNodeRoot(), CREATE_PERM);
+			role().revokePermissions(folder("news"), CREATE_PERM);
 		}
 
-		call(() -> client().createNode(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm");
+		call(() -> client().createNode(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm",  parentNodeUuid);
 
 	}
 
