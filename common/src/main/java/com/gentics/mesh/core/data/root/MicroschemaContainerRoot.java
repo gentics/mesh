@@ -33,7 +33,21 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	 *            User that is used to set creator and editor references.
 	 * @return
 	 */
-	MicroschemaContainer create(Microschema microschema, User user);
+	default MicroschemaContainer create(Microschema microschema, User user) {
+		return create(microschema, user, null);
+	}
+
+	/**
+	 * Create a new microschema container.
+	 * 
+	 * @param microschema
+	 * @param user
+	 *            User that is used to set creator and editor references.
+	 * @param uuid
+	 *            optional uuid
+	 * @return
+	 */
+	MicroschemaContainer create(Microschema microschema, User user, String uuid);
 
 	/**
 	 * Check whether the given microschema is assigned to this root node.

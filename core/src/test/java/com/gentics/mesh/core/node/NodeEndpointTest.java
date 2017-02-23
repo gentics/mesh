@@ -20,6 +20,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -75,6 +76,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.vertx.core.logging.Logger;
@@ -239,6 +241,50 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		call(() -> client().createNode(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm",  parentNodeUuid);
 
+	}
+
+	@Test
+	@Override
+	public void testCreateWithUuid() throws Exception {
+		String nodeUuid = UUIDUtil.randomUUID();
+		String parentNodeUuid = db().noTx(() -> folder("news").getUuid());
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("content"));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(parentNodeUuid);
+
+		try (NoTx noTx = db().noTx()) {
+
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
+			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, nodeUuid, request));
+			assertThat(restNode).matches(request).hasUuid(nodeUuid);
+			assertThat(dummySearchProvider()).recordedStoreEvents(1);
+		}
+	}
+
+	@Test
+	@Override
+	public void testCreateWithDuplicateUuid() throws Exception {
+		String nodeUuid = db().noTx(() -> project().getUuid());
+		String parentNodeUuid = db().noTx(() -> folder("news").getUuid());
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("content"));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(parentNodeUuid);
+
+		try (NoTx noTx = db().noTx()) {
+
+			assertThat(dummySearchProvider()).recordedStoreEvents(0);
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, request), INTERNAL_SERVER_ERROR, "error_internal");
+		}
 	}
 
 	@Test
@@ -1519,7 +1565,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeParameters parameters = new NodeParameters();
 			parameters.setLanguages("en", "de");
 
-			call(() -> client().updateNode(PROJECT_NAME, "bogus", request, parameters), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			call(() -> client().updateNode(PROJECT_NAME, "bogus", request, parameters), BAD_REQUEST, "error_illegal_uuid", "bogus");
 		}
 	}
 

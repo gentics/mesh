@@ -1,6 +1,8 @@
 package com.gentics.mesh.assertj.impl;
 
 import org.assertj.core.api.AbstractAssert;
+
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.*;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -63,4 +65,8 @@ public class UserResponseAssert extends AbstractAssert<UserResponseAssert, UserR
 		return this;
 	}
 
+	public UserResponseAssert hasUuid(String uuid) {
+		assertThat(actual.getUuid()).as("User uuid").isEqualTo(uuid);
+		return this;
+	}
 }

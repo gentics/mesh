@@ -1,5 +1,8 @@
 package com.gentics.mesh.graphdb;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,6 +43,7 @@ import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.metadata.security.OSecurityNull;
 import com.orientechnologies.orient.core.record.impl.ODocument;
+import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
 import com.orientechnologies.orient.server.plugin.OServerPluginManager;
@@ -487,6 +491,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// Reset previous result
 				handlerFinished = false;
 				handlerResult = null;
+			} catch (ORecordDuplicatedException e) {
+				log.error(e);
+				throw error(INTERNAL_SERVER_ERROR, "error_internal");
 			} catch (RuntimeException e) {
 				log.error("Error handling transaction", e);
 				throw e;

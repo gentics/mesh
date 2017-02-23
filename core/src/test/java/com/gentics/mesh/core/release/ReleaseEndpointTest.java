@@ -13,6 +13,7 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -47,6 +48,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
@@ -175,6 +177,37 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			request.setName(releaseName);
 
 			call(() -> client().createRelease(project.getName(), request), FORBIDDEN, "error_missing_perm", uuid + "/" + name);
+		}
+	}
+
+	@Test
+	@Override
+	public void testCreateWithUuid() throws Exception {
+		String releaseName = "Release V1";
+		String uuid = UUIDUtil.randomUUID();
+		try (NoTx noTx = db().noTx()) {
+			Project project = project();
+
+			ReleaseUpdateRequest request = new ReleaseUpdateRequest();
+			request.setName(releaseName);
+
+			ReleaseResponse response = call(() -> client().updateRelease(project.getName(), uuid, request));
+			assertThat(response).as("Release Response").isNotNull().hasName(releaseName).isActive().isNotMigrated().hasUuid(uuid);
+		}
+	}
+
+	@Test
+	@Override
+	public void testCreateWithDuplicateUuid() throws Exception {
+		String releaseName = "Release V1";
+		try (NoTx noTx = db().noTx()) {
+			Project project = project();
+			String uuid = user().getUuid();
+
+			ReleaseUpdateRequest request = new ReleaseUpdateRequest();
+			request.setName(releaseName);
+
+			call(() -> client().updateRelease(project.getName(), uuid, request), INTERNAL_SERVER_ERROR, "error_internal");
 		}
 	}
 
@@ -391,7 +424,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String projectName = db().noTx(() -> project().getName());
 		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
 		// request.setActive(false);
-		call(() -> client().updateRelease(projectName, "bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		call(() -> client().updateRelease(projectName, "bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
 	}
 
 	@Override

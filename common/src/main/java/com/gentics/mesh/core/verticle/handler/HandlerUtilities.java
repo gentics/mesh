@@ -4,10 +4,13 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -26,6 +29,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
@@ -53,26 +57,7 @@ public class HandlerUtilities {
 	 * @param handler
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, TxHandler<RootVertex<T>> handler) {
-		operateNoTx(ac, () -> {
-			ResultInfo info = database.tx(() -> {
-				RootVertex<T> root = handler.call();
-				SearchQueueBatch batch = searchQueue.create();
-				T created = root.create(ac, batch);
-				RM model = created.transformToRestSync(ac, 0);
-				String path = created.getAPIPath(ac);
-				ResultInfo resultInfo = new ResultInfo(model, batch);
-				resultInfo.setProperty("path", path);
-				return resultInfo;
-			});
-
-			RestModel model = info.getModel();
-			String path = info.getProperty("path");
-			SearchQueueBatch batch = info.getBatch();
-			ac.setLocation(path);
-			batch.processSync();
-			return model;
-		}, model -> ac.send(model, CREATED));
-
+		createOrUpdateElement(ac, null, handler);
 	}
 
 	/**
@@ -120,25 +105,65 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
 			TxHandler<RootVertex<T>> handler) {
+		createOrUpdateElement(ac, uuid, handler);
+	}
+
+	/**
+	 * Either create or update an element with the given uuid.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of the element to create or update. If null, an element will be created with random Uuid
+	 * @param handler
+	 *            Handler which provides the root vertex which should be used when loading the element
+	 */
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
+			TxHandler<RootVertex<T>> handler) {
+		AtomicBoolean created = new AtomicBoolean(false);
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
 
-			// 1. Load the element from the root element using the given uuid
-			T element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			// 1. Load the element from the root element using the given uuid (if not null)
+			T element = null;
+			if (uuid != null) {
+				if (!UUIDUtil.isUUID(uuid)) {
+					throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
+				}
+				element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
+			}
 
 			// 2. Create a batch before starting the update to prevent creation of duplicate batches due to trx retry actions
 			SearchQueueBatch batch = searchQueue.create();
-			RM model = database.tx(() -> {
-				T updatedElement = element.update(ac, batch);
-				return updatedElement.transformToRestSync(ac, 0);
-			});
+			RestModel model = null;
+
+			if (element != null) {
+				final T updateElement = element;
+				model = database.tx(() -> {
+					T updatedElement = updateElement.update(ac, batch);
+					return updatedElement.transformToRestSync(ac, 0);
+				});
+			} else {
+				ResultInfo info = database.tx(() -> {
+					T createdElement = root.create(ac, batch, uuid);
+					created.set(true);
+					RM innerModel = createdElement.transformToRestSync(ac, 0);
+					String path = createdElement.getAPIPath(ac);
+					ResultInfo resultInfo = new ResultInfo(innerModel, batch);
+					resultInfo.setProperty("path", path);
+					return resultInfo;
+				});
+				model = info.getModel();
+				String path = info.getProperty("path");
+				ac.setLocation(path);
+			}
 
 			// 3. The updating transaction has succeeded. Now lets store it in the index
+			final RestModel finalModel = model;
 			return database.noTx(() -> {
 				batch.processSync();
-				return model;
+				return finalModel;
 			});
-		}, model -> ac.send(model, OK));
+		}, model -> ac.send(model, created.get() ? CREATED : OK));
 	}
 
 	/**

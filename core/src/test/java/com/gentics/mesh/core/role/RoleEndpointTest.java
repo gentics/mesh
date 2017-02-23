@@ -18,7 +18,7 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -55,6 +55,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
 
 import rx.Single;
 
@@ -99,6 +100,27 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String roleRootUuid = db().noTx(() -> meshRoot().getRoleRoot().getUuid());
 		call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", roleRootUuid);
 
+	}
+
+	@Test
+	@Override
+	public void testCreateWithUuid() throws Exception {
+		String uuid = UUIDUtil.randomUUID();
+		RoleCreateRequest request = new RoleCreateRequest();
+		request.setName("new_role");
+
+		RoleResponse restRole = call(() -> client().updateRole(uuid, request));
+		assertThat(restRole).hasName("new_role").hasUuid(uuid);
+	}
+
+	@Test
+	@Override
+	public void testCreateWithDuplicateUuid() throws Exception {
+		String uuid = db().noTx(() -> user().getUuid());
+		RoleCreateRequest request = new RoleCreateRequest();
+		request.setName("new_role");
+
+		call(() -> client().updateRole(uuid, request), INTERNAL_SERVER_ERROR, "error_internal");
 	}
 
 	@Test
@@ -379,7 +401,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		MeshResponse<RoleResponse> future = client().updateRole("bogus", request).invoke();
 		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		expectException(future, BAD_REQUEST, "error_illegal_uuid", "bogus");
 
 	}
 

@@ -210,11 +210,32 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return Loaded element. A not found error will be thrown if the element could not be found. Returned value will never be null.
 	 */
 	default public T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+		return loadObjectByUuid(ac, uuid, perm, true);
+	}
+
+	/**
+	 * Load the object by uuid and check the given permission.
+	 * 
+	 * @param ac
+	 *            Context to be used in order to check user permissions
+	 * @param uuid
+	 *            Uuid of the object that should be loaded
+	 * @param perm
+	 *            Permission that must be granted in order to load the object
+	 * @param errorIfNotFound
+	 *            True if an error should be thrown, when the element could not be found
+	 * @return Loaded element. If errorIfNotFound is true, a not found error will be thrown if the element could not be found and the returned value will never be null.
+	 */
+	default public T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		Database db = database();
 		reload();
 		T element = findByUuid(uuid);
 		if (element == null) {
-			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
+			if (errorIfNotFound) {
+				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
+			} else {
+				return null;
+			}
 		}
 
 		T result = db.noTx(() -> {
@@ -264,7 +285,20 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Context which is used to load information needed for the object creation
 	 * @param batch
 	 */
-	T create(InternalActionContext ac, SearchQueueBatch batch);
+	default T create(InternalActionContext ac, SearchQueueBatch batch) {
+		return create(ac, batch, null);
+	}
+
+	/**
+	 * Create a new object which is connected or directly related to this aggregation vertex.
+	 * 
+	 * @param ac
+	 *            Context which is used to load information needed for the object creation
+	 * @param batch
+	 * @param uuid
+	 *            optional uuid to create the object with a given uuid (null to create a random uuid)
+	 */
+	T create(InternalActionContext ac, SearchQueueBatch batch, String uuid);
 
 	/**
 	 * Add the given item to the this root vertex.

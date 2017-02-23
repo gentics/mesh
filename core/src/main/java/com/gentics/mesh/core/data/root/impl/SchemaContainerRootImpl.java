@@ -62,9 +62,12 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public SchemaContainer create(Schema schema, User creator) {
+	public SchemaContainer create(Schema schema, User creator, String uuid) {
 		schema.validate();
 		SchemaContainerImpl container = getGraph().addFramedVertex(SchemaContainerImpl.class);
+		if (uuid != null) {
+			container.setUuid(uuid);
+		}
 		SchemaContainerVersion version = getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		container.setLatestVersion(version);
 
@@ -101,7 +104,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public SchemaContainer create(InternalActionContext ac, SearchQueueBatch batch) {
+	public SchemaContainer create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
 		requestModel.validate();
@@ -115,7 +118,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			throw conflict(conflictingSchema.getUuid(), schemaName, "schema_conflicting_name", schemaName);
 		}
 
-		SchemaContainer container = create(requestModel, requestUser);
+		SchemaContainer container = create(requestModel, requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
 		batch.store(container, true);
 		return container;

@@ -23,6 +23,7 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -71,6 +72,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
@@ -168,6 +170,42 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		String projectRootUuid = db().noTx(() -> meshRoot().getProjectRoot().getUuid());
 		call(() -> client().createProject(request), FORBIDDEN, "error_missing_perm", projectRootUuid);
+	}
+
+	@Test
+	@Override
+	public void testCreateWithUuid() throws Exception {
+		try (NoTx noTx = db().noTx()) {
+			String uuid = UUIDUtil.randomUUID();
+
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName("New Name");
+			request.setSchema(new SchemaReference().setName("folder"));
+
+			assertThat(dummySearchProvider()).hasNoStoreEvents();
+			ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
+
+			assertThat(restProject).hasUuid(uuid);
+
+			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
+			reloadedProject.reload();
+			assertEquals("New Name", reloadedProject.getName());
+		}
+	}
+
+	@Test
+	@Override
+	public void testCreateWithDuplicateUuid() throws Exception {
+		try (NoTx noTx = db().noTx()) {
+			String uuid = user().getUuid();
+
+			ProjectCreateRequest request = new ProjectCreateRequest();
+			request.setName("New Name");
+			request.setSchema(new SchemaReference().setName("folder"));
+
+			assertThat(dummySearchProvider()).hasNoStoreEvents();
+			call(() -> client().updateProject(uuid, request), INTERNAL_SERVER_ERROR, "error_internal");
+		}
 	}
 
 	@Test
@@ -434,7 +472,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		ProjectUpdateRequest request = new ProjectUpdateRequest();
 		request.setName("new Name");
-		call(() -> client().updateProject("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		call(() -> client().updateProject("bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
 
 	}
 

@@ -56,9 +56,12 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public MicroschemaContainer create(Microschema microschema, User user) {
+	public MicroschemaContainer create(Microschema microschema, User user, String uuid) {
 		microschema.validate();
 		MicroschemaContainer container = getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		if (uuid != null) {
+			container.setUuid(uuid);
+		}
 		MicroschemaContainerVersion version = getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 
 		microschema.setVersion(1);
@@ -79,14 +82,14 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public MicroschemaContainer create(InternalActionContext ac, SearchQueueBatch batch) {
+	public MicroschemaContainer create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		Microschema microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
 		microschema.validate();
 		if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid());
 		}
-		MicroschemaContainer container = create(microschema, requestUser);
+		MicroschemaContainer container = create(microschema, requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
 		batch.store(container, true);
 		return container;

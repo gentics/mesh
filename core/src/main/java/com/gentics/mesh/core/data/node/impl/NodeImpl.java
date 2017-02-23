@@ -514,10 +514,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * Create a new node and make sure to delegate the creation request to the main node root aggregation node.
 	 */
 	@Override
-	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Release release) {
+	public Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Release release, String uuid) {
 		// We need to use the (meshRoot)--(nodeRoot) node instead of the
 		// (project)--(nodeRoot) node.
-		Node node = MeshInternal.get().boot().nodeRoot().create(creator, schemaVersion, project);
+		Node node = MeshInternal.get().boot().nodeRoot().create(creator, schemaVersion, project, uuid);
 		node.setParentNode(release.getUuid(), this);
 		node.setSchemaContainer(schemaVersion.getSchemaContainer());
 		// setCreated(creator);

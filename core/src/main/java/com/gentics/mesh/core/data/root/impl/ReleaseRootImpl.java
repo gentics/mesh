@@ -48,10 +48,13 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 	}
 
 	@Override
-	public Release create(String name, User creator) {
+	public Release create(String name, User creator, String uuid) {
 		Release latestRelease = getLatestRelease();
 
 		Release release = getGraph().addFramedVertex(ReleaseImpl.class);
+		if (uuid != null) {
+			release.setUuid(uuid);
+		}
 		addItem(release);
 		release.setCreated(creator);
 		release.setName(name);
@@ -99,7 +102,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 	}
 
 	@Override
-	public Release create(InternalActionContext ac, SearchQueueBatch batch) {
+	public Release create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		Database db = MeshInternal.get().database();
 
 		ReleaseCreateRequest createRequest = ac.fromJson(ReleaseCreateRequest.class);
@@ -125,7 +128,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 			throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name", createRequest.getName());
 		}
 
-		Release release = create(createRequest.getName(), requestUser);
+		Release release = create(createRequest.getName(), requestUser, uuid);
 
 		// A new release was created - We also need to create new indices for the nodes within the release
 		for (SchemaContainerVersion version : release.findAllSchemaVersions()) {

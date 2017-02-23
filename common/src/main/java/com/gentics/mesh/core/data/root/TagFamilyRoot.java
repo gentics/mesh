@@ -20,7 +20,22 @@ public interface TagFamilyRoot extends RootVertex<TagFamily> {
 	 *            User that should be used to set creator and editor references
 	 * @return Created tag family
 	 */
-	TagFamily create(String name, User user);
+	default TagFamily create(String name, User user) {
+		return create(name, user, null);
+	}
+
+	/**
+	 * Create a new tag family with the given name and assign creator and editor field using the provided user.
+	 * 
+	 * @param name
+	 *            Name of the tag family
+	 * @param user
+	 *            User that should be used to set creator and editor references
+	 * @param uuid
+	 *            Optional uuid
+	 * @return Created tag family
+	 */
+	TagFamily create(String name, User user, String uuid);
 
 	/**
 	 * Remove the tag family from the aggregation node.

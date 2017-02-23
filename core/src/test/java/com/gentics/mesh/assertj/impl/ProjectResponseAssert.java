@@ -1,5 +1,6 @@
 package com.gentics.mesh.assertj.impl;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -20,6 +21,11 @@ public class ProjectResponseAssert extends AbstractMeshAssert<ProjectResponseAss
 		assertEquals(project.getName(), actual.getName());
 		assertNotNull(actual.getRootNode());
 		assertEquals(project.getBaseNode().getUuid(), actual.getRootNode().getUuid());
+		return this;
+	}
+
+	public ProjectResponseAssert hasUuid(String uuid) {
+		assertThat(actual.getUuid()).as("Uuid").isEqualTo(uuid);
 		return this;
 	}
 

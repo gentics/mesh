@@ -80,8 +80,11 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
-	public Project create(String name, User creator, SchemaContainerVersion schemaContainerVersion) {
+	public Project create(String name, User creator, SchemaContainerVersion schemaContainerVersion, String uuid) {
 		Project project = getGraph().addFramedVertex(ProjectImpl.class);
+		if (uuid != null) {
+			project.setUuid(uuid);
+		}
 		project.setName(name);
 		project.getNodeRoot();
 
@@ -149,7 +152,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 	}
 
 	@Override
-	public Project create(InternalActionContext ac, SearchQueueBatch batch) {
+	public Project create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		RouterStorage routerStorage = RouterStorage.getIntance();
 		BootstrapInitializer boot = MeshInternal.get().boot();
 
@@ -181,7 +184,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		}
 		SchemaContainerVersion schemaContainerVersion = MeshInternal.get().boot().schemaContainerRoot().fromReference(requestModel.getSchema());
 
-		Project project = create(projectName, creator, schemaContainerVersion);
+		Project project = create(projectName, creator, schemaContainerVersion, uuid);
 		Release initialRelease = project.getInitialRelease();
 
 		// Add project permissions

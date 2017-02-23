@@ -51,8 +51,11 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	public Group create(String name, User creator) {
+	public Group create(String name, User creator, String uuid) {
 		GroupImpl group = getGraph().addFramedVertex(GroupImpl.class);
+		if (uuid != null) {
+			group.setUuid(uuid);
+		}
 		group.setName(name);
 		group.setCreated(creator);
 		addGroup(group);
@@ -66,7 +69,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 	}
 
 	@Override
-	public Group create(InternalActionContext ac, SearchQueueBatch batch) {
+	public Group create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		GroupCreateRequest requestModel = ac.fromJson(GroupCreateRequest.class);
 
@@ -85,7 +88,7 @@ public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoo
 		}
 
 		// Finally create the group and set the permissions
-		Group group = create(requestModel.getName(), requestUser);
+		Group group = create(requestModel.getName(), requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(root.getGroupRoot(), CREATE_PERM, group);
 		batch.store(group, true);
 		return group;

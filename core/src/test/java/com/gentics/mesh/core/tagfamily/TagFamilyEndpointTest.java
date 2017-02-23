@@ -18,7 +18,7 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -57,6 +57,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
@@ -239,6 +240,25 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 	@Test
 	@Override
+	public void testCreateWithUuid() throws Exception {
+		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+		request.setName("newTagFamily");
+		String uuid = UUIDUtil.randomUUID();
+		TagFamilyResponse response = call(() -> client().updateTagFamily(PROJECT_NAME, uuid, request));
+		assertThat(response).hasName("newTagFamily").hasUuid(uuid);
+	}
+
+	@Test
+	@Override
+	public void testCreateWithDuplicateUuid() throws Exception {
+		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
+		request.setName("newTagFamily");
+		String uuid = db().tx(() -> user().getUuid());
+		call(() -> client().updateTagFamily(PROJECT_NAME, uuid, request), INTERNAL_SERVER_ERROR, "error_internal");
+	}
+
+	@Test
+	@Override
 	public void testCreateReadDelete() throws Exception {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("newTagFamily");
@@ -399,7 +419,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 		MeshResponse<TagFamilyResponse> future = client().updateTagFamily(PROJECT_NAME, "bogus", request).invoke();
 		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		expectException(future, BAD_REQUEST, "error_illegal_uuid", "bogus");
 	}
 
 	@Test

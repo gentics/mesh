@@ -54,6 +54,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
@@ -153,6 +154,18 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		}
 		call(() -> client().createMicroschema(request), FORBIDDEN, "error_missing_perm", microschemaRootUuid);
 
+	}
+
+	@Test
+	@Override
+	@Ignore("Not yet implemented")
+	public void testCreateWithUuid() throws Exception {
+	}
+
+	@Test
+	@Override
+	@Ignore("Not yet implemented")
+	public void testCreateWithDuplicateUuid() throws Exception {
 	}
 
 	@Test

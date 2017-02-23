@@ -57,8 +57,11 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public TagFamily create(String name, User creator) {
+	public TagFamily create(String name, User creator, String uuid) {
 		TagFamilyImpl tagFamily = getGraph().addFramedVertex(TagFamilyImpl.class);
+		if (uuid != null) {
+			tagFamily.setUuid(uuid);
+		}
 		tagFamily.setName(name);
 		addTagFamily(tagFamily);
 		tagFamily.setCreated(creator);
@@ -97,7 +100,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 	}
 
 	@Override
-	public TagFamily create(InternalActionContext ac, SearchQueueBatch batch) {
+	public TagFamily create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		TagFamilyCreateRequest requestModel = ac.fromJson(TagFamilyCreateRequest.class);
 
@@ -115,7 +118,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
 		}
-		TagFamily tagFamily = create(name, requestUser);
+		TagFamily tagFamily = create(name, requestUser, uuid);
 		addTagFamily(tagFamily);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, tagFamily);
 

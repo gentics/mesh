@@ -36,7 +36,25 @@ public interface ProjectRoot extends RootVertex<Project> {
 	 *            Schema container version which will be used to create the basenode
 	 * @return
 	 */
-	Project create(String projectName, User creator, SchemaContainerVersion schemaContainerVersion);
+	default Project create(String projectName, User creator, SchemaContainerVersion schemaContainerVersion) {
+		return create(projectName, creator, schemaContainerVersion, null);
+	}
+
+	/**
+	 * Create a new project with the given name and add it to the aggregation vertex. Assign the provided schema container version to the created initial
+	 * release of the project.
+	 * 
+	 * @param projectName
+	 *            Name of the new project.
+	 * @param creator
+	 *            User that is being used to set the initial creator and editor references.
+	 * @param schemaContainerVersion
+	 *            Schema container version which will be used to create the basenode
+	 * @param uuid
+	 *            Optional uuid
+	 * @return
+	 */
+	Project create(String projectName, User creator, SchemaContainerVersion schemaContainerVersion, String uuid);
 
 	/**
 	 * Remove the project from the aggregation vertex.

@@ -119,9 +119,12 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Node create(User creator, SchemaContainerVersion version, Project project) {
+	public Node create(User creator, SchemaContainerVersion version, Project project, String uuid) {
 		// TODO check whether the mesh node is in fact a folder node.
 		NodeImpl node = getGraph().addFramedVertex(NodeImpl.class);
+		if (uuid != null) {
+			node.setUuid(uuid);
+		}
 		node.setSchemaContainer(version.getSchemaContainer());
 
 		// TODO is this a duplicate? - Maybe we should only store the project assignment in one way?
@@ -158,10 +161,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @param ac
 	 * @param schemaContainer
 	 * @param batch
+	 * @param uuid
 	 * @return
 	 */
 	// TODO use schema container version instead of container
-	private Node createNode(InternalActionContext ac, SchemaContainer schemaContainer, SearchQueueBatch batch) {
+	private Node createNode(InternalActionContext ac, SchemaContainer schemaContainer, SearchQueueBatch batch, String uuid) {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = MeshInternal.get().boot();
@@ -178,7 +182,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// Load the parent node in order to create the node
 		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNode().getUuid(), CREATE_PERM);
 		Release release = ac.getRelease(project);
-		Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project, release);
+		Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project, release, uuid);
 
 		// Add initial permissions to the created node
 		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
@@ -197,7 +201,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Node create(InternalActionContext ac, SearchQueueBatch batch) {
+	public Node create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 
 		// Override any given version parameter. Creation is always scoped to drafts
 		ac.getVersioningParameters().setVersion("draft");
@@ -220,7 +224,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 			// 2. Use schema reference by uuid first
 			SchemaContainer schemaContainer = project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM);
-			return createNode(ac, schemaContainer, batch);
+			return createNode(ac, schemaContainer, batch, uuid);
 		}
 
 		// TODO handle schema version as well? Decide whether it should be possible to create a node and specify the schema version.
@@ -231,7 +235,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 				String schemaName = containerByName.getName();
 				String schemaUuid = containerByName.getUuid();
 				if (requestUser.hasPermission(containerByName, GraphPermission.READ_PERM)) {
-					return createNode(ac, containerByName, batch);
+					return createNode(ac, containerByName, batch, uuid);
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName);
 				}

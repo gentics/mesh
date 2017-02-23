@@ -21,7 +21,7 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -58,6 +58,7 @@ import com.gentics.mesh.rest.client.MeshRestClientHttpException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
@@ -460,6 +461,29 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	}
 
 	@Test
+	@Override
+	public void testCreateWithUuid() throws Exception {
+		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
+		tagUpdateRequest.setName("SomeName");
+		String parentTagFamilyUuid = db().noTx(() -> tagFamily("colors").getUuid());
+		String uuid = UUIDUtil.randomUUID();
+
+		TagResponse response = call(() -> client().updateTag(PROJECT_NAME, parentTagFamilyUuid, uuid, tagUpdateRequest));
+		assertThat(response).hasName("SomeName").hasUuid(uuid);
+	}
+
+	@Test
+	@Override
+	public void testCreateWithDuplicateUuid() throws Exception {
+		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
+		tagUpdateRequest.setName("SomeName");
+		String parentTagFamilyUuid = db().noTx(() -> tagFamily("colors").getUuid());
+		String uuid = db().noTx(() -> user().getUuid());
+
+		call(() -> client().updateTag(PROJECT_NAME, parentTagFamilyUuid, uuid, tagUpdateRequest), INTERNAL_SERVER_ERROR, "error_internal");
+	}
+
+	@Test
 	public void testCreateTagWithSameNameInSameTagFamily() {
 		try (NoTx noTx = db().noTx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
@@ -627,7 +651,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			MeshResponse<TagResponse> future = client()
 					.updateTag(PROJECT_NAME, parentTagFamily.getUuid(), "bogus", request).invoke();
 			latchFor(future);
-			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			expectException(future, BAD_REQUEST, "error_illegal_uuid", "bogus");
 		}
 
 	}
