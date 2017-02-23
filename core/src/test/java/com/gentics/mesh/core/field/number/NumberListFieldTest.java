@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.field.number.NumberListFieldTestHelper.CREAT
 import static com.gentics.mesh.core.field.number.NumberListFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.number.NumberListFieldTestHelper.FILLNUMBERS;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -28,9 +27,10 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	private static final String NUMBER_LIST = "numberList";

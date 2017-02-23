@@ -1,6 +1,5 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
@@ -10,11 +9,12 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 
-@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
+@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = TestSize.PROJECT)
 public class RoleSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test

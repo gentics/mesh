@@ -20,12 +20,12 @@ import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.tinkerpop.blueprints.Vertex;
-import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT, startServer = false)
 public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Ignore("test test not apply")

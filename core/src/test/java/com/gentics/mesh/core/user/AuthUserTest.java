@@ -11,11 +11,11 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.mock.Mocks;
+import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT, startServer = false)
 public class AuthUserTest extends AbstractMeshTest {
 
 	@Test
@@ -23,7 +23,7 @@ public class AuthUserTest extends AbstractMeshTest {
 		try (NoTx noTrx = db().noTx()) {
 			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
 			MeshAuthUser requestUser = ac.getUser();
-			Node targetNode = content();
+			Node targetNode = folder("2015");
 			assertTrue(requestUser.hasPermission(targetNode, GraphPermission.READ_PERM));
 			role().revokePermissions(targetNode, GraphPermission.READ_PERM);
 			assertFalse(requestUser.hasPermission(targetNode, GraphPermission.READ_PERM));

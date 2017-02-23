@@ -30,8 +30,6 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class GroupRolesEndpointTest extends AbstractMeshTest {
 
-	// Group Role Testcases - PUT / Add
-
 	@Test
 	public void testReadRolesByGroup() throws Exception {
 		try (NoTx noTx = db().noTx()) {
@@ -169,8 +167,6 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			call(() -> client().addRoleToGroup(group().getUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		}
 	}
-
-	// Group Role Testcases - DELETE / Remove
 
 	@Test
 	public void testRemoveRoleFromGroupWithPerm() throws Exception {

@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.field.string.StringListFieldTestHelper.CREAT
 import static com.gentics.mesh.core.field.string.StringListFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.string.StringListFieldTestHelper.FILLTEXT;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -27,9 +26,10 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 	private static final String STRING_LIST = "stringList";
