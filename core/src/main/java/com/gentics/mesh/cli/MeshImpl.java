@@ -189,7 +189,7 @@ public class MeshImpl implements Mesh {
 
 	private void printProductInformation() {
 		log.info("###############################################################");
-		log.info(infoLine("Mesh Version " + Mesh.getVersion()));
+		log.info(infoLine("Mesh Version " + Mesh.getBuildInfo()));
 		log.info(infoLine("Gentics Software"));
 		log.info("#-------------------------------------------------------------#");
 		// log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
@@ -201,7 +201,7 @@ public class MeshImpl implements Mesh {
 	private void printAprilFoolJoke() {
 		try {
 			log.info("###############################################################");
-			log.info(infoLine("Booting Skynet Kernel " + Mesh.getVersion()));
+			log.info(infoLine("Booting Skynet Kernel " + Mesh.getBuildInfo()));
 			Thread.sleep(500);
 			log.info(infoLine("Skynet Node Id: " + MeshNameProvider.getInstance().getName()));
 			Thread.sleep(500);

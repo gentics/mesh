@@ -35,17 +35,17 @@ public interface Mesh {
 	}
 
 	/**
-	 * Return the mesh version and build timestamp.
+	 * Return the mesh build information.
 	 * 
 	 * @return Mesh version and build timestamp.
 	 */
-	static String getVersion() {
+	static BuildInfo getBuildInfo() {
 		try {
 			Properties buildProperties = new Properties();
 			buildProperties.load(Mesh.class.getResourceAsStream("/mesh.build.properties"));
-			return buildProperties.get("mesh.version") + " " + buildProperties.get("mesh.build.timestamp");
+			return new BuildInfo(buildProperties);
 		} catch (Exception e) {
-			return "Unknown";
+			return new BuildInfo("unknown", "unknown");
 		}
 		// Package pack = MeshImpl.class.getPackage();
 		// return pack.getImplementationVersion();
