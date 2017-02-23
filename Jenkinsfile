@@ -22,7 +22,7 @@ node('dockerRoot') {
 
 	stage("Set Version") {
 		if (Boolean.valueOf(runReleaseBuild)) {
-			def originalV = version();
+			def originalV = readVersion();
 			def major = originalV[1];
 			def minor = originalV[2];
 			def patch  = Integer.parseInt(originalV[3]) + 1;
@@ -157,7 +157,7 @@ node('dockerRoot') {
 
 }
 
-def version() {
+def readVersion() {
 	def matcher = readFile('pom.xml') =~ '<version>(\\d*)\\.(\\d*)\\.(\\d*)(-SNAPSHOT)*</version>'
 	matcher ? matcher[0] : null
 }
