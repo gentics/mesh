@@ -8,6 +8,7 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
 import io.vertx.rxjava.core.buffer.Buffer;
 import rx.Single;
+import rx.functions.Func0;
 
 /**
  * SPI provider interface for image manipulators.
@@ -46,10 +47,10 @@ public interface ImageManipulator {
 	/**
 	 * Read the image information from the given image data stream.
 	 * 
-	 * @param ins
+	 * @param insFunc
 	 * @return
 	 */
-	Single<ImageInfo> readImageInfo(InputStream ins);
+	Single<ImageInfo> readImageInfo(Func0<InputStream> insFunc);
 
 	/**
 	 * Return the dominant color in the image.
