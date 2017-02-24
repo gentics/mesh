@@ -65,7 +65,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @throws InvalidArgumentException
 	 *             if the paging options are malformed.
 	 */
-	default public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException {
+	default public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo)
+			throws InvalidArgumentException {
 
 		int page = pagingInfo.getPage();
 		int perPage = pagingInfo.getPerPage();
@@ -185,7 +186,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	default public T findByUuid(String uuid) {
 		FramedGraph graph = Database.getThreadLocalGraph();
 		// 1. Find the element with given uuid within the whole graph
-		Iterator<Vertex> it = database().getVertices(getPersistanceClass(), new String[] { "uuid" }, new String[] { uuid });
+		Iterator<Vertex> it = database().getVertices(getPersistanceClass(), new String[] { "uuid" },
+				new String[] { uuid });
 		if (it.hasNext()) {
 			Vertex potentialElement = it.next();
 			// 2. Use the edge index to determine whether the element is part of this root vertex
@@ -210,23 +212,19 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return Loaded element. A not found error will be thrown if the element could not be found. Returned value will never be null.
 	 */
 	default public T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
-		Database db = database();
 		reload();
 		T element = findByUuid(uuid);
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
 
-		T result = db.noTx(() -> {
-			MeshAuthUser requestUser = ac.getUser();
-			String elementUuid = element.getUuid();
-			if (requestUser.hasPermission(element, perm)) {
-				return element;
-			} else {
-				throw error(FORBIDDEN, "error_missing_perm", elementUuid);
-			}
-		});
-		return result;
+		MeshAuthUser requestUser = ac.getUser();
+		String elementUuid = element.getUuid();
+		if (requestUser.hasPermission(element, perm)) {
+			return element;
+		} else {
+			throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+		}
 	}
 
 	/**

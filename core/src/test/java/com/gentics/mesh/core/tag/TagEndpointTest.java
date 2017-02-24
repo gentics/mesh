@@ -365,8 +365,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 					Tag.composeDocumentId(uuid));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			for (Node node : nodes) {
-				String schemaContainerVersionUuid = db()
-						.noTx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english())
+						.getSchemaContainerVersion().getUuid();
 				assertThat(dummySearchProvider()).hasStore(
 						NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid,
 								ContainerType.DRAFT),

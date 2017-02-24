@@ -177,8 +177,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			PagingParametersImpl pagingParams = ac.getPagingParameters();
 			VersioningParameters versionParams = ac.getVersioningParameters();
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
-			Page<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(), ac.getRelease(node.getProject()).getUuid(),
-					ContainerType.forVersion(versionParams.getVersion()), pagingParams);
+			Page<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(),
+					ac.getRelease(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()),
+					pagingParams);
 			// Handle etag
 			String etag = page.getETag(ac);
 			ac.setEtag(etag, true);
@@ -312,10 +313,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			SearchQueueBatch batch = searchQueue.create();
 			return node.publish(ac, batch).andThen(Single.defer(() -> {
-				return db.noTx(() -> {
-					node.reload();
-					return Single.just(node.transformToPublishStatus(ac));
-				});
+				node.reload();
+				return Single.just(node.transformToPublishStatus(ac));
 			}));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
@@ -331,14 +330,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		db.operateNoTx(() -> {
-			//TODO handle SQB
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			return node.takeOffline(ac).andThen(Single.defer(() -> {
-				return db.noTx(() -> {
-					node.reload();
-					// return node.transformToPublishStatus(ac);
-					return Single.just(null);
-				});
+				node.reload();
+				return Single.just(null);
 			}));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
@@ -373,10 +368,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.operateNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			return node.publish(ac, languageTag).andThen(Single.defer(() -> {
-				return db.noTx(() -> {
-					node.reload();
-					return Single.just(node.transformToPublishStatus(ac, languageTag));
-				});
+				node.reload();
+				return Single.just(node.transformToPublishStatus(ac, languageTag));
 			}));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
@@ -395,12 +388,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.operateNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
-			//TODO sqb
+			// TODO sqb
 			return node.takeOffline(ac, languageTag).toSingle(() -> {
-				return db.noTx(() -> {
-					node.reload();
-					return Single.just(null);
-				});
+				node.reload();
+				return Single.just(null);
 			}).flatMap(x -> x);
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
@@ -419,11 +410,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		utils.operateNoTx(ac, () -> {
 			RootVertex<Node> root = handler.call();
-			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
+			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion())
+					? READ_PUBLISHED_PERM : READ_PERM;
 			Node node = root.loadObjectByUuid(ac, uuid, requiredPermission);
 			return node.transformToRestSync(ac, 0);
 		}, model -> {
-			HttpResponseStatus code = HttpResponseStatus.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
+			HttpResponseStatus code = HttpResponseStatus
+					.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
 			ac.send(model, code);
 		});
 

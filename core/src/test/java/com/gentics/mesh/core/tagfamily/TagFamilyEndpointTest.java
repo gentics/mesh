@@ -69,7 +69,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			assertNotNull(tagFamily);
 
-			MeshResponse<TagFamilyResponse> future = client().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid()).invoke();
+			MeshResponse<TagFamilyResponse> future = client().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid())
+					.invoke();
 			latchFor(future);
 			assertSuccess(future);
 			TagFamilyResponse response = future.result();
@@ -86,9 +87,10 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			String uuid = tagFamily.getUuid();
 
-			TagFamilyResponse response = call(
-					() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
-			assertNotNull("The response did not contain the expected role permission field value", response.getRolePerms());
+			TagFamilyResponse response = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid,
+					new RolePermissionParameters().setRoleUuid(role().getUuid())));
+			assertNotNull("The response did not contain the expected role permission field value",
+					response.getRolePerms());
 			assertThat(response.getRolePerms()).hasPerm(Permission.values());
 		}
 
@@ -140,7 +142,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			TagFamilyListResponse restResponse = future.result();
 			assertEquals(25, restResponse.getMetainfo().getPerPage());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-			assertEquals("The response did not contain the correct amount of items", data().getTagFamilies().size(), restResponse.getData().size());
+			assertEquals("The response did not contain the correct amount of items", data().getTagFamilies().size(),
+					restResponse.getData().size());
 
 			int perPage = 4;
 			// Extra Tags + permitted tag
@@ -148,8 +151,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			int totalPages = (int) Math.ceil(totalTagFamilies / (double) perPage);
 			List<TagFamilyResponse> allTagFamilies = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<TagFamilyListResponse> tagPageFut = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(page, perPage))
-						.invoke();
+				MeshResponse<TagFamilyListResponse> tagPageFut = client()
+						.findTagFamilies(PROJECT_NAME, new PagingParametersImpl(page, perPage)).invoke();
 				latchFor(tagPageFut);
 				assertSuccess(future);
 				restResponse = tagPageFut.result();
@@ -158,24 +161,31 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 				if (page == 1) {
 					expectedItemsCount = 2;
 				}
-				assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
+				assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount,
+						restResponse.getData().size());
 				assertEquals(perPage, restResponse.getMetainfo().getPerPage());
 				assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page,
 						restResponse.getMetainfo().getCurrentPage());
-				assertEquals("The amount of total pages did not match the expected value. There are {" + totalTagFamilies + "} tags and {" + perPage
-						+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
-				assertEquals("The total tag count does not match.", totalTagFamilies, restResponse.getMetainfo().getTotalCount());
+				assertEquals(
+						"The amount of total pages did not match the expected value. There are {" + totalTagFamilies
+								+ "} tags and {" + perPage + "} tags per page",
+						totalPages, restResponse.getMetainfo().getPageCount());
+				assertEquals("The total tag count does not match.", totalTagFamilies,
+						restResponse.getMetainfo().getTotalCount());
 
 				allTagFamilies.addAll(restResponse.getData());
 			}
-			assertEquals("Somehow not all users were loaded when loading all pages.", totalTagFamilies, allTagFamilies.size());
+			assertEquals("Somehow not all users were loaded when loading all pages.", totalTagFamilies,
+					allTagFamilies.size());
 
 			// Verify that the no_perm_tag is not part of the response
-			List<TagFamilyResponse> filteredUserList = allTagFamilies.parallelStream().filter(restTag -> restTag.getUuid().equals(noPermTagUUID))
-					.collect(Collectors.toList());
-			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
+			List<TagFamilyResponse> filteredUserList = allTagFamilies.parallelStream()
+					.filter(restTag -> restTag.getUuid().equals(noPermTagUUID)).collect(Collectors.toList());
+			assertTrue("The no perm tag should not be part of the list since no permissions were added.",
+					filteredUserList.size() == 0);
 
-			MeshResponse<TagFamilyListResponse> pageFuture = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(-1, perPage)).invoke();
+			MeshResponse<TagFamilyListResponse> pageFuture = client()
+					.findTagFamilies(PROJECT_NAME, new PagingParametersImpl(-1, perPage)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
@@ -203,7 +213,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 	@Test
 	public void testReadMetaCountOnly() {
-		MeshResponse<TagFamilyListResponse> pageFuture = client().findTagFamilies(PROJECT_NAME, new PagingParametersImpl(1, 0)).invoke();
+		MeshResponse<TagFamilyListResponse> pageFuture = client()
+				.findTagFamilies(PROJECT_NAME, new PagingParametersImpl(1, 0)).invoke();
 		latchFor(pageFuture);
 		assertSuccess(pageFuture);
 		assertEquals(0, pageFuture.result().getData().size());
@@ -285,8 +296,11 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			TagFamily basicTagFamily = tagFamily("basic");
 			String uuid = basicTagFamily.getUuid();
 			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid));
+		}
 
-			call(() -> client().deleteTagFamily(PROJECT_NAME, uuid));
+		String uuid = db().noTx(() -> tagFamily("basic").getUuid());
+		call(() -> client().deleteTagFamily(PROJECT_NAME, uuid));
+		try (NoTx noTx = db().noTx()) {
 			assertElement(project().getTagFamilyRoot(), uuid, false);
 		}
 	}
@@ -301,7 +315,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 
-			call(() -> client().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()), FORBIDDEN, "error_missing_perm", basicTagFamily.getUuid());
+			call(() -> client().deleteTagFamily(PROJECT_NAME, basicTagFamily.getUuid()), FORBIDDEN,
+					"error_missing_perm", basicTagFamily.getUuid());
 
 			assertElement(project().getTagFamilyRoot(), basicTagFamily.getUuid(), true);
 		}
@@ -315,7 +330,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 			request.setName(newName);
 
-			MeshResponse<TagFamilyResponse> future = client().updateTagFamily(PROJECT_NAME, tagFamily("basic").getUuid(), request).invoke();
+			MeshResponse<TagFamilyResponse> future = client()
+					.updateTagFamily(PROJECT_NAME, tagFamily("basic").getUuid(), request).invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "tagfamily_conflicting_name", newName);
 		}
@@ -372,15 +388,18 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 				for (Node node : tag.getNodes(release)) {
 					if (!taggedNodes.contains(node.getUuid())) {
 						taggedNodes.add(node.getUuid());
-						for (ContainerType containerType : new ContainerType[] { ContainerType.DRAFT, ContainerType.PUBLISHED }) {
-							for (NodeGraphFieldContainer fieldContainer : node.getGraphFieldContainers(release, containerType)) {
+						for (ContainerType containerType : new ContainerType[] { ContainerType.DRAFT,
+								ContainerType.PUBLISHED }) {
+							for (NodeGraphFieldContainer fieldContainer : node.getGraphFieldContainers(release,
+									containerType)) {
 								SchemaContainerVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
 								assertThat(dummySearchProvider()).hasStore(
-										NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), schema.getUuid(),
-												containerType),
+										NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
+												schema.getUuid(), containerType),
 										NodeGraphFieldContainer.composeIndexType(),
-										NodeGraphFieldContainer.composeDocumentId(node.getUuid(), fieldContainer.getLanguage().getLanguageTag()));
+										NodeGraphFieldContainer.composeDocumentId(node.getUuid(),
+												fieldContainer.getLanguage().getLanguageTag()));
 							}
 						}
 					}

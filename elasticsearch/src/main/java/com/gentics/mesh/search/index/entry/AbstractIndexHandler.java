@@ -20,7 +20,6 @@ import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.Transformator;
@@ -49,7 +48,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	private SearchQueue searchQueue;
 
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot,
+			SearchQueue searchQueue) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.boot = boot;
@@ -113,12 +113,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
 		String indexType = composeIndexTypeFromEntry(entry);
-		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformator().toDocument(object)).doOnCompleted(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Stored object in index.");
-			}
-			searchProvider.refreshIndex();
-		});
+		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformator().toDocument(object))
+				.doOnCompleted(() -> {
+					if (log.isDebugEnabled()) {
+						log.debug("Stored object in index.");
+					}
+					searchProvider.refreshIndex();
+				});
 	}
 
 	@Override
@@ -133,22 +134,19 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Completable store(UpdateDocumentEntry entry) {
 		return Completable.defer(() -> {
-			try (NoTx noTx = db.noTx()) {
-				String uuid = entry.getElementUuid();
-				String type = composeIndexTypeFromEntry(entry);
-				T element = getRootVertex().findByUuid(uuid);
-				if (element == null) {
-					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
-				} else {
-					return store(element, entry);
-				}
+			String uuid = entry.getElementUuid();
+			String type = composeIndexTypeFromEntry(entry);
+			T element = getRootVertex().findByUuid(uuid);
+			if (element == null) {
+				throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
+			} else {
+				return store(element, entry);
 			}
 		});
 	}
 
 	/**
-	 * Check whether the search provider is available. Some tests are not starting an search provider and thus we must be able to determine whether we can use
-	 * the search provider.
+	 * Check whether the search provider is available. Some tests are not starting an search provider and thus we must be able to determine whether we can use the search provider.
 	 * 
 	 * @return
 	 */
@@ -170,7 +168,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			return Completable.create(sub -> {
 
 				org.elasticsearch.node.Node node = getESNode();
-				PutMappingRequestBuilder mappingRequestBuilder = node.client().admin().indices().preparePutMapping(indexName);
+				PutMappingRequestBuilder mappingRequestBuilder = node.client().admin().indices()
+						.preparePutMapping(indexName);
 				mappingRequestBuilder.setType(normalizedDocumentType);
 
 				// Generate the mapping for the specific type
@@ -210,7 +209,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		if (searchProvider.getNode() != null && searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
 			return (org.elasticsearch.node.Node) searchProvider.getNode();
 		} else {
-			throw new RuntimeException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
+			throw new RuntimeException(
+					"Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
 		}
 	}
 
@@ -230,7 +230,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			for (T element : getRootVertex().findAll()) {
 				if (element instanceof IndexableElement) {
 					IndexableElement indexableElement = (IndexableElement) element;
-					log.info("Invoking reindex in handler {" + getClass().getName() + "} for element {" + indexableElement.getUuid() + "}");
+					log.info("Invoking reindex in handler {" + getClass().getName() + "} for element {"
+							+ indexableElement.getUuid() + "}");
 					batch.store(indexableElement, false);
 				} else {
 					log.info("Found element {" + element.getUuid() + "} is not indexable. Ignoring element.");

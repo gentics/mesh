@@ -1,6 +1,7 @@
 package com.gentics.mesh.auth;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
 import java.io.File;
@@ -55,7 +56,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	protected Database db;
 
 	private BCryptPasswordEncoder passwordEncoder;
-	
+
 	private BootstrapInitializer boot;
 
 	@Inject
@@ -142,7 +143,13 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				resultHandler.handle(Future.failedFuture(rh.cause()));
 			} else {
 				User user = rh.result();
-				JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, user.principal().getString("uuid"));
+				String uuid = null;
+				if (user instanceof MeshAuthUser) {
+					uuid = ((MeshAuthUser) user).getUuid();
+				} else {
+					uuid = user.principal().getString("uuid");
+				}
+				JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, uuid);
 				resultHandler.handle(Future
 						.succeededFuture(jwtProvider.generateToken(tokenData, new JWTOptions().setExpiresInSeconds(
 								Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
@@ -202,9 +209,14 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 * @return The new token
 	 */
 	public String generateToken(User user) {
-		JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, user.principal().getString("uuid"));
-		return jwtProvider.generateToken(tokenData, new JWTOptions()
-				.setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()));
+		if (user instanceof MeshAuthUser) {
+			JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, ((MeshAuthUser) user).getUuid());
+			return jwtProvider.generateToken(tokenData, new JWTOptions()
+					.setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()));
+		} else {
+			log.error("Can't generate token for user of type {" + user.getClass().getName() + "}");
+			throw error(INTERNAL_SERVER_ERROR, "error_internal");
+		}
 	}
 
 	/**
@@ -229,6 +241,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			if (!user.isEnabled()) {
 				throw new Exception("User is disabled");
 			}
+			// Load the uuid to cache it
+			user.getUuid();
 			return user;
 		}
 	}

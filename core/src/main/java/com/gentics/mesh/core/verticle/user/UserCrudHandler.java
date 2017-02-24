@@ -72,21 +72,19 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 			// 2. Resolve the path to element that is targeted
 			MeshVertex targetElement = MeshInternal.get().boot().meshRoot().resolvePathToElement(pathToElement);
-			return db.noTx(() -> {
-				if (targetElement == null) {
-					throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
-				}
-				UserPermissionResponse response = new UserPermissionResponse();
+			if (targetElement == null) {
+				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
+			}
+			UserPermissionResponse response = new UserPermissionResponse();
 
-				// 1. Add granted permissions
-				for (GraphPermission perm : user.getPermissions(targetElement)) {
-					response.set(perm.getRestPerm(), true);
-				}
+			// 1. Add granted permissions
+			for (GraphPermission perm : user.getPermissions(targetElement)) {
+				response.set(perm.getRestPerm(), true);
+			}
 
-				// 2. Add not granted permissions
-				response.setOthers(false);
-				return Single.just(response);
-			});
+			// 2. Add not granted permissions
+			response.setOthers(false);
+			return Single.just(response);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -104,18 +102,15 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		db.operateNoTx(() -> {
 			// 1. Load the user that should be used
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, CREATE_PERM);
-			//TODO why do we need another transaction?!
-			return db.noTx(() -> {
-				String token = TokenUtil.randomToken();
-				Long tokenTimestamp = System.currentTimeMillis();
-				user.setResetToken(token);
-				user.setResetTokenIssueTimestamp(tokenTimestamp);
-				UserTokenResponse response = new UserTokenResponse();
-				String created = DateUtils.toISO8601(tokenTimestamp, 0);
-				response.setCreated(created);
-				response.setToken(token);
-				return Single.just(response);
-			});
+			String token = TokenUtil.randomToken();
+			Long tokenTimestamp = System.currentTimeMillis();
+			user.setResetToken(token);
+			user.setResetTokenIssueTimestamp(tokenTimestamp);
+			UserTokenResponse response = new UserTokenResponse();
+			String created = DateUtils.toISO8601(tokenTimestamp, 0);
+			response.setCreated(created);
+			response.setToken(token);
+			return Single.just(response);
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 

@@ -11,7 +11,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
@@ -28,39 +27,52 @@ import io.vertx.ext.auth.User;
  */
 public class MeshAuthUserImpl extends UserImpl implements MeshAuthUser {
 
+	private String uuid;
+
+	@Override
+	public String getUuid() {
+		// Cache the user uuid so that we can reuse it during the login process
+		if (uuid != null) {
+			return uuid;
+		} else {
+			uuid = super.getUuid();
+		}
+		return uuid;
+	}
+
+	/**
+	 * An active transaction is required in order to load the json data.
+	 */
 	@Override
 	public JsonObject principal() {
 		JsonObject user = new JsonObject();
-		Database db = MeshInternal.get().database();
-		try (NoTx noTx = db.noTx()) {
-			user.put("uuid", getUuid());
-			user.put("username", getUsername());
-			user.put("firstname", getFirstname());
-			user.put("lastname", getLastname());
-			user.put("emailAddress", getEmailAddress());
+		user.put("uuid", getUuid());
+		user.put("username", getUsername());
+		user.put("firstname", getFirstname());
+		user.put("lastname", getLastname());
+		user.put("emailAddress", getEmailAddress());
 
-			JsonArray rolesArray = new JsonArray();
-			user.put("roles", rolesArray);
-			for (Role role : getRoles()) {
-				JsonObject roleJson = new JsonObject();
-				roleJson.put("uuid", role.getUuid());
-				roleJson.put("name", role.getName());
-				rolesArray.add(roleJson);
-			}
+		JsonArray rolesArray = new JsonArray();
+		user.put("roles", rolesArray);
+		for (Role role : getRoles()) {
+			JsonObject roleJson = new JsonObject();
+			roleJson.put("uuid", role.getUuid());
+			roleJson.put("name", role.getName());
+			rolesArray.add(roleJson);
+		}
 
-			JsonArray groupsArray = new JsonArray();
-			user.put("groups", groupsArray);
-			for (Group group : getGroups()) {
-				JsonObject groupJson = new JsonObject();
-				groupJson.put("uuid", group.getUuid());
-				groupJson.put("name", group.getName());
-				groupsArray.add(groupJson);
-			}
+		JsonArray groupsArray = new JsonArray();
+		user.put("groups", groupsArray);
+		for (Group group : getGroups()) {
+			JsonObject groupJson = new JsonObject();
+			groupJson.put("uuid", group.getUuid());
+			groupJson.put("name", group.getName());
+			groupsArray.add(groupJson);
+		}
 
-			Node reference = getReferencedNode();
-			if (reference != null) {
-				user.put("nodeReference", reference.getUuid());
-			}
+		Node reference = getReferencedNode();
+		if (reference != null) {
+			user.put("nodeReference", reference.getUuid());
 		}
 		return user;
 	}

@@ -105,10 +105,8 @@ public class HandlerUtilities {
 				}
 			});
 			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
-			return database.noTx(() -> {
-				batch.processSync();
-				return (RM) null;
-			});
+			batch.processSync();
+			return (RM) null;
 		}, model -> ac.send(NO_CONTENT));
 	}
 
@@ -138,10 +136,8 @@ public class HandlerUtilities {
 			});
 
 			// 3. The updating transaction has succeeded. Now lets store it in the index
-			return database.noTx(() -> {
-				batch.processSync();
-				return model;
-			});
+			batch.processSync();
+			return model;
 		}, model -> ac.send(model, OK));
 	}
 
