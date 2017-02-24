@@ -12,8 +12,6 @@ import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -75,8 +73,8 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testETag() {
-		InternalActionContext ac = getMockedInternalActionContext();
 		try (NoTx noTx = db().noTx()) {
+			InternalActionContext ac = mockActionContext();
 			User user = user();
 			String eTag = user.getETag(ac);
 			System.out.println(eTag);
@@ -117,7 +115,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTx noTx = db().noTx()) {
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
 			Page<? extends User> page = boot().userRoot().findAll(ac, new PagingParametersImpl(1, 6));
@@ -134,7 +132,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db().noTx()) {
-			Page<? extends User> page = boot().userRoot().findAll(getMockedInternalActionContext(null, user()), new PagingParametersImpl(1, 25));
+			Page<? extends User> page = boot().userRoot().findAll(mockActionContext(), new PagingParametersImpl(1, 25));
 			assertNotNull(page);
 			assertEquals(users().size(), page.getTotalElements());
 		}
@@ -143,7 +141,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testGetPrincipal() {
 		try (NoTx noTx = db().noTx()) {
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			io.vertx.ext.auth.User user = rc.user();
 			assertNotNull(user);
 			JsonObject json = user.principal();
@@ -196,7 +194,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			User extraUser = userRoot.create("extraUser", user());
 			group().addUser(extraUser);
 			role().grantPermissions(extraUser, GraphPermission.READ_PERM);
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
 			Page<? extends User> userPage = group().getVisibleUsers(requestUser, new PagingParametersImpl(1, 10));
@@ -229,7 +227,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testTransformation() throws Exception {
 		try (NoTx noTx = db().noTx()) {
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
 			UserResponse restUser = user().transformToRest(ac, 0).toBlocking().value();
@@ -287,7 +285,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Role roleWithNoPerm;
 			Role roleWithCreatePerm;
 
-			InternalActionContext ac = getMockedInternalActionContext(null, user());
+			InternalActionContext ac = mockActionContext();
 
 			Group newGroup = meshRoot().getGroupRoot().create("extraGroup", user());
 			newUser = meshRoot().getUserRoot().create("Anton", user());

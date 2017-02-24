@@ -3,7 +3,6 @@ package com.gentics.mesh.core.field.html;
 import static com.gentics.mesh.core.field.html.HtmlListFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.html.HtmlListFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.html.HtmlListFieldHelper.FILLTEXT;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -180,7 +179,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testRemoveFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(HTML_LIST, FETCH, FILLTEXT, (node) -> {
 				updateContainer(ac, node, HTML_LIST, null);
 			});
@@ -191,7 +190,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(HTML_LIST, FETCH, FILLTEXT, (container) -> {
 				updateContainer(ac, container, HTML_LIST, null);
 			});
@@ -202,7 +201,7 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(HTML_LIST, FILLTEXT, (container) -> {
 				HtmlFieldListImpl field = new HtmlFieldListImpl();
 				field.getItems().add("someValue");

@@ -3,7 +3,6 @@ package com.gentics.mesh.core.field.bool;
 import static com.gentics.mesh.core.field.bool.BooleanFieldTestHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.bool.BooleanFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.bool.BooleanFieldTestHelper.FILLTRUE;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -33,7 +32,6 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = false)
 public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
@@ -217,7 +215,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testRemoveFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (node) -> {
 				updateContainer(ac, node, BOOLEAN_FIELD, null);
 			});
@@ -228,7 +226,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(BOOLEAN_FIELD, FETCH, FILLTRUE, (container) -> {
 				updateContainer(ac, container, BOOLEAN_FIELD, null);
 			});
@@ -239,7 +237,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(BOOLEAN_FIELD, FILLTRUE, (container) -> {
 				BooleanField field = new BooleanFieldImpl();
 				field.setValue(false);

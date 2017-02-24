@@ -3,8 +3,7 @@ package com.gentics.mesh.core.tagfamily;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -41,7 +40,6 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.ext.web.RoutingContext;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTestcases {
@@ -72,7 +70,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db().noTx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
-			root.findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 10));
+			root.findAll(mockActionContext(), new PagingParametersImpl(1, 10));
 		}
 	}
 
@@ -256,7 +254,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testTransformation() throws Exception {
 		try (NoTx noTx = db().noTx()) {
 			TagFamily tagFamily = tagFamily("colors");
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			TagFamilyResponse response = tagFamily.transformToRestSync(ac, 0);
 			assertNotNull(response);

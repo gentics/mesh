@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.role;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
@@ -43,7 +42,7 @@ public class RoleEndpointETagTest extends AbstractETagTest {
 			Role role = role();
 			MeshResponse<RoleResponse> response = client().findRoleByUuid(role.getUuid()).invoke();
 			latchFor(response);
-			String etag = role.getETag(getMockedInternalActionContext());
+			String etag = role.getETag(mockActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag

@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.tag;
 
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,7 +51,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 			assertThat(nodeList.getData()).as("Published tagged nodes").isNotNull().isEmpty();
 
 			// publish the node and its parent
-			InternalActionContext ac = getMockedInternalActionContext(user());
+			InternalActionContext ac = mockActionContext();
 			SearchQueueBatch batch = createBatch();
 			content("concorde").getParentNode(project().getLatestRelease().getUuid()).publish(ac, batch);
 			content("concorde").publish(ac, batch);

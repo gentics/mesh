@@ -4,8 +4,6 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DROP_INDEX;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
@@ -128,7 +126,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db().noTx()) {
-			Page<? extends Project> page = meshRoot().getProjectRoot().findAll(getMockedInternalActionContext(user()),
+			Page<? extends Project> page = meshRoot().getProjectRoot().findAll(mockActionContext(),
 					new PagingParametersImpl(1, 25));
 			assertNotNull(page);
 		}
@@ -169,7 +167,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testTransformation() throws Exception {
 		try (NoTx noTx = db().noTx()) {
 			Project project = project();
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			ProjectResponse response = project.transformToRest(ac, 0).toBlocking().value();
 
@@ -201,7 +199,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testCRUDPermissions() {
 		try (NoTx noTx = db().noTx()) {
 			MeshRoot root = meshRoot();
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			// 1. Give the user create on the project root
 			role().grantPermissions(meshRoot().getProjectRoot(), CREATE_PERM);
 			// 2. Create the project

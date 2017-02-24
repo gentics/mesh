@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
@@ -114,7 +113,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 			MeshResponse<WebRootResponse> response = client()
 					.webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")).invoke();
 			latchFor(response);
-			String etag = node.getETag(getMockedInternalActionContext());
+			String etag = node.getETag(mockActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag

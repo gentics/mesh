@@ -4,7 +4,6 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -52,7 +51,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String parentFolderUuid;
 		String subFolderUuid;
 		try (NoTx notrx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext("recursive=true", user());
+			InternalActionContext ac = mockActionContext("recursive=true");
 			Node subFolder = folder("2015");
 			Node parentFolder = folder("news");
 			SearchQueueBatch batch = createBatch();

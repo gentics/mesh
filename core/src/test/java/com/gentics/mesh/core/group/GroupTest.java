@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.group;
 
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
@@ -72,7 +70,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db().noTx()) {
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Page<? extends Group> page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 19));
 
@@ -129,7 +127,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testTransformation() throws Exception {
 		try (NoTx noTx = db().noTx()) {
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
 			GroupResponse response = group().transformToRest(ac, 0).toBlocking().value();
@@ -160,7 +158,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 		try (NoTx noTx = db().noTx()) {
 			MeshRoot root = meshRoot();
 			User user = user();
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			Group group = root.getGroupRoot().create("newGroup", user);
 			assertFalse(user.hasPermission(group, GraphPermission.CREATE_PERM));
 			user.addCRUDPermissionOnRole(root.getGroupRoot(), GraphPermission.CREATE_PERM, group);

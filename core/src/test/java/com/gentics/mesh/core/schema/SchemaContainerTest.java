@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.schema;
 
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -107,7 +106,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db().noTx()) {
-			Page<? extends SchemaContainer> page = meshRoot().getSchemaContainerRoot().findAll(getMockedInternalActionContext(user()),
+			Page<? extends SchemaContainer> page = meshRoot().getSchemaContainerRoot().findAll(mockActionContext(),
 					new PagingParametersImpl(1, 25));
 			assertNotNull(page);
 		}

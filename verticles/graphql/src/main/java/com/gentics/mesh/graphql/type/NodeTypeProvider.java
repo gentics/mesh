@@ -10,7 +10,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 
-import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 
 @Singleton

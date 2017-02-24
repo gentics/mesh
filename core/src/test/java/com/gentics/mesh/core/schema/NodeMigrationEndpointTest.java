@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -53,7 +53,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeMigrationEndpointTest extends AbstractMeshTest {
@@ -190,7 +189,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
 			englishContainer.createString(fieldName).setString("content");
 			englishContainer.createString("name").setString("someName");
-			InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(user()));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
 			node.publish(ac, "en").await();
 
 			doSchemaMigration(container, versionA, versionB);
@@ -225,7 +224,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 		try (NoTx tx = db().noTx()) {
 			node.reload();
-			InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(user()));
+			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
 			node.publish(ac, "en").await();
 		}
 

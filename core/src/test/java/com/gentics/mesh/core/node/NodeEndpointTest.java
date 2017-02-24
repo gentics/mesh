@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
@@ -1679,7 +1678,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// 2. Publish the node
 			SearchQueueBatch batch = createBatch();
-			node.publish(getMockedInternalActionContext(), batch).await();
+			node.publish(mockActionContext(), batch).await();
 
 			// 3. create new release
 			Project project = project();

@@ -4,8 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
@@ -223,7 +221,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 				}
 			}
 
-			RoutingContext rc = getMockedRoutingContext();
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 			assertEquals(0, requestUser.getPermissions(node).size());
@@ -260,7 +258,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			group().addRole(extraRole);
 
 			role().grantPermissions(extraRole, READ_PERM);
-			RoutingContext rc = getMockedRoutingContext();
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
 			Page<? extends Role> roles = group().getRoles(requestUser, new PagingParametersImpl(1, 10));
@@ -275,7 +273,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (NoTx noTx = db().noTx()) {
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Page<? extends Role> page = boot().roleRoot().findAll(ac, new PagingParametersImpl(1, 5));
 			assertEquals(roles().size(), page.getTotalElements());
@@ -312,7 +310,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testTransformation() throws Exception {
 		try (NoTx noTx = db().noTx()) {
 			Role role = role();
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			RoleResponse restModel = role.transformToRest(ac, 0).toBlocking().value();
 
@@ -347,7 +345,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testCRUDPermissions() {
 		try (NoTx noTx = db().noTx()) {
 			MeshRoot root = meshRoot();
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			Role role = root.getRoleRoot().create("SuperUser", user());
 			assertFalse(user().hasPermission(role, GraphPermission.CREATE_PERM));
 			user().addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, role);

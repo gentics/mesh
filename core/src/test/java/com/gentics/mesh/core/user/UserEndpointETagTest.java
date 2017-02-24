@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
@@ -50,7 +49,7 @@ public class UserEndpointETagTest extends AbstractETagTest {
 
 			MeshResponse<UserResponse> response = client().findUserByUuid(user.getUuid()).invoke();
 			latchFor(response);
-			String etag = user().getETag(getMockedInternalActionContext());
+			String etag = user().getETag(mockActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag

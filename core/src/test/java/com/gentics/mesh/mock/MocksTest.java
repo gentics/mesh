@@ -22,16 +22,16 @@ public class MocksTest extends AbstractMeshTest {
 	@Test
 	public void testMockParameters() throws Exception {
 
-		String query = "lang=de,en";
-		RoutingContext rc = Mocks.getMockedRoutingContext(query);
-		assertEquals("The query did not match up.", query, rc.request().query());
-		MultiMap params = rc.request().params();
-		assertNotNull("The routing context request parameters were null.", params);
-		assertTrue("The routing context request parameters did not contain the lang parameter. Size {" + params.size()
-				+ "}", params.contains("lang"));
-
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = Mocks.getMockedInternalActionContext("lang=de,en");
+			String query = "lang=de,en";
+			RoutingContext rc = mockRoutingContext(query);
+			assertEquals("The query did not match up.", query, rc.request().query());
+			MultiMap params = rc.request().params();
+			assertNotNull("The routing context request parameters were null.", params);
+			assertTrue("The routing context request parameters did not contain the lang parameter. Size {" + params.size() + "}",
+					params.contains("lang"));
+
+			InternalActionContext ac = mockActionContext("lang=de,en");
 			assertThat(ac.getNodeParameters().getLanguages()).containsExactly("de", "en");
 		}
 	}

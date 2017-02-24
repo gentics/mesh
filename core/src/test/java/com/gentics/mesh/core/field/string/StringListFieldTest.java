@@ -3,7 +3,6 @@ package com.gentics.mesh.core.field.string;
 import static com.gentics.mesh.core.field.string.StringListFieldTestHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.string.StringListFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.string.StringListFieldTestHelper.FILLTEXT;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -184,7 +183,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testRemoveFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(STRING_LIST, FETCH, FILLTEXT, (node) -> {
 				updateContainer(ac, node, STRING_LIST, null);
 			});
@@ -195,7 +194,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(STRING_LIST, FETCH, FILLTEXT, (container) -> {
 				updateContainer(ac, container, STRING_LIST, null);
 			});
@@ -205,7 +204,7 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(STRING_LIST, FILLTEXT, (container) -> {
 				StringFieldListImpl field = new StringFieldListImpl();
 				field.getItems().add("someValue");

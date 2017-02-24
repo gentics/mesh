@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.release;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -44,7 +43,7 @@ public class ReleaseEndpointETagTest extends AbstractETagTest {
 			Release release = project().getLatestRelease();
 			MeshResponse<ReleaseResponse> response = client().findReleaseByUuid(PROJECT_NAME, release.getUuid()).invoke();
 			latchFor(response);
-			String etag = release.getETag(getMockedInternalActionContext());
+			String etag = release.getETag(mockActionContext());
 			assertThat(response.getResponse().getHeader(ETAG)).contains(etag);
 
 			// Check whether 304 is returned for correct etag

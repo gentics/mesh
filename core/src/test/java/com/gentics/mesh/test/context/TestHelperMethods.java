@@ -1,5 +1,7 @@
 package com.gentics.mesh.test.context;
 
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.junit.Assert.assertNotNull;
@@ -13,6 +15,7 @@ import org.apache.commons.io.IOUtils;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -79,6 +82,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.test.core.TestUtils;
 
 public interface TestHelperMethods {
@@ -221,6 +225,22 @@ public interface TestHelperMethods {
 		MicroschemaContainer container = data().getMicroschemaContainers().get(key);
 		container.reload();
 		return container;
+	}
+
+	default public RoutingContext mockRoutingContext() {
+		return getMockedRoutingContext("", false, user(), project());
+	}
+
+	default public RoutingContext mockRoutingContext(String query) {
+		return getMockedRoutingContext(query, false, user(), project());
+	}
+
+	default public InternalActionContext mockActionContext() {
+		return getMockedInternalActionContext("", user(), project());
+	}
+
+	default public InternalActionContext mockActionContext(String query) {
+		return getMockedInternalActionContext(query, user(), project());
 	}
 
 	/**

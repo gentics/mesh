@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.field.micronode;
 
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -45,7 +44,6 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.RoutingContext;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class MicroschemaContainerTest extends AbstractMeshTest implements BasicObjectTestcases {
@@ -73,7 +71,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTx noTx = db().noTx()) {
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			int expectedMicroschemaContainers = microschemaContainers().size();
 
@@ -239,7 +237,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testTransformation() throws IOException {
 		try (NoTx noTx = db().noTx()) {
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MicroschemaContainer vcard = microschemaContainer("vcard");
 			MicroschemaResponse schema = vcard.transformToRest(ac, 0, "en").toBlocking().value();
@@ -291,7 +289,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 			SchemaChangesListModel model = new SchemaChangesListModel();
 			model.getChanges().addAll(new MicroschemaComparator().diff(microschema, updatedMicroschema));
 
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			SearchQueueBatch batch = createBatch();
 			vcard.applyChanges(ac, model, batch);
 			MicroschemaContainerVersion newVCard = microschemaContainer("vcard").getLatestVersion();

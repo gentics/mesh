@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -30,7 +30,6 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeEndpointETagTest extends AbstractETagTest {
@@ -116,7 +115,7 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 
 			MeshResponse<NodeResponse> response = client().findNodeByUuid(PROJECT_NAME, node.getUuid()).invoke();
 			latchFor(response);
-			String etag = node.getETag(getMockedInternalActionContext());
+			String etag = node.getETag(mockActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag

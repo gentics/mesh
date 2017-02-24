@@ -1,6 +1,5 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -8,7 +7,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -17,7 +15,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.test.TestDataProvider;
 
@@ -53,14 +50,13 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	}
 
 	public String getJson(Node node) throws Exception {
-		RoutingContext rc = Mocks.getMockedRoutingContext("lang=en&version=draft", user());
-		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+		InternalActionContext ac = mockActionContext("lang=en&version=draft");
 		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().value());
 	}
 
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
-		RoutingContext rc = getMockedRoutingContext();
+		RoutingContext rc = mockRoutingContext();
 
 		try (Tx tx = db().tx()) {
 			role().grantPermissions(element, perm);

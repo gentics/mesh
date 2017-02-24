@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.group;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -45,7 +44,7 @@ public class GroupEndpointETagTest extends AbstractETagTest {
 
 			MeshResponse<GroupResponse> response = client().findGroupByUuid(group.getUuid()).invoke();
 			latchFor(response);
-			String etag = group.getETag(getMockedInternalActionContext());
+			String etag = group.getETag(mockActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag

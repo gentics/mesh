@@ -4,8 +4,6 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -24,7 +22,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -45,14 +42,12 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.web.RoutingContext;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
@@ -299,7 +294,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
+			InternalActionContext ac = mockActionContext();
 			Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParametersImpl(1, 10));
 			assertEquals(12, tagPage.getTotalElements());
 			assertEquals(10, tagPage.getSize());
@@ -322,11 +317,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull(noPermTag.getUuid());
 			assertEquals(beforeCount + 1, basicTagFamily.findAll().size());
 
-			Page<? extends Tag> tagfamilyTagpage = basicTagFamily.findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 20));
+			Page<? extends Tag> tagfamilyTagpage = basicTagFamily.findAll(mockActionContext(), new PagingParametersImpl(1, 20));
 			assertPage(tagfamilyTagpage, beforeCount);
 
 			role().grantPermissions(noPermTag, READ_PERM);
-			Page<? extends Tag> globalTagPage = basicTagFamily.findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 20));
+			Page<? extends Tag> globalTagPage = basicTagFamily.findAll(mockActionContext(), new PagingParametersImpl(1, 20));
 			assertPage(globalTagPage, beforeCount + 1);
 		}
 	}
@@ -421,8 +416,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			languageTags.add("de");
 			int depth = 3;
 
-			RoutingContext rc = getMockedRoutingContext("lang=de,en", user());
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			InternalActionContext ac = mockActionContext("lang=de,en");
 			int nTransformations = 100;
 			for (int i = 0; i < nTransformations; i++) {
 				long start = System.currentTimeMillis();

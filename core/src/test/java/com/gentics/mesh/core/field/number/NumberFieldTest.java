@@ -3,7 +3,6 @@ package com.gentics.mesh.core.field.number;
 import static com.gentics.mesh.core.field.number.NumberFieldTestHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.number.NumberFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.number.NumberFieldTestHelper.FILL;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -200,7 +199,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testRemoveFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(NUMBER_FIELD, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, NUMBER_FIELD, null);
 			});
@@ -211,7 +210,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(NUMBER_FIELD, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, NUMBER_FIELD, null);
 			});
@@ -222,7 +221,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(NUMBER_FIELD, FILL, (container) -> {
 				NumberField field = new NumberFieldImpl();
 				field.setNumber(42L);

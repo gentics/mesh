@@ -3,7 +3,6 @@ package com.gentics.mesh.core.field.node;
 import static com.gentics.mesh.core.field.node.NodeFieldTestHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.node.NodeFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.node.NodeFieldTestHelper.FILL;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -184,7 +183,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testRemoveFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(NODE_FIELD, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, NODE_FIELD, null);
 			});
@@ -195,7 +194,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(NODE_FIELD, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, NODE_FIELD, null);
 			});
@@ -206,7 +205,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(NODE_FIELD, FILL, (container) -> {
 				NodeFieldImpl field = new NodeFieldImpl();
 				field.setUuid(content().getUuid());

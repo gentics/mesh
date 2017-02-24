@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.release;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -69,7 +67,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			Release releaseTwo = releaseRoot.create("Two", user());
 			Release releaseThree = releaseRoot.create("Three", user());
 
-			Page<? extends Release> page = releaseRoot.findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 25));
+			Page<? extends Release> page = releaseRoot.findAll(mockActionContext(), new PagingParametersImpl(1, 25));
 			assertThat(page).isNotNull();
 			ArrayList<Release> arrayList = new ArrayList<Release>();
 			page.iterator().forEachRemaining(r -> arrayList.add(r));
@@ -227,7 +225,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 		try (NoTx noTx = db().noTx()) {
 			Release release = project().getInitialRelease();
 
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
 			ReleaseResponse releaseResponse = release.transformToRestSync(ac, 0);
@@ -491,7 +489,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 		SchemaChangesListModel model = new SchemaChangesListModel();
 		model.getChanges().addAll(new SchemaComparator().diff(schema, updatedSchema));
 
-		InternalActionContext ac = getMockedInternalActionContext();
+		InternalActionContext ac = mockActionContext();
 		SearchQueueBatch batch = createBatch();
 		schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 		schemaContainer.reload();
@@ -532,7 +530,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 		SchemaChangesListModel model = new SchemaChangesListModel();
 		model.getChanges().addAll(new MicroschemaComparator().diff(microschema, updatedMicroschema));
 
-		InternalActionContext ac = getMockedInternalActionContext();
+		InternalActionContext ac = mockActionContext();
 		SearchQueueBatch batch = createBatch();
 		microschemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 		microschemaContainer.reload();

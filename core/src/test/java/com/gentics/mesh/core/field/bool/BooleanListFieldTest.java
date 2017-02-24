@@ -3,7 +3,6 @@ package com.gentics.mesh.core.field.bool;
 import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.bool.BooleanListFieldHelper.FILL;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -176,7 +175,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testRemoveFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext("", user());
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, BOOLEAN_LIST, null);
 			});
@@ -187,7 +186,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext("", user());
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(BOOLEAN_LIST, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, BOOLEAN_LIST, null);
 			});
@@ -198,7 +197,7 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext("", user());
+			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(BOOLEAN_LIST, FILL, (container) -> {
 				BooleanFieldListImpl field = new BooleanFieldListImpl();
 				field.getItems().add(true);

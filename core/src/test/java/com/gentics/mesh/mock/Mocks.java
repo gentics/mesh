@@ -14,7 +14,6 @@ import java.util.Map.Entry;
 
 import org.mockito.Mockito;
 
-import com.gentics.mesh.cli.MeshIntegerationTest;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
@@ -87,10 +86,8 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.HttpQueryUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -409,50 +406,12 @@ public final class Mocks {
 		return container;
 	}
 
-	public static InternalActionContext getMockedVoidInternalActionContext(User user) {
-		return getMockedVoidInternalActionContext(null, user);
-	}
-
-	public static InternalActionContext getMockedVoidInternalActionContext(String query, User user) {
-		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, true, user, null));
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
-		return ac;
-	}
-
-	public static InternalActionContext getMockedInternalActionContext() {
-		return getMockedInternalActionContext("", null);
-	}
-
-	public static InternalActionContext getMockedInternalActionContext(String query) {
-		return getMockedInternalActionContext(query, null);
-	}
-
-	public static InternalActionContext getMockedInternalActionContext(User user) {
-		return getMockedInternalActionContext("", user);
-	}
-
-	public static InternalActionContext getMockedInternalActionContext(String query, User user) {
+	public static InternalActionContext getMockedInternalActionContext(String query, User user, Project project) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, false, user, null));
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, project);
 		return ac;
 	}
-
-	public static RoutingContext getMockedRoutingContext() {
-		return getMockedRoutingContext("", null);
-	}
-
-	public static RoutingContext getMockedRoutingContext(User user) {
-		return getMockedRoutingContext("", user);
-	}
-
-	public static RoutingContext getMockedRoutingContext(String query) {
-		return getMockedRoutingContext(query, null);
-	}
-
-	public static RoutingContext getMockedRoutingContext(String query, User user) {
-		return getMockedRoutingContext(query, false, user, null);
-	}
-
+	
 	public static RoutingContext getMockedRoutingContext(String query, boolean noInternalMap, User user, Project project) {
 		Map<String, Object> map = new HashMap<>();
 		if (noInternalMap) {

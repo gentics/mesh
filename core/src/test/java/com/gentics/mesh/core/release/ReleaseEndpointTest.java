@@ -40,7 +40,6 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.parameter.impl.RolePermissionParameters;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -296,7 +295,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			ListResponse<ReleaseResponse> responseList = call(() -> client().findReleases(project.getName()));
 
-			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
+			InternalActionContext ac = mockActionContext();
 
 			assertThat(responseList).isNotNull();
 			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initialRelease.transformToRestSync(ac, 0),
@@ -318,7 +317,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			ListResponse<ReleaseResponse> responseList = call(() -> client().findReleases(project.getName()));
 
-			InternalActionContext ac = Mocks.getMockedInternalActionContext(user());
+			InternalActionContext ac = mockActionContext();
 			assertThat(responseList).isNotNull();
 			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initialRelease.transformToRestSync(ac, 0),
 					secondRelease.transformToRestSync(ac, 0));

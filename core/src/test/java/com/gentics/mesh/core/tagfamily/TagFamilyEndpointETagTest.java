@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.tagfamily;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
@@ -45,7 +44,7 @@ public class TagFamilyEndpointETagTest extends AbstractETagTest {
 
 			MeshResponse<TagFamilyResponse> response = client().findTagFamilyByUuid(PROJECT_NAME, tagfamily.getUuid()).invoke();
 			latchFor(response);
-			String etag = tagfamily.getETag(getMockedInternalActionContext());
+			String etag = tagfamily.getETag(mockActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag

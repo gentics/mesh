@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -45,7 +44,7 @@ public class SchemaEndpointETagTest extends AbstractETagTest {
 
 			MeshResponse<SchemaResponse> response = client().findSchemaByUuid(schema.getUuid()).invoke();
 			latchFor(response);
-			String etag = schema.getETag(getMockedInternalActionContext());
+			String etag = schema.getETag(mockActionContext());
 			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag

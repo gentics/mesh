@@ -2,7 +2,6 @@ package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
@@ -337,8 +336,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// 2. Publish nodes
 		try (NoTx noTx = db().noTx()) {
 			SearchQueueBatch batch = createBatch();
-			folder("news").publish(getMockedInternalActionContext(user()), batch).await();
-			folder("2015").publish(getMockedInternalActionContext(user()), batch).await();
+			folder("news").publish(mockActionContext(), batch).await();
+			folder("2015").publish(mockActionContext(), batch).await();
 		}
 
 		// 3. Assert that published path can be found
@@ -356,8 +355,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// 1. Publish nodes
 		db().noTx(() -> {
 			SearchQueueBatch batch = createBatch();
-			folder("news").publish(getMockedInternalActionContext(), batch).await();
-			folder("2015").publish(getMockedInternalActionContext(), batch).await();
+			folder("news").publish(mockActionContext(), batch).await();
+			folder("2015").publish(mockActionContext(), batch).await();
 			return null;
 		});
 

@@ -31,7 +31,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.mock.Mocks;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.DateUtils;
@@ -200,7 +199,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Override
 	public void testRemoveFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = Mocks.getMockedInternalActionContext("", null);
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(DATE_FIELD, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, DATE_FIELD, null);
 			});
@@ -211,7 +210,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = Mocks.getMockedInternalActionContext("", null);
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(DATE_FIELD, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, DATE_FIELD, null);
 			});
@@ -222,7 +221,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
 		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = Mocks.getMockedInternalActionContext("", null);
+			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(DATE_FIELD, FILL, (container) -> {
 				DateField field = new DateFieldImpl();
 				field.setDate(DateUtils.toISO8601(0L, 0));
