@@ -29,6 +29,7 @@ import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.buffer.Buffer;
 import rx.Single;
 import rx.functions.Action5;
+import rx.functions.Func0;
 
 public class ImgscalrImageManipulatorTest {
 
@@ -52,7 +53,7 @@ public class ImgscalrImageManipulatorTest {
 
 		checkImages((imageName, width, height, color, ins) -> {
 			System.out.println("Handling " + imageName);
-			Single<Buffer> obs = manipulator.handleResize(ins, imageName, new ImageManipulationParameters().setWidth(150).setHeight(180));
+			Single<Buffer> obs = manipulator.handleResize(ins.call(), imageName, new ImageManipulationParameters().setWidth(150).setHeight(180));
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(buffer -> {
 				assertNotNull(buffer);
@@ -80,7 +81,7 @@ public class ImgscalrImageManipulatorTest {
 		});
 	}
 
-	private void checkImages(Action5<String, Integer, Integer, String, InputStream> action) throws JSONException, IOException {
+	private void checkImages(Action5<String, Integer, Integer, String, Func0<InputStream>> action) throws JSONException, IOException {
 		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json")));
 		JSONArray array = json.getJSONArray("images");
 		for (int i = 0; i < array.length(); i++) {
@@ -91,7 +92,7 @@ public class ImgscalrImageManipulatorTest {
 			int width = image.getInt("w");
 			int height = image.getInt("h");
 			String color = image.getString("dominantColor");
-			action.call(imageName, width, height, color, ins);
+			action.call(imageName, width, height, color, () -> ins);
 		}
 	}
 

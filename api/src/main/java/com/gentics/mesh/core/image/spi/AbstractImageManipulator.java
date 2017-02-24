@@ -17,6 +17,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.buffer.Buffer;
 import rx.Single;
+import rx.functions.Func0;
 
 /**
  * Abstract image manipulator implementation.
@@ -69,11 +70,11 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public Single<ImageInfo> readImageInfo(InputStream ins) {
+	public Single<ImageInfo> readImageInfo(Func0<InputStream> insFunc) {
 		return Single.create(sub -> {
 			// 1. Read the image
 			BufferedImage bi = null;
-			try {
+			try (InputStream ins = insFunc.call()) {
 				bi = ImageIO.read(ins);
 			} catch (Exception e) {
 				throw error(BAD_REQUEST, "image_error_reading_failed", e);
