@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.common;
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 /**
@@ -16,13 +17,14 @@ public abstract class NameUuidReference<T> {
 	private String name;
 
 	@JsonPropertyDescription("Uuid of the referenced element")
+	@JsonProperty(required = true)
 	private String uuid;
 
 	public NameUuidReference() {
 	}
 
 	/**
-	 * Create a new reference that provides the name and uuid.
+	 * Create a new reference that provides the name and UUID.
 	 * 
 	 * @param name
 	 * @param uuid
@@ -55,19 +57,19 @@ public abstract class NameUuidReference<T> {
 	}
 
 	/**
-	 * Return the uuid of element that is referenced.
+	 * Return the UUID of element that is referenced.
 	 * 
-	 * @return Uuid of the referenced element
+	 * @return UUID of the referenced element
 	 */
 	public String getUuid() {
 		return uuid;
 	}
 
 	/**
-	 * Set the uuid of the referenced element.
+	 * Set the UUID of the referenced element.
 	 * 
 	 * @param uuid
-	 *            Uuid of the referenced element
+	 *            UUID of the referenced element
 	 * @return Fluent API
 	 */
 	@SuppressWarnings("unchecked")
@@ -77,7 +79,7 @@ public abstract class NameUuidReference<T> {
 	}
 
 	/**
-	 * Checks whether one of the needed parameters (name or uuid) is set.
+	 * Checks whether one of the needed parameters (name or UUID) is set.
 	 * 
 	 * @return
 	 */

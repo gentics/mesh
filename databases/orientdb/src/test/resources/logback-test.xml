@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<conversionRule conversionWord="meshName" converterClass="com.gentics.mesh.log.MeshLogNameConverter"/>
+
+	<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+		<target>System.err</target>
+		<encoder>
+			<pattern>TEST %-5level [%thread] [%file:%line] - %msg%n
+			</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>ERROR</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+	</appender>
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>TEST %-5level [%thread] [%file:%line] - %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+	<!-- <logger name="io.vertx" level="INFO"/> <logger name="com.gentics.mesh" level="INFO"/> <logger name="org.elasticsearch" level="INFO"/> <logger name="com.gentics.mesh.rest.MeshResponseHandler" 
+		level="TRACE"/> -->
+	<!-- <logger name="com.gentics" level="ERROR" additivity="false"> <appender-ref ref="STDERR"/> </logger> -->
+<!-- 
+	<logger name="com.gentics.mesh.rest.client.handler.impl.MeshJsonResponseHandler" level="DEBUG"/>
+	<logger name="com.gentics.mesh.rest.MeshRestRequestUtil" level="DEBUG"/>
+	<logger name="com.gentics.mesh.etc.RouterStorage" level="DEBUG"/>
+	<logger name="com.gentics.mesh.search.index.NodeIndexHandler" level="DEBUG"/>
+	<logger name="com.gentics.mesh.search.impl.ElasticSearchProvider" level="DEBUG"/>
+	 -->
+	<logger name="com.gentics.mesh.graphdb.AbstractTx" level="DEBUG" />
+	<!-- <logger name="com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl" level="DEBUG" /> -->
+	<root level="DEBUG">
+		<appender-ref ref="STDOUT"/>
+	</root>
+</configuration>

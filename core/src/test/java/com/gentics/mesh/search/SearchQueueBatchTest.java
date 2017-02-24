@@ -1,5 +1,7 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.test.TestSize.PROJECT;
+
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -14,7 +16,8 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
+
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
 public class SearchQueueBatchTest extends AbstractMeshTest {
 
 	@Test

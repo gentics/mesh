@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.tag;
 
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,8 +26,9 @@ import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TagNodeEndpointTest extends AbstractMeshTest {
 
 	@Test

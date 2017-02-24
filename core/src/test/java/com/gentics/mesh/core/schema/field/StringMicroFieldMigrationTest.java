@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.schema.field;
 
+import static com.gentics.mesh.test.TestSize.FULL;
+
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -7,7 +9,7 @@ import com.gentics.mesh.core.schema.field.AbstractFieldMigrationTest.Microschema
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MicroschemaTest
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class StringMicroFieldMigrationTest extends StringFieldMigrationTest {
 
 	@Override

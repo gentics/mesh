@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -34,7 +35,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class RestModelTest extends AbstractMeshTest {
 
 	@Test

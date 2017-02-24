@@ -23,8 +23,9 @@ import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 	@Test

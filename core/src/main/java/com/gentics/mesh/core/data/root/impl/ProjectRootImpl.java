@@ -201,8 +201,8 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		String projectUuid = project.getUuid();
 
 		// 1. Create needed indices
-		batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT);
-		batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED);
+		batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
+		batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED, schemaContainerVersion.getSchema());
 		batch.createTagIndex(projectUuid);
 		batch.createTagFamilyIndex(projectUuid);
 

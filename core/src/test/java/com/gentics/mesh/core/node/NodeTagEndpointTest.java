@@ -3,7 +3,7 @@ package com.gentics.mesh.core.node;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -34,8 +34,9 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.TestUtils;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeTagEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -195,7 +196,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			NodeResponse response = call(
 					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("red")).count());
+					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag = tag("red");
@@ -238,9 +239,9 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			NodeResponse response = call(
 					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("red")).count());
+					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("blue")).count());
+					response.getTags().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
@@ -279,9 +280,9 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			NodeResponse response = call(
 					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("red")).count());
+					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected to find the red tag in the node response", 1,
-					response.getTags().get("colors").getItems().stream().filter(tag -> tag.getName().equals("blue")).count());
+					response.getTags().stream().filter(tag -> tag.getName().equals("blue")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");

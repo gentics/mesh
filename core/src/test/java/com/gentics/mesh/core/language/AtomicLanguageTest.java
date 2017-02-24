@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.language;
 
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
@@ -12,8 +13,7 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
 public class AtomicLanguageTest extends AbstractMeshTest {
 
 	@Test

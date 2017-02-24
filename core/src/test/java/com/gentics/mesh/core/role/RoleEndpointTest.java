@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
@@ -57,7 +58,7 @@ import com.gentics.mesh.test.definition.BasicRestTestcases;
 
 import rx.Single;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
@@ -252,7 +253,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			RoleListResponse restResponse = call(() -> client().findRoles());
 			assertEquals(25, restResponse.getMetainfo().getPerPage());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-			assertEquals(25, restResponse.getData().size());
+			assertEquals(23, restResponse.getData().size());
 
 			int perPage = 11;
 			final int currentPage = 1;
@@ -300,7 +301,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals(0, response.getData().size());
 			assertEquals(4242, response.getMetainfo().getCurrentPage());
 			assertEquals(1, response.getMetainfo().getPageCount());
-			assertEquals(25, response.getMetainfo().getTotalCount());
+			assertEquals(23, response.getMetainfo().getTotalCount());
 			assertEquals(25, response.getMetainfo().getPerPage());
 		}
 	}

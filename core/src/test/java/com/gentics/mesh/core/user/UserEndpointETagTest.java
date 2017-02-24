@@ -2,6 +2,7 @@ package com.gentics.mesh.core.user;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -21,7 +22,7 @@ import com.gentics.mesh.test.AbstractETagTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class UserEndpointETagTest extends AbstractETagTest {
 
 	@Test

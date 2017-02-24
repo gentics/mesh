@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.core.rest.schema.Schema;
 
 import rx.Completable;
 
@@ -33,7 +34,7 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch createNodeIndex(String projectUuid, String releaseUuid, String versionUuid, ContainerType type) {
+	public SearchQueueBatch createNodeIndex(String projectUuid, String releaseUuid, String versionUuid, ContainerType type, Schema schema) {
 		return this;
 	}
 

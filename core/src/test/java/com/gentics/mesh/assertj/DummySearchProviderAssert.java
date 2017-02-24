@@ -1,11 +1,22 @@
 package com.gentics.mesh.assertj;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.Arrays;
+
 import org.assertj.core.api.AbstractAssert;
 
+import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.search.DummySearchProvider;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 
 public class DummySearchProviderAssert extends AbstractAssert<DummySearchProviderAssert, DummySearchProvider> {
 
@@ -119,6 +130,50 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 		assertEquals("The search provider did not record the correct amount of create index events. Found events: {\n" + createInfo + "\n}",
 				createIndexEvents, actual.getCreateIndexEvents().size());
 
+		return this;
+	}
+
+	/**
+	 * Assert that the node was stored in the index for given languages and DRAFT and PUBLISHED versions
+	 * 
+	 * @param node
+	 * @param test
+	 * @param languages
+	 * @return Fluent API
+	 */
+	public DummySearchProviderAssert storedAllContainers(Node node, AbstractMeshTest test, String... languages) {
+		for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
+			for (String lang : languages) {
+				String projectUuid = test.project().getUuid();
+				String releaseUuid = test.release().getUuid();
+				String schemaVersionUuid = node.getSchemaContainer().getLatestVersion().getUuid();
+				assertThat(actual).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaVersionUuid, type),
+						NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), lang));
+			}
+		}
+		return this;
+	}
+
+	/**
+	 * Assert that the tag family was stored in the index.
+	 * 
+	 * @param tag
+	 * @return Fluent API
+	 */
+	public DummySearchProviderAssert stored(Tag tag) {
+		assertThat(actual).hasStore(Tag.composeIndexName(tag.getProject().getUuid()), Tag.composeTypeName(), Tag.composeDocumentId(tag.getUuid()));
+		return this;
+	}
+
+	/**
+	 * Assert that the tag family was stored in the index.
+	 * 
+	 * @param tagfamily
+	 * @return Fluent API
+	 */
+	public DummySearchProviderAssert stored(TagFamily tagfamily) {
+		assertThat(actual).hasStore(TagFamily.composeIndexName(tagfamily.getProject().getUuid()), TagFamily.composeTypeName(),
+				TagFamily.composeDocumentId(tagfamily.getUuid()));
 		return this;
 	}
 

@@ -21,6 +21,7 @@ public final class ChangesList {
 		list.add(new ChangeReindexAll());
 		list.add(new ChangeSanitizeSchemaJson());
 		list.add(new AddTagFamiliesToNodeIndex());
+		list.add(new RestructureTags());
 		return list;
 	}
 }

@@ -28,8 +28,9 @@ import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.rxjava.core.buffer.Buffer;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest implements BinaryFieldTestHelper {
 
 	String sha512Sum;

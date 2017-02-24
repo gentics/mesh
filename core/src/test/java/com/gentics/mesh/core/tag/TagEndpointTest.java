@@ -9,7 +9,7 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
@@ -58,8 +58,9 @@ import com.gentics.mesh.rest.client.MeshRestClientHttpException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
@@ -73,7 +74,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
 			String noPermTagUUID = noPermTag.getUuid();
 			// TODO check whether the project reference should be moved from generic class into node mesh class and thus not be available for tags
-			basicTagFamily.getTagRoot().addTag(noPermTag);
+			basicTagFamily.addTag(noPermTag);
 			assertNotNull(noPermTag.getUuid());
 
 			// Test default paging parameters
@@ -436,8 +437,6 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		try (NoTx noTx = db().noTx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.",
 					meshRoot().getTagRoot().findByUuid(response.getUuid()));
-			assertNotNull("The tag could not be found within the project.tagRoot node.",
-					project().getTagRoot().findByUuid(response.getUuid()));
 		}
 
 		String uuid = response.getUuid();

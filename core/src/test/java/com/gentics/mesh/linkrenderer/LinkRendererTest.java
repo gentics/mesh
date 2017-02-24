@@ -23,8 +23,9 @@ import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class LinkRendererTest extends AbstractMeshTest {
 
 	private WebRootLinkReplacer replacer;

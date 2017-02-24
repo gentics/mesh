@@ -5,9 +5,10 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.schema.field.AbstractFieldMigrationTest.MicroschemaTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import static com.gentics.mesh.test.TestSize.FULL;
 
 @MicroschemaTest
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class HtmlMicroFieldMigrationTest extends HtmlFieldMigrationTest {
 	@Override
 	@Ignore("Not applicable for micronodes")

@@ -85,7 +85,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public TagReference transformToReference() {
-		return new TagReference().setName(getName()).setUuid(getUuid());
+		return new TagReference().setName(getName()).setUuid(getUuid()).setTagFamily(getTagFamily().getName());
 	}
 
 	@Override
@@ -193,7 +193,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 			TagFamily tagFamily = getTagFamily();
 
 			// Check for conflicts
-			Tag foundTagWithSameName = tagFamily.getTagRoot().findByName(newTagName);
+			Tag foundTagWithSameName = tagFamily.findByName(newTagName);
 			if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
 				throw conflict(foundTagWithSameName.getUuid(), newTagName,
 						"tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName());

@@ -18,8 +18,9 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 import com.gentics.mesh.util.MeshAssert;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = true, startServer = true, useTinyDataset = false)
+@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
 public class ProjectSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test

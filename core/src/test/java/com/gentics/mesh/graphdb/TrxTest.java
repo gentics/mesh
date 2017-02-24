@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphdb;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -33,7 +34,7 @@ import com.gentics.mesh.test.performance.TestUtils;
 
 import rx.Single;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TrxTest extends AbstractMeshTest {
 
 	@Test

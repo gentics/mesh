@@ -1,12 +1,14 @@
 package com.gentics.mesh.core.data.search;
 
+import static com.gentics.mesh.test.TestSize.PROJECT;
+
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
 public class SearchQueueBatchTest extends AbstractMeshTest {
 
 	@Test

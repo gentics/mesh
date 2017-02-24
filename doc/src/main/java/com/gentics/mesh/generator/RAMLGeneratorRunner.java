@@ -4,7 +4,7 @@ import java.io.File;
 
 import org.apache.commons.io.FileUtils;
 
-public class MeshRAMLGeneratorRunner {
+public class RAMLGeneratorRunner {
 
 	private static File outputFolder = new File("target", "api");
 

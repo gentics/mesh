@@ -9,8 +9,9 @@ import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class MultithreadGraphTest extends AbstractMeshTest {
 
 	@Test

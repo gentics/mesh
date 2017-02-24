@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.tag;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 
@@ -9,9 +10,11 @@ import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 public class TagResponse extends AbstractGenericRestResponse {
 
 	@JsonPropertyDescription("Reference to the tag family to which the tag belongs.")
+	@JsonProperty(required = true)
 	private TagFamilyReference tagFamily;
 
 	@JsonPropertyDescription("Name of the tag.")
+	@JsonProperty(required = true)
 	private String name;
 
 	public TagResponse() {
@@ -51,6 +54,11 @@ public class TagResponse extends AbstractGenericRestResponse {
 	 */
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return "tag: " + getName() + "/" + getUuid() + " of family " + getTagFamily().getName();
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.tag;
 
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -16,7 +17,7 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
 public class AtomicTagTest extends AbstractMeshTest {
 
 	@Test

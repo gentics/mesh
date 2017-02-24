@@ -11,7 +11,6 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
 
 public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeResponse> {
@@ -36,11 +35,9 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 			return false;
 		}
 
-		for (TagFamilyTagGroup group : actual.getTags().values()) {
-			for (TagReference restTag : group.getItems()) {
-				if (tag.getUuid().equals(restTag.getUuid())) {
-					return true;
-				}
+		for (TagReference tagRef : actual.getTags()) {
+			if (tag.getUuid().equals(tagRef.getUuid())) {
+				return true;
 			}
 		}
 		return false;

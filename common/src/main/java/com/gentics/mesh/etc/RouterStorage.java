@@ -54,7 +54,7 @@ public class RouterStorage {
 
 	public static final String DEFAULT_API_MOUNTPOINT = "/api/v1";
 	public static final String DEFAULT_CUSTOM_MOUNTPOINT = "/custom";
-	public static final String PROJECT2_CONTEXT_KEY = "mesh-project";
+	public static final String PROJECT_CONTEXT_KEY = "mesh-project";
 
 	private static RouterStorage instance;
 
@@ -236,7 +236,7 @@ public class RouterStorage {
 
 			projectRouter.route().handler(ctx -> {
 				Project project = db.get().noTx(() -> boot.get().projectRoot().findByName(name));
-				ctx.data().put(PROJECT2_CONTEXT_KEY, project);
+				ctx.data().put(PROJECT_CONTEXT_KEY, project);
 				ctx.next();
 			});
 

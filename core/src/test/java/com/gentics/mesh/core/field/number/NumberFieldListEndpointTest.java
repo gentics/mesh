@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.field.number;
 
-import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -22,9 +22,10 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
 public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Override
@@ -44,7 +45,8 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 			NodeResponse response = createNode(FIELD_NAME, listField);
 			NumberFieldListImpl field = response.getFields().getNumberFieldList(FIELD_NAME);
-			assertThat(field.getItems()).as("Only valid values should be stored").containsExactly(42, 41, 0.1, Long.MAX_VALUE);
+			assertThat(field.getItems()).as("Only valid values should be stored").containsExactly(42, 41, 0.1,
+					Long.MAX_VALUE);
 		}
 	}
 
@@ -56,7 +58,8 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			listField.add(42);
 			listField.add(41);
 			listField.add(null);
-			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
+			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed",
+					FIELD_NAME);
 		}
 	}
 
@@ -77,7 +80,8 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	public void testCreateNodeWithNoField() {
 		try (NoTx noTx = db().noTx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
-			assertThat(response.getFields().getNumberFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
+			assertThat(response.getFields().getNumberFieldList(FIELD_NAME)).as("List field in reponse should be null")
+					.isNull();
 		}
 	}
 
@@ -107,11 +111,12 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			listField.add(42L);
 			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
-			//2. Read the node
+			// 2. Read the node
 			NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
 			NumberFieldListImpl deserializedField = response.getFields().getNumberFieldList(FIELD_NAME);
 			assertNotNull(deserializedField);
-			assertThat(deserializedField.getItems()).as("List field values from updated node (null values are omitted)").containsExactly(41, 42);
+			assertThat(deserializedField.getItems()).as("List field values from updated node (null values are omitted)")
+					.containsExactly(41, 42);
 		}
 	}
 
@@ -121,8 +126,8 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 
-			List<List<Number>> valueCombinations = Arrays.asList(Arrays.asList(1.1, 2, 3), Arrays.asList(3, 2, 1.1), Collections.emptyList(),
-					Arrays.asList(47.11, 8.15), Arrays.asList(3));
+			List<List<Number>> valueCombinations = Arrays.asList(Arrays.asList(1.1, 2, 3), Arrays.asList(3, 2, 1.1),
+					Collections.emptyList(), Arrays.asList(47.11, 8.15), Arrays.asList(3));
 
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 			for (int i = 0; i < 20; i++) {
@@ -140,8 +145,10 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 				container.reload();
 
 				NodeGraphFieldContainer newContainerVersion = container.getNextVersion();
-				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion().getNumber());
-				assertEquals("Check old value", oldValue, getListValues(container, NumberGraphFieldListImpl.class, FIELD_NAME));
+				assertEquals("Check version number", newContainerVersion.getVersion().toString(),
+						response.getVersion().getNumber());
+				assertEquals("Check old value", oldValue,
+						getListValues(container, NumberGraphFieldListImpl.class, FIELD_NAME));
 				container = newContainerVersion;
 			}
 		}
@@ -159,7 +166,8 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 			assertThat(secondResponse.getFields().getNumberFieldList(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(oldVersion).as("Version should be updated")
+					.isNotEqualTo(secondResponse.getVersion().getNumber());
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
@@ -167,13 +175,13 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
 			assertThat(latest.getNumberList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNumberList(FIELD_NAME)).isNotNull();
-			List<Number> oldValueList = latest.getPreviousVersion().getNumberList(FIELD_NAME).getList().stream().map(item -> item.getNumber())
-					.collect(Collectors.toList());
+			List<Number> oldValueList = latest.getPreviousVersion().getNumberList(FIELD_NAME).getList().stream()
+					.map(item -> item.getNumber()).collect(Collectors.toList());
 			assertThat(oldValueList).containsExactly(42L, 41.1);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.",
+					thirdResponse.getVersion().getNumber(), secondResponse.getVersion().getNumber());
 		}
 	}
 
@@ -190,12 +198,14 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			NumberFieldListImpl emptyField = new NumberFieldListImpl();
 			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
 			assertThat(secondResponse.getFields().getNumberFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
-			assertThat(secondResponse.getFields().getNumberFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number should be generated").isNotEqualTo(oldVersion);
+			assertThat(secondResponse.getFields().getNumberFieldList(FIELD_NAME).getItems())
+					.as("Field value should be truncated").isEmpty();
+			assertThat(secondResponse.getVersion().getNumber()).as("New version number should be generated")
+					.isNotEqualTo(oldVersion);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.",
+					thirdResponse.getVersion().getNumber(), secondResponse.getVersion().getNumber());
 			assertThat(secondResponse.getVersion().getNumber()).as("No new version number should be generated")
 					.isEqualTo(secondResponse.getVersion().getNumber());
 		}

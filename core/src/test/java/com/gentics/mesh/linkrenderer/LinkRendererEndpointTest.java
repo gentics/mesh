@@ -16,11 +16,12 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonObject;
+import static com.gentics.mesh.test.TestSize.FULL;
 
 /**
  * Test cases for link rendering using the Utility Verticle
  */
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class LinkRendererEndpointTest extends AbstractMeshTest {
 
 	/**

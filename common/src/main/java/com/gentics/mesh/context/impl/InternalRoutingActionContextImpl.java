@@ -181,7 +181,7 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	@Override
 	public Project getProject() {
 		if (project == null) {
-			project = get(RouterStorage.PROJECT2_CONTEXT_KEY);
+			project = get(RouterStorage.PROJECT_CONTEXT_KEY);
 		}
 		return project;
 	}

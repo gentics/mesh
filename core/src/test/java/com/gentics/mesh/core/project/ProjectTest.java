@@ -2,11 +2,11 @@ package com.gentics.mesh.core.project;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DROP_INDEX;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -42,7 +42,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.ext.web.RoutingContext;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = true, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
 public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
@@ -83,7 +83,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 
 			// Meta vertices
 			batchEnttries.put("project.tagFamilyRoot", new ElementEntry(null, project().getTagFamilyRoot().getUuid()));
-			batchEnttries.put("project.schemaContainerRoot", new ElementEntry(null, project().getSchemaContainerRoot().getUuid()));
+			batchEnttries.put("project.schemaContainerRoot",
+					new ElementEntry(null, project().getSchemaContainerRoot().getUuid()));
 			batchEnttries.put("project.nodeRoot", new ElementEntry(null, project().getNodeRoot().getUuid()));
 			batchEnttries.put("project.baseNode", new ElementEntry(null, project().getBaseNode().getUuid()));
 
@@ -92,14 +93,15 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			batchEnttries.put("project node index " + i, new ElementEntry(DROP_INDEX, project().getUuid()));
 			i++;
 
-			// Project tags
-			for (Tag tag : project().getTagRoot().findAll()) {
-				batchEnttries.put("project tag " + tag.getName(), new ElementEntry(DROP_INDEX, tag.getUuid()));
-			}
-
 			// Project tagFamilies
 			for (TagFamily tagFamily : project().getTagFamilyRoot().findAll()) {
-				batchEnttries.put("project tagfamily " + tagFamily.getName(), new ElementEntry(DROP_INDEX, tagFamily.getUuid()));
+				batchEnttries.put("project tagfamily " + tagFamily.getName(),
+						new ElementEntry(DROP_INDEX, tagFamily.getUuid()));
+
+				// tags
+				for (Tag tag : tagFamily.findAll()) {
+					batchEnttries.put("project tag " + tag.getName(), new ElementEntry(DROP_INDEX, tag.getUuid()));
+				}
 			}
 
 			SearchQueueBatch batch = createBatch();
@@ -180,7 +182,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (NoTx noTx = db().noTx()) {
-			Project project = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
+			Project project = meshRoot().getProjectRoot().create("newProject", user(),
+					schemaContainer("folder").getLatestVersion());
 			assertNotNull(project);
 			String uuid = project.getUuid();
 			SearchQueueBatch batch = createBatch();
@@ -202,8 +205,10 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			// 1. Give the user create on the project root
 			role().grantPermissions(meshRoot().getProjectRoot(), CREATE_PERM);
 			// 2. Create the project
-			Project project = root.getProjectRoot().create("TestProject", user(), schemaContainer("folder").getLatestVersion());
-			assertFalse("The user should not have create permissions on the project.", user().hasPermission(project, CREATE_PERM));
+			Project project = root.getProjectRoot().create("TestProject", user(),
+					schemaContainer("folder").getLatestVersion());
+			assertFalse("The user should not have create permissions on the project.",
+					user().hasPermission(project, CREATE_PERM));
 			user().addCRUDPermissionOnRole(root.getProjectRoot(), CREATE_PERM, project);
 			// 3. Assert that the crud permissions (eg. CREATE) was inherited
 			ac.data().clear();
@@ -244,7 +249,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testReadPermission() {
 		try (NoTx noTx = db().noTx()) {
 			Project newProject;
-			newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
+			newProject = meshRoot().getProjectRoot().create("newProject", user(),
+					schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.READ_PERM, newProject);
 		}
 	}
@@ -254,7 +260,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testDeletePermission() {
 		try (NoTx noTx = db().noTx()) {
 			Project newProject;
-			newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
+			newProject = meshRoot().getProjectRoot().create("newProject", user(),
+					schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.DELETE_PERM, newProject);
 		}
 	}
@@ -263,7 +270,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testUpdatePermission() {
 		try (NoTx noTx = db().noTx()) {
-			Project newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
+			Project newProject = meshRoot().getProjectRoot().create("newProject", user(),
+					schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.UPDATE_PERM, newProject);
 		}
 	}
@@ -272,7 +280,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreatePermission() {
 		try (NoTx noTx = db().noTx()) {
-			Project newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
+			Project newProject = meshRoot().getProjectRoot().create("newProject", user(),
+					schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.CREATE_PERM, newProject);
 		}
 	}

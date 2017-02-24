@@ -1,5 +1,6 @@
 package com.gentics.mesh.core;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -15,7 +16,8 @@ import com.orientechnologies.orient.core.OConstants;
 
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class RestInfoEndpointTest extends AbstractMeshTest {
 
 	@Test

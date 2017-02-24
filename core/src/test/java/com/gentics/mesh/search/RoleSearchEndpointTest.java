@@ -9,11 +9,12 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 
-@MeshTestSetting(useElasticsearch = true, startServer = true, useTinyDataset = false)
+@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = TestSize.PROJECT)
 public class RoleSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test

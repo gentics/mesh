@@ -12,8 +12,9 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MeshRootTest extends AbstractMeshTest {
 
 	@Test
@@ -31,7 +32,7 @@ public class MeshRootTest extends AbstractMeshTest {
 			expectSuccess("projects/" + project().getUuid() + "/nodes", project().getNodeRoot());
 			expectSuccess("projects/" + project().getUuid() + "/nodes/" + folder("2015").getUuid(), folder("2015"));
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags",
-					tagFamily("colors").getTagRoot());
+					tagFamily("colors"));
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags/"
 					+ tag("red").getUuid(), tag("red"));
 

@@ -64,12 +64,13 @@ import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
+import static com.gentics.mesh.test.TestSize.FULL;
 
 /**
  * Test cases for fields of type "micronode"
  */
 // TODO: add tests for all types of fields that can be put into a micronode
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> {
 
 	private static final String MICRONODE_FIELD = "micronodeField";

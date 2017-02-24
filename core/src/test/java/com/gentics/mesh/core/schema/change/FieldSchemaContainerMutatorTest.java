@@ -41,11 +41,12 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import static com.gentics.mesh.test.TestSize.FULL;
 
 /**
  * Test for common mutator operations on a field containers.
  */
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 	private FieldSchemaContainerMutator mutator = new FieldSchemaContainerMutator();

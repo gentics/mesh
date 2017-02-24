@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.transformator;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -19,7 +20,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class NodeContainerTransformatorTest extends AbstractMeshTest {
 
 	@Test

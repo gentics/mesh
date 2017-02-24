@@ -10,8 +10,9 @@ import org.junit.Test;
 import com.gentics.mesh.context.AbstractActionContext;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class I18NTest extends AbstractMeshTest {
 
 	@Test

@@ -75,6 +75,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void removeTag(Tag tag, Release release);
 
 	/**
+	 * Remove all tags for the given release.
+	 * 
+	 * @param release
+	 */
+	void removeAllTags(Release release);
+
+	/**
 	 * Return a list of tags that were assigned to this node in the given release
 	 *
 	 * @param release
@@ -558,4 +565,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param ignoreChecks
 	 */
 	void delete(SearchQueueBatch batch, boolean ignoreChecks);
+
+	/**
+	 * Handle the update tags request.
+	 * 
+	 * @param ac
+	 * @param batch
+	 * @return Page which includes the new set of tags
+	 */
+	Page<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch);
+
 }

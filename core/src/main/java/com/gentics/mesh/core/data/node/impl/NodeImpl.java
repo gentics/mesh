@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.INITIAL;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.ContainerType.forVersion;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
@@ -17,6 +18,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -63,6 +65,7 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -85,7 +88,7 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
+import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -446,6 +449,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
+	public void removeAllTags(Release release) {
+		outE(HAS_TAG).has(TagEdgeImpl.RELEASE_UUID_KEY, release.getUuid()).removeAll();
+	}
+
+	@Override
 	public void setSchemaContainer(SchemaContainer schema) {
 		setLinkOut(schema, HAS_SCHEMA_CONTAINER);
 	}
@@ -732,17 +740,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private void setTagsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
 		for (Tag tag : getTags(release)) {
-			TagFamily tagFamily = tag.getTagFamily();
-			String tagFamilyName = tagFamily.getName();
-			String tagFamilyUuid = tagFamily.getUuid();
 			TagReference reference = tag.transformToReference();
-			TagFamilyTagGroup group = restNode.getTags().get(tagFamilyName);
-			if (group == null) {
-				group = new TagFamilyTagGroup();
-				group.setUuid(tagFamilyUuid);
-				restNode.getTags().put(tagFamilyName, group);
-			}
-			group.getItems().add(reference);
+			restNode.getTags().add(reference);
 		}
 	}
 
@@ -1520,6 +1519,63 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 		return this;
+	}
+
+	@Override
+	public Page<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch) {
+
+		Project project = getProject();
+		Release release = ac.getRelease(null);
+		PagingParameters pagingParams = ac.getPagingParameters();
+		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
+		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
+		User user = ac.getUser();
+		return db.tx(() -> {
+			batch.store(this);
+			removeAllTags(release);
+			for (TagReference tagReference : request.getTags()) {
+				if (!tagReference.isSet()) {
+					throw error(BAD_REQUEST, "tag_error_name_or_uuid_missing");
+				}
+				if (isEmpty(tagReference.getTagFamily())) {
+					throw error(BAD_REQUEST, "tag_error_tagfamily_not_set");
+				}
+				// 1. Locate the tag family
+				TagFamily tagFamily = tagFamilyRoot.findByName(tagReference.getTagFamily());
+				// Tag Family could not be found so lets create a new one
+				if (tagFamily == null) {
+					throw error(NOT_FOUND, "object_not_found_for_name", tagReference.getTagFamily());
+				}
+				// 2. The uuid was specified so lets try to load the tag this way
+				if (!isEmpty(tagReference.getUuid())) {
+					Tag tag = tagFamily.findByUuid(tagReference.getUuid());
+					if (tag == null) {
+						throw error(NOT_FOUND, "object_not_found_for_uuid", tagReference.getUuid());
+					}
+					addTag(tag, release);
+				} else {
+					Tag tag = tagFamily.findByName(tagReference.getName());
+					// Tag with name could not be found so create it
+					if (tag == null) {
+						if (user.hasPermission(tagFamily, CREATE_PERM)) {
+							tag = tagFamily.create(tagReference.getName(), project, user);
+							batch.store(tag, false);
+							batch.store(tagFamily, false);
+						} else {
+							throw error(FORBIDDEN, "tag_error_missing_perm_on_tag_family", tagFamily.getName(), tagFamily.getUuid(),
+									tagReference.getName());
+						}
+					}
+					addTag(tag, release);
+				}
+			}
+			return getTags(release, pagingParams);
+		});
+
+		/*
+		 * node.addTag(tag, release); batch.store(node, release.getUuid(), PUBLISHED, false); batch.store(node, release.getUuid(), DRAFT, false);
+		 */
+
 	}
 
 	@Override

@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_AC
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.STORE_ACTION;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -53,7 +54,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.RoutingContext;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	private static Logger log = LoggerFactory.getLogger(TagTest.class);
@@ -91,9 +92,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNull(tagFamily.getDescription());
 			tagFamily.setDescription("description");
 			assertEquals("description", tagFamily.getDescription());
-			assertEquals(0, tagFamily.getTagRoot().findAll().size());
+			assertEquals(0, tagFamily.findAll().size());
 			assertNotNull(tagFamily.create(GERMAN_NAME, project(), user()));
-			assertEquals(1, tagFamily.getTagRoot().findAll().size());
+			assertEquals(1, tagFamily.findAll().size());
 		}
 	}
 
@@ -177,7 +178,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Release initialRelease = project.getInitialRelease();
 			Tag tag = root.create(ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
-			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
+			assertNotNull(root.findByUuid(uuid));
 
 			// 2. Create new Release
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -265,7 +266,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			initialRelease = project.getInitialRelease();
 			tag = root.create(ENGLISH_NAME, project, user());
 			String uuid = tag.getUuid();
-			assertNotNull(meshRoot().getTagRoot().findByUuid(uuid));
+			assertNotNull(root.findByUuid(uuid));
 
 			// 2. Create and Tag a node
 			node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
@@ -315,22 +316,18 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (NoTx noTx = db().noTx()) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily basicTagFamily = tagFamily("basic");
+			int beforeCount = basicTagFamily.findAll().size();
 			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
-			basicTagFamily.getTagRoot().addTag(noPermTag);
+			basicTagFamily.addTag(noPermTag);
 			assertNotNull(noPermTag.getUuid());
-			assertEquals(tags().size() + 1, meshRoot().getTagRoot().findAll().size());
+			assertEquals(beforeCount + 1, basicTagFamily.findAll().size());
 
-			Page<? extends Tag> projectTagpage = project().getTagRoot().findAll(getMockedInternalActionContext(user()),
-					new PagingParametersImpl(1, 20));
-			assertPage(projectTagpage, tags().size());
-
-			Page<? extends Tag> globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(user()),
-					new PagingParametersImpl(1, 20));
-			assertPage(globalTagPage, tags().size());
+			Page<? extends Tag> tagfamilyTagpage = basicTagFamily.findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 20));
+			assertPage(tagfamilyTagpage, beforeCount);
 
 			role().grantPermissions(noPermTag, READ_PERM);
-			globalTagPage = meshRoot().getTagRoot().findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 20));
-			assertPage(globalTagPage, tags().size() + 1);
+			Page<? extends Tag> globalTagPage = basicTagFamily.findAll(getMockedInternalActionContext(user()), new PagingParametersImpl(1, 20));
+			assertPage(globalTagPage, beforeCount + 1);
 		}
 	}
 
@@ -375,11 +372,10 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testFindByName() {
 		try (NoTx noTx = db().noTx()) {
 			Tag tag = tag("car");
-			Tag foundTag = meshRoot().getTagRoot().findByName("Car");
+			Tag foundTag = tag.getTagFamily().findByName("Car");
 			assertNotNull(foundTag);
 			assertEquals("Car", foundTag.getName());
-			assertNotNull(meshRoot().getTagRoot().findByName(tag.getName()));
-			assertNull("No tag with the name bogus should be found", meshRoot().getTagRoot().findByName("bogus"));
+			assertNull("No tag with the name bogus should be found", tag.getTagFamily().findByName("bogus"));
 		}
 	}
 
@@ -406,9 +402,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull("The folder could not be found.", loadedTag);
 			String name = loadedTag.getName();
 			assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-			assertEquals(10, tagFamily.getTagRoot().findAll().size());
+			assertEquals(10, tagFamily.findAll().size());
 			latch.countDown();
-			Tag projectTag = tagFamily.getTagRoot().findByUuid(uuid);
+			Tag projectTag = tagFamily.findByUuid(uuid);
 			assertNotNull("The tag should also be assigned to the project tag root", projectTag);
 		}
 

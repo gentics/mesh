@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
@@ -49,7 +50,7 @@ import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = true, startServer = true, useTinyDataset = false)
+@MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
 public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
@@ -214,8 +215,8 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			assertEquals("Expect to only get one search result", 1, response.getMetainfo().getTotalCount());
 
 			// assert tag count
-			int nColorTags = response.getData().get(0).getTags().get("colors").getItems().size();
-			int nBasicTags = response.getData().get(0).getTags().get("basic").getItems().size();
+			long nColorTags = response.getData().get(0).getTags().stream().filter(ref -> ref.getTagFamily().equals("colors")).count();
+			long nBasicTags = response.getData().get(0).getTags().stream().filter(ref -> ref.getTagFamily().equals("basic")).count();
 			assertEquals("Expect correct tag count", previousTagCount + tagCount, nColorTags + nBasicTags);
 		}
 	}

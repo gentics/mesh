@@ -45,7 +45,6 @@ import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.tag.TagFamilyTagGroup;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.util.Tuple;
@@ -62,9 +61,7 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setCreated(getTimestamp());
 		nodeResponse.setEdited(getTimestamp());
 		nodeResponse.setCreator(getUserReference());
-		TagFamilyTagGroup tagGroup = new TagFamilyTagGroup().setUuid(randomUUID());
-		tagGroup.getItems().add(new TagReference().setName("red").setUuid(randomUUID()));
-		nodeResponse.getTags().put("colors", tagGroup);
+		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(randomUUID()).setTagFamily("colors"));
 		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
 		nodeResponse.setAvailableLanguages(Arrays.asList("en", "de"));
 		HashMap<String, String> languagePaths = new HashMap<>();
@@ -107,15 +104,11 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setBreadcrumb(breadcrumb);
 
 		// tags
-		TagFamilyTagGroup colorsGroup = new TagFamilyTagGroup();
-		colorsGroup.getItems().add(new TagReference().setName("red").setUuid(randomUUID()));
-		colorsGroup.getItems().add(new TagReference().setName("green").setUuid(randomUUID()));
-		nodeResponse.getTags().put("colors", colorsGroup);
+		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(randomUUID()).setTagFamily("colors"));
+		nodeResponse.getTags().add(new TagReference().setName("green").setUuid(randomUUID()).setTagFamily("colors"));
 
-		TagFamilyTagGroup typesGroup = new TagFamilyTagGroup();
-		typesGroup.getItems().add(new TagReference().setName("car").setUuid(randomUUID()));
-		typesGroup.getItems().add(new TagReference().setName("ship").setUuid(randomUUID()));
-		nodeResponse.getTags().put("types", typesGroup);
+		nodeResponse.getTags().add(new TagReference().setName("car").setUuid(randomUUID()));
+		nodeResponse.getTags().add(new TagReference().setName("ship").setUuid(randomUUID()));
 
 		return nodeResponse;
 	}
@@ -187,15 +180,10 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setBreadcrumb(breadcrumb);
 
 		// tags
-		TagFamilyTagGroup colorsGroup = new TagFamilyTagGroup();
-		colorsGroup.getItems().add(new TagReference().setName("red").setUuid(randomUUID()));
-		colorsGroup.getItems().add(new TagReference().setName("green").setUuid(randomUUID()));
-		nodeResponse.getTags().put("colors", colorsGroup);
-
-		TagFamilyTagGroup typesGroup = new TagFamilyTagGroup();
-		typesGroup.getItems().add(new TagReference().setName("car").setUuid(randomUUID()));
-		typesGroup.getItems().add(new TagReference().setName("ship").setUuid(randomUUID()));
-		nodeResponse.getTags().put("types", typesGroup);
+		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(randomUUID()).setTagFamily("colors"));
+		nodeResponse.getTags().add(new TagReference().setName("green").setUuid(randomUUID()).setTagFamily("colors"));
+		nodeResponse.getTags().add(new TagReference().setName("car").setUuid(randomUUID()).setTagFamily("vehicles"));
+		nodeResponse.getTags().add(new TagReference().setName("ship").setUuid(randomUUID()).setTagFamily("vehicles"));
 
 		return nodeResponse;
 	}

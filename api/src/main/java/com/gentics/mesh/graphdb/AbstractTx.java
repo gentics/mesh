@@ -11,7 +11,7 @@ import io.vertx.core.logging.LoggerFactory;
  */
 public abstract class AbstractTx extends AbstractTrxBase<FramedTransactionalGraph>implements Tx {
 
-	private static final Logger log = LoggerFactory.getLogger(AbstractTx.class);
+	protected static final Logger log = LoggerFactory.getLogger(AbstractTx.class);
 
 	private boolean isSuccess = false;
 

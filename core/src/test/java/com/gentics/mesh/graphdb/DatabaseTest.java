@@ -21,8 +21,9 @@ import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class DatabaseTest extends AbstractMeshTest {
 
 	private File outputDirectory;

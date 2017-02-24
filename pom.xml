@@ -23,7 +23,7 @@
 		<dagger.version>2.6</dagger.version>
 		<rx.version>1.2.3</rx.version>
 
-		<surefire.forkcount>6</surefire.forkcount>
+		<surefire.forkcount>8</surefire.forkcount>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
 	</properties>
@@ -178,6 +178,18 @@
 					<skipDeploy>true</skipDeploy>
 					<generateReports>false</generateReports>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

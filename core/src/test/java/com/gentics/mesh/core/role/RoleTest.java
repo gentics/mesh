@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -47,7 +48,7 @@ import com.tinkerpop.blueprints.Edge;
 
 import io.vertx.ext.web.RoutingContext;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = false)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
 public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
@@ -80,7 +81,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testGrantPermission() {
 		try (NoTx noTx = db().noTx()) {
 			Role role = role();
-			Node node = content("news overview");
+			Node node = folder("news");
 			role.grantPermissions(node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
 
 			// node2
@@ -141,7 +142,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testGrantPermissionTwice() {
 		try (NoTx noTx = db().noTx()) {
 			Role role = role();
-			Node node = content("news overview");
+			Node node = folder("news");
 
 			role.grantPermissions(node, CREATE_PERM);
 			role.grantPermissions(node, CREATE_PERM);
@@ -159,7 +160,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testGetPermissions() {
 		try (NoTx noTx = db().noTx()) {
 			Role role = role();
-			Node node = content("news overview");
+			Node node = folder("news");
 			assertEquals(6, role.getPermissions(node).size());
 		}
 	}
@@ -168,7 +169,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRevokePermission() {
 		try (NoTx noTx = db().noTx()) {
 			Role role = role();
-			Node node = content("news overview");
+			Node node = folder("news");
 			role.revokePermissions(node, CREATE_PERM);
 
 			Set<GraphPermission> permissions = role.getPermissions(node);
@@ -210,7 +211,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (NoTx noTx = db().noTx()) {
 			MeshAuthUser requestUser = user().reframe(MeshAuthUserImpl.class);
 			// userRoot.findMeshAuthUserByUsername(requestUser.getUsername())
-			Node parentNode = folder("2015");
+			Node parentNode = folder("news");
 			assertNotNull(parentNode);
 
 			parentNode.reload();
@@ -234,8 +235,9 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 				for (Role role : roles().values()) {
 					for (GraphPermission permission : GraphPermission.values()) {
 						assertTrue(
-								"The role {" + role.getName() + "} does not grant perm {" + permission.getRestPerm().getName() + "} to the node {"
-										+ node.getUuid() + "} but it should since the parent object got this role permission.",
+								"The role {" + role.getName() + "} does not grant perm {"
+										+ permission.getRestPerm().getName() + "} to the node {" + node.getUuid()
+										+ "} but it should since the parent object got this role permission.",
 								role.hasPermission(permission, node));
 					}
 				}
@@ -277,11 +279,11 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Page<? extends Role> page = boot().roleRoot().findAll(ac, new PagingParametersImpl(1, 5));
 			assertEquals(roles().size(), page.getTotalElements());
-			assertEquals(4, page.getSize());
+			assertEquals(2, page.getSize());
 
 			page = boot().roleRoot().findAll(ac, new PagingParametersImpl(1, 15));
 			assertEquals(roles().size(), page.getTotalElements());
-			assertEquals(4, page.getSize());
+			assertEquals(2, page.getSize());
 		}
 	}
 
@@ -395,13 +397,13 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertElement(boot().roleRoot(), uuid, false);
 
 			// Check role entry
-//			Optional<? extends SearchQueueEntry> roleEntry = batch.findEntryByUuid(uuid);
-//			assertThat(roleEntry).isPresent();
-//			assertEquals(DELETE_ACTION, roleEntry.get().getElementAction());
-//
-//			Optional<? extends SearchQueueEntry> groupEntry = batch.findEntryByUuid(group().getUuid());
-//			assertThat(groupEntry).isPresent();
-//			assertEquals(STORE_ACTION, groupEntry.get().getElementAction());
+			// Optional<? extends SearchQueueEntry> roleEntry = batch.findEntryByUuid(uuid);
+			// assertThat(roleEntry).isPresent();
+			// assertEquals(DELETE_ACTION, roleEntry.get().getElementAction());
+			//
+			// Optional<? extends SearchQueueEntry> groupEntry = batch.findEntryByUuid(group().getUuid());
+			// assertThat(groupEntry).isPresent();
+			// assertEquals(STORE_ACTION, groupEntry.get().getElementAction());
 
 			assertEquals(2, batch.getEntries().size());
 		}

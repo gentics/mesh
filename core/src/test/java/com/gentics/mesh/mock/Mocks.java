@@ -68,8 +68,6 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.core.data.root.TagRoot;
-import com.gentics.mesh.core.data.root.impl.TagRootImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -92,7 +90,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.test.TestFullDataProvider;
+import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.HttpQueryUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -215,8 +213,6 @@ public final class Mocks {
 		when(tagFamily.getName()).thenReturn(name);
 		when(tagFamily.getUuid()).thenReturn(randomUUID());
 		when(tagFamily.getProject()).thenReturn(project);
-		TagRoot tagRoot = mock(TagRootImpl.class);
-		when(tagFamily.getTagRoot()).thenReturn(tagRoot);
 		return tagFamily;
 	}
 
@@ -419,7 +415,7 @@ public final class Mocks {
 
 	public static InternalActionContext getMockedVoidInternalActionContext(String query, User user) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, true, user, null));
-		ac.data().put(RouterStorage.PROJECT2_CONTEXT_KEY, TestFullDataProvider.PROJECT_NAME);
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return ac;
 	}
 
@@ -437,7 +433,7 @@ public final class Mocks {
 
 	public static InternalActionContext getMockedInternalActionContext(String query, User user) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, false, user, null));
-		ac.data().put(RouterStorage.PROJECT2_CONTEXT_KEY, TestFullDataProvider.PROJECT_NAME);
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return ac;
 	}
 
@@ -491,7 +487,7 @@ public final class Mocks {
 		when(rc.session()).thenReturn(session);
 
 		if (project != null) {
-			when(rc.get(RouterStorage.PROJECT2_CONTEXT_KEY)).thenReturn(project);
+			when(rc.get(RouterStorage.PROJECT_CONTEXT_KEY)).thenReturn(project);
 		}
 		return rc;
 

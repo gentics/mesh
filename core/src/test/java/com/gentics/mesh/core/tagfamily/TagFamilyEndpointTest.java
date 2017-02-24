@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.test.TestFullDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
@@ -57,8 +57,9 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, useTinyDataset = false, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
 	@Test
@@ -340,23 +341,13 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			// 2. Update the tagfamily
 			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 			request.setName("new Name");
-			TagFamilyUpdateRequest tagUpdateRequest = new TagFamilyUpdateRequest();
-			final String newName = "new Name";
-			tagUpdateRequest.setName(newName);
-			assertEquals(newName, tagUpdateRequest.getName());
 
 			// 3. Send the request to the server
-			MeshResponse<TagFamilyResponse> updatedTagFut = client().updateTagFamily(PROJECT_NAME, uuid, tagUpdateRequest).invoke();
-			latchFor(updatedTagFut);
-			assertSuccess(updatedTagFut);
-			TagFamilyResponse tagFamily2 = updatedTagFut.result();
+			TagFamilyResponse tagFamily2 = call(() -> client().updateTagFamily(PROJECT_NAME, uuid, request));
 			assertThat(tagFamily2).matches(tagFamily("basic"));
 
 			// 4. read the tag again and verify that it was changed
-			MeshResponse<TagFamilyResponse> reloadedTagFut = client().findTagFamilyByUuid(PROJECT_NAME, uuid).invoke();
-			latchFor(reloadedTagFut);
-			assertSuccess(reloadedTagFut);
-			TagFamilyResponse reloadedTagFamily = reloadedTagFut.result();
+			TagFamilyResponse reloadedTagFamily = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid));
 			assertEquals(request.getName(), reloadedTagFamily.getName());
 			assertThat(reloadedTagFamily).matches(tagFamily("basic"));
 		}
@@ -376,7 +367,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			// Multiple tags of the same family can be tagged on same node. This should still trigger only 1 update for that node.
 			HashSet<String> taggedNodes = new HashSet<>();
 			int storeCount = 0;
-			for (Tag tag : tagfamily.getTagRoot().findAll()) {
+			for (Tag tag : tagfamily.findAll()) {
 				storeCount++;
 				for (Node node : tag.getNodes(release)) {
 					if (!taggedNodes.contains(node.getUuid())) {
