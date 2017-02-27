@@ -12,9 +12,9 @@ public class OrientDBNoTx extends AbstractNoTx<FramedGraph> {
 	OrientGraphNoTx noTx = null;
 
 	public OrientDBNoTx(OrientGraphFactory factory, TypeResolver resolver) {
-		if(Database.threadLocalGraph.get()!=null) {
-			throw new RuntimeException("Warning - nested noTx detected!");
-		}
+//		if(Database.threadLocalGraph.get()!=null) {
+//			throw new RuntimeException("Warning - nested noTx detected!");
+//		}
 		this.noTx = factory.getNoTx();
 		FramedGraph graph = new DelegatingFramedOrientGraph(noTx, resolver);
 		init(graph);
