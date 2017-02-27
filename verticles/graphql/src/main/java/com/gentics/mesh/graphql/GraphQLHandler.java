@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +49,9 @@ public class GraphQLHandler {
 			JsonObject queryJson = new JsonObject(body);
 			String query = queryJson.getString("query");
 			// Map<String, Object> result = (Map<String, Object>) new GraphQL(GarfieldSchema.GarfieldSchema).execute(query, GarfieldSchema.john).getData();
-			ExecutionResult result = new GraphQL(typeProvider.getRootSchema(ac.getProject())).execute(query, ac);
+			Map<String, Object> context = new HashMap<>();
+			context.put("ac", ac);
+			ExecutionResult result = new GraphQL(typeProvider.getRootSchema(ac.getProject())).execute(query, context);
 			List<GraphQLError> errors = result.getErrors();
 			if (!errors.isEmpty()) {
 				log.error("Could not execute query {" + query + "}");
