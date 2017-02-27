@@ -6,7 +6,6 @@ import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import org.json.JSONException;
 import org.junit.Test;
 
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -25,23 +24,13 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeQuery() throws JSONException {
-		try (NoTx noTx = db().noTx()) {
-			JsonObject response = call(
-					() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + content().getUuid() + "\"){uuid}}"));
-			MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + content().getUuid() + "'}}}", response);
+		String contentUuid = db().noTx(() -> content().getUuid());
+//		JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + contentUuid + "\"){uuid}}"));
+//		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "'}}}", response);
 
-			response = call(() -> client().graphql(PROJECT_NAME,
-					"{nodes(uuid:\"" + content().getUuid() + "\") {uuid, fields { ... on content {title}}}}"));
-			System.out.println(response.toString());
-			MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + content().getUuid() + "'}}}", response);
-		}
-	}
-
-	@Test
-	public void testNodeFieldQuery() throws JSONException {
-		JsonObject response = call(
-				() -> client().graphql(PROJECT_NAME, "{nodes(field: name){uuid}}"));
-		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + content().getUuid() + "'}}}", response);
+		JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + contentUuid + "\") {uuid, fields { ... on content { name }}}}"));
+		System.out.println(response.toString());
+		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "'}}}", response);
 	}
 
 }
