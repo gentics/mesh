@@ -212,19 +212,23 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return Loaded element. A not found error will be thrown if the element could not be found. Returned value will never be null.
 	 */
 	default public T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
+		Database db = database();
 		reload();
 		T element = findByUuid(uuid);
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
 
-		MeshAuthUser requestUser = ac.getUser();
-		String elementUuid = element.getUuid();
-		if (requestUser.hasPermission(element, perm)) {
-			return element;
-		} else {
-			throw error(FORBIDDEN, "error_missing_perm", elementUuid);
-		}
+		T result = db.noTx(() -> {
+			MeshAuthUser requestUser = ac.getUser();
+			String elementUuid = element.getUuid();
+			if (requestUser.hasPermission(element, perm)) {
+				return element;
+			} else {
+				throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+			}
+		});
+		return result;
 	}
 
 	/**

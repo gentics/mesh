@@ -101,20 +101,18 @@ public class TagCrudHandler extends AbstractHandler {
 
 		utils.operateNoTx(ac, () -> {
 			Database db = MeshInternal.get().database();
+			SearchQueueBatch batch = searchQueue.create();
 			ResultInfo info = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-
 				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
 				TagResponse model = tag.transformToRestSync(ac, 0);
 				String path = tag.getAPIPath(ac);
-				ResultInfo resultInfo = new ResultInfo(model, batch);
+				ResultInfo resultInfo = new ResultInfo(model);
 				resultInfo.setProperty("path", path);
 				return resultInfo;
 			});
 
 			RestModel model = info.getModel();
 			String path = info.getProperty("path");
-			SearchQueueBatch batch = info.getBatch();
 			ac.setLocation(path);
 			// TODO don't wait forever in order to prevent locking the thread
 			batch.processSync();

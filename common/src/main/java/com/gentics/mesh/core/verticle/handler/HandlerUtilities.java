@@ -58,20 +58,20 @@ public class HandlerUtilities {
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac,
 			TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
+			SearchQueueBatch batch = searchQueue.create();
 			ResultInfo info = database.tx(() -> {
 				RootVertex<T> root = handler.call();
-				SearchQueueBatch batch = searchQueue.create();
 				T created = root.create(ac, batch);
 				RM model = created.transformToRestSync(ac, 0);
 				String path = created.getAPIPath(ac);
-				ResultInfo resultInfo = new ResultInfo(model, batch);
+				ResultInfo resultInfo = new ResultInfo(model);
 				resultInfo.setProperty("path", path);
 				return resultInfo;
 			});
 
 			RestModel model = info.getModel();
 			String path = info.getProperty("path");
-			SearchQueueBatch batch = info.getBatch();
+
 			ac.setLocation(path);
 			batch.processSync();
 			return model;

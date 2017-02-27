@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.Transformator;
@@ -134,13 +135,15 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Completable store(UpdateDocumentEntry entry) {
 		return Completable.defer(() -> {
-			String uuid = entry.getElementUuid();
-			String type = composeIndexTypeFromEntry(entry);
-			T element = getRootVertex().findByUuid(uuid);
-			if (element == null) {
-				throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
-			} else {
-				return store(element, entry);
+			try (NoTx noTx = db.noTx()) {
+				String uuid = entry.getElementUuid();
+				String type = composeIndexTypeFromEntry(entry);
+				T element = getRootVertex().findByUuid(uuid);
+				if (element == null) {
+					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
+				} else {
+					return store(element, entry);
+				}
 			}
 		});
 	}

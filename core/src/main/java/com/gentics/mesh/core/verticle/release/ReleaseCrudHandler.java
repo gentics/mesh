@@ -15,7 +15,6 @@ import java.util.List;
 import javax.inject.Inject;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.elasticsearch.common.collect.Tuple;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
@@ -72,15 +71,14 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	public void handleCreate(InternalActionContext ac) {
 		utils.operateNoTx(ac, () -> {
 			Database db = MeshInternal.get().database();
+			SearchQueueBatch batch = searchQueue.create();
 
 			ResultInfo info = db.tx(() -> {
 				RootVertex<Release> root = getRootVertex(ac);
-				SearchQueueBatch batch = searchQueue.create();
-
 				Release created = root.create(ac, batch);
 				Project project = created.getProject();
 				ReleaseResponse model = created.transformToRestSync(ac, 0);
-				ResultInfo resultInfo = new ResultInfo(model, batch);
+				ResultInfo resultInfo = new ResultInfo(model);
 				resultInfo.setProperty("path", created.getAPIPath(ac));
 				resultInfo.setProperty("projectUuid", project.getUuid());
 				resultInfo.setProperty("releaseUuid", created.getUuid());
@@ -93,7 +91,6 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			options.addHeader(NodeMigrationVerticle.UUID_HEADER, info.getProperty("releaseUuid"));
 			Mesh.vertx().eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options);
 
-			SearchQueueBatch batch = info.getBatch();
 			ac.setLocation(info.getProperty("path"));
 			// Finally process the batch
 			batch.processSync();
@@ -134,8 +131,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 			List<DeliveryOptions> events = new ArrayList<>();
 
-			Tuple<SearchQueueBatch, Single<SchemaReferenceList>> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			SearchQueueBatch batch = searchQueue.create();
+			Single<SchemaReferenceList> ref = db.tx(() -> {
 
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList) {
@@ -162,17 +159,17 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					events.add(options);
 				}
 
-				return Tuple.tuple(batch, getSchemaVersions(release));
+				return getSchemaVersions(release);
 			});
 
 			// 1. Process batch and create need indices
-			tuple.v1().processSync();
+			batch.processSync();
 
 			// 2. Invoke migrations which will populate the created index
 			for (DeliveryOptions option : events) {
 				Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, option);
 			}
-			return tuple.v2();
+			return ref;
 
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 

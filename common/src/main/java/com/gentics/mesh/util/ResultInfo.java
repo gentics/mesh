@@ -3,7 +3,6 @@ package com.gentics.mesh.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -13,20 +12,15 @@ public class ResultInfo {
 
 	private RestModel model;
 
-	private SearchQueueBatch batch;
-
 	Map<String, String> properties = new HashMap<>();
 
 	/**
 	 * Create a new result.
 	 * 
 	 * @param model
-	 * @param batch
-	 *            Search queue batch which was updated within the handler
 	 */
-	public ResultInfo(RestModel model, SearchQueueBatch batch) {
+	public ResultInfo(RestModel model) {
 		this.model = model;
-		this.batch = batch;
 	}
 
 	/**
@@ -36,15 +30,6 @@ public class ResultInfo {
 	 */
 	public RestModel getModel() {
 		return model;
-	}
-
-	/**
-	 * Return the batch of this result.
-	 * 
-	 * @return
-	 */
-	public SearchQueueBatch getBatch() {
-		return batch;
 	}
 
 	/**
