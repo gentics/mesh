@@ -33,6 +33,7 @@ import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -178,7 +179,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return Completable.defer(() -> {
 			HandleContext context = entry.getContext();
 			Set<Single<String>> obs = new HashSet<>();
-			store(obs, node, context);
+			try (NoTx noTrx = db.noTx()) {
+				store(obs, node, context);
+			}
 
 			// Now merge all store actions and refresh the affected indices
 			return Observable.from(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct()
