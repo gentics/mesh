@@ -219,7 +219,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
 		}
 
-		T result = db.noTx(() -> {
+//		T result = db.noTx(() -> {
 			MeshAuthUser requestUser = ac.getUser();
 			String elementUuid = element.getUuid();
 			if (requestUser.hasPermission(element, perm)) {
@@ -227,8 +227,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", elementUuid);
 			}
-		});
-		return result;
+//		});
+//		return result;
 	}
 
 	/**

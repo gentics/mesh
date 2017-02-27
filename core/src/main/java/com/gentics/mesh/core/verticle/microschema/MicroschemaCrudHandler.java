@@ -147,11 +147,12 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		utils.operateNoTx(ac, () -> {
 			MicroschemaContainer schema = boot.get().microschemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
+			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
 				schema.getLatestVersion().applyChanges(ac, batch);
-				return batch;
-			}).processSync();
+				return null;
+			});
+			batch.processSync();
 			return message(ac, "migration_invoked", schema.getName());
 		}, model -> ac.send(model, OK));
 

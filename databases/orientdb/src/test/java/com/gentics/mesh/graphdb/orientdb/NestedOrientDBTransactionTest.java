@@ -73,7 +73,7 @@ public class NestedOrientDBTransactionTest {
 					long count = tx2.countVertices();
 					System.out.println("Inner " + count);
 				} finally {
-					//tx2.rollback();
+//					tx2.rollback();
 					tx2.shutdown();
 				}
 				throw new RuntimeException();
