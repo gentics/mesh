@@ -25,8 +25,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testNodeQuery() throws JSONException {
 		String contentUuid = db().noTx(() -> content().getUuid());
-		JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + contentUuid + "\"){uuid}}"));
-		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "'}}}", response);
+		String creationDate = db().noTx(() -> content().getCreationDate());
+		JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + contentUuid + "\"){uuid, created, creator { username, groups { name } }}}"));
+		System.out.println(response.encodePrettily());
+		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "', 'created': '" + creationDate + "'}}}", response);
 
 		//		JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + contentUuid + "\") {uuid, fields { ... on content { name, content }}}}"));
 		//		System.out.println(response.toString());

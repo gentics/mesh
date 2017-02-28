@@ -9,6 +9,8 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.CreatorTrackingVertex;
+import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.graphdb.model.MeshElement;
 
 import dagger.Lazy;
@@ -132,7 +134,9 @@ public class InterfaceTypeProvider {
 				.type(GraphQLString)
 				.dataFetcher(fetcher -> {
 					Object source = fetcher.getSource();
-					System.out.println(source.getClass());
+					if (source instanceof EditorTrackingVertex) {
+						return ((EditorTrackingVertex) source).getLastEditedDate();
+					}
 					return null;
 				})
 				.build());
@@ -142,7 +146,9 @@ public class InterfaceTypeProvider {
 				.type(GraphQLString)
 				.dataFetcher(fetcher -> {
 					Object source = fetcher.getSource();
-					System.out.println(source.getClass());
+					if (source instanceof CreatorTrackingVertex) {
+						return ((CreatorTrackingVertex) source).getCreationDate();
+					}
 					return null;
 				})
 				.build());
@@ -152,15 +158,29 @@ public class InterfaceTypeProvider {
 				.type(getPermInfoType())
 				.build());
 
-		//rolePerms
+		//TODO rolePerms
 
 		builder.field(newFieldDefinition().name("creator")
 				.description("Creator of the element")
-				.type(new GraphQLList(new GraphQLTypeReference("User")))
+				.type(new GraphQLTypeReference("User"))
+				.dataFetcher(fetcher -> {
+					Object source = fetcher.getSource();
+					if (source instanceof CreatorTrackingVertex) {
+						return ((CreatorTrackingVertex) source).getCreator();
+					}
+					return null;
+				})
 				.build());
 		builder.field(newFieldDefinition().name("editor")
 				.description("Editor of the element")
-				.type(new GraphQLList(new GraphQLTypeReference("User")))
+				.type(new GraphQLTypeReference("User"))
+				.dataFetcher(fetcher -> {
+					Object source = fetcher.getSource();
+					if (source instanceof EditorTrackingVertex) {
+						return ((EditorTrackingVertex) source).getEditor();
+					}
+					return null;
+				})
 				.build());
 
 	}
