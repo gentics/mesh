@@ -25,7 +25,7 @@ public interface PagingParameters extends ParameterProvider {
 	 *            Current page number
 	 * @return Fluent API
 	 */
-	PagingParameters setPage(int page);
+	PagingParameters setPage(long page);
 
 	/**
 	 * Set the per page count.

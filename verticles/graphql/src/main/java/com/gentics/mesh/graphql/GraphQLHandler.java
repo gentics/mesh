@@ -56,11 +56,12 @@ public class GraphQLHandler {
 			if (!errors.isEmpty()) {
 				log.error("Could not execute query {" + query + "}");
 				for (GraphQLError error : errors) {
-					if (error.getLocations().isEmpty()) {
+					if (error.getLocations() == null || error.getLocations().isEmpty()) {
 						log.error(error.getErrorType() + " " + error.getMessage());
 					} else {
 						for (SourceLocation location : error.getLocations()) {
-							log.error(error.getErrorType() + " " + error.getMessage() + " " + location.getColumn() + ":" + location.getLine());
+							log.error(error.getErrorType() + " " + error.getMessage() + " " + location.getColumn() + ":"
+									+ location.getLine());
 						}
 					}
 				}

@@ -26,7 +26,11 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	public void testNodeQuery() throws JSONException {
 		String contentUuid = db().noTx(() -> content().getUuid());
 		String creationDate = db().noTx(() -> content().getCreationDate());
-		JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + contentUuid + "\"){uuid, created, creator { username, groups { name } }}}"));
+		//JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{ tagFamilies(name: \"colors\") { name, creator {firstname, lastname}, tags(page: 1, perPage:1) {name}}, schemas(name:\"content\") {name}, nodes(uuid:\"" + contentUuid + "\"){uuid, languagePaths(linkType: FULL) {languageTag, link}, availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
+
+		JsonObject response = call(() -> client().graphql(PROJECT_NAME,
+				"{ microschemas(name: \"vcard\") {name, uuid}, roles(name: \"admin\") {name, uuid},  groups(name: \"admin\") {name, uuid}, tagFamilies(name: \"colors\") { uuid, name, creator {firstname, lastname}, tags(page: 1, perPage:1) {name}}, schemas(name:\"content\") {uuid, name}, nodes(path:\"/Neuigkeiten/News Overview.de.html\"){uuid, language, languagePaths(linkType: FULL) {languageTag, link}, availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
+
 		System.out.println(response.encodePrettily());
 		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "', 'created': '" + creationDate + "'}}}", response);
 

@@ -8,7 +8,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.graphql.type.argument.ArgumentsProvider;
 
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
@@ -16,13 +15,10 @@ import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLTypeReference;
 
 @Singleton
-public class UserTypeProvider {
+public class UserTypeProvider extends AbstractTypeProvider{
 
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;
-
-	@Inject
-	public ArgumentsProvider argumentsProvider;
 
 	@Inject
 	public UserTypeProvider() {
@@ -83,7 +79,7 @@ public class UserTypeProvider {
 
 		root.field(newFieldDefinition().name("groups")
 				.description("Groups to which the user belongs")
-				.argument(argumentsProvider.getPagingArgs())
+				.argument(getPagingArgs())
 				.type(new GraphQLList(new GraphQLTypeReference("Group")))
 				.dataFetcher(fetcher -> {
 					Object source = fetcher.getSource();

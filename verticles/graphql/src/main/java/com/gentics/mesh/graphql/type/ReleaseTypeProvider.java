@@ -11,7 +11,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 
 @Singleton
-public class ReleaseTypeProvider {
+public class ReleaseTypeProvider extends AbstractTypeProvider{
 
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;

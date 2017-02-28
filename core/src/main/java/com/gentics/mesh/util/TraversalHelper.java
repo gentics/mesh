@@ -61,8 +61,8 @@ public final class TraversalHelper {
 		// External (for the enduser) all pages start with 1.
 		page = page - 1;
 
-		int low = page * pageSize - 1;
-		int upper = low + pageSize;
+		long low = page * pageSize - 1;
+		long upper = low + pageSize;
 
 		if (pageSize == 0) {
 			low = 0;
@@ -70,7 +70,7 @@ public final class TraversalHelper {
 		}
 
 		Iterator<VertexFrame> iterator = traversal.iterator();
-		int count = 0;
+		long count = 0;
 		List<T> elementsOfPage = new ArrayList<>();
 		while (iterator.hasNext()) {
 			VertexFrame element = iterator.next();
@@ -82,9 +82,9 @@ public final class TraversalHelper {
 		}
 
 		// The totalPages of the list response must be zero if the perPage parameter is also zero.
-		int totalPages = 0;
+		long totalPages = 0;
 		if (perPage != 0) {
-			totalPages = (int) Math.ceil(count / (double) (perPage));
+			totalPages = (long) Math.ceil(count / (double) (perPage));
 		}
 
 		// Internally the page size was reduced. We need to increment it now that we are finished.

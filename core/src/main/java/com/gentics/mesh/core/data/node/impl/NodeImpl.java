@@ -761,22 +761,34 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			String releaseUuid = ac.getRelease(getProject()).getUuid();
 			ContainerType type = forVersion(versioiningParameters.getVersion());
 
+			LinkType linkType = ac.getNodeParameters().getResolveLinks();
+			
 			// Path
 			WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
-			String path = linkReplacer.resolve(releaseUuid, type, getUuid(), ac.getNodeParameters().getResolveLinks(), getProject().getName(),
+			String path = linkReplacer.resolve(releaseUuid, type, getUuid(), linkType, getProject().getName(),
 					restNode.getLanguage());
 			restNode.setPath(path);
 
 			// languagePaths
-			Map<String, String> languagePaths = new HashMap<>();
-			for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release, forVersion(versioiningParameters.getVersion()))) {
-				Language currLanguage = currentFieldContainer.getLanguage();
-				String languagePath = linkReplacer.resolve(releaseUuid, type, this, ac.getNodeParameters().getResolveLinks(),
-						currLanguage.getLanguageTag());
-				languagePaths.put(currLanguage.getLanguageTag(), languagePath);
-			}
-			restNode.setLanguagePaths(languagePaths);
+			restNode.setLanguagePaths(getLanguagePaths(ac, linkType, release));
 		}
+	}
+
+	@Override
+	public Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, Release release) {
+		VersioningParameters versioiningParameters = ac.getVersioningParameters();
+		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		ContainerType type = forVersion(versioiningParameters.getVersion());
+
+		Map<String, String> languagePaths = new HashMap<>();
+		WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
+		for (GraphFieldContainer currentFieldContainer : getGraphFieldContainers(release, forVersion(versioiningParameters.getVersion()))) {
+			Language currLanguage = currentFieldContainer.getLanguage();
+			String languagePath = linkReplacer.resolve(releaseUuid, type, this, linkType,
+					currLanguage.getLanguageTag());
+			languagePaths.put(currLanguage.getLanguageTag(), languagePath);
+		}
+		return languagePaths;
 	}
 
 	/**

@@ -11,7 +11,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 
 @Singleton
-public class MicroschemaTypeProvider {
+public class MicroschemaTypeProvider extends AbstractTypeProvider{
 
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;

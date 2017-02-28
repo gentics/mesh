@@ -24,21 +24,21 @@ public interface Page<T extends TransformableElement<? extends RestModel>> exten
 	 * 
 	 * @return
 	 */
-	int getNumberOfElements();
+	long getNumberOfElements();
 
 	/**
 	 * Return the total amount of pages which the resources that provided this page could return.
 	 * 
 	 * @return
 	 */
-	int getTotalPages();
+	long getTotalPages();
 
 	/**
 	 * Return the current page number.
 	 * 
 	 * @return
 	 */
-	int getNumber();
+	long getNumber();
 
 	/**
 	 * Return the total item count which the resource that provided this page could return.

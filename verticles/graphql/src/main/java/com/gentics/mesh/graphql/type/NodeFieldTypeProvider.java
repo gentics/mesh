@@ -34,7 +34,7 @@ import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLUnionType;
 
 @Singleton
-public class NodeFieldTypeProvider {
+public class NodeFieldTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public StringFieldTypeProvider stringFieldProvider;

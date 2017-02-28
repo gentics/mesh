@@ -3,24 +3,28 @@ package com.gentics.mesh.graphql.type;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
+import java.util.Map;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.service.WebRootService;
-import com.gentics.mesh.graphql.type.argument.ArgumentsProvider;
 import com.gentics.mesh.path.Path;
 
+import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLSchema;
 
 @Singleton
-public class RootTypeProvider {
+public class RootTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public NodeFieldTypeProvider nodeFieldProvider;
@@ -50,9 +54,6 @@ public class RootTypeProvider {
 	public WebRootService webrootService;
 
 	@Inject
-	public ArgumentsProvider arguments;
-
-	@Inject
 	public BootstrapInitializer boot;
 
 	@Inject
@@ -78,8 +79,8 @@ public class RootTypeProvider {
 				.type(userFieldProvider.getUserType())
 				.dataFetcher(fetcher -> {
 					Object source = fetcher.getSource();
-					if (source instanceof InternalActionContext) {
-						InternalActionContext ac = (InternalActionContext) source;
+					if (source instanceof Map) {
+						InternalActionContext ac = ((Map<String, InternalActionContext>) source).get("ac");
 						MeshAuthUser requestUser = ac.getUser();
 						return requestUser;
 					}
@@ -90,20 +91,19 @@ public class RootTypeProvider {
 		// .projects
 		root.field(newFieldDefinition().name("projects")
 				.description("Load a project")
-				.argument(arguments.getUuidArg("Uuid of the project"))
+				.argument(getUuidArg("Uuid of the project"))
+				.argument(getNameArg("Name of the project"))
 				.dataFetcher(fetcher -> {
-					String uuid = fetcher.getArgument("uuid");
-					return boot.projectRoot()
-							.findByUuid(uuid);
+					return handleUuidNameArgs(fetcher, boot.projectRoot());
 				})
 				.type(projectTypeProvider.getProjectType(project))
 				.build());
 
 		// .nodes
-		GraphQLFieldDefinition nodeField = newFieldDefinition().name("nodes")
+		root.field(newFieldDefinition().name("nodes")
 				.description("Load a node")
-				.argument(arguments.getUuidArg("Node uuid"))
-				.argument(arguments.getPathArg())
+				.argument(getUuidArg("Node uuid"))
+				.argument(getPathArg())
 				.dataFetcher(fetcher -> {
 					String uuid = fetcher.getArgument("uuid");
 					if (uuid != null) {
@@ -112,24 +112,23 @@ public class RootTypeProvider {
 					}
 					String path = fetcher.getArgument("path");
 					if (path != null) {
-						Path pathResult = webrootService.findByProjectPath(null, path);
+						InternalActionContext ac = (InternalActionContext) ((Map) fetcher.getContext()).get("ac");
+						Path pathResult = webrootService.findByProjectPath(ac, path);
 						return pathResult.getLast()
 								.getNode();
 					}
 					return null;
 				})
 				.type(nodeTypeProvider.getNodeType(project))
-				.build();
-		root.field(nodeField);
+				.build());
 
 		// .tags
 		root.field(newFieldDefinition().name("tags")
 				.description("Load a tag")
-				.argument(arguments.getUuidArg("Tag uuid"))
+				.argument(getUuidArg("Uuid of the tag"))
+				.argument(getNameArg("Name of the tag"))
 				.dataFetcher(fetcher -> {
-					String uuid = fetcher.getArgument("uuid");
-					return boot.tagRoot()
-							.findByUuid(uuid);
+					return handleUuidNameArgs(fetcher, boot.tagRoot());
 				})
 				.type(tagTypeProvider.getTagType())
 				.build());
@@ -137,11 +136,10 @@ public class RootTypeProvider {
 		// .tagFamilies
 		root.field(newFieldDefinition().name("tagFamilies")
 				.description("Load a tag family")
-				.argument(arguments.getUuidArg("TagFamily uuid"))
+				.argument(getUuidArg("Uuid of the tag family"))
+				.argument(getNameArg("Name of the tag family"))
 				.dataFetcher(fetcher -> {
-					String uuid = fetcher.getArgument("uuid");
-					return boot.tagFamilyRoot()
-							.findByUuid(uuid);
+					return handleUuidNameArgs(fetcher, boot.tagFamilyRoot());
 				})
 				.type(tagFamilyTypeProvider.getTagFamilyType())
 				.build());
@@ -149,31 +147,43 @@ public class RootTypeProvider {
 		// .releases
 		root.field(newFieldDefinition().name("releases")
 				.description("Load a specific release")
-				.argument(arguments.getUuidArg("Uuid of the release"))
+				.argument(getNameArg("Name of the release"))
+				.argument(getUuidArg("Uuid of the release"))
 				.type(releaseTypeProvider.getReleaseType())
+				.dataFetcher(fetcher -> {
+					return handleUuidNameArgs(fetcher, project.getReleaseRoot());
+				})
 				.build());
 
 		// .schemas
-		root.field(newFieldDefinition().name("schema")
+		root.field(newFieldDefinition().name("schemas")
 				.description("Load a schema")
-				.argument(arguments.getUuidArg("Uuid of the schema"))
+				.argument(getUuidArg("Uuid of the schema"))
+				.argument(getNameArg("Name of the schema"))
 				.type(schemaTypeProvider.getSchemaType())
+				.dataFetcher(fetcher -> {
+					return handleUuidNameArgs(fetcher, boot.schemaContainerRoot());
+				})
 				.build());
 
 		// .microschemas
 		root.field(newFieldDefinition().name("microschemas")
 				.description("Load a microschema")
-				.argument(arguments.getUuidArg("Uuid of the microschema"))
+				.argument(getUuidArg("Uuid of the microschema"))
+				.argument(getNameArg("Name of the microschema"))
 				.type(microschemaTypeProvider.getMicroschemaType())
+				.dataFetcher(fetcher -> {
+					return handleUuidNameArgs(fetcher, boot.microschemaContainerRoot());
+				})
 				.build());
-		//.roles
+
+		// .roles
 		root.field(newFieldDefinition().name("roles")
 				.description("Load a role")
-				.argument(arguments.getUuidArg("Role uuid"))
+				.argument(getUuidArg("Uuid of the role"))
+				.argument(getNameArg("Name of the role"))
 				.dataFetcher(fetcher -> {
-					String uuid = fetcher.getArgument("uuid");
-					return boot.roleRoot()
-							.findByUuid(uuid);
+					return handleUuidNameArgs(fetcher, boot.roleRoot());
 				})
 				.type(roleTypeProvider.getRoleType())
 				.build());
@@ -181,11 +191,10 @@ public class RootTypeProvider {
 		// .groups
 		root.field(newFieldDefinition().name("groups")
 				.description("Load a group")
-				.argument(arguments.getUuidArg("Group uuid"))
+				.argument(getUuidArg("Uuid of the group"))
+				.argument(getNameArg("Name of the group"))
 				.dataFetcher(fetcher -> {
-					String uuid = fetcher.getArgument("uuid");
-					return boot.roleRoot()
-							.findByUuid(uuid);
+					return handleUuidNameArgs(fetcher, boot.groupRoot());
 				})
 				.type(groupTypeProvider.getGroupType())
 				.build());
@@ -193,16 +202,27 @@ public class RootTypeProvider {
 		// .users
 		root.field(newFieldDefinition().name("users")
 				.description("Load a user")
-				.argument(arguments.getUuidArg("User uuid"))
+				.argument(getUuidArg("Uuid of the user"))
+				.argument(getNameArg("Username of the user"))
 				.dataFetcher(fetcher -> {
-					String uuid = fetcher.getArgument("uuid");
-					return boot.userRoot()
-							.findByUuid(uuid);
+					return handleUuidNameArgs(fetcher, boot.userRoot());
 				})
 				.type(userFieldProvider.getUserType())
 				.build());
 
 		return root.build();
+	}
+
+	private MeshVertex handleUuidNameArgs(DataFetchingEnvironment fetcher, RootVertex<?> root) {
+		String uuid = fetcher.getArgument("uuid");
+		if (uuid != null) {
+			return root.findByUuid(uuid);
+		}
+		String name = fetcher.getArgument("name");
+		if (name != null) {
+			return root.findByName(name);
+		}
+		return null;
 	}
 
 	public GraphQLSchema getRootSchema(Project project) {

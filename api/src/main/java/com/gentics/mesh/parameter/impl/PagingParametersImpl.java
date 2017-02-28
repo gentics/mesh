@@ -41,7 +41,7 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 		}
 	}
 
-	public PagingParametersImpl(int page, int perPage, String sortBy, SortOrder order) {
+	public PagingParametersImpl(long page, int perPage, String sortBy, SortOrder order) {
 		super();
 		setPage(page);
 		setPerPage(perPage);
@@ -90,7 +90,7 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 	}
 
 	@Override
-	public PagingParameters setPage(int page) {
+	public PagingParameters setPage(long page) {
 		setParameter(PAGE_PARAMETER_KEY, String.valueOf(page));
 		return this;
 	}

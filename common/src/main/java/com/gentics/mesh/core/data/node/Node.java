@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.node;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -27,6 +28,7 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -574,5 +576,15 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return Page which includes the new set of tags
 	 */
 	Page<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch);
+
+	/**
+	 * Return a map with language tags and resolved link types
+	 * 
+	 * @param ac
+	 * @param linkType
+	 * @param release
+	 * @return
+	 */
+	Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, Release release);
 
 }

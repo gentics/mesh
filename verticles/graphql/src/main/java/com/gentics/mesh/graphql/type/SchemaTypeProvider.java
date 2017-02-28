@@ -12,7 +12,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 
 @Singleton
-public class SchemaTypeProvider {
+public class SchemaTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;

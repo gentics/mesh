@@ -13,7 +13,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 
 @Singleton
-public class ProjectTypeProvider {
+public class ProjectTypeProvider extends AbstractTypeProvider{
 
 	@Inject
 	public NodeTypeProvider nodeTypeProvider;
@@ -32,8 +32,23 @@ public class ProjectTypeProvider {
 		Builder root = newObject();
 		root.name("Project");
 		interfaceTypeProvider.addCommonFields(root);
-		root.field(newFieldDefinition().name("name").description("The name of the project").type(GraphQLString).build());
-		root.field(newFieldDefinition().name("rootNode").description("The root node of the project").type(nodeTypeProvider.getNodeType(project)).build());
+
+		root.field(newFieldDefinition().name("name")
+				.description("The name of the project")
+				.type(GraphQLString)
+				.build());
+
+		root.field(newFieldDefinition().name("rootNode")
+				.description("The root node of the project")
+				.type(nodeTypeProvider.getNodeType(project))
+				.dataFetcher(fetcher -> {
+					Object source = fetcher.getSource();
+					if (source instanceof Project) {
+						return ((Project) source).getBaseNode();
+					}
+					return null;
+				})
+				.build());
 		return root.build();
 	}
 

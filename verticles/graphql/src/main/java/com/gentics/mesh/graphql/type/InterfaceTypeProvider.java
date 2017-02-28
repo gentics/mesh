@@ -21,7 +21,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeReference;
 
 @Singleton
-public class InterfaceTypeProvider {
+public class InterfaceTypeProvider extends AbstractTypeProvider{
 
 	@Inject
 	public Lazy<UserTypeProvider> userTypeProvider;

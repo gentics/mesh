@@ -23,9 +23,9 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 
 	private List<? extends T> wrappedList;
 	private long totalElements;
-	private int numberOfElements;
-	private int pageNumber;
-	private int totalPages;
+	private long numberOfElements;
+	private long pageNumber;
+	private long totalPages;
 	private int perPage;
 
 	/**
@@ -44,7 +44,7 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 	 * @param perPage
 	 *            Number of element per page
 	 */
-	public PageImpl(List<? extends T> wrappedList, long totalElements, int pageNumber, int totalPages,
+	public PageImpl(List<? extends T> wrappedList, long totalElements, long pageNumber, long totalPages,
 			int numberOfElements, int perPage) {
 		this.wrappedList = wrappedList;
 		this.totalElements = totalElements;
@@ -70,17 +70,17 @@ public class PageImpl<T extends TransformableElement<? extends RestModel>> imple
 	}
 
 	@Override
-	public int getNumber() {
+	public long getNumber() {
 		return pageNumber;
 	}
 
 	@Override
-	public int getTotalPages() {
+	public long getTotalPages() {
 		return totalPages;
 	}
 
 	@Override
-	public int getNumberOfElements() {
+	public long getNumberOfElements() {
 		return numberOfElements;
 	}
 
