@@ -1,14 +1,17 @@
 package com.gentics.mesh.core.rest.project;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 
 public class ProjectResponse extends AbstractGenericRestResponse {
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("The name of the project.")
 	private String name;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("The project root node. All futher nodes are children of this node.")
 	private NodeReference rootNode;
 

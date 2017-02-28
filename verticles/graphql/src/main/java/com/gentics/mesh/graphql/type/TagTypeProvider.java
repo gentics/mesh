@@ -9,18 +9,23 @@ import javax.inject.Singleton;
 
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
+import graphql.schema.GraphQLTypeReference;
 
 @Singleton
 public class TagTypeProvider {
+
+	@Inject
+	InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
 	public TagTypeProvider() {
 	}
 
 	public GraphQLObjectType getTagType() {
-		Builder tagType = newObject().name("tag");
+		Builder tagType = newObject().name("Tag");
+		interfaceTypeProvider.addCommonFields(tagType);
 		tagType.field(newFieldDefinition().name("name").type(GraphQLString).build());
-		tagType.field(newFieldDefinition().name("uuid").type(GraphQLString).build());
+		tagType.field(newFieldDefinition().name("tagFamily").type(new GraphQLTypeReference("TagFamily")).build());
 		return tagType.build();
 	}
 }

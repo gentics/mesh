@@ -15,19 +15,25 @@ import graphql.schema.GraphQLObjectType.Builder;
 @Singleton
 public class ProjectTypeProvider {
 
-	private NodeTypeProvider nodeTypeProvider;
+	@Inject
+	public NodeTypeProvider nodeTypeProvider;
 
 	@Inject
-	public ProjectTypeProvider(NodeTypeProvider nodeTypeProvider) {
-		this.nodeTypeProvider = nodeTypeProvider;
+	public UserTypeProvider userTypeProvider;
+
+	@Inject
+	public InterfaceTypeProvider interfaceTypeProvider;
+
+	@Inject
+	public ProjectTypeProvider() {
 	}
 
 	public GraphQLObjectType getProjectType(Project project) {
 		Builder root = newObject();
 		root.name("Project");
+		interfaceTypeProvider.addCommonFields(root);
 		root.field(newFieldDefinition().name("name").description("The name of the project").type(GraphQLString).build());
-		root.field(newFieldDefinition().name("uuid").description("The uuid of the project").type(GraphQLString).build());
-		root.field(newFieldDefinition().name("baseNode").description("The base node of the project").type(nodeTypeProvider.getNodeType(project)).build());
+		root.field(newFieldDefinition().name("rootNode").description("The root node of the project").type(nodeTypeProvider.getNodeType(project)).build());
 		return root.build();
 	}
 

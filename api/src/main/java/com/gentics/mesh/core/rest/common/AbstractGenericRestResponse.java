@@ -21,7 +21,7 @@ public abstract class AbstractGenericRestResponse extends AbstractResponse imple
 	@JsonPropertyDescription("ISO8601 formatted created date string.")
 	private String created;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("User reference of the editor of the element.")
 	private UserReference editor;
 
