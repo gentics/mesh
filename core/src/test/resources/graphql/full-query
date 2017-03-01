@@ -1,0 +1,35 @@
+{
+	microschemas(name: "vcard") { name, uuid }, 
+	roles(name: "admin") {name, uuid },  
+	groups(name: "admin") {name, uuid },
+	tagFamilies(name: "colors") { 
+		uuid, 
+		name, 
+		creator { firstname, lastname },
+		tags(page: 1, perPage:1) {
+			name
+		}
+	},
+	schemas(name:"content") { uuid, name }, 
+	nodes(path:"/Neuigkeiten/News Overview.de.html") {
+		uuid, 
+		language, 
+		languagePaths(linkType: FULL) {
+			languageTag, 
+			link
+		}, 
+		availableLanguages, 
+		project { 
+			name, 
+			rootNode { uuid }
+		}, 
+		created, 
+		creator { 
+			username, 
+			groups(page:1, perPage:1) { 
+				name, 
+				roles { name }
+			}
+		}
+	}
+}
