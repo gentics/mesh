@@ -17,17 +17,10 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.graphql.type.field.BinaryFieldTypeProvider;
-import com.gentics.mesh.graphql.type.field.BooleanFieldTypeProvider;
-import com.gentics.mesh.graphql.type.field.DateFieldTypeProvider;
-import com.gentics.mesh.graphql.type.field.HtmlFieldTypeProvider;
-import com.gentics.mesh.graphql.type.field.ListFieldTypeProvider;
-import com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider;
-import com.gentics.mesh.graphql.type.field.NumberFieldTypeProvider;
-import com.gentics.mesh.graphql.type.field.StringFieldTypeProvider;
+import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 
-import dagger.Lazy;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
@@ -37,32 +30,8 @@ import graphql.schema.GraphQLUnionType;
 public class NodeFieldTypeProvider extends AbstractTypeProvider {
 
 	@Inject
-	public StringFieldTypeProvider stringFieldProvider;
+	public FieldDefinitionProvider fields;
 
-	@Inject
-	public HtmlFieldTypeProvider htmlFieldProvider;
-
-	@Inject
-	public DateFieldTypeProvider dateFieldProvider;
-
-	@Inject
-	public NumberFieldTypeProvider numberFieldProvider;
-
-	@Inject
-	public BooleanFieldTypeProvider booleanFieldProvider;
-
-	@Inject
-	public Lazy<NodeFieldTypeProvider> nodeFieldProvider;
-
-	@Inject
-	public MicronodeFieldTypeProvider micronodeFieldProvider;	
-	
-	@Inject
-	public BinaryFieldTypeProvider binaryFieldProvider;
-	
-	@Inject
-	public ListFieldTypeProvider listFieldProvider;
-	
 	@Inject
 	public NodeFieldTypeProvider() {
 	}
@@ -82,6 +51,23 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 					}
 					return null;
 				}).build();
+		
+		//.language
+//		nodeType.field(newFieldDefinition().name("language")
+//				.type(GraphQLString)
+//				.dataFetcher(fetcher -> {
+//					Object source = fetcher.getSource();
+//					if (source instanceof Node) {
+//						// TODO implement correct language handling
+//						return ((Node) source).getGraphFieldContainer("en")
+//								.getLanguage()
+//								.getLanguageTag();
+//					}
+//					return null;
+//				})
+//				.build());
+
+		
 		return fieldType;
 
 		// GraphQLUnionType PetType = newUnionType().name("Fields").possibleTypes(types).typeResolver(new TypeResolver() {
@@ -102,7 +88,8 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 	public Map<String, GraphQLObjectType> generateFieldType(Project project) {
 		Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
 		List<GraphQLObjectType> list = new ArrayList<>();
-		for (SchemaContainer container : project.getSchemaContainerRoot().findAll()) {
+		for (SchemaContainer container : project.getSchemaContainerRoot()
+				.findAll()) {
 			SchemaContainerVersion version = container.getLatestVersion();
 			Schema schema = version.getSchema();
 			Builder root = newObject();
@@ -111,31 +98,32 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 				FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 				switch (type) {
 				case STRING:
-					root.field(stringFieldProvider.getFieldDefinition(fieldSchema.getName(), fieldSchema.getLabel()));
+					root.field(fields.getStringDef(fieldSchema));
 					break;
 				case HTML:
-					root.field(htmlFieldProvider.getFieldDefinition(fieldSchema.getName(), fieldSchema.getLabel()));
+					root.field(fields.getHtmlDef(fieldSchema));
 					break;
 				case NUMBER:
-					root.field(numberFieldProvider.getFieldDefinition(fieldSchema.getName(), fieldSchema.getLabel()));
+					root.field(fields.getNumberDef(fieldSchema));
 					break;
 				case DATE:
-					root.field(dateFieldProvider.getFieldDefinition(fieldSchema.getName(), fieldSchema.getLabel()));
+					root.field(fields.getDateDef(fieldSchema));
 					break;
 				case BOOLEAN:
-					root.field(booleanFieldProvider.getFieldDefinition(fieldSchema.getName(), fieldSchema.getLabel()));
+					root.field(fields.getBooleanDef(fieldSchema));
 					break;
 				case NODE:
-					root.field(nodeFieldProvider.get().getFieldDefinition(fieldSchema.getName(), fieldSchema.getLabel()));
+					root.field(fields.getNodeDef(fieldSchema));
 					break;
 				case BINARY:
-					//root.field(binaryFieldProvider.getFieldDefinition(fieldSchema.getName(), fieldSchema.getLabel()));
+					root.field(fields.getBinaryDef(fieldSchema));
 					break;
 				case LIST:
-					root.field(listFieldProvider.getFieldDefinition(fieldSchema.getName(), fieldSchema.getLabel()));
+					ListFieldSchema listFieldSchema = ((ListFieldSchema)fieldSchema);
+					root.field(fields.getListDef(listFieldSchema));
 					break;
 				case MICRONODE:
-					root.field(micronodeFieldProvider.getFieldDefinition(fieldSchema.getName(), fieldSchema.getLabel()));
+					root.field(fields.getMicronodeDef(fieldSchema));
 					break;
 				}
 

@@ -4,8 +4,6 @@ import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
-import java.util.Map;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -41,8 +39,7 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 				.dataFetcher(fetcher -> {
 					Object source = fetcher.getSource();
 					if (source instanceof TagFamily) {
-
-						InternalActionContext ac = ((InternalActionContext) ((Map) fetcher.getContext()).get("ac"));
+						InternalActionContext ac = (InternalActionContext) fetcher.getContext();
 						//TODO check for permission handling
 						PagingParameters pagingInfo = getPagingParameters(fetcher);
 						try {

@@ -52,21 +52,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.type(new GraphQLTypeReference("Project"))
 				.build());
 
-		//.language
-		nodeType.field(newFieldDefinition().name("language")
-				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof Node) {
-						// TODO implement correct language handling
-						return ((Node) source).getGraphFieldContainer("en")
-								.getLanguage()
-								.getLanguageTag();
-					}
-					return null;
-				})
-				.build());
-
 		//.availableLanguages
 		nodeType.field(newFieldDefinition().name("availableLanguages")
 				.type(new GraphQLList(GraphQLString))
@@ -87,7 +72,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.dataFetcher(fetcher -> {
 					LinkType linkType = fetcher.getArgument("linkType");
 					if (linkType != null) {
-						InternalActionContext ac = (InternalActionContext) ((Map) fetcher.getContext()).get("ac");
+						InternalActionContext ac = (InternalActionContext) fetcher.getContext();
 						Release release = ac.getRelease(ac.getProject());
 
 						Object source = fetcher.getSource();
@@ -113,7 +98,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		nodeType.field(newFieldDefinition().name("parent")
 				.type(new GraphQLTypeReference("Node"))
 				.dataFetcher(fetcher -> {
-					InternalActionContext ac = (InternalActionContext) ((Map) fetcher.getContext()).get("ac");
+					InternalActionContext ac = (InternalActionContext) fetcher.getContext();
 					// TODO add checks 
 					Object source = fetcher.getSource();
 					if (source instanceof Node) {
@@ -130,7 +115,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.argument(getPagingArgs())
 				.type(tagTypeProvider.getTagType())
 				.dataFetcher(fetcher -> {
-					InternalActionContext ac = (InternalActionContext) ((Map) fetcher.getContext()).get("ac");
+					InternalActionContext ac = (InternalActionContext) fetcher.getContext();
 					Object source = fetcher.getSource();
 					if (source instanceof Node) {
 						Release release = ac.getRelease(ac.getProject());
@@ -143,13 +128,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		//.fields
 		nodeType.field(newFieldDefinition().name("fields")
 				.type(nodeFieldTypeProvider.getFieldsType(project))
+				.argument(getLanguageTagArg())
 				.dataFetcher(fetcher -> {
 					if (fetcher.getSource() instanceof Node) {
 						Node node = (Node) fetcher.getSource();
-						NodeGraphFieldContainer nodeContainer = node.getGraphFieldContainer("en");
-						Map<String, Object> context = (Map<String, Object>) fetcher.getContext();
-						context.put("nodeContainer", nodeContainer);
-						return nodeContainer;
+						String languageTag = fetcher.getArgument("language");
+						if (languageTag != null) {
+							return node.getGraphFieldContainer(languageTag);
+						}
 					}
 					return null;
 				})

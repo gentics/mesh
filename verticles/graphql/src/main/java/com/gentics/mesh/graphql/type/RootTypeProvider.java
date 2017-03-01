@@ -18,7 +18,6 @@ import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.path.Path;
 
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLSchema;
@@ -79,8 +78,8 @@ public class RootTypeProvider extends AbstractTypeProvider {
 				.type(userFieldProvider.getUserType())
 				.dataFetcher(fetcher -> {
 					Object source = fetcher.getSource();
-					if (source instanceof Map) {
-						InternalActionContext ac = ((Map<String, InternalActionContext>) source).get("ac");
+					if (source instanceof InternalActionContext) {
+						InternalActionContext ac = (InternalActionContext) source;
 						MeshAuthUser requestUser = ac.getUser();
 						return requestUser;
 					}
@@ -112,7 +111,7 @@ public class RootTypeProvider extends AbstractTypeProvider {
 					}
 					String path = fetcher.getArgument("path");
 					if (path != null) {
-						InternalActionContext ac = (InternalActionContext) ((Map) fetcher.getContext()).get("ac");
+						InternalActionContext ac = (InternalActionContext) fetcher.getContext();
 						Path pathResult = webrootService.findByProjectPath(ac, path);
 						return pathResult.getLast()
 								.getNode();

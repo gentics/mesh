@@ -1,47 +1,36 @@
 {
-	test: nodes(uuid: "sgadsgasd", lang: "en") {
-		uuid,
-		language
-	},
-	test2: nodes(uuid: "sgadsgasd") {
-		uuid,
-		field-en: fields(lang: "en") {
-			language, 
-			... on content { name, content }
-			... on folder { name, title }
-		}
-		field-de: fields(lang: "de") {
-			language, 
-			... on content { name, content }
-			... on folder { name, title }
-		}
-	},
-	blub: nodes(uuid: "sgadsgasd") {
-		uuid,
-		language// null
-	},
-	blub: nodes(path:"/Neuigkeiten/2015") {
-		uuid,
-		language
-	},
-	nodes(path:"/Neuigkeiten/News Overview.de.html") {
+	nodes(path:"/Neuigkeiten/2015") {
 		uuid, 
-		language,
 		languagePaths(linkType: FULL) {
 			languageTag, 
 			link
 		}, 
-		availableLanguages, 
-		project { 
-			name, 
-			rootNode { uuid }
-		}, 
-		created, 
-		creator { 
-			username, 
-			groups { 
-				name, 
-				roles { name }
+		availableLanguages,
+		fields(language: "en") {
+			... on content { title },
+			... on folder { 
+				name,
+				nodeRef {
+					uuid
+				},
+				binary {
+					sha512sum, 
+					height,
+					width,
+					mimeType,
+					dominantColor,
+					fileSize
+				},
+				stringList,
+				dateList,
+				nodeList { uuid },
+				booleanList,
+				numberList,
+				boolean,
+				number,
+				date,
+				htmlList,
+				html
 			}
 		}
 	}

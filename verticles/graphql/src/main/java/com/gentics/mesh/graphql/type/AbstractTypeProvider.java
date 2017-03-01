@@ -39,6 +39,21 @@ public abstract class AbstractTypeProvider {
 		return arguments;
 	}
 
+	public GraphQLArgument getReleaseUuidArg() {
+		return newArgument().name("release")
+				.type(GraphQLString)
+				.description("Release Uuid")
+				.build();
+	}
+
+	public GraphQLArgument getLanguageTagArg() {
+		return newArgument().name("language")
+				.type(GraphQLString)
+				.description("Language tag")
+				.defaultValue("en")
+				.build();
+	}
+
 	/**
 	 * Return a new argument for the uuid.
 	 * 

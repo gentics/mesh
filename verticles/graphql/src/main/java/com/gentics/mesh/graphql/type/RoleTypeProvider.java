@@ -27,10 +27,12 @@ public class RoleTypeProvider extends AbstractTypeProvider {
 		roleType.name("Role");
 		roleType.description("Role description");
 		interfaceTypeProvider.addCommonFields(roleType);
+
 		roleType.field(newFieldDefinition().name("name")
 				.description("The name of the role")
 				.type(GraphQLString)
 				.build());
+
 		roleType.field(newFieldDefinition().name("groups")
 				.description("Groups which reference the role")
 				.argument(getPagingArgs())

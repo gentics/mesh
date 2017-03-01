@@ -40,28 +40,28 @@ public class GraphQLHandler {
 	public GraphQLHandler() {
 	}
 
+	/**
+	 * Handle the GraphQL query
+	 * 
+	 * @param ac
+	 * @param body
+	 *            GraphQL query
+	 */
 	public void handleQuery(InternalActionContext ac, String body) {
-		// TestNode context = new TestNode();
-		// context.setUuid(UUIDUtil.randomUUID());
-		// context.getFields().add(new DateTestField("dateFieldName", "todayValue"));
-		// context.getFields().add(new StringTestField("stringFieldName", true));
 		try (NoTx noTx = db.noTx()) {
 			JsonObject queryJson = new JsonObject(body);
 			String query = queryJson.getString("query");
-			// Map<String, Object> result = (Map<String, Object>) new GraphQL(GarfieldSchema.GarfieldSchema).execute(query, GarfieldSchema.john).getData();
-			Map<String, Object> context = new HashMap<>();
-			context.put("ac", ac);
-			ExecutionResult result = new GraphQL(typeProvider.getRootSchema(ac.getProject())).execute(query, context);
+			ExecutionResult result = new GraphQL(typeProvider.getRootSchema(ac.getProject())).execute(query, ac);
 			List<GraphQLError> errors = result.getErrors();
 			if (!errors.isEmpty()) {
 				log.error("Could not execute query {" + query + "}");
 				for (GraphQLError error : errors) {
-					if (error.getLocations() == null || error.getLocations().isEmpty()) {
+					if (error.getLocations() == null || error.getLocations()
+							.isEmpty()) {
 						log.error(error.getErrorType() + " " + error.getMessage());
 					} else {
 						for (SourceLocation location : error.getLocations()) {
-							log.error(error.getErrorType() + " " + error.getMessage() + " " + location.getColumn() + ":"
-									+ location.getLine());
+							log.error(error.getErrorType() + " " + error.getMessage() + " " + location.getColumn() + ":" + location.getLine());
 						}
 					}
 				}
