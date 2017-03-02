@@ -187,7 +187,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		}
 		//JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{ tagFamilies(name: \"colors\") { name, creator {firstname, lastname}, tags(page: 1, perPage:1) {name}}, schemas(name:\"content\") {name}, nodes(uuid:\"" + contentUuid + "\"){uuid, languagePaths(linkType: FULL) {languageTag, link}, availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
 
-		JsonObject response = call(() -> client().graphql(PROJECT_NAME, getQuery("node-query")));
+		JsonObject response = call(() -> client().graphql(PROJECT_NAME, getQuery("node2-query")));
 
 		System.out.println(response.encodePrettily());
 		//		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "', 'created': '" + creationDate + "'}}}", response);

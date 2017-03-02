@@ -1,0 +1,9 @@
+{
+	denode: nodes(path:"/Neuigkeiten/2015") {
+		uuid,
+		content: fields(language: "de") {
+			... on folder { name }
+		}
+		breadcrumb { uuid }
+	}
+}

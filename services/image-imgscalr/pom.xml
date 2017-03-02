@@ -17,6 +17,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<imgscalr-lib.version>4.2</imgscalr-lib.version>
 		<tika.version>0.6</tika.version>
+		<twelvemonkeys.version>3.3.2</twelvemonkeys.version>
 	</properties>
 
 	<dependencies>
@@ -35,19 +36,17 @@
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-jpeg</artifactId>
-			<version>3.2</version>
+			<version>${twelvemonkeys.version}</version>
 		</dependency>
-		<!-- <dependency> <groupId>com.twelvemonkeys.imageio</groupId> <artifactId>imageio-bmp</artifactId> 
-			<version>3.2</version> </dependency> -->
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-tiff</artifactId>
-			<version>3.2</version>
+			<version>${twelvemonkeys.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-icns</artifactId>
-			<version>3.2</version>
+			<version>${twelvemonkeys.version}</version>
 		</dependency>
 	</dependencies>
 

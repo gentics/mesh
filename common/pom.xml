@@ -71,13 +71,18 @@
 		<dependency>
 			<groupId>org.raml</groupId>
 			<artifactId>raml-parser</artifactId>
-			<version>0.8.14</version>
+			<version>0.8.17</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-log4j12</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>commons-validator</groupId>
+			<artifactId>commons-validator</artifactId>
+			<version>1.6</version>
 		</dependency>
 	</dependencies>
 
