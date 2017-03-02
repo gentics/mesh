@@ -165,8 +165,6 @@ public interface GraphFieldContainer extends BasicFieldContainer {
 	 */
 	MicronodeGraphField createMicronode(String key, MicroschemaContainerVersion microschemaVersion);
 
-	// Lists
-
 	/**
 	 * Return the graph date list.
 	 * 

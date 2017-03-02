@@ -1,0 +1,12 @@
+{
+	tagFamilies(name: "colors") { 
+		uuid, 
+		name, 
+		creator { firstname, lastname },
+		tags(page: 1, perPage:25) {
+			name,
+			nodes { uuid }
+		},
+		etag
+	}
+}

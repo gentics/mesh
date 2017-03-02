@@ -13,11 +13,15 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
+import com.gentics.mesh.graphql.type.MicronodeFieldTypeProvider;
 import com.gentics.mesh.util.DateUtils;
 
 import graphql.schema.GraphQLFieldDefinition;
@@ -29,6 +33,9 @@ import graphql.schema.GraphQLTypeReference;
 
 @Singleton
 public class FieldDefinitionProvider extends AbstractTypeProvider {
+
+	@Inject
+	public MicronodeFieldTypeProvider micronodeFieldTypeProvider;
 
 	@Inject
 	public FieldDefinitionProvider() {
@@ -174,8 +181,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				.type(GraphQLString)
 				.dataFetcher(fetcher -> {
 					Object source = fetcher.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
+					if (source instanceof GraphFieldContainer) {
+						GraphFieldContainer nodeContainer = (GraphFieldContainer) source;
 						return nodeContainer.getString(schema.getName())
 								.getString();
 					}
@@ -281,15 +288,16 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		}
 	}
 
-	public GraphQLFieldDefinition getMicronodeDef(FieldSchema schema) {
+	public GraphQLFieldDefinition getMicronodeDef(FieldSchema schema, Project project) {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
-				.type(GraphQLString)
+				.type(micronodeFieldTypeProvider.getMicroschemaFieldsType(project))
 				.dataFetcher(fetcher -> {
 					Object source = fetcher.getSource();
 					if (source instanceof NodeGraphFieldContainer) {
 						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						return nodeContainer.getMicronode(schema.getName());
+						return nodeContainer.getMicronode(schema.getName())
+								.getMicronode();
 					}
 					return null;
 				})

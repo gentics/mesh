@@ -11,7 +11,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
@@ -28,13 +27,13 @@ import graphql.schema.GraphQLTypeReference;
 public class NodeTypeProvider extends AbstractTypeProvider {
 
 	@Inject
-	public NodeFieldTypeProvider nodeFieldTypeProvider;
-
-	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
 	public TagTypeProvider tagTypeProvider;
+
+	@Inject
+	public ContainerTypeProvider containerTypeProvider;
 
 	@Inject
 	public NodeTypeProvider() {
@@ -46,13 +45,27 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		nodeType.description("Mesh Node");
 		interfaceTypeProvider.addCommonFields(nodeType);
 
-		//.project
+		// .project
 		nodeType.field(newFieldDefinition().name("project")
 				.description("Project of the node")
 				.type(new GraphQLTypeReference("Project"))
 				.build());
 
-		//.availableLanguages
+		// .breadcrumb
+		nodeType.field(newFieldDefinition().name("breadcrumb")
+				.description("Breadcrumb of the node")
+				.type(new GraphQLList(new GraphQLTypeReference("Node")))
+				.dataFetcher(fetcher -> {
+					Object source = fetcher.getSource();
+					if (source instanceof Node) {
+						InternalActionContext ac = (InternalActionContext) fetcher.getContext();
+						return ((Node) source).getBreadcrumbNodes(ac);
+					}
+					return null;
+				})
+				.build());
+
+		// .availableLanguages
 		nodeType.field(newFieldDefinition().name("availableLanguages")
 				.type(new GraphQLList(GraphQLString))
 				.dataFetcher(fetcher -> {
@@ -65,7 +78,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				})
 				.build());
 
-		//.languagePaths
+		// .languagePaths
 		nodeType.field(newFieldDefinition().name("languagePaths")
 				.argument(getLinkTypeArg())
 				.type(new GraphQLList(getLinkInfoType()))
@@ -88,19 +101,20 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				})
 				.build());
 
-		//.children
+		// .children
 		nodeType.field(newFieldDefinition().name("children")
 				.argument(getPagingArgs())
 				.type(new GraphQLList(new GraphQLTypeReference("Node")))
 				.build());
 
-		//.parent
+		// .parent
 		nodeType.field(newFieldDefinition().name("parent")
+				.description("Parent node")
 				.type(new GraphQLTypeReference("Node"))
 				.dataFetcher(fetcher -> {
-					InternalActionContext ac = (InternalActionContext) fetcher.getContext();
 					// TODO add checks 
 					Object source = fetcher.getSource();
+					InternalActionContext ac = (InternalActionContext) fetcher.getContext();
 					if (source instanceof Node) {
 						String uuid = ac.getRelease(ac.getProject())
 								.getUuid();
@@ -110,7 +124,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				})
 				.build());
 
-		//.tags
+		// .tags
 		nodeType.field(newFieldDefinition().name("tags")
 				.argument(getPagingArgs())
 				.type(tagTypeProvider.getTagType())
@@ -125,9 +139,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				})
 				.build());
 
-		//.fields
-		nodeType.field(newFieldDefinition().name("fields")
-				.type(nodeFieldTypeProvider.getFieldsType(project))
+		// .container
+		nodeType.field(newFieldDefinition().name("container")
+				.type(containerTypeProvider.getContainerType(project))
 				.argument(getLanguageTagArg())
 				.dataFetcher(fetcher -> {
 					if (fetcher.getSource() instanceof Node) {
@@ -140,6 +154,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					return null;
 				})
 				.build());
+
 		return nodeType.build();
 	}
 

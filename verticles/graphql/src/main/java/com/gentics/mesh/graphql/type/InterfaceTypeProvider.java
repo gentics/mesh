@@ -9,8 +9,10 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
+import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.graphdb.model.MeshElement;
 
 import dagger.Lazy;
@@ -21,7 +23,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeReference;
 
 @Singleton
-public class InterfaceTypeProvider extends AbstractTypeProvider{
+public class InterfaceTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public Lazy<UserTypeProvider> userTypeProvider;
@@ -36,31 +38,16 @@ public class InterfaceTypeProvider extends AbstractTypeProvider{
 		common.field(newFieldDefinition().name("uuid")
 				.description("UUID of the element")
 				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					System.out.println(source.getClass());
-					return null;
-				})
 				.build());
 
 		common.field(newFieldDefinition().name("edited")
 				.description("ISO8601 formatted edit timestamp")
 				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					System.out.println(source.getClass());
-					return null;
-				})
 				.build());
 
 		common.field(newFieldDefinition().name("created")
 				.description("ISO8601 formatted created date string")
 				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					System.out.println(source.getClass());
-					return null;
-				})
 				.build());
 
 		common.field(newFieldDefinition().name("permissions")
@@ -74,6 +61,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider{
 				.description("Creator of the element")
 				.type(new GraphQLList(new GraphQLTypeReference("User")))
 				.build());
+
 		common.field(newFieldDefinition().name("editor")
 				.description("Editor of the element")
 				.type(new GraphQLList(new GraphQLTypeReference("User")))
@@ -117,6 +105,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider{
 
 	public void addCommonFields(graphql.schema.GraphQLObjectType.Builder builder) {
 		builder.withInterface(getCommonType());
+
+		// .uuid
 		builder.field(newFieldDefinition().name("uuid")
 				.description("UUID of the element")
 				.type(GraphQLString)
@@ -129,6 +119,29 @@ public class InterfaceTypeProvider extends AbstractTypeProvider{
 				})
 				.build());
 
+		// .etag
+		builder.field(newFieldDefinition().name("etag")
+				.description("ETag of the element")
+				.type(GraphQLString)
+				.dataFetcher(fetcher -> {
+					Object source = fetcher.getSource();
+					if (source instanceof TransformableElement) {
+						InternalActionContext ac = (InternalActionContext) fetcher.getContext();
+						return ((TransformableElement<?>) source).getETag(ac);
+					}
+					return null;
+				})
+				.build());
+
+		// .permission
+		builder.field(newFieldDefinition().name("permissions")
+				.description("Permission information of the element")
+				.type(getPermInfoType())
+				.build());
+
+		//TODO rolePerms
+
+		// .edited
 		builder.field(newFieldDefinition().name("edited")
 				.description("ISO8601 formatted edit timestamp")
 				.type(GraphQLString)
@@ -141,6 +154,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider{
 				})
 				.build());
 
+		// .created
 		builder.field(newFieldDefinition().name("created")
 				.description("ISO8601 formatted created date string")
 				.type(GraphQLString)
@@ -153,13 +167,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider{
 				})
 				.build());
 
-		builder.field(newFieldDefinition().name("permissions")
-				.description("Permission information of the element")
-				.type(getPermInfoType())
-				.build());
-
-		//TODO rolePerms
-
+		// .creator
 		builder.field(newFieldDefinition().name("creator")
 				.description("Creator of the element")
 				.type(new GraphQLTypeReference("User"))
@@ -171,6 +179,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider{
 					return null;
 				})
 				.build());
+
+		// .editor
 		builder.field(newFieldDefinition().name("editor")
 				.description("Editor of the element")
 				.type(new GraphQLTypeReference("User"))

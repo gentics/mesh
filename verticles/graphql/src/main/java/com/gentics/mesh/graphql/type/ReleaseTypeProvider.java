@@ -11,7 +11,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 
 @Singleton
-public class ReleaseTypeProvider extends AbstractTypeProvider{
+public class ReleaseTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;
@@ -23,7 +23,9 @@ public class ReleaseTypeProvider extends AbstractTypeProvider{
 	public GraphQLObjectType getReleaseType() {
 		Builder releaseType = newObject().name("Release");
 		interfaceTypeProvider.addCommonFields(releaseType);
-		releaseType.field(newFieldDefinition().name("name").type(GraphQLString).build());
+		releaseType.field(newFieldDefinition().name("name")
+				.type(GraphQLString)
+				.build());
 		return releaseType.build();
 	}
 

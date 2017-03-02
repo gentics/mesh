@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.node;
 
+import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -586,5 +587,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @return
 	 */
 	Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, Release release);
+
+	/**
+	 * Return the breadcrumb nodes.
+	 *  
+	 * @param ac
+	 * @return Deque with breadcrumb nodes
+	 */
+	Deque<Node> getBreadcrumbNodes(InternalActionContext ac);
 
 }

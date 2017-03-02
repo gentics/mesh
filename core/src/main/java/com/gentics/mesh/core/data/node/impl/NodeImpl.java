@@ -813,21 +813,32 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				break;
 			}
 			NodeReference reference = current.transformToReference(ac);
-			//			NodeReference reference = new NodeReference();
-			//			reference.setUuid(current.getUuid());
-			//			reference.setDisplayName(current.getDisplayName(ac));
-			//
-			//			if (LinkType.OFF != ac.getNodeParameters().getResolveLinks()) {
-			//				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
-			//				ContainerType type = forVersion(ac.getVersioningParameters().getVersion());
-			//				String url = linkReplacer.resolve(releaseUuid, type, current.getUuid(), ac.getNodeParameters().getResolveLinks(),
-			//						getProject().getName(), ac.getNodeParameters().getLanguages());
-			//				reference.setPath(url);
-			//			}
 			breadcrumb.add(reference);
 			current = current.getParentNode(releaseUuid);
 		}
 		restNode.setBreadcrumb(breadcrumb);
+	}
+
+	@Override
+	public Deque<Node> getBreadcrumbNodes(InternalActionContext ac) {
+		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		Node current = this.getParentNode(releaseUuid);
+		// The project basenode has no breadcrumb
+		if (current == null) {
+			return new ArrayDeque<>();
+		}
+		
+		Deque<Node> breadcrumb = new ArrayDeque<>();
+		while (current != null) {
+			// Don't add the base node to the breadcrumb
+			// TODO should we add the basenode to the breadcrumb?
+			if (current.getUuid().equals(this.getProject().getBaseNode().getUuid())) {
+				break;
+			}
+			breadcrumb.add(current);
+			current = current.getParentNode(releaseUuid);
+		}
+		return breadcrumb;
 	}
 
 	@Override

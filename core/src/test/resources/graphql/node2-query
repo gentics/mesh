@@ -1,9 +1,16 @@
 {
-	denode: nodes(path:"/Neuigkeiten/2015") {
+	denode: nodes(path:"/Neuigkeiten/2015/News_2015.en.html") {
 		uuid,
-		content: fields(language: "de") {
-			... on folder { name }
-		}
+		container(language: "de") {
+			fields {
+				... on content { name }
+			}
+			language,
+			version,
+			node { uuid },
+			editor {username},
+			edited
+		},
 		breadcrumb { uuid }
 	}
 }

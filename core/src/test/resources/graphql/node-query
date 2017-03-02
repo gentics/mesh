@@ -6,31 +6,38 @@
 			link
 		}, 
 		availableLanguages,
-		fields(language: "en") {
-			... on content { title },
-			... on folder { 
-				name,
-				nodeRef {
-					uuid
-				},
-				binary {
-					sha512sum, 
-					height,
-					width,
-					mimeType,
-					dominantColor,
-					fileSize
-				},
-				stringList,
-				dateList,
-				nodeList { uuid },
-				booleanList,
-				numberList,
-				boolean,
-				number,
-				date,
-				htmlList,
-				html
+		container(language: "en") {
+			fields {
+				... on content { title },
+				... on folder { 
+					name,
+					nodeRef {
+						uuid
+					},
+					binary {
+						sha512sum, 
+						height,
+						width,
+						mimeType,
+						dominantColor,
+						fileSize
+					},
+					stringList,
+					dateList,
+					nodeList { uuid },
+					booleanList,
+					numberList,
+					boolean,
+					number,
+					date,
+					htmlList,
+					html
+					micronode {
+						... on vcard {
+							firstName
+						}
+					}
+				}
 			}
 		}
 	}

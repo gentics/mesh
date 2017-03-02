@@ -17,11 +17,13 @@ import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -30,6 +32,7 @@ import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
@@ -117,6 +120,11 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			numberListSchema.setName("numberList");
 			schema.addField(numberListSchema);
 
+			MicronodeFieldSchema micronodeFieldSchema = new MicronodeFieldSchemaImpl();
+			micronodeFieldSchema.setAllowedMicroSchemas("vcard");
+			micronodeFieldSchema.setName("micronode");
+			schema.addField(micronodeFieldSchema);
+
 			schemaContainer("folder").getLatestVersion()
 					.setSchema(schema);
 
@@ -184,10 +192,25 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			nodeList.createNode("0", node2);
 			nodeList.createNode("1", node3);
 
+			// micronode
+			MicronodeGraphField micronodeField = container.createMicronode("micronode", microschemaContainer("vcard").getLatestVersion());
+			micronodeField.getMicronode()
+					.createString("firstName")
+					.setString("Joe");
+			micronodeField.getMicronode()
+					.createString("lastName")
+					.setString("Doe");
+			micronodeField.getMicronode()
+					.createString("address")
+					.setString("Somewhere");
+			micronodeField.getMicronode()
+					.createString("postcode")
+					.setString("1010");
+
 		}
 		//JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{ tagFamilies(name: \"colors\") { name, creator {firstname, lastname}, tags(page: 1, perPage:1) {name}}, schemas(name:\"content\") {name}, nodes(uuid:\"" + contentUuid + "\"){uuid, languagePaths(linkType: FULL) {languageTag, link}, availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
 
-		JsonObject response = call(() -> client().graphql(PROJECT_NAME, getQuery("node2-query")));
+		JsonObject response = call(() -> client().graphql(PROJECT_NAME, getQuery("node-query")));
 
 		System.out.println(response.encodePrettily());
 		//		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "', 'created': '" + creationDate + "'}}}", response);

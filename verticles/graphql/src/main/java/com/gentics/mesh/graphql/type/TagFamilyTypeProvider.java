@@ -30,9 +30,13 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 	public GraphQLObjectType getTagFamilyType() {
 		Builder tagFamilyType = newObject().name("TagFamily");
 		interfaceTypeProvider.addCommonFields(tagFamilyType);
+
+		// .name
 		tagFamilyType.field(newFieldDefinition().name("name")
 				.type(GraphQLString)
 				.build());
+
+		// .tags
 		tagFamilyType.field(newFieldDefinition().name("tags")
 				.argument(getPagingArgs())
 				.type(new GraphQLList(new GraphQLTypeReference("Tag")))
