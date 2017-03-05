@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 
@@ -37,6 +38,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 	}
 
 	public GraphQLUnionType getMicroschemaFieldsType(Project project) {
+
 		Map<String, GraphQLObjectType> types = generateMicroschemaFieldType(project);
 
 		GraphQLObjectType[] typeArray = types.values()
@@ -49,15 +51,14 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				.typeResolver(object -> {
 					if (object instanceof Micronode) {
 						Micronode fieldContainer = (Micronode) object;
-						return types.get("vcard");
-						//return types.get(fieldContainer.getFieldKey());
+						MicroschemaContainerVersion micronodeFieldSchema = fieldContainer.getSchemaContainerVersion();
+						return types.get(micronodeFieldSchema.getName());
 					}
 					return null;
 				})
 				.build();
 
 		return fieldType;
-
 	}
 
 	static Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();

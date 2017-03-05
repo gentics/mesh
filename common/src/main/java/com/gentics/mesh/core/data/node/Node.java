@@ -85,7 +85,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void removeAllTags(Release release);
 
 	/**
-	 * Return a list of tags that were assigned to this node in the given release
+	 * Return a list of tags that were assigned to this node in the given release.
 	 *
 	 * @param release
 	 * @return
@@ -93,7 +93,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends Tag> getTags(Release release);
 
 	/**
-	 * Return the draft field container for the given language in the latest release
+	 * Return the draft field container for the given language in the latest release.
 	 * 
 	 * @param language
 	 * @return
@@ -101,7 +101,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer getLatestDraftFieldContainer(Language language);
 
 	/**
-	 * Return the field container for the given language, type and release
+	 * Return the field container for the given language, type and release.
 	 * 
 	 * @param language
 	 * @param release
@@ -112,7 +112,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer getGraphFieldContainer(Language language, Release release, ContainerType type);
 
 	/**
-	 * Return the draft field container for the given language in the latest release
+	 * Return the draft field container for the given language in the latest release.
 	 * 
 	 * @param languageTag
 	 * @return
@@ -120,7 +120,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer getGraphFieldContainer(String languageTag);
 
 	/**
-	 * Return the field container for the given language, type and release Uuid
+	 * Return the field container for the given language, type and release Uuid.
 	 * 
 	 * @param languageTag
 	 * @param releaseUuid
@@ -132,7 +132,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Create a new graph field container for the given language and assign the schema version of the release to the container. The graph field container will
 	 * be the (only) DRAFT version for the language/release. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
-	 * container will be a clone of the last draft and will have the next version number
+	 * container will be a clone of the last draft and will have the next version number.
 	 * 
 	 * @param language
 	 * @param release
@@ -144,7 +144,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user);
 
 	/**
-	 * Like {@link #createGraphFieldContainer(Language, Release, User)}, but let the new graph field container be a clone of the given original (if not null)
+	 * Like {@link #createGraphFieldContainer(Language, Release, User)}, but let the new graph field container be a clone of the given original (if not null).
 	 * 
 	 * @param language
 	 * @param release
@@ -155,21 +155,21 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user, NodeGraphFieldContainer original);
 
 	/**
-	 * Return a list of draft graph field containers for the node in the latest release
+	 * Return a list of draft graph field containers for the node in the latest release.
 	 * 
 	 * @return
 	 */
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
 
 	/**
-	 * Return a list of all initial graph field containers for the node (in any release)
+	 * Return a list of all initial graph field containers for the node (in any release).
 	 *
 	 * @return
 	 */
 	List<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
 
 	/**
-	 * Return a list of graph field containers of given type for the node in the given release
+	 * Return a list of graph field containers of given type for the node in the given release.
 	 *
 	 * @param release
 	 * @param type
@@ -178,7 +178,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Release release, ContainerType type);
 
 	/**
-	 * Return a list of graph field containers of given type for the node in the given release
+	 * Return a list of graph field containers of given type for the node in the given release.
 	 *
 	 * @param releaseUuid
 	 * @param type
@@ -187,7 +187,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, ContainerType type);
 
 	/**
-	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any release
+	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any release.
 	 *
 	 * @return
 	 */
@@ -213,7 +213,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<String> getAvailableLanguageNames();
 
 	/**
-	 * Return a list of language names for versions of given type in the given release
+	 * Return a list of language names for versions of given type in the given release.
 	 * 
 	 * @param release
 	 *            release
@@ -238,14 +238,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void setProject(Project project);
 
 	/**
-	 * Return the list of children for this node for all releases
+	 * Return the list of children for this node for all releases.
 	 * 
 	 * @return
 	 */
 	List<? extends Node> getChildren();
 
 	/**
-	 * Return the list of children for this node in the given release
+	 * Return the list of children for this node in the given release.
 	 * 
 	 * @param releaseUuid
 	 * @return
@@ -253,7 +253,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends Node> getChildren(String releaseUuid);
 
 	/**
-	 * Return the list of children for this node, that the given user has read permission for
+	 * Return the list of children for this node, that the given user has read permission for.
 	 *
 	 * @param requestUser
 	 *            user
@@ -590,7 +590,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 
 	/**
 	 * Return the breadcrumb nodes.
-	 *  
+	 * 
 	 * @param ac
 	 * @return Deque with breadcrumb nodes
 	 */

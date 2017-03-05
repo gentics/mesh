@@ -7,13 +7,17 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 
+import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 
 @Singleton
-public class ProjectTypeProvider extends AbstractTypeProvider{
+public class ProjectTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public NodeTypeProvider nodeTypeProvider;
@@ -26,6 +30,22 @@ public class ProjectTypeProvider extends AbstractTypeProvider{
 
 	@Inject
 	public ProjectTypeProvider() {
+	}
+
+	public Object baseNodeFetcher(DataFetchingEnvironment env) {
+		Object source = env.getSource();
+		if (source instanceof Project) {
+			InternalActionContext ac = (InternalActionContext) env.getContext();
+			Node node = ((Project) source).getBaseNode();
+			;
+			if (ac.getUser()
+					.hasPermission(node, GraphPermission.READ_PERM)
+					|| ac.getUser()
+							.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
+				return node;
+			}
+		}
+		return null;
 	}
 
 	public GraphQLObjectType getProjectType(Project project) {
@@ -41,13 +61,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider{
 		root.field(newFieldDefinition().name("rootNode")
 				.description("The root node of the project")
 				.type(nodeTypeProvider.getNodeType(project))
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof Project) {
-						return ((Project) source).getBaseNode();
-					}
-					return null;
-				})
+				.dataFetcher(this::baseNodeFetcher)
 				.build());
 		return root.build();
 	}

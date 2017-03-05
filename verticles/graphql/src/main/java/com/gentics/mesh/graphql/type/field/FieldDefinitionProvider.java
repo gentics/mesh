@@ -16,7 +16,6 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
@@ -296,8 +295,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					Object source = fetcher.getSource();
 					if (source instanceof NodeGraphFieldContainer) {
 						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						return nodeContainer.getMicronode(schema.getName())
-								.getMicronode();
+						return nodeContainer.getMicronode(schema.getName()).getMicronode();
 					}
 					return null;
 				})

@@ -1,0 +1,6 @@
+{
+	denode: nodes(path:"/Neuigkeiten") {
+		uuid,
+		children { uuid }
+	}
+}

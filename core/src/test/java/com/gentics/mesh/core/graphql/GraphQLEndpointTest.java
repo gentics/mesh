@@ -18,6 +18,7 @@ import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
@@ -207,10 +208,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 					.createString("postcode")
 					.setString("1010");
 
+			folder("news").getChildren().forEach(e -> role().revokePermissions(e, GraphPermission.READ_PERM));
 		}
 		//JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{ tagFamilies(name: \"colors\") { name, creator {firstname, lastname}, tags(page: 1, perPage:1) {name}}, schemas(name:\"content\") {name}, nodes(uuid:\"" + contentUuid + "\"){uuid, languagePaths(linkType: FULL) {languageTag, link}, availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
 
-		JsonObject response = call(() -> client().graphql(PROJECT_NAME, getQuery("node-query")));
+		
+		JsonObject response = call(() -> client().graphql(PROJECT_NAME, getQuery("node-fields-query")));
 
 		System.out.println(response.encodePrettily());
 		//		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "', 'created': '" + creationDate + "'}}}", response);

@@ -14,9 +14,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.graphql.model.LinkInfo;
 import com.gentics.mesh.parameter.impl.LinkType;
 
+import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
@@ -39,6 +41,93 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	public NodeTypeProvider() {
 	}
 
+	public Object languagePathsFetcher(DataFetchingEnvironment env) {
+		LinkType linkType = env.getArgument("linkType");
+		if (linkType != null) {
+			InternalActionContext ac = (InternalActionContext) env.getContext();
+			Release release = ac.getRelease(ac.getProject());
+
+			Object source = env.getSource();
+			if (source instanceof Node) {
+				Map<String, String> map = ((Node) source).getLanguagePaths(ac, linkType, release);
+				return map.entrySet()
+						.stream()
+						.map(entry -> new LinkInfo(entry.getKey(), entry.getValue()))
+						.collect(Collectors.toList());
+			}
+		}
+		return null;
+
+	}
+
+	public Object childrenFetcher(DataFetchingEnvironment env) {
+		Object source = env.getSource();
+		if (source instanceof Node) {
+			Node node = (Node) source;
+			InternalActionContext ac = (InternalActionContext) env.getContext();
+			return node.getChildren(ac.getUser(), ac.getRelease(ac.getProject())
+					.getUuid(), null);
+		}
+		return null;
+	}
+
+	public Object parentNodeFetcher(DataFetchingEnvironment env) {
+		Object source = env.getSource();
+		if (source instanceof Node) {
+			InternalActionContext ac = (InternalActionContext) env.getContext();
+			String uuid = ac.getRelease(ac.getProject())
+					.getUuid();
+			Node node = ((Node) source).getParentNode(uuid);
+			if (ac.getUser()
+					.hasPermission(node, GraphPermission.READ_PERM)
+					|| ac.getUser()
+							.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
+				return node;
+			}
+		}
+		return null;
+	}
+
+	public Object tagsFetcher(DataFetchingEnvironment env) {
+		InternalActionContext ac = (InternalActionContext) env.getContext();
+		Object source = env.getSource();
+		if (source instanceof Node) {
+			//TODO handle permissions
+			Release release = ac.getRelease(ac.getProject());
+			return ((Node) source).getTags(release);
+		}
+		return null;
+	}
+
+	public Object containerFetcher(DataFetchingEnvironment env) {
+		if (env.getSource() instanceof Node) {
+			Node node = (Node) env.getSource();
+			String languageTag = env.getArgument("language");
+			if (languageTag != null) {
+				return node.getGraphFieldContainer(languageTag);
+			}
+		}
+		return null;
+	}
+
+	public Object breadcrumbFetcher(DataFetchingEnvironment env) {
+		Object source = env.getSource();
+		if (source instanceof Node) {
+			InternalActionContext ac = (InternalActionContext) env.getContext();
+			return ((Node) source).getBreadcrumbNodes(ac);
+		}
+		return null;
+	}
+
+	public Object languageNamesFetcher(DataFetchingEnvironment env) {
+		Object source = env.getSource();
+		if (source instanceof Node) {
+			//TODO handle release!
+			return ((Node) source).getAvailableLanguageNames();
+		}
+		return null;
+	}
+
 	public GraphQLObjectType getNodeType(Project project) {
 		Builder nodeType = newObject();
 		nodeType.name("Node");
@@ -55,104 +144,48 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		nodeType.field(newFieldDefinition().name("breadcrumb")
 				.description("Breadcrumb of the node")
 				.type(new GraphQLList(new GraphQLTypeReference("Node")))
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof Node) {
-						InternalActionContext ac = (InternalActionContext) fetcher.getContext();
-						return ((Node) source).getBreadcrumbNodes(ac);
-					}
-					return null;
-				})
+				.dataFetcher(this::breadcrumbFetcher)
 				.build());
 
 		// .availableLanguages
 		nodeType.field(newFieldDefinition().name("availableLanguages")
 				.type(new GraphQLList(GraphQLString))
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof Node) {
-						//TODO handle release!
-						return ((Node) source).getAvailableLanguageNames();
-					}
-					return null;
-				})
+				.dataFetcher(this::languageNamesFetcher)
 				.build());
 
 		// .languagePaths
 		nodeType.field(newFieldDefinition().name("languagePaths")
 				.argument(getLinkTypeArg())
 				.type(new GraphQLList(getLinkInfoType()))
-				.dataFetcher(fetcher -> {
-					LinkType linkType = fetcher.getArgument("linkType");
-					if (linkType != null) {
-						InternalActionContext ac = (InternalActionContext) fetcher.getContext();
-						Release release = ac.getRelease(ac.getProject());
-
-						Object source = fetcher.getSource();
-						if (source instanceof Node) {
-							Map<String, String> map = ((Node) source).getLanguagePaths(ac, linkType, release);
-							return map.entrySet()
-									.stream()
-									.map(entry -> new LinkInfo(entry.getKey(), entry.getValue()))
-									.collect(Collectors.toList());
-						}
-					}
-					return null;
-				})
+				.dataFetcher(this::languagePathsFetcher)
 				.build());
 
 		// .children
 		nodeType.field(newFieldDefinition().name("children")
 				.argument(getPagingArgs())
 				.type(new GraphQLList(new GraphQLTypeReference("Node")))
+				.dataFetcher(this::childrenFetcher)
 				.build());
 
 		// .parent
 		nodeType.field(newFieldDefinition().name("parent")
 				.description("Parent node")
 				.type(new GraphQLTypeReference("Node"))
-				.dataFetcher(fetcher -> {
-					// TODO add checks 
-					Object source = fetcher.getSource();
-					InternalActionContext ac = (InternalActionContext) fetcher.getContext();
-					if (source instanceof Node) {
-						String uuid = ac.getRelease(ac.getProject())
-								.getUuid();
-						return ((Node) source).getParentNode(uuid);
-					}
-					return null;
-				})
+				.dataFetcher(this::parentNodeFetcher)
 				.build());
 
 		// .tags
 		nodeType.field(newFieldDefinition().name("tags")
 				.argument(getPagingArgs())
 				.type(tagTypeProvider.getTagType())
-				.dataFetcher(fetcher -> {
-					InternalActionContext ac = (InternalActionContext) fetcher.getContext();
-					Object source = fetcher.getSource();
-					if (source instanceof Node) {
-						Release release = ac.getRelease(ac.getProject());
-						return ((Node) source).getTags(release);
-					}
-					return null;
-				})
+				.dataFetcher(this::tagsFetcher)
 				.build());
 
 		// .container
 		nodeType.field(newFieldDefinition().name("container")
 				.type(containerTypeProvider.getContainerType(project))
 				.argument(getLanguageTagArg())
-				.dataFetcher(fetcher -> {
-					if (fetcher.getSource() instanceof Node) {
-						Node node = (Node) fetcher.getSource();
-						String languageTag = fetcher.getArgument("language");
-						if (languageTag != null) {
-							return node.getGraphFieldContainer(languageTag);
-						}
-					}
-					return null;
-				})
+				.dataFetcher(this::containerFetcher)
 				.build());
 
 		return nodeType.build();
