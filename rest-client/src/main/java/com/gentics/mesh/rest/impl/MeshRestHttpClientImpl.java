@@ -502,7 +502,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		if (!path.startsWith("/")) {
 			throw new RuntimeException("The path {" + path + "} must start with a slash");
 		}
-		String requestUri = BASEURI + "/" + projectName + "/webroot" + URIUtils.encodeFragment(path) + getQuery(parameters);
+		String requestUri = BASEURI + "/" + projectName + "/webroot" + path + getQuery(parameters);
 		MeshResponseHandler<Object> handler = new MeshResponseHandler<>(Object.class, HttpMethod.GET, requestUri);
 		HttpClientRequest request = client.request(GET, requestUri, handler);
 		if (log.isDebugEnabled()) {
