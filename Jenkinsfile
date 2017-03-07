@@ -79,6 +79,8 @@ node('dockerRoot') {
 	stage 'Docker Build'
 	if (!Boolean.valueOf(skipDocker)) {
 		withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
+			sh "rm demo/target/*sources*"
+			sh "rm server/target/*sources*"
 			sh "captain build"
 		}
 	} else {
