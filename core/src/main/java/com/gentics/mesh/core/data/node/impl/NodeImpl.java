@@ -92,7 +92,6 @@ import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -275,7 +274,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public List<? extends Tag> getTags(Release release) {
-		return TagEdgeImpl.getTagTraversal(this, release)
+		return TagEdgeImpl.getTagTraversal(null, this, release)
 				.toListExplicit(TagImpl.class);
 	}
 
@@ -952,7 +951,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		StringBuilder builder = new StringBuilder();
 		builder.append(node.getETag(ac));
 
-		List<? extends Node> nodes = node.getChildren(ac.getUser(), releaseUuid, type);
+		List<? extends Node> nodes = node.getChildren(ac.getUser(), releaseUuid, null, type);
 
 		// Abort recursion when we reach the max level or when no more children
 		// can be found.
@@ -995,7 +994,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	private Single<NavigationResponse> buildNavigationResponse(InternalActionContext ac, Node node, int maxDepth, int level,
 			NavigationResponse navigation, NavigationElement currentElement, String releaseUuid, ContainerType type) {
-		List<? extends Node> nodes = node.getChildren(ac.getUser(), releaseUuid, type);
+		List<? extends Node> nodes = node.getChildren(ac.getUser(), releaseUuid, null, type);
 		List<Single<NavigationResponse>> obsResponses = new ArrayList<>();
 
 		obsResponses.add(node.transformToRest(ac, 0)
@@ -1467,49 +1466,69 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 *            user
 	 * @param releaseUuid
 	 *            release uuid
+	 * @param languageTags
+	 *            Only list nodes which match the given language tags. Don't filter if the language tags list is null
 	 * @param type
 	 *            edge type
 	 * @return vertex traversal
 	 */
-	private VertexTraversal<?, ?, ?> getChildrenTraversal(MeshAuthUser requestUser, String releaseUuid, ContainerType type) {
+	private VertexTraversal<?, ?, ?> getChildrenTraversal(MeshAuthUser requestUser, String releaseUuid, List<String> languageTags,
+			ContainerType type) {
 		String permLabel = type == PUBLISHED ? READ_PUBLISHED_PERM.label() : READ_PERM.label();
 
 		VertexTraversal<?, ?, ?> traversal = null;
 		if (releaseUuid != null) {
-			traversal = inE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid).outV();
+			traversal = inE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY, releaseUuid)
+					.outV();
 		} else {
 			traversal = in(HAS_PARENT_NODE);
 		}
 		if (releaseUuid != null || type != null) {
-			traversal = traversal.mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser).back();
-			EdgeTraversal<?, ?, ?> edgeTraversal = traversal.mark().outE(HAS_FIELD_CONTAINER);
+			traversal = traversal.mark()
+					.in(permLabel)
+					.out(HAS_ROLE)
+					.in(HAS_USER)
+					.retain(requestUser)
+					.back();
+			EdgeTraversal<?, ?, ?> edgeTraversal = traversal.mark()
+					.outE(HAS_FIELD_CONTAINER);
 			if (releaseUuid != null) {
 				edgeTraversal = edgeTraversal.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid);
 			}
 			if (type != null) {
-				edgeTraversal  = edgeTraversal .has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+				edgeTraversal = edgeTraversal.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
 			}
-			traversal = (VertexTraversal<?, ?, ?>) edgeTraversal.outV().back();
+
+			// Filter out nodes which are not listed in the given language tags
+			if (languageTags != null) {
+				edgeTraversal = edgeTraversal.filter(edge -> {
+					String languageTag = edge.getProperty(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY);
+					return languageTags.contains(languageTag);
+				});
+			}
+			traversal = (VertexTraversal<?, ?, ?>) edgeTraversal.outV()
+					.back();
 		}
 		return traversal;
 	}
 
 	@Override
-	public List<? extends Node> getChildren(MeshAuthUser requestUser, String releaseUuid, ContainerType type) {
-		return getChildrenTraversal(requestUser, releaseUuid, type).toListExplicit(NodeImpl.class);
+	public List<? extends Node> getChildren(MeshAuthUser requestUser, String releaseUuid, List<String> languageTags, ContainerType type) {
+		return getChildrenTraversal(requestUser, releaseUuid, languageTags, type).toListExplicit(NodeImpl.class);
 	}
 
 	@Override
 	public Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
-			PagingParameters pagingInfo) throws InvalidArgumentException {
-		VertexTraversal<?, ?, ?> traversal = getChildrenTraversal(requestUser, releaseUuid, type);
+			PagingParameters pagingInfo) {
+		VertexTraversal<?, ?, ?> traversal = getChildrenTraversal(requestUser, releaseUuid, languageTags, type);
 		return TraversalHelper.getPagedResult(traversal, pagingInfo, NodeImpl.class);
 	}
 
 	@Override
-	public Page<? extends Tag> getTags(Release release, PagingParameters params) throws InvalidArgumentException {
-		// TODO add permissions
-		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, release);
+	public Page<? extends Tag> getTags(InternalActionContext ac) {
+		Release release = ac.getRelease();
+		PagingParameters params = ac.getPagingParameters();
+		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(ac.getUser(), this, release);
 		return TraversalHelper.getPagedResult(traversal, params, TagImpl.class);
 	}
 
@@ -1703,8 +1722,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public Page<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch) {
 
 		Project project = getProject();
-		Release release = ac.getRelease(null);
-		PagingParameters pagingParams = ac.getPagingParameters();
+		Release release = ac.getRelease();
 		TagListUpdateRequest request = JsonUtil.readValue(ac.getBodyAsString(), TagListUpdateRequest.class);
 		TagFamilyRoot tagFamilyRoot = project.getTagFamilyRoot();
 		User user = ac.getUser();
@@ -1747,7 +1765,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					addTag(tag, release);
 				}
 			}
-			return getTags(release, pagingParams);
+			return getTags(ac);
 		});
 
 		/*

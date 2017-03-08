@@ -1,0 +1,23 @@
+{
+	roles(name: "admin") {
+		name,
+		uuid,
+		groups { uuid, name }
+	},
+	groups(name: "admin") {
+		name,
+		uuid
+	},
+	oneUser: users(name: "joe1") { 
+		username,
+		uuid 
+	},
+	users { 
+		username,
+		uuid 
+	},
+	me {
+		username, 
+		uuid
+	}
+}

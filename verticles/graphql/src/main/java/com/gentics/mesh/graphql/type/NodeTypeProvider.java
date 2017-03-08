@@ -4,6 +4,7 @@ import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -17,6 +18,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.graphql.model.LinkInfo;
 import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
@@ -45,7 +47,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		LinkType linkType = env.getArgument("linkType");
 		if (linkType != null) {
 			InternalActionContext ac = (InternalActionContext) env.getContext();
-			Release release = ac.getRelease(ac.getProject());
+			Release release = ac.getRelease();
 
 			Object source = env.getSource();
 			if (source instanceof Node) {
@@ -60,17 +62,38 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 	}
 
+	/**
+	 * Fetcher for children of a node.
+	 * 
+	 * @param env
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
 	public Object childrenFetcher(DataFetchingEnvironment env) {
 		Object source = env.getSource();
 		if (source instanceof Node) {
 			Node node = (Node) source;
 			InternalActionContext ac = (InternalActionContext) env.getContext();
-			return node.getChildren(ac.getUser(), ac.getRelease(ac.getProject())
-					.getUuid(), null);
+			PagingParametersImpl params = ac.getPagingParameters();
+
+			// The obj type is validated by graphtype 
+			Object obj = env.getArgument("languages");
+			List<String> languageTags = null;
+			if (obj instanceof List) {
+				languageTags = (List<String>) obj;
+			}
+			return node.getChildren(ac.getUser(), languageTags, ac.getRelease()
+					.getUuid(), null, params);
 		}
 		return null;
 	}
 
+	/**
+	 * Fetcher for the parent node reference of a node.
+	 * 
+	 * @param env
+	 * @return
+	 */
 	public Object parentNodeFetcher(DataFetchingEnvironment env) {
 		Object source = env.getSource();
 		if (source instanceof Node) {
@@ -78,6 +101,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			String uuid = ac.getRelease(ac.getProject())
 					.getUuid();
 			Node node = ((Node) source).getParentNode(uuid);
+			// The project basenode may be null
+			if (node == null) {
+				return null;
+			}
 			if (ac.getUser()
 					.hasPermission(node, GraphPermission.READ_PERM)
 					|| ac.getUser()
@@ -92,9 +119,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		InternalActionContext ac = (InternalActionContext) env.getContext();
 		Object source = env.getSource();
 		if (source instanceof Node) {
-			//TODO handle permissions
-			Release release = ac.getRelease(ac.getProject());
-			return ((Node) source).getTags(release);
+			return ((Node) source).getTags(ac);
 		}
 		return null;
 	}
@@ -163,6 +188,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		// .children
 		nodeType.field(newFieldDefinition().name("children")
 				.argument(getPagingArgs())
+				.argument(getLanguageTagListArg())
 				.type(new GraphQLList(new GraphQLTypeReference("Node")))
 				.dataFetcher(this::childrenFetcher)
 				.build());

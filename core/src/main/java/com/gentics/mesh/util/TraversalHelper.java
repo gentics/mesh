@@ -45,10 +45,9 @@ public final class TraversalHelper {
 	 * @param classOfT
 	 *            Class that used to map the ferma objects that were found for the page query
 	 * @return
-	 * @throws InvalidArgumentException
 	 */
 	private static <T extends TransformableElement<? extends RestModel>> Page<T> getPagedResult(VertexTraversal<?, ?, ?> traversal, String sortBy,
-			SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) throws InvalidArgumentException {
+			SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) {
 
 		if (page < 1) {
 			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(page));
@@ -102,7 +101,7 @@ public final class TraversalHelper {
 	 * @throws InvalidArgumentException
 	 */
 	public static <T extends TransformableElement<? extends RestModel>> Page<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
-			PagingParameters pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
+			PagingParameters pagingInfo, Class<T> classOfT) {
 		return getPagedResult(traversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
 				pagingInfo.getPerPage(), classOfT);
 	}

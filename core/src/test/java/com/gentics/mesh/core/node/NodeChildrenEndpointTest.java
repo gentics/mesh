@@ -3,6 +3,7 @@ package com.gentics.mesh.core.node;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -14,6 +15,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -24,7 +28,9 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -32,7 +38,6 @@ import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeChildrenEndpointTest extends AbstractMeshTest {
@@ -120,7 +125,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 					subContentCount);
 		}
 	}
-
+	
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren2() throws Exception {
 		try (NoTx noTx = db().noTx()) {
@@ -218,6 +223,22 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			assertEquals("Total children in new release", 1, nodeList.getMetainfo().getTotalCount());
 			assertEquals("Returned children in new release", 1, nodeList.getData().size());
 		}
+	}
+
+	@Test
+	public void testFilterByLanguage() {
+		String uuid = db().noTx(() -> folder("2015").getUuid());
+		
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("de");
+		nodeCreateRequest.setParentNode(new NodeReference().setUuid(uuid));
+		nodeCreateRequest.setSchema(new SchemaReference().setName("content"));
+		nodeCreateRequest.getFields().put("name",  new StringFieldImpl().setString("Only German Content"));
+
+		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+		NodeListResponse listResponse = call(() -> client().findNodeChildren(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en")));
+		List<String> langList = listResponse.getData().stream().map(node ->   node.getLanguage()).collect(Collectors.toList());
+		assertThat(langList).doesNotContain(null, "de");
 	}
 
 	@Test

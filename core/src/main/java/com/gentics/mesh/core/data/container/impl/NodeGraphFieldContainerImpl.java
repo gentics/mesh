@@ -161,7 +161,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
 		if (restFields.hasField(segmentFieldName)) {
-			updateWebrootPathInfo(ac.getRelease(null).getUuid(), "node_conflicting_segmentfield_update");
+			updateWebrootPathInfo(ac.getRelease().getUuid(), "node_conflicting_segmentfield_update");
 		}
 		updateDisplayFieldValue();
 	}

@@ -23,7 +23,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ElementIdComparator;
@@ -62,11 +61,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Paging information object that contains page options.
 	 * 
 	 * @return
-	 * @throws InvalidArgumentException
-	 *             if the paging options are malformed.
 	 */
-	default public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo)
-			throws InvalidArgumentException {
+	default public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 
 		int page = pagingInfo.getPage();
 		int perPage = pagingInfo.getPerPage();

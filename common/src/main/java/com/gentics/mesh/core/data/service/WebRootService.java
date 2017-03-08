@@ -52,7 +52,7 @@ public class WebRootService {
 		stack.addAll(list);
 
 		// Traverse the graph and buildup the result path while doing so
-		return baseNode.resolvePath(ac.getRelease(null).getUuid(),
+		return baseNode.resolvePath(ac.getRelease().getUuid(),
 				ContainerType.forVersion(ac.getVersioningParameters().getVersion()), nodePath, stack);
 	}
 

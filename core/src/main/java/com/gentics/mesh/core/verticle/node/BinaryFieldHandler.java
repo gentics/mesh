@@ -168,7 +168,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
-			Release release = ac.getRelease(null);
+			Release release = ac.getRelease();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 
 			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);

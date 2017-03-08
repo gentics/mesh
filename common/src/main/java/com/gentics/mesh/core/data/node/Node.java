@@ -27,7 +27,6 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.PublishParameters;
@@ -85,12 +84,20 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void removeAllTags(Release release);
 
 	/**
-	 * Return a list of tags that were assigned to this node in the given release.
+	 * Return a list of all tags that were assigned to this node in the given release.
 	 *
 	 * @param release
 	 * @return
 	 */
 	List<? extends Tag> getTags(Release release);
+
+	/**
+	 * Return a page of all visible tags that are assigned to the node.
+	 * 
+	 * @param ac
+	 * @return Page which contains the result
+	 */
+	Page<? extends Tag> getTags(InternalActionContext ac);
 
 	/**
 	 * Return the draft field container for the given language in the latest release.
@@ -194,18 +201,6 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	long getGraphFieldContainerCount();
 
 	/**
-	 * Return a page of tags that are assigned to the node.
-	 * 
-	 * @param release
-	 *            release
-	 * @param params
-	 * 
-	 * @return
-	 * @throws InvalidArgumentException
-	 */
-	Page<? extends Tag> getTags(Release release, PagingParameters params) throws InvalidArgumentException;
-
-	/**
 	 * Return a list of language names for draft versions in the latest release
 	 * 
 	 * @return
@@ -253,17 +248,18 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends Node> getChildren(String releaseUuid);
 
 	/**
-	 * Return the list of children for this node, that the given user has read permission for.
+	 * Return the list of children for this node, that the given user has read permission for. Filter by the provides information.
 	 *
 	 * @param requestUser
 	 *            user
 	 * @param releaseUuid
 	 *            release Uuid
+	 * @param languageTags
 	 * @param type
 	 *            edge type
 	 * @return
 	 */
-	List<? extends Node> getChildren(MeshAuthUser requestUser, String releaseUuid, ContainerType type);
+	List<? extends Node> getChildren(MeshAuthUser requestUser, String releaseUuid, List<String> languageTags, ContainerType type);
 
 	/**
 	 * Returns the parent node of this node.
@@ -314,10 +310,9 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            edge type
 	 * @param pagingParameter
 	 * @return
-	 * @throws InvalidArgumentException
 	 */
 	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
-			PagingParameters pagingParameter) throws InvalidArgumentException;
+			PagingParameters pagingParameter);
 
 	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the

@@ -1,11 +1,13 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 
 import com.gentics.ferma.annotation.GraphElement;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractEdgeFrame;
@@ -27,23 +29,41 @@ public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
 	/**
 	 * Get the traversal for the tags assigned to the given vertex for the given release
 	 * 
+	 * @param user
+	 *            User to be used for filtering visible nodes. No filtering will be performed if null was provided
 	 * @param vertex
 	 * @param release
 	 * @return Traversal
 	 */
-	public static VertexTraversal<?, ?, ?> getTagTraversal(VertexFrame vertex, Release release) {
-		return vertex.outE(HAS_TAG).has(RELEASE_UUID_KEY, release.getUuid()).inV().has(TagImpl.class);
+	public static VertexTraversal<?, ?, ?> getTagTraversal(User user, VertexFrame vertex, Release release) {
+		VertexTraversal<?, ?, ?> traversal = vertex.outE(HAS_TAG)
+				.has(RELEASE_UUID_KEY, release.getUuid())
+				.inV()
+				.has(TagImpl.class);
+
+		if (user != null) {
+			traversal = traversal.filter(tagVertex -> {
+				if (user.hasPermissionForId(tagVertex.getId(), READ_PERM)) {
+					return true;
+				}
+				return null;
+			});
+		}
+		return traversal;
 	}
 
 	/**
 	 * Get the traversal for nodes that have been tagged with the given tag in the given release
 	 * 
-	 * @param tag 
+	 * @param tag
 	 * @param release
 	 * @return Traversal
 	 */
 	public static VertexTraversal<?, ?, ?> getNodeTraversal(Tag tag, Release release) {
-		return tag.inE(HAS_TAG).has(RELEASE_UUID_KEY, release.getUuid()).outV().has(NodeImpl.class);
+		return tag.inE(HAS_TAG)
+				.has(RELEASE_UUID_KEY, release.getUuid())
+				.outV()
+				.has(NodeImpl.class);
 	}
 
 	@Override

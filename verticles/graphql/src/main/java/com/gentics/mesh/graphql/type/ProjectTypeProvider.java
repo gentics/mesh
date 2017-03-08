@@ -37,7 +37,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		if (source instanceof Project) {
 			InternalActionContext ac = (InternalActionContext) env.getContext();
 			Node node = ((Project) source).getBaseNode();
-			;
+
 			if (ac.getUser()
 					.hasPermission(node, GraphPermission.READ_PERM)
 					|| ac.getUser()

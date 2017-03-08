@@ -144,7 +144,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Set<String> indices = new HashSet<>();
 			Project project = ac.getProject();
 			if (project != null) {
-				Release release = ac.getRelease(null);
+				Release release = ac.getRelease();
 				for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
 					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
 							version.getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion())));

@@ -136,7 +136,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			if (type != LinkType.OFF) {
 
 				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
-				Release release = ac.getRelease(null);
+				Release release = ac.getRelease();
 				ContainerType containerType = forVersion(ac.getVersioningParameters().getVersion());
 
 				// Set the webroot path for the currently active language

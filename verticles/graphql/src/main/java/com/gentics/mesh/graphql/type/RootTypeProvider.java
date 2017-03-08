@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.type;
 
+import static graphql.Scalars.GraphQLLong;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
@@ -9,16 +10,20 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.path.Path;
 
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLSchema;
+import graphql.schema.GraphQLType;
 
 @Singleton
 public class RootTypeProvider extends AbstractTypeProvider {
@@ -66,6 +71,52 @@ public class RootTypeProvider extends AbstractTypeProvider {
 	public RootTypeProvider() {
 	}
 
+	public Object nodesFetcher(DataFetchingEnvironment env) {
+		String uuid = env.getArgument("uuid");
+		if (uuid != null) {
+			InternalActionContext ac = (InternalActionContext) env.getContext();
+			Node node = boot.nodeRoot()
+					.findByUuid(uuid);
+			// Check permissions
+			if (ac.getUser()
+					.hasPermission(node, GraphPermission.READ_PERM)
+					|| ac.getUser()
+							.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
+				return node;
+			}
+		}
+
+		String path = env.getArgument("path");
+		if (path != null) {
+			InternalActionContext ac = (InternalActionContext) env.getContext();
+			Path pathResult = webrootService.findByProjectPath(ac, path);
+			return pathResult.getLast()
+					.getNode();
+		}
+		return null;
+	}
+
+	public Object userMeFetcher(DataFetchingEnvironment env) {
+		Object source = env.getSource();
+		if (source instanceof InternalActionContext) {
+			InternalActionContext ac = (InternalActionContext) source;
+			MeshAuthUser requestUser = ac.getUser();
+			return requestUser;
+		}
+		return null;
+	}
+
+	public Object usersFetcher(DataFetchingEnvironment env) {
+		Object source = env.getSource();
+		if (source instanceof InternalActionContext) {
+			InternalActionContext ac = (InternalActionContext) source;
+			MeshRoot meshRoot = boot.meshRoot();
+			return meshRoot.getUserRoot()
+					.findAll(ac, ac.getPagingParameters());
+		}
+		return null;
+	}
+
 	public GraphQLObjectType getRootType(Project project) {
 		Builder root = newObject();
 		root.name("Mesh root");
@@ -74,15 +125,7 @@ public class RootTypeProvider extends AbstractTypeProvider {
 		root.field(newFieldDefinition().name("me")
 				.description("The current user")
 				.type(userFieldProvider.getUserType())
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof InternalActionContext) {
-						InternalActionContext ac = (InternalActionContext) source;
-						MeshAuthUser requestUser = ac.getUser();
-						return requestUser;
-					}
-					return null;
-				})
+				.dataFetcher(this::userMeFetcher)
 				.build());
 
 		// .projects
@@ -101,21 +144,7 @@ public class RootTypeProvider extends AbstractTypeProvider {
 				.description("Load a node")
 				.argument(getUuidArg("Node uuid"))
 				.argument(getPathArg())
-				.dataFetcher(fetcher -> {
-					String uuid = fetcher.getArgument("uuid");
-					if (uuid != null) {
-						return boot.nodeRoot()
-								.findByUuid(uuid);
-					}
-					String path = fetcher.getArgument("path");
-					if (path != null) {
-						InternalActionContext ac = (InternalActionContext) fetcher.getContext();
-						Path pathResult = webrootService.findByProjectPath(ac, path);
-						return pathResult.getLast()
-								.getNode();
-					}
-					return null;
-				})
+				.dataFetcher(this::nodesFetcher)
 				.type(nodeTypeProvider.getNodeType(project))
 				.build());
 
@@ -196,8 +225,8 @@ public class RootTypeProvider extends AbstractTypeProvider {
 				.type(groupTypeProvider.getGroupType())
 				.build());
 
-		// .users
-		root.field(newFieldDefinition().name("users")
+		// .user
+		root.field(newFieldDefinition().name("user")
 				.description("Load a user")
 				.argument(getUuidArg("Uuid of the user"))
 				.argument(getNameArg("Username of the user"))
@@ -207,51 +236,44 @@ public class RootTypeProvider extends AbstractTypeProvider {
 				.type(userFieldProvider.getUserType())
 				.build());
 
+		// .users
+		root.field(newFieldDefinition().name("users")
+				.description("Load a page of users")
+				.dataFetcher(this::usersFetcher)
+				.type(getPageType(userFieldProvider.getUserType()))
+				.build());
+
 		return root.build();
 	}
 
-	private MeshVertex handleUuidNameArgs(DataFetchingEnvironment fetcher, RootVertex<?> root) {
-		String uuid = fetcher.getArgument("uuid");
-		if (uuid != null) {
-			return root.findByUuid(uuid);
-		}
-		String name = fetcher.getArgument("name");
-		if (name != null) {
-			return root.findByName(name);
-		}
-		return null;
+	public GraphQLObjectType getPageType(GraphQLType elementType) {
+		Builder type = newObject().name("Page")
+				.description("Paged result");
+		type.field(newFieldDefinition().name("elements")
+				.type(new GraphQLList(elementType)).dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof Page) {
+						return ((Page) source);
+					}
+					return null;
+				})
+				.build());
+		type.field(newFieldDefinition().name("totalElements")
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof Page) {
+						return ((Page) source).getTotalElements();
+					}
+					return null;
+				})
+				.type(GraphQLLong));
+		return type.build();
 	}
 
 	public GraphQLSchema getRootSchema(Project project) {
-
-		// Builder obj = newObject().name("helloWorldQuery");
-		// obj.field(newFieldDefinition().type(GraphQLString).name("hello").staticValue("world").build());
-		// obj.field(newFieldDefinition().type(GraphQLString).name("mop").dataFetcher(env -> {
-		// return "mopValue";
-		// }).build());
-		// GraphQLObjectType queryType = obj.build();
-
-		// Builder userBuilder = newObject().name("User").description("The user");
-		// userBuilder.field(newFieldDefinition().type(GraphQLString).name("name").staticValue("someName").build());
-		// GraphQLObjectType userType = userBuilder.build();
-
-		// GraphQLUnionType fieldType = newUnionType().name("Fields").possibleType(dateFieldType).possibleType(stringFieldType)
-		// .typeResolver(new TypeResolver() {
-		// @Override
-		// public GraphQLObjectType getType(Object object) {
-		// if(object instanceof StringTestField) {
-		// return stringFieldType;
-		// }
-		// if(object instanceof DateTestField) {
-		// return dateFieldType;
-		// }
-		// return stringFieldType;
-		// }
-		// }).build();
 		graphql.schema.GraphQLSchema.Builder schema = GraphQLSchema.newSchema();
 		return schema.query(getRootType(project))
 				.build();
-
 	}
 
 }

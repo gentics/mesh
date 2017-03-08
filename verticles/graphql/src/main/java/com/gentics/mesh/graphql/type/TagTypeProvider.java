@@ -52,7 +52,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 					if (source instanceof Tag) {
 						Tag tag = (Tag) source;
 						InternalActionContext ac = (InternalActionContext) fetcher.getContext();
-						return tag.getNodes(ac.getRelease(ac.getProject()));
+						return tag.getNodes(ac.getRelease());
 					}
 					return null;
 				})

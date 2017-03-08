@@ -7,8 +7,13 @@ import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLEnumType.newEnum;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -16,6 +21,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLList;
 
 public abstract class AbstractTypeProvider {
 
@@ -51,6 +57,14 @@ public abstract class AbstractTypeProvider {
 				.type(GraphQLString)
 				.description("Language tag")
 				.defaultValue("en")
+				.build();
+	}
+
+	public GraphQLArgument getLanguageTagListArg() {
+		return newArgument().name("languages")
+				.type(new GraphQLList(GraphQLString))
+				.description(
+						"Language tags to filter by. When set only nodes which contain at least one of the provided language tags will be returned")
 				.build();
 	}
 
@@ -126,6 +140,27 @@ public abstract class AbstractTypeProvider {
 				.defaultValue(LinkType.OFF.name())
 				.description("Specify the resolve type")
 				.build();
+	}
+
+	protected MeshVertex handleUuidNameArgs(DataFetchingEnvironment env, RootVertex<?> root) {
+		String uuid = env.getArgument("uuid");
+		MeshVertex element = null;
+		if (uuid != null) {
+			element = root.findByUuid(uuid);
+		}
+		String name = env.getArgument("name");
+		if (name != null) {
+			element = root.findByName(name);
+		}
+		if (element == null) {
+			return null;
+		}
+		InternalActionContext ac = (InternalActionContext) env.getContext();
+		if (ac.getUser()
+				.hasPermission(element, GraphPermission.READ_PERM)) {
+			return element;
+		}
+		return element;
 	}
 
 }

@@ -34,7 +34,8 @@
 					html
 					micronode {
 						... on vcard {
-							firstName
+							firstName,
+							lastName
 						}
 					}
 				}

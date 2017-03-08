@@ -88,9 +88,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Page<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		MeshAuthUser requestUser = ac.getUser();
-		Release release = ac.getRelease(null);
+		Release release = ac.getRelease();
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 		GraphPermission perm = type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 
@@ -177,7 +177,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		// Load the parent node in order to create the node
 		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNode().getUuid(), CREATE_PERM);
-		Release release = ac.getRelease(project);
+		Release release = ac.getRelease();
 		Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project, release);
 
 		// Add initial permissions to the created node

@@ -80,7 +80,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
-				node.deleteFromRelease(ac.getRelease(null), batch, false);
+				node.deleteFromRelease(ac.getRelease(), batch, false);
 				return batch;
 			}).processSync();
 			return null;
@@ -109,7 +109,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
-				node.deleteLanguageContainer(ac.getRelease(null), language, batch);
+				node.deleteLanguageContainer(ac.getRelease(), language, batch);
 				return batch;
 			}).processSync();
 			return null;
@@ -204,7 +204,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.operateNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			try {
-				Page<? extends Tag> tagPage = node.getTags(ac.getRelease(null), ac.getPagingParameters());
+				Page<? extends Tag> tagPage = node.getTags(ac);
 				// Handle etag
 				String etag = tagPage.getETag(ac);
 				ac.setEtag(etag, true);
@@ -235,7 +235,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
-			Release release = ac.getRelease(null);
+			Release release = ac.getRelease();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
@@ -267,7 +267,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
-			Release release = ac.getRelease(null);
+			Release release = ac.getRelease();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 

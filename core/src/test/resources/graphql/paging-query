@@ -1,0 +1,9 @@
+{
+	users {
+		totalElements
+		elements { 
+			username,
+			uuid 
+		}
+	}
+}
