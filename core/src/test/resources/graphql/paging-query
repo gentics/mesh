@@ -1,9 +1,27 @@
 {
 	users {
 		totalElements
+		number
+		totalPages
+		perPage
+		count
+		size
 		elements { 
 			username,
 			uuid 
 		}
 	}
+	roles {
+		totalElements
+		number
+		totalPages
+		perPage
+		count
+		size
+		elements { 
+			name,
+			uuid 
+		}
+	}
+
 }

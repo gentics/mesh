@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

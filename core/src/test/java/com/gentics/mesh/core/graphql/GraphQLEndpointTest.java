@@ -46,7 +46,7 @@ import io.vertx.core.json.JsonObject;
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.FULL, startServer = true)
 public class GraphQLEndpointTest extends AbstractMeshTest {
 
-	@Test
+//	@Test
 	public void testSimpleQuery() throws JSONException {
 		JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{me{firstname}}"));
 		MeshJSONAssert.assertEquals("{'data':{'me':{'firstname':'Joe'}}}", response);

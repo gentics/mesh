@@ -1,6 +1,5 @@
 package com.gentics.mesh.graphql.type;
 
-import static graphql.Scalars.GraphQLLong;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
@@ -12,24 +11,20 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.MeshRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.path.Path;
 
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLSchema;
-import graphql.schema.GraphQLType;
 
 @Singleton
 public class RootTypeProvider extends AbstractTypeProvider {
 
 	@Inject
-	public NodeFieldTypeProvider nodeFieldProvider;
+	public NodeFieldTypeProvider nodeFieldTypeProvider;
 
 	@Inject
 	public NodeTypeProvider nodeTypeProvider;
@@ -38,7 +33,7 @@ public class RootTypeProvider extends AbstractTypeProvider {
 	public ProjectTypeProvider projectTypeProvider;
 
 	@Inject
-	public UserTypeProvider userFieldProvider;
+	public UserTypeProvider userTypeProvider;
 
 	@Inject
 	public TagTypeProvider tagTypeProvider;
@@ -71,7 +66,7 @@ public class RootTypeProvider extends AbstractTypeProvider {
 	public RootTypeProvider() {
 	}
 
-	public Object nodesFetcher(DataFetchingEnvironment env) {
+	public Object nodeFetcher(DataFetchingEnvironment env) {
 		String uuid = env.getArgument("uuid");
 		if (uuid != null) {
 			InternalActionContext ac = (InternalActionContext) env.getContext();
@@ -106,17 +101,6 @@ public class RootTypeProvider extends AbstractTypeProvider {
 		return null;
 	}
 
-	public Object usersFetcher(DataFetchingEnvironment env) {
-		Object source = env.getSource();
-		if (source instanceof InternalActionContext) {
-			InternalActionContext ac = (InternalActionContext) source;
-			MeshRoot meshRoot = boot.meshRoot();
-			return meshRoot.getUserRoot()
-					.findAll(ac, ac.getPagingParameters());
-		}
-		return null;
-	}
-
 	public GraphQLObjectType getRootType(Project project) {
 		Builder root = newObject();
 		root.name("Mesh root");
@@ -124,150 +108,77 @@ public class RootTypeProvider extends AbstractTypeProvider {
 		// .me
 		root.field(newFieldDefinition().name("me")
 				.description("The current user")
-				.type(userFieldProvider.getUserType())
+				.type(userTypeProvider.getUserType())
 				.dataFetcher(this::userMeFetcher)
 				.build());
 
+		// .project
+		root.field(
+				newElementField("project", "Load project by name of uuid.", (ac) -> boot.projectRoot(), projectTypeProvider.getProjectType(project)));
+
 		// .projects
-		root.field(newFieldDefinition().name("projects")
-				.description("Load a project")
-				.argument(getUuidArg("Uuid of the project"))
-				.argument(getNameArg("Name of the project"))
-				.dataFetcher(fetcher -> {
-					return handleUuidNameArgs(fetcher, boot.projectRoot());
-				})
-				.type(projectTypeProvider.getProjectType(project))
-				.build());
+		root.field(newPagingField("projects", "Load page of projects.", (ac) -> boot.projectRoot(), "Project"));
+
+		// .node
+		root.field(newElementField("node", "Load node by name of uuid.", (ac) -> boot.nodeRoot(), nodeTypeProvider.getNodeType(project)));
 
 		// .nodes
-		root.field(newFieldDefinition().name("nodes")
-				.description("Load a node")
-				.argument(getUuidArg("Node uuid"))
-				.argument(getPathArg())
-				.dataFetcher(this::nodesFetcher)
-				.type(nodeTypeProvider.getNodeType(project))
-				.build());
+		root.field(newPagingField("nodes", "Load page of nodes.", (ac) -> ac.getProject()
+				.getTagFamilyRoot(), "Node"));
+
+		// .tag
+		root.field(newElementField("tag", "Load tag by name of uuid.", (ac) -> boot.tagRoot(), tagTypeProvider.getTagType()));
 
 		// .tags
-		root.field(newFieldDefinition().name("tags")
-				.description("Load a tag")
-				.argument(getUuidArg("Uuid of the tag"))
-				.argument(getNameArg("Name of the tag"))
-				.dataFetcher(fetcher -> {
-					return handleUuidNameArgs(fetcher, boot.tagRoot());
-				})
-				.type(tagTypeProvider.getTagType())
-				.build());
+		root.field(newPagingField("tags", "Load page of tags.", (ac) -> boot.tagRoot(), "Tag"));
+
+		// .tagFamily
+		root.field(newElementField("tagFamily", "Load tagFamily by name of uuid.", (ac) -> ac.getProject()
+				.getTagFamilyRoot(), tagFamilyTypeProvider.getTagFamilyType()));
 
 		// .tagFamilies
-		root.field(newFieldDefinition().name("tagFamilies")
-				.description("Load a tag family")
-				.argument(getUuidArg("Uuid of the tag family"))
-				.argument(getNameArg("Name of the tag family"))
-				.dataFetcher(fetcher -> {
-					return handleUuidNameArgs(fetcher, boot.tagFamilyRoot());
-				})
-				.type(tagFamilyTypeProvider.getTagFamilyType())
-				.build());
+		root.field(newPagingField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), "TagFamily"));
 
-		// .releases
-		root.field(newFieldDefinition().name("releases")
-				.description("Load a specific release")
-				.argument(getNameArg("Name of the release"))
-				.argument(getUuidArg("Uuid of the release"))
-				.type(releaseTypeProvider.getReleaseType())
-				.dataFetcher(fetcher -> {
-					return handleUuidNameArgs(fetcher, project.getReleaseRoot());
-				})
-				.build());
+		// .release
+		root.field(newElementField("release", "Load release by name of uuid.", (ac) -> ac.getProject()
+				.getReleaseRoot(), releaseTypeProvider.getReleaseType()));
+
+		//.releases
+		root.field(newPagingField("releases", "Load page of releases.", (ac) -> ac.getProject()
+				.getReleaseRoot(), "Release"));
+
+		// .schema
+		root.field(newElementField("schema", "Load schema by name of uuid.", (ac) -> boot.schemaContainerRoot(), schemaTypeProvider.getSchemaType()));
 
 		// .schemas
-		root.field(newFieldDefinition().name("schemas")
-				.description("Load a schema")
-				.argument(getUuidArg("Uuid of the schema"))
-				.argument(getNameArg("Name of the schema"))
-				.type(schemaTypeProvider.getSchemaType())
-				.dataFetcher(fetcher -> {
-					return handleUuidNameArgs(fetcher, boot.schemaContainerRoot());
-				})
-				.build());
+		root.field(newPagingField("schemas", "Load page of schemas.", (ac) -> boot.schemaContainerRoot(), "Schema"));
+
+		// .microschema
+		root.field(newElementField("microschema", "Load microschema by name of uuid.", (ac) -> boot.microschemaContainerRoot(),
+				microschemaTypeProvider.getMicroschemaType()));
 
 		// .microschemas
-		root.field(newFieldDefinition().name("microschemas")
-				.description("Load a microschema")
-				.argument(getUuidArg("Uuid of the microschema"))
-				.argument(getNameArg("Name of the microschema"))
-				.type(microschemaTypeProvider.getMicroschemaType())
-				.dataFetcher(fetcher -> {
-					return handleUuidNameArgs(fetcher, boot.microschemaContainerRoot());
-				})
-				.build());
+		root.field(newPagingField("microschemas", "Load page of microschemas.", (ac) -> boot.microschemaContainerRoot(), "Microschema"));
+
+		// .role
+		root.field(newElementField("role", "Load role by name of uuid.", (ac) -> boot.roleRoot(), roleTypeProvider.getRoleType()));
 
 		// .roles
-		root.field(newFieldDefinition().name("roles")
-				.description("Load a role")
-				.argument(getUuidArg("Uuid of the role"))
-				.argument(getNameArg("Name of the role"))
-				.dataFetcher(fetcher -> {
-					return handleUuidNameArgs(fetcher, boot.roleRoot());
-				})
-				.type(roleTypeProvider.getRoleType())
-				.build());
+		root.field(newPagingField("roles", "Load page of roles.", (ac) -> boot.roleRoot(), "Role"));
+
+		// .group
+		root.field(newElementField("group", "Load group by name of uuid.", (ac) -> boot.groupRoot(), groupTypeProvider.getGroupType()));
 
 		// .groups
-		root.field(newFieldDefinition().name("groups")
-				.description("Load a group")
-				.argument(getUuidArg("Uuid of the group"))
-				.argument(getNameArg("Name of the group"))
-				.dataFetcher(fetcher -> {
-					return handleUuidNameArgs(fetcher, boot.groupRoot());
-				})
-				.type(groupTypeProvider.getGroupType())
-				.build());
+		root.field(newPagingField("groups", "Load page of groups.", (ac) -> boot.groupRoot(), "Group"));
 
 		// .user
-		root.field(newFieldDefinition().name("user")
-				.description("Load a user")
-				.argument(getUuidArg("Uuid of the user"))
-				.argument(getNameArg("Username of the user"))
-				.dataFetcher(fetcher -> {
-					return handleUuidNameArgs(fetcher, boot.userRoot());
-				})
-				.type(userFieldProvider.getUserType())
-				.build());
+		root.field(newElementField("user", "Load user by name of uuid.", (ac) -> boot.userRoot(), userTypeProvider.getUserType()));
 
 		// .users
-		root.field(newFieldDefinition().name("users")
-				.description("Load a page of users")
-				.dataFetcher(this::usersFetcher)
-				.type(getPageType(userFieldProvider.getUserType()))
-				.build());
+		root.field(newPagingField("users", "Load page of users.", (ac) -> boot.userRoot(), "User"));
 
 		return root.build();
-	}
-
-	public GraphQLObjectType getPageType(GraphQLType elementType) {
-		Builder type = newObject().name("Page")
-				.description("Paged result");
-		type.field(newFieldDefinition().name("elements")
-				.type(new GraphQLList(elementType)).dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof Page) {
-						return ((Page) source);
-					}
-					return null;
-				})
-				.build());
-		type.field(newFieldDefinition().name("totalElements")
-				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof Page) {
-						return ((Page) source).getTotalElements();
-					}
-					return null;
-				})
-				.type(GraphQLLong));
-		return type.build();
 	}
 
 	public GraphQLSchema getRootSchema(Project project) {

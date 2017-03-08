@@ -5,13 +5,17 @@ import static graphql.Scalars.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLEnumType.newEnum;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
+import static graphql.schema.GraphQLObjectType.newObject;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+
+import org.apache.commons.lang.WordUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -21,7 +25,13 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLEnumType;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
+import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLObjectType.Builder;
+import graphql.schema.GraphQLType;
+import graphql.schema.GraphQLTypeReference;
+import rx.functions.Func1;
 
 public abstract class AbstractTypeProvider {
 
@@ -161,6 +171,150 @@ public abstract class AbstractTypeProvider {
 			return element;
 		}
 		return element;
+	}
+
+	/**
+	 * Construct a page type with the given element type for its nested elements.
+	 * 
+	 * @param elementType
+	 * @return
+	 */
+	protected GraphQLObjectType newPageType(String name, GraphQLType elementType) {
+		Builder type = newObject().name("Page" + WordUtils.capitalize(name))
+				.description("Paged result");
+		type.field(newFieldDefinition().name("elements")
+				.type(new GraphQLList(elementType))
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof Page) {
+						return ((Page<?>) source);
+					}
+					return null;
+				})
+				.build());
+
+		type.field(newFieldDefinition().name("totalElements")
+				.description("Return the total item count which the resource could provide.")
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof Page) {
+						return ((Page<?>) source).getTotalElements();
+					}
+					return null;
+				})
+				.type(GraphQLLong)
+				.build());
+
+		type.field(newFieldDefinition().name("number")
+				.description("Return the page number of the page.")
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof Page) {
+						return ((Page<?>) source).getNumber();
+					}
+					return null;
+				})
+				.type(GraphQLLong)
+				.build());
+
+		type.field(newFieldDefinition().name("totalPages")
+				.description("Return the total amount of pages which the resource can provide.")
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof Page) {
+						return ((Page<?>) source).getTotalPages();
+					}
+					return null;
+				})
+				.type(GraphQLLong)
+				.build());
+
+		type.field(newFieldDefinition().name("perPage")
+				.description("Return the per page parameter value that was used to load the page.")
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof Page) {
+						return ((Page<?>) source).getPerPage();
+					}
+					return null;
+				})
+				.type(GraphQLLong)
+				.build());
+
+		type.field(newFieldDefinition().name("count")
+				.description(
+						"Return the amount of items which the page is containing. Please note that a page may always contain less items compared to its maximum capacity.")
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof Page) {
+						return ((Page<?>) source).getNumberOfElements();
+					}
+					return null;
+				})
+				.type(GraphQLLong)
+				.build());
+
+		type.field(newFieldDefinition().name("size")
+				.description("Return the amount of elements which the page can hold.")
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof Page) {
+						return ((Page<?>) source).getSize();
+					}
+					return null;
+				})
+				.type(GraphQLInt)
+				.build());
+
+		return type.build();
+	}
+
+	protected GraphQLFieldDefinition newPagingField(String name, String description, Func1<InternalActionContext, RootVertex<?>> rootProvider,
+			String referenceTypeName) {
+		return newFieldDefinition().name(name)
+				.description(description)
+				.type(newPageType(name, new GraphQLTypeReference(referenceTypeName)))
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof InternalActionContext) {
+						InternalActionContext ac = (InternalActionContext) source;
+						return rootProvider.call(ac)
+								.findAll(ac, getPagingInfo(env));
+					}
+					return null;
+				})
+				.build();
+	}
+
+	protected GraphQLFieldDefinition newElementField(String name, String description, Func1<InternalActionContext, RootVertex<?>> rootProvider,
+			GraphQLObjectType type) {
+		return newFieldDefinition().name(name)
+				.description(description)
+				.argument(getUuidArg("Uuid of the " + name))
+				.argument(getNameArg("Name of the " + name))
+				.type(type)
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof InternalActionContext) {
+						InternalActionContext ac = (InternalActionContext) source;
+						return handleUuidNameArgs(env, rootProvider.call(ac));
+					}
+					return null;
+				})
+				.build();
+	}
+
+	protected PagingParameters getPagingInfo(DataFetchingEnvironment env) {
+		PagingParameters parameters = new PagingParametersImpl();
+		Long page = env.getArgument("page");
+		if (page != null) {
+			parameters.setPage(page);
+		}
+		Integer perPage = env.getArgument("perPage");
+		if (perPage != null) {
+			parameters.setPerPage(perPage);
+		}
+		return parameters;
 	}
 
 }
