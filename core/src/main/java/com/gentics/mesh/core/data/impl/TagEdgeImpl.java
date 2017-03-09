@@ -43,10 +43,7 @@ public class TagEdgeImpl extends AbstractEdgeFrame implements TagEdge {
 
 		if (user != null) {
 			traversal = traversal.filter(tagVertex -> {
-				if (user.hasPermissionForId(tagVertex.getId(), READ_PERM)) {
-					return true;
-				}
-				return null;
+				return user.hasPermissionForId(tagVertex.getId(), READ_PERM);
 			});
 		}
 		return traversal;

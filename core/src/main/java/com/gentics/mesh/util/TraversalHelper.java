@@ -70,6 +70,7 @@ public final class TraversalHelper {
 
 		Iterator<VertexFrame> iterator = traversal.iterator();
 		long count = 0;
+		// Iterate over all found elements and frame them
 		List<T> elementsOfPage = new ArrayList<>();
 		while (iterator.hasNext()) {
 			VertexFrame element = iterator.next();

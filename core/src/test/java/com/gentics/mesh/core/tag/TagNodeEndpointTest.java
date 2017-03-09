@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.tag;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -106,13 +107,15 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 			node.addTag(tag3, release());
 			node.addTag(tag2, release());
 
+			role().grantPermissions(tag1, READ_PERM);
+			role().grantPermissions(tag2, READ_PERM);
+			role().grantPermissions(tag3, READ_PERM);
 		}
 
 		String tagFamilyUuid = db().noTx(() -> tagFamily("basic").getUuid());
 		TagResponse tagResponse = call(() -> client().createTag(PROJECT_NAME, tagFamilyUuid, new TagCreateRequest().setName("test4")));
 
 		String nodeUuid = db().noTx(() -> content().getUuid());
-
 		TagListResponse list = call(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid));
 
 		List<String> names = list.getData().stream().map(entry -> entry.getName()).collect(Collectors.toList());
