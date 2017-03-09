@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.type.field;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static graphql.Scalars.GraphQLBigDecimal;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLInt;
@@ -13,10 +14,14 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
@@ -295,22 +300,39 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					Object source = fetcher.getSource();
 					if (source instanceof NodeGraphFieldContainer) {
 						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						return nodeContainer.getMicronode(schema.getName()).getMicronode();
+						return nodeContainer.getMicronode(schema.getName())
+								.getMicronode();
 					}
 					return null;
 				})
 				.build();
 	}
 
+	/**
+	 * Generate a new node field definition using the provided field schema.
+	 * 
+	 * @param schema
+	 * @return
+	 */
 	public GraphQLFieldDefinition getNodeDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(new GraphQLTypeReference("Node"))
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
+				.dataFetcher(env -> {
+					Object source = env.getSource();
 					if (source instanceof NodeGraphFieldContainer) {
+						InternalActionContext ac = (InternalActionContext) env.getContext();
 						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						return nodeContainer.getNode(schema.getName());
+						NodeGraphField nodeField = nodeContainer.getNode(schema.getName());
+						if (nodeField != null) {
+							Node node = nodeField.getNode();
+							if (node != null && (ac.getUser()
+									.hasPermission(node, READ_PERM)
+									|| ac.getUser()
+											.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM))) {
+								return node;
+							}
+						}
 					}
 					return null;
 				})

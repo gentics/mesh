@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.type;
 
+import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLInt;
 import static graphql.Scalars.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
@@ -43,7 +44,7 @@ public abstract class AbstractTypeProvider {
 	public List<GraphQLArgument> getPagingArgs() {
 		List<GraphQLArgument> arguments = new ArrayList<>();
 		arguments.add(newArgument().name("page")
-				.defaultValue(1)
+				.defaultValue(1L)
 				.description("Page to be selected")
 				.type(GraphQLLong)
 				.build());
@@ -176,7 +177,10 @@ public abstract class AbstractTypeProvider {
 	/**
 	 * Construct a page type with the given element type for its nested elements.
 	 * 
+	 * @param name
+	 *            Name of the element that is being nested
 	 * @param elementType
+	 *            Type of the nested element
 	 * @return
 	 */
 	protected GraphQLObjectType newPageType(String name, GraphQLType elementType) {
@@ -254,6 +258,32 @@ public abstract class AbstractTypeProvider {
 				.type(GraphQLLong)
 				.build());
 
+		type.field(newFieldDefinition().name("hasNextPage")
+				.description("Check whether the paged resource could serve another page")
+				.type(GraphQLBoolean)
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof Page) {
+						Page<?> page = ((Page<?>) source);
+						return page.getTotalPages() > page.getNumber();
+					}
+					return null;
+				})
+				.build());
+
+		type.field(newFieldDefinition().name("hasPreviousPage")
+				.description("Check whether the current page has a previous page.")
+				.type(GraphQLBoolean)
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof Page) {
+						Page<?> page = ((Page<?>) source);
+						return page.getNumber() > 1;
+					}
+					return null;
+				})
+				.build());
+
 		type.field(newFieldDefinition().name("size")
 				.description("Return the amount of elements which the page can hold.")
 				.dataFetcher(env -> {
@@ -273,6 +303,7 @@ public abstract class AbstractTypeProvider {
 			String referenceTypeName) {
 		return newFieldDefinition().name(name)
 				.description(description)
+				.argument(getPagingArgs())
 				.type(newPageType(name, new GraphQLTypeReference(referenceTypeName)))
 				.dataFetcher(env -> {
 					Object source = env.getSource();

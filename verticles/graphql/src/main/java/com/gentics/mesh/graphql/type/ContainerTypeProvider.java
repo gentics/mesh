@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.type;
 
+import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
@@ -74,8 +75,8 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 		type.field(newFieldDefinition().name("edited")
 				.description("ISO8601 formatted edit timestamp")
 				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
+				.dataFetcher(env -> {
+					Object source = env.getSource();
 					if (source instanceof EditorTrackingVertex) {
 						return ((EditorTrackingVertex) source).getLastEditedDate();
 					}
@@ -114,12 +115,44 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 				.dataFetcher(this::editorFetcher)
 				.build());
 
+		// .isPublished
+		type.field(newFieldDefinition().name("isPublished")
+				.description("Check whether the container is published")
+				.type(GraphQLBoolean)
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof NodeGraphFieldContainer) {
+						InternalActionContext ac = (InternalActionContext) env.getContext();
+						NodeGraphFieldContainer container = (NodeGraphFieldContainer) source;
+						return container.isPublished(ac.getRelease()
+								.getUuid());
+					}
+					return null;
+				})
+				.build());
+
+		// .isDraft
+		type.field(newFieldDefinition().name("isDraft")
+				.description("Check whether the container is a draft")
+				.type(GraphQLBoolean)
+				.dataFetcher(env -> {
+					Object source = env.getSource();
+					if (source instanceof NodeGraphFieldContainer) {
+						NodeGraphFieldContainer container = (NodeGraphFieldContainer) source;
+						InternalActionContext ac = (InternalActionContext) env.getContext();
+						return container.isDraft(ac.getRelease()
+								.getUuid());
+					}
+					return null;
+				})
+				.build());
+
 		// .version
 		type.field(newFieldDefinition().name("version")
 				.description("Version of the container")
 				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
+				.dataFetcher(env -> {
+					Object source = env.getSource();
 					if (source instanceof NodeGraphFieldContainer) {
 						NodeGraphFieldContainer container = (NodeGraphFieldContainer) source;
 						return container.getVersion()
@@ -132,8 +165,8 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 		// .fields
 		type.field(newFieldDefinition().name("fields")
 				.type(nodeFieldTypeProvider.getSchemaFieldsType(project))
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
+				.dataFetcher(env -> {
+					Object source = env.getSource();
 					if (source instanceof NodeGraphFieldContainer) {
 						return (NodeGraphFieldContainer) source;
 					}
@@ -144,8 +177,8 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 		//.language
 		type.field(newFieldDefinition().name("language")
 				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
+				.dataFetcher(env -> {
+					Object source = env.getSource();
 					if (source instanceof NodeGraphFieldContainer) {
 						return ((NodeGraphFieldContainer) source).getLanguage()
 								.getLanguageTag();

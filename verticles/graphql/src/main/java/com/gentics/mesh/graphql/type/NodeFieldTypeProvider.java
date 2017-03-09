@@ -70,6 +70,7 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 			root.name(schema.getName());
 			root.description(schema.getDescription());
 
+			// TODO add link resolving argument / code
 			for (FieldSchema fieldSchema : schema.getFields()) {
 				FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 				switch (type) {

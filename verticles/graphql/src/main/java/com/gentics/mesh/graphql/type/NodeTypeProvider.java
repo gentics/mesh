@@ -1,5 +1,8 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
@@ -12,13 +15,13 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.graphql.model.LinkInfo;
 import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
@@ -62,6 +65,20 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 	}
 
+	public Object projectFetcher(DataFetchingEnvironment env) {
+		Object source = env.getSource();
+		if (source instanceof Node) {
+			Node node = (Node) source;
+			InternalActionContext ac = (InternalActionContext) env.getContext();
+			Project project = node.getProject();
+			if (ac.getUser()
+					.hasPermission(project, READ_PERM)) {
+				return project;
+			}
+		}
+		return null;
+	}
+
 	/**
 	 * Fetcher for children of a node.
 	 * 
@@ -74,7 +91,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		if (source instanceof Node) {
 			Node node = (Node) source;
 			InternalActionContext ac = (InternalActionContext) env.getContext();
-			PagingParametersImpl params = ac.getPagingParameters();
 
 			// The obj type is validated by graphtype 
 			Object obj = env.getArgument("languages");
@@ -83,7 +99,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				languageTags = (List<String>) obj;
 			}
 			return node.getChildren(ac.getUser(), languageTags, ac.getRelease()
-					.getUuid(), null, params);
+					.getUuid(), null, getPagingInfo(env));
 		}
 		return null;
 	}
@@ -101,7 +117,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			String uuid = ac.getRelease(ac.getProject())
 					.getUuid();
 			Node node = ((Node) source).getParentNode(uuid);
-			// The project basenode may be null
+			// The project root node can have no parent. Lets check this and exit early. 
 			if (node == null) {
 				return null;
 			}
@@ -116,9 +132,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Object tagsFetcher(DataFetchingEnvironment env) {
-		InternalActionContext ac = (InternalActionContext) env.getContext();
 		Object source = env.getSource();
 		if (source instanceof Node) {
+			InternalActionContext ac = (InternalActionContext) env.getContext();
 			return ((Node) source).getTags(ac);
 		}
 		return null;
@@ -129,8 +145,30 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			Node node = (Node) env.getSource();
 			String languageTag = env.getArgument("language");
 			if (languageTag != null) {
-				return node.getGraphFieldContainer(languageTag);
+				InternalActionContext ac = (InternalActionContext) env.getContext();
+				Release release = ac.getRelease();
+				NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag);
+
+				// Check whether the user is allowed to read the published container
+				boolean isPublished = container.isPublished(release.getUuid());
+				if (isPublished && ac.getUser()
+						.hasPermission(node, READ_PUBLISHED_PERM)) {
+					return container;
+				}
+				// Otherwise the container is a draft and we need to use the regular read permission
+				if (!isPublished && ac.getUser()
+						.hasPermission(node, READ_PERM)) {
+					return container;
+				}
 			}
+		}
+		return null;
+	}
+
+	public Object isContainerFetcher(DataFetchingEnvironment env) {
+		if (env.getSource() instanceof Node) {
+			Node node = (Node) env.getSource();
+			return node.getSchemaContainer().getLatestVersion().getSchema().isContainer();
 		}
 		return null;
 	}
@@ -163,6 +201,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		nodeType.field(newFieldDefinition().name("project")
 				.description("Project of the node")
 				.type(new GraphQLTypeReference("Project"))
+				.dataFetcher(this::projectFetcher)
 				.build());
 
 		// .breadcrumb
@@ -212,6 +251,14 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.type(containerTypeProvider.getContainerType(project))
 				.argument(getLanguageTagArg())
 				.dataFetcher(this::containerFetcher)
+				.build());
+
+		// TODO Fix name confusion and check what version of schema should be used to determine this type
+		// .isContainer
+		nodeType.field(newFieldDefinition().name("isContainer")
+				.description("Check whether the node can have subnodes via children")
+				.type(GraphQLBoolean)
+				.dataFetcher(this::isContainerFetcher)
 				.build());
 
 		return nodeType.build();

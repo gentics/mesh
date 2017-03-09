@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
@@ -19,7 +20,18 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLSchema;
+import graphql.schema.GraphQLTypeReference;
 
+/**
+ * The {@link RootTypeProvider} provides as the name suggests the root type for the GraphQL schema. This type is the starting point for all GraphQL queries.
+ * Various other schema types are located in dedicated classes for each type. Dependency injection is used to load those dependencies and thus make these types
+ * accessible by the root type. Please note that this root type is and will most likely always be project specific. It is not possible to query other projects.
+ * Only the currently selected project and global elements (user, roles, groups..) can be queries.
+ * 
+ * We must enforce this limitation because GraphQL schemas can't handle dynamic types. It is not possible to distinguish between a content schema v1 or projectA
+ * and content schema v2 of projectB. It is not possible to access data across releases due to the same reason. A different release may use different schema
+ * versions.
+ */
 @Singleton
 public class RootTypeProvider extends AbstractTypeProvider {
 
@@ -101,6 +113,38 @@ public class RootTypeProvider extends AbstractTypeProvider {
 		return null;
 	}
 
+	public Object projectFetcher(DataFetchingEnvironment env) {
+		Object source = env.getSource();
+		if (source instanceof InternalActionContext) {
+			InternalActionContext ac = (InternalActionContext) source;
+			MeshAuthUser requestUser = ac.getUser();
+			Project project = ac.getProject();
+			if (requestUser.hasPermission(project, READ_PERM)) {
+				return project;
+			}
+		}
+		return null;
+	}
+
+	public Object rootNodeFetcher(DataFetchingEnvironment env) {
+		Object source = env.getSource();
+		if (source instanceof InternalActionContext) {
+			InternalActionContext ac = (InternalActionContext) source;
+			Project project = ac.getProject();
+			if (project != null) {
+				Node node = project.getBaseNode();
+				if (ac.getUser()
+						.hasPermission(node, GraphPermission.READ_PERM)
+						|| ac.getUser()
+								.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
+					return node;
+				}
+			}
+			return null;
+		}
+		return null;
+	}
+
 	public GraphQLObjectType getRootType(Project project) {
 		Builder root = newObject();
 		root.name("Mesh root");
@@ -112,19 +156,36 @@ public class RootTypeProvider extends AbstractTypeProvider {
 				.dataFetcher(this::userMeFetcher)
 				.build());
 
-		// .project
-		root.field(
-				newElementField("project", "Load project by name of uuid.", (ac) -> boot.projectRoot(), projectTypeProvider.getProjectType(project)));
+		//.project
+		root.field(newFieldDefinition().name("project")
+				.description("Load project current")
+				.type(projectTypeProvider.getProjectType(project))
+				.dataFetcher(this::projectFetcher)
+				.build());
 
+		// NOT ALLOWED - See class description for details
 		// .projects
-		root.field(newPagingField("projects", "Load page of projects.", (ac) -> boot.projectRoot(), "Project"));
+		//	root.field(newPagingField("projects", "Load page of projects.", (ac) -> boot.projectRoot(), "Project"));
 
 		// .node
-		root.field(newElementField("node", "Load node by name of uuid.", (ac) -> boot.nodeRoot(), nodeTypeProvider.getNodeType(project)));
+		root.field(newFieldDefinition().name("node")
+				.description("Load a node by uuid or webroot path.")
+				.argument(getUuidArg("Node uuid"))
+				.argument(getPathArg())
+				.dataFetcher(this::nodeFetcher)
+				.type(nodeTypeProvider.getNodeType(project))
+				.build());
 
 		// .nodes
 		root.field(newPagingField("nodes", "Load page of nodes.", (ac) -> ac.getProject()
-				.getTagFamilyRoot(), "Node"));
+				.getNodeRoot(), "Node"));
+
+		// .baseNode
+		root.field(newFieldDefinition().name("rootNode")
+				.description("Return the project root node.")
+				.type(new GraphQLTypeReference("Node"))
+				.dataFetcher(this::rootNodeFetcher)
+				.build());
 
 		// .tag
 		root.field(newElementField("tag", "Load tag by name of uuid.", (ac) -> boot.tagRoot(), tagTypeProvider.getTagType()));

@@ -1,10 +1,12 @@
 {
-	users {
+	users(perPage: 1, page: 2) {
 		totalElements
 		number
 		totalPages
 		perPage
 		count
+		hasPreviousPage
+		hasNextPage
 		size
 		elements { 
 			username,
@@ -18,6 +20,12 @@
 		perPage
 		count
 		size
+		elements { 
+			name,
+			uuid 
+		}
+	},
+	lessStuff: roles {
 		elements { 
 			name,
 			uuid 

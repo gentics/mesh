@@ -1,5 +1,5 @@
 {
-	nodes(path:"/Neuigkeiten/2015") {
+	node(path:"/Neuigkeiten/2015") {
 		uuid, 
 		languagePaths(linkType: FULL) {
 			languageTag, 
@@ -13,6 +13,14 @@
 					name,
 					nodeRef {
 						uuid
+						isContainer
+						container(language: "en") {
+							isPublished
+							fields {
+							... on content { title },
+							... on folder { name },
+							}
+						}
 					},
 					binary {
 						sha512sum, 

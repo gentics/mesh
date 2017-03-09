@@ -26,6 +26,9 @@ public class ReleaseTypeProvider extends AbstractTypeProvider {
 		releaseType.field(newFieldDefinition().name("name")
 				.type(GraphQLString)
 				.build());
+
+		//TODO add more fields
+
 		return releaseType.build();
 	}
 

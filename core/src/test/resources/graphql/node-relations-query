@@ -1,6 +1,12 @@
 {
-	denode: nodes(path:"/Neuigkeiten") {
+	denode: node(path:"/Neuigkeiten") {
 		uuid,
 		children(languages: ["en","de"]) { uuid }
+	}
+	rootNode {
+		uuid
+	}
+	project {
+		name
 	}
 }

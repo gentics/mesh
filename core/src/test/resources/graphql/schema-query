@@ -1,0 +1,10 @@
+{
+  schemas {
+   name
+  },
+  schema(name:"content") {
+    name
+    uuid,
+    isContainer
+  }
+}
