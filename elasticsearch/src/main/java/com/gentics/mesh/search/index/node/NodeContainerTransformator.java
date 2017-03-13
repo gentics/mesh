@@ -562,8 +562,8 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		JsonObject displayFieldMapping = new JsonObject();
 		displayFieldMapping.put("type", OBJECT);
 		JsonObject displayFieldMappingProperties = new JsonObject();
-		displayFieldMappingProperties.put("key", notAnalyzedType(STRING));
-		displayFieldMappingProperties.put("value", notAnalyzedType(STRING));
+		displayFieldMappingProperties.put("key", trigramStringType());
+		displayFieldMappingProperties.put("value", trigramStringType());
 		displayFieldMapping.put("properties", displayFieldMappingProperties);
 		typeProperties.put("displayField", displayFieldMapping);
 
