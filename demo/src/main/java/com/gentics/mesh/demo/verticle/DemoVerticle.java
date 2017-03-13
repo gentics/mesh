@@ -32,11 +32,6 @@ public class DemoVerticle extends AbstractCustomVerticle {
 		this.demoDataProvider = demoDataProvider;
 	}
 
-//	@Override
-//	public String getDescription() {
-//		return "Provides endpoints which serve the demo application";
-//	}
-
 	private void addRedirectionHandler() {
 		route().method(GET).handler(rc -> {
 			if ("/demo".equals(rc.request().path())) {
@@ -59,8 +54,8 @@ public class DemoVerticle extends AbstractCustomVerticle {
 				} catch (Exception e) {
 					log.error("Error while generating demo data.", e);
 				}
-			}, rh -> {
-				System.out.println("Done");
+			}, false, rh -> {
+				log.info("Demo data setup complete");
 			});
 		} else {
 			log.info("Demo graph was already setup once. Not invoking demo data setup.");

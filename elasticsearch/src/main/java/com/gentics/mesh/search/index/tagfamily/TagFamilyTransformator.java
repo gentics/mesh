@@ -39,6 +39,8 @@ public class TagFamilyTransformator extends AbstractTransformator<TagFamily> {
 		JsonObject props = new JsonObject();
 		props.put(NAME_KEY, trigramStringType());
 
+		//TODO tags
+
 		// project
 		JsonObject projectMapping = new JsonObject();
 		projectMapping.put("type", OBJECT);
