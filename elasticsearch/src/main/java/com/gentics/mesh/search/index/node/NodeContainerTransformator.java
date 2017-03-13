@@ -535,13 +535,17 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 
 		// tags
 		JsonObject tagsMapping = new JsonObject();
-		tagsMapping.put("type", "nested");
-		tagsMapping.put("dynamic", true);
+		tagsMapping.put("type", NESTED);
+		JsonObject tagsMappingProps = new JsonObject();
+		tagsMappingProps.put("name", trigramStringType());
+		tagsMappingProps.put("uuid", notAnalyzedType(STRING));
+		tagsMapping.put("properties", tagsMappingProps);
 		typeProperties.put("tags", tagsMapping);
 
 		// tagFamilies
+		// TODO Currently tag family entries are dynamic because we utilize the name of the tag family as the key of the data.
 		JsonObject tagFamiliesMapping = new JsonObject();
-		tagFamiliesMapping.put("type", "nested");
+		tagFamiliesMapping.put("type", NESTED);
 		tagFamiliesMapping.put("dynamic", true);
 		typeProperties.put("tagFamilies", tagFamiliesMapping);
 
