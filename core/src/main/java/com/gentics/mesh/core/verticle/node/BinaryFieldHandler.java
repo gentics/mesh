@@ -238,7 +238,14 @@ public class BinaryFieldHandler extends AbstractHandler {
 				// 3. Only gather image info for actual images. Otherwise return an empty image info object.
 				if (contentType.startsWith("image/")) {
 					try {
-						obsImage = imageManipulator.readImageInfo(new FileInputStream(ul.uploadedFileName()));
+						obsImage = imageManipulator.readImageInfo(() -> {
+							try {
+								return new FileInputStream(ul.uploadedFileName());
+							} catch (Exception e) {
+								log.error("Could not load schema for node {" + node.getUuid() + "}");
+								throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
+							}
+						});
 					} catch (Exception e) {
 						log.error("Could not load schema for node {" + node.getUuid() + "}");
 						throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
@@ -337,14 +344,16 @@ public class BinaryFieldHandler extends AbstractHandler {
 							return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).flatMap(hash -> {
 								// The image was stored and hashed. Now we need to load the stored file again and check the image properties
 								return db.noTx(() -> {
-									try {
-										return imageManipulator.readImageInfo(new FileInputStream(field.getFilePath())).map(info -> {
-											// Return a pojo which hold all information that is needed to update the field
-											return new TransformationResult(hash, buffer.length(), info);
-										});
-									} catch (IOException e) {
-										throw new RuntimeException(e);
-									}
+									return imageManipulator.readImageInfo(() -> {
+										try {
+											return new FileInputStream(field.getFilePath());
+										} catch (IOException e) {
+											throw new RuntimeException(e);
+										}
+									}).map(info -> {
+										// Return a pojo which hold all information that is needed to update the field
+										return new TransformationResult(hash, buffer.length(), info);
+									});
 								});
 							});
 						});

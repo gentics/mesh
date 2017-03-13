@@ -1,6 +1,7 @@
 {
 "images": [
 { "name": "bild2.jpg", "w": 300, "h": 300, "dominantColor": "#a18a72" },
+{ "name": "blank.gif", "w": 1, "h": 1, "dominantColor": "#000000" },
 { "name": "blume2.jpeg", "w": 1160, "h": 1376, "dominantColor": "#737042" },
 { "name": "blume.jpg", "w": 1160, "h": 1376, "dominantColor": "#737042" },
 { "name": "blume.png", "w": 1160, "h": 1376, "dominantColor": "#747042" },
