@@ -431,11 +431,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Binary content for images and other downloads
-			SchemaContainer binarySchemaContainer = schemaContainerRoot.findByName("binary-content");
+			SchemaContainer binarySchemaContainer = schemaContainerRoot.findByName("binary_content");
 			if (binarySchemaContainer == null) {
 
 				Schema schema = new SchemaModel();
-				schema.setName("binary-content");
+				schema.setName("binary_content");
 				schema.setDisplayField("name");
 				schema.setSegmentField("binary");
 

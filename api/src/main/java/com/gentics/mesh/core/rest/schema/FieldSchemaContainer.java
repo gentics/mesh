@@ -22,6 +22,8 @@ import com.gentics.mesh.core.rest.node.FieldMap;
  */
 public interface FieldSchemaContainer extends RestModel {
 
+	public static final String NAME_REGEX = "^[_a-zA-Z][_a-zA-Z0-9]*$";
+
 	/**
 	 * Return the name of the container.
 	 * 
@@ -59,7 +61,11 @@ public interface FieldSchemaContainer extends RestModel {
 	 * @return
 	 */
 	default FieldSchema getField(String fieldName) {
-		return (FieldSchema) getFields().stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null);
+		return (FieldSchema) getFields().stream()
+				.filter(f -> f.getName()
+						.equals(fieldName))
+				.findFirst()
+				.orElse(null);
 	}
 
 	/**
@@ -70,7 +76,11 @@ public interface FieldSchemaContainer extends RestModel {
 	 * @return
 	 */
 	default <T> T getField(String fieldName, Class<T> classOfT) {
-		return (T) getFields().stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null);
+		return (T) getFields().stream()
+				.filter(f -> f.getName()
+						.equals(fieldName))
+				.findFirst()
+				.orElse(null);
 	}
 
 	/**
@@ -131,7 +141,8 @@ public interface FieldSchemaContainer extends RestModel {
 		int index = fields.size();
 		if (afterFieldName != null) {
 			for (int i = 0; i < fields.size(); i++) {
-				if (afterFieldName.equals(fields.get(i).getName())) {
+				if (afterFieldName.equals(fields.get(i)
+						.getName())) {
 					index = i;
 					break;
 				}
@@ -172,6 +183,10 @@ public interface FieldSchemaContainer extends RestModel {
 			throw error(BAD_REQUEST, "schema_error_no_name");
 		}
 
+		if(!getName().matches(NAME_REGEX)) {
+			throw error(BAD_REQUEST, "schema_error_invalid_name", getName());
+		}
+
 		Set<String> fieldLabels = new HashSet<>();
 		Set<String> fieldNames = new HashSet<>();
 
@@ -190,7 +205,6 @@ public interface FieldSchemaContainer extends RestModel {
 			field.validate();
 		}
 	}
-
 
 	/**
 	 * Assert that the field map does not contain any fields which are not specified by the schema.

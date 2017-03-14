@@ -2,6 +2,8 @@
 
 == 0.8.0 (Pending)
 
+* __[Enhancement]__ Schema name validation - Schema and microschema names must only contain letter, number or underscore characters.
+
 * __[Enhancement]__ Node Tag Endpoint
 
 The endpoint `/api/v1/:projectName/nodes/:nodeUuid/tags` was enhanced. It is now possible to post a list of tag references which will be applied to the node. Tags which are not part of the list will removed from the node. Tags which do not exist will be created. Please note that tag families will not automatically be created.

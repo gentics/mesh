@@ -39,7 +39,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 			Node node = content("news_2015");
 
 			// 1. Transform the node into a binary content
-			SchemaContainer container = schemaContainer("binary-content");
+			SchemaContainer container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
 			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
@@ -69,7 +69,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 			Node node = content("news_2015");
 
 			// 1. Transform the node into a binary content
-			SchemaContainer container = schemaContainer("binary-content");
+			SchemaContainer container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
 			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");

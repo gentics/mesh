@@ -54,9 +54,43 @@ public class SchemaTest {
 		Schema schema = new SchemaModel();
 		schema.setName("dummySchema");
 		schema.setContainer(true);
-		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label").setName("Name").setRequired(true));
+		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label")
+				.setName("Name")
+				.setRequired(true));
 		validateSchema(schema);
+	}
+
+	@Test
+	public void testSchemaNameValidation() {
+		Schema schema = new SchemaModel();
+		schema.setContainer(true);
+		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label")
+				.setName("Name")
+				.setRequired(true));
+
+		schema.setName("dummySchema");
 		schema.validate();
+
+		schema.setName("dummy-name");
+		expectErrorOnValidate(schema, "schema_error_invalid_name", schema.getName());
+
+		schema.setName("DummyName");
+		schema.validate();
+
+		schema.setName("DömmyNäme");
+		expectErrorOnValidate(schema, "schema_error_invalid_name", schema.getName());
+
+		schema.setName("0.9");
+		expectErrorOnValidate(schema, "schema_error_invalid_name", schema.getName());
+
+		schema.setName("a0");
+		schema.validate();
+
+		schema.setName("0");
+		expectErrorOnValidate(schema, "schema_error_invalid_name", schema.getName());
+
+		schema.setName("ab cd");
+		expectErrorOnValidate(schema, "schema_error_invalid_name", schema.getName());
 	}
 
 	@Test
@@ -67,18 +101,30 @@ public class SchemaTest {
 		schema.setSegmentField("name_2");
 		schema.setContainer(true);
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
-		schema.addField(FieldUtil.createHtmlFieldSchema("name_1").setLabel("label_1").setRequired(true));
-		schema.addField(FieldUtil.createStringFieldSchema("name_2").setLabel("label_2").setRequired(true));
-		schema.addField(FieldUtil.createNumberFieldSchema("name_3").setLabel("label_3").setRequired(true));
-		schema.addField(FieldUtil.createDateFieldSchema("name_4").setLabel("label_4").setRequired(true));
-		schema.addField(FieldUtil.createBooleanFieldSchema("name_5").setLabel("label_5").setRequired(true));
+		schema.addField(FieldUtil.createHtmlFieldSchema("name_1")
+				.setLabel("label_1")
+				.setRequired(true));
+		schema.addField(FieldUtil.createStringFieldSchema("name_2")
+				.setLabel("label_2")
+				.setRequired(true));
+		schema.addField(FieldUtil.createNumberFieldSchema("name_3")
+				.setLabel("label_3")
+				.setRequired(true));
+		schema.addField(FieldUtil.createDateFieldSchema("name_4")
+				.setLabel("label_4")
+				.setRequired(true));
+		schema.addField(FieldUtil.createBooleanFieldSchema("name_5")
+				.setLabel("label_5")
+				.setRequired(true));
 
 		ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
-		listFieldSchema.setLabel("label_7").setName("name_7").setRequired(true);
+		listFieldSchema.setLabel("label_7")
+				.setName("name_7")
+				.setRequired(true);
 		listFieldSchema.setAllowedSchemas(new String[] { "folder", "videos" });
 		listFieldSchema.setListType("node");
-//		listFieldSchema.setMax(10);
-//		listFieldSchema.setMin(3);
+		//		listFieldSchema.setMax(10);
+		//		listFieldSchema.setMin(3);
 		schema.addField(listFieldSchema);
 
 		// MicroschemaFieldSchema microschemaFieldSchema = new MicroschemaFieldSchemaImpl();
@@ -100,7 +146,10 @@ public class SchemaTest {
 		System.out.println(json);
 		assertNotNull(json);
 		Schema deserializedSchema = JsonUtil.readValue(json, SchemaModel.class);
-		assertEquals(schema.getFields().size(), deserializedSchema.getFields().size());
+		assertEquals(schema.getFields()
+				.size(),
+				deserializedSchema.getFields()
+						.size());
 		assertNotNull(deserializedSchema);
 	}
 
@@ -210,8 +259,10 @@ public class SchemaTest {
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
-		schema.addField(FieldUtil.createStringFieldSchema("name").setLabel("conflict"));
-		schema.addField(FieldUtil.createStringFieldSchema("name2").setLabel("conflict"));
+		schema.addField(FieldUtil.createStringFieldSchema("name")
+				.setLabel("conflict"));
+		schema.addField(FieldUtil.createStringFieldSchema("name2")
+				.setLabel("conflict"));
 		expectErrorOnValidate(schema, "schema_error_duplicate_field_label", "name2", "conflict");
 	}
 
@@ -270,7 +321,8 @@ public class SchemaTest {
 		Microschema schema = new MicroschemaModel();
 		schema.setName("test");
 		schema.setDescription("some blub");
-		schema.addField(FieldUtil.createListFieldSchema("list").setListType("micronode"));
+		schema.addField(FieldUtil.createListFieldSchema("list")
+				.setListType("micronode"));
 		expectErrorOnValidate(schema, "microschema_error_field_type_not_allowed", "list", "list:micronode");
 	}
 
@@ -279,7 +331,8 @@ public class SchemaTest {
 		Microschema schema = new MicroschemaModel();
 		schema.setName("test");
 		schema.setDescription("some blub");
-		schema.addField(FieldUtil.createListFieldSchema("list").setListType("binary"));
+		schema.addField(FieldUtil.createListFieldSchema("list")
+				.setListType("binary"));
 		expectErrorOnValidate(schema, "microschema_error_field_type_not_allowed", "list", "list:binary");
 	}
 

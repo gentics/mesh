@@ -413,7 +413,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			SchemaReference content = schemaContainer("content").getLatestVersion().transformToReference();
 			SchemaReference folder = schemaContainer("folder").getLatestVersion().transformToReference();
-			SchemaReference binaryContent = schemaContainer("binary-content").getLatestVersion().transformToReference();
+			SchemaReference binaryContent = schemaContainer("binary_content").getLatestVersion().transformToReference();
 
 			assertThat(list).as("release schema versions").usingElementComparatorOnFields("name", "uuid", "version").containsOnly(content, folder,
 					binaryContent);

@@ -236,6 +236,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not load user with UUID {" + userUuid + "}.");
 				}
+				//TODO use NoStackTraceThrowable?
 				throw new Exception("Invalid credentials!");
 			}
 			if (!user.isEnabled()) {

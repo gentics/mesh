@@ -43,17 +43,18 @@ public class SchemaExamples extends AbstractExamples {
 		schemaUpdateRequest.setDescription("Some description text");
 		schemaUpdateRequest.setDisplayField("name");
 		schemaUpdateRequest.setSegmentField("name");
-		schemaUpdateRequest.setName("video-schema");
+		schemaUpdateRequest.setName("video");
 		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 		nameFieldSchema.setName("name");
 		schemaUpdateRequest.addField(nameFieldSchema);
+		schemaUpdateRequest.validate();
 		return schemaUpdateRequest;
 	}
 
 	public SchemaResponse getSchemaResponse() {
 		SchemaResponse schema = new SchemaResponse();
 		schema.setUuid(randomUUID());
-		schema.setName("Example Schema");
+		schema.setName("ExampleSchema");
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
 		// schema.setDescription("Description of the schema");

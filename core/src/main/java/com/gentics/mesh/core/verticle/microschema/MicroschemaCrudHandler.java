@@ -69,6 +69,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
 			MicroschemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
+			requestModel.validate();
+
 			SchemaChangesListModel model = new SchemaChangesListModel();
 			model.getChanges().addAll(comparator.diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
 			String name = schemaContainer.getName();
@@ -110,7 +112,6 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 						Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options);
 
 					}
-
 				}
 
 				return batch;
@@ -132,6 +133,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		utils.operateNoTx(ac, () -> {
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
+			requestModel.validate();
 			return microschema.getLatestVersion().diff(ac, comparator, requestModel);
 		}, model -> ac.send(model, OK));
 	}

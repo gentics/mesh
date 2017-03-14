@@ -334,7 +334,7 @@ public class TestDataProvider {
 		project.addLanguage(getGerman());
 		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("folder"));
 		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("content"));
-		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("binary-content"));
+		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("binary_content"));
 
 		if (getSize() == FULL) {
 			// Guest Group / Role
@@ -388,9 +388,9 @@ public class TestDataProvider {
 		SchemaContainer contentSchemaContainer = boot.schemaContainerRoot().findByName("content");
 		schemaContainers.put("content", contentSchemaContainer);
 
-		// binary-content
-		SchemaContainer binaryContentSchemaContainer = boot.schemaContainerRoot().findByName("binary-content");
-		schemaContainers.put("binary-content", binaryContentSchemaContainer);
+		// binary_content
+		SchemaContainer binaryContentSchemaContainer = boot.schemaContainerRoot().findByName("binary_content");
+		schemaContainers.put("binary_content", binaryContentSchemaContainer);
 
 	}
 

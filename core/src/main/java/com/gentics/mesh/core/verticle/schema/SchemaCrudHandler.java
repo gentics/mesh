@@ -78,6 +78,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
 			SchemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
+			requestModel.validate();
 
 			// 2. Diff the schema with the latest version
 			SchemaChangesListModel model = new SchemaChangesListModel();
@@ -155,6 +156,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		utils.operateNoTx(ac, () -> {
 			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
+			requestModel.validate();
 			return schema.getLatestVersion().diff(ac, comparator, requestModel);
 		}, model -> ac.send(model, OK));
 	}
