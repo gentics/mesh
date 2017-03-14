@@ -108,7 +108,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		}
 
 		MeshAuthUser requestUser = ac.getUser();
-		String elementUuid = element.getUuid();
 		if (perm == READ_PUBLISHED_PERM) {
 			Release release = ac.getRelease(element.getProject());
 			List<String> requestedLanguageTags = ac.getNodeParameters()
@@ -117,16 +116,19 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 					ac.getVersioningParameters()
 							.getVersion());
 
+			if (fieldContainer == null) {
+				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", uuid, release.getUuid());
+			}
 			// Additionally check whether the read published permission could grant read perm for published nodes
 			if (fieldContainer.isPublished(release.getUuid()) && requestUser.hasPermission(element, READ_PUBLISHED_PERM)) {
 				return element;
 			} else {
-				throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+				throw error(FORBIDDEN, "error_missing_perm", uuid);
 			}
 		} else if (requestUser.hasPermission(element, perm)) {
 			return element;
 		}
-		throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+		throw error(FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	/**

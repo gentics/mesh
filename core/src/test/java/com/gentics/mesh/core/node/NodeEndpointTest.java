@@ -1326,7 +1326,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// 1. Take node offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, uuid, new PublishParameters().setRecursive(true)));
 
-		// 2. Load node using default options. By default the scope published is active. Thus the node can't be found.
+		// 2. Load node using published options. 
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().published()), NOT_FOUND,
 				"node_error_published_not_found_for_uuid_release_version", uuid, releaseUuid);
 
