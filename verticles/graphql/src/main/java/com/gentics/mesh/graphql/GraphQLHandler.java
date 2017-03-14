@@ -13,7 +13,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphql.type.RootTypeProvider;
+import com.gentics.mesh.graphql.type.QueryTypeProvider;
 import com.gentics.mesh.json.JsonUtil;
 
 import graphql.ExecutionResult;
@@ -30,7 +30,7 @@ public class GraphQLHandler {
 	private static final Logger log = LoggerFactory.getLogger(GraphQLHandler.class);
 
 	@Inject
-	public RootTypeProvider typeProvider;
+	public QueryTypeProvider typeProvider;
 
 	@Inject
 	public Database db;
@@ -64,7 +64,7 @@ public class GraphQLHandler {
 						}
 					}
 				}
-				ac.fail(error(BAD_REQUEST, "Query could not be executed"));
+				ac.fail(error(BAD_REQUEST, "graphql_error_while_executing"));
 			} else {
 				Map<String, Object> data = (Map<String, Object>) result.getData();
 				JsonObject response = new JsonObject();

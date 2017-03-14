@@ -67,7 +67,8 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 			SchemaContainerVersion version = container.getLatestVersion();
 			Schema schema = version.getSchema();
 			Builder root = newObject();
-			root.name(schema.getName());
+			//TODO only allow specific characters for schema names: Error: Names must match /^[_a-zA-Z][_a-zA-Z0-9]*$/ but "binary-content" does not.
+			root.name(schema.getName().replaceAll("-", "_"));
 			root.description(schema.getDescription());
 
 			// TODO add link resolving argument / code

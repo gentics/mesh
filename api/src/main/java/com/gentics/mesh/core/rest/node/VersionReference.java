@@ -11,9 +11,6 @@ public class VersionReference extends AbstractResponse {
 	@JsonPropertyDescription("Version number")
 	private String number;
 
-	/**
-	 * Empty Constructor
-	 */
 	public VersionReference() {
 	}
 

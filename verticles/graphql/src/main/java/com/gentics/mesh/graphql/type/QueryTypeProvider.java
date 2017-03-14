@@ -23,7 +23,7 @@ import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLTypeReference;
 
 /**
- * The {@link RootTypeProvider} provides as the name suggests the root type for the GraphQL schema. This type is the starting point for all GraphQL queries.
+ * The {@link QueryTypeProvider} provides as the name suggests the query type for the GraphQL schema. This type is the starting point for all GraphQL queries.
  * Various other schema types are located in dedicated classes for each type. Dependency injection is used to load those dependencies and thus make these types
  * accessible by the root type. Please note that this root type is and will most likely always be project specific. It is not possible to query other projects.
  * Only the currently selected project and global elements (user, roles, groups..) can be queries.
@@ -33,7 +33,7 @@ import graphql.schema.GraphQLTypeReference;
  * versions.
  */
 @Singleton
-public class RootTypeProvider extends AbstractTypeProvider {
+public class QueryTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public NodeFieldTypeProvider nodeFieldTypeProvider;
@@ -75,7 +75,7 @@ public class RootTypeProvider extends AbstractTypeProvider {
 	public MicroschemaTypeProvider microschemaTypeProvider;
 
 	@Inject
-	public RootTypeProvider() {
+	public QueryTypeProvider() {
 	}
 
 	public Object nodeFetcher(DataFetchingEnvironment env) {
@@ -147,7 +147,7 @@ public class RootTypeProvider extends AbstractTypeProvider {
 
 	public GraphQLObjectType getRootType(Project project) {
 		Builder root = newObject();
-		root.name("Mesh root");
+		root.name("Query");
 
 		// .me
 		root.field(newFieldDefinition().name("me")

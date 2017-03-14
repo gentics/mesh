@@ -8,7 +8,7 @@ import io.vertx.core.json.JsonObject;
 public interface GraphQLClientMethods {
 
 	/**
-	 * Execute the Graph QL query.
+	 * Execute the GraphQL query.
 	 * 
 	 * @param projectName
 	 * @param query

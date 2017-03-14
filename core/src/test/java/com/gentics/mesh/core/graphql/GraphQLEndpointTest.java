@@ -51,6 +51,12 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{me{firstname}}"));
 		MeshJSONAssert.assertEquals("{'data':{'me':{'firstname':'Joe'}}}", response);
 	}
+	
+	@Test
+	public void testIntrospection() {
+		JsonObject response = call(() -> client().graphql(PROJECT_NAME, getQuery("introspection-query")));
+		System.out.println(response.toString());
+	}
 
 	@Test
 	public void testNodeQuery() throws JSONException {

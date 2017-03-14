@@ -91,30 +91,36 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		root.name("User");
 		root.description("User description");
 		interfaceTypeProvider.addCommonFields(root);
+
+		// .username
 		root.field(newFieldDefinition().name("username")
 				.description("The username of the user")
 				.type(GraphQLString)
 				.dataFetcher(this::usernameFetcher)
 				.build());
 
+		// .firstname
 		root.field(newFieldDefinition().name("firstname")
 				.description("The firstname of the user")
 				.type(GraphQLString)
 				.dataFetcher(this::firstnameFetcher)
 				.build());
 
+		// .lastname
 		root.field(newFieldDefinition().name("lastname")
 				.description("The lastname of the user")
 				.type(GraphQLString)
 				.dataFetcher(this::lastnameFetcher)
 				.build());
 
+		// .emailAddress
 		root.field(newFieldDefinition().name("emailAddress")
 				.description("The email of the user")
 				.type(GraphQLString)
 				.dataFetcher(this::emailAddressFetcher)
 				.build());
 
+		// .groups
 		root.field(newFieldDefinition().name("groups")
 				.description("Groups to which the user belongs")
 				.argument(getPagingArgs())
@@ -122,11 +128,13 @@ public class UserTypeProvider extends AbstractTypeProvider {
 				.dataFetcher(this::groupsFetcher)
 				.build());
 
+		// .nodeReference
 		root.field(newFieldDefinition().name("nodeReference")
 				.description("User node reference")
 				.type(new GraphQLTypeReference("Node"))
 				.dataFetcher(this::nodeReferenceFetcher)
 				.build());
+
 		return root.build();
 	}
 }

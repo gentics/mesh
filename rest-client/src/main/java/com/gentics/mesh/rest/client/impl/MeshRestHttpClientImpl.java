@@ -1025,11 +1025,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		String path = "/" + encodeFragment(projectName) + "/graphql" + getQuery(parameters);
 		String uri = BASEURI + path;
 		Buffer buffer = Buffer.buffer();
-		String json = new JsonObject().put("query", query).toString();
-		if (log.isDebugEnabled()) {
-			log.debug(json);
-		}
-		buffer.appendString(json);
+		buffer.appendString(query);
 //		return MeshRestRequestUtil.prepareRequest(POST, path, JsonObject.class, buffer,
 //				"application/json", client, authentication);
 		

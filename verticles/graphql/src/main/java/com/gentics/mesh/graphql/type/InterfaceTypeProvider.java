@@ -35,36 +35,42 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 	private GraphQLInterfaceType getCommonType() {
 
 		Builder common = newInterface().name("MeshElement");
+		// .uuid
 		common.field(newFieldDefinition().name("uuid")
 				.description("UUID of the element")
 				.type(GraphQLString)
 				.build());
 
+		// .edited
 		common.field(newFieldDefinition().name("edited")
 				.description("ISO8601 formatted edit timestamp")
 				.type(GraphQLString)
 				.build());
 
+		// .created
 		common.field(newFieldDefinition().name("created")
 				.description("ISO8601 formatted created date string")
 				.type(GraphQLString)
 				.build());
 
+		// .permissions
 		common.field(newFieldDefinition().name("permissions")
 				.description("Permission information of the element")
 				.type(getPermInfoType())
 				.build());
 
-		//rolePerms
+		//TODO add rolePerms
 
+		// .creator
 		common.field(newFieldDefinition().name("creator")
 				.description("Creator of the element")
-				.type(new GraphQLList(new GraphQLTypeReference("User")))
+				.type(new GraphQLTypeReference("User"))
 				.build());
 
+		// .editor
 		common.field(newFieldDefinition().name("editor")
 				.description("Editor of the element")
-				.type(new GraphQLList(new GraphQLTypeReference("User")))
+				.type(new GraphQLTypeReference("User"))
 				.build());
 
 		common.typeResolver(resolver -> {

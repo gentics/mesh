@@ -37,6 +37,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -245,6 +246,8 @@ public class NodeExamples extends AbstractExamples {
 		request.setCropy(20);
 		request.setCropw(170);
 		request.setCroph(150);
+		request.setLanguage("en");
+		request.setVersion(new VersionReference().setNumber("1.0"));
 		return request;
 	}
 

@@ -64,7 +64,7 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 
 	@Override
 	public String getDescription() {
-		return "Graph QL endpoint";
+		return "GraphQL endpoint";
 	}
 
 }
