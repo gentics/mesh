@@ -17,6 +17,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -149,12 +150,13 @@ public class HandlerUtilities {
 	 *            Uuid of the element which should be loaded
 	 * @param handler
 	 *            Handler which provides the root vertex which should be used when loading the element
+	 * @param perm Permission to check against when loading the element
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac,
-			String uuid, TxHandler<RootVertex<T>> handler) {
+			String uuid, TxHandler<RootVertex<T>> handler, GraphPermission perm) {
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
-			T element = root.loadObjectByUuid(ac, uuid, READ_PERM);
+			T element = root.loadObjectByUuid(ac, uuid, perm);
 			String etag = element.getETag(ac);
 			ac.setEtag(etag, true);
 			if (ac.matches(etag, true)) {

@@ -166,7 +166,7 @@ public class TagCrudHandler extends AbstractHandler {
 
 		utils.readElement(ac, tagUuid, () -> {
 			return getTagFamily(ac, tagFamilyUuid);
-		});
+		}, READ_PERM);
 
 	}
 

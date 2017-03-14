@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.handler;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -67,7 +68,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 	 */
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.readElement(ac, uuid, () -> getRootVertex(ac));
+		utils.readElement(ac, uuid, () -> getRootVertex(ac), READ_PERM);
 	}
 
 	/**

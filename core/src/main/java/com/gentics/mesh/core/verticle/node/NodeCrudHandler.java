@@ -176,7 +176,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			NodeParameters nodeParams = ac.getNodeParameters();
 			PagingParametersImpl pagingParams = ac.getPagingParameters();
 			VersioningParameters versionParams = ac.getVersioningParameters();
-			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
+			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
 			Page<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(), ac.getRelease(node.getProject()).getUuid(),
 					ContainerType.forVersion(versionParams.getVersion()), pagingParams);
 			// Handle etag
@@ -191,12 +192,18 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	}
 
+	public void handleRead(InternalActionContext ac, String uuid) {
+		validateParameter(uuid, "uuid");
+		GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
+		utils.readElement(ac, uuid, () -> getRootVertex(ac), requiredPermission);
+	}
+
 	/**
 	 * Handle the read node tags request.
 	 * 
 	 * @param ac
 	 * @param uuid
-	 *            Uuid of the node for which the tags should be loaded
+	 *            UUID of the node for which the tags should be loaded
 	 */
 	public void readTags(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
