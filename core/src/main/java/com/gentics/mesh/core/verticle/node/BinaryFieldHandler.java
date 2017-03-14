@@ -352,7 +352,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 											throw new RuntimeException(e);
 										}
 									}).map(info -> {
-										// Return a pojo which hold all information that is needed to update the field
+										// Return a POJO which hold all information that is needed to update the field
 										return new TransformationResult(hash, buffer.length(), info);
 									});
 								});
