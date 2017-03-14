@@ -45,13 +45,16 @@ public class TagCrudHandler extends AbstractHandler {
 	public TagFamily getTagFamily(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		return ac.getProject().getTagFamilyRoot().findByUuid(tagFamilyUuid);
+		return ac.getProject()
+				.getTagFamilyRoot()
+				.findByUuid(tagFamilyUuid);
 	}
 
 	/**
 	 * Add the handler that returns a node list for a specified tag.
 	 * 
 	 * @param ac
+	 *            Action Context
 	 * @param tagFamilyUuid
 	 *            Uuid of the tag's parent tag family
 	 * @param tagUuid
@@ -67,18 +70,22 @@ public class TagCrudHandler extends AbstractHandler {
 			Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
 			// try {
 			Page<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(), nodeParams.getLanguageList(),
-					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
+					ContainerType.forVersion(ac.getVersioningParameters()
+							.getVersion()),
+					pagingParams);
 			return page.transformToRest(ac, 0);
 			// } catch (Exception e) {
 			// return Single.error(e);
 			// }
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		})
+				.subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
 	 * Read paged list of tags.
 	 * 
 	 * @param ac
+	 *            Action Context
 	 * @param tagFamilyUuid
 	 */
 	public void handleReadTagList(InternalActionContext ac, String tagFamilyUuid) {
@@ -93,6 +100,7 @@ public class TagCrudHandler extends AbstractHandler {
 	 * Handle a tag create request.
 	 * 
 	 * @param ac
+	 *            Action Context
 	 * @param tagFamilyUuid
 	 *            Uuid of the tagfamily in which the tag should be created
 	 */
@@ -100,7 +108,8 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
 		utils.operateNoTx(ac, () -> {
-			Database db = MeshInternal.get().database();
+			Database db = MeshInternal.get()
+					.database();
 			SearchQueueBatch batch = searchQueue.create();
 			ResultInfo info = db.tx(() -> {
 				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
@@ -125,6 +134,7 @@ public class TagCrudHandler extends AbstractHandler {
 	 * Handle a tag delete request.
 	 * 
 	 * @param ac
+	 *            Action Context
 	 * @param tagFamilyUuid
 	 *            The tags tagfamily uuid
 	 * @param tagUuid
@@ -144,6 +154,7 @@ public class TagCrudHandler extends AbstractHandler {
 	 * Handle a tag read request.
 	 * 
 	 * @param ac
+	 *            Action Context
 	 * @param tagFamilyUuid
 	 *            Uuid of the tagfamily to which the tag belongs
 	 * @param tagUuid
@@ -163,6 +174,7 @@ public class TagCrudHandler extends AbstractHandler {
 	 * Handle a tag delete request.
 	 * 
 	 * @param ac
+	 *            Action Context
 	 * @param tagFamilyUuid
 	 *            Uuid of the tagfamily to which the tag belongs
 	 * @param tagUuid

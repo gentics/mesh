@@ -96,10 +96,12 @@ public final class TraversalHelper {
 	 * Return a paged result for the given traversal and paging parameters.
 	 * 
 	 * @param traversal
+	 *            Traversal to be used to load the vertices for the page
 	 * @param pagingInfo
+	 *            Paging information to be used to apply paging
 	 * @param classOfT
-	 * @return
-	 * @throws InvalidArgumentException
+	 *            Type of the elements within the page
+	 * @return Page with the result information
 	 */
 	public static <T extends TransformableElement<? extends RestModel>> Page<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
 			PagingParameters pagingInfo, Class<T> classOfT) {
@@ -111,6 +113,7 @@ public final class TraversalHelper {
 	 * Simple debug method for a vertex traversal. All vertices will be printed out. Don't use this code for production.
 	 * 
 	 * @param traversal
+	 *            Traversal to be debugged
 	 */
 	public static void debug(VertexTraversal<?, ?, ?> traversal) {
 		for (MeshVertexImpl v : traversal.toListExplicit(MeshVertexImpl.class)) {
@@ -126,7 +129,12 @@ public final class TraversalHelper {
 	 */
 	public static void debug(EdgeTraversal<?, ?, ?> traversal) {
 		for (MeshEdgeImpl e : traversal.toListExplicit(MeshEdgeImpl.class)) {
-			System.out.println(e.getElement().getId() + "from " + e.inV().next() + " to " + e.outV().next());
+			System.out.println(e.getElement()
+					.getId() + "from "
+					+ e.inV()
+							.next()
+					+ " to " + e.outV()
+							.next());
 			System.out.println(e.getLabel() + " type: " + e.getFermaType() + " json: " + e.toJson());
 		}
 	}
@@ -135,7 +143,8 @@ public final class TraversalHelper {
 	 * Simple debug method for printing all existing vertices.
 	 */
 	public static void printDebugVertices() {
-		for (VertexFrame frame : Database.getThreadLocalGraph().v()) {
+		for (VertexFrame frame : Database.getThreadLocalGraph()
+				.v()) {
 			System.out.println(
 					frame.getId() + " " + frame.getProperty("ferma_type") + " " + frame.getProperty("name") + " " + frame.getProperty("uuid"));
 		}
