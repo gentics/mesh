@@ -344,9 +344,10 @@ public class BinaryFieldHandler extends AbstractHandler {
 							return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).flatMap(hash -> {
 								// The image was stored and hashed. Now we need to load the stored file again and check the image properties
 								return db.noTx(() -> {
+									String fieldPath = field.getFilePath();
 									return imageManipulator.readImageInfo(() -> {
 										try {
-											return new FileInputStream(field.getFilePath());
+											return new FileInputStream(fieldPath);
 										} catch (IOException e) {
 											throw new RuntimeException(e);
 										}
