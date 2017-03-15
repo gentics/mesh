@@ -135,7 +135,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateName() throws Exception {
 		try (NoTx noTx = db().noTx()) {
-			String name = "new-name";
+			String name = "new_name";
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			MicroschemaContainerVersion currentVersion = vcardContainer.getLatestVersion();
 			assertNotNull(vcardContainer);

@@ -63,7 +63,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testUpdateName() throws GenericRestException, Exception {
 		try (NoTx noTx = db().noTx()) {
-			String name = "new-name";
+			String name = "new_name";
 			SchemaContainer container = schemaContainer("content");
 			SchemaContainerVersion currentVersion = container.getLatestVersion();
 			SchemaUpdateRequest request = JsonUtil.readValue(container.getLatestVersion().getJson(),
