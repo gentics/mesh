@@ -1018,6 +1018,15 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<JsonObject> graphqlQuery(String projectName, String query, ParameterProvider... parameters) {
+		String json = new JsonObject().put("query", query).toString();
+		if (log.isDebugEnabled()) {
+			log.debug(json);
+		}
+		return graphql(projectName, json, parameters);
+	}
+
+	@Override
 	public MeshRequest<JsonObject> graphql(String projectName, String query, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(query, "query must not be null");

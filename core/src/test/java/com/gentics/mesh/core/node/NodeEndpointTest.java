@@ -775,6 +775,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadPublishedNodes() {
 		try (NoTx noTx = db().noTx()) {
+			List<Node> nodes = Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015"));
+
 			// 1. Take all nodes offline
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode()
 					.getUuid(), new PublishParameters().setRecursive(true)));
@@ -785,15 +787,23 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(listResponse.getData()).as("Published nodes list")
 					.isEmpty();
 
-			List<Node> nodes = Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015"));
+			// 3. Assert that the offline nodes are also not loadable if requests via uuid
+			for (Node node : nodes) {
+				call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().published()), NOT_FOUND,
+						"node_error_published_not_found_for_uuid_release_version", node.getUuid(), release().getUuid());
+			}
+
+			// Publish a few nodes
 			nodes.stream()
 					.forEach(node -> call(() -> client().publishNode(PROJECT_NAME, node.getUuid())));
 
+			// Read each node individually
 			List<NodeResponse> publishedNodes = nodes.stream()
 					.map(node -> call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid())))
 					.collect(Collectors.toList());
 			assertThat(publishedNodes).hasSize(nodes.size());
 
+			// Read a bunch of nodes
 			listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParameters().published(), new PagingParametersImpl(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list")
 					.usingElementComparatorOnFields("uuid")

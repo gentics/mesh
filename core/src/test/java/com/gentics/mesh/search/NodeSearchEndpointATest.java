@@ -16,6 +16,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.parameter.impl.NodeParameters;
 import com.gentics.mesh.parameter.impl.VersioningParameters;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -80,10 +81,10 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 
 		// "supersonic" found in published nodes
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParameters().published()));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
-		// change draft version of content
+		// Change draft version of content
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage("en");
 		update.getFields().put("content", FieldUtil.createHtmlField(newContent));

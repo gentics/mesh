@@ -1168,4 +1168,10 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public MeshRequest<JsonObject> graphqlQuery(String projectName, String query, ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

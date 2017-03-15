@@ -51,7 +51,7 @@ public class ProjectEndpointETagTest extends AbstractETagTest {
 
 			// The node has no node reference and thus expanding will not affect the etag
 			assertEquals(etag,
-					expect304(client().findProjectByUuid(project.getUuid(), new NodeParameters().setExpandAll(true)),
+					expect304(client().findProjectByUuid(project.getUuid()),
 							etag, true));
 
 			// Assert that adding bogus query parameters will not affect the etag
