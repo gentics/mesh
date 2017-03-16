@@ -29,22 +29,13 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		super();
 	}
 
-	/**
-	 * Set the <code>{@value #LANGUAGES_QUERY_PARAM_KEY}</code> request parameter values.
-	 * 
-	 * @param languages
-	 * @return Fluent API
-	 */
-	public NodeParametersImpl setLanguages(String... languages) {
+	@Override
+	public NodeParameters setLanguages(String... languages) {
 		setParameter(LANGUAGES_QUERY_PARAM_KEY, convertToStr(languages));
 		return this;
 	}
 
-	/**
-	 * Return the <code>{@value #LANGUAGES_QUERY_PARAM_KEY}</code> request parameter values.
-	 * 
-	 * @return
-	 */
+	@Override
 	public String[] getLanguages() {
 		String value = getParameter(LANGUAGES_QUERY_PARAM_KEY);
 		String[] languages = null;
@@ -65,17 +56,14 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		return Arrays.asList(getLanguages());
 	}
 
-	/**
-	 * Set a list of field names which should be expanded.
-	 * 
-	 * @param fieldNames
-	 * @return
-	 */
-	public NodeParametersImpl setExpandedFieldNames(String... fieldNames) {
+	@Deprecated
+	@Override
+	public NodeParameters setExpandedFieldNames(String... fieldNames) {
 		setParameter(EXPANDFIELDS_QUERY_PARAM_KEY, convertToStr(fieldNames));
 		return this;
 	}
 
+	@Override
 	public String[] getExpandedFieldNames() {
 		String fieldNames = getParameter(EXPANDFIELDS_QUERY_PARAM_KEY);
 		if (fieldNames != null) {
@@ -93,22 +81,16 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		return Arrays.asList(getExpandedFieldNames());
 	}
 
-	/**
-	 * Set the <code>{@value #EXPANDALL_QUERY_PARAM_KEY}</code> request parameter flag.
-	 * 
-	 * @param flag
-	 * @return
-	 */
-	public NodeParametersImpl setExpandAll(boolean flag) {
+
+	@Override
+	@Deprecated
+	public NodeParameters setExpandAll(boolean flag) {
 		setParameter(EXPANDALL_QUERY_PARAM_KEY, String.valueOf(flag));
 		return this;
 	}
 
-	/**
-	 * Return the <code>{@value #EXPANDALL_QUERY_PARAM_KEY}</code> query parameter flag value.
-	 * 
-	 * @return
-	 */
+	@Override
+	@Deprecated
 	public boolean getExpandAll() {
 		String value = getParameter(EXPANDALL_QUERY_PARAM_KEY);
 		if (value != null) {
@@ -130,13 +112,8 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		return LinkType.OFF;
 	}
 
-	/**
-	 * Set the <code>{@value #RESOLVE_LINKS_QUERY_PARAM_KEY}</code> request parameter.
-	 * 
-	 * @param type
-	 * @return Fluent API
-	 */
-	public NodeParametersImpl setResolveLinks(LinkType type) {
+	@Override
+	public NodeParameters setResolveLinks(LinkType type) {
 		setParameter(RESOLVE_LINKS_QUERY_PARAM_KEY, type.name().toLowerCase());
 		return this;
 	}

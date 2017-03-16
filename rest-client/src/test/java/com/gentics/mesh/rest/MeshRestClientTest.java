@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -20,10 +21,10 @@ public class MeshRestClientTest {
 
 	@Test
 	public void testParameterHandling() {
-		NodeParametersImpl parameters1 = new NodeParametersImpl();
+		NodeParameters parameters1 = new NodeParametersImpl();
 		parameters1.setLanguages("en");
 
-		NodeParametersImpl parameters2 = new NodeParametersImpl();
+		NodeParameters parameters2 = new NodeParametersImpl();
 		parameters2.setExpandedFieldNames("test");
 		assertEquals("?lang=en&expand=test", AbstractMeshRestHttpClient.getQuery(parameters1, parameters2));
 		assertEquals("?lang=en", AbstractMeshRestHttpClient.getQuery(parameters1));

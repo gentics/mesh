@@ -8,7 +8,6 @@ import com.gentics.mesh.rest.client.MeshRestRequestUtil;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.ext.web.RoutingContext;
 import rx.Completable;
 import rx.Single;
 
@@ -18,10 +17,6 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 	private Single<GenericMessageResponse> loginRequest;
 
 	public JWTAuthentication() {
-	}
-
-	public JWTAuthentication(RoutingContext context) {
-		super();
 	}
 
 	@Override
