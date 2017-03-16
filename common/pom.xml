@@ -18,8 +18,13 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-rest-model</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

@@ -47,6 +47,7 @@ import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.util.FileUtils;
 import com.gentics.mesh.util.RxUtil;
@@ -329,7 +330,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 			try {
 				// Prepare the imageManipulationParameter using the transformation request as source
-				ImageManipulationParametersImpl imageManipulationParameter = new ImageManipulationParametersImpl().setWidth(transformation.getWidth())
+				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParametersImpl().setWidth(transformation.getWidth())
 						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
 						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
 				if (!imageManipulationParameter.isSet()) {

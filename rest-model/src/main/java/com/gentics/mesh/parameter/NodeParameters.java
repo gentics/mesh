@@ -25,7 +25,7 @@ public interface NodeParameters extends ParameterProvider {
 	/**
 	 * Set the <code>{@value #LANGUAGES_QUERY_PARAM_KEY}</code> request parameter values.
 	 * 
-	 * @param languages
+	 * @param languageTags
 	 * @return Fluent API
 	 */
 	public NodeParameters setLanguages(String... languageTags);

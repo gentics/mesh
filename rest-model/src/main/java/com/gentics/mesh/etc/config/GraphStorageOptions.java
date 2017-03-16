@@ -1,4 +1,4 @@
-package com.gentics.mesh.etc;
+package com.gentics.mesh.etc.config;
 
 import java.io.File;
 import java.util.HashMap;

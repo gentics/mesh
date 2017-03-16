@@ -43,22 +43,22 @@
 	<dependencies>
 		<!-- Internal dependencies -->
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-elasticsearch</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-graphql</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-rest-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>

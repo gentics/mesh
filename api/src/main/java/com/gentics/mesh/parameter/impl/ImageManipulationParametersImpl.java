@@ -13,20 +13,12 @@ import org.raml.model.parameter.QueryParameter;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 
 /**
  * Crop and resize parameters for image manipulation.
  */
-public class ImageManipulationParametersImpl extends AbstractParameters {
-
-	public static final String WIDTH_QUERY_PARAM_KEY = "width";
-	public static final String HEIGHT_QUERY_PARAM_KEY = "height";
-
-	public static final String CROP_X_QUERY_PARAM_KEY = "cropx";
-	public static final String CROP_Y_QUERY_PARAM_KEY = "cropy";
-
-	public static final String CROP_HEIGHT_QUERY_PARAM_KEY = "croph";
-	public static final String CROP_WIDTH_QUERY_PARAM_KEY = "cropw";
+public class ImageManipulationParametersImpl extends AbstractParameters implements ImageManipulationParameters {
 
 	public ImageManipulationParametersImpl(ActionContext ac) {
 		super(ac);
@@ -36,131 +28,73 @@ public class ImageManipulationParametersImpl extends AbstractParameters {
 	public ImageManipulationParametersImpl() {
 	}
 
-	/**
-	 * Return the image width.
-	 * 
-	 * @return
-	 */
+	@Override
 	public Integer getWidth() {
 		return toInteger(getParameter(WIDTH_QUERY_PARAM_KEY), null);
 	}
 
-	/**
-	 * Set the image width.
-	 * 
-	 * @param width
-	 * @return Fluent API
-	 */
-	public ImageManipulationParametersImpl setWidth(Integer width) {
+	@Override
+	public ImageManipulationParameters setWidth(Integer width) {
 		setParameter(WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
 		return this;
 	}
 
-	/**
-	 * Return the image height.
-	 * 
-	 * @return
-	 */
+	@Override
 	public Integer getHeight() {
 		return toInteger(getParameter(HEIGHT_QUERY_PARAM_KEY), null);
 	}
 
-	/**
-	 * Set the image height.
-	 * 
-	 * @param height
-	 * @return Fluent API
-	 */
-	public ImageManipulationParametersImpl setHeight(Integer height) {
+	@Override
+	public ImageManipulationParameters setHeight(Integer height) {
 		setParameter(HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
 		return this;
 	}
 
-	/**
-	 * Return the crop x-axis start coordinate.
-	 * 
-	 * @return
-	 */
+	@Override
 	public Integer getStartx() {
 		return toInteger(getParameter(CROP_X_QUERY_PARAM_KEY), null);
 	}
 
-	/**
-	 * Set the crop x-axis start coordinate.
-	 * 
-	 * @param startx
-	 * @return Fluent API
-	 */
-	public ImageManipulationParametersImpl setStartx(Integer startx) {
+	@Override
+	public ImageManipulationParameters setStartx(Integer startx) {
 		setParameter(CROP_X_QUERY_PARAM_KEY, String.valueOf(startx));
 		return this;
 	}
 
-	/**
-	 * Return the crop y-axis start coordinate.
-	 * 
-	 * @return
-	 */
+	@Override
 	public Integer getStarty() {
 		return toInteger(getParameter(CROP_Y_QUERY_PARAM_KEY), null);
 	}
 
-	/**
-	 * Set the crop y-axis start coordinate.
-	 * 
-	 * @param starty
-	 * @return Fluent API
-	 */
-	public ImageManipulationParametersImpl setStarty(Integer starty) {
+	@Override
+	public ImageManipulationParameters setStarty(Integer starty) {
 		setParameter(CROP_Y_QUERY_PARAM_KEY, String.valueOf(starty));
 		return this;
 	}
 
-	/**
-	 * Return the crop height.
-	 * 
-	 * @return
-	 */
+	@Override
 	public Integer getCroph() {
 		return toInteger(getParameter(CROP_HEIGHT_QUERY_PARAM_KEY), null);
 	}
 
-	/**
-	 * Set the crop height.
-	 * 
-	 * @param croph
-	 * @return Fluent API
-	 */
-	public ImageManipulationParametersImpl setCroph(Integer croph) {
+	@Override
+	public ImageManipulationParameters setCroph(Integer croph) {
 		setParameter(CROP_HEIGHT_QUERY_PARAM_KEY, String.valueOf(croph));
 		return this;
 	}
 
-	/**
-	 * Return the crop width.
-	 * 
-	 * @return
-	 */
+	@Override
 	public Integer getCropw() {
 		return toInteger(getParameter(CROP_WIDTH_QUERY_PARAM_KEY), null);
 	}
 
-	/**
-	 * Set the crop width.
-	 * 
-	 * @param cropw
-	 * @return Fluent API
-	 */
-	public ImageManipulationParametersImpl setCropw(Integer cropw) {
+	@Override
+	public ImageManipulationParameters setCropw(Integer cropw) {
 		setParameter(CROP_WIDTH_QUERY_PARAM_KEY, String.valueOf(cropw));
 		return this;
 	}
 
-	/**
-	 * Check whether any of the parameters is set.
-	 * 
-	 * @return
-	 */
+	@Override
 	public boolean isSet() {
 		return getWidth() != null || getHeight() != null || getCroph() != null || getCropw() != null || getStartx() != null || getStarty() != null;
 	}
@@ -176,7 +110,8 @@ public class ImageManipulationParametersImpl extends AbstractParameters {
 		}
 		Integer height = getHeight();
 		if (height != null && height < 1) {
-			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
+			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.HEIGHT_QUERY_PARAM_KEY,
+					String.valueOf(height));
 		}
 
 		Integer croph = getCroph();
@@ -215,32 +150,19 @@ public class ImageManipulationParametersImpl extends AbstractParameters {
 
 	}
 
-	/**
-	 * Check whether all required crop parameters have been set.
-	 * 
-	 * @return
-	 */
+	@Override
 	public boolean hasAllCropParameters() {
 		return getCroph() != null && getCropw() != null && getStartx() != null && getStarty() != null;
 	}
 
-	/**
-	 * Validate the image crop parameters and check whether those would exceed the source image dimensions.
-	 * 
-	 * @param imageWidth
-	 * @param imageHeight
-	 */
+	@Override
 	public void validateCropBounds(int imageWidth, int imageHeight) {
 		if (getStartx() + getCropw() > imageWidth || getStarty() + getCroph() > imageHeight) {
 			throw error(BAD_REQUEST, "image_error_crop_out_of_bounds", String.valueOf(imageWidth), String.valueOf(imageHeight));
 		}
 	}
 
-	/**
-	 * Generate cache key.
-	 * 
-	 * @return
-	 */
+	@Override
 	public String getCacheKey() {
 
 		StringBuilder builder = new StringBuilder();
@@ -266,6 +188,7 @@ public class ImageManipulationParametersImpl extends AbstractParameters {
 		return builder.toString();
 	}
 
+	@Override
 	public void validateLimits(ImageManipulatorOptions options) {
 		if (getWidth() != null && options.getMaxWidth() != null && options.getMaxWidth() > 0 && getWidth() > options.getMaxWidth()) {
 			throw error(BAD_REQUEST, "image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(getWidth()));

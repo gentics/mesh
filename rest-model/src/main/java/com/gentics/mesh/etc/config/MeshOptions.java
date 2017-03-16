@@ -3,8 +3,6 @@ package com.gentics.mesh.etc.config;
 import java.io.File;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.etc.ElasticSearchOptions;
-import com.gentics.mesh.etc.GraphStorageOptions;
 
 /**
  * Main mesh configuration POJO.

@@ -2,8 +2,8 @@ package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 
 import io.vertx.core.buffer.Buffer;
@@ -66,5 +66,5 @@ public interface NodeBinaryFieldClientMethods {
 	 * @return Mesh request
 	 */
 	MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version,
-			String fieldKey, ImageManipulationParametersImpl imageManipulationParameter);
+			String fieldKey, ImageManipulationParameters imageManipulationParameter);
 }

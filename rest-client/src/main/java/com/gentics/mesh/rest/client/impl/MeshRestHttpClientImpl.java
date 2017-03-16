@@ -72,9 +72,9 @@ import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -83,7 +83,6 @@ import com.gentics.mesh.rest.client.handler.MeshResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshBinaryResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshJsonObjectResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshWebrootResponseHandler;
-import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -794,9 +793,9 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(fileName, "fileName must not be null");
 		Objects.requireNonNull(version, "version must not be null");
 		Objects.requireNonNull(contentType, "contentType must not be null");
-
+		
 		// TODO handle escaping of filename
-		String boundary = "--------" + UUIDUtil.randomUUID();
+		String boundary = "--------Geg2Oob";
 		Buffer multiPartFormData = Buffer.buffer(fileData.length());
 
 		multiPartFormData.appendString("--" + boundary + "\r\n");
@@ -810,7 +809,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		multiPartFormData.appendString(languageTag + "\r\n");
 
 		multiPartFormData.appendString("--" + boundary + "\r\n");
-		multiPartFormData.appendString("Content-Disposition: form-data; name=\"" + UUIDUtil.randomUUID() + "\"; filename=\"" + fileName + "\"\r\n");
+		multiPartFormData.appendString("Content-Disposition: form-data; name=\"" + "shohY6d" + "\"; filename=\"" + fileName + "\"\r\n");
 		multiPartFormData.appendString("Content-Type: " + contentType + "\r\n");
 		multiPartFormData.appendString("Content-Transfer-Encoding: binary\r\n" + "\r\n");
 		multiPartFormData.appendBuffer(fileData);
@@ -841,7 +840,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version,
-			String fieldKey, ImageManipulationParametersImpl imageManipulationParameter) {
+			String fieldKey, ImageManipulationParameters imageManipulationParameter) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "language must not be null");

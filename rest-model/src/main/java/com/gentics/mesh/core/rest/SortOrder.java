@@ -1,4 +1,4 @@
-package com.gentics.mesh.api.common;
+package com.gentics.mesh.core.rest;
 
 /**
  * Enum which contains the sortorder states.

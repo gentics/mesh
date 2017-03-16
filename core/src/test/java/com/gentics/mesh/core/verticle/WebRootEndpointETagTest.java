@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -48,7 +49,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 			uploadImage(node, "en", "binary");
 
 			// 3. Resize image
-			ImageManipulationParametersImpl params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
+			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
 			MeshResponse<WebRootResponse> response = client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft"))
 					.invoke();
 			latchFor(response);

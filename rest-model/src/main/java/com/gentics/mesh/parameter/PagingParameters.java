@@ -1,6 +1,6 @@
 package com.gentics.mesh.parameter;
 
-import com.gentics.mesh.api.common.SortOrder;
+import com.gentics.mesh.core.rest.SortOrder;
 
 public interface PagingParameters extends ParameterProvider {
 
