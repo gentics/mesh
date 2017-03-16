@@ -83,6 +83,7 @@
 	<modules>
 		<module>api</module>
 		<module>common</module>
+		<module>test-common</module>
 		<module>elasticsearch</module>
 		<module>rest-client</module>
 		<module>databases</module>

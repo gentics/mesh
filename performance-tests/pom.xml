@@ -20,42 +20,17 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-test-common</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
-			<groupId>com.gentics.mesh</groupId>
 			<version>${project.version}</version>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<artifactId>mesh-common</artifactId>
-			<groupId>com.gentics.mesh</groupId>
-			<version>${project.version}</version>
 			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<artifactId>mesh-core</artifactId>
-			<groupId>com.gentics.mesh</groupId>
-			<version>${project.version}</version>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<version>3.2.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.simpleframework</groupId>
-			<artifactId>simple-xml</artifactId>
-			<version>2.7.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<version>1.10.19</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
