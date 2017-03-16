@@ -39,12 +39,12 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.PublishParameters;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.TestUtils;
 
@@ -66,8 +66,8 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
 
 				NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
-						new PagingParametersImpl().setPage(1).setPerPage(2), new NodeParameters().setResolveLinks(LinkType.FULL),
-						new VersioningParameters().draft()));
+						new PagingParametersImpl().setPage(1).setPerPage(2), new NodeParametersImpl().setResolveLinks(LinkType.FULL),
+						new VersioningParametersImpl().draft()));
 
 				if (expectResult) {
 					assertEquals("Check returned search results", 1, response.getData().size());
@@ -96,7 +96,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				new JsonObject().put("match_phrase", new JsonObject().put("fields.content", new JsonObject().put("query", "Hersteller"))));
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query.toString(),
-				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft(), new NodeParameters().setLanguages("de")));
+				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("de")));
 		assertEquals(1, response.getData().size());
 
 		String name = response.getData().get(0).getFields().getStringField("name").getString();
@@ -116,7 +116,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		NodeListResponse response = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid), new PagingParametersImpl().setPage(1).setPerPage(10),
-						new NodeParameters().setLanguages("en", "de"), new VersioningParameters().draft()));
+						new NodeParametersImpl().setLanguages("en", "de"), new VersioningParametersImpl().draft()));
 		assertEquals("We expect to find the two language versions.", 2, response.getData().size());
 
 		// 3. Prepare an updated schema
@@ -134,7 +134,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 4. Invoke the schema migration
 		GenericMessageResponse message = call(
-				() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
+				() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
 		expectResponseMessage(message, "migration_invoked", "content");
 
 		// 5. Assign the new schema version to the release
@@ -150,7 +150,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		// 6. Assert that the two migrated language variations can be found
 		response = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid), new PagingParametersImpl().setPage(1).setPerPage(10),
-						new NodeParameters().setLanguages("en", "de"), new VersioningParameters().draft()));
+						new NodeParametersImpl().setLanguages("en", "de"), new VersioningParametersImpl().draft()));
 		assertEquals("We only expect to find the two language versions while searching for uuid {" + uuid + "}", 2, response.getData().size());
 	}
 
@@ -181,7 +181,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 
 			NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),
-					new PagingParametersImpl().setPage(1).setPerPage(numAdditionalNodes + 1), new VersioningParameters().draft()));
+					new PagingParametersImpl().setPage(1).setPerPage(numAdditionalNodes + 1), new VersioningParametersImpl().draft()));
 
 			assertEquals("Check returned search results", numAdditionalNodes + 1, response.getData().size());
 		}
@@ -207,11 +207,11 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			for (int i = 0; i < tagCount; i++) {
 				TagResponse tagResponse = createTag(PROJECT_NAME, tagFamily("colors").getUuid(), "tag" + i);
 				// Add tags to node:
-				call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tagResponse.getUuid(), new VersioningParameters().draft()));
+				call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tagResponse.getUuid(), new VersioningParametersImpl().draft()));
 			}
 
 			NodeListResponse response = call(
-					() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new VersioningParameters().draft()));
+					() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new VersioningParametersImpl().draft()));
 			assertEquals("Expect to only get one search result", 1, response.getMetainfo().getTotalCount());
 
 			// assert tag count
@@ -229,7 +229,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		try (NoTx noTx = db().noTx()) {
 			NodeResponse oldNode = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParameters().draft()));
+					() -> client().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParametersImpl().draft()));
 
 			ProjectCreateRequest createProject = new ProjectCreateRequest();
 			createProject.setSchema(new SchemaReference().setName("folder"));
@@ -245,15 +245,15 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 			// search in old project
 			NodeListResponse response = call(
-					() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new VersioningParameters().draft()));
+					() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new VersioningParametersImpl().draft()));
 			assertThat(response.getData()).as("Search result in " + PROJECT_NAME).usingElementComparatorOnFields("uuid").containsOnly(oldNode);
 
 			// search in new project
-			response = call(() -> client().searchNodes("mynewproject", getSimpleQuery("Concorde"), new VersioningParameters().draft()));
+			response = call(() -> client().searchNodes("mynewproject", getSimpleQuery("Concorde"), new VersioningParametersImpl().draft()));
 			assertThat(response.getData()).as("Search result in mynewproject").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
 			// search globally
-			response = call(() -> client().searchNodes(getSimpleQuery("Concorde"), new VersioningParameters().draft()));
+			response = call(() -> client().searchNodes(getSimpleQuery("Concorde"), new VersioningParametersImpl().draft()));
 			assertThat(response.getData()).as("Global search result").usingElementComparatorOnFields("uuid").containsOnly(newNode, oldNode);
 		}
 	}
@@ -281,23 +281,23 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 3. Search globally for published version - The created node is still a draft and thus can't be found
 		NodeListResponse response = call(
-				() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("published")));
+				() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParametersImpl().setVersion("published")));
 		assertThat(response.getData()).as("Global search result before publishing").isEmpty();
 
 		// 4. Search globally for draft version - The created node should be found since it is a draft
-		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("draft")));
+		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParametersImpl().setVersion("draft")));
 		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
 		// 5. Invoke the take offline action on the project base node
 		String baseUuid = db().noTx(() -> project().getBaseNode().getUuid());
-		call(() -> client().takeNodeOffline(PROJECT_NAME, baseUuid, new PublishParameters().setRecursive(true)));
+		call(() -> client().takeNodeOffline(PROJECT_NAME, baseUuid, new PublishParametersImpl().setRecursive(true)));
 
 		// 6. The node should still be found because it is still a draft
-		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("draft")));
+		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParametersImpl().setVersion("draft")));
 		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
 		// 7. Search globally for the published version - Still there is no published version of the node
-		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("published")));
+		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParametersImpl().setVersion("published")));
 		assertThat(response.getData()).as("Global search result before publishing").isEmpty();
 
 	}
@@ -324,19 +324,19 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 3. search globally for published version - The created node is still a draft and thus can't be found
 		NodeListResponse response = call(
-				() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("published")));
+				() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParametersImpl().setVersion("published")));
 		assertThat(response.getData()).as("Global search result before publishing").isEmpty();
 
 		// 4. now publish the node
 		call(() -> client().publishNode("mynewproject", newNode.getUuid()));
 
 		// 5. search globally for published version - by default published nodes will be searched for
-		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParameters().setVersion("published")));
+		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString"), new VersioningParametersImpl().setVersion("published")));
 		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
 		// 6. Invoke the take offline action on the project base node
 		String baseUuid = db().noTx(() -> project().getBaseNode().getUuid());
-		call(() -> client().takeNodeOffline(PROJECT_NAME, baseUuid, new PublishParameters().setRecursive(true)));
+		call(() -> client().takeNodeOffline(PROJECT_NAME, baseUuid, new PublishParametersImpl().setRecursive(true)));
 
 		// 7. search globally for published version and assert that the node could be found
 		response = call(() -> client().searchNodes(getSimpleQuery("AwesomeString")));

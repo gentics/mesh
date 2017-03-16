@@ -27,9 +27,9 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.PublishParameters;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
@@ -385,7 +385,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 */
 	Completable takeOffline(InternalActionContext ac);
 
-	SearchQueueBatch takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParameters parameters);
+	SearchQueueBatch takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParametersImpl parameters);
 
 	/**
 	 * Transform the node language into a publish status response rest model.

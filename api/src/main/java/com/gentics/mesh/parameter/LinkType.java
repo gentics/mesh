@@ -1,4 +1,4 @@
-package com.gentics.mesh.parameter.impl;
+package com.gentics.mesh.parameter;
 
 /**
  * Link Replacing type

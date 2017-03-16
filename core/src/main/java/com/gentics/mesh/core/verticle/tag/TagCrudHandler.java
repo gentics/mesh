@@ -20,7 +20,7 @@ import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.util.ResultInfo;
 
@@ -66,7 +66,7 @@ public class TagCrudHandler extends AbstractHandler {
 
 		db.operateNoTx(() -> {
 			PagingParametersImpl pagingParams = ac.getPagingParameters();
-			NodeParameters nodeParams = ac.getNodeParameters();
+			NodeParametersImpl nodeParams = ac.getNodeParameters();
 			Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
 			// try {
 			Page<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(), nodeParams.getLanguageList(),

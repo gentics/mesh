@@ -5,13 +5,13 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 
 public class RolePermissionParametersTest {
 
 	@Test
 	public void testRoleParam() {
-		RolePermissionParameters params = new RolePermissionParameters();
+		RolePermissionParametersImpl params = new RolePermissionParametersImpl();
 		assertNull(params.getRoleUuid());
 		params.setRoleUuid("bogus");
 		assertEquals("bogus", params.getRoleUuid());

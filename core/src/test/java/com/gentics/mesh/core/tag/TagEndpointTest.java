@@ -52,7 +52,7 @@ import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientHttpException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -193,7 +193,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			TagResponse response = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid,
-					new RolePermissionParameters().setRoleUuid(role().getUuid())));
+					new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertThat(response.getRolePerms()).as("Role perms").hasPerm(CREATE, READ, UPDATE, DELETE);
 		}
 	}

@@ -21,8 +21,8 @@ import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PublishParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -36,7 +36,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			Node node = folder("products");
 			String uuid = node.getUuid();
 
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, uuid))).as("Publish Status").isPublished("en").isPublished("de");
 			return uuid;
@@ -53,7 +53,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			}
 		}
 
-		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 		assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en").isNotPublished("de");
 
 		// assert that the containers have only the draft webrootpath properties set
@@ -79,7 +79,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			String nodeUuid = node.getUuid();
 
 			// 1. Take all nodes offline
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 
 			// 2. publish the test node
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
@@ -139,11 +139,11 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
-			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
 					.isNotPublished("de");
 			// The request should work fine if we call it again 
-			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
 					.isNotPublished("de");
 		}
@@ -220,22 +220,22 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.getFields().put("name", FieldUtil.createStringField("News"));
-			call(() -> client().updateNode(PROJECT_NAME, news.getUuid(), update, new VersioningParameters().setRelease(newRelease.getName())));
+			call(() -> client().updateNode(PROJECT_NAME, news.getUuid(), update, new VersioningParametersImpl().setRelease(newRelease.getName())));
 
 			// publish in initial and new release
-			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(initialRelease.getName())));
-			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(newRelease.getName())));
+			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setRelease(initialRelease.getName())));
+			call(() -> client().publishNode(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setRelease(newRelease.getName())));
 
 			// take offline in initial release
-			call(() -> client().takeNodeOffline(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(initialRelease.getName()),
-					new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setRelease(initialRelease.getName()),
+					new PublishParametersImpl().setRecursive(true)));
 
 			// check publish status
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
-					new VersioningParameters().setRelease(initialRelease.getName())))).as("Initial release publish status").isNotPublished("en")
+					new VersioningParametersImpl().setRelease(initialRelease.getName())))).as("Initial release publish status").isNotPublished("en")
 							.isNotPublished("de");
 			assertThat(call(
-					() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(), new VersioningParameters().setRelease(newRelease.getName()))))
+					() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setRelease(newRelease.getName()))))
 							.as("New release publish status").isPublished("en").doesNotContain("de");
 
 		}
@@ -265,9 +265,9 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 		//3. Take sub nodes offline
 		db().noTx(() -> {
-			call(() -> client().takeNodeOffline(PROJECT_NAME, content("news overview").getUuid(), new PublishParameters().setRecursive(false)));
-			call(() -> client().takeNodeOffline(PROJECT_NAME, folder("2015").getUuid(), new PublishParameters().setRecursive(true)));
-			call(() -> client().takeNodeOffline(PROJECT_NAME, folder("2014").getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, content("news overview").getUuid(), new PublishParametersImpl().setRecursive(false)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, folder("2015").getUuid(), new PublishParametersImpl().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, folder("2014").getUuid(), new PublishParametersImpl().setRecursive(true)));
 			return null;
 		});
 

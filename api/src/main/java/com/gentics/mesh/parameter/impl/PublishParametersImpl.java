@@ -8,17 +8,18 @@ import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
 
-public class PublishParameters extends AbstractParameters {
+public class PublishParametersImpl extends AbstractParameters {
 
 	public static final String RECURSIVE_PARAMETER_KEY = "recursive";
 
-	public PublishParameters(ActionContext ac) {
+	public PublishParametersImpl(ActionContext ac) {
 		super(ac);
 	}
 
-	public PublishParameters() {
+	public PublishParametersImpl() {
 	}
 
 	/**

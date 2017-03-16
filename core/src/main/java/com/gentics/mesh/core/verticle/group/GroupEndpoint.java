@@ -16,7 +16,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -62,7 +62,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		readRoles.produces(APPLICATION_JSON);
 		readRoles.exampleResponse(OK, roleExamples.getRoleListResponse(), "List of roles which were assigned to the group.");
 		readRoles.addQueryParameters(PagingParametersImpl.class);
-		readRoles.addQueryParameters(RolePermissionParameters.class);
+		readRoles.addQueryParameters(RolePermissionParametersImpl.class);
 		readRoles.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String groupUuid = ac.getParameter("groupUuid");
@@ -185,7 +185,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, groupExamples.getGroupResponse1("Admin Group"), "Loaded group.");
-		readOne.addQueryParameters(RolePermissionParameters.class);
+		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("groupUuid");
@@ -202,7 +202,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(OK, groupExamples.getGroupListResponse(), "List response which contains the found  groups.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
-		readAll.addQueryParameters(RolePermissionParameters.class);
+		readAll.addQueryParameters(RolePermissionParametersImpl.class);
 		readAll.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			crudHandler.handleReadList(ac);

@@ -52,7 +52,7 @@ import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -88,7 +88,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			String uuid = tagFamily.getUuid();
 
 			TagFamilyResponse response = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid,
-					new RolePermissionParameters().setRoleUuid(role().getUuid())));
+					new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertNotNull("The response did not contain the expected role permission field value",
 					response.getRolePerms());
 			assertThat(response.getRolePerms()).hasPerm(Permission.values());

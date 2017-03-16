@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.NodeParameters;
 
 /**
  * A node reference contains the bare minimum of useful information which identifies a node. Various field in the {@link NodeResponse} utilize these references

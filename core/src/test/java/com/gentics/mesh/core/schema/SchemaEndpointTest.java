@@ -53,7 +53,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -224,7 +224,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String uuid = db().noTx(() -> schemaContainer("content").getUuid());
 
 		SchemaResponse schema = call(
-				() -> client().findSchemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(db().noTx(() -> role().getUuid()))));
+				() -> client().findSchemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(db().noTx(() -> role().getUuid()))));
 		assertNotNull(schema.getRolePerms());
 		assertThat(schema.getRolePerms()).hasPerm(Permission.values());
 	}

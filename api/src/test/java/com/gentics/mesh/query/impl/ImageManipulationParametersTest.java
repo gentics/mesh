@@ -1,7 +1,7 @@
 package com.gentics.mesh.query.impl;
 
-import static com.gentics.mesh.parameter.impl.ImageManipulationParameters.HEIGHT_QUERY_PARAM_KEY;
-import static com.gentics.mesh.parameter.impl.ImageManipulationParameters.WIDTH_QUERY_PARAM_KEY;
+import static com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl.HEIGHT_QUERY_PARAM_KEY;
+import static com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl.WIDTH_QUERY_PARAM_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -15,7 +15,7 @@ import org.mockito.Mockito;
 
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.test.junit.Assert;
 import com.gentics.mesh.util.HttpQueryUtils;
 
@@ -42,14 +42,14 @@ public class ImageManipulationParametersTest {
 	@Test
 	public void testFromAC() throws Exception {
 
-		ImageManipulationParameters parameter = new ImageManipulationParameters(
+		ImageManipulationParametersImpl parameter = new ImageManipulationParametersImpl(
 				getActionContext(HEIGHT_QUERY_PARAM_KEY + "=112&" + WIDTH_QUERY_PARAM_KEY + "=142"));
 		assertEquals(112, parameter.getHeight().intValue());
 		assertEquals(142, parameter.getWidth().intValue());
 		assertTrue(parameter.isSet());
 
-		ImageManipulationParameters param = new ImageManipulationParameters();
-		ImageManipulationParameters paramsFromQuery = new ImageManipulationParameters(getActionContext(param.getQueryParameters()));
+		ImageManipulationParametersImpl param = new ImageManipulationParametersImpl();
+		ImageManipulationParametersImpl paramsFromQuery = new ImageManipulationParametersImpl(getActionContext(param.getQueryParameters()));
 		assertEquals(param.getCroph(), paramsFromQuery.getCroph());
 		assertEquals(param.getCropw(), paramsFromQuery.getCropw());
 		assertEquals(param.getStartx(), paramsFromQuery.getStartx());
@@ -59,7 +59,7 @@ public class ImageManipulationParametersTest {
 		assertFalse(param.isSet());
 		assertFalse(paramsFromQuery.isSet());
 
-		param = new ImageManipulationParameters();
+		param = new ImageManipulationParametersImpl();
 		param.setCroph(100);
 		param.setCropw(101);
 		param.setWidth(103);
@@ -67,7 +67,7 @@ public class ImageManipulationParametersTest {
 		param.setStartx(105);
 		param.setStarty(106);
 		assertTrue(param.isSet());
-		paramsFromQuery = new ImageManipulationParameters(getActionContext(param.getQueryParameters()));
+		paramsFromQuery = new ImageManipulationParametersImpl(getActionContext(param.getQueryParameters()));
 		assertEquals(param.getCroph(), paramsFromQuery.getCroph());
 		assertEquals(param.getCropw(), paramsFromQuery.getCropw());
 		assertEquals(param.getStartx(), paramsFromQuery.getStartx());
@@ -79,29 +79,29 @@ public class ImageManipulationParametersTest {
 
 	@Test
 	public void testValidation() {
-		ImageManipulationParameters request = new ImageManipulationParameters();
+		ImageManipulationParametersImpl request = new ImageManipulationParametersImpl();
 		request.validate();
 
 		try {
-			request = new ImageManipulationParameters();
+			request = new ImageManipulationParametersImpl();
 			request.setWidth(0);
 			request.validate();
 			fail("The validation should fail but it did not.");
 		} catch (GenericRestException e) {
-			Assert.assertException(e, BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.WIDTH_QUERY_PARAM_KEY, "0");
+			Assert.assertException(e, BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.WIDTH_QUERY_PARAM_KEY, "0");
 		}
 
 		try {
-			request = new ImageManipulationParameters();
+			request = new ImageManipulationParametersImpl();
 			request.setHeight(0);
 			request.validate();
 			fail("The validation should fail but it did not.");
 		} catch (GenericRestException e) {
-			Assert.assertException(e, BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.HEIGHT_QUERY_PARAM_KEY, "0");
+			Assert.assertException(e, BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.HEIGHT_QUERY_PARAM_KEY, "0");
 		}
 
 		try {
-			request = new ImageManipulationParameters();
+			request = new ImageManipulationParametersImpl();
 			request.setCroph(0);
 			request.setCropw(10);
 			request.setStartx(0);
@@ -109,11 +109,11 @@ public class ImageManipulationParametersTest {
 			request.validate();
 			fail("The validation should fail but it did not.");
 		} catch (GenericRestException e) {
-			Assert.assertException(e, BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.CROP_HEIGHT_QUERY_PARAM_KEY, "0");
+			Assert.assertException(e, BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.CROP_HEIGHT_QUERY_PARAM_KEY, "0");
 		}
 
 		try {
-			request = new ImageManipulationParameters();
+			request = new ImageManipulationParametersImpl();
 			request.setCroph(10);
 			request.setCropw(0);
 			request.setStartx(0);
@@ -121,11 +121,11 @@ public class ImageManipulationParametersTest {
 			request.validate();
 			fail("The validation should fail but it did not.");
 		} catch (GenericRestException e) {
-			Assert.assertException(e, BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.CROP_WIDTH_QUERY_PARAM_KEY, "0");
+			Assert.assertException(e, BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.CROP_WIDTH_QUERY_PARAM_KEY, "0");
 		}
 
 		try {
-			request = new ImageManipulationParameters();
+			request = new ImageManipulationParametersImpl();
 			request.setCroph(10);
 			request.setCropw(10);
 			request.setStartx(-1);
@@ -133,11 +133,11 @@ public class ImageManipulationParametersTest {
 			request.validate();
 			fail("The validation should fail but it did not.");
 		} catch (GenericRestException e) {
-			Assert.assertException(e, BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParameters.CROP_X_QUERY_PARAM_KEY, "-1");
+			Assert.assertException(e, BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParametersImpl.CROP_X_QUERY_PARAM_KEY, "-1");
 		}
 
 		try {
-			request = new ImageManipulationParameters();
+			request = new ImageManipulationParametersImpl();
 			request.setCroph(10);
 			request.setCropw(10);
 			request.setStartx(0);
@@ -145,10 +145,10 @@ public class ImageManipulationParametersTest {
 			request.validate();
 			fail("The validation should fail but it did not.");
 		} catch (GenericRestException e) {
-			Assert.assertException(e, BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParameters.CROP_Y_QUERY_PARAM_KEY, "-1");
+			Assert.assertException(e, BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParametersImpl.CROP_Y_QUERY_PARAM_KEY, "-1");
 		}
 
-		request = new ImageManipulationParameters();
+		request = new ImageManipulationParametersImpl();
 		request.setCroph(1);
 		request.setCropw(1);
 		request.setStartx(0);
@@ -160,7 +160,7 @@ public class ImageManipulationParametersTest {
 	@Test
 	public void testValidateCropBounds() throws Exception {
 		try {
-			ImageManipulationParameters request = new ImageManipulationParameters();
+			ImageManipulationParametersImpl request = new ImageManipulationParametersImpl();
 			request.setStartx(10);
 			request.setStarty(10);
 			request.setCroph(1);
@@ -172,7 +172,7 @@ public class ImageManipulationParametersTest {
 		}
 
 		// Exact crop captures the exact bounds of the source image
-		ImageManipulationParameters request = new ImageManipulationParameters();
+		ImageManipulationParametersImpl request = new ImageManipulationParametersImpl();
 		request.setStartx(10);
 		request.setStarty(10);
 		request.setCroph(1);
@@ -182,13 +182,13 @@ public class ImageManipulationParametersTest {
 
 	@Test
 	public void testCacheKey() {
-		String cacheKey = new ImageManipulationParameters().getCacheKey();
+		String cacheKey = new ImageManipulationParametersImpl().getCacheKey();
 		assertEquals("", cacheKey);
 
-		cacheKey = new ImageManipulationParameters().setWidth(100).setHeight(200).getCacheKey();
+		cacheKey = new ImageManipulationParametersImpl().setWidth(100).setHeight(200).getCacheKey();
 		assertEquals("rw100rh200", cacheKey);
 
-		cacheKey = new ImageManipulationParameters().setWidth(100).setHeight(200).setCroph(20).setCropw(21).setStartx(10).setStarty(22).getCacheKey();
+		cacheKey = new ImageManipulationParametersImpl().setWidth(100).setHeight(200).setCroph(20).setCropw(21).setStartx(10).setStarty(22).getCacheKey();
 		assertEquals("cx10cy22cw21ch20rw100rh200", cacheKey);
 	}
 

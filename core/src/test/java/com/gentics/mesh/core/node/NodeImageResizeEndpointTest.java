@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.VersionNumber;
@@ -49,7 +49,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		}
 
 		// 2. Resize image
-		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100)
+		ImageManipulationParametersImpl params = new ImageManipulationParametersImpl().setWidth(100)
 				.setHeight(102);
 		NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image", params));
 
@@ -74,7 +74,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			uploadImage(node, "en", "image");
 
 			// 2. Resize image
-			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth() + 1)
+			ImageManipulationParametersImpl params = new ImageManipulationParametersImpl().setWidth(options.getMaxWidth() + 1)
 					.setHeight(102);
 			call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), BAD_REQUEST,
 					"image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(options.getMaxWidth() + 1));
@@ -92,7 +92,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			uploadImage(node, "en", "image");
 
 			// 2. Resize image
-			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth())
+			ImageManipulationParametersImpl params = new ImageManipulationParametersImpl().setWidth(options.getMaxWidth())
 					.setHeight(102);
 			NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params));
 
@@ -112,7 +112,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			return uploadImage(node, "en", "image").getVersion();
 		});
 		// 2. Transform the image
-		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
+		ImageManipulationParametersImpl params = new ImageManipulationParametersImpl().setWidth(100);
 		NodeResponse transformResponse = call(
 				() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version.getNumber(), "image", params));
 		assertEquals("The image should have been resized", 100, transformResponse.getFields()
@@ -136,7 +136,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			NodeResponse response = uploadImage(node, "en", "image");
 
 			// 2. Transform the image
-			ImageManipulationParameters params = new ImageManipulationParameters();
+			ImageManipulationParametersImpl params = new ImageManipulationParametersImpl();
 			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", response.getVersion()
 					.getNumber(), "image", params), BAD_REQUEST, "error_no_image_transformation", "image");
 		}
@@ -153,7 +153,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		});
 
 		// try to transform the "name"
-		ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
+		ImageManipulationParametersImpl params = new ImageManipulationParametersImpl().setWidth(100);
 
 		call(() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "name", params), BAD_REQUEST,
 				"error_found_field_is_not_binary", "name");
@@ -171,7 +171,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", version.toString(), "image",
 					Buffer.buffer("I am not an image"), "test.txt", "text/plain"));
 
-			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
+			ImageManipulationParametersImpl params = new ImageManipulationParametersImpl().setWidth(100);
 			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", response.getVersion()
 					.getNumber(), "image", params), BAD_REQUEST, "error_transformation_non_image", "image");
 		}
@@ -189,13 +189,13 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 					.toString();
 
 			// 2. Transform the image
-			ImageManipulationParameters params = new ImageManipulationParameters();
+			ImageManipulationParametersImpl params = new ImageManipulationParametersImpl();
 			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", version, "image", params), NOT_FOUND,
 					"error_binaryfield_not_found_with_name", "image");
 		}
 	}
 
-	private void validateResizeImage(NodeDownloadResponse download, BinaryGraphField binaryField, ImageManipulationParameters params,
+	private void validateResizeImage(NodeDownloadResponse download, BinaryGraphField binaryField, ImageManipulationParametersImpl params,
 			int expectedWidth, int expectedHeight) throws Exception {
 		File targetFile = new File("target", UUID.randomUUID() + "_resized.jpg");
 		CountDownLatch latch = new CountDownLatch(1);

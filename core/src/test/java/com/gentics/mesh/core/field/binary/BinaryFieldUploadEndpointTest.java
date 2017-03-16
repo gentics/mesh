@@ -30,9 +30,9 @@ import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -164,13 +164,13 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			Node node = folder("news");
 			prepareSchema(node, "", fieldKey);
 
-			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			String originalVersion = response.getVersion().getNumber();
 
 			// 1. Upload the image
 			int size = uploadImage(node, "en", fieldKey, fileName, mimeType);
 
-			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertNotEquals(originalVersion, response.getVersion().getNumber());
 			originalVersion = response.getVersion().getNumber();
 
@@ -182,7 +182,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			assertNotNull(response);
 
 			node.reload();
-			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertNotEquals(originalVersion, response.getVersion().getNumber());
 			BinaryField binaryField = response.getFields().getBinaryField(fieldKey);
 
@@ -251,7 +251,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			NodeResponse response = call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 			node.reload();
 
-			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			BinaryField binaryField = response.getFields().getBinaryField("binary");
 
 			assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
@@ -300,7 +300,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 
 		call(() -> client().findNodeByUuid(PROJECT_NAME, db().noTx(() -> folder("2014").getUuid()),
-				new NodeParameters().setResolveLinks(LinkType.FULL)));
+				new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 
 		try (NoTx noTrx = db().noTx()) {
 			// try to upload same file to folder 2015
@@ -324,7 +324,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			int size = uploadImage(node, "en", fieldName, fileName, contentType);
 
 			node.reload();
-			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 
 			BinaryField binaryField = response.getFields().getBinaryField(fieldName);
 			assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());

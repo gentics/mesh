@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.TestUtils;
@@ -148,7 +148,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			// 3. Invoke migration
-			call(() -> client().updateMicroschema(vcardContainer.getUuid(), request, new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
+			call(() -> client().updateMicroschema(vcardContainer.getUuid(), request, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
 			Microschema microschema = call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()));
 			call(() -> client().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
 					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));

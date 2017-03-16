@@ -40,8 +40,8 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -265,7 +265,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String uuid = db().noTx(() -> project().getInitialRelease().getUuid());
 		String roleUuid = db().noTx(() -> role().getUuid());
 
-		ReleaseResponse response = call(() -> client().findReleaseByUuid(projectName, uuid, new RolePermissionParameters().setRoleUuid(roleUuid)));
+		ReleaseResponse response = call(() -> client().findReleaseByUuid(projectName, uuid, new RolePermissionParametersImpl().setRoleUuid(roleUuid)));
 		assertThat(response.getRolePerms()).hasPerm(READ, CREATE, UPDATE, DELETE);
 	}
 
@@ -439,7 +439,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 					.contains(new SchemaReference().setName("newschemaname").setUuid(schema.getUuid()).setVersion(2));
 
 			// Generate version 3
-			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
+			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false));
 
 			// Assert that version 2 is still assigned to release
 			list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
@@ -448,7 +448,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			// Generate version 3 which should not be auto assigned to the project release
 			updateSchema(schema.getUuid(), "anothernewschemaname",
-					new SchemaUpdateParameters().setUpdateAssignedReleases(true).setReleaseNames(project.getInitialRelease().getName()));
+					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true).setReleaseNames(project.getInitialRelease().getName()));
 
 			// Assert that version 2 is still assigned to the release
 			list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
@@ -456,7 +456,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 					.contains(new SchemaReference().setName("newschemaname").setUuid(schema.getUuid()).setVersion(2));
 
 			// Generate version 4
-			updateSchema(schema.getUuid(), "anothernewschemaname2", new SchemaUpdateParameters().setUpdateAssignedReleases(true));
+			updateSchema(schema.getUuid(), "anothernewschemaname2", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true));
 
 			// Assert that version 4 is assigned to the release
 			list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
@@ -465,7 +465,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			// Generate version 5
 			updateSchema(schema.getUuid(), "anothernewschemaname3",
-					new SchemaUpdateParameters().setUpdateAssignedReleases(true).setReleaseNames("bla", "bogus", "moped"));
+					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true).setReleaseNames("bla", "bogus", "moped"));
 
 			// Assert that version 4 is still assigned to the release since non of the names matches the project release
 			list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
@@ -486,10 +486,10 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			call(() -> client().assignSchemaToProject(project.getName(), schema.getUuid()));
 
 			// generate version 2
-			updateSchema(schema.getUuid(), "newschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
+			updateSchema(schema.getUuid(), "newschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false));
 
 			// generate version 3
-			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
+			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false));
 
 			// check that version 1 is assigned to release
 			SchemaReferenceList list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
@@ -594,10 +594,10 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			call(() -> client().assignSchemaToProject(project.getName(), schema.getUuid()));
 
 			// generate version 2
-			updateSchema(schema.getUuid(), "newschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
+			updateSchema(schema.getUuid(), "newschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false));
 
 			// generate version 3
-			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
+			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false));
 
 			// check that version 1 is assigned to release
 			SchemaReferenceList list = call(() -> client().getReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid()));
@@ -643,10 +643,10 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			call(() -> client().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
 
 			// generate version 2
-			updateMicroschema(microschema.getUuid(), "newmicroschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
+			updateMicroschema(microschema.getUuid(), "newmicroschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false));
 
 			// generate version 3
-			updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
+			updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false));
 
 			// check that version 1 is assigned to release
 			MicroschemaReferenceList list = call(
@@ -676,7 +676,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			call(() -> client().assignMicroschemaToProject(project.getName(), microschema.getUuid()));
 
 			// generate version 2
-			updateMicroschema(microschema.getUuid(), "newmicroschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(true));
+			updateMicroschema(microschema.getUuid(), "newmicroschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true));
 
 			// generate version 3
 			updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname");
@@ -795,7 +795,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 					.contains(new MicroschemaReference().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion(2));
 
 			// Generate version 3 which should not be auto assigned to the project release
-			updateMicroschema(microschema.getUuid(), "anothernewschemaname", new SchemaUpdateParameters().setUpdateAssignedReleases(false));
+			updateMicroschema(microschema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false));
 
 			// Assert that version 2 is still assigned to release
 			list = call(() -> client().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
@@ -804,7 +804,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			// Generate version 4
 			updateMicroschema(microschema.getUuid(), "anothernewschemaname1",
-					new SchemaUpdateParameters().setUpdateAssignedReleases(true).setReleaseNames(project.getInitialRelease().getName()));
+					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true).setReleaseNames(project.getInitialRelease().getName()));
 
 			// Assert that version 4 is assigned to the release
 			list = call(() -> client().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
@@ -812,7 +812,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 					.contains(new MicroschemaReference().setName("anothernewschemaname1").setUuid(microschema.getUuid()).setVersion(4));
 
 			// Generate version 5
-			updateMicroschema(microschema.getUuid(), "anothernewschemaname2", new SchemaUpdateParameters().setUpdateAssignedReleases(true));
+			updateMicroschema(microschema.getUuid(), "anothernewschemaname2", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true));
 
 			// Assert that version 5
 			list = call(() -> client().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));
@@ -821,7 +821,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			// Generate version 6
 			updateMicroschema(microschema.getUuid(), "anothernewschemaname3",
-					new SchemaUpdateParameters().setUpdateAssignedReleases(true).setReleaseNames("bla", "bogus", "moped"));
+					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true).setReleaseNames("bla", "bogus", "moped"));
 
 			// Assert that version 4 is still assigned to the release since non of the names matches the project release
 			list = call(() -> client().getReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid()));

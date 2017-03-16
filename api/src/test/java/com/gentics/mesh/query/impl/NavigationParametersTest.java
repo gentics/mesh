@@ -6,14 +6,14 @@ import static org.junit.Assert.assertNull;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.mesh.parameter.impl.NavigationParameters;
+import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 
 public class NavigationParametersTest {
 
 	@Test
 	@Ignore
 	public void testName() throws Exception {
-		NavigationParameters params = new NavigationParameters();
+		NavigationParametersImpl params = new NavigationParametersImpl();
 		assertNull(params.getMaxDepth());
 		params.getQueryParameters();
 

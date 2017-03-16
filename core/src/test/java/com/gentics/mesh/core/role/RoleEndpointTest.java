@@ -50,7 +50,7 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -192,7 +192,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			String uuid = role.getUuid();
 
 			RoleResponse restRole = call(
-					() -> client().findRoleByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
+					() -> client().findRoleByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertNotNull(restRole.getRolePerms());
 			assertThat(restRole.getRolePerms()).hasPerm(Permission.values());
 		}

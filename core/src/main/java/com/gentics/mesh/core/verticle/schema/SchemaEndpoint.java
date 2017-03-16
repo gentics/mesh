@@ -18,7 +18,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -136,7 +136,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.description("Update the schema.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.addQueryParameters(SchemaUpdateParameters.class);
+		endpoint.addQueryParameters(SchemaUpdateParametersImpl.class);
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated schema.");
 		endpoint.handler(rc -> {

@@ -10,20 +10,21 @@ import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.util.VersionNumber;
 
 //TODO split this class into two since some actions are not versioing specific but release specific 
-public class VersioningParameters extends AbstractParameters {
+public class VersioningParametersImpl extends AbstractParameters {
 
 	public static final String RELEASE_QUERY_PARAM_KEY = "release";
 
 	public static final String VERSION_QUERY_PARAM_KEY = "version";
 
-	public VersioningParameters(ActionContext ac) {
+	public VersioningParametersImpl(ActionContext ac) {
 		super(ac);
 	}
 
-	public VersioningParameters() {
+	public VersioningParametersImpl() {
 	}
 
 	/**
@@ -33,7 +34,7 @@ public class VersioningParameters extends AbstractParameters {
 	 *            name or uuid
 	 * @return fluent API
 	 */
-	public VersioningParameters setRelease(String release) {
+	public VersioningParametersImpl setRelease(String release) {
 		setParameter(RELEASE_QUERY_PARAM_KEY, release);
 		return this;
 	}
@@ -63,7 +64,7 @@ public class VersioningParameters extends AbstractParameters {
 	 * @return fluent API
 	 */
 
-	public VersioningParameters setVersion(String version) {
+	public VersioningParametersImpl setVersion(String version) {
 		setParameter(VERSION_QUERY_PARAM_KEY, version);
 		return this;
 	}
@@ -73,7 +74,7 @@ public class VersioningParameters extends AbstractParameters {
 	 * 
 	 * @return fluent API
 	 */
-	public VersioningParameters draft() {
+	public VersioningParametersImpl draft() {
 		return setVersion("draft");
 	}
 
@@ -82,7 +83,7 @@ public class VersioningParameters extends AbstractParameters {
 	 * 
 	 * @return fluent API
 	 */
-	public VersioningParameters published() {
+	public VersioningParametersImpl published() {
 		return setVersion("published");
 	}
 

@@ -12,7 +12,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.parameter.impl.NavigationParameters;
+import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 
 /**
@@ -51,7 +51,7 @@ public class NavRootEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Return a navigation for the node which is located using the given path.");
 		endpoint.setRAMLPath("/{path}");
 		endpoint.addUriParameter("path", "Webroot path to the node language variation.", "someFolder/somePage.html");
-		endpoint.addQueryParameters(NavigationParameters.class);
+		endpoint.addQueryParameters(NavigationParametersImpl.class);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, nodeExamples.getNavigationResponse(), "Loaded navigation.");
 		endpoint.handler(rc -> {

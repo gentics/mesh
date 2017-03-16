@@ -28,7 +28,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -73,7 +73,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 			nodeCreateRequest.setLanguage("en");
 			nodeCreateRequest.getFields().put(fieldKey, field);
 
-			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en")),
+			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en")),
 					BAD_REQUEST, "field_number_error_invalid_type", fieldKey, "text");
 		}
 	}

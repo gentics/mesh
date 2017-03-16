@@ -88,7 +88,7 @@ import com.gentics.mesh.core.verticle.utility.UtilityHandler;
 import com.gentics.mesh.core.verticle.webroot.WebRootHandler;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.MeshLocalRequestImpl;
@@ -945,7 +945,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version,
-			String fieldKey, ImageManipulationParameters imageManipulationParameter) {
+			String fieldKey, ImageManipulationParametersImpl imageManipulationParameter) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class);
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());

@@ -21,7 +21,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -50,7 +50,7 @@ public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 			nodeCreateRequest.setLanguage("en");
 			nodeCreateRequest.getFields().put("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
 
-			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en")));
+			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en")));
 			assertNotNull("The response could not be found in the result of the future.", response);
 			assertNotNull("The field was not included in the response.", response.getFields().getHtmlField("htmlField"));
 
@@ -60,7 +60,7 @@ public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 			nodeUpdateRequest.setVersion(new VersionReference().setNumber("0.1"));
 
 			MeshResponse<NodeResponse> updateFuture = client()
-					.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParameters().setLanguages("en")).invoke();
+					.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).invoke();
 			latchFor(updateFuture);
 			assertSuccess(updateFuture);
 			assertNotNull("The response could not be found in the result of the future.", updateFuture.result());

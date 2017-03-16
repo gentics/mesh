@@ -7,14 +7,14 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 
 public class NodeParametersTest {
 
 	@Test
 	public void testNodeParams() {
-		NodeParameters params = new NodeParameters();
+		NodeParametersImpl params = new NodeParametersImpl();
 
 		// ExpandAll
 		assertFalse("The default expandAll setting should be false", params.getExpandAll());

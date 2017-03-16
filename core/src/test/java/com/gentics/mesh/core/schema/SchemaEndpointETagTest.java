@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -52,11 +52,11 @@ public class SchemaEndpointETagTest extends AbstractETagTest {
 			assertThat(expect304(request, etag, true)).contains(etag);
 
 			// The node has no node reference and thus expanding will not affect the etag
-			assertThat(expect304(client().findSchemaByUuid(schema.getUuid(), new NodeParameters().setExpandAll(true)), etag, true)).contains(etag);
+			assertThat(expect304(client().findSchemaByUuid(schema.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true)).contains(etag);
 
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(client().findSchemaByUuid(schema.getUuid(), new NodeParameters().setExpandAll(false)), etag, true);
-			expect304(client().findSchemaByUuid(schema.getUuid(), new NodeParameters().setExpandAll(true)), etag, true);
+			expect304(client().findSchemaByUuid(schema.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag, true);
+			expect304(client().findSchemaByUuid(schema.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true);
 		}
 
 	}

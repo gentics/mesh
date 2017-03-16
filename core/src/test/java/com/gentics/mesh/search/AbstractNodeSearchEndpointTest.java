@@ -28,9 +28,9 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
@@ -51,7 +51,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 
 		NodeListResponse response = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("concorde"), new PagingParametersImpl().setPage(1).setPerPage(100),
-						new NodeParameters().setLanguages(expectedLanguages), new VersioningParameters().draft()));
+						new NodeParametersImpl().setLanguages(expectedLanguages), new VersioningParametersImpl().draft()));
 		assertEquals("Check # of returned nodes", expectedLanguages.length, response.getData().size());
 		assertEquals("Check total count", expectedLanguages.length, response.getMetainfo().getTotalCount());
 

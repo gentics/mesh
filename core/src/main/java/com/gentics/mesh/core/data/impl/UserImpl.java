@@ -51,7 +51,7 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
@@ -334,7 +334,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 *            Current depth level of transformation
 	 */
 	private void setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {
-		NodeParameters parameters = new NodeParameters(ac);
+		NodeParametersImpl parameters = new NodeParametersImpl(ac);
 
 		// Check whether a node reference was set.
 		Node node = getReferencedNode();

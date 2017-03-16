@@ -19,7 +19,7 @@ import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;

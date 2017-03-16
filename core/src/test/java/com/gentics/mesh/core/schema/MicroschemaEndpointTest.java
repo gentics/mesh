@@ -49,7 +49,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -183,7 +183,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			String uuid = vcardContainer.getUuid();
 
 			MicroschemaResponse microschema = call(
-					() -> client().findMicroschemaByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
+					() -> client().findMicroschemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertNotNull(microschema.getRolePerms());
 			assertThat(microschema.getRolePerms()).hasPerm(Permission.values());
 		}

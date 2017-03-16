@@ -3,7 +3,6 @@ package com.gentics.mesh.core.rest.common;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.handler.ActionContext;
 
 /**
  * The {@link GenericMessageResponse} is used when a generic message should be returned to the requester.
@@ -33,18 +32,6 @@ public class GenericMessageResponse implements RestModel {
 	 */
 	public GenericMessageResponse(String message) {
 		this(message, null);
-	}
-
-	/**
-	 * Generate a new message response.
-	 * 
-	 * @param ac
-	 * @param i18nMessage
-	 * @param i18nParameters
-	 * @return
-	 */
-	public static GenericMessageResponse message(ActionContext ac, String i18nMessage, String... i18nParameters) {
-		return new GenericMessageResponse(ac.i18n(i18nMessage, i18nParameters));
 	}
 
 	/**

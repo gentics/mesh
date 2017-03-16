@@ -2,8 +2,8 @@ package com.gentics.mesh.core.verticle.microschema;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -33,7 +33,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 
 import dagger.Lazy;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -82,7 +82,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				SearchQueueBatch batch = searchQueue.create();
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
-				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
+				SchemaUpdateParametersImpl updateParams = ac.getSchemaUpdateParameters();
 				if (updateParams.getUpdateAssignedReleases()) {
 					Map<Release, MicroschemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
 

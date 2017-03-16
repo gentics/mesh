@@ -74,7 +74,7 @@ import com.gentics.mesh.core.rest.user.UserTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -841,7 +841,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<NodeResponse> transformNodeBinaryField(String projectName, String nodeUuid, String languageTag, String version,
-			String fieldKey, ImageManipulationParameters imageManipulationParameter) {
+			String fieldKey, ImageManipulationParametersImpl imageManipulationParameter) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "language must not be null");

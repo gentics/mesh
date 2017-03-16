@@ -22,9 +22,9 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
@@ -93,7 +93,7 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			NodeResponse createdNode = call(() -> client().createNode(PROJECT_NAME, request));
 
 			// We added another node but it has not yet been published
-			expect304(client().findNodeChildren(PROJECT_NAME, uuid, new VersioningParameters().published()), etag, true);
+			expect304(client().findNodeChildren(PROJECT_NAME, uuid, new VersioningParametersImpl().published()), etag, true);
 
 			call(() -> client().publishNode(PROJECT_NAME, createdNode.getUuid()));
 
@@ -123,13 +123,13 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			assertThat(expect304(request, etag, true)).contains(etag);
 
 			assertNotEquals("A different etag should have been generated since we are not requesting the expanded node.", etag,
-					expectNo304(client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true)), etag, true));
+					expectNo304(client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true));
 
 			String newETag = expectNo304(
-					client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandedFieldNames("reference")), etag, true);
+					client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandedFieldNames("reference")), etag, true);
 			assertNotEquals("We added parameters and thus a new etag should have been generated.", newETag,
 					expectNo304(
-							client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandedFieldNames("reference", "bla")),
+							client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandedFieldNames("reference", "bla")),
 							newETag, true));
 
 		}

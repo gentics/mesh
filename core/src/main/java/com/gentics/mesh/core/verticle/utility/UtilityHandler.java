@@ -9,7 +9,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 
 import io.vertx.ext.web.RoutingContext;
 import rx.Single;
@@ -43,7 +43,7 @@ public class UtilityHandler extends AbstractHandler {
 			}
 
 			return Single.just(linkReplacer.replace(null, null, ac.getBodyAsString(), ac.getNodeParameters().getResolveLinks(), projectName,
-					new NodeParameters(ac).getLanguageList()));
+					new NodeParametersImpl(ac).getLanguageList()));
 		}).subscribe(body -> rc.response().putHeader("Content-Type", "text/plain").setStatusCode(OK.code()).end(body), ac::fail);
 	}
 

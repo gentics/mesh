@@ -35,7 +35,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.Tx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientHttpException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -68,7 +68,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 			Node node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 
 			// Invoke an initial update on the node
@@ -96,7 +96,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			// Invoke an initial update on the node - Update Version 1.0 Name -> 1.1
 			Node node = getTestNode();
 			NodeUpdateRequest request1 = prepareNameFieldUpdateRequest("1234", "1.0");
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request1, parameters));
 			assertThat(restNode).hasVersion("1.1");
@@ -167,7 +167,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-firstname")),
 							Tuple.tuple("lastName", FieldUtil.createStringField("test-lastname"))));
 
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.1");
@@ -191,7 +191,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	private NodeUpdateRequest modifingRequest() {
 		try (Tx trx = db().tx()) {
 			Node node = getTestNode();
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.1");
 
@@ -222,7 +222,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	private void repeatRequest(NodeUpdateRequest request) {
 		try (Tx trx = db().tx()) {
 			Node node = getTestNode();
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			// Add another field to the request in order to invoke an update. Otherwise no update would occure and no 1.3 would be created.
 			request.getFields().put("content", FieldUtil.createHtmlField("changed"));
@@ -261,7 +261,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	private void deletingRequest() {
 		try (Tx trx = db().tx()) {
 			Node node = getTestNode();
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request4 = prepareNameFieldUpdateRequest("1234", "1.2");
 			request4.getFields().put("micronode", null);
@@ -317,7 +317,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		// Modify 1.1 and update micronode
 		try (Tx trx = db().tx()) {
 			Node node = getTestNode();
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.1");
 
@@ -339,7 +339,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		// Another update request based on 1.1 which also updates the micronode - A conflict should be detected
 		try (Tx trx = db().tx()) {
 			Node node = getTestNode();
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.1");
 
@@ -371,7 +371,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 			Node node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "42.1");
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 
 			call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters), BAD_REQUEST, "node_error_draft_not_found", "42.1",

@@ -95,12 +95,12 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NavigationParameters;
-import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PublishParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.DateUtils;
@@ -231,7 +231,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void assertPublishConsistency(InternalActionContext ac) {
 
-		NodeParameters parameters = new NodeParameters(ac);
+		NodeParametersImpl parameters = new NodeParametersImpl(ac);
 
 		String releaseUuid = ac.getRelease(getProject())
 				.getUuid();
@@ -578,7 +578,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Increment level for each node transformation to avoid stackoverflow situations
 		level = level + 1;
-		VersioningParameters versioiningParameters = ac.getVersioningParameters();
+		VersioningParametersImpl versioiningParameters = ac.getVersioningParameters();
 
 		NodeResponse restNode = new NodeResponse();
 		SchemaContainer container = getSchemaContainer();
@@ -634,8 +634,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @return
 	 */
 	private void setFields(InternalActionContext ac, Release release, NodeResponse restNode, int level, String... languageTags) {
-		VersioningParameters versioiningParameters = ac.getVersioningParameters();
-		NodeParameters nodeParameters = ac.getNodeParameters();
+		VersioningParametersImpl versioiningParameters = ac.getVersioningParameters();
+		NodeParametersImpl nodeParameters = ac.getNodeParameters();
 
 		List<String> requestedLanguageTags = null;
 		if (languageTags != null && languageTags.length > 0) {
@@ -802,7 +802,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @return
 	 */
 	private void setPathsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
-		VersioningParameters versioiningParameters = ac.getVersioningParameters();
+		VersioningParametersImpl versioiningParameters = ac.getVersioningParameters();
 		if (ac.getNodeParameters()
 				.getResolveLinks() != LinkType.OFF) {
 			String releaseUuid = ac.getRelease(getProject())
@@ -825,7 +825,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, Release release) {
-		VersioningParameters versioiningParameters = ac.getVersioningParameters();
+		VersioningParametersImpl versioiningParameters = ac.getVersioningParameters();
 		String releaseUuid = ac.getRelease(getProject())
 				.getUuid();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
@@ -901,7 +901,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Single<NavigationResponse> transformToNavigation(InternalActionContext ac) {
-		NavigationParameters parameters = new NavigationParameters(ac);
+		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
 		if (parameters.getMaxDepth() < 0) {
 			throw error(BAD_REQUEST, "navigation_error_invalid_max_depth");
 		}
@@ -948,7 +948,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @return
 	 */
 	private String buildNavigationEtagKey(InternalActionContext ac, Node node, int maxDepth, int level, String releaseUuid, ContainerType type) {
-		NavigationParameters parameters = new NavigationParameters(ac);
+		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
 		StringBuilder builder = new StringBuilder();
 		builder.append(node.getETag(ac));
 
@@ -1016,7 +1016,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					.last()
 					.toSingle();
 		}
-		NavigationParameters parameters = new NavigationParameters(ac);
+		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
 		// Add children
 		for (Node child : nodes) {
 			// TODO assure that the schema version is correct?
@@ -1082,7 +1082,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeFieldListItemImpl listItem = new NodeFieldListItemImpl(getUuid());
 		String releaseUuid = ac.getRelease(getProject())
 				.getUuid();
-		ContainerType type = forVersion(new VersioningParameters(ac).getVersion());
+		ContainerType type = forVersion(new VersioningParametersImpl(ac).getVersion());
 		if (ac.getNodeParameters()
 				.getResolveLinks() != LinkType.OFF) {
 			listItem.setUrl(MeshInternal.get()
@@ -1139,7 +1139,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		List<Completable> obs = new ArrayList<>();
 		// publish all unpublished containers
 
-		PublishParameters parameters = ac.getPublishParameters();
+		PublishParametersImpl parameters = ac.getPublishParameters();
 
 		batch.store(this, releaseUuid, ContainerType.PUBLISHED, false);
 
@@ -1176,7 +1176,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					.map(c -> publish(c.getLanguage(), release, ac.getUser()))
 					.collect(Collectors.toList());
 
-			PublishParameters parameters = ac.getPublishParameters();
+			PublishParametersImpl parameters = ac.getPublishParameters();
 			if (parameters.isRecursive()) {
 				for (Node node : getChildren()) {
 					obs.add(node.publish(ac, batch));
@@ -1190,7 +1190,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return Completable.merge(obs);
 	}
 
-	public SearchQueueBatch takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParameters parameters) {
+	public SearchQueueBatch takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParametersImpl parameters) {
 		List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, PUBLISHED);
 
 		String releaseUuid = release.getUuid();
@@ -1226,7 +1226,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		SearchQueue queue = MeshInternal.get()
 				.searchQueue();
 		SearchQueueBatch batch = queue.create();
-		PublishParameters parameters = ac.getPublishParameters();
+		PublishParametersImpl parameters = ac.getPublishParameters();
 		return db.tx(() -> {
 			return takeOffline(ac, batch, release, parameters);
 		})
@@ -1546,8 +1546,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public String getDisplayName(InternalActionContext ac) {
-		NodeParameters nodeParameters = ac.getNodeParameters();
-		VersioningParameters versioningParameters = ac.getVersioningParameters();
+		NodeParametersImpl nodeParameters = ac.getNodeParameters();
+		VersioningParametersImpl versioningParameters = ac.getVersioningParameters();
 
 		NodeGraphFieldContainer container = findNextMatchingFieldContainer(nodeParameters.getLanguageList(), ac.getRelease(getProject())
 				.getUuid(), versioningParameters.getVersion());
@@ -1918,7 +1918,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public String getETag(InternalActionContext ac) {
 		// Parameters
 		Release release = ac.getRelease(getProject());
-		VersioningParameters versioiningParameters = ac.getVersioningParameters();
+		VersioningParametersImpl versioiningParameters = ac.getVersioningParameters();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Node parentNode = getParentNode(release.getUuid());

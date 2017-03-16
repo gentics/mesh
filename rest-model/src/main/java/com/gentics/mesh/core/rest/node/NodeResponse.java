@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.node;
 
 import java.util.ArrayDeque;
+
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -18,7 +19,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.NodeParameters;
 
 /**
  * POJO for the node rest response model.

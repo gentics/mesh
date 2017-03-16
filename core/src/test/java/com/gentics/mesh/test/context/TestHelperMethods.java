@@ -67,10 +67,10 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.search.DummySearchProvider;
@@ -347,7 +347,7 @@ public interface TestHelperMethods {
 		if (fieldKey != null) {
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
-		return client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en"));
+		return client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en"));
 	}
 
 	default public NodeResponse createNode(String fieldKey, Field field) {
@@ -360,7 +360,7 @@ public interface TestHelperMethods {
 	}
 
 	default public NodeResponse readNode(String projectName, String uuid) {
-		return call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParameters().draft()));
+		return call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().draft()));
 	}
 
 	default public void deleteNode(String projectName, String uuid) {
@@ -408,7 +408,7 @@ public interface TestHelperMethods {
 	default public NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
 		// read node from source release
 		NodeResponse nodeResponse = call(
-				() -> client().findNodeByUuid(projectName, uuid, new VersioningParameters().setRelease(sourceReleaseName).draft()));
+				() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setRelease(sourceReleaseName).draft()));
 
 		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 
@@ -417,7 +417,7 @@ public interface TestHelperMethods {
 		update.setLanguage(nodeResponse.getLanguage());
 
 		nodeResponse.getFields().keySet().forEach(key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
-		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParameters().setRelease(targetReleaseName)));
+		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParametersImpl().setRelease(targetReleaseName)));
 	}
 
 	default public ProjectResponse createProject(String projectName) {
@@ -451,7 +451,7 @@ public interface TestHelperMethods {
 		return call(() -> client().findSchemaByUuid(uuid));
 	}
 
-	default public GenericMessageResponse updateSchema(String uuid, String schemaName, SchemaUpdateParameters... updateParameters) {
+	default public GenericMessageResponse updateSchema(String uuid, String schemaName, SchemaUpdateParametersImpl... updateParameters) {
 		SchemaUpdateRequest schema = new SchemaUpdateRequest();
 		schema.setName(schemaName);
 		return call(() -> client().updateSchema(uuid, schema, updateParameters));
@@ -467,7 +467,7 @@ public interface TestHelperMethods {
 		return call(() -> client().createMicroschema(microschema));
 	}
 
-	default public GenericMessageResponse updateMicroschema(String uuid, String microschemaName, SchemaUpdateParameters... parameters) {
+	default public GenericMessageResponse updateMicroschema(String uuid, String microschemaName, SchemaUpdateParametersImpl... parameters) {
 		MicroschemaUpdateRequest microschema = FieldUtil.createMinimalValidMicroschemaUpdateRequest();
 		microschema.setName(microschemaName);
 		return call(() -> client().updateMicroschema(uuid, microschema, parameters));
@@ -498,7 +498,7 @@ public interface TestHelperMethods {
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
 		return client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldKey, buffer, fileName, contentType,
-				new NodeParameters().setResolveLinks(LinkType.FULL));
+				new NodeParametersImpl().setResolveLinks(LinkType.FULL));
 	}
 
 	default public NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {

@@ -1,11 +1,10 @@
-package com.gentics.mesh.parameter.impl;
+package com.gentics.mesh.parameter;
 
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.BooleanUtils;
 
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.vertx.core.MultiMap;
 

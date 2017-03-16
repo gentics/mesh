@@ -30,8 +30,8 @@ import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.util.CompareUtils;
 
 public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
@@ -117,7 +117,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 	public NodeField transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		// TODO handle null across all types
 		// if (getNode() != null) {
-		NodeParameters parameters = ac.getNodeParameters();
+		NodeParametersImpl parameters = ac.getNodeParameters();
 		boolean expandField = ac.getNodeParameters().getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		Node node = getNode();
 

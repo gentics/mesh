@@ -22,7 +22,7 @@ import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.VersionNumber;
@@ -103,7 +103,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 					"application/binary"));
 
-			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("draft")));
+			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
 			assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
 			String oldVersion = firstResponse.getVersion().getNumber();
 			BinaryField binaryField = firstResponse.getFields().getBinaryField(FIELD_NAME);
@@ -163,7 +163,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 					"application/binary"));
 
-			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("draft")));
+			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
 			assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -184,7 +184,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 					"application/binary"));
 
-			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().setVersion("draft")));
+			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
 			assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
 
 			// 2. Set the field to empty

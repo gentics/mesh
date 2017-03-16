@@ -16,8 +16,8 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
@@ -39,7 +39,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		String uuid = db().noTx(() -> content("concorde").getUuid());
 
 		// publish the Concorde
-		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
+		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 
 		// "supersonic" found in published nodes
@@ -77,11 +77,11 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		String uuid = db().noTx(() -> content("concorde").getUuid());
 
 		// publish the Concorde
-		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().draft()));
+		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 
 		// "supersonic" found in published nodes
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParameters().published()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParametersImpl().published()));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
 		// Change draft version of content
@@ -92,9 +92,9 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().updateNode(PROJECT_NAME, concorde.getUuid(), update));
 
 		// "supersonic" still found, "urschnell" not found in published nodes
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParameters().published()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParametersImpl().published()));
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParameters().published()));
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParametersImpl().published()));
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
 		// publish content "urschnell"

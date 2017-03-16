@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import rx.Completable;
@@ -55,7 +55,7 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	private Observable<NodeResponse> getNodesBySchema(String schemaName) throws JSONException {
-		return client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name.raw", SCHEMA_NAME), new VersioningParameters().draft())
+		return client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name.raw", SCHEMA_NAME), new VersioningParametersImpl().draft())
 				.toObservable().flatMapIterable(it -> it.getData());
 	}
 

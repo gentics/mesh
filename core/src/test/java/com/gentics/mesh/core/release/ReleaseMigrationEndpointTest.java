@@ -30,7 +30,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PublishParameters;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -56,7 +56,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 			Project project = project();
 			assertThat(project.getInitialRelease().isMigrated()).as("Initial release migration status").isEqualTo(true);
 
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 
 			List<? extends Node> published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
 			List<? extends Node> nodes = project.getNodeRoot().findAll().stream()

@@ -44,7 +44,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.PublishParameters;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.TestUtils;
@@ -331,7 +331,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			String fieldName = "changedfield";
 			String micronodeFieldName = "micronodefield";
 
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 
 			// create version 1 of the microschema
 			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);

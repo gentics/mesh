@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.LinkType;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

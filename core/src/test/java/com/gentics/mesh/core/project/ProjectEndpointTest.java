@@ -62,11 +62,11 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -105,7 +105,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertEquals("The name of the project did not match.", name, restProject.getName());
 
 		NodeResponse response = call(
-				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParameters().setVersion("draft")));
+				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		// Test slashes
@@ -137,7 +137,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectResponse restProject = call(() -> client().createProject(request));
 
 		NodeResponse response = call(
-				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParameters().setVersion("draft")));
+				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		assertThat(restProject).matches(request);
@@ -325,7 +325,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			assertThat(response).matches(project());
 			System.out.println(response.getRootNode().getDisplayName());
 
-			response = call(() -> client().findProjectByUuid(uuid, new NodeParameters().setResolveLinks(LinkType.FULL)));
+			response = call(() -> client().findProjectByUuid(uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 			assertNotNull(response.getRootNode().getPath());
 
 			PermissionInfo permissions = response.getPermissions();
@@ -342,7 +342,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			Project project = project();
 			String uuid = project.getUuid();
 
-			ProjectResponse response = call(() -> client().findProjectByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
+			ProjectResponse response = call(() -> client().findProjectByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertNotNull(response.getRolePerms());
 			assertThat(response.getRolePerms()).hasPerm(Permission.values());
 		}

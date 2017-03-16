@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
@@ -46,7 +46,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 		json += "			}";
 
 		String search = json;
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, search, new VersioningParameters().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, search, new VersioningParametersImpl().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 
@@ -70,7 +70,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("the"),
-				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft()));
+				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {

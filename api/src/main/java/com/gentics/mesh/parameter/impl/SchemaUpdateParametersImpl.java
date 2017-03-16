@@ -10,8 +10,9 @@ import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.parameter.AbstractParameters;
 
-public class SchemaUpdateParameters extends AbstractParameters {
+public class SchemaUpdateParametersImpl extends AbstractParameters {
 
 	/**
 	 * Query parameter key: {@value #UPDATE_ASSIGNED_RELEASES_QUERY_PARAM_KEY}
@@ -23,11 +24,11 @@ public class SchemaUpdateParameters extends AbstractParameters {
 	 */
 	public static final String UPDATE_RELEASE_NAMES_QUERY_PARAM_KEY = "updateReleaseNames";
 
-	public SchemaUpdateParameters(ActionContext ac) {
+	public SchemaUpdateParametersImpl(ActionContext ac) {
 		super(ac);
 	}
 
-	public SchemaUpdateParameters() {
+	public SchemaUpdateParametersImpl() {
 		super();
 	}
 
@@ -52,7 +53,7 @@ public class SchemaUpdateParameters extends AbstractParameters {
 	 * @param flag
 	 * @return
 	 */
-	public SchemaUpdateParameters setUpdateAssignedReleases(boolean flag) {
+	public SchemaUpdateParametersImpl setUpdateAssignedReleases(boolean flag) {
 		setParameter(UPDATE_ASSIGNED_RELEASES_QUERY_PARAM_KEY, String.valueOf(flag));
 		return this;
 	}
@@ -80,7 +81,7 @@ public class SchemaUpdateParameters extends AbstractParameters {
 	 * @param releaseNames
 	 * @return Fluent API
 	 */
-	public SchemaUpdateParameters setReleaseNames(String... releaseNames) {
+	public SchemaUpdateParametersImpl setReleaseNames(String... releaseNames) {
 		setParameter(UPDATE_RELEASE_NAMES_QUERY_PARAM_KEY, convertToStr(releaseNames));
 		return this;
 	}

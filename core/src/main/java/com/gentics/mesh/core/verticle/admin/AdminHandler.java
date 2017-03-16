@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.admin;
 
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
+import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.File;

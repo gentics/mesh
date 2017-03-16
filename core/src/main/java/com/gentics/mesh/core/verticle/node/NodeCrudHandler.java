@@ -39,9 +39,9 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Single;
@@ -173,9 +173,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		utils.operateNoTx(ac, () -> {
-			NodeParameters nodeParams = ac.getNodeParameters();
+			NodeParametersImpl nodeParams = ac.getNodeParameters();
 			PagingParametersImpl pagingParams = ac.getPagingParameters();
-			VersioningParameters versionParams = ac.getVersioningParameters();
+			VersioningParametersImpl versionParams = ac.getVersioningParameters();
 			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
 			Page<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(), ac.getRelease(node.getProject()).getUuid(),

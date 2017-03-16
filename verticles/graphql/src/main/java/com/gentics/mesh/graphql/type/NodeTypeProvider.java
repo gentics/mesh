@@ -21,7 +21,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.graphql.model.LinkInfo;
-import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.LinkType;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;

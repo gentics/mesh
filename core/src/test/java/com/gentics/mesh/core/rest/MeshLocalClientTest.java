@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -25,7 +25,7 @@ public class MeshLocalClientTest extends AbstractMeshTest {
 		});
 		meshDagger().meshLocalClientImpl().setUser(user);
 		NodeResponse response = call(
-				() -> meshDagger().meshLocalClientImpl().findNodeByUuid(PROJECT_NAME, newsNodeUuid, new NodeParameters().setLanguages("de")));
+				() -> meshDagger().meshLocalClientImpl().findNodeByUuid(PROJECT_NAME, newsNodeUuid, new NodeParametersImpl().setLanguages("de")));
 		assertEquals("Neuigkeiten", response.getFields().getStringField("name").getString());
 	}
 }

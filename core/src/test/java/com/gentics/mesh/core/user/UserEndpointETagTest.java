@@ -13,7 +13,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -57,7 +57,7 @@ public class UserEndpointETagTest extends AbstractETagTest {
 			assertEquals(etag, expect304(request, etag, true));
 
 			// The node has no node reference and thus expanding will not affect the etag
-			assertEquals(etag, expect304(client().findUserByUuid(user.getUuid(), new NodeParameters().setExpandAll(true)), etag, true));
+			assertEquals(etag, expect304(client().findUserByUuid(user.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true));
 
 			// Add node reference. This should affect the etag
 			user.setReferencedNode(content());
@@ -66,8 +66,8 @@ public class UserEndpointETagTest extends AbstractETagTest {
 			assertNotEquals(etag, newETag);
 
 			// Assert whether expanding the node will also affect the user etag
-			expect304(client().findUserByUuid(user.getUuid(), new NodeParameters().setExpandAll(false)), newETag, true);
-			expectNo304(client().findUserByUuid(user.getUuid(), new NodeParameters().setExpandAll(true)), newETag, true);
+			expect304(client().findUserByUuid(user.getUuid(), new NodeParametersImpl().setExpandAll(false)), newETag, true);
+			expectNo304(client().findUserByUuid(user.getUuid(), new NodeParametersImpl().setExpandAll(true)), newETag, true);
 		}
 
 	}

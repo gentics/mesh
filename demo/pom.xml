@@ -15,6 +15,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<skip.demodump>false</skip.demodump>
 	</properties>
 
 	<dependencies>
@@ -81,6 +82,7 @@
 						</goals>
 						<phase>process-classes</phase>
 						<configuration>
+							<skip>${skip.demodump}</skip>
 							<executable>java</executable>
 							<arguments>
 								<argument>-classpath</argument>
@@ -118,6 +120,7 @@
 							<goal>single</goal>
 						</goals>
 						<configuration>
+							<skipAssembly>${skip.demodump}</skipAssembly>
 							<attach>true</attach>
 							<appendAssemblyId>true</appendAssemblyId>
 							<descriptors>

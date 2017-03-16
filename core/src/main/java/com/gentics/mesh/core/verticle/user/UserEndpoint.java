@@ -15,11 +15,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -100,9 +100,9 @@ public class UserEndpoint extends AbstractEndpoint {
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, userExamples.getUserResponse1("jdoe"), "User response which may also contain an expanded node.");
-		readOne.addQueryParameters(NodeParameters.class);
-		readOne.addQueryParameters(VersioningParameters.class);
-		readOne.addQueryParameters(RolePermissionParameters.class);
+		readOne.addQueryParameters(NodeParametersImpl.class);
+		readOne.addQueryParameters(VersioningParametersImpl.class);
+		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.blockingHandler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
@@ -118,9 +118,9 @@ public class UserEndpoint extends AbstractEndpoint {
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(OK, userExamples.getUserListResponse(), "User list response which may also contain an expanded node references.");
-		readAll.addQueryParameters(NodeParameters.class);
-		readAll.addQueryParameters(VersioningParameters.class);
-		readAll.addQueryParameters(RolePermissionParameters.class);
+		readAll.addQueryParameters(NodeParametersImpl.class);
+		readAll.addQueryParameters(VersioningParametersImpl.class);
+		readAll.addQueryParameters(RolePermissionParametersImpl.class);
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);

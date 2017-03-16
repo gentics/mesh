@@ -17,8 +17,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.NavigationParameters;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -37,7 +37,7 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 
 			List<MeshResponse<NavigationResponse>> futures = new ArrayList<>();
 			for (int i = 0; i < nJobs; i++) {
-				futures.add(client().navroot(PROJECT_NAME, path, new NodeParameters().setLanguages("en", "de")).invoke());
+				futures.add(client().navroot(PROJECT_NAME, path, new NodeParametersImpl().setLanguages("en", "de")).invoke());
 			}
 
 			for (MeshResponse<NavigationResponse> fut : futures) {
@@ -55,7 +55,7 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 	public void testReadNavWithValidPath() {
 		try (NoTx noTx = db().noTx()) {
 			String path = "/News/2015";
-			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10)).invoke();
+			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NavigationParametersImpl().setMaxDepth(10)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertThat(future.result()).hasDepth(0).isValid(1);
@@ -69,7 +69,7 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 	public void testReadNavWithValidPath2() {
 		try (NoTx noTx = db().noTx()) {
 			String path = "/News/2015/";
-			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10)).invoke();
+			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NavigationParametersImpl().setMaxDepth(10)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertThat(future.result()).isValid(1).hasDepth(0);
@@ -87,7 +87,7 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 			// System.out.println(container.isPublished(project().getLatestRelease().getUuid()));
 			// }
 			String path = "/";
-			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NavigationParameters().setMaxDepth(10)).invoke();
+			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NavigationParametersImpl().setMaxDepth(10)).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			assertThat(future.result()).isValid(7).hasDepth(3);
@@ -116,7 +116,7 @@ public class NavRootEndpointTest extends AbstractMeshTest {
 	public void testReadNavWithPathToContent() {
 		try (NoTx noTx = db().noTx()) {
 			String path = "/News/2015/News_2015.en.html";
-			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NodeParameters().setLanguages("en", "de")).invoke();
+			MeshResponse<NavigationResponse> future = client().navroot(PROJECT_NAME, path, new NodeParametersImpl().setLanguages("en", "de")).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "navigation_error_no_container");
 		}

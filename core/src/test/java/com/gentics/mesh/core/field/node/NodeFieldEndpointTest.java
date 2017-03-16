@@ -35,9 +35,9 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -143,15 +143,15 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			Node updatedNode = folder("2015");
 			// Load the node so that we can use it to prepare the update request
-			NodeResponse loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			NodeResponse loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 
 			// Update the field to point to node
 			NodeResponse response = updateNode(FIELD_NAME, loadedNode);
 			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertEquals(node.getUuid(), field.getUuid());
 
-			loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParameters().setLanguages("en"),
-					new VersioningParameters().draft()));
+			loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParametersImpl().setLanguages("en"),
+					new VersioningParametersImpl().draft()));
 			field = loadedNode.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertEquals(node.getUuid(), field.getUuid());
 
@@ -160,8 +160,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertEquals(node2.getUuid(), field.getUuid());
 
-			loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParameters().setLanguages("en"),
-					new VersioningParameters().draft()));
+			loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParametersImpl().setLanguages("en"),
+					new VersioningParametersImpl().draft()));
 			field = loadedNode.getFields().getNodeFieldExpanded("nodeField");
 			assertEquals(node2.getUuid(), field.getUuid());
 		}
@@ -180,7 +180,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			nodeUpdateRequest.getFields().put(FIELD_NAME, null);
 
 			MeshResponse<NodeResponse> future = client()
-					.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParameters().setLanguages("en")).invoke();
+					.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).invoke();
 			latchFor(future);
 			assertSuccess(future);
 			response = future.result();
@@ -225,10 +225,10 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			container.createNode(FIELD_NAME, newsNode);
 
 			// Read the node
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en");
 			parameters.setResolveLinks(LinkType.FULL);
-			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParameters().draft()));
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParametersImpl().draft()));
 
 			// Check whether the field contains the languagePath
 			NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
@@ -262,8 +262,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(FIELD_NAME, referencedNode);
 
-			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true),
-					new VersioningParameters().draft()));
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
+					new VersioningParametersImpl().draft()));
 
 			// Check expanded node field
 			NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
@@ -288,8 +288,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(FIELD_NAME, referencedNode);
 
-			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParameters().setExpandAll(true),
-					new VersioningParameters().draft()));
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
+					new VersioningParametersImpl().draft()));
 
 			// Assert that the field has not been loaded
 			NodeResponse deserializedExpandedNodeField = response.getFields().getNodeFieldExpanded(FIELD_NAME);
@@ -376,7 +376,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			// read source node with expanded field
 			for (String[] requestedLangs : Arrays.asList(new String[] { "de" }, new String[] { "de", "en" }, new String[] { "en", "de" })) {
 				MeshResponse<NodeResponse> resultFuture = client().findNodeByUuid(PROJECT_NAME, source.getUuid(),
-						new NodeParameters().setLanguages(requestedLangs).setExpandAll(true), new VersioningParameters().draft()).invoke();
+						new NodeParametersImpl().setLanguages(requestedLangs).setExpandAll(true), new VersioningParametersImpl().draft()).invoke();
 				latchFor(resultFuture);
 				assertSuccess(resultFuture);
 				NodeResponse response = resultFuture.result();

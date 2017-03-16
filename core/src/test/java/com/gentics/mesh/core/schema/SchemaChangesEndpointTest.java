@@ -47,8 +47,8 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.search.AbstractNodeSearchEndpointTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -227,7 +227,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// 4. Update the schema server side -> 2.0
 			GenericMessageResponse status = call(() -> client().updateSchema(container.getUuid(), schema,
-					new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
+					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
 			expectResponseMessage(status, "migration_invoked", schema.getName());
 			// 5. assign the new schema version to the release (which will start the migration)
 			Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
@@ -240,7 +240,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// 6. Read node and check additional field
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParameters().draft()));
+					() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParametersImpl().draft()));
 			assertNotNull("The response should contain the content field.", response.getFields().hasField("content"));
 			assertEquals("The type of the content field was not changed to a number field.", NumberFieldImpl.class,
 					response.getFields().getNumberField("content").getClass());
@@ -566,7 +566,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// 3. Update the schema server side -> 2.0
 			call(() -> client().updateSchema(container.getUuid(), schema,
-					new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
+					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
 
 			// 4. assign the new schema version to the release
 			Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
@@ -582,7 +582,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// Read node and check additional field
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParameters().draft()));
+					() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParametersImpl().draft()));
 			assertNotNull(response);
 
 			// Update the node and set the new field
@@ -597,7 +597,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// Read node and check additional field
 			response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParameters().draft()));
+					() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParametersImpl().draft()));
 			assertNotNull(response);
 			assertNotNull(response.getFields().hasField("extraname"));
 		}
@@ -631,7 +631,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// Read node and check additional field
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParameters().draft()));
+					() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParametersImpl().draft()));
 			assertNotNull(response);
 			assertNull(response.getFields().getStringField("content"));
 		}
@@ -657,7 +657,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// 3. Update the schema server side
 			call(() -> client().updateSchema(container.getUuid(), schema,
-					new SchemaUpdateParameters().setUpdateAssignedReleases(false)));
+					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
 
 			// 4. assign the new schema version to the initial release
 			Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));

@@ -81,6 +81,7 @@
 	<inceptionYear>2014</inceptionYear>
 
 	<modules>
+		<module>rest-model</module>
 		<module>api</module>
 		<module>common</module>
 		<module>test-common</module>

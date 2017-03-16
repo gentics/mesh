@@ -25,7 +25,7 @@ import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.util.CompareUtils;
 
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, Node> implements NodeGraphFieldList {
@@ -113,7 +113,7 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 	public NodeFieldList transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 
 		// Check whether the list should be returned in a collapsed or expanded format
-		NodeParameters parameters = ac.getNodeParameters();
+		NodeParametersImpl parameters = ac.getNodeParameters();
 		boolean expandField = parameters.getExpandedFieldnameList().contains(fieldKey) || parameters.getExpandAll();
 		String[] lTagsArray = languageTags.toArray(new String[languageTags.size()]);
 

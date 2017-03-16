@@ -50,7 +50,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.PublishParameters;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -122,7 +122,7 @@ public class DemoDataProvider {
 	 */
 	private void publishAllNodes() throws InterruptedException {
 		for (ProjectResponse project : projects.values()) {
-			call(() -> client.publishNode(PROJECT_NAME, project.getRootNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client.publishNode(PROJECT_NAME, project.getRootNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 		}
 	}
 

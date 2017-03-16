@@ -11,7 +11,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -30,7 +30,7 @@ public class NodeImageResizeEndpointETagTest extends AbstractETagTest {
 			uploadImage(node, "en", "image");
 
 			// 2. Resize image
-			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100).setHeight(102);
+			ImageManipulationParametersImpl params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
 			MeshResponse<NodeDownloadResponse> response = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params).invoke();
 			latchFor(response);
 			assertSuccess(response);

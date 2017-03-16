@@ -30,9 +30,9 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PublishParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -137,7 +137,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 					.hasVersion("en", "1.0");
 
 			// 2. Take node offline
-			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 
 			// 3. Assert that node is offline
 			publishStatus = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid));
@@ -176,7 +176,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 
 			PublishStatusResponse publishStatus = call(
-					() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParameters().setRelease(initialRelease.getName())));
+					() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(initialRelease.getName())));
 			assertThat(publishStatus).as("Initial release publish status")
 					.isNotNull()
 					.isPublished("en")
@@ -184,14 +184,14 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 					.doesNotContain("de");
 
 			publishStatus = call(
-					() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParameters().setRelease(newRelease.getName())));
+					() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(newRelease.getName())));
 			assertThat(publishStatus).as("New release publish status")
 					.isNotNull()
 					.isPublished("de")
 					.hasVersion("de", "1.0")
 					.doesNotContain("en");
 
-			publishStatus = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new NodeParameters()));
+			publishStatus = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new NodeParametersImpl()));
 			assertThat(publishStatus).as("New release publish status")
 					.isNotNull()
 					.isPublished("de")
@@ -224,7 +224,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 			// 1. Take everything offline
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode()
-					.getUuid(), new PublishParameters().setRecursive(true)));
+					.getUuid(), new PublishParametersImpl().setRecursive(true)));
 
 			// 2. Publish only a specific language of a node
 			call(() -> client().publishNodeLanguage(PROJECT_NAME, node.getUuid(), "en"));
@@ -270,7 +270,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 			// publish for the initial release
 			PublishStatusResponse publishStatus = call(
-					() -> client().publishNode(PROJECT_NAME, nodeUuid, new VersioningParameters().setRelease(initialRelease.getName())));
+					() -> client().publishNode(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(initialRelease.getName())));
 			assertThat(publishStatus).as("Initial publish status")
 					.isPublished("en")
 					.hasVersion("en", "1.0")
@@ -318,7 +318,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	public void testMoveConsistency() {
 		// 1. Take the target folder offline
 		String newsFolderUuid = db().noTx(() -> folder("news").getUuid());
-		call(() -> client().takeNodeOffline(PROJECT_NAME, newsFolderUuid, new PublishParameters().setRecursive(true)));
+		call(() -> client().takeNodeOffline(PROJECT_NAME, newsFolderUuid, new PublishParametersImpl().setRecursive(true)));
 
 		// 2. Move the published node into the offline target node
 		String publishedNode = db().noTx(() -> content("concorde").getUuid());
@@ -331,7 +331,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String nodeUuid = db().noTx(() -> folder("2015").getUuid());
 
 		// Only publish the test node. Take all children offline
-		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 		call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 
 		// Update german language -> new draft
@@ -341,14 +341,14 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 				.put("name", FieldUtil.createStringField("changed-de"));
 		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
-		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"),
-				new VersioningParameters().published())).getAvailableLanguages()).containsOnly("en");
+		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"),
+				new VersioningParametersImpl().published())).getAvailableLanguages()).containsOnly("en");
 
 		// Take english language offline
 		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"));
 
 		// The node should not be loadable since both languages are offline
-		call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"), new VersioningParameters().published()),
+		call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"), new VersioningParametersImpl().published()),
 				NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", nodeUuid, project().getLatestRelease()
 						.getUuid());
 
@@ -359,8 +359,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 				.hasVersion("1.0");
 
 		// Assert that german is published and english is offline
-		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParameters().setLanguages("de"),
-				new VersioningParameters().published())).getAvailableLanguages()).containsOnly("de");
+		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"),
+				new VersioningParametersImpl().published())).getAvailableLanguages()).containsOnly("de");
 		assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status")
 				.isPublished("de")
 				.hasVersion("de", "1.0")
@@ -389,32 +389,32 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			String nodeUuid = node.getUuid();
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode()
-					.getUuid(), new VersioningParameters().setRelease(initialRelease.getUuid()), new PublishParameters().setRecursive(true)));
+					.getUuid(), new VersioningParametersImpl().setRelease(initialRelease.getUuid()), new PublishParametersImpl().setRecursive(true)));
 
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
 			update.getFields()
 					.put("name", FieldUtil.createStringField("2015 de"));
-			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParameters().setRelease(initialRelease.getName())));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setRelease(initialRelease.getName())));
 
 			update.getFields()
 					.put("name", FieldUtil.createStringField("2015 new de"));
-			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParameters().setRelease(newRelease.getName())));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setRelease(newRelease.getName())));
 			update.setLanguage("en");
 			update.getFields()
 					.put("name", FieldUtil.createStringField("2015 new en"));
-			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParameters().setRelease(newRelease.getName())));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setRelease(newRelease.getName())));
 
 			PublishStatusModel publishStatus = call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de",
-					new VersioningParameters().setRelease(initialRelease.getName())));
+					new VersioningParametersImpl().setRelease(initialRelease.getName())));
 			assertThat(publishStatus).isPublished();
 
 			assertThat(call(
-					() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParameters().setRelease(initialRelease.getName()))))
+					() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(initialRelease.getName()))))
 							.as("Initial Release Publish Status")
 							.isPublished("de")
 							.isNotPublished("en");
-			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParameters().setRelease(newRelease.getName()))))
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(newRelease.getName()))))
 					.as("New Release Publish Status")
 					.isNotPublished("de")
 					.isNotPublished("en");
@@ -437,7 +437,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String nodeUuid = db().noTx(() -> folder("2015").getUuid());
 
 		// 1. Take a node subtree offline
-		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 
 		// 2. Try to publish a node from within that subtree structure
 		String contentUuid = db().noTx(() -> content("news_2015").getUuid());
@@ -456,12 +456,12 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		assertPublishStatus("Node should be published.", contentUuid, true);
 
 		// 2. Take all nodes offline
-		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 		assertPublishStatus("Node should be offline.", nodeUuid, false);
 		assertPublishStatus("Node should be offline.", contentUuid, false);
 
 		// 3. Publish all nodes again
-		call(() -> client().publishNode(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+		call(() -> client().publishNode(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 		assertPublishStatus("Node should be online again.", nodeUuid, true);
 		assertPublishStatus("Node should be online again.", contentUuid, true);
 	}
@@ -477,7 +477,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		assertPublishStatus("Node should be published.", contentUuid, true);
 
 		// 2. Take all nodes offline
-		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParameters().setRecursive(true)));
+		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 		assertPublishStatus("Node should be offline.", nodeUuid, false);
 		assertPublishStatus("Node should be offline.", contentUuid, false);
 

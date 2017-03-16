@@ -22,9 +22,9 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -143,7 +143,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			request.setParentNodeUuid(folder("2015").getUuid());
 			request.setLanguage("en");
 			NodeResponse nodeResponse = call(
-					() -> client().createNode(PROJECT_NAME, request, new NodeParameters().setResolveLinks(LinkType.FULL)));
+					() -> client().createNode(PROJECT_NAME, request, new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", "/api/v1/dummy/webroot/error/404",
 					nodeResponse.getPath());
 			assertEquals("The node has no segmentfield value and thus a 404 path should be returned.", "/api/v1/dummy/webroot/error/404",
@@ -163,7 +163,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			Node targetNode = folder("2015");
 
 			// 1. Get original parent uuid
-			String oldParentUuid = call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().draft()))
+			String oldParentUuid = call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParametersImpl().draft()))
 					.getParentNode().getUuid();
 
 			Release initialRelease = project.getInitialRelease();
@@ -175,15 +175,15 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 			// 2. Move in initial release
 			call(() -> client().moveNode(PROJECT_NAME, movedNode.getUuid(), targetNode.getUuid(),
-					new VersioningParameters().setRelease(initialRelease.getName())));
+					new VersioningParametersImpl().setRelease(initialRelease.getName())));
 
 			// 3. Assert that the node still uses the old parent for the new release
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParameters().draft())).getParentNode()
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParametersImpl().draft())).getParentNode()
 					.getUuid()).as("Parent Uuid in new release").isEqualTo(oldParentUuid);
 
 			// 4. Assert that the node uses the new parent for the initial release
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(),
-					new VersioningParameters().setRelease(initialRelease.getName()).draft())).getParentNode().getUuid())
+					new VersioningParametersImpl().setRelease(initialRelease.getName()).draft())).getParentNode().getUuid())
 							.as("Parent Uuid in initial release").isEqualTo(targetNode.getUuid());
 		}
 	}

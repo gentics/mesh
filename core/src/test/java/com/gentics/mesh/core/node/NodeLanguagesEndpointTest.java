@@ -19,8 +19,8 @@ import org.junit.Test;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -43,13 +43,13 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 
 			// Loading is still be possible but the node will contain no fields
 			MeshResponse<NodeResponse> response = client()
-					.findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("en")).invoke();
+					.findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setLanguages("en")).invoke();
 			latchFor(response);
 			assertSuccess(response);
 			assertThat(response.result().getAvailableLanguages()).contains("de");
 			assertThat(response.result().getFields()).isEmpty();
 
-			response = client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setLanguages("de")).invoke();
+			response = client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setLanguages("de")).invoke();
 			latchFor(response);
 			assertSuccess(future);
 
@@ -68,7 +68,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 			future = client().deleteNode(PROJECT_NAME, node.getUuid(), "de").invoke();
 			latchFor(future);
 			assertThat(dummySearchProvider()).recordedDeleteEvents(2 + 2);
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParameters().published()), NOT_FOUND,
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()), NOT_FOUND,
 					"node_error_published_not_found_for_uuid_release_version", uuid,
 					project().getLatestRelease().getUuid());
 		}

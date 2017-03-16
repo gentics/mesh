@@ -4,8 +4,8 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -40,7 +40,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
@@ -98,7 +98,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 				// Check whether the assigned releases of the schema should also directly be updated.
 				// This will trigger a node migration.
-				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
+				SchemaUpdateParametersImpl updateParams = ac.getSchemaUpdateParameters();
 				if (updateParams.getUpdateAssignedReleases()) {
 					Map<Release, SchemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
 

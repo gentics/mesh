@@ -8,20 +8,21 @@ import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.util.NumberUtils;
 
-public class NavigationParameters extends AbstractParameters {
+public class NavigationParametersImpl extends AbstractParameters {
 
 	public static final String MAX_DEPTH_QUERY_PARAM_KEY = "maxDepth";
 
 	public static final String INCLUDE_ALL_QUERY_PARAM_KEY = "includeAll";
 
-	public NavigationParameters(ActionContext ac) {
+	public NavigationParametersImpl(ActionContext ac) {
 		super(ac);
 		// TODO assert values (depth must not be negative etc)
 	}
 
-	public NavigationParameters() {
+	public NavigationParametersImpl() {
 		super();
 	}
 
@@ -40,7 +41,7 @@ public class NavigationParameters extends AbstractParameters {
 	 * @param maxDepth
 	 * @return
 	 */
-	public NavigationParameters setMaxDepth(Integer maxDepth) {
+	public NavigationParametersImpl setMaxDepth(Integer maxDepth) {
 		setParameter(MAX_DEPTH_QUERY_PARAM_KEY, String.valueOf(maxDepth));
 		return this;
 	}
@@ -61,7 +62,7 @@ public class NavigationParameters extends AbstractParameters {
 	 * @param flag
 	 * @return
 	 */
-	public NavigationParameters setIncludeAll(boolean flag) {
+	public NavigationParametersImpl setIncludeAll(boolean flag) {
 		setParameter(INCLUDE_ALL_QUERY_PARAM_KEY, String.valueOf(flag));
 		return this;
 	}

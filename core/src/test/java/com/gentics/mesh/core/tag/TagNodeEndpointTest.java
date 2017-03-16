@@ -22,8 +22,8 @@ import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PublishParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -35,7 +35,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 	public void testReadNodesForTag() {
 		try (NoTx noTx = db().noTx()) {
 			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParameters().draft()));
+					new VersioningParametersImpl().draft()));
 			NodeResponse concorde = new NodeResponse();
 			concorde.setUuid(content("concorde").getUuid());
 			assertThat(nodeList.getData()).as("Tagged nodes").isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
@@ -46,9 +46,9 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 	public void testReadPublishedNodesForTag() {
 		try (NoTx noTx = db().noTx()) {
 
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParameters().published()));
+					new VersioningParametersImpl().published()));
 			assertThat(nodeList.getData()).as("Published tagged nodes").isNotNull().isEmpty();
 
 			// publish the node and its parent
@@ -76,16 +76,16 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 			// get for latest release (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParameters().draft())).getData()).as("Nodes tagged in latest release").isNotNull().isEmpty();
+					new VersioningParametersImpl().draft())).getData()).as("Nodes tagged in latest release").isNotNull().isEmpty();
 
 			// get for new release (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParameters().draft().setRelease(newRelease.getUuid()))).getData()).as("Nodes tagged in new release").isNotNull()
+					new VersioningParametersImpl().draft().setRelease(newRelease.getUuid()))).getData()).as("Nodes tagged in new release").isNotNull()
 							.isEmpty();
 
 			// get for initial release
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
-					new VersioningParameters().draft().setRelease(initialRelease.getUuid()))).getData()).as("Nodes tagged in initial release")
+					new VersioningParametersImpl().draft().setRelease(initialRelease.getUuid()))).getData()).as("Nodes tagged in initial release")
 							.isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
 		}
 	}

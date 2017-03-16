@@ -12,11 +12,12 @@ import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.parameter.AbstractParameters;
 
 /**
  * Crop and resize parameters for image manipulation.
  */
-public class ImageManipulationParameters extends AbstractParameters {
+public class ImageManipulationParametersImpl extends AbstractParameters {
 
 	public static final String WIDTH_QUERY_PARAM_KEY = "width";
 	public static final String HEIGHT_QUERY_PARAM_KEY = "height";
@@ -27,12 +28,12 @@ public class ImageManipulationParameters extends AbstractParameters {
 	public static final String CROP_HEIGHT_QUERY_PARAM_KEY = "croph";
 	public static final String CROP_WIDTH_QUERY_PARAM_KEY = "cropw";
 
-	public ImageManipulationParameters(ActionContext ac) {
+	public ImageManipulationParametersImpl(ActionContext ac) {
 		super(ac);
 		// TODO validate parameters
 	}
 
-	public ImageManipulationParameters() {
+	public ImageManipulationParametersImpl() {
 	}
 
 	/**
@@ -50,7 +51,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @param width
 	 * @return Fluent API
 	 */
-	public ImageManipulationParameters setWidth(Integer width) {
+	public ImageManipulationParametersImpl setWidth(Integer width) {
 		setParameter(WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
 		return this;
 	}
@@ -70,7 +71,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @param height
 	 * @return Fluent API
 	 */
-	public ImageManipulationParameters setHeight(Integer height) {
+	public ImageManipulationParametersImpl setHeight(Integer height) {
 		setParameter(HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
 		return this;
 	}
@@ -90,7 +91,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @param startx
 	 * @return Fluent API
 	 */
-	public ImageManipulationParameters setStartx(Integer startx) {
+	public ImageManipulationParametersImpl setStartx(Integer startx) {
 		setParameter(CROP_X_QUERY_PARAM_KEY, String.valueOf(startx));
 		return this;
 	}
@@ -110,7 +111,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @param starty
 	 * @return Fluent API
 	 */
-	public ImageManipulationParameters setStarty(Integer starty) {
+	public ImageManipulationParametersImpl setStarty(Integer starty) {
 		setParameter(CROP_Y_QUERY_PARAM_KEY, String.valueOf(starty));
 		return this;
 	}
@@ -130,7 +131,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @param croph
 	 * @return Fluent API
 	 */
-	public ImageManipulationParameters setCroph(Integer croph) {
+	public ImageManipulationParametersImpl setCroph(Integer croph) {
 		setParameter(CROP_HEIGHT_QUERY_PARAM_KEY, String.valueOf(croph));
 		return this;
 	}
@@ -150,7 +151,7 @@ public class ImageManipulationParameters extends AbstractParameters {
 	 * @param cropw
 	 * @return Fluent API
 	 */
-	public ImageManipulationParameters setCropw(Integer cropw) {
+	public ImageManipulationParametersImpl setCropw(Integer cropw) {
 		setParameter(CROP_WIDTH_QUERY_PARAM_KEY, String.valueOf(cropw));
 		return this;
 	}
@@ -171,11 +172,11 @@ public class ImageManipulationParameters extends AbstractParameters {
 	public void validate() {
 		Integer width = getWidth();
 		if (width != null && width < 1) {
-			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
+			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.WIDTH_QUERY_PARAM_KEY, String.valueOf(width));
 		}
 		Integer height = getHeight();
 		if (height != null && height < 1) {
-			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
+			throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.HEIGHT_QUERY_PARAM_KEY, String.valueOf(height));
 		}
 
 		Integer croph = getCroph();
@@ -191,22 +192,22 @@ public class ImageManipulationParameters extends AbstractParameters {
 			}
 
 			if (croph != null && croph <= 0) {
-				throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.CROP_HEIGHT_QUERY_PARAM_KEY,
+				throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.CROP_HEIGHT_QUERY_PARAM_KEY,
 						String.valueOf(croph));
 			}
 
 			if (cropw != null && cropw <= 0) {
-				throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParameters.CROP_WIDTH_QUERY_PARAM_KEY,
+				throw error(BAD_REQUEST, "image_error_parameter_positive", ImageManipulationParametersImpl.CROP_WIDTH_QUERY_PARAM_KEY,
 						String.valueOf(cropw));
 			}
 
 			if (startx != null && startx <= -1) {
-				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParameters.CROP_X_QUERY_PARAM_KEY,
+				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParametersImpl.CROP_X_QUERY_PARAM_KEY,
 						String.valueOf(startx));
 			}
 
 			if (starty != null && starty <= -1) {
-				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParameters.CROP_Y_QUERY_PARAM_KEY,
+				throw error(BAD_REQUEST, "image_error_crop_start_not_negative", ImageManipulationParametersImpl.CROP_Y_QUERY_PARAM_KEY,
 						String.valueOf(starty));
 			}
 

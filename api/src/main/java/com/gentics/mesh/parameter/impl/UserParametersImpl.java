@@ -7,6 +7,7 @@ import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.UserParameters;
 import com.gentics.mesh.util.TokenUtil;
 

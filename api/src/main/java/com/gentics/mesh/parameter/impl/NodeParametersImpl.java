@@ -15,34 +15,17 @@ import org.raml.model.parameter.QueryParameter;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.parameter.AbstractParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.NodeParameters;
 
-public class NodeParameters extends AbstractParameters {
+public class NodeParametersImpl extends AbstractParameters implements NodeParameters {
 
-	/**
-	 * Query parameter key: {@value #LANGUAGES_QUERY_PARAM_KEY}
-	 */
-	public static final String LANGUAGES_QUERY_PARAM_KEY = "lang";
-
-	/**
-	 * Query parameter key: {@value #EXPANDFIELDS_QUERY_PARAM_KEY}
-	 */
-	public static final String EXPANDFIELDS_QUERY_PARAM_KEY = "expand";
-
-	/**
-	 * Query parameter key: {@value #EXPANDALL_QUERY_PARAM_KEY}
-	 */
-	public static final String EXPANDALL_QUERY_PARAM_KEY = "expandAll";
-
-	/**
-	 * Query parameter key: {@value #RESOLVE_LINKS_QUERY_PARAM_KEY}
-	 */
-	public static final String RESOLVE_LINKS_QUERY_PARAM_KEY = "resolveLinks";
-
-	public NodeParameters(ActionContext ac) {
+	public NodeParametersImpl(ActionContext ac) {
 		super(ac);
 	}
 
-	public NodeParameters() {
+	public NodeParametersImpl() {
 		super();
 	}
 
@@ -52,7 +35,7 @@ public class NodeParameters extends AbstractParameters {
 	 * @param languages
 	 * @return Fluent API
 	 */
-	public NodeParameters setLanguages(String... languages) {
+	public NodeParametersImpl setLanguages(String... languages) {
 		setParameter(LANGUAGES_QUERY_PARAM_KEY, convertToStr(languages));
 		return this;
 	}
@@ -88,7 +71,7 @@ public class NodeParameters extends AbstractParameters {
 	 * @param fieldNames
 	 * @return
 	 */
-	public NodeParameters setExpandedFieldNames(String... fieldNames) {
+	public NodeParametersImpl setExpandedFieldNames(String... fieldNames) {
 		setParameter(EXPANDFIELDS_QUERY_PARAM_KEY, convertToStr(fieldNames));
 		return this;
 	}
@@ -116,7 +99,7 @@ public class NodeParameters extends AbstractParameters {
 	 * @param flag
 	 * @return
 	 */
-	public NodeParameters setExpandAll(boolean flag) {
+	public NodeParametersImpl setExpandAll(boolean flag) {
 		setParameter(EXPANDALL_QUERY_PARAM_KEY, String.valueOf(flag));
 		return this;
 	}
@@ -153,7 +136,7 @@ public class NodeParameters extends AbstractParameters {
 	 * @param type
 	 * @return Fluent API
 	 */
-	public NodeParameters setResolveLinks(LinkType type) {
+	public NodeParametersImpl setResolveLinks(LinkType type) {
 		setParameter(RESOLVE_LINKS_QUERY_PARAM_KEY, type.name().toLowerCase());
 		return this;
 	}

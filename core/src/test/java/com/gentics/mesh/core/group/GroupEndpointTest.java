@@ -52,7 +52,7 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -286,7 +286,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testReadByUuidWithRolePerms() {
 		String uuid = db().noTx(() -> group().getUuid());
 		String roleUuid = db().noTx(() -> role().getUuid());
-		GroupResponse response = call(() -> client().findGroupByUuid(uuid, new RolePermissionParameters().setRoleUuid(roleUuid)));
+		GroupResponse response = call(() -> client().findGroupByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(roleUuid)));
 		assertNotNull(response.getRolePerms());
 		assertThat(response.getRolePerms()).hasPerm(READ, READ_PUBLISHED, PUBLISH, UPDATE, DELETE, CREATE);
 	}
@@ -397,7 +397,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			}
 
 			ParameterProvider[] params = new ParameterProvider[] { new PagingParametersImpl().setPerPage(10000),
-					new RolePermissionParameters().setRoleUuid(role().getUuid()) };
+					new RolePermissionParametersImpl().setRoleUuid(role().getUuid()) };
 
 			int readCount = 100;
 			for (int i = 0; i < readCount; i++) {

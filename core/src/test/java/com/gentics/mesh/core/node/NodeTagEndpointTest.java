@@ -28,8 +28,8 @@ import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -154,7 +154,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(node, UPDATE_PERM);
 
-			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()), FORBIDDEN, "error_missing_perm",
+			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParametersImpl()), FORBIDDEN, "error_missing_perm",
 					node.getUuid());
 
 			assertTrue("The tag should not be removed from the node", node.getTags(project().getLatestRelease()).contains(tag));
@@ -180,7 +180,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			Tag tag = tag("red");
-			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setRelease(releaseOne)));
 		}
 
 		// Assert that the node is tagged with red in release one
@@ -188,20 +188,20 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseOne)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
 					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseOne)));
 			assertEquals("We expected to find the red tag in the node response", 1,
 					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
-					new VersioningParameters().setRelease(releaseOne)));
+					new VersioningParametersImpl().setRelease(releaseOne)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
@@ -221,7 +221,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			Tag tag = tag("blue");
-			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setRelease(releaseTwo)));
 		}
 
 		// Assert that the node is tagged with both tags in releaseTwo
@@ -229,7 +229,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseTwo)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
 					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
@@ -237,7 +237,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
 					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected to find the red tag in the node response", 1,
@@ -246,13 +246,13 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
-					new VersioningParameters().setRelease(releaseTwo)));
+					new VersioningParametersImpl().setRelease(releaseTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 			Tag tag2 = tag("blue");
 			taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
-					new VersioningParameters().setRelease(releaseTwo)));
+					new VersioningParametersImpl().setRelease(releaseTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
@@ -262,7 +262,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		try (NoTx noTx = db().noTx()) {
 			Node node = content();
 			Tag tag = tag("red");
-			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setRelease(releaseOne)));
 		}
 
 		// Assert that the node is still tagged with both tags in releaseTwo
@@ -270,7 +270,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseTwo)));
 			assertEquals("We expected the node to be tagged with the red tag but the tag was not found in the list.", 1,
 					tagsForNode.getData().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected the node to be tagged with the blue tag but the tag was not found in the list.", 1,
@@ -278,7 +278,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseTwo)));
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseTwo)));
 			assertEquals("We expected to find the red tag in the node response", 1,
 					response.getTags().stream().filter(tag -> tag.getName().equals("red")).count());
 			assertEquals("We expected to find the red tag in the node response", 1,
@@ -287,13 +287,13 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag1 = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag1.getTagFamily().getUuid(), tag1.getUuid(),
-					new VersioningParameters().setRelease(releaseTwo)));
+					new VersioningParametersImpl().setRelease(releaseTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
 			Tag tag2 = tag("blue");
 			taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag2.getTagFamily().getUuid(), tag2.getUuid(),
-					new VersioningParameters().setRelease(releaseTwo)));
+					new VersioningParametersImpl().setRelease(releaseTwo)));
 			assertEquals("We expected to find the node in the list response but it was not included.", 1,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
@@ -304,18 +304,18 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
-					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+					() -> client().findTagsForNode(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseOne)));
 			assertEquals("We expected to find no tags for the node in release one.", 0, tagsForNode.getData().size());
 
 			// via /nodes/:nodeUuid
 			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().setRelease(releaseOne)));
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().setRelease(releaseOne)));
 			assertEquals("We expected to find no tags for the node in release one.", 0, response.getTags().size());
 
 			// via /tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes
 			Tag tag = tag("red");
 			NodeListResponse taggedNodes = call(() -> client().findNodesForTag(PROJECT_NAME, tag.getTagFamily().getUuid(), tag.getUuid(),
-					new VersioningParameters().setRelease(releaseOne)));
+					new VersioningParametersImpl().setRelease(releaseOne)));
 			assertEquals("We expected to find the node not be tagged by tag red.", 0,
 					taggedNodes.getData().stream().filter(item -> item.getUuid().equals(node.getUuid())).count());
 
@@ -330,7 +330,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 			role().revokePermissions(tag, READ_PERM);
-			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParameters()), FORBIDDEN, "error_missing_perm",
+			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new NodeParametersImpl()), FORBIDDEN, "error_missing_perm",
 					tag.getUuid());
 
 			assertTrue("The tag should not have been removed from the node", node.getTags(project().getLatestRelease()).contains(tag));

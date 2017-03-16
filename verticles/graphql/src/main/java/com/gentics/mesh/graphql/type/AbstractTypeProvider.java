@@ -19,8 +19,8 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.impl.LinkType;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
 import graphql.schema.DataFetchingEnvironment;

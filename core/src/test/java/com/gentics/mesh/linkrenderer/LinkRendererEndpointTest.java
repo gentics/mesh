@@ -9,8 +9,8 @@ import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
@@ -142,6 +142,6 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	 * @return rendered result
 	 */
 	private String renderContent(String content, LinkType linkType) {
-		return call(() -> client().resolveLinks(content, new NodeParameters().setResolveLinks(linkType)));
+		return call(() -> client().resolveLinks(content, new NodeParametersImpl().setResolveLinks(linkType)));
 	}
 }

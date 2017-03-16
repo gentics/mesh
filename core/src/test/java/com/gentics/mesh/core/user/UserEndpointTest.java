@@ -67,9 +67,9 @@ import com.gentics.mesh.core.rest.user.UserTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -252,7 +252,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			String uuid = user.getUuid();
 
 			UserResponse userResponse = call(
-					() -> client().findUserByUuid(uuid, new RolePermissionParameters().setRoleUuid(role().getUuid())));
+					() -> client().findUserByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
 			assertNotNull(userResponse.getRolePerms());
 			assertThat(userResponse.getRolePerms()).hasPerm(READ, READ_PUBLISHED, PUBLISH, CREATE, UPDATE, DELETE);
 		}
@@ -610,7 +610,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			UserListResponse userResponse = call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100),
-					new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en")));
+					new NodeParametersImpl().setExpandedFieldNames("nodeReference").setLanguages("en")));
 			assertNotNull(userResponse);
 
 			UserResponse foundUser = userResponse.getData().stream()
@@ -648,7 +648,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserResponse userResponse = future.result();
 
 		MeshResponse<UserResponse> userResponseFuture = client().findUserByUuid(userResponse.getUuid(),
-				new NodeParameters().setExpandedFieldNames("nodeReference").setLanguages("en")).invoke();
+				new NodeParametersImpl().setExpandedFieldNames("nodeReference").setLanguages("en")).invoke();
 		latchFor(userResponseFuture);
 		assertSuccess(userResponseFuture);
 		UserResponse userResponse2 = userResponseFuture.result();

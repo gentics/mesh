@@ -7,20 +7,20 @@ import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
+import com.gentics.mesh.parameter.AbstractParameters;
+import com.gentics.mesh.parameter.RolePermissionParameters;
 
 /**
  * The role permission parameter can be used to set the role parameter value in form of an UUID which will cause mesh to add the rolePerm field to the rest
  * response.
  */
-public class RolePermissionParameters extends AbstractParameters {
+public class RolePermissionParametersImpl extends AbstractParameters implements RolePermissionParameters {
 
-	public static final String ROLE_PERMISSION_QUERY_PARAM_KEY = "role";
-
-	public RolePermissionParameters(ActionContext ac) {
+	public RolePermissionParametersImpl(ActionContext ac) {
 		super(ac);
 	}
 
-	public RolePermissionParameters() {
+	public RolePermissionParametersImpl() {
 	}
 
 	/**
@@ -29,7 +29,7 @@ public class RolePermissionParameters extends AbstractParameters {
 	 * @param roleUuid
 	 * @return Fluent API
 	 */
-	public RolePermissionParameters setRoleUuid(String roleUuid) {
+	public RolePermissionParametersImpl setRoleUuid(String roleUuid) {
 		setParameter(ROLE_PERMISSION_QUERY_PARAM_KEY, roleUuid);
 		return this;
 	}

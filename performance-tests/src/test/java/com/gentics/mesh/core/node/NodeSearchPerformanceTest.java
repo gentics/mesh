@@ -16,7 +16,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.StopWatchLogger;
@@ -80,7 +80,7 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 		String search = json;
 		loggingStopWatch(logger, "node.search-filter-one-perm", 400, (step) -> {
 			NodeListResponse response = call(
-					() -> client().searchNodes(PROJECT_NAME, search, new VersioningParameters().draft()));
+					() -> client().searchNodes(PROJECT_NAME, search, new VersioningParametersImpl().draft()));
 			assertEquals(1, response.getMetainfo().getTotalCount());
 		});
 
@@ -123,7 +123,7 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 		String search = json;
 		loggingStopWatch(logger, "node.search-filter-schema", 200, (step) -> {
-			call(() -> client().searchNodes(PROJECT_NAME, search, new VersioningParameters().draft()));
+			call(() -> client().searchNodes(PROJECT_NAME, search, new VersioningParametersImpl().draft()));
 		});
 
 	}
