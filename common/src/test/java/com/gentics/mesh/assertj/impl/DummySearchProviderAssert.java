@@ -1,4 +1,4 @@
-package com.gentics.mesh.assertj;
+package com.gentics.mesh.assertj.impl;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
@@ -12,15 +12,16 @@ import org.assertj.core.api.AbstractAssert;
 
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.search.DummySearchProvider;
-import com.gentics.mesh.test.context.AbstractMeshTest;
 
 public class DummySearchProviderAssert extends AbstractAssert<DummySearchProviderAssert, DummySearchProvider> {
 
-	protected DummySearchProviderAssert(DummySearchProvider actual) {
+	public DummySearchProviderAssert(DummySearchProvider actual) {
 		super(actual, DummySearchProviderAssert.class);
 	}
 
@@ -141,11 +142,11 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param languages
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert storedAllContainers(Node node, AbstractMeshTest test, String... languages) {
+	public DummySearchProviderAssert storedAllContainers(Node node, Project project, Release release, String... languages) {
 		for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 			for (String lang : languages) {
-				String projectUuid = test.project().getUuid();
-				String releaseUuid = test.release().getUuid();
+				String projectUuid = project.getUuid();
+				String releaseUuid = release.getUuid();
 				String schemaVersionUuid = node.getSchemaContainer().getLatestVersion().getUuid();
 				assertThat(actual).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaVersionUuid, type),
 						NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), lang));

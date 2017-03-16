@@ -5,8 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.elasticsearch.node.Node;
-
 import com.gentics.mesh.core.rest.schema.Schema;
 
 import io.vertx.core.json.JsonObject;
@@ -90,7 +88,7 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Node getNode() {
+	public Object getNode() {
 		return null;
 	}
 

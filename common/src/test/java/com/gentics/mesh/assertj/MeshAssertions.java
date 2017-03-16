@@ -1,7 +1,11 @@
 package com.gentics.mesh.assertj;
 
+import java.awt.image.BufferedImage;
+
 import org.assertj.core.api.Assertions;
 
+import com.gentics.mesh.assertj.impl.BufferedImageAssert;
+import com.gentics.mesh.assertj.impl.DummySearchProviderAssert;
 import com.gentics.mesh.assertj.impl.FieldMapAssert;
 import com.gentics.mesh.assertj.impl.FieldSchemaContainerAssert;
 import com.gentics.mesh.assertj.impl.GroupResponseAssert;
@@ -177,5 +181,9 @@ public class MeshAssertions extends Assertions {
 	
 	public static TagListResponseAssert assertThat(TagListResponse actual) {
 		return new TagListResponseAssert(actual);
+	}
+	
+	public static BufferedImageAssert assertThat(BufferedImage actual) {
+		return new BufferedImageAssert(actual);
 	}
 }

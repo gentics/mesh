@@ -3,10 +3,6 @@ package com.gentics.mesh.core.image.spi;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.awt.AlphaComposite;
-import java.awt.Color;
-import java.awt.Graphics2D;
-import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -96,7 +92,12 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 			// CMap result = ColorThief.getColorMap(bi, 5);
 			// VBox vbox = result.vboxes.get(0);
 			// int[] rgb = vbox.avg(false);
-			String colorHex = "#" + Integer.toHexString(rgb[0]) + Integer.toHexString(rgb[1]) + Integer.toHexString(rgb[2]);
+
+			// By default we assume white for the images
+			String colorHex = "#FFFFFF";
+			if (rgb.length >= 3) {
+				colorHex = "#" + Integer.toHexString(rgb[0]) + Integer.toHexString(rgb[1]) + Integer.toHexString(rgb[2]);
+			}
 			info.setDominantColor(colorHex);
 			sub.onSuccess(info);
 		});

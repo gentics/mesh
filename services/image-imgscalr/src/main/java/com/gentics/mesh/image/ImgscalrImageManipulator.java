@@ -160,7 +160,6 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 		// Convert the image to RGB for images with transparency (gif, png)
 		BufferedImage rgbCopy = bi;
-		System.out.println(bi.getTransparency());
 		if (bi.getTransparency() == Transparency.TRANSLUCENT || bi.getTransparency() == Transparency.BITMASK) {
 			rgbCopy = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
 			Graphics2D graphics = rgbCopy.createGraphics();

@@ -1,5 +1,6 @@
 package com.gentics.mesh.image;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -32,13 +33,17 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.buffer.Buffer;
 import rx.Single;
-import rx.functions.Action5;
+import rx.functions.Action6;
 import rx.functions.Func0;
 
 public class ImgscalrImageManipulatorTest {
+
+	private static final Logger log = LoggerFactory.getLogger(ImgscalrImageManipulatorTest.class);
 
 	private ImgscalrImageManipulator manipulator;
 	private File cacheDir;
@@ -53,13 +58,15 @@ public class ImgscalrImageManipulatorTest {
 	@After
 	public void cleanup() throws IOException {
 		FileUtils.deleteDirectory(cacheDir);
+		FileUtils.deleteDirectory(new File("data"));
+		FileUtils.deleteDirectory(new File("target/data"));
 	}
 
 	@Test
 	public void testResize() throws Exception {
 
-		checkImages((imageName, width, height, color, ins) -> {
-			System.out.println("Handling " + imageName);
+		checkImages((imageName, width, height, color, refImage, ins) -> {
+			log.debug("Handling " + imageName);
 			Single<Buffer> obs = manipulator.handleResize(ins.call(), imageName, new ImageManipulationParameters().setWidth(150)
 					.setHeight(180));
 			CountDownLatch latch = new CountDownLatch(1);
@@ -70,10 +77,10 @@ public class ImgscalrImageManipulatorTest {
 							.getBytes();
 					ByteArrayInputStream bis = new ByteArrayInputStream(data);
 					BufferedImage resizedImage = ImageIO.read(bis);
-					assertEquals(150, resizedImage.getWidth());
-					assertEquals(180, resizedImage.getHeight());
 					bis.close();
-					FileUtils.writeByteArrayToFile(new File("/tmp/image" + imageName + ".jpg"), data);
+					assertThat(resizedImage).hasSize(150, 180)
+							.matches(refImage);
+					//FileUtils.writeByteArrayToFile(new File("/tmp/" + imageName + "reference.jpg"), data);
 				} catch (Exception e) {
 					e.printStackTrace();
 					fail("Error occured");
@@ -93,7 +100,7 @@ public class ImgscalrImageManipulatorTest {
 
 	@Test
 	public void testExtractImageInfo() throws IOException, JSONException {
-		checkImages((imageName, width, height, color, ins) -> {
+		checkImages((imageName, width, height, color, refImage, ins) -> {
 			Single<ImageInfo> obs = manipulator.readImageInfo(ins);
 			ImageInfo info = obs.toBlocking()
 					.value();
@@ -103,18 +110,29 @@ public class ImgscalrImageManipulatorTest {
 		});
 	}
 
-	private void checkImages(Action5<String, Integer, Integer, String, Func0<InputStream>> action) throws JSONException, IOException {
+	private void checkImages(Action6<String, Integer, Integer, String, BufferedImage, Func0<InputStream>> action) throws JSONException, IOException {
 		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json")));
 		JSONArray array = json.getJSONArray("images");
 		for (int i = 0; i < array.length(); i++) {
 			JSONObject image = array.getJSONObject(i);
 			String imageName = image.getString("name");
-			System.out.println("Handling " + imageName);
-			InputStream ins = getClass().getResourceAsStream("/pictures/" + imageName);
+			log.debug("Handling " + imageName);
+			String path = "/pictures/" + imageName;
+			InputStream ins = getClass().getResourceAsStream(path);
+			if (ins == null) {
+				throw new RuntimeException("Could not find image {" + path + "}");
+			}
 			int width = image.getInt("w");
 			int height = image.getInt("h");
 			String color = image.getString("dominantColor");
-			action.call(imageName, width, height, color, () -> ins);
+			String refPath = "/references/" + imageName + "reference.jpg";
+			InputStream insRef = getClass().getResourceAsStream(refPath);
+			if (insRef == null) {
+				throw new RuntimeException("Could not find reference image {" + refPath + "}");
+			}
+			BufferedImage refImage = ImageIO.read(insRef);
+			insRef.close();
+			action.call(imageName, width, height, color, refImage, () -> ins);
 		}
 	}
 
