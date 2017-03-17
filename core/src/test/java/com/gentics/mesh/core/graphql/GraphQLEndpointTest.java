@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.graphql;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 
@@ -46,12 +47,12 @@ import io.vertx.core.json.JsonObject;
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.FULL, startServer = true)
 public class GraphQLEndpointTest extends AbstractMeshTest {
 
-//	@Test
+	//	@Test
 	public void testSimpleQuery() throws JSONException {
 		JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{me{firstname}}"));
 		MeshJSONAssert.assertEquals("{'data':{'me':{'firstname':'Joe'}}}", response);
 	}
-	
+
 	@Test
 	public void testIntrospection() {
 		JsonObject response = call(() -> client().graphql(PROJECT_NAME, getQuery("introspection-query")));
@@ -59,9 +60,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testNodeQuery() throws JSONException {
+	public void testNodeQuery() throws JSONException, IOException {
 		String contentUuid = db().noTx(() -> content().getUuid());
 		String creationDate = db().noTx(() -> content().getCreationDate());
+		String uuid = db().noTx(() -> folder("2015").getUuid());
 		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			Node node2 = content();
@@ -218,6 +220,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		//JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{ tagFamilies(name: \"colors\") { name, creator {firstname, lastname}, tags(page: 1, perPage:1) {name}}, schemas(name:\"content\") {name}, nodes(uuid:\"" + contentUuid + "\"){uuid, languagePaths(linkType: FULL) {languageTag, link}, availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
 
 		JsonObject response = call(() -> client().graphqlQuery(PROJECT_NAME, getQuery("node-fields-query")));
+		assertThat(response).compliesToAssertions("node-fields-query");
 
 		System.out.println(response.encodePrettily());
 		//		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "', 'created': '" + creationDate + "'}}}", response);
@@ -230,5 +233,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	private String getQuery(String name) throws IOException {
 		return IOUtils.toString(getClass().getResourceAsStream("/graphql/" + name));
 	}
+
+	
 
 }

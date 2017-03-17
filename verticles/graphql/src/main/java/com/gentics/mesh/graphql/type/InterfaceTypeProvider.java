@@ -18,7 +18,6 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 import dagger.Lazy;
 import graphql.schema.GraphQLInterfaceType;
 import graphql.schema.GraphQLInterfaceType.Builder;
-import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeReference;
 
