@@ -1,17 +1,16 @@
 package com.gentics.mesh.rest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.assertj.core.api.Assertions.*;
-import java.util.Arrays;
 
 import org.junit.Test;
 
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRestClient;
+
 import io.vertx.core.Vertx;
 
 public class MeshRestClientTest {
