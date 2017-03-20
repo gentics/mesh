@@ -46,12 +46,9 @@ public class TagTypeProvider extends AbstractTypeProvider {
 
 		// .nodes
 		tagType.field(newPagingFieldWithFetcher("nodes", "Nodes which are tagged with the tag.", (env) -> {
-			Object source = env.getSource();
-			if (source instanceof Tag) {
-				InternalActionContext ac = (InternalActionContext) env.getContext();
-				return ((Tag) source).findTaggedNodes(ac.getUser(), ac.getRelease(),null,null, getPagingInfo(env));
-			}
-			return null;
+			Tag tag = env.getSource();
+			InternalActionContext ac = env.getContext();
+			return tag.findTaggedNodes(ac.getUser(), ac.getRelease(), null, null, getPagingInfo(env));
 		}, "Node"));
 
 		return tagType.build();

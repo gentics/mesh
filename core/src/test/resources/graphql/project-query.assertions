@@ -1,0 +1,6 @@
+$.data.me.uuid=<is-uuid>
+$.data.me.username=joe1
+$.data.project.uuid=<is-uuid>
+$.data.project.name=dummy
+$.data.project.rootNode.uuid=<is-uuid>
+$.data.project.rootNode.container.fields.name=<is-null>##The root node has initially no fields thus the name is null

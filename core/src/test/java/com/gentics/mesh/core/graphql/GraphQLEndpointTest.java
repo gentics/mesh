@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.graphql;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 
@@ -77,9 +78,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeQuery() throws JSONException, IOException {
-		String contentUuid = db().noTx(() -> content().getUuid());
-		String creationDate = db().noTx(() -> content().getCreationDate());
-		String uuid = db().noTx(() -> folder("2015").getUuid());
+//		String contentUuid = db().noTx(() -> content().getUuid());
+//		String creationDate = db().noTx(() -> content().getCreationDate());
+//		String uuid = db().noTx(() -> folder("2015").getUuid());
 		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			Node node2 = content();
@@ -236,9 +237,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		//JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{ tagFamilies(name: \"colors\") { name, creator {firstname, lastname}, tags(page: 1, perPage:1) {name}}, schemas(name:\"content\") {name}, nodes(uuid:\"" + contentUuid + "\"){uuid, languagePaths(linkType: FULL) {languageTag, link}, availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
 
 		JsonObject response = call(() -> client().graphqlQuery(PROJECT_NAME, getQuery(queryName)));
-		//assertThat(response).compliesToAssertions("node-fields-query");
-
 		System.out.println(response.encodePrettily());
+		assertThat(response).compliesToAssertions(queryName);
+
 		//		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "', 'created': '" + creationDate + "'}}}", response);
 
 		//		JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + contentUuid + "\") {uuid, fields { ... on content { name, content }}}}"));

@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.assertj.core.api.AbstractAssert;
@@ -39,12 +40,12 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		return this;
 	}
 
-	public JsonObjectAssert has(String path, String value) {
+	public JsonObjectAssert has(String path, String value, String msg) {
 		try {
 			String actualValue = getByPath(path);
-			assertEquals("Value for property on path {" + path + "} did notmatch.", value, actualValue);
+			assertEquals("Value for property on path {" + path + "} did notmatch: " + msg, value, actualValue);
 		} catch (PathNotFoundException e) {
-			fail("Could not find property for path {" + path + "} - Json is:\n--snip--\n" + actual.encodePrettily() + "\n--snap--\n");
+			fail("Could not find property for path {" + path + "} - Json is:\n--snip--\n" + actual.encodePrettily() + "\n--snap--\n" + msg);
 		}
 		return this;
 	}
@@ -68,20 +69,43 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		return this;
 	}
 
+	/**
+	 * Assert that the json object complies to the assertions which are stored in the assertionsfile of the given name.
+	 * 
+	 * @param name
+	 * @return
+	 * @throws IOException
+	 */
 	public JsonObjectAssert compliesToAssertions(String name) throws IOException {
 		Properties props = new Properties();
-		props.load(getClass().getResourceAsStream("/graphql/" + name + ".assertions"));
+		String path = "/graphql/" + name + ".assertions";
+		InputStream ins = getClass().getResourceAsStream(path);
+		if (ins == null) {
+			fail("Could not find assertionsfile {" + path + "}");
+		}
+		try {
+			props.load(ins);
+		} finally {
+			ins.close();
+		}
 		for (Object key : props.keySet()) {
 			String keyStr = (String) key;
-			String value = props.getProperty(keyStr);
+			String valueStr = props.getProperty(keyStr);
+			String[] assertionInfo = valueStr.split("##");
+			String value = assertionInfo[0];
+
+			String msg = "";
+			if (assertionInfo.length > 1) {
+				msg = assertionInfo[1];
+			}
 			if ("<not-null>".equals(value)) {
-				pathIsNotNull(keyStr);
-			} else if ("<null>".equals(value)) {
-				pathIsNull(keyStr);
+				pathIsNotNull(keyStr, msg);
+			} else if ("<is-null>".equals(value)) {
+				pathIsNull(keyStr, msg);
 			} else if ("<is-uuid>".equals(value)) {
-				pathIsUuid(keyStr);
+				pathIsUuid(keyStr, msg);
 			} else {
-				has(keyStr, value);
+				has(keyStr, value, msg);
 			}
 		}
 
@@ -89,21 +113,42 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	}
 
 	public JsonObjectAssert pathIsUuid(String path) {
+		return pathIsUuid(path, null);
+	}
+
+	public JsonObjectAssert pathIsUuid(String path, String msg) {
+		if (msg == null) {
+			msg = "";
+		}
 		String value = JsonPath.read(actual.toString(), path);
 		assertNotNull("Value on path {" + path + "} was null", value);
-		assertTrue("The specified value {" + value + "} on path {" + path + "} was no uuid", UUIDUtil.isUUID(value));
+		assertTrue("The specified value {" + value + "} on path {" + path + "} was no uuid: " + msg, UUIDUtil.isUUID(value));
 		return this;
 	}
 
 	public JsonObjectAssert pathIsNotNull(String path) {
+		return pathIsNotNull(path, null);
+	}
+
+	public JsonObjectAssert pathIsNotNull(String path, String msg) {
+		if (msg == null) {
+			msg = "";
+		}
 		Object value = JsonPath.read(actual.toString(), path);
-		assertNotNull("Value on the path {" + path + "} was expected to be non-null", value);
+		assertNotNull("Value on the path {" + path + "} was expected to be non-null: " + msg, value);
 		return this;
 	}
 
 	public JsonObjectAssert pathIsNull(String path) {
+		return pathIsNull(path, null);
+	}
+
+	public JsonObjectAssert pathIsNull(String path, String msg) {
+		if (msg == null) {
+			msg = "";
+		}
 		Object value = JsonPath.read(actual.toString(), path);
-		assertNull("Value on the path {" + path + "} was expected to be null but was {" + value + "}", value);
+		assertNull("Value on the path {" + path + "} was expected to be null but was {" + value + "}: " + msg, value);
 		return this;
 	}
 }

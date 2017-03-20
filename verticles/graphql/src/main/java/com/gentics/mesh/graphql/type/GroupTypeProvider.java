@@ -10,10 +10,8 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 
-import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
-import graphql.schema.GraphQLTypeReference;
 
 @Singleton
 public class GroupTypeProvider extends AbstractTypeProvider {
@@ -41,24 +39,16 @@ public class GroupTypeProvider extends AbstractTypeProvider {
 
 		// .roles
 		groupType.field(newPagingFieldWithFetcher("roles", "Roles assigned to the group.", (env) -> {
-			Object source = env.getSource();
-			if (source instanceof Group) {
-				InternalActionContext ac = (InternalActionContext) env.getContext();
-				Group group = (Group) source;
-				return group.getRoles(ac.getUser(), getPagingInfo(env));
-			}
-			return null;
+			Group group = env.getSource();
+			InternalActionContext ac = env.getContext();
+			return group.getRoles(ac.getUser(), getPagingInfo(env));
 		}, "Role"));
 
 		// .users
 		groupType.field(newPagingFieldWithFetcher("users", "Users assigned to the group.", (env) -> {
-			Object source = env.getSource();
-			if (source instanceof Group) {
-				InternalActionContext ac = (InternalActionContext) env.getContext();
-				Group group = (Group) source;
-				return group.getVisibleUsers(ac.getUser(), getPagingInfo(env));
-			}
-			return null;
+			Group group = env.getSource();
+			InternalActionContext ac = env.getContext();
+			return group.getVisibleUsers(ac.getUser(), getPagingInfo(env));
 		}, "User"));
 		return groupType.build();
 	}

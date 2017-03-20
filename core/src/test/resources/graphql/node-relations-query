@@ -1,7 +1,11 @@
 {
 	denode: node(path:"/Neuigkeiten") {
 		uuid,
-		children(languages: ["en","de"]) { uuid }
+		children(languages: ["en","de"]) {
+			elements { 
+				uuid
+			}
+		}
 	}
 	rootNode {
 		uuid

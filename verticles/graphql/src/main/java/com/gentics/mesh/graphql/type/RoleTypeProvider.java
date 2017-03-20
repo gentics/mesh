@@ -36,13 +36,9 @@ public class RoleTypeProvider extends AbstractTypeProvider {
 
 		// .groups
 		roleType.field(newPagingFieldWithFetcher("groups", "Groups which reference the role.", (env) -> {
-			Object source = env.getSource();
-			if (source instanceof Role) {
-				Role role = (Role) source;
-				InternalActionContext ac = (InternalActionContext) env.getContext();
-				return role.getGroups(ac.getUser(), getPagingParameters(env));
-			}
-			return null;
+			Role role = env.getSource();
+			InternalActionContext ac = env.getContext();
+			return role.getGroups(ac.getUser(), getPagingParameters(env));
 		}, "Group"));
 		return roleType.build();
 	}

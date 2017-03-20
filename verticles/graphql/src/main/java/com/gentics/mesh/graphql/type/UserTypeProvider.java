@@ -13,7 +13,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLTypeReference;
@@ -29,52 +28,38 @@ public class UserTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Object nodeReferenceFetcher(DataFetchingEnvironment env) {
-		Object source = env.getSource();
-		if (source instanceof User) {
-			InternalActionContext ac = (InternalActionContext) env.getContext();
-			Node node = ((User) source).getReferencedNode();
-			if (node != null) {
-				if (ac.getUser()
-						.hasPermission(node, GraphPermission.READ_PERM)
-						|| ac.getUser()
-								.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
-					return node;
-				}
+		User user = env.getSource();
+		InternalActionContext ac = env.getContext();
+		Node node = user.getReferencedNode();
+		if (node != null) {
+			if (ac.getUser()
+					.hasPermission(node, GraphPermission.READ_PERM)
+					|| ac.getUser()
+							.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
+				return node;
 			}
 		}
 		return null;
 	}
 
 	public Object usernameFetcher(DataFetchingEnvironment env) {
-		Object source = env.getSource();
-		if (source instanceof User) {
-			return ((User) source).getUsername();
-		}
-		return null;
+		User user = env.getSource();
+		return user.getUsername();
 	}
 
 	public Object firstnameFetcher(DataFetchingEnvironment env) {
-		Object source = env.getSource();
-		if (source instanceof User) {
-			return ((User) source).getFirstname();
-		}
-		return null;
+		User user = env.getSource();
+		return user.getFirstname();
 	}
 
 	public Object lastnameFetcher(DataFetchingEnvironment env) {
-		Object source = env.getSource();
-		if (source instanceof User) {
-			return ((User) source).getLastname();
-		}
-		return null;
+		User user = env.getSource();
+		return user.getLastname();
 	}
 
 	public Object emailAddressFetcher(DataFetchingEnvironment env) {
-		Object source = env.getSource();
-		if (source instanceof User) {
-			return ((User) source).getEmailAddress();
-		}
-		return null;
+		User user = env.getSource();
+		return user.getEmailAddress();
 	}
 
 	public GraphQLObjectType getUserType() {
@@ -87,46 +72,38 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		root.field(newFieldDefinition().name("username")
 				.description("The username of the user")
 				.type(GraphQLString)
-				.dataFetcher(this::usernameFetcher)
-				.build());
+				.dataFetcher(this::usernameFetcher));
 
 		// .firstname
 		root.field(newFieldDefinition().name("firstname")
 				.description("The firstname of the user")
 				.type(GraphQLString)
-				.dataFetcher(this::firstnameFetcher)
-				.build());
+				.dataFetcher(this::firstnameFetcher));
 
 		// .lastname
 		root.field(newFieldDefinition().name("lastname")
 				.description("The lastname of the user")
 				.type(GraphQLString)
-				.dataFetcher(this::lastnameFetcher)
-				.build());
+				.dataFetcher(this::lastnameFetcher));
 
 		// .emailAddress
 		root.field(newFieldDefinition().name("emailAddress")
 				.description("The email of the user")
 				.type(GraphQLString)
-				.dataFetcher(this::emailAddressFetcher)
-				.build());
+				.dataFetcher(this::emailAddressFetcher));
 
 		// .groups
 		root.field(newPagingFieldWithFetcher("groups", "Groups to which the user belongs.", (env) -> {
-			Object source = env.getSource();
-			if (source instanceof User) {
-				InternalActionContext ac = (InternalActionContext) env.getContext();
-				User user = ((User) source);
-				return user.getGroups(ac.getUser(), getPagingInfo(env));
-			}
-			return null;
+			User user = env.getSource();
+			InternalActionContext ac = env.getContext();
+			return user.getGroups(ac.getUser(), getPagingInfo(env));
 		}, "Group"));
+
 		// .nodeReference
 		root.field(newFieldDefinition().name("nodeReference")
 				.description("User node reference")
 				.type(new GraphQLTypeReference("Node"))
-				.dataFetcher(this::nodeReferenceFetcher)
-				.build());
+				.dataFetcher(this::nodeReferenceFetcher));
 
 		return root.build();
 	}

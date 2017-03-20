@@ -1,4 +1,4 @@
-$.data.node.uuid=<not-null>
-$.data.node.uuid=<is-uuid>
-$.data.node.languagePaths[0].languageTag=en
-$.data.node.languagePaths[0].link=/api/v1/dummy/webroot/News/2015
+$.data.node.uuid=<not-null>##Node uuid should not be null
+$.data.node.uuid=<is-uuid>##Node uuis is not a uuid
+$.data.node.languagePaths[0].languageTag=en##First language path should be english
+$.data.node.languagePaths[0].link=/api/v1/dummy/webroot/News/2015##Path did not match

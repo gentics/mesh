@@ -33,17 +33,15 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Object baseNodeFetcher(DataFetchingEnvironment env) {
-		Object source = env.getSource();
-		if (source instanceof Project) {
-			InternalActionContext ac = (InternalActionContext) env.getContext();
-			Node node = ((Project) source).getBaseNode();
+		Project project = env.getSource();
+		InternalActionContext ac = env.getContext();
+		Node node = project.getBaseNode();
 
-			if (ac.getUser()
-					.hasPermission(node, GraphPermission.READ_PERM)
-					|| ac.getUser()
-							.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
-				return node;
-			}
+		if (ac.getUser()
+				.hasPermission(node, GraphPermission.READ_PERM)
+				|| ac.getUser()
+						.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
+			return node;
 		}
 		return null;
 	}
@@ -53,16 +51,17 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		root.name("Project");
 		interfaceTypeProvider.addCommonFields(root);
 
+		// .name
 		root.field(newFieldDefinition().name("name")
 				.description("The name of the project")
-				.type(GraphQLString)
-				.build());
+				.type(GraphQLString));
 
+		// .rootNode
 		root.field(newFieldDefinition().name("rootNode")
 				.description("The root node of the project")
 				.type(nodeTypeProvider.getNodeType(project))
-				.dataFetcher(this::baseNodeFetcher)
-				.build());
+				.dataFetcher(this::baseNodeFetcher));
+
 		return root.build();
 	}
 

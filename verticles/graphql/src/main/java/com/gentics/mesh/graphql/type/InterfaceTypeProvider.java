@@ -37,40 +37,34 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		// .uuid
 		common.field(newFieldDefinition().name("uuid")
 				.description("UUID of the element")
-				.type(GraphQLString)
-				.build());
+				.type(GraphQLString));
 
 		// .edited
 		common.field(newFieldDefinition().name("edited")
 				.description("ISO8601 formatted edit timestamp")
-				.type(GraphQLString)
-				.build());
+				.type(GraphQLString));
 
 		// .created
 		common.field(newFieldDefinition().name("created")
 				.description("ISO8601 formatted created date string")
-				.type(GraphQLString)
-				.build());
+				.type(GraphQLString));
 
 		// .permissions
 		common.field(newFieldDefinition().name("permissions")
 				.description("Permission information of the element")
-				.type(createPermInfoType())
-				.build());
+				.type(createPermInfoType()));
 
 		//TODO add rolePerms
 
 		// .creator
 		common.field(newFieldDefinition().name("creator")
 				.description("Creator of the element")
-				.type(new GraphQLTypeReference("User"))
-				.build());
+				.type(new GraphQLTypeReference("User")));
 
 		// .editor
 		common.field(newFieldDefinition().name("editor")
 				.description("Editor of the element")
-				.type(new GraphQLTypeReference("User"))
-				.build());
+				.type(new GraphQLTypeReference("User")));
 
 		common.typeResolver(resolver -> {
 			return null;
@@ -90,38 +84,32 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		// .create
 		builder.field(newFieldDefinition().name("create")
 				.type(GraphQLBoolean)
-				.description("Flag which idicates whether the create permission is granted.")
-				.build());
+				.description("Flag which idicates whether the create permission is granted."));
 
 		// .read
 		builder.field(newFieldDefinition().name("read")
 				.type(GraphQLBoolean)
-				.description("Flag which idicates whether the read permission is granted.")
-				.build());
+				.description("Flag which idicates whether the read permission is granted."));
 
 		// .update
 		builder.field(newFieldDefinition().name("update")
 				.type(GraphQLBoolean)
-				.description("Flag which idicates whether the update permission is granted.")
-				.build());
+				.description("Flag which idicates whether the update permission is granted."));
 
 		// .delete
 		builder.field(newFieldDefinition().name("delete")
 				.type(GraphQLBoolean)
-				.description("Flag which idicates whether the delete permission is granted.")
-				.build());
+				.description("Flag which idicates whether the delete permission is granted."));
 
 		// .publish
 		builder.field(newFieldDefinition().name("publish")
 				.type(GraphQLBoolean)
-				.description("Flag which idicates whether the publish permission is granted.")
-				.build());
+				.description("Flag which idicates whether the publish permission is granted."));
 
 		// .readPublished
 		builder.field(newFieldDefinition().name("readPublished")
 				.type(GraphQLBoolean)
-				.description("Flag which idicates whether the read published permission is granted.")
-				.build());
+				.description("Flag which idicates whether the read published permission is granted."));
 		return builder.build();
 	}
 
@@ -132,34 +120,25 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		builder.field(newFieldDefinition().name("uuid")
 				.description("UUID of the element")
 				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof MeshElement) {
-						return ((MeshElement) source).getUuid();
-					}
-					return null;
-				})
-				.build());
+				.dataFetcher(env -> {
+					MeshElement element = env.getSource();
+					return element.getUuid();
+				}));
 
 		// .etag
 		builder.field(newFieldDefinition().name("etag")
 				.description("ETag of the element")
 				.type(GraphQLString)
 				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof TransformableElement) {
-						InternalActionContext ac = (InternalActionContext) fetcher.getContext();
-						return ((TransformableElement<?>) source).getETag(ac);
-					}
-					return null;
-				})
-				.build());
+					TransformableElement<?> element = fetcher.getSource();
+					InternalActionContext ac = fetcher.getContext();
+					return element.getETag(ac);
+				}));
 
 		// .permission
 		builder.field(newFieldDefinition().name("permissions")
 				.description("Permission information of the element")
-				.type(createPermInfoType())
-				.build());
+				.type(createPermInfoType()));
 
 		//TODO rolePerms
 
@@ -167,53 +146,37 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		builder.field(newFieldDefinition().name("edited")
 				.description("ISO8601 formatted edit timestamp")
 				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof EditorTrackingVertex) {
-						return ((EditorTrackingVertex) source).getLastEditedDate();
-					}
-					return null;
-				})
-				.build());
+				.dataFetcher(env -> {
+					EditorTrackingVertex vertex = env.getSource();
+					return vertex.getLastEditedDate();
+				}));
 
 		// .created
 		builder.field(newFieldDefinition().name("created")
 				.description("ISO8601 formatted created date string")
 				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof CreatorTrackingVertex) {
-						return ((CreatorTrackingVertex) source).getCreationDate();
-					}
-					return null;
-				})
-				.build());
+				.dataFetcher(env -> {
+					CreatorTrackingVertex vertex = env.getSource();
+					return vertex.getCreationDate();
+				}));
 
 		// .creator
 		builder.field(newFieldDefinition().name("creator")
 				.description("Creator of the element")
 				.type(new GraphQLTypeReference("User"))
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof CreatorTrackingVertex) {
-						return ((CreatorTrackingVertex) source).getCreator();
-					}
-					return null;
-				})
-				.build());
+				.dataFetcher(env -> {
+					CreatorTrackingVertex vertex = env.getSource();
+					return vertex.getCreator();
+				}));
 
 		// .editor
 		builder.field(newFieldDefinition().name("editor")
 				.description("Editor of the element")
 				.type(new GraphQLTypeReference("User"))
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof EditorTrackingVertex) {
-						return ((EditorTrackingVertex) source).getEditor();
-					}
-					return null;
-				})
-				.build());
+				.dataFetcher(env -> {
+					EditorTrackingVertex vertex = env.getSource();
+					return vertex.getEditor();
+				}));
 
 	}
 

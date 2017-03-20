@@ -44,11 +44,15 @@ public abstract class AbstractTypeProvider {
 	 */
 	public List<GraphQLArgument> getPagingArgs() {
 		List<GraphQLArgument> arguments = new ArrayList<>();
+
+		// .page
 		arguments.add(newArgument().name("page")
 				.defaultValue(1L)
 				.description("Page to be selected")
 				.type(GraphQLLong)
 				.build());
+
+		// .perPage
 		arguments.add(newArgument().name("perPage")
 				.defaultValue(25)
 				.description("Max count of elements per page")
@@ -167,7 +171,7 @@ public abstract class AbstractTypeProvider {
 		if (element == null) {
 			return null;
 		}
-		InternalActionContext ac = (InternalActionContext) env.getContext();
+		InternalActionContext ac = env.getContext();
 		if (ac.getUser()
 				.hasPermission(element, GraphPermission.READ_PERM)) {
 			return element;
@@ -190,49 +194,33 @@ public abstract class AbstractTypeProvider {
 		type.field(newFieldDefinition().name("elements")
 				.type(new GraphQLList(elementType))
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof Page) {
-						return ((Page<?>) source);
-					}
-					return null;
-				})
-				.build());
+					Page<?> page = env.getSource();
+					return page;
+				}));
 
 		type.field(newFieldDefinition().name("totalElements")
 				.description("Return the total item count which the resource could provide.")
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof Page) {
-						return ((Page<?>) source).getTotalElements();
-					}
-					return null;
+					Page<?> page = env.getSource();
+					return page.getTotalElements();
 				})
-				.type(GraphQLLong)
-				.build());
+				.type(GraphQLLong));
 
 		type.field(newFieldDefinition().name("number")
 				.description("Return the page number of the page.")
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof Page) {
-						return ((Page<?>) source).getNumber();
-					}
-					return null;
+					Page<?> page = env.getSource();
+					return page.getNumber();
 				})
-				.type(GraphQLLong)
-				.build());
+				.type(GraphQLLong));
 
 		type.field(newFieldDefinition().name("totalPages")
 				.description("Return the total amount of pages which the resource can provide.")
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof Page) {
-						return ((Page<?>) source).getTotalPages();
-					}
-					return null;
+					Page<?> page = env.getSource();
+					return page.getTotalPages();
 				})
-				.type(GraphQLLong)
-				.build());
+				.type(GraphQLLong));
 
 		type.field(newFieldDefinition().name("perPage")
 				.description("Return the per page parameter value that was used to load the page.")
@@ -243,8 +231,7 @@ public abstract class AbstractTypeProvider {
 					}
 					return null;
 				})
-				.type(GraphQLLong)
-				.build());
+				.type(GraphQLLong));
 
 		type.field(newFieldDefinition().name("count")
 				.description(
@@ -256,57 +243,45 @@ public abstract class AbstractTypeProvider {
 					}
 					return null;
 				})
-				.type(GraphQLLong)
-				.build());
+				.type(GraphQLLong));
 
 		type.field(newFieldDefinition().name("hasNextPage")
 				.description("Check whether the paged resource could serve another page")
 				.type(GraphQLBoolean)
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof Page) {
-						Page<?> page = ((Page<?>) source);
-						return page.getTotalPages() > page.getNumber();
-					}
-					return null;
-				})
-				.build());
+					Page<?> page = env.getSource();
+					return page.getTotalPages() > page.getNumber();
+				}));
 
 		type.field(newFieldDefinition().name("hasPreviousPage")
 				.description("Check whether the current page has a previous page.")
 				.type(GraphQLBoolean)
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof Page) {
-						Page<?> page = ((Page<?>) source);
-						return page.getNumber() > 1;
-					}
-					return null;
-				})
-				.build());
+					Page<?> page = env.getSource();
+					return page.getNumber() > 1;
+				}));
 
 		type.field(newFieldDefinition().name("size")
 				.description("Return the amount of elements which the page can hold.")
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof Page) {
-						return ((Page<?>) source).getSize();
-					}
-					return null;
+					Page<?> page = env.getSource();
+					return page.getSize();
 				})
-				.type(GraphQLInt)
-				.build());
+				.type(GraphQLInt));
 
 		return type.build();
 	}
 
 	protected GraphQLFieldDefinition newPagingFieldWithFetcher(String name, String description, DataFetcher dataFetcher, String referenceTypeName) {
+		return newPagingFieldWithFetcherBuilder(name, description, dataFetcher, referenceTypeName).build();
+	}
+	
+	protected graphql.schema.GraphQLFieldDefinition.Builder newPagingFieldWithFetcherBuilder(String name, String description, DataFetcher dataFetcher, String referenceTypeName) {
 		return newFieldDefinition().name(name)
 				.description(description)
 				.argument(getPagingArgs())
 				.type(newPageType(name, new GraphQLTypeReference(referenceTypeName)))
-				.dataFetcher(dataFetcher)
-				.build();
+				.dataFetcher(dataFetcher);
 	}
 
 	protected GraphQLFieldDefinition newPagingField(String name, String description, Func1<InternalActionContext, RootVertex<?>> rootProvider,

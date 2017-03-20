@@ -1,0 +1,6 @@
+$.data.denode.uuid=<is-uuid>
+$.data.denode.children.elements[0].uuid=<is-uuid>
+$.data.denode.children.elements[1].uuid=<is-uuid>
+$.data.denode.children.elements[2].uuid=<is-uuid>
+$.data.rootNode.uuid=<is-uuid>
+$.data.project.name=dummy##Project name did not match up

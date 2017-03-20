@@ -27,20 +27,16 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		interfaceTypeProvider.addCommonFields(schemaType);
 
 		schemaType.field(newFieldDefinition().name("name")
-				.type(GraphQLString)
-				.build());
+				.type(GraphQLString));
 
 		schemaType.field(newFieldDefinition().name("isContainer")
-				.type(GraphQLBoolean)
-				.build());
+				.type(GraphQLBoolean));
 
 		schemaType.field(newFieldDefinition().name("displayField")
-				.type(GraphQLString)
-				.build());
+				.type(GraphQLString));
 
 		schemaType.field(newFieldDefinition().name("segmentField")
-				.type(GraphQLString)
-				.build());
+				.type(GraphQLString));
 
 		// TODO add fields
 

@@ -34,14 +34,10 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 
 		// .tags
 		tagFamilyType.field(newPagingFieldWithFetcher("tags", "Tags which are assigned to the tagfamily.", (env) -> {
-			Object source = env.getSource();
-			if (source instanceof TagFamily) {
-				InternalActionContext ac = (InternalActionContext) env.getContext();
-				PagingParameters pagingInfo = getPagingParameters(env);
-				TagFamily tagFamily = (TagFamily) source;
-				return tagFamily.getTags(ac.getUser(), pagingInfo);
-			}
-			return null;
+			TagFamily tagFamily = env.getSource();
+			InternalActionContext ac = env.getContext();
+			PagingParameters pagingInfo = getPagingParameters(env);
+			return tagFamily.getTags(ac.getUser(), pagingInfo);
 		}, "Tag"));
 		return tagFamilyType.build();
 	}

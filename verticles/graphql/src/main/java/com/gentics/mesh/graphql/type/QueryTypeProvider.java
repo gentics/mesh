@@ -87,7 +87,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	public Object nodeFetcher(DataFetchingEnvironment env) {
 		String uuid = env.getArgument("uuid");
 		if (uuid != null) {
-			InternalActionContext ac = (InternalActionContext) env.getContext();
+			InternalActionContext ac = env.getContext();
 			Node node = boot.nodeRoot()
 					.findByUuid(uuid);
 			// Check permissions
@@ -101,7 +101,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		String path = env.getArgument("path");
 		if (path != null) {
-			InternalActionContext ac = (InternalActionContext) env.getContext();
+			InternalActionContext ac = env.getContext();
 			Path pathResult = webrootService.findByProjectPath(ac, path);
 			return pathResult.getLast()
 					.getNode();
@@ -116,14 +116,10 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object userMeFetcher(DataFetchingEnvironment env) {
-		Object source = env.getSource();
-		if (source instanceof InternalActionContext) {
-			InternalActionContext ac = (InternalActionContext) source;
-			MeshAuthUser requestUser = ac.getUser();
-			// No need to check for permissions. The user should always be able to read himself
-			return requestUser;
-		}
-		return null;
+		InternalActionContext ac = env.getSource();
+		MeshAuthUser requestUser = ac.getUser();
+		// No need to check for permissions. The user should always be able to read himself
+		return requestUser;
 	}
 
 	/**
@@ -133,14 +129,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object projectFetcher(DataFetchingEnvironment env) {
-		Object source = env.getSource();
-		if (source instanceof InternalActionContext) {
-			InternalActionContext ac = (InternalActionContext) source;
-			MeshAuthUser requestUser = ac.getUser();
-			Project project = ac.getProject();
-			if (requestUser.hasPermission(project, READ_PERM)) {
-				return project;
-			}
+		InternalActionContext ac = env.getSource();
+		MeshAuthUser requestUser = ac.getUser();
+		Project project = ac.getProject();
+		if (requestUser.hasPermission(project, READ_PERM)) {
+			return project;
 		}
 		return null;
 	}
@@ -152,18 +145,15 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object rootNodeFetcher(DataFetchingEnvironment env) {
-		Object source = env.getSource();
-		if (source instanceof InternalActionContext) {
-			InternalActionContext ac = (InternalActionContext) source;
-			Project project = ac.getProject();
-			if (project != null) {
-				Node node = project.getBaseNode();
-				if (ac.getUser()
-						.hasPermission(node, GraphPermission.READ_PERM)
-						|| ac.getUser()
-								.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
-					return node;
-				}
+		InternalActionContext ac = env.getSource();
+		Project project = ac.getProject();
+		if (project != null) {
+			Node node = project.getBaseNode();
+			if (ac.getUser()
+					.hasPermission(node, GraphPermission.READ_PERM)
+					|| ac.getUser()
+							.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
+				return node;
 			}
 		}
 		return null;

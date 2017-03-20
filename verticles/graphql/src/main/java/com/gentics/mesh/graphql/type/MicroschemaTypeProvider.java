@@ -29,8 +29,7 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 
 		// .name
 		schemaType.field(newFieldDefinition().name("name")
-				.type(GraphQLString)
-				.build());
+				.type(GraphQLString));
 
 		// .version
 		schemaType.field(newFieldDefinition().name("version")

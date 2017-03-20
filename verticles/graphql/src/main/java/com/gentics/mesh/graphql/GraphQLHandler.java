@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphql;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static graphql.GraphQL.newGraphQL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -50,7 +51,8 @@ public class GraphQLHandler {
 		try (NoTx noTx = db.noTx()) {
 			JsonObject queryJson = new JsonObject(body);
 			String query = queryJson.getString("query");
-			ExecutionResult result = new GraphQL(typeProvider.getRootSchema(ac.getProject())).execute(query, ac);
+			GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(ac.getProject())).build();
+			ExecutionResult result = graphQL.execute(query, ac);
 			List<GraphQLError> errors = result.getErrors();
 			if (!errors.isEmpty()) {
 				log.error("Could not execute query {" + query + "}");

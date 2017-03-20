@@ -32,8 +32,7 @@ public class ReleaseTypeProvider extends AbstractTypeProvider {
 
 		// .name
 		releaseType.field(newFieldDefinition().name("name")
-				.type(GraphQLString)
-				.build());
+				.type(GraphQLString));
 
 		// .migrated
 		releaseType.field(newFieldDefinition().name("migrated")

@@ -32,30 +32,25 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Object parentNodeFetcher(DataFetchingEnvironment env) {
-		Object source = env.getSource();
-		if (source instanceof NodeGraphFieldContainer) {
-			InternalActionContext ac = (InternalActionContext) env.getContext();
-			NodeGraphFieldContainer container = (NodeGraphFieldContainer) source;
-			Node node = container.getParentNode();
-			if (ac.getUser()
-					.hasPermission(node, GraphPermission.READ_PERM)
-					|| ac.getUser()
-							.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
-				return node;
-			}
+		InternalActionContext ac = env.getContext();
+		NodeGraphFieldContainer container = env.getSource();
+		Node node = container.getParentNode();
+		if (ac.getUser()
+				.hasPermission(node, GraphPermission.READ_PERM)
+				|| ac.getUser()
+						.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
+			return node;
 		}
 		return null;
 	}
 
 	public Object editorFetcher(DataFetchingEnvironment env) {
-		Object source = env.getSource();
-		if (source instanceof EditorTrackingVertex) {
-			InternalActionContext ac = (InternalActionContext) env.getContext();
-			User user = ((EditorTrackingVertex) source).getEditor();
-			if (ac.getUser()
-					.hasPermission(user, GraphPermission.READ_PERM)) {
-				return user;
-			}
+		EditorTrackingVertex vertex = env.getSource();
+		InternalActionContext ac = env.getContext();
+		User user = vertex.getEditor();
+		if (ac.getUser()
+				.hasPermission(user, GraphPermission.READ_PERM)) {
+			return user;
 		}
 		return null;
 	}
@@ -69,20 +64,15 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 		type.field(newFieldDefinition().name("node")
 				.description("Node to which the container belongs")
 				.type(new GraphQLTypeReference("Node"))
-				.dataFetcher(this::parentNodeFetcher)
-				.build());
+				.dataFetcher(this::parentNodeFetcher));
 
 		type.field(newFieldDefinition().name("edited")
 				.description("ISO8601 formatted edit timestamp")
 				.type(GraphQLString)
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof EditorTrackingVertex) {
-						return ((EditorTrackingVertex) source).getLastEditedDate();
-					}
-					return null;
-				})
-				.build());
+					EditorTrackingVertex vertex = env.getSource();
+					return vertex.getLastEditedDate();
+				}));
 
 		//		type.field(newFieldDefinition().name("created")
 		//				.description("ISO8601 formatted created date string")
@@ -112,80 +102,56 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 		type.field(newFieldDefinition().name("editor")
 				.description("Editor of the element")
 				.type(new GraphQLTypeReference("User"))
-				.dataFetcher(this::editorFetcher)
-				.build());
+				.dataFetcher(this::editorFetcher));
 
 		// .isPublished
 		type.field(newFieldDefinition().name("isPublished")
 				.description("Check whether the container is published")
 				.type(GraphQLBoolean)
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						InternalActionContext ac = (InternalActionContext) env.getContext();
-						NodeGraphFieldContainer container = (NodeGraphFieldContainer) source;
-						return container.isPublished(ac.getRelease()
-								.getUuid());
-					}
-					return null;
-				})
-				.build());
+					NodeGraphFieldContainer container = env.getSource();
+					InternalActionContext ac = env.getContext();
+					return container.isPublished(ac.getRelease()
+							.getUuid());
+				}));
 
 		// .isDraft
 		type.field(newFieldDefinition().name("isDraft")
 				.description("Check whether the container is a draft")
 				.type(GraphQLBoolean)
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						NodeGraphFieldContainer container = (NodeGraphFieldContainer) source;
-						InternalActionContext ac = (InternalActionContext) env.getContext();
-						return container.isDraft(ac.getRelease()
-								.getUuid());
-					}
-					return null;
-				})
-				.build());
+					NodeGraphFieldContainer container = env.getSource();
+					InternalActionContext ac = env.getContext();
+					return container.isDraft(ac.getRelease()
+							.getUuid());
+				}));
 
 		// .version
 		type.field(newFieldDefinition().name("version")
 				.description("Version of the container")
 				.type(GraphQLString)
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						NodeGraphFieldContainer container = (NodeGraphFieldContainer) source;
-						return container.getVersion()
-								.getFullVersion();
-					}
-					return null;
-				})
-				.build());
+					NodeGraphFieldContainer container = env.getSource();
+					return container.getVersion()
+							.getFullVersion();
+				}));
 
 		// .fields
 		type.field(newFieldDefinition().name("fields")
 				.type(nodeFieldTypeProvider.getSchemaFieldsType(project))
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						return (NodeGraphFieldContainer) source;
-					}
-					return null;
-				})
-				.build());
+					NodeGraphFieldContainer container = env.getSource();
+					return container;
+				}));
 
-		//.language
+		// .language
 		type.field(newFieldDefinition().name("language")
 				.type(GraphQLString)
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						return ((NodeGraphFieldContainer) source).getLanguage()
-								.getLanguageTag();
-					}
-					return null;
-				})
-				.build());
+					NodeGraphFieldContainer container = env.getSource();
+					return container.getLanguage()
+							.getLanguageTag();
+				}));
 
 		return type.build();
 	}
