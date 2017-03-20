@@ -790,7 +790,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// 3. Assert that the offline nodes are also not loadable if requests via uuid
 			for (Node node : nodes) {
 				call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().published()), NOT_FOUND,
-						"node_error_published_not_found_for_uuid_release_version", node.getUuid(), release().getUuid());
+						"node_error_published_not_found_for_uuid_release_language", node.getUuid(), "en", release().getUuid());
 			}
 
 			// Publish a few nodes
@@ -1338,7 +1338,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 2. Load node using published options. 
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()), NOT_FOUND,
-				"node_error_published_not_found_for_uuid_release_version", uuid, releaseUuid);
+				"node_error_published_not_found_for_uuid_release_language", uuid, "en", releaseUuid);
 
 		// 3. Publish the node again.
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
