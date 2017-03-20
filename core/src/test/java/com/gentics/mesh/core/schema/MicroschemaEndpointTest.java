@@ -96,7 +96,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 5;
 		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
-		request.setName("new microschema name");
+		request.setName("new_microschema_name");
 
 		CyclicBarrier barrier = prepareBarrier(nJobs);
 		Set<MeshResponse<?>> set = new HashSet<>();
@@ -130,7 +130,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testCreate() throws Exception {
 		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
-		request.setName("new microschema name");
+		request.setName("new_microschema_name");
 		request.setDescription("microschema description");
 
 		assertThat(dummySearchProvider()).recordedStoreEvents(0);
@@ -144,7 +144,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
 		MicroschemaCreateRequest request = new MicroschemaCreateRequest();
-		request.setName("new microschema name");
+		request.setName("new_microschema_name");
 		request.setDescription("microschema description");
 
 		String microschemaRootUuid = db().noTx(() -> meshRoot().getMicroschemaContainerRoot().getUuid());

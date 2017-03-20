@@ -329,6 +329,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testPublishLanguage() {
 		String nodeUuid = db().noTx(() -> folder("2015").getUuid());
+		String releaseUuid = db().noTx(() -> release().getUuid());
 
 		// Only publish the test node. Take all children offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
@@ -341,16 +342,20 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 				.put("name", FieldUtil.createStringField("changed-de"));
 		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
-		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"),
-				new VersioningParametersImpl().published())).getAvailableLanguages()).containsOnly("en");
+		//		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"),
+		//				new VersioningParametersImpl().published())).getAvailableLanguages()).containsOnly("en");
+
+		call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"),
+				new VersioningParametersImpl().published()), NOT_FOUND, "node_error_published_not_found_for_uuid_release_language", nodeUuid, "de",
+				releaseUuid);
 
 		// Take english language offline
 		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"));
 
 		// The node should not be loadable since both languages are offline
-		call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"), new VersioningParametersImpl().published()),
-				NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", nodeUuid, project().getLatestRelease()
-						.getUuid());
+		call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"),
+				new VersioningParametersImpl().published()), NOT_FOUND, "node_error_published_not_found_for_uuid_release_language", nodeUuid, "de",
+				releaseUuid);
 
 		// Publish german version
 		PublishStatusModel publishStatus = call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
@@ -414,10 +419,11 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 							.as("Initial Release Publish Status")
 							.isPublished("de")
 							.isNotPublished("en");
-			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(newRelease.getName()))))
-					.as("New Release Publish Status")
-					.isNotPublished("de")
-					.isNotPublished("en");
+			assertThat(call(
+					() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(newRelease.getName()))))
+							.as("New Release Publish Status")
+							.isNotPublished("de")
+							.isNotPublished("en");
 		}
 	}
 

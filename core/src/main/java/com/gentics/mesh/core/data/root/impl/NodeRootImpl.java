@@ -117,7 +117,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 							.getVersion());
 
 			if (fieldContainer == null) {
-				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_release_version", uuid, release.getUuid());
+				throw error(NOT_FOUND, "node_error_published_not_found_for_uuid_release_language", uuid, String.join(",", requestedLanguageTags),
+						release.getUuid());
 			}
 			// Additionally check whether the read published permission could grant read perm for published nodes
 			if (fieldContainer.isPublished(release.getUuid()) && requestUser.hasPermission(element, READ_PUBLISHED_PERM)) {

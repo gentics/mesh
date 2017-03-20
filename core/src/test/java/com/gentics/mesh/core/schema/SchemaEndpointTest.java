@@ -126,7 +126,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
 			final int nSchemas = 22;
 			Schema schema = FieldUtil.createMinimalValidSchema();
-			schema.setName("No Perm Schema");
+			schema.setName("No_Perm_Schema");
 			SchemaContainer noPermSchema = schemaRoot.create(schema, user());
 			Schema dummySchema = new SchemaModel();
 			dummySchema.setName("dummy");
