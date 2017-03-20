@@ -78,6 +78,12 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	public QueryTypeProvider() {
 	}
 
+	/**
+	 * Data fetcher for nodes.
+	 * 
+	 * @param env
+	 * @return
+	 */
 	public Object nodeFetcher(DataFetchingEnvironment env) {
 		String uuid = env.getArgument("uuid");
 		if (uuid != null) {
@@ -103,16 +109,29 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		return null;
 	}
 
+	/**
+	 * Data fetcher for the currently active user.
+	 * 
+	 * @param env
+	 * @return
+	 */
 	public Object userMeFetcher(DataFetchingEnvironment env) {
 		Object source = env.getSource();
 		if (source instanceof InternalActionContext) {
 			InternalActionContext ac = (InternalActionContext) source;
 			MeshAuthUser requestUser = ac.getUser();
+			// No need to check for permissions. The user should always be able to read himself
 			return requestUser;
 		}
 		return null;
 	}
 
+	/**
+	 * Data fetcher for the current project.
+	 * 
+	 * @param env
+	 * @return
+	 */
 	public Object projectFetcher(DataFetchingEnvironment env) {
 		Object source = env.getSource();
 		if (source instanceof InternalActionContext) {
@@ -126,6 +145,12 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		return null;
 	}
 
+	/**
+	 * Data fetcher for the root node of the current project.
+	 * 
+	 * @param env
+	 * @return
+	 */
 	public Object rootNodeFetcher(DataFetchingEnvironment env) {
 		Object source = env.getSource();
 		if (source instanceof InternalActionContext) {
@@ -145,6 +170,12 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		return null;
 	}
 
+	/**
+	 * Construct the query/root type for the current project.
+	 * 
+	 * @param project
+	 * @return
+	 */
 	public GraphQLObjectType getRootType(Project project) {
 		Builder root = newObject();
 		root.name("Query");
@@ -242,6 +273,12 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		return root.build();
 	}
 
+	/**
+	 * Construct the root schema.
+	 * 
+	 * @param project
+	 * @return
+	 */
 	public GraphQLSchema getRootSchema(Project project) {
 		graphql.schema.GraphQLSchema.Builder schema = GraphQLSchema.newSchema();
 		return schema.query(getRootType(project))

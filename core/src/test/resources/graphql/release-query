@@ -1,0 +1,9 @@
+{
+	releases {
+		elements { 
+			uuid
+			name
+			migrated
+		}
+	}
+}

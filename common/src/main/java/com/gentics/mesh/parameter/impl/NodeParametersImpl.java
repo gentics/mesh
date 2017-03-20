@@ -12,7 +12,6 @@ import java.util.Map;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
@@ -29,25 +28,6 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		super();
 	}
 
-	@Override
-	public NodeParameters setLanguages(String... languages) {
-		setParameter(LANGUAGES_QUERY_PARAM_KEY, convertToStr(languages));
-		return this;
-	}
-
-	@Override
-	public String[] getLanguages() {
-		String value = getParameter(LANGUAGES_QUERY_PARAM_KEY);
-		String[] languages = null;
-		if (value != null) {
-			languages = value.split(",");
-		}
-		if (languages == null) {
-			languages = new String[] { Mesh.mesh().getOptions().getDefaultLanguage() };
-		}
-		return languages;
-	}
-
 	/**
 	 * @see #getLanguages()
 	 * @return
@@ -56,47 +36,13 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		return Arrays.asList(getLanguages());
 	}
 
-	@Deprecated
-	@Override
-	public NodeParameters setExpandedFieldNames(String... fieldNames) {
-		setParameter(EXPANDFIELDS_QUERY_PARAM_KEY, convertToStr(fieldNames));
-		return this;
-	}
-
-	@Override
-	public String[] getExpandedFieldNames() {
-		String fieldNames = getParameter(EXPANDFIELDS_QUERY_PARAM_KEY);
-		if (fieldNames != null) {
-			return fieldNames.split(",");
-		} else {
-			return new String[0];
-		}
-	}
-
 	/**
 	 * @see #getExpandedFieldNames()
 	 * @return
 	 */
+	@Deprecated
 	public List<String> getExpandedFieldnameList() {
 		return Arrays.asList(getExpandedFieldNames());
-	}
-
-
-	@Override
-	@Deprecated
-	public NodeParameters setExpandAll(boolean flag) {
-		setParameter(EXPANDALL_QUERY_PARAM_KEY, String.valueOf(flag));
-		return this;
-	}
-
-	@Override
-	@Deprecated
-	public boolean getExpandAll() {
-		String value = getParameter(EXPANDALL_QUERY_PARAM_KEY);
-		if (value != null) {
-			return Boolean.valueOf(value);
-		}
-		return false;
 	}
 
 	/**
@@ -113,16 +59,12 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 	}
 
 	@Override
-	public NodeParameters setResolveLinks(LinkType type) {
-		setParameter(RESOLVE_LINKS_QUERY_PARAM_KEY, type.name().toLowerCase());
-		return this;
-	}
-
-	@Override
 	public void validate() {
 		// Check whether all given language tags exists
 		for (String languageTag : getLanguages()) {
-			Iterator<?> it = Database.getThreadLocalGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
+			Iterator<?> it = Database.getThreadLocalGraph()
+					.getVertices("LanguageImpl.languageTag", languageTag)
+					.iterator();
 			if (!it.hasNext()) {
 				throw error(BAD_REQUEST, "error_language_not_found", languageTag);
 			}

@@ -23,22 +23,6 @@ public class RolePermissionParametersImpl extends AbstractParameters implements 
 	}
 
 	@Override
-	public RolePermissionParametersImpl setRoleUuid(String roleUuid) {
-		setParameter(ROLE_PERMISSION_QUERY_PARAM_KEY, roleUuid);
-		return this;
-	}
-
-	@Override
-	public String getRoleUuid() {
-		return getParameter(ROLE_PERMISSION_QUERY_PARAM_KEY);
-	}
-
-	@Override
-	public void validate() {
-		// Not needed
-	}
-
-	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 

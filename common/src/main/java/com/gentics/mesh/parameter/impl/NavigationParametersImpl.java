@@ -9,13 +9,10 @@ import org.raml.model.parameter.QueryParameter;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
+import com.gentics.mesh.parameter.NavigationParameters;
 import com.gentics.mesh.util.NumberUtils;
 
-public class NavigationParametersImpl extends AbstractParameters {
-
-	public static final String MAX_DEPTH_QUERY_PARAM_KEY = "maxDepth";
-
-	public static final String INCLUDE_ALL_QUERY_PARAM_KEY = "includeAll";
+public class NavigationParametersImpl extends AbstractParameters implements NavigationParameters {
 
 	public NavigationParametersImpl(ActionContext ac) {
 		super(ac);
@@ -24,47 +21,6 @@ public class NavigationParametersImpl extends AbstractParameters {
 
 	public NavigationParametersImpl() {
 		super();
-	}
-
-	/**
-	 * Return the navigation maximum depth.
-	 * 
-	 * @return
-	 */
-	public Integer getMaxDepth() {
-		return NumberUtils.toInteger(getParameter(MAX_DEPTH_QUERY_PARAM_KEY), Mesh.mesh().getOptions().getDefaultMaxDepth());
-	}
-
-	/**
-	 * Set the navigation maximum depth.
-	 * 
-	 * @param maxDepth
-	 * @return
-	 */
-	public NavigationParametersImpl setMaxDepth(Integer maxDepth) {
-		setParameter(MAX_DEPTH_QUERY_PARAM_KEY, String.valueOf(maxDepth));
-		return this;
-	}
-
-	/**
-	 * Return the flag which indicates whether all elements should be included in the navigation.
-	 * 
-	 * @return
-	 */
-	public boolean isIncludeAll() {
-		return Boolean.parseBoolean(getParameter(INCLUDE_ALL_QUERY_PARAM_KEY));
-	}
-
-	/**
-	 * Set the include all flag. By default only containers are included in a navigation response. When set to true all node types will be included in the
-	 * navigation response.
-	 * 
-	 * @param flag
-	 * @return
-	 */
-	public NavigationParametersImpl setIncludeAll(boolean flag) {
-		setParameter(INCLUDE_ALL_QUERY_PARAM_KEY, String.valueOf(flag));
-		return this;
 	}
 
 	@Override
@@ -78,7 +34,8 @@ public class NavigationParametersImpl extends AbstractParameters {
 
 		// includeAll
 		QueryParameter includeAllParameter = new QueryParameter();
-		includeAllParameter.setDescription("If set to true all nodes will be included in the response. By default only container nodes are included in a navigation response.");
+		includeAllParameter.setDescription(
+				"If set to true all nodes will be included in the response. By default only container nodes are included in a navigation response.");
 		includeAllParameter.setExample("true");
 		includeAllParameter.setRequired(false);
 		includeAllParameter.setType(ParamType.BOOLEAN);

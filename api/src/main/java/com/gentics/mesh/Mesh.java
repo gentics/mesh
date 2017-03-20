@@ -15,6 +15,8 @@ public interface Mesh {
 
 	public static final String STARTUP_EVENT_ADDRESS = "mesh-startup-complete";
 
+	static final MeshFactory factory = ServiceHelper.loadFactory(MeshFactory.class);
+
 	/**
 	 * Returns the initialized instance.
 	 * 
@@ -60,7 +62,8 @@ public interface Mesh {
 		try {
 			Properties buildProperties = new Properties();
 			buildProperties.load(Mesh.class.getResourceAsStream("/mesh.build.properties"));
-			return buildProperties.get("mesh.version").toString();
+			return buildProperties.get("mesh.version")
+					.toString();
 		} catch (Exception e) {
 			return "Unknown";
 		}
@@ -109,13 +112,13 @@ public interface Mesh {
 	 * @return Vertx instance
 	 */
 	public static Vertx vertx() {
-		return factory.mesh().getVertx();
+		return factory.mesh()
+				.getVertx();
 	}
 
-	static final MeshFactory factory = ServiceHelper.loadFactory(MeshFactory.class);
-
 	public static void main(String[] args) throws Exception {
-		Mesh.mesh().run();
+		Mesh.mesh()
+				.run();
 	}
 
 }

@@ -59,6 +59,12 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 
 	}
 
+	/**
+	 * Generate a map of all schema types which correspond to schemas which are part of the project/release.
+	 * 
+	 * @param project
+	 * @return
+	 */
 	private Map<String, GraphQLObjectType> generateSchemaFieldType(Project project) {
 		Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
 		List<GraphQLObjectType> list = new ArrayList<>();
@@ -68,7 +74,8 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 			Schema schema = version.getSchema();
 			Builder root = newObject();
 			//TODO remove this workaround
-			root.name(schema.getName().replaceAll("-", "_"));
+			root.name(schema.getName()
+					.replaceAll("-", "_"));
 			root.description(schema.getDescription());
 
 			// TODO add link resolving argument / code

@@ -14,13 +14,18 @@ public interface RolePermissionParameters extends ParameterProvider {
 	 * @param roleUuid
 	 * @return Fluent API
 	 */
-	RolePermissionParameters setRoleUuid(String roleUuid);
+	default RolePermissionParameters setRoleUuid(String roleUuid) {
+		setParameter(ROLE_PERMISSION_QUERY_PARAM_KEY, roleUuid);
+		return this;
+	}
 
 	/**
 	 * Return the role UUID.
 	 * 
 	 * @return
 	 */
-	String getRoleUuid();
+	default String getRoleUuid() {
+		return getParameter(ROLE_PERMISSION_QUERY_PARAM_KEY);
+	}
 
 }

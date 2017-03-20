@@ -22,8 +22,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>mesh-api</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
