@@ -3,6 +3,9 @@ package com.gentics.mesh.test.context;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
+import org.apache.commons.io.IOUtils;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
@@ -38,21 +41,31 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	 */
 	protected void recreateIndices() throws Exception {
 		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
-		MeshInternal.get().searchProvider().clear();
+		MeshInternal.get()
+				.searchProvider()
+				.clear();
 		// We need to call init() again in order create missing indices for the created test data
-		for (IndexHandler handler : MeshInternal.get().indexHandlerRegistry().getHandlers()) {
-			handler.init().await();
+		for (IndexHandler handler : MeshInternal.get()
+				.indexHandlerRegistry()
+				.getHandlers()) {
+			handler.init()
+					.await();
 		}
-		IndexHandlerRegistry registry = MeshInternal.get().indexHandlerRegistry();
+		IndexHandlerRegistry registry = MeshInternal.get()
+				.indexHandlerRegistry();
 		for (IndexHandler handler : registry.getHandlers()) {
-			handler.reindexAll().await();
+			handler.reindexAll()
+					.await();
 		}
 	}
 
 	public String getJson(Node node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
-		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().value());
+		ac.data()
+				.put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
+		return JsonUtil.toJson(node.transformToRest(ac, 0)
+				.toBlocking()
+				.value());
 	}
 
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
@@ -66,29 +79,46 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 		try (Tx tx = db().tx()) {
 			assertTrue("The role {" + role().getName() + "} does not grant permission on element {" + element.getUuid()
 					+ "} although we granted those permissions.", role().hasPermission(perm, element));
-			assertTrue(
-					"The user has no {" + perm.getRestPerm().getName() + "} permission on node {" + element.getUuid()
-							+ "/" + element.getClass().getSimpleName() + "}",
-					getRequestUser().hasPermission(element, perm));
+			assertTrue("The user has no {" + perm.getRestPerm()
+					.getName() + "} permission on node {" + element.getUuid() + "/"
+					+ element.getClass()
+							.getSimpleName()
+					+ "}", getRequestUser().hasPermission(element, perm));
 		}
 
 		try (Tx tx = db().tx()) {
 			role().revokePermissions(element, perm);
-			rc.data().clear();
+			rc.data()
+					.clear();
 			tx.success();
 		}
 
 		try (Tx tx = db().tx()) {
 			boolean hasPerm = role().hasPermission(perm, element);
-			assertFalse("The user's role {" + role().getName() + "} still got {" + perm.getRestPerm().getName()
-					+ "} permission on node {" + element.getUuid() + "/" + element.getClass().getSimpleName()
+			assertFalse("The user's role {" + role().getName() + "} still got {" + perm.getRestPerm()
+					.getName() + "} permission on node {" + element.getUuid() + "/"
+					+ element.getClass()
+							.getSimpleName()
 					+ "} although we revoked it.", hasPerm);
 
 			hasPerm = getRequestUser().hasPermission(element, perm);
-			assertFalse("The user {" + getRequestUser().getUsername() + "} still got {" + perm.getRestPerm().getName()
-					+ "} permission on node {" + element.getUuid() + "/" + element.getClass().getSimpleName()
+			assertFalse("The user {" + getRequestUser().getUsername() + "} still got {" + perm.getRestPerm()
+					.getName() + "} permission on node {" + element.getUuid() + "/"
+					+ element.getClass()
+							.getSimpleName()
 					+ "} although we revoked it.", hasPerm);
 		}
+	}
+
+	/**
+	 * Return the graphql query for the given name.
+	 * 
+	 * @param name
+	 * @return
+	 * @throws IOException
+	 */
+	protected String getQuery(String name) throws IOException {
+		return IOUtils.toString(getClass().getResourceAsStream("/graphql/" + name));
 	}
 
 }

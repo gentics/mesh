@@ -6,10 +6,12 @@ import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * The User Domain Model interface.
@@ -225,6 +227,15 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @param targetNode
 	 */
 	User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode);
+
+	/**
+	 * Return a page of groups which the user was assigned to.
+	 * 
+	 * @param user
+	 * @param params
+	 * @return
+	 */
+	Page<? extends Group> getGroups(User user, PagingParameters params);
 
 	/**
 	 * Return a list of groups to which the user was assigned.

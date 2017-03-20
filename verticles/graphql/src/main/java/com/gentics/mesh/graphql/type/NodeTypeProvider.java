@@ -135,7 +135,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		Object source = env.getSource();
 		if (source instanceof Node) {
 			InternalActionContext ac = (InternalActionContext) env.getContext();
-			return ((Node) source).getTags(ac);
+			Node node = ((Node) source);
+			return node.getTags(ac.getUser(), getPagingParameters(env), ac.getRelease());
 		}
 		return null;
 	}
@@ -168,7 +169,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	public Object isContainerFetcher(DataFetchingEnvironment env) {
 		if (env.getSource() instanceof Node) {
 			Node node = (Node) env.getSource();
-			return node.getSchemaContainer().getLatestVersion().getSchema().isContainer();
+			return node.getSchemaContainer()
+					.getLatestVersion()
+					.getSchema()
+					.isContainer();
 		}
 		return null;
 	}
@@ -242,7 +246,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		// .tags
 		nodeType.field(newFieldDefinition().name("tags")
 				.argument(getPagingArgs())
-				.type(tagTypeProvider.getTagType())
+				.type(tagTypeProvider.createTagType())
 				.dataFetcher(this::tagsFetcher)
 				.build());
 

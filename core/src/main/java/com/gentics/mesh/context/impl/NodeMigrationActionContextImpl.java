@@ -19,6 +19,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.ClassInitializer;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.TEdge;
@@ -295,6 +297,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public String getLastname() {
 				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Page<? extends Group> getGroups(User user, PagingParameters params) {
 				return null;
 			}
 
@@ -756,9 +763,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-				return MeshInternal.get().database().operateNoTx(() -> {
-					return Single.just(transformToRestSync(ac, level, languageTags));
-				});
+				return MeshInternal.get()
+						.database()
+						.operateNoTx(() -> {
+							return Single.just(transformToRestSync(ac, level, languageTags));
+						});
 			}
 
 			@Override
@@ -791,7 +800,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override

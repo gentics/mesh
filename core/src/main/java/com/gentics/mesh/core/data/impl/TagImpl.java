@@ -38,7 +38,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
@@ -65,7 +64,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public List<? extends Node> getNodes(Release release) {
-		return TagEdgeImpl.getNodeTraversal(this, release).toListExplicit(NodeImpl.class);
+		return TagEdgeImpl.getNodeTraversal(this, release)
+				.toListExplicit(NodeImpl.class);
 	}
 
 	@Override
@@ -85,7 +85,9 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public TagReference transformToReference() {
-		return new TagReference().setName(getName()).setUuid(getUuid()).setTagFamily(getTagFamily().getName());
+		return new TagReference().setName(getName())
+				.setUuid(getUuid())
+				.setTagFamily(getTagFamily().getName());
 	}
 
 	@Override
@@ -114,7 +116,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public TagFamily getTagFamily() {
-		return out(HAS_TAGFAMILY_ROOT).has(TagFamilyImpl.class).nextOrDefaultExplicit(TagFamilyImpl.class, null);
+		return out(HAS_TAGFAMILY_ROOT).has(TagFamilyImpl.class)
+				.nextOrDefaultExplicit(TagFamilyImpl.class, null);
 	}
 
 	@Override
@@ -124,7 +127,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public Project getProject() {
-		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
+		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class)
+				.nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 
 	@Override
@@ -135,7 +139,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		batch.delete(this, true);
 
 		// Nodes which used this tag must be updated in the search index for all releases
-		for (Release release : getProject().getReleaseRoot().findAll()) {
+		for (Release release : getProject().getReleaseRoot()
+				.findAll()) {
 			String releaseUuid = release.getUuid();
 			for (Node node : getNodes(release)) {
 				batch.store(node, releaseUuid);
@@ -145,9 +150,8 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	}
 
 	@Override
-	public Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags,
-			ContainerType type, PagingParameters pagingInfo) throws InvalidArgumentException {
-
+	public Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, ContainerType type,
+			PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = getTaggedNodesTraversal(requestUser, release, languageTags, type);
 		Page<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, pagingInfo, NodeImpl.class);
 		return nodePage;
@@ -168,19 +172,30 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	 * @param languageTags
 	 *            List of language tags used to filter containers which should be included in the traversal
 	 * @param type
-	 *            Type of the node containers to be located
+	 *            Optional type of the node containers to filter by
 	 * @return Traversal which can be used to locate the nodes
 	 */
-	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(MeshAuthUser requestUser, Release release,
-			List<String> languageTags, ContainerType type) {
+	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(MeshAuthUser requestUser, Release release, List<String> languageTags,
+			ContainerType type) {
 
 		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release)
-				.mark().in(READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser).back().mark()
-				.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid())
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+				.mark()
+				.in(READ_PERM.label())
+				.out(HAS_ROLE)
+				.in(HAS_USER)
+				.retain(requestUser)
+				.back()
+				.mark()
+				.outE(HAS_FIELD_CONTAINER)
+				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid());
+
+		if (type != null) {
+			traversal = traversal.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
+		}
 
 		traversal = GraphFieldContainerEdgeImpl.filterLanguages(traversal, languageTags);
-		return traversal.outV().back();
+		return traversal.outV()
+				.back();
 	}
 
 	@Override
@@ -194,9 +209,10 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 			// Check for conflicts
 			Tag foundTagWithSameName = tagFamily.findByName(newTagName);
-			if (foundTagWithSameName != null && !foundTagWithSameName.getUuid().equals(getUuid())) {
-				throw conflict(foundTagWithSameName.getUuid(), newTagName,
-						"tag_create_tag_with_same_name_already_exists", newTagName, tagFamily.getName());
+			if (foundTagWithSameName != null && !foundTagWithSameName.getUuid()
+					.equals(getUuid())) {
+				throw conflict(foundTagWithSameName.getUuid(), newTagName, "tag_create_tag_with_same_name_already_exists", newTagName,
+						tagFamily.getName());
 			}
 
 			setEditor(ac.getUser());
@@ -212,13 +228,15 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	@Override
 	public void handleRelatedEntries(HandleElementAction action) {
 		// Locate all nodes that use the tag across all releases and update these nodes
-		for (Release release : getProject().getReleaseRoot().findAll()) {
+		for (Release release : getProject().getReleaseRoot()
+				.findAll()) {
 			for (Node node : getNodes(release)) {
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					HandleContext context = new HandleContext();
 					context.setContainerType(type);
 					context.setReleaseUuid(release.getUuid());
-					context.setProjectUuid(node.getProject().getUuid());
+					context.setProjectUuid(node.getProject()
+							.getUuid());
 					action.call(node, context);
 				}
 			}
@@ -227,13 +245,13 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp() + "-" + ac.getRelease(getProject()).getUuid());
+		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp() + "-" + ac.getRelease(getProject())
+				.getUuid());
 	}
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		return "/api/v1/" + encodeFragment(getProject().getName()) + "/tagFamilies/" + getTagFamily().getUuid()
-				+ "/tags/" + getUuid();
+		return "/api/v1/" + encodeFragment(getProject().getName()) + "/tagFamilies/" + getTagFamily().getUuid() + "/tags/" + getUuid();
 	}
 
 	@Override

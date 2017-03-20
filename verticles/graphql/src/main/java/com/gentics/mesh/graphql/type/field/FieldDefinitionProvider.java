@@ -20,6 +20,12 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
+import com.gentics.mesh.core.data.node.field.BooleanGraphField;
+import com.gentics.mesh.core.data.node.field.DateGraphField;
+import com.gentics.mesh.core.data.node.field.HtmlGraphField;
+import com.gentics.mesh.core.data.node.field.NumberGraphField;
+import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -45,17 +51,19 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	public FieldDefinitionProvider() {
 	}
 
-	public GraphQLObjectType getBinaryFieldType() {
+	public GraphQLObjectType createBinaryFieldType() {
 		Builder type = newObject().name("BinaryField")
 				.description("Binary field");
 
+		// .fileName
 		type.field(newFieldDefinition().name("fileName")
-				.description("Filename of the uploaded file")
+				.description("Filename of the uploaded file.")
 				.type(GraphQLString)
 				.build());
 
+		// .width
 		type.field(newFieldDefinition().name("width")
-				.description("Image width")
+				.description("Image width in pixel.")
 				.type(GraphQLInt)
 				.dataFetcher(fetcher -> {
 					Object source = fetcher.getSource();
@@ -65,9 +73,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					return null;
 				})
 				.build());
-
+		// .height
 		type.field(newFieldDefinition().name("height")
-				.description("Image height")
+				.description("Image height in pixel.")
 				.type(GraphQLInt)
 				.dataFetcher(fetcher -> {
 					Object source = fetcher.getSource();
@@ -78,8 +86,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				})
 				.build());
 
+		// .sha512sum
 		type.field(newFieldDefinition().name("sha512sum")
-				.description("SHA512 checksum of the data")
+				.description("SHA512 checksum of the binary data.")
 				.type(GraphQLString)
 				.dataFetcher(fetcher -> {
 					Object source = fetcher.getSource();
@@ -90,16 +99,19 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				})
 				.build());
 
+		// .fileSize
 		type.field(newFieldDefinition().name("fileSize")
 				.description("Size of the binary data in bytes")
 				.type(GraphQLLong)
 				.build());
 
+		// .mimeType
 		type.field(newFieldDefinition().name("mimeType")
 				.description("Mimetype of the binary data")
 				.type(GraphQLString)
 				.build());
 
+		// .dominantColor
 		type.field(newFieldDefinition().name("dominantColor")
 				.description("Computed image dominant color")
 				.type(GraphQLString)
@@ -115,10 +127,10 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		return type.build();
 	}
 
-	public GraphQLFieldDefinition getBinaryDef(FieldSchema schema) {
+	public GraphQLFieldDefinition createBinaryDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
-				.type(getBinaryFieldType())
+				.type(createBinaryFieldType())
 				.dataFetcher(fetcher -> {
 					Object source = fetcher.getSource();
 					if (source instanceof NodeGraphFieldContainer) {
@@ -131,7 +143,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 	}
 
-	public GraphQLFieldDefinition getBooleanDef(FieldSchema schema) {
+	public GraphQLFieldDefinition createBooleanDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(GraphQLBoolean)
@@ -139,15 +151,17 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					Object source = fetcher.getSource();
 					if (source instanceof NodeGraphFieldContainer) {
 						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						return nodeContainer.getBoolean(schema.getName())
-								.getBoolean();
+						BooleanGraphField booleanField = nodeContainer.getBoolean(schema.getName());
+						if (booleanField != null) {
+							return booleanField.getBoolean();
+						}
 					}
 					return null;
 				})
 				.build();
 	}
 
-	public GraphQLFieldDefinition getNumberDef(FieldSchema schema) {
+	public GraphQLFieldDefinition createNumberDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(GraphQLBigDecimal)
@@ -155,15 +169,17 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					Object source = fetcher.getSource();
 					if (source instanceof NodeGraphFieldContainer) {
 						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						return nodeContainer.getNumber(schema.getName())
-								.getNumber();
+						NumberGraphField numberField = nodeContainer.getNumber(schema.getName());
+						if (numberField != null) {
+							return numberField.getNumber();
+						}
 					}
 					return null;
 				})
 				.build();
 	}
 
-	public GraphQLFieldDefinition getHtmlDef(FieldSchema schema) {
+	public GraphQLFieldDefinition createHtmlDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(GraphQLString)
@@ -171,15 +187,17 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					Object source = fetcher.getSource();
 					if (source instanceof NodeGraphFieldContainer) {
 						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						return nodeContainer.getHtml(schema.getName())
-								.getHTML();
+						HtmlGraphField htmlField = nodeContainer.getHtml(schema.getName());
+						if (htmlField != null) {
+							return htmlField.getHTML();
+						}
 					}
 					return null;
 				})
 				.build();
 	}
 
-	public GraphQLFieldDefinition getStringDef(FieldSchema schema) {
+	public GraphQLFieldDefinition createStringDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(GraphQLString)
@@ -187,15 +205,17 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					Object source = fetcher.getSource();
 					if (source instanceof GraphFieldContainer) {
 						GraphFieldContainer nodeContainer = (GraphFieldContainer) source;
-						return nodeContainer.getString(schema.getName())
-								.getString();
+						StringGraphField field = nodeContainer.getString(schema.getName());
+						if (field != null) {
+							return field.getString();
+						}
 					}
 					return null;
 				})
 				.build();
 	}
 
-	public GraphQLFieldDefinition getDateDef(FieldSchema schema) {
+	public GraphQLFieldDefinition createDateDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(GraphQLString)
@@ -203,15 +223,23 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					Object source = fetcher.getSource();
 					if (source instanceof NodeGraphFieldContainer) {
 						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						return DateUtils.toISO8601(nodeContainer.getDate(schema.getName())
-								.getDate(), 0);
+						DateGraphField dateField = nodeContainer.getDate(schema.getName());
+						if (dateField != null) {
+							return DateUtils.toISO8601(dateField.getDate(), 0);
+						}
 					}
 					return null;
 				})
 				.build();
 	}
 
-	public GraphQLFieldDefinition getListDef(ListFieldSchema schema) {
+	/**
+	 * Create the graphql field definition for the given list field schema.
+	 * 
+	 * @param schema
+	 * @return
+	 */
+	public GraphQLFieldDefinition createListDef(ListFieldSchema schema) {
 		GraphQLType type = getElementTypeOfList(schema);
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
@@ -292,7 +320,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		}
 	}
 
-	public GraphQLFieldDefinition getMicronodeDef(FieldSchema schema, Project project) {
+	public GraphQLFieldDefinition createMicronodeDef(FieldSchema schema, Project project) {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(micronodeFieldTypeProvider.getMicroschemaFieldsType(project))
@@ -300,8 +328,10 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					Object source = fetcher.getSource();
 					if (source instanceof NodeGraphFieldContainer) {
 						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						return nodeContainer.getMicronode(schema.getName())
-								.getMicronode();
+						MicronodeGraphField micronodeField = nodeContainer.getMicronode(schema.getName());
+						if (micronodeField != null) {
+							return micronodeField.getMicronode();
+						}
 					}
 					return null;
 				})
@@ -314,7 +344,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @param schema
 	 * @return
 	 */
-	public GraphQLFieldDefinition getNodeDef(FieldSchema schema) {
+	public GraphQLFieldDefinition createNodeDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(new GraphQLTypeReference("Node"))
@@ -326,6 +356,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 						NodeGraphField nodeField = nodeContainer.getNode(schema.getName());
 						if (nodeField != null) {
 							Node node = nodeField.getNode();
+
+							// Check permissions for the linked node
 							if (node != null && (ac.getUser()
 									.hasPermission(node, READ_PERM)
 									|| ac.getUser()

@@ -31,7 +31,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider() {
 	}
 
-	private GraphQLInterfaceType getCommonType() {
+	private GraphQLInterfaceType createCommonType() {
 
 		Builder common = newInterface().name("MeshElement");
 		// .uuid
@@ -55,7 +55,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		// .permissions
 		common.field(newFieldDefinition().name("permissions")
 				.description("Permission information of the element")
-				.type(getPermInfoType())
+				.type(createPermInfoType())
 				.build());
 
 		//TODO add rolePerms
@@ -78,29 +78,46 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		return common.build();
 	}
 
-	private GraphQLObjectType getPermInfoType() {
+	/**
+	 * Create the permission information type.
+	 * 
+	 * @return
+	 */
+	private GraphQLObjectType createPermInfoType() {
 		graphql.schema.GraphQLObjectType.Builder builder = newObject().name("permissions")
 				.description("Permission information");
+
+		// .create
 		builder.field(newFieldDefinition().name("create")
 				.type(GraphQLBoolean)
 				.description("Flag which idicates whether the create permission is granted.")
 				.build());
+
+		// .read
 		builder.field(newFieldDefinition().name("read")
 				.type(GraphQLBoolean)
 				.description("Flag which idicates whether the read permission is granted.")
 				.build());
+
+		// .update
 		builder.field(newFieldDefinition().name("update")
 				.type(GraphQLBoolean)
 				.description("Flag which idicates whether the update permission is granted.")
 				.build());
+
+		// .delete
 		builder.field(newFieldDefinition().name("delete")
 				.type(GraphQLBoolean)
 				.description("Flag which idicates whether the delete permission is granted.")
 				.build());
+
+		// .publish
 		builder.field(newFieldDefinition().name("publish")
 				.type(GraphQLBoolean)
 				.description("Flag which idicates whether the publish permission is granted.")
 				.build());
+
+		// .readPublished
 		builder.field(newFieldDefinition().name("readPublished")
 				.type(GraphQLBoolean)
 				.description("Flag which idicates whether the read published permission is granted.")
@@ -109,7 +126,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 	}
 
 	public void addCommonFields(graphql.schema.GraphQLObjectType.Builder builder) {
-		builder.withInterface(getCommonType());
+		builder.withInterface(createCommonType());
 
 		// .uuid
 		builder.field(newFieldDefinition().name("uuid")
@@ -141,7 +158,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		// .permission
 		builder.field(newFieldDefinition().name("permissions")
 				.description("Permission information of the element")
-				.type(getPermInfoType())
+				.type(createPermInfoType())
 				.build());
 
 		//TODO rolePerms

@@ -6,7 +6,6 @@ import java.util.Objects;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -114,13 +113,13 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	/**
 	 * Return a page with all visible roles that the given user can see.
 	 * 
-	 * @param requestUser
+	 * @param User
+	 *            user User which requested the resource
 	 * @param pagingInfo
-	 * @return
-	 * @throws InvalidArgumentException
-	 *             Request may fail when invalid paging parameters are provided
+	 *            Paging information
+	 * @return Page which contains the retrieved items
 	 */
-	Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException;
+	Page<? extends Role> getRoles(User user, PagingParameters pagingInfo);
 
 	/**
 	 * Return a page with all users that the given user can see.
@@ -128,9 +127,7 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	 * @param requestUser
 	 * @param pagingInfo
 	 * @return Page with found users, an empty page is returned when no users could be found
-	 * @throws InvalidArgumentException
-	 *             Request may fail when invalid paging parameters are provided
 	 */
-	Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException;
+	Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo);
 
 }

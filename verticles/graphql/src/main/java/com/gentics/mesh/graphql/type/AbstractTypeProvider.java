@@ -23,6 +23,7 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 
+import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLEnumType;
@@ -299,30 +300,34 @@ public abstract class AbstractTypeProvider {
 		return type.build();
 	}
 
-	protected GraphQLFieldDefinition newPagingField(String name, String description, Func1<InternalActionContext, RootVertex<?>> rootProvider,
-			String referenceTypeName) {
+	protected GraphQLFieldDefinition newPagingFieldWithFetcher(String name, String description, DataFetcher dataFetcher, String referenceTypeName) {
 		return newFieldDefinition().name(name)
 				.description(description)
 				.argument(getPagingArgs())
 				.type(newPageType(name, new GraphQLTypeReference(referenceTypeName)))
-				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof InternalActionContext) {
-						InternalActionContext ac = (InternalActionContext) source;
-						return rootProvider.call(ac)
-								.findAll(ac, getPagingInfo(env));
-					}
-					return null;
-				})
+				.dataFetcher(dataFetcher)
 				.build();
+	}
+
+	protected GraphQLFieldDefinition newPagingField(String name, String description, Func1<InternalActionContext, RootVertex<?>> rootProvider,
+			String referenceTypeName) {
+		return newPagingFieldWithFetcher(name, description, (env) -> {
+			Object source = env.getSource();
+			if (source instanceof InternalActionContext) {
+				InternalActionContext ac = (InternalActionContext) source;
+				return rootProvider.call(ac)
+						.findAll(ac, getPagingInfo(env));
+			}
+			return null;
+		}, referenceTypeName);
 	}
 
 	protected GraphQLFieldDefinition newElementField(String name, String description, Func1<InternalActionContext, RootVertex<?>> rootProvider,
 			GraphQLObjectType type) {
 		return newFieldDefinition().name(name)
 				.description(description)
-				.argument(getUuidArg("Uuid of the " + name))
-				.argument(getNameArg("Name of the " + name))
+				.argument(getUuidArg("Uuid of the " + name + "."))
+				.argument(getNameArg("Name of the " + name + "."))
 				.type(type)
 				.dataFetcher(env -> {
 					Object source = env.getSource();
@@ -335,6 +340,12 @@ public abstract class AbstractTypeProvider {
 				.build();
 	}
 
+	/**
+	 * Load the paging parameters from the provided {@link DataFetchingEnvironment}.
+	 * 
+	 * @param env
+	 * @return Loaded paging parameters
+	 */
 	protected PagingParameters getPagingInfo(DataFetchingEnvironment env) {
 		PagingParameters parameters = new PagingParametersImpl();
 		Long page = env.getArgument("page");
@@ -345,6 +356,7 @@ public abstract class AbstractTypeProvider {
 		if (perPage != null) {
 			parameters.setPerPage(perPage);
 		}
+		parameters.validate();
 		return parameters;
 	}
 

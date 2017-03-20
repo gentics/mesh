@@ -1,10 +1,12 @@
 {
-  schemas {
-   name
-  },
-  schema(name:"content") {
-    name
-    uuid,
-    isContainer
-  }
+	schemas {
+		elements {
+			name
+		}
+	}
+	schema(name:"content") {
+		name
+		uuid,
+		isContainer
+	}
 }

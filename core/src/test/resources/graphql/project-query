@@ -1,0 +1,18 @@
+{
+  me {
+    uuid
+    username
+  }
+  project {
+    uuid
+    name
+    rootNode {
+      uuid
+      container(language: "en") {
+        fields {
+          ...on folder {name}
+        }
+      }
+    }
+  }
+}

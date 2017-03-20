@@ -58,8 +58,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		db.operateNoTx(() -> {
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
-			MeshAuthUser requestUser = ac.getUser();
-			Page<? extends Role> rolePage = group.getRoles(requestUser, pagingInfo);
+			Page<? extends Role> rolePage = group.getRoles(ac.getUser(), pagingInfo);
 			return rolePage.transformToRest(ac, 0);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}

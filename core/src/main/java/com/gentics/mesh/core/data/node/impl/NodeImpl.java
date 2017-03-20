@@ -95,6 +95,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -1525,10 +1526,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Page<? extends Tag> getTags(InternalActionContext ac) {
-		Release release = ac.getRelease();
-		PagingParameters params = ac.getPagingParameters();
-		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(ac.getUser(), this, release);
+	public Page<? extends Tag> getTags(User user, PagingParameters params, Release release) {
+		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(user, this, release);
 		return TraversalHelper.getPagedResult(traversal, params, TagImpl.class);
 	}
 
@@ -1545,7 +1544,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public String getDisplayName(InternalActionContext ac) {
-		NodeParametersImpl nodeParameters = ac.getNodeParameters();
+		NodeParameters nodeParameters = ac.getNodeParameters();
 		VersioningParametersImpl versioningParameters = ac.getVersioningParameters();
 
 		NodeGraphFieldContainer container = findNextMatchingFieldContainer(nodeParameters.getLanguageList(), ac.getRelease(getProject())
@@ -1766,7 +1765,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					addTag(tag, release);
 				}
 			}
-			return getTags(ac);
+			return getTags(user, ac.getPagingParameters(), release);
 		});
 
 		/*

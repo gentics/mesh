@@ -99,9 +99,8 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 * @param requestUser
 	 * @param pagingInfo
 	 * @return
-	 * @throws InvalidArgumentException
 	 */
-	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException;
+	Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameters pagingInfo);
 
 	/**
 	 * Return the tag family to which this tag belongs.

@@ -1,5 +1,8 @@
 package com.gentics.mesh.parameter;
 
+import java.util.Arrays;
+import java.util.List;
+
 import com.gentics.mesh.Mesh;
 
 public interface NodeParameters extends ParameterProvider {
@@ -120,6 +123,14 @@ public interface NodeParameters extends ParameterProvider {
 		} else {
 			return new String[0];
 		}
+	}
+
+	/**
+	 * @see #getLanguages()
+	 * @return
+	 */
+	default List<String> getLanguageList() {
+		return Arrays.asList(getLanguages());
 	}
 
 }

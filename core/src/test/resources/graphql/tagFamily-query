@@ -1,0 +1,14 @@
+{
+	tagFamily(name: "colors") {
+		name,
+		uuid
+		tags {
+			elements { name }
+		}
+	}
+	tagFamilies(perPage: 10, page: 1) {
+		elements {
+			name
+		}
+	}
+}

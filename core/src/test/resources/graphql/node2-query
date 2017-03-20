@@ -1,5 +1,5 @@
 {
-	denode: nodes(path:"/Neuigkeiten/2015/News_2015.en.html") {
+	denode: node(path:"/Neuigkeiten/2015/News_2015.en.html") {
 		uuid,
 		container(language: "de") {
 			fields {

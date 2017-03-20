@@ -83,32 +83,32 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				switch (type) {
 				case STRING:
 					root.field(fields.get()
-							.getStringDef(fieldSchema));
+							.createStringDef(fieldSchema));
 					break;
 				case HTML:
 					root.field(fields.get()
-							.getHtmlDef(fieldSchema));
+							.createHtmlDef(fieldSchema));
 					break;
 				case NUMBER:
 					root.field(fields.get()
-							.getNumberDef(fieldSchema));
+							.createNumberDef(fieldSchema));
 					break;
 				case DATE:
 					root.field(fields.get()
-							.getDateDef(fieldSchema));
+							.createDateDef(fieldSchema));
 					break;
 				case BOOLEAN:
 					root.field(fields.get()
-							.getBooleanDef(fieldSchema));
+							.createBooleanDef(fieldSchema));
 					break;
 				case NODE:
 					root.field(fields.get()
-							.getNodeDef(fieldSchema));
+							.createNodeDef(fieldSchema));
 					break;
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
 					root.field(fields.get()
-							.getListDef(listFieldSchema));
+							.createListDef(listFieldSchema));
 					break;
 				default:
 					//TODO throw exception for unsupported type

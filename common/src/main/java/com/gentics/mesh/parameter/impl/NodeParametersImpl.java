@@ -29,14 +29,6 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 	}
 
 	/**
-	 * @see #getLanguages()
-	 * @return
-	 */
-	public List<String> getLanguageList() {
-		return Arrays.asList(getLanguages());
-	}
-
-	/**
 	 * @see #getExpandedFieldNames()
 	 * @return
 	 */

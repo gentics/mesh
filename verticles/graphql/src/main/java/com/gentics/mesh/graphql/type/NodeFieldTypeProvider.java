@@ -83,32 +83,32 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 				FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 				switch (type) {
 				case STRING:
-					root.field(fields.getStringDef(fieldSchema));
+					root.field(fields.createStringDef(fieldSchema));
 					break;
 				case HTML:
-					root.field(fields.getHtmlDef(fieldSchema));
+					root.field(fields.createHtmlDef(fieldSchema));
 					break;
 				case NUMBER:
-					root.field(fields.getNumberDef(fieldSchema));
+					root.field(fields.createNumberDef(fieldSchema));
 					break;
 				case DATE:
-					root.field(fields.getDateDef(fieldSchema));
+					root.field(fields.createDateDef(fieldSchema));
 					break;
 				case BOOLEAN:
-					root.field(fields.getBooleanDef(fieldSchema));
+					root.field(fields.createBooleanDef(fieldSchema));
 					break;
 				case NODE:
-					root.field(fields.getNodeDef(fieldSchema));
+					root.field(fields.createNodeDef(fieldSchema));
 					break;
 				case BINARY:
-					root.field(fields.getBinaryDef(fieldSchema));
+					root.field(fields.createBinaryDef(fieldSchema));
 					break;
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-					root.field(fields.getListDef(listFieldSchema));
+					root.field(fields.createListDef(listFieldSchema));
 					break;
 				case MICRONODE:
-					root.field(fields.getMicronodeDef(fieldSchema, project));
+					root.field(fields.createMicronodeDef(fieldSchema, project));
 					break;
 				}
 

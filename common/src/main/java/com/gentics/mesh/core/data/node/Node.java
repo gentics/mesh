@@ -94,10 +94,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Return a page of all visible tags that are assigned to the node.
 	 * 
-	 * @param ac
+	 * @param user
+	 * @param params
+	 * @param release
 	 * @return Page which contains the result
 	 */
-	Page<? extends Tag> getTags(InternalActionContext ac);
+	Page<? extends Tag> getTags(User user, PagingParameters params, Release release);
 
 	/**
 	 * Return the draft field container for the given language in the latest release.

@@ -45,15 +45,6 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		return null;
 	}
 
-	public Object groupsFetcher(DataFetchingEnvironment env) {
-		Object source = env.getSource();
-		if (source instanceof User) {
-			//TODO handle perms
-			return ((User) source).getGroups();
-		}
-		return null;
-	}
-
 	public Object usernameFetcher(DataFetchingEnvironment env) {
 		Object source = env.getSource();
 		if (source instanceof User) {
@@ -121,13 +112,15 @@ public class UserTypeProvider extends AbstractTypeProvider {
 				.build());
 
 		// .groups
-		root.field(newFieldDefinition().name("groups")
-				.description("Groups to which the user belongs")
-				.argument(getPagingArgs())
-				.type(new GraphQLList(new GraphQLTypeReference("Group")))
-				.dataFetcher(this::groupsFetcher)
-				.build());
-
+		root.field(newPagingFieldWithFetcher("groups", "Groups to which the user belongs.", (env) -> {
+			Object source = env.getSource();
+			if (source instanceof User) {
+				InternalActionContext ac = (InternalActionContext) env.getContext();
+				User user = ((User) source);
+				return user.getGroups(ac.getUser(), getPagingInfo(env));
+			}
+			return null;
+		}, "Group"));
 		// .nodeReference
 		root.field(newFieldDefinition().name("nodeReference")
 				.description("User node reference")

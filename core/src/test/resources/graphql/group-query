@@ -1,0 +1,20 @@
+{
+	group(name: "admin") {
+		name
+		uuid
+	}
+	group(name: "admin") {
+		uuid
+		name
+		roles {
+			elements {
+				name
+			}
+		}
+		users {
+			elements {
+				username
+			}
+		}
+	}
+}

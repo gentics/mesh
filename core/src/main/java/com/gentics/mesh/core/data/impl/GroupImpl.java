@@ -30,7 +30,6 @@ import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
@@ -51,7 +50,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public GroupReference transformToReference() {
-		return new GroupReference().setName(getName()).setUuid(getUuid());
+		return new GroupReference().setName(getName())
+				.setUuid(getUuid());
 	}
 
 	@Override
@@ -119,23 +119,30 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public boolean hasRole(Role role) {
-		return in(HAS_ROLE).retain(role).hasNext();
+		return in(HAS_ROLE).retain(role)
+				.hasNext();
 	}
 
 	@Override
 	public boolean hasUser(User user) {
-		return in(HAS_USER).retain(user).hasNext();
+		return in(HAS_USER).retain(user)
+				.hasNext();
 	}
 
 	@Override
-	public Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
-		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser)
-				.back().has(UserImpl.class);
+	public Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) {
+		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark()
+				.in(GraphPermission.READ_PERM.label())
+				.out(HAS_ROLE)
+				.in(HAS_USER)
+				.retain(requestUser)
+				.back()
+				.has(UserImpl.class);
 		return TraversalHelper.getPagedResult(traversal, pagingInfo, UserImpl.class);
 	}
 
 	@Override
-	public Page<? extends Role> getRoles(MeshAuthUser requestUser, PagingParameters pagingInfo) throws InvalidArgumentException {
+	public Page<? extends Role> getRoles(User user, PagingParameters pagingInfo) {
 		//TODO handle request user / handle perms
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
 		Page<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, RoleImpl.class);
@@ -164,7 +171,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		for (Role role : getRoles()) {
 			String name = role.getName();
 			if (name != null) {
-				restGroup.getRoles().add(role.transformToReference());
+				restGroup.getRoles()
+						.add(role.transformToReference());
 			}
 		}
 	}
@@ -179,7 +187,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public Group update(InternalActionContext ac, SearchQueueBatch batch) {
-		BootstrapInitializer boot = MeshInternal.get().boot();
+		BootstrapInitializer boot = MeshInternal.get()
+				.boot();
 		GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 		if (isEmpty(requestModel.getName())) {
@@ -187,8 +196,10 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		}
 
 		if (shouldUpdate(requestModel.getName(), getName())) {
-			Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
-			if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
+			Group groupWithSameName = boot.groupRoot()
+					.findByName(requestModel.getName());
+			if (groupWithSameName != null && !groupWithSameName.getUuid()
+					.equals(getUuid())) {
 				throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 			}
 

@@ -27,6 +27,7 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.FramedGraph;
@@ -66,11 +67,11 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public Page<? extends Group> getGroups(InternalActionContext ac) {
+	public Page<? extends Group> getGroups(User user, PagingParameters params) {
 		VertexTraversal<?, ?, ?> traversal = out(HAS_ROLE).filter(group -> {
-			return ac.getUser().hasPermissionForId(group.getId(), GraphPermission.READ_PERM);
+			return user.hasPermissionForId(group.getId(), GraphPermission.READ_PERM);
 		});
-		return TraversalHelper.getPagedResult(traversal, ac.getPagingParameters(), GroupImpl.class);
+		return TraversalHelper.getPagedResult(traversal, params, GroupImpl.class);
 	}
 
 	@Override

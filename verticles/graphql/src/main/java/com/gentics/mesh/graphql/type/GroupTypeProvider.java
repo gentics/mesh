@@ -7,6 +7,9 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Group;
+
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
@@ -25,28 +28,38 @@ public class GroupTypeProvider extends AbstractTypeProvider {
 	public GroupTypeProvider() {
 	}
 
-	public GraphQLObjectType getGroupType() {
+	public GraphQLObjectType createGroupType() {
 		Builder groupType = newObject();
 		groupType.name("Group");
-		groupType.description("Group description");
+		groupType.description("A group is a collection of users. Groups can't be nested.");
 		interfaceTypeProvider.addCommonFields(groupType);
 
+		// .name
 		groupType.field(newFieldDefinition().name("name")
-				.description("The name of the group")
-				.type(GraphQLString)
-				.build());
+				.description("The name of the group.")
+				.type(GraphQLString));
 
-		groupType.field(newFieldDefinition().name("roles")
-				.description("Roles assigned to the group")
-				.argument(getPagingArgs())
-				.type(new GraphQLList(new GraphQLTypeReference("Role")))
-				.build());
+		// .roles
+		groupType.field(newPagingFieldWithFetcher("roles", "Roles assigned to the group.", (env) -> {
+			Object source = env.getSource();
+			if (source instanceof Group) {
+				InternalActionContext ac = (InternalActionContext) env.getContext();
+				Group group = (Group) source;
+				return group.getRoles(ac.getUser(), getPagingInfo(env));
+			}
+			return null;
+		}, "Role"));
 
-		groupType.field(newFieldDefinition().name("users")
-				.description("Users assigned to the group")
-				.argument(getPagingArgs())
-				.type(new GraphQLList(new GraphQLTypeReference("User")))
-				.build());
+		// .users
+		groupType.field(newPagingFieldWithFetcher("users", "Users assigned to the group.", (env) -> {
+			Object source = env.getSource();
+			if (source instanceof Group) {
+				InternalActionContext ac = (InternalActionContext) env.getContext();
+				Group group = (Group) source;
+				return group.getVisibleUsers(ac.getUser(), getPagingInfo(env));
+			}
+			return null;
+		}, "User"));
 		return groupType.build();
 	}
 }

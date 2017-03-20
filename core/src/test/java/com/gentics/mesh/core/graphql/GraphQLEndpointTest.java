@@ -1,14 +1,17 @@
 package com.gentics.mesh.core.graphql;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.json.JSONException;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -40,23 +43,36 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.MeshJSONAssert;
 
 import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.FULL, startServer = true)
+@RunWith(Parameterized.class)
 public class GraphQLEndpointTest extends AbstractMeshTest {
 
-	//	@Test
-	public void testSimpleQuery() throws JSONException {
-		JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{me{firstname}}"));
-		MeshJSONAssert.assertEquals("{'data':{'me':{'firstname':'Joe'}}}", response);
+	@Parameters(name = "query={0}")
+	public static List<String> paramData() {
+		List<String> testQueries = new ArrayList<>();
+		testQueries.add("full-query");
+		testQueries.add("role-user-group-query");
+		testQueries.add("group-query");
+		testQueries.add("node-relations-query");
+		testQueries.add("schema-query");
+		testQueries.add("paging-query");
+		testQueries.add("tagFamily-query");
+		testQueries.add("node2-query");
+		testQueries.add("project-query");
+		testQueries.add("tag-query");
+		testQueries.add("node-fields-query");
+		testQueries.add("release-query");
+		testQueries.add("user-query");
+		return testQueries;
 	}
 
-	@Test
-	public void testIntrospection() {
-		JsonObject response = call(() -> client().graphql(PROJECT_NAME, getQuery("introspection-query")));
-		System.out.println(response.toString());
+	private final String queryName;
+
+	public GraphQLEndpointTest(String queryName) {
+		this.queryName = queryName;
 	}
 
 	@Test
@@ -219,7 +235,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		}
 		//JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{ tagFamilies(name: \"colors\") { name, creator {firstname, lastname}, tags(page: 1, perPage:1) {name}}, schemas(name:\"content\") {name}, nodes(uuid:\"" + contentUuid + "\"){uuid, languagePaths(linkType: FULL) {languageTag, link}, availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
 
-		JsonObject response = call(() -> client().graphqlQuery(PROJECT_NAME, getQuery("release-query")));
+		JsonObject response = call(() -> client().graphqlQuery(PROJECT_NAME, getQuery(queryName)));
 		//assertThat(response).compliesToAssertions("node-fields-query");
 
 		System.out.println(response.encodePrettily());
@@ -229,11 +245,5 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		//		System.out.println(response.toString());
 		//		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "'}}}", response);
 	}
-
-	private String getQuery(String name) throws IOException {
-		return IOUtils.toString(getClass().getResourceAsStream("/graphql/" + name));
-	}
-
-	
 
 }

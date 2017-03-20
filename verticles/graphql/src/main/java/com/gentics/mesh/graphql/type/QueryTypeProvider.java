@@ -165,7 +165,6 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 					return node;
 				}
 			}
-			return null;
 		}
 		return null;
 	}
@@ -219,20 +218,20 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				.build());
 
 		// .tag
-		root.field(newElementField("tag", "Load tag by name of uuid.", (ac) -> boot.tagRoot(), tagTypeProvider.getTagType()));
+		root.field(newElementField("tag", "Load tag by name or uuid.", (ac) -> boot.tagRoot(), tagTypeProvider.createTagType()));
 
 		// .tags
 		root.field(newPagingField("tags", "Load page of tags.", (ac) -> boot.tagRoot(), "Tag"));
 
 		// .tagFamily
-		root.field(newElementField("tagFamily", "Load tagFamily by name of uuid.", (ac) -> ac.getProject()
+		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", (ac) -> ac.getProject()
 				.getTagFamilyRoot(), tagFamilyTypeProvider.getTagFamilyType()));
 
 		// .tagFamilies
 		root.field(newPagingField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), "TagFamily"));
 
 		// .release
-		root.field(newElementField("release", "Load release by name of uuid.", (ac) -> ac.getProject()
+		root.field(newElementField("release", "Load release by name or uuid.", (ac) -> ac.getProject()
 				.getReleaseRoot(), releaseTypeProvider.getReleaseType()));
 
 		//.releases
@@ -240,32 +239,32 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				.getReleaseRoot(), "Release"));
 
 		// .schema
-		root.field(newElementField("schema", "Load schema by name of uuid.", (ac) -> boot.schemaContainerRoot(), schemaTypeProvider.getSchemaType()));
+		root.field(newElementField("schema", "Load schema by name or uuid.", (ac) -> boot.schemaContainerRoot(), schemaTypeProvider.getSchemaType()));
 
 		// .schemas
 		root.field(newPagingField("schemas", "Load page of schemas.", (ac) -> boot.schemaContainerRoot(), "Schema"));
 
 		// .microschema
-		root.field(newElementField("microschema", "Load microschema by name of uuid.", (ac) -> boot.microschemaContainerRoot(),
-				microschemaTypeProvider.getMicroschemaType()));
+		root.field(newElementField("microschema", "Load microschema by name or uuid.", (ac) -> boot.microschemaContainerRoot(),
+				microschemaTypeProvider.createMicroschemaType()));
 
 		// .microschemas
 		root.field(newPagingField("microschemas", "Load page of microschemas.", (ac) -> boot.microschemaContainerRoot(), "Microschema"));
 
 		// .role
-		root.field(newElementField("role", "Load role by name of uuid.", (ac) -> boot.roleRoot(), roleTypeProvider.getRoleType()));
+		root.field(newElementField("role", "Load role by name or uuid.", (ac) -> boot.roleRoot(), roleTypeProvider.createRoleType()));
 
 		// .roles
 		root.field(newPagingField("roles", "Load page of roles.", (ac) -> boot.roleRoot(), "Role"));
 
 		// .group
-		root.field(newElementField("group", "Load group by name of uuid.", (ac) -> boot.groupRoot(), groupTypeProvider.getGroupType()));
+		root.field(newElementField("group", "Load group by name or uuid.", (ac) -> boot.groupRoot(), groupTypeProvider.createGroupType()));
 
 		// .groups
 		root.field(newPagingField("groups", "Load page of groups.", (ac) -> boot.groupRoot(), "Group"));
 
 		// .user
-		root.field(newElementField("user", "Load user by name of uuid.", (ac) -> boot.userRoot(), userTypeProvider.getUserType()));
+		root.field(newElementField("user", "Load user by name or uuid.", (ac) -> boot.userRoot(), userTypeProvider.getUserType()));
 
 		// .users
 		root.field(newPagingField("users", "Load page of users.", (ac) -> boot.userRoot(), "User"));

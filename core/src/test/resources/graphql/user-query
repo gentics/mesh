@@ -1,0 +1,12 @@
+{
+
+	user(name: "admin") {
+		username
+	}
+	users {
+		elements {
+			username
+		}
+	}
+
+}
