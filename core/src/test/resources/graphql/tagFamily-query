@@ -1,11 +1,20 @@
 {
+	# [$.data.bogus=<is-null>]
+	bogus: tagFamily(name: "bogus") {
+		uuid
+	}
+
 	tagFamily(name: "colors") {
-		name,
+		# [$.data.tagFamily.name=colors]
+		name
+
+		# [$.data.tagFamily.uuid=<is-uuid>]
 		uuid
 		tags {
 			elements { name }
 		}
 	}
+
 	tagFamilies(perPage: 10, page: 1) {
 		elements {
 			name

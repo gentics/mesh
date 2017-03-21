@@ -1,8 +1,10 @@
 {
-	group(name: "admin") {
+	# [$.data.bogus=<is-null>]
+	bogus: group(name: "bogus") {
 		name
 		uuid
 	}
+
 	group(name: "admin") {
 		uuid
 		name
@@ -15,6 +17,13 @@
 			elements {
 				username
 			}
+		}
+	}
+
+	groups {
+		elements {
+			name
+			uuid
 		}
 	}
 }

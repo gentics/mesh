@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.apache.commons.lang.WordUtils;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.Page;
@@ -62,6 +63,7 @@ public abstract class AbstractTypeProvider {
 	}
 
 	public GraphQLArgument getReleaseUuidArg() {
+		// .release
 		return newArgument().name("release")
 				.type(GraphQLString)
 				.description("Release Uuid")
@@ -69,10 +71,14 @@ public abstract class AbstractTypeProvider {
 	}
 
 	public GraphQLArgument getLanguageTagArg() {
+		// .language
+		String defaultLanguage = Mesh.mesh()
+				.getOptions()
+				.getDefaultLanguage();
 		return newArgument().name("language")
 				.type(GraphQLString)
 				.description("Language tag")
-				.defaultValue("en")
+				.defaultValue(defaultLanguage)
 				.build();
 	}
 
@@ -141,7 +147,7 @@ public abstract class AbstractTypeProvider {
 		return params;
 	}
 
-	public GraphQLArgument getLinkTypeArg() {
+	public GraphQLArgument createLinkTypeArg() {
 
 		GraphQLEnumType linkTypeEnum = newEnum().name("LinkType")
 				.description("Mesh resolve link type")
@@ -158,6 +164,13 @@ public abstract class AbstractTypeProvider {
 				.build();
 	}
 
+	/**
+	 * Handle the UUID or name arguments and locate and return the vertex from the root vertex.
+	 * 
+	 * @param env
+	 * @param root
+	 * @return
+	 */
 	protected MeshVertex handleUuidNameArgs(DataFetchingEnvironment env, RootVertex<?> root) {
 		String uuid = env.getArgument("uuid");
 		MeshVertex element = null;
@@ -171,12 +184,15 @@ public abstract class AbstractTypeProvider {
 		if (element == null) {
 			return null;
 		}
+
+		// Check permissions
 		InternalActionContext ac = env.getContext();
 		if (ac.getUser()
 				.hasPermission(element, GraphPermission.READ_PERM)) {
 			return element;
+		} else {
+			return null;
 		}
-		return element;
 	}
 
 	/**
@@ -194,8 +210,7 @@ public abstract class AbstractTypeProvider {
 		type.field(newFieldDefinition().name("elements")
 				.type(new GraphQLList(elementType))
 				.dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page;
+					return env.getSource();
 				}));
 
 		type.field(newFieldDefinition().name("totalElements")
@@ -225,11 +240,8 @@ public abstract class AbstractTypeProvider {
 		type.field(newFieldDefinition().name("perPage")
 				.description("Return the per page parameter value that was used to load the page.")
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof Page) {
-						return ((Page<?>) source).getPerPage();
-					}
-					return null;
+					Page<?> page = env.getSource();
+					return page.getPerPage();
 				})
 				.type(GraphQLLong));
 
@@ -237,11 +249,8 @@ public abstract class AbstractTypeProvider {
 				.description(
 						"Return the amount of items which the page is containing. Please note that a page may always contain less items compared to its maximum capacity.")
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof Page) {
-						return ((Page<?>) source).getNumberOfElements();
-					}
-					return null;
+					Page<?> page = env.getSource();
+					return page.getNumberOfElements();
 				})
 				.type(GraphQLLong));
 
@@ -272,11 +281,13 @@ public abstract class AbstractTypeProvider {
 		return type.build();
 	}
 
-	protected GraphQLFieldDefinition newPagingFieldWithFetcher(String name, String description, DataFetcher dataFetcher, String referenceTypeName) {
+	protected GraphQLFieldDefinition newPagingFieldWithFetcher(String name, String description, DataFetcher<?> dataFetcher,
+			String referenceTypeName) {
 		return newPagingFieldWithFetcherBuilder(name, description, dataFetcher, referenceTypeName).build();
 	}
-	
-	protected graphql.schema.GraphQLFieldDefinition.Builder newPagingFieldWithFetcherBuilder(String name, String description, DataFetcher dataFetcher, String referenceTypeName) {
+
+	protected graphql.schema.GraphQLFieldDefinition.Builder newPagingFieldWithFetcherBuilder(String name, String description,
+			DataFetcher<?> dataFetcher, String referenceTypeName) {
 		return newFieldDefinition().name(name)
 				.description(description)
 				.argument(getPagingArgs())
@@ -287,13 +298,9 @@ public abstract class AbstractTypeProvider {
 	protected GraphQLFieldDefinition newPagingField(String name, String description, Func1<InternalActionContext, RootVertex<?>> rootProvider,
 			String referenceTypeName) {
 		return newPagingFieldWithFetcher(name, description, (env) -> {
-			Object source = env.getSource();
-			if (source instanceof InternalActionContext) {
-				InternalActionContext ac = (InternalActionContext) source;
-				return rootProvider.call(ac)
-						.findAll(ac, getPagingInfo(env));
-			}
-			return null;
+			InternalActionContext ac = env.getSource();
+			return rootProvider.call(ac)
+					.findAll(ac, getPagingInfo(env));
 		}, referenceTypeName);
 	}
 
@@ -305,12 +312,8 @@ public abstract class AbstractTypeProvider {
 				.argument(getNameArg("Name of the " + name + "."))
 				.type(type)
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof InternalActionContext) {
-						InternalActionContext ac = (InternalActionContext) source;
-						return handleUuidNameArgs(env, rootProvider.call(ac));
-					}
-					return null;
+					InternalActionContext ac = env.getSource();
+					return handleUuidNameArgs(env, rootProvider.call(ac));
 				})
 				.build();
 	}

@@ -9,6 +9,9 @@ import static org.junit.Assert.fail;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.Scanner;
+
+import javax.sound.sampled.Line;
 
 import org.assertj.core.api.AbstractAssert;
 
@@ -42,8 +45,9 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 
 	public JsonObjectAssert has(String path, String value, String msg) {
 		try {
-			String actualValue = getByPath(path);
-			assertEquals("Value for property on path {" + path + "} did notmatch: " + msg, value, actualValue);
+			Object actualValue = getByPath(path);
+			String actualStringRep = String.valueOf(actualValue);
+			assertEquals("Value for property on path {" + path + "} did notmatch: " + msg, value, actualStringRep);
 		} catch (PathNotFoundException e) {
 			fail("Could not find property for path {" + path + "} - Json is:\n--snip--\n" + actual.encodePrettily() + "\n--snap--\n" + msg);
 		}
@@ -70,46 +74,58 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	}
 
 	/**
-	 * Assert that the json object complies to the assertions which are stored in the assertionsfile of the given name.
+	 * Assert that the JSON object complies to the assertions which are stored in the comments of the query with the given name.
 	 * 
 	 * @param name
 	 * @return
 	 * @throws IOException
 	 */
 	public JsonObjectAssert compliesToAssertions(String name) throws IOException {
-		Properties props = new Properties();
-		String path = "/graphql/" + name + ".assertions";
+		String path = "/graphql/" + name;
 		InputStream ins = getClass().getResourceAsStream(path);
 		if (ins == null) {
-			fail("Could not find assertionsfile {" + path + "}");
+			fail("Could not find query file {" + path + "}");
 		}
+		Scanner scanner = new Scanner(ins);
 		try {
-			props.load(ins);
+			int lineNr = 1;
+			// Parse the query and extract comments which include assertions. Directly evaluate these assertions.
+			while (scanner.hasNextLine()) {
+				String line = scanner.nextLine();
+				line = line.trim();
+				if (line.startsWith("# [")) {
+					int start = line.indexOf("# [") + 3;
+					int end = line.lastIndexOf("]");
+					String assertion = line.substring(start, end);
+					evaluteAssertion(assertion, lineNr);
+				}
+				lineNr++;
+			}
 		} finally {
-			ins.close();
-		}
-		for (Object key : props.keySet()) {
-			String keyStr = (String) key;
-			String valueStr = props.getProperty(keyStr);
-			String[] assertionInfo = valueStr.split("##");
-			String value = assertionInfo[0];
-
-			String msg = "";
-			if (assertionInfo.length > 1) {
-				msg = assertionInfo[1];
-			}
-			if ("<not-null>".equals(value)) {
-				pathIsNotNull(keyStr, msg);
-			} else if ("<is-null>".equals(value)) {
-				pathIsNull(keyStr, msg);
-			} else if ("<is-uuid>".equals(value)) {
-				pathIsUuid(keyStr, msg);
-			} else {
-				has(keyStr, value, msg);
-			}
+			scanner.close();
 		}
 
 		return this;
+	}
+
+	private void evaluteAssertion(String assertion, int lineNr) {
+		String[] parts = assertion.split("=");
+		if (parts.length <= 1) {
+			fail("Assertion on line {" + lineNr + "} is not complete {" + assertion + "}");
+		}
+		String path = parts[0];
+		String value = parts[1];
+
+		String msg = "Failure on line {" + lineNr + "}";
+		if ("<not-null>".equals(value)) {
+			pathIsNotNull(path, msg);
+		} else if ("<is-null>".equals(value)) {
+			pathIsNull(path, msg);
+		} else if ("<is-uuid>".equals(value)) {
+			pathIsUuid(path, msg);
+		} else {
+			has(path, value, msg);
+		}
 	}
 
 	public JsonObjectAssert pathIsUuid(String path) {

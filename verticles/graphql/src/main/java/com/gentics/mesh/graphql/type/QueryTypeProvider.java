@@ -179,7 +179,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		//.project
 		root.field(newFieldDefinition().name("project")
 				.description("Load project current")
-				.type(projectTypeProvider.getProjectType(project))
+				.type(projectTypeProvider.createProjectType(project))
 				.dataFetcher(this::projectFetcher)
 				.build());
 

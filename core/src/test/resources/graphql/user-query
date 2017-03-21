@@ -1,12 +1,16 @@
 {
-
-	user(name: "admin") {
+	# [$.data.bogus=<is-null>]
+	bogus: user(name: "bogus") {
 		username
+	}
+	user(name: "admin") {
+		# [$.data.user.username=admin]
+		username
+		emailAddress
 	}
 	users {
 		elements {
 			username
 		}
 	}
-
 }

@@ -9,6 +9,8 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Tag;
+import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
@@ -42,6 +44,16 @@ public class TagTypeProvider extends AbstractTypeProvider {
 		// .tagFamily
 		tagType.field(newFieldDefinition().name("tagFamily")
 				.description("Tag family to which the tag belongs")
+				.dataFetcher((env) -> {
+					Tag tag = env.getSource();
+					InternalActionContext ac = env.getContext();
+					TagFamily tagFamily = tag.getTagFamily();
+					if (ac.getUser()
+							.hasPermission(tagFamily, GraphPermission.READ_PERM)) {
+						return tagFamily;
+					}
+					return null;
+				})
 				.type(new GraphQLTypeReference("TagFamily")));
 
 		// .nodes

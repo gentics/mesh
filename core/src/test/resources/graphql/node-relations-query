@@ -1,16 +1,26 @@
 {
 	denode: node(path:"/Neuigkeiten") {
+		# [$.data.denode.uuid=<is-uuid>]
 		uuid,
 		children(languages: ["en","de"]) {
-			elements { 
+			elements {
+				# [$.data.denode.children.elements[0].uuid=<is-uuid>]
+				# [$.data.denode.children.elements[1].uuid=<is-uuid>]
+				# [$.data.denode.children.elements[2].uuid=<is-uuid>]
 				uuid
 			}
 		}
+		parent {
+			# [$.data.denode.parent.uuid=<is-uuid>]
+			uuid
+		}
 	}
 	rootNode {
+		# [$.data.rootNode.uuid=<is-uuid>]
 		uuid
 	}
 	project {
+		# [$.data.project.name=dummy]
 		name
 	}
 }

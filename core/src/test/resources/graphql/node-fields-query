@@ -1,24 +1,43 @@
 {
 	node(path:"/Neuigkeiten/2015") {
+	
+		# [$.data.node.uuid=<is-uuid>]
 		uuid, 
 		languagePaths(linkType: FULL) {
-			languageTag, 
+			# First language path should be english
+			# [$.data.node.languagePaths[0].languageTag=en]
+			languageTag
+
+			# [$.data.node.languagePaths[0].link=/api/v1/dummy/webroot/News/2015]
 			link
-		}, 
-		availableLanguages,
+		}
+		# [$.data.node.availableLanguages[0]=en]
+		availableLanguages
 		container(language: "en") {
 			fields {
 				... on content { title },
 				... on folder { 
-					name,
+					# [$.data.node.container.fields.name=2015]
+					name
+
 					nodeRef {
+						# [$.data.node.container.fields.nodeRef.uuid=<is-uuid>]
 						uuid
+
+						# [$.data.node.container.fields.nodeRef.isContainer=false]
 						isContainer
+
 						container(language: "en") {
+							# [$.data.node.container.fields.nodeRef.container.isPublished=true]
 							isPublished
+
+							# [$.data.node.container.fields.nodeRef.container.isDraft=false]
+							isDraft
+
 							fields {
-							... on content { title },
-							... on folder { name },
+							# [$.data.node.container.fields.nodeRef.container.fields.title=News Overview english title]
+							... on content { title }
+							... on folder { name }
 							}
 						}
 					},

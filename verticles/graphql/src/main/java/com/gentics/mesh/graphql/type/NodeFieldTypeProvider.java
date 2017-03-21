@@ -25,6 +25,10 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLUnionType;
 
+/**
+ * This class contains all field specific type code. It provides methods which can be used to generate field types for a specific project. This is done by
+ * examining the schemas which are assigned to the project release.
+ */
 @Singleton
 public class NodeFieldTypeProvider extends AbstractTypeProvider {
 
@@ -111,7 +115,6 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 					root.field(fields.createMicronodeDef(fieldSchema, project));
 					break;
 				}
-
 			}
 			GraphQLObjectType type = root.build();
 			list.add(type);

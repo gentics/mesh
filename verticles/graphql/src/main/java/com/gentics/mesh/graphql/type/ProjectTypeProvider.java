@@ -32,7 +32,13 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 	public ProjectTypeProvider() {
 	}
 
-	public Object baseNodeFetcher(DataFetchingEnvironment env) {
+	/**
+	 * Fetcher for the project base node.
+	 * 
+	 * @param env
+	 * @return
+	 */
+	private Node baseNodeFetcher(DataFetchingEnvironment env) {
 		Project project = env.getSource();
 		InternalActionContext ac = env.getContext();
 		Node node = project.getBaseNode();
@@ -46,7 +52,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		return null;
 	}
 
-	public GraphQLObjectType getProjectType(Project project) {
+	public GraphQLObjectType createProjectType(Project project) {
 		Builder root = newObject();
 		root.name("Project");
 		interfaceTypeProvider.addCommonFields(root);

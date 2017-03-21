@@ -1,8 +1,23 @@
 {
+	# [$.data.bogus=<is-null>]
+	bogus: release(name: "bogus") {
+		name
+	}
+
+	release(name: "dummy") {
+		# [$.data.release.uuid=<is-uuid>]
+		uuid
+		# [$.data.release.name=dummy]
+		name
+	}
+
 	releases {
+		# [$.data.releases.elements.length()=1]
 		elements { 
 			uuid
+			# [$.data.releases.elements[0].name=dummy]
 			name
+			# [$.data.releases.elements[0].migrated=true]
 			migrated
 		}
 	}

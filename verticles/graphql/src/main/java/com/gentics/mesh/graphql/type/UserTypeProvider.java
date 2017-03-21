@@ -27,41 +27,6 @@ public class UserTypeProvider extends AbstractTypeProvider {
 	public UserTypeProvider() {
 	}
 
-	public Object nodeReferenceFetcher(DataFetchingEnvironment env) {
-		User user = env.getSource();
-		InternalActionContext ac = env.getContext();
-		Node node = user.getReferencedNode();
-		if (node != null) {
-			if (ac.getUser()
-					.hasPermission(node, GraphPermission.READ_PERM)
-					|| ac.getUser()
-							.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
-				return node;
-			}
-		}
-		return null;
-	}
-
-	public Object usernameFetcher(DataFetchingEnvironment env) {
-		User user = env.getSource();
-		return user.getUsername();
-	}
-
-	public Object firstnameFetcher(DataFetchingEnvironment env) {
-		User user = env.getSource();
-		return user.getFirstname();
-	}
-
-	public Object lastnameFetcher(DataFetchingEnvironment env) {
-		User user = env.getSource();
-		return user.getLastname();
-	}
-
-	public Object emailAddressFetcher(DataFetchingEnvironment env) {
-		User user = env.getSource();
-		return user.getEmailAddress();
-	}
-
 	public GraphQLObjectType getUserType() {
 		Builder root = newObject();
 		root.name("User");
@@ -72,25 +37,37 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		root.field(newFieldDefinition().name("username")
 				.description("The username of the user")
 				.type(GraphQLString)
-				.dataFetcher(this::usernameFetcher));
+				.dataFetcher((env) -> {
+					User user = env.getSource();
+					return user.getUsername();
+				}));
 
 		// .firstname
 		root.field(newFieldDefinition().name("firstname")
 				.description("The firstname of the user")
 				.type(GraphQLString)
-				.dataFetcher(this::firstnameFetcher));
+				.dataFetcher((env) -> {
+					User user = env.getSource();
+					return user.getFirstname();
+				}));
 
 		// .lastname
 		root.field(newFieldDefinition().name("lastname")
 				.description("The lastname of the user")
 				.type(GraphQLString)
-				.dataFetcher(this::lastnameFetcher));
+				.dataFetcher((env -> {
+					User user = env.getSource();
+					return user.getLastname();
+				})));
 
 		// .emailAddress
 		root.field(newFieldDefinition().name("emailAddress")
 				.description("The email of the user")
 				.type(GraphQLString)
-				.dataFetcher(this::emailAddressFetcher));
+				.dataFetcher((env) -> {
+					User user = env.getSource();
+					return user.getEmailAddress();
+				}));
 
 		// .groups
 		root.field(newPagingFieldWithFetcher("groups", "Groups to which the user belongs.", (env) -> {
@@ -103,7 +80,20 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		root.field(newFieldDefinition().name("nodeReference")
 				.description("User node reference")
 				.type(new GraphQLTypeReference("Node"))
-				.dataFetcher(this::nodeReferenceFetcher));
+				.dataFetcher((env) -> {
+					User user = env.getSource();
+					InternalActionContext ac = env.getContext();
+					Node node = user.getReferencedNode();
+					if (node != null) {
+						if (ac.getUser()
+								.hasPermission(node, GraphPermission.READ_PERM)
+								|| ac.getUser()
+										.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
+							return node;
+						}
+					}
+					return null;
+				}));
 
 		return root.build();
 	}

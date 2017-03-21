@@ -172,7 +172,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .languagePaths
 		nodeType.field(newFieldDefinition().name("languagePaths")
-				.argument(getLinkTypeArg())
+				.argument(createLinkTypeArg())
 				.type(new GraphQLList(getLinkInfoType()))
 				.dataFetcher(this::languagePathsFetcher));
 

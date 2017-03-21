@@ -13,6 +13,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
+import graphql.schema.GraphQLTypeReference;
 
 @Singleton
 public class TagFamilyTypeProvider extends AbstractTypeProvider {
@@ -31,6 +32,18 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 		// .name
 		tagFamilyType.field(newFieldDefinition().name("name")
 				.type(GraphQLString));
+
+		// .tag
+		tagFamilyType.field(newFieldDefinition().name("tag")
+				.description("Load a specific tag by name or uuid.")
+				.argument(getUuidArg("Uuid of the tag."))
+				.argument(getNameArg("Name of the tag."))
+				.type(new GraphQLTypeReference("Tag"))
+				.dataFetcher(env -> {
+					TagFamily tagFamily = env.getSource();
+					return handleUuidNameArgs(env, tagFamily);
+				})
+				.build());
 
 		// .tags
 		tagFamilyType.field(newPagingFieldWithFetcher("tags", "Tags which are assigned to the tagfamily.", (env) -> {

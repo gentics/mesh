@@ -1,34 +1,54 @@
 {
 	users(perPage: 1, page: 2) {
+		# [$.data.users.totalElements=3]
 		totalElements
+
+		# [$.data.users.number=2]
 		number
 		totalPages
+
+		# [$.data.users.perPage=1]
 		perPage
 		count
+
+		# [$.data.users.hasPreviousPage=true]
 		hasPreviousPage
+
+		# [$.data.users.hasNextPage=true]
 		hasNextPage
+
+		# [$.data.users.size=1]
 		size
-		elements { 
-			username,
+
+		# [$.data.users.elements.length()=1]
+		elements {
+			# [$.data.users.elements[0].username=joe1] 
+			username
+
+			# [$.data.users.elements[0].uuid=<is-uuid>]
 			uuid 
 		}
 	}
 	roles {
 		totalElements
+
+		# [$.data.roles.number=1]
 		number
 		totalPages
+
+		# [$.data.roles.perPage=25]
 		perPage
 		count
 		size
-		elements { 
-			name,
-			uuid 
+		elements {
+			name
+			uuid
 		}
 	},
 	lessStuff: roles {
-		elements { 
-			name,
-			uuid 
+		elements {
+			name
+			uuid
 		}
 	}
 
