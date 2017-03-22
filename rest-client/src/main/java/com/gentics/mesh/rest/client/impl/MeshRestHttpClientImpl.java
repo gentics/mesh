@@ -79,10 +79,11 @@ import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestRequestUtil;
-import com.gentics.mesh.rest.client.handler.MeshResponseHandler;
+import com.gentics.mesh.rest.client.handler.ResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshBinaryResponseHandler;
-import com.gentics.mesh.rest.client.handler.impl.MeshJsonObjectResponseHandler;
-import com.gentics.mesh.rest.client.handler.impl.MeshWebrootResponseHandler;
+import com.gentics.mesh.rest.client.handler.impl.GraphQLResponseHandler;
+import com.gentics.mesh.rest.client.handler.impl.JsonObjectResponseHandler;
+import com.gentics.mesh.rest.client.handler.impl.WebRootResponseHandler;
 
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -641,7 +642,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		}
 		// TODO encode path?
 		String requestUri = BASEURI + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
-		MeshResponseHandler<WebRootResponse> handler = new MeshWebrootResponseHandler(HttpMethod.GET, requestUri);
+		ResponseHandler<WebRootResponse> handler = new WebRootResponseHandler(HttpMethod.GET, requestUri);
 		HttpClientRequest request = client.request(GET, requestUri, handler);
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "*/*");
@@ -1037,8 +1038,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 //		return MeshRestRequestUtil.prepareRequest(POST, path, JsonObject.class, buffer,
 //				"application/json", client, authentication);
 		
-		
-		MeshJsonObjectResponseHandler handler = new MeshJsonObjectResponseHandler(POST, uri);
+		GraphQLResponseHandler handler = new GraphQLResponseHandler(uri);
 		HttpClientRequest request = client.request(POST, uri, handler);
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "application/json");

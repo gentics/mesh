@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.rest.error.Errors.missingPerm;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
@@ -134,8 +135,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		Project project = ac.getProject();
 		if (requestUser.hasPermission(project, READ_PERM)) {
 			return project;
+		} else {
+			throw missingPerm("Project", project.getUuid());
 		}
-		return null;
 	}
 
 	/**

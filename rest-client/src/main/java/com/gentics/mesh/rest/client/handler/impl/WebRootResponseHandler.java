@@ -5,7 +5,6 @@ import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
-import com.gentics.mesh.rest.client.handler.AbstractMeshResponseHandler;
 
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpHeaders;
@@ -15,10 +14,10 @@ import io.vertx.core.http.HttpMethod;
  * Response handler for webroot responses. The webroot endpoint is special since it may return a JSON response or the binary field value. This handler will wrap
  * both possible values into one {@link WebRootResponse} object.
  */
-public class MeshWebrootResponseHandler extends AbstractMeshResponseHandler<WebRootResponse> {
+public class WebRootResponseHandler extends ModelResponseHandler<WebRootResponse> {
 
-	public MeshWebrootResponseHandler(HttpMethod method, String uri) {
-		super(method, uri);
+	public WebRootResponseHandler(HttpMethod method, String uri) {
+		super(WebRootResponse.class, method, uri);
 	}
 
 	@Override
@@ -29,7 +28,7 @@ public class MeshWebrootResponseHandler extends AbstractMeshResponseHandler<WebR
 		String contentType = rh.getHeader(HttpHeaders.CONTENT_TYPE.toString());
 		if (contentType.startsWith(APPLICATION_JSON)) {
 			// Delegate the response to the json handler
-			MeshJsonResponseHandler<NodeResponse> handler = new MeshJsonResponseHandler<>(NodeResponse.class, getMethod(), contentType);
+			ModelResponseHandler<NodeResponse> handler = new ModelResponseHandler<>(NodeResponse.class, getMethod(), contentType);
 			handler.handle(rh);
 			handler.getFuture().setHandler(rh2 -> {
 				if (rh2.failed()) {

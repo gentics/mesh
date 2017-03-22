@@ -37,7 +37,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.rest.client.MeshRestClientHttpException;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.Tuple;
@@ -114,8 +114,8 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			latchFor(future);
 			assertTrue("The node update should fail with a conflict error", future.failed());
 			Throwable error = future.cause();
-			assertThat(error).isNotNull().isInstanceOf(MeshRestClientHttpException.class);
-			MeshRestClientHttpException conflictException = ((MeshRestClientHttpException) error);
+			assertThat(error).isNotNull().isInstanceOf(MeshRestClientMessageException.class);
+			MeshRestClientMessageException conflictException = ((MeshRestClientMessageException) error);
 
 			assertThat((List) conflictException.getResponseMessage().getProperty("conflicts")).hasSize(1).containsExactly("name");
 			assertThat(conflictException.getStatusCode()).isEqualTo(CONFLICT.code());
@@ -353,8 +353,8 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			latchFor(future);
 			assertTrue("The node update should fail with a conflict error", future.failed());
 			Throwable error = future.cause();
-			assertThat(error).isNotNull().isInstanceOf(MeshRestClientHttpException.class);
-			MeshRestClientHttpException conflictException = ((MeshRestClientHttpException) error);
+			assertThat(error).isNotNull().isInstanceOf(MeshRestClientMessageException.class);
+			MeshRestClientMessageException conflictException = ((MeshRestClientMessageException) error);
 			assertThat(((List) conflictException.getResponseMessage().getProperty("conflicts"))).hasSize(2).containsExactly("micronode.firstName",
 					"micronode.lastName");
 			assertThat(conflictException.getStatusCode()).isEqualTo(CONFLICT.code());

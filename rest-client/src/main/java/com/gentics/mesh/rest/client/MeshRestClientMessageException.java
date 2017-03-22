@@ -2,7 +2,10 @@ package com.gentics.mesh.rest.client;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 
-public class MeshRestClientHttpException extends Exception {
+/**
+ * Rest client exception which stores the error information in within a generic message response.
+ */
+public class MeshRestClientMessageException extends Exception {
 
 	private static final long serialVersionUID = 6595846107882435538L;
 
@@ -13,11 +16,11 @@ public class MeshRestClientHttpException extends Exception {
 
 	private GenericMessageResponse responseMessage;
 
-	public MeshRestClientHttpException(int statusCode, String statusMessage) {
+	public MeshRestClientMessageException(int statusCode, String statusMessage) {
 		this(statusCode, statusMessage, null);
 	}
 
-	public MeshRestClientHttpException(int statusCode, String statusMessage, GenericMessageResponse responseMessage) {
+	public MeshRestClientMessageException(int statusCode, String statusMessage, GenericMessageResponse responseMessage) {
 		super(statusMessage);
 		this.statusCode = statusCode;
 		this.responseMessage = responseMessage;

@@ -4,7 +4,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 
 import com.gentics.mesh.http.HttpConstants;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.rest.client.handler.AbstractMeshResponseHandler;
+import com.gentics.mesh.rest.client.handler.AbstractResponseHandler;
+import com.gentics.mesh.rest.client.handler.GenericMessageErrorHandler;
 
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpMethod;
@@ -16,9 +17,9 @@ import io.vertx.core.logging.LoggerFactory;
  * 
  * @param <T>
  */
-public class MeshJsonResponseHandler<T> extends AbstractMeshResponseHandler<T> {
+public class ModelResponseHandler<T> extends AbstractResponseHandler<T> implements GenericMessageErrorHandler<T> {
 
-	private static final Logger log = LoggerFactory.getLogger(MeshJsonResponseHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(ModelResponseHandler.class);
 
 	private Class<? extends T> classOfT;
 
@@ -32,7 +33,7 @@ public class MeshJsonResponseHandler<T> extends AbstractMeshResponseHandler<T> {
 	 * @param uri
 	 *            Uri that was queried
 	 */
-	public MeshJsonResponseHandler(Class<? extends T> classOfT, HttpMethod method, String uri) {
+	public ModelResponseHandler(Class<? extends T> classOfT, HttpMethod method, String uri) {
 		super(method, uri);
 		this.classOfT = classOfT;
 	}
@@ -65,6 +66,7 @@ public class MeshJsonResponseHandler<T> extends AbstractMeshResponseHandler<T> {
 				}
 			});
 		} else {
+			//TODO move regular string success handler into dedicated interface
 			if (classOfT.isAssignableFrom(String.class)) {
 				response.bodyHandler(buffer -> {
 					future.complete((T) buffer.toString());

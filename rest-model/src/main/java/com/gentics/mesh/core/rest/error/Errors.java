@@ -86,6 +86,17 @@ public enum Errors {
 	}
 
 	/**
+	 * Create a i18n translated permission error exception.
+	 * 
+	 * @param elementType
+	 * @param elementDescription
+	 * @return
+	 */
+	public static PermissionException missingPerm(String elementType, String elementDescription) {
+		return new PermissionException(elementType, elementDescription);
+	}
+
+	/**
 	 * Create a i18n translated error exception.
 	 * 
 	 * @param status
@@ -108,7 +119,8 @@ public enum Errors {
 	 */
 	public static Errors valueByName(String typeName) {
 		for (Errors type : values()) {
-			if (type.getType().equals(typeName)) {
+			if (type.getType()
+					.equals(typeName)) {
 				return type;
 			}
 		}

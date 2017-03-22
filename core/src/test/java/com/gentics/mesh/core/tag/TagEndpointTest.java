@@ -54,7 +54,7 @@ import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.rest.client.MeshRestClientHttpException;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
@@ -414,7 +414,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 					.invoke();
 			latchFor(future);
 			expectException(future, CONFLICT, "tag_create_tag_with_same_name_already_exists", "red", "colors");
-			MeshRestClientHttpException exception = ((MeshRestClientHttpException) future.cause());
+			MeshRestClientMessageException exception = ((MeshRestClientMessageException) future.cause());
 			assertNotNull(exception.getResponseMessage().getProperties());
 			assertNotNull(exception.getResponseMessage().getProperties().get("conflictingUuid"));
 		}

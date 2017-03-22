@@ -5,8 +5,8 @@ import org.apache.commons.lang.StringUtils;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.rest.MeshRestClientAuthenticationProvider;
-import com.gentics.mesh.rest.client.handler.MeshResponseHandler;
-import com.gentics.mesh.rest.client.handler.impl.MeshJsonResponseHandler;
+import com.gentics.mesh.rest.client.handler.ResponseHandler;
+import com.gentics.mesh.rest.client.handler.impl.ModelResponseHandler;
 import com.gentics.mesh.rest.client.impl.MeshHttpRequestImpl;
 
 import io.vertx.core.buffer.Buffer;
@@ -46,7 +46,7 @@ public final class MeshRestRequestUtil {
 	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType,
 			HttpClient client, MeshRestClientAuthenticationProvider authentication, String accepts) {
 		String uri = BASEURI + path;
-		MeshResponseHandler<T> handler = new MeshJsonResponseHandler<T>(classOfT, method, uri);
+		ResponseHandler<T> handler = new ModelResponseHandler<T>(classOfT, method, uri);
 
 		HttpClientRequest request = client.request(method, uri, handler);
 		// Let the response handler fail when an error ocures

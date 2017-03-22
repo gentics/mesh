@@ -25,10 +25,12 @@ import org.elasticsearch.index.query.RangeQueryBuilder;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.rest.client.MeshRestClientHttpException;
+import com.gentics.mesh.rest.client.MeshRestClientJsonObjectException;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -61,12 +63,13 @@ public final class MeshTestHelper {
 		assertTrue("We expected the future to have failed but it succeeded.", future.failed());
 		assertNotNull(future.cause());
 
-		if (future.cause() instanceof MeshRestClientHttpException) {
-			MeshRestClientHttpException exception = ((MeshRestClientHttpException) future.cause());
+		if (future.cause() instanceof MeshRestClientMessageException) {
+			MeshRestClientMessageException exception = ((MeshRestClientMessageException) future.cause());
 			assertEquals("The status code of the nested exception did not match the expected value.", status.code(), exception.getStatusCode());
 			assertEquals(message, exception.getMessage());
 		} else {
-			future.cause().printStackTrace();
+			future.cause()
+					.printStackTrace();
 			fail("Unhandled exception");
 		}
 	}
@@ -90,7 +93,8 @@ public final class MeshTestHelper {
 	public static <T> T call(ClientHandler<T> handler) {
 		MeshResponse<T> future;
 		try {
-			future = handler.handle().invoke();
+			future = handler.handle()
+					.invoke();
 		} catch (Exception e) {
 			future = new MeshResponse<>(Future.failedFuture(e));
 		}
@@ -100,7 +104,34 @@ public final class MeshTestHelper {
 	}
 
 	/**
-	 * Call the given handler, latch for the future and expect the given failure in the future
+	 * Returns the failure response and asserts the given status code.
+	 * 
+	 * @param handler
+	 * @param status
+	 * @return
+	 * @throws Throwable 
+	 */
+	public static JsonObject call(ClientHandler<JsonObject> handler, HttpResponseStatus status) throws Throwable {
+		MeshResponse<JsonObject> future;
+		try {
+			future = handler.handle()
+					.invoke();
+		} catch (Exception e) {
+			future = new MeshResponse<>(Future.failedFuture(e));
+		}
+		latchFor(future);
+		if (!future.failed()) {
+			fail("Request should have failed but it did not.");
+		}
+		if (future.cause() instanceof MeshRestClientJsonObjectException) {
+			MeshRestClientJsonObjectException error = (MeshRestClientJsonObjectException) future.cause();
+			return error.getResponseInfo();
+		}
+		throw future.cause();
+	}
+
+	/**
+	 * Call the given handler, latch for the future and expect the given failure in the future.
 	 *
 	 * @param handler
 	 *            handler
@@ -114,7 +145,8 @@ public final class MeshTestHelper {
 	public static <T> void call(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
 		MeshResponse<T> future;
 		try {
-			future = handler.handle().invoke();
+			future = handler.handle()
+					.invoke();
 		} catch (Exception e) {
 			future = new MeshResponse<>(Future.failedFuture(e));
 		}
@@ -168,7 +200,9 @@ public final class MeshTestHelper {
 			assertSuccess(future);
 			Object result = future.result();
 			// Rest responses do not share a common class. We just use reflection to extract the uuid from the response pojo
-			Object uuidObject = result.getClass().getMethod("getUuid").invoke(result);
+			Object uuidObject = result.getClass()
+					.getMethod("getUuid")
+					.invoke(result);
 			String currentUuid = uuidObject.toString();
 			assertFalse("The rest api returned a response with a uuid that was returned before. Each create request must always be atomic.",
 					uuids.contains(currentUuid));
@@ -221,7 +255,9 @@ public final class MeshTestHelper {
 	}
 
 	public static String getRangeQuery(String fieldName, double from, double to) throws JSONException {
-		RangeQueryBuilder range = QueryBuilders.rangeQuery(fieldName).from(from).to(to);
+		RangeQueryBuilder range = QueryBuilders.rangeQuery(fieldName)
+				.from(from)
+				.to(to);
 		return "{ \"query\": " + range.toString() + "}";
 	}
 

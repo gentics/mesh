@@ -29,17 +29,18 @@ public class MeshLocalRequestImpl<T> implements MeshRequest<T> {
 
 	@Override
 	public Completable toCompletable() {
-		return toObservable().toCompletable();
+		return Completable.defer(() -> invoke().rxSetHandler()
+				.toCompletable());
 	}
 
 	@Override
 	public Single<T> toSingle() {
-		return toObservable().toSingle();
+		return Single.defer(() -> invoke().rxSetHandler());
 	}
-
 
 	@Override
 	public Observable<T> toObservable() {
-		return Observable.defer(() -> invoke().setHandlerObservable());
+		return Observable.defer(() -> invoke().rxSetHandler()
+				.toObservable());
 	}
 }
