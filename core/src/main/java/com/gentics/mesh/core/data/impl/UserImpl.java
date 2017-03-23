@@ -335,7 +335,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 * @param restUser
 	 */
 	private void setGroups(InternalActionContext ac, UserResponse restUser) {
-		for (Group group : getGroups(ac.getUser(), null)) {
+		//TODO filter by permissions
+		for (Group group : getGroups()) {
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups()
 					.add(reference);
