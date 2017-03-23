@@ -57,15 +57,16 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testQueries.add("full-query");
 		testQueries.add("role-user-group-query");
 		testQueries.add("group-query");
-		testQueries.add("node-relations-query");
 		testQueries.add("schema-query");
 		testQueries.add("microschema-query");
 		testQueries.add("paging-query");
 		testQueries.add("tagFamily-query");
+		testQueries.add("node-relations-query");
+		testQueries.add("node-fields-query");
+		testQueries.add("node-container-query");
 		testQueries.add("node2-query");
 		testQueries.add("project-query");
 		testQueries.add("tag-query");
-		testQueries.add("node-fields-query");
 		testQueries.add("release-query");
 		testQueries.add("user-query");
 		return testQueries;

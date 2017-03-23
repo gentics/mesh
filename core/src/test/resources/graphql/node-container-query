@@ -1,0 +1,26 @@
+{
+	node(path:"/Neuigkeiten/2015") {
+		container(language: "en") {
+			# [$.data.node.container.version=1.0]
+			version
+
+			# [$.data.node.container.isDraft=true]
+			isDraft
+
+			# [$.data.node.container.isPublished=true]
+			isPublished
+
+			# [$.data.node.container.language=en]
+			language
+
+			# [$.data.node.container.editor.username=joe1]
+			editor { username }
+
+			# [$.data.node.container.edited=<not-null>]
+			edited
+
+			# [$.data.node.container.node.uuid=<is-uuid>]
+			node { uuid }
+		}
+	}
+}

@@ -57,6 +57,7 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 				.type(new GraphQLTypeReference("Node"))
 				.dataFetcher(this::parentNodeFetcher));
 
+		// .edited
 		type.field(newFieldDefinition().name("edited")
 				.description("ISO8601 formatted edit timestamp")
 				.type(GraphQLString)
@@ -64,30 +65,6 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 					EditorTrackingVertex vertex = env.getSource();
 					return vertex.getLastEditedDate();
 				}));
-
-		//		type.field(newFieldDefinition().name("created")
-		//				.description("ISO8601 formatted created date string")
-		//				.type(GraphQLString)
-		//				.dataFetcher(fetcher -> {
-		//					Object source = fetcher.getSource();
-		//					if (source instanceof CreatorTrackingVertex) {
-		//						return ((CreatorTrackingVertex) source).getCreationDate();
-		//					}
-		//					return null;
-		//				})
-		//				.build());
-		//
-		//		type.field(newFieldDefinition().name("creator")
-		//				.description("Creator of the element")
-		//				.type(new GraphQLTypeReference("User"))
-		//				.dataFetcher(fetcher -> {
-		//					Object source = fetcher.getSource();
-		//					if (source instanceof CreatorTrackingVertex) {
-		//						return ((CreatorTrackingVertex) source).getCreator();
-		//					}
-		//					return null;
-		//				})
-		//				.build());
 
 		// .editor
 		type.field(newFieldDefinition().name("editor")
