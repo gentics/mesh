@@ -46,26 +46,23 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Object languagePathsFetcher(DataFetchingEnvironment env) {
-		LinkType linkType = env.getArgument("linkType");
-		if (linkType != null) {
+		String typeName = env.getArgument("linkType");
+		if (typeName != null) {
+			LinkType type = LinkType.valueOf(typeName);
 			GraphQLContext gc = env.getContext();
 			Release release = gc.getRelease();
 			Node node = env.getSource();
-			Map<String, String> map = node.getLanguagePaths(gc, linkType, release);
-			return map.entrySet()
-					.stream()
-					.map(entry -> new LinkInfo(entry.getKey(), entry.getValue()))
-					.collect(Collectors.toList());
+			// We only need to render links for - non off types
+			if (type != LinkType.OFF) {
+				Map<String, String> map = node.getLanguagePaths(gc, type, release);
+				return map.entrySet()
+						.stream()
+						.map(entry -> new LinkInfo(entry.getKey(), entry.getValue()))
+						.collect(Collectors.toList());
+			}
 		}
 		return null;
 
-	}
-
-	public Object projectFetcher(DataFetchingEnvironment env) {
-		GraphQLContext gc = env.getContext();
-		Node node = env.getSource();
-		Project project = node.getProject();
-		return gc.requiresPerm(project, READ_PERM);
 	}
 
 	/**
@@ -138,14 +135,20 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	public GraphQLObjectType getNodeType(Project project) {
 		Builder nodeType = newObject();
 		nodeType.name("Node");
-		nodeType.description("Mesh Node");
-		interfaceTypeProvider.addCommonFields(nodeType);
+		nodeType.description(
+				"A Node is the basic building block for contents. Nodes can contain multiple language specific contents. These contents contain the fields with the actual content.");
+		interfaceTypeProvider.addCommonFields(nodeType, true);
 
 		// .project
 		nodeType.field(newFieldDefinition().name("project")
 				.description("Project of the node")
 				.type(new GraphQLTypeReference("Project"))
-				.dataFetcher(this::projectFetcher));
+				.dataFetcher((env) -> {
+					GraphQLContext gc = env.getContext();
+					Node node = env.getSource();
+					Project projectOfNode = node.getProject();
+					return gc.requiresPerm(projectOfNode, READ_PERM);
+				}));
 
 		// .breadcrumb
 		nodeType.field(newFieldDefinition().name("breadcrumb")

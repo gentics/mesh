@@ -10,6 +10,9 @@
 				uuid
 			}
 		}
+		languagePaths {
+			link
+		}
 		parent {
 			# [$.data.denode.parent.uuid=<is-uuid>]
 			uuid

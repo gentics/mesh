@@ -22,6 +22,20 @@ Gentics Mesh will also provide you a lot of powerful tools build around and for 
 
 * link:changelog.html[Changelog]
 
+
+== GraphQL
+
+Gentics Mesh is also able to process http://graphql.org/[GraphQL] queries. You can use GraphQL to directly specify what fields should be retrieved and retrieve deeply nested data sets.
+Internally Gentics Mesh will resolve your query and traverse your content graph to fetch only the data you specified.
+
+=== Examples
+
+include::json/tiny-query[]
+
+Field query:
+
+include::json/field-query[]
+
 == REST API
 
 The link:raml[Gentics Mesh REST API] provides endpoints which enable you to invoke CRUD operations on any Gentics Mesh element.
@@ -57,6 +71,7 @@ You also have to set the keystore secret and the path to the keystore file. See 
 
 Before using JWT you have to create a keystore which holds the secret to generate the signature for the token.
 Currently only the HS256 algorithm is supported. You can use the java `keytool` to create a new keystore.
+
 Here is an example on how to create a keystore:
 
 [source,bash]
@@ -70,13 +85,10 @@ Example:
 
 [source,bash]
 ----
-"authenticationOptions" : {
-  "jwtAuthenticationOptions" : {
-    "tokenExpirationTime" : 3600,
-    "signatureSecret" : "secret",
-    "keystorePath": "keystore.jceks"
-  }
-}
+security:
+  tokenExpirationTime: 3600
+  signatureSecret: "secret"
+  keystorePath: "keystore.jceks"
 ----
 
 ===== Basic Auth
@@ -538,12 +550,13 @@ Since the JSON standard does not have a special regex type, it would need to be 
 
 [options="header"]
 |======
-| Component                                                    | Type                | Version
-| http://orientdb.com/[OrientDB]                               | Graph Database      | 2.2.x
-| https://github.com/Syncleus/Ferma[Ferma]                     | OGM                 | 2.2.x
-| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine       | 2.3.x
-| http://vertx.io/[Vert.x]                                     | Core Framework      | 3.3.x
-| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid | 3.5.x
+| Component                                                    | Type                 | Version
+| http://orientdb.com/[OrientDB]                               | Graph Database       | 2.2.x
+| https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.2.x
+| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 2.3.x
+| http://vertx.io/[Vert.x]                                     | Core Framework       | 3.3.x
+| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.5.x
+| https://google.github.io/dagger/                             | Dependency Injection | 2.6.x
 |======
 
 == Installation
@@ -991,11 +1004,11 @@ This makes it possible to integrate Gentics Mesh with many known routing framewo
 
 [options="header"]
 |======
-| Framework                           | Language
-| http://silex.sensiolabs.org/[Silex] | PHP
-| http://expressjs.com/[ExpressJS]    | JS
-| http://vertx.io/[Vert.x]            | Java,JS,Ceylon
-| http://lotusrb.org/[Lotus]          | Ruby
+| Framework                           | Language | Example
+| http://silex.sensiolabs.org/[Silex] | PHP      | http://getmesh.io/Blog/Building+an+API-first+Web+App+with+Gentics+Mesh+and+the+PHP+Microframework+Silex[Blogpost]
+| http://expressjs.com/[ExpressJS]    | JS       | http://getmesh.io/Blog/Getting+started+with+Express+and+the+API-first+CMS+Gentics+Mesh[Blogpost]
+| http://vertx.io/[Vert.x]            | Java,JS,Ceylon | http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[Blogpost] 
+| http://lotusrb.org/[Lotus]          | Ruby | -
 |======
 
 A webroot path consists of multiple path segments. Each segment of the url must be URL encoded. A list of segments can be provided by a single node. The `segmentField` information from the schema is used to determine the segment field value which the node provides. Each language of the node must provide different path segment.
@@ -1673,4 +1686,5 @@ The post request will contain the node JSON data of the current editing state. T
 
 == License
 
-Gentics Mesh is published under a commercial license. http://getmesh.io/Terms[License Terms]
+* Gentics Mesh is published under a commercial license. http://getmesh.io/Terms[License Terms]
+* https://github.com/graphql/graphiql[GraphiQL] is owned and developed by Facebook Inc.

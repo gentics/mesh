@@ -113,9 +113,21 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				.description("Flag which idicates whether the read published permission is granted."));
 		return builder.build();
 	}
-
+	
+	
 	public void addCommonFields(graphql.schema.GraphQLObjectType.Builder builder) {
-		builder.withInterface(createCommonType());
+		addCommonFields(builder, false);
+	}
+
+	/**
+	 * Add common fields to the given builder.
+	 * 
+	 * @param builder
+	 * @param isNode
+	 *            Flag which indicates whether the builder is for a node. Nodes do not require certain common fields. Those fields will be excluded.
+	 */
+	public void addCommonFields(graphql.schema.GraphQLObjectType.Builder builder, boolean isNode) {
+		//builder.withInterface(createCommonType());
 
 		// .uuid
 		builder.field(newFieldDefinition().name("uuid")
@@ -143,15 +155,6 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 
 		//TODO rolePerms
 
-		// .edited
-		builder.field(newFieldDefinition().name("edited")
-				.description("ISO8601 formatted edit timestamp")
-				.type(GraphQLString)
-				.dataFetcher(env -> {
-					EditorTrackingVertex vertex = env.getSource();
-					return vertex.getLastEditedDate();
-				}));
-
 		// .created
 		builder.field(newFieldDefinition().name("created")
 				.description("ISO8601 formatted created date string")
@@ -171,15 +174,26 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 					return gc.requiresPerm(vertex.getCreator(), READ_PERM);
 				}));
 
-		// .editor
-		builder.field(newFieldDefinition().name("editor")
-				.description("Editor of the element")
-				.type(new GraphQLTypeReference("User"))
-				.dataFetcher(env -> {
-					GraphQLContext gc = env.getContext();
-					EditorTrackingVertex vertex = env.getSource();
-					return gc.requiresPerm(vertex.getEditor(), READ_PERM);
-				}));
+		if (!isNode) {
+			// .edited
+			builder.field(newFieldDefinition().name("edited")
+					.description("ISO8601 formatted edit timestamp")
+					.type(GraphQLString)
+					.dataFetcher(env -> {
+						EditorTrackingVertex vertex = env.getSource();
+						return vertex.getLastEditedDate();
+					}));
+
+			// .editor
+			builder.field(newFieldDefinition().name("editor")
+					.description("Editor of the element")
+					.type(new GraphQLTypeReference("User"))
+					.dataFetcher(env -> {
+						GraphQLContext gc = env.getContext();
+						EditorTrackingVertex vertex = env.getSource();
+						return gc.requiresPerm(vertex.getEditor(), READ_PERM);
+					}));
+		}
 
 	}
 
