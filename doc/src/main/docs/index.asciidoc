@@ -18,10 +18,7 @@ Gentics Mesh will also provide you a lot of powerful tools build around and for 
  * Clustering (in development)
  * Versioning of your documents
 
-== Changelog
-
-* link:changelog.html[Changelog]
-
+== link:changelog.html[Changelog]
 
 == GraphQL
 
@@ -35,6 +32,18 @@ include::json/tiny-query[]
 Field query:
 
 include::json/field-query[]
+
+=== GraphiQL Browser
+
+Once authenticated you can access the interactive GraphiQL browser. ```/api/v1/:projectName/graphql/browser/``` .
+
+Try our link:/api/v1/demo/graphql/browser/[Demo].
+
+=== Limitations
+
+* The GraphQL API can currently only be used for read-only operations. Modifying data with via mutations is currently not supported.
+* GraphQL queries are restricted to a specific project. It is not possible to query data across multiple projects.
+* GraphQL queries are restricted to a specific release. The scope of the release can be changed by adding the `?release` query parameter.
 
 == REST API
 
@@ -50,12 +59,16 @@ All REST API responses are only available in JSON.
 
 The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en[Postman] chrome extension can be used to build and invoke requests from your browser to Gentics Mesh.
 
-
 === Authentication
 
 ==== Overview
 
-Gentics Mesh currently supports multiple ways of authentication: `Basic`, `JSON`, `Json Web Token (JWT)`. 
+Gentics Mesh currently supports multiple ways of authentication.
+You can login via:
+
+* sending Basic Authentication header 
+* sending JSON Data 
+* sending a JWT token
 
 Each way will store a JWT in the cookie which is used to authenticate the user for succeeding requests.
 
@@ -65,7 +78,7 @@ This will set create new token which has a refreshed expire time.
 
 ===== JWT Configuration
 
-The Json Web Token store can be configured within the main `mesh.yml` config file.
+The _Json Web Token_ store can be configured within the main `mesh.yml` config file.
 
 You also have to set the keystore secret and the path to the keystore file. See above for an example.
 
@@ -124,7 +137,6 @@ Gentics Mesh expects and returns UTF-8 encoded data. Sending data in any other e
 
 It is important to set the ```Content-Type: application/json``` when sending JSON data and to also set the ```Accept``` header in order to signal Gentics Mesh that your client is accepting JSON.
 
-
 [source,bash]
 ----
 Content-Type: application/json
@@ -135,17 +147,43 @@ A request which is not well formatted may fail. Gentics Mesh will do its best to
 
 === Paging
 
-The paging query parameters are ```perPage``` and ```page```. It is important to note that ```page``` is 1-based and ```perPage``` can be set to ```0``` in order to just retrieve a count of elements.
+The paging query parameters are `perPage` and `page` . It is important to note that ```page``` is 1-based and ```perPage``` can be set to ```0``` in order to just retrieve a count of elements.
 
 === File Upload
 
-Binary data can be attached to node binary fields which have been created using a schema that lists one or more binary fields. The ```/api/v1/nodes/:uuid/languages/:languageTag/fields/:fieldName``` endpoint can be used to POST binary data and thus update the stored binary field. This endpoint is accepting only ```multipart/form-data```.
+Binary data can be attached to node binary fields which have been created using a schema that lists one or more binary fields. The ```/api/v1/nodes/:uuid/binary/:fieldName``` endpoint can be used to POST binary data and thus update the stored binary field. This endpoint is accepting only ```multipart/form-data``` .
+It is required to specify the `version` and `language` within the update request. This is similar to regular node update requests in which these information must be added to the JSON.
+
+
+```
+----------Geg2Oob
+Content-Disposition: form-data; name="version"
+
+1.0
+
+----------Geg2Oob
+Content-Disposition: form-data; name="language"
+
+en
+
+----------Geg2Oob
+Content-Disposition: form-data; name="shohY6d"; filename="somefile.bin"
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: binary
+
+fileData
+
+----------Geg2Oob--
+
+```
+
 
 === Examples
 
 *Create a new node*
 
-It is mandatory to specify the ```parentNodeUuid```, ```language```  and ```schema``` field when creating a node. It is possible specify the schema uuid instead of the name. At least one property within the ```schema``` object must be set.
+It is mandatory to specify the ```parentNode``` reference, ```language```  and ```schema``` field when creating a node. 
+It is possible specify the schema uuid instead of the name. At least one property within the ```schema``` object must be set.
 
 [source]
 ----
@@ -185,7 +223,6 @@ Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
 Accept: application/json
 ----
 
-
 == Building blocks
 
 Gentics Mesh provides a various building blocks which can be used in order to setup your content structure. Below are elements which can be used to create your project datastructure.
@@ -207,7 +244,7 @@ Endpoint: ```/api/v1/users/:uuid```
 | firstname     | Firstname of the user
 | username      | Username of the user (mandatory)
 | emailAddress  | Email Address of the user
-| nodeReference | Node reference which can be used to store additional user data. It is also possible to expand this field using the ```expand``` query parameter.
+| nodeReference | Node reference which can be used to store additional user data.
 | enabled       | Enabled flag. Disabled users can no longer log into Gentics Mesh. A deleted user will not be completely removed. Instead the user will just be disabled.
 | groups        | List of group references of the user
 | creator       | User reference of the creator
@@ -350,7 +387,7 @@ Endpoint: ```/api/v1/:projectName/tagFamilies/:uuid/tags```
 |======
 | Property      | Description
 | uuid          | Uuid of the tag
-| fields        | Tag fields which provide the tag name
+| name          | Name of the tag
 | tagFamily     | Tag family reference of the tag
 | creator       | User reference of the creator
 | created       | Epoch creation date
@@ -375,7 +412,7 @@ Nodes can be hierarchically structured if the schema is allowing this. The type 
 NOTE: It is important to understand that a node is just a container for language variants. These language variants will store your fields. 
 You can query individual language variants by appending the ```?lang``` request parameter. The ```language``` json property within an update or create request will be used to identify which language variant should be created or updated.
 
-Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=de,en&expand=field&version=draft&release=winter2016```
+Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=de,en&version=draft&release=winter2016```
 
 
 [options="header"]
@@ -425,13 +462,6 @@ include::json/response/api/v1/:projectName/nodes/:uuid/200/NodeResponse.json[]
 | The role query parameter may be used in order to add permission information related to the specified role to the response.
 This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role.
 Endpoint: ```/api/v1/:projectName/nodes?role=:roleUuid```
-
-| expand
-| A comma separated list of fields to expand on the node. When not set various fields may only contain element references.
-It is possible to expand node fields.
-
-| expandAll
-| The ```expandAll``` query parameter is a boolean flag which can be used to expand all expandable fields.
 
 | release
 | The specific ```release``` to be used for loading the node.
@@ -688,7 +718,7 @@ By default all specified directories are relative to the current working directo
 
 === Cache Options
 
-Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying graph database cache settings.
+Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying graph and elasticsearch database cache settings.
 
 == Features
 
@@ -1004,11 +1034,11 @@ This makes it possible to integrate Gentics Mesh with many known routing framewo
 
 [options="header"]
 |======
-| Framework                           | Language | Example
-| http://silex.sensiolabs.org/[Silex] | PHP      | http://getmesh.io/Blog/Building+an+API-first+Web+App+with+Gentics+Mesh+and+the+PHP+Microframework+Silex[Blogpost]
-| http://expressjs.com/[ExpressJS]    | JS       | http://getmesh.io/Blog/Getting+started+with+Express+and+the+API-first+CMS+Gentics+Mesh[Blogpost]
+| Framework                           | Language       | Example
+| http://silex.sensiolabs.org/[Silex] | PHP            | http://getmesh.io/Blog/Building+an+API-first+Web+App+with+Gentics+Mesh+and+the+PHP+Microframework+Silex[Blogpost]
+| http://expressjs.com/[ExpressJS]    | JS             | http://getmesh.io/Blog/Getting+started+with+Express+and+the+API-first+CMS+Gentics+Mesh[Blogpost]
 | http://vertx.io/[Vert.x]            | Java,JS,Ceylon | http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[Blogpost] 
-| http://lotusrb.org/[Lotus]          | Ruby | -
+| http://lotusrb.org/[Lotus]          | Ruby           | -
 |======
 
 A webroot path consists of multiple path segments. Each segment of the url must be URL encoded. A list of segments can be provided by a single node. The `segmentField` information from the schema is used to determine the segment field value which the node provides. Each language of the node must provide different path segment.
@@ -1412,7 +1442,7 @@ The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possibl
 
 Images can be resized by appending the image manipulation query parameters on the binary node endpoint:
 
-Endpoint: ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/fields/:fieldname?width=220```
+Endpoint: ```/api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname?width=220```
 
 It is also possible to use the image manipulation in combination with the webroot endpoint:
 
@@ -1440,11 +1470,6 @@ Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=en,de```
 
 If the requested node is available in any of the languages, the response will contain the fields in that language (first language found).
 Otherwise, the node will still be returned, but without fields.
-
-==== Referenced nodes
-
-If requested nodes contain fields of type `node` or `list of nodes`, and the fields are expanded, the expanded versions of the referenced nodes will be in the
-same language as the node (if possible), otherwise the normal language fallback is done.
 
 === Search
 

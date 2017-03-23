@@ -2,7 +2,11 @@
 
 = Gentics Mesh Changelog
 
-== 0.8.0
+== 0.9.0
+
+icon:plus[] Gentics Mesh now supports GraphQL.
+
+icon:important[] The `expandAll` and `expand` parameters will be removed within an upcoming release of Gentics Mesh. We highly recommend to use the GraphQL endpoint instead if you want to fetch deeply nested data.
 
 icon:plus[] Schema name validation - Schema and microschema names must only contain letter, number or underscore characters.
 
@@ -11,6 +15,8 @@ icon:plus[] Node Tag Endpoint
 The endpoint `/api/v1/:projectName/nodes/:nodeUuid/tags` was enhanced. It is now possible to post a list of tag references which will be applied to the node. Tags which are not part of the list will removed from the node. Tags which do not exist will be created. Please note that tag families will not automatically be created.
 
 The `tags` field within the node response was updated accordingly.
+
+== 0.8.3
 
 icon:plus[] Names, string fields and html field values will now be indexed using the https://www.elastic.co/guide/en/elasticsearch/guide/current/ngrams-compound-words.html[trigram analyzer].
 

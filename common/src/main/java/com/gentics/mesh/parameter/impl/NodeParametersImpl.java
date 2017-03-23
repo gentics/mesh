@@ -66,24 +66,6 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		langParameter.setType(ParamType.STRING);
 		parameters.put(LANGUAGES_QUERY_PARAM_KEY, langParameter);
 
-		// expand
-		QueryParameter expandParameter = new QueryParameter();
-		expandParameter.setDescription(
-				"Specifies the name of fields which should be expanded. By default node fields are not expanded and just contain the node reference information. These fields fields can be expanded such that node fields are part of the response. Please note that expanding nodes stops at a certain depth in order to prevent endless recursions.");
-		expandParameter.setExample("nodeField, nodeList");
-		expandParameter.setRequired(false);
-		expandParameter.setType(ParamType.STRING);
-		parameters.put(EXPANDFIELDS_QUERY_PARAM_KEY, expandParameter);
-
-		// expandAll
-		QueryParameter expandAllParameter = new QueryParameter();
-		expandAllParameter.setDescription(
-				"All fields that can be expanded will be expanded when setting the parameter to true. Please note that expanding nodes stops at a certain depth in order to prevent endless recursions.");
-		expandAllParameter.setExample("true");
-		expandAllParameter.setRequired(false);
-		expandAllParameter.setType(ParamType.BOOLEAN);
-		parameters.put(EXPANDALL_QUERY_PARAM_KEY, expandAllParameter);
-
 		// resolveLinks
 		QueryParameter resolveLinksParameter = new QueryParameter();
 		resolveLinksParameter.setDescription(

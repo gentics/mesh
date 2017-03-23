@@ -95,7 +95,7 @@ import io.vertx.core.http.WebSocket;
 import io.vertx.core.json.JsonObject;
 
 /**
- * Http based rest client implementation.
+ * HTTP based rest client implementation.
  */
 public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
