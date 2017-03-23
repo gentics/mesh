@@ -1,7 +1,7 @@
 package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.core.rest.error.Errors.missingPerm;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
@@ -9,12 +9,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.service.WebRootService;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.path.Path;
 
 import graphql.schema.DataFetchingEnvironment;
@@ -88,22 +87,16 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	public Object nodeFetcher(DataFetchingEnvironment env) {
 		String uuid = env.getArgument("uuid");
 		if (uuid != null) {
-			InternalActionContext ac = env.getContext();
+			GraphQLContext gc = env.getContext();
 			Node node = boot.nodeRoot()
 					.findByUuid(uuid);
-			// Check permissions
-			if (ac.getUser()
-					.hasPermission(node, GraphPermission.READ_PERM)
-					|| ac.getUser()
-							.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
-				return node;
-			}
+			return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 		}
 
 		String path = env.getArgument("path");
 		if (path != null) {
-			InternalActionContext ac = env.getContext();
-			Path pathResult = webrootService.findByProjectPath(ac, path);
+			GraphQLContext gc = env.getContext();
+			Path pathResult = webrootService.findByProjectPath(gc, path);
 			return pathResult.getLast()
 					.getNode();
 		}
@@ -117,8 +110,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object userMeFetcher(DataFetchingEnvironment env) {
-		InternalActionContext ac = env.getSource();
-		MeshAuthUser requestUser = ac.getUser();
+		GraphQLContext gc = env.getContext();
+		User requestUser = gc.getUser();
 		// No need to check for permissions. The user should always be able to read himself
 		return requestUser;
 	}
@@ -130,14 +123,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object projectFetcher(DataFetchingEnvironment env) {
-		InternalActionContext ac = env.getSource();
-		MeshAuthUser requestUser = ac.getUser();
-		Project project = ac.getProject();
-		if (requestUser.hasPermission(project, READ_PERM)) {
-			return project;
-		} else {
-			throw missingPerm("Project", project.getUuid());
-		}
+		GraphQLContext gc = env.getContext();
+		Project project = gc.getProject();
+		return gc.requiresPerm(project, READ_PERM);
 	}
 
 	/**
@@ -147,16 +135,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public Object rootNodeFetcher(DataFetchingEnvironment env) {
-		InternalActionContext ac = env.getSource();
-		Project project = ac.getProject();
+		GraphQLContext gc = env.getContext();
+		Project project = gc.getProject();
 		if (project != null) {
 			Node node = project.getBaseNode();
-			if (ac.getUser()
-					.hasPermission(node, GraphPermission.READ_PERM)
-					|| ac.getUser()
-							.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
-				return node;
-			}
+			return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 		}
 		return null;
 	}

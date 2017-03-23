@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphql.type.field;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static graphql.Scalars.GraphQLBigDecimal;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLInt;
@@ -14,7 +15,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -27,9 +27,9 @@ import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 import com.gentics.mesh.graphql.type.MicronodeFieldTypeProvider;
 import com.gentics.mesh.util.DateUtils;
@@ -58,71 +58,53 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		// .fileName
 		type.field(newFieldDefinition().name("fileName")
 				.description("Filename of the uploaded file.")
-				.type(GraphQLString)
-				.build());
+				.type(GraphQLString));
 
 		// .width
 		type.field(newFieldDefinition().name("width")
 				.description("Image width in pixel.")
 				.type(GraphQLInt)
 				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof BinaryGraphField) {
-						return ((BinaryGraphField) source).getImageWidth();
-					}
-					return null;
-				})
-				.build());
+					BinaryGraphField field = fetcher.getSource();
+					return field.getImageWidth();
+				}));
+
 		// .height
 		type.field(newFieldDefinition().name("height")
 				.description("Image height in pixel.")
 				.type(GraphQLInt)
 				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof BinaryGraphField) {
-						return ((BinaryGraphField) source).getImageHeight();
-					}
-					return null;
-				})
-				.build());
+					BinaryGraphField field = fetcher.getSource();
+					return field.getImageHeight();
+				}));
 
 		// .sha512sum
 		type.field(newFieldDefinition().name("sha512sum")
 				.description("SHA512 checksum of the binary data.")
 				.type(GraphQLString)
 				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof BinaryGraphField) {
-						return ((BinaryGraphField) source).getSHA512Sum();
-					}
-					return null;
-				})
-				.build());
+					BinaryGraphField field = fetcher.getSource();
+					return field.getSHA512Sum();
+				}));
 
 		// .fileSize
 		type.field(newFieldDefinition().name("fileSize")
 				.description("Size of the binary data in bytes")
-				.type(GraphQLLong)
-				.build());
+				.type(GraphQLLong));
 
 		// .mimeType
 		type.field(newFieldDefinition().name("mimeType")
 				.description("Mimetype of the binary data")
-				.type(GraphQLString)
-				.build());
+				.type(GraphQLString));
 
 		// .dominantColor
 		type.field(newFieldDefinition().name("dominantColor")
 				.description("Computed image dominant color")
 				.type(GraphQLString)
 				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof BinaryGraphField) {
-						return ((BinaryGraphField) source).getImageDominantColor();
-					}
-					return null;
-				})
-				.build());
+					BinaryGraphField field = fetcher.getSource();
+					return field.getImageDominantColor();
+				}));
 
 		return type.build();
 	}
@@ -131,13 +113,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(createBinaryFieldType())
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						return nodeContainer.getBinary(schema.getName());
-					}
-					return null;
+				.dataFetcher(env -> {
+					GraphFieldContainer container = env.getSource();
+					return container.getBinary(schema.getName());
 				})
 				.build();
 
@@ -147,14 +125,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(GraphQLBoolean)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						BooleanGraphField booleanField = nodeContainer.getBoolean(schema.getName());
-						if (booleanField != null) {
-							return booleanField.getBoolean();
-						}
+				.dataFetcher(env -> {
+					GraphFieldContainer container = env.getSource();
+					BooleanGraphField booleanField = container.getBoolean(schema.getName());
+					if (booleanField != null) {
+						return booleanField.getBoolean();
 					}
 					return null;
 				})
@@ -165,14 +140,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(GraphQLBigDecimal)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						NumberGraphField numberField = nodeContainer.getNumber(schema.getName());
-						if (numberField != null) {
-							return numberField.getNumber();
-						}
+				.dataFetcher(env -> {
+					GraphFieldContainer container = env.getSource();
+					NumberGraphField numberField = container.getNumber(schema.getName());
+					if (numberField != null) {
+						return numberField.getNumber();
 					}
 					return null;
 				})
@@ -183,14 +155,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						HtmlGraphField htmlField = nodeContainer.getHtml(schema.getName());
-						if (htmlField != null) {
-							return htmlField.getHTML();
-						}
+				.dataFetcher(env -> {
+					GraphFieldContainer container = env.getSource();
+					HtmlGraphField htmlField = container.getHtml(schema.getName());
+					if (htmlField != null) {
+						return htmlField.getHTML();
 					}
 					return null;
 				})
@@ -201,14 +170,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof GraphFieldContainer) {
-						GraphFieldContainer nodeContainer = (GraphFieldContainer) source;
-						StringGraphField field = nodeContainer.getString(schema.getName());
-						if (field != null) {
-							return field.getString();
-						}
+				.dataFetcher(env -> {
+					GraphFieldContainer container = env.getSource();
+					StringGraphField field = container.getString(schema.getName());
+					if (field != null) {
+						return field.getString();
 					}
 					return null;
 				})
@@ -219,18 +185,16 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						DateGraphField dateField = nodeContainer.getDate(schema.getName());
-						if (dateField != null) {
-							return DateUtils.toISO8601(dateField.getDate(), 0);
-						}
+				.dataFetcher(env -> {
+					GraphFieldContainer container = env.getSource();
+					DateGraphField dateField = container.getDate(schema.getName());
+					if (dateField != null) {
+						return DateUtils.toISO8601(dateField.getDate(), 0);
 					}
 					return null;
 				})
 				.build();
+
 	}
 
 	/**
@@ -245,56 +209,51 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				.description(schema.getLabel())
 				.type(new GraphQLList(type))
 				.argument(getPagingArgs())
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
+				.dataFetcher(env -> {
+					GraphFieldContainer container = env.getSource();
 
-						switch (schema.getListType()) {
-						case "boolean":
-							return nodeContainer.getBooleanList(schema.getName())
-									.getList()
-									.stream()
-									.map(item -> item.getBoolean())
-									.collect(Collectors.toList());
-						case "html":
-							return nodeContainer.getHTMLList(schema.getName())
-									.getList()
-									.stream()
-									.map(item -> item.getHTML())
-									.collect(Collectors.toList());
-						case "string":
-							return nodeContainer.getStringList(schema.getName())
-									.getList()
-									.stream()
-									.map(item -> item.getString())
-									.collect(Collectors.toList());
-						case "number":
-							return nodeContainer.getNumberList(schema.getName())
-									.getList()
-									.stream()
-									.map(item -> item.getNumber())
-									.collect(Collectors.toList());
-						case "date":
-							return nodeContainer.getDateList(schema.getName())
-									.getList()
-									.stream()
-									.map(item -> DateUtils.toISO8601(item.getDate(), 0))
-									.collect(Collectors.toList());
-						case "node":
-							return nodeContainer.getNodeList(schema.getName())
-									.getList()
-									.stream()
-									.map(item -> item.getNode())
-									.collect(Collectors.toList());
-						case "micronode":
-							return null;
-						default:
-							return null;
-						}
-
+					switch (schema.getListType()) {
+					case "boolean":
+						return container.getBooleanList(schema.getName())
+								.getList()
+								.stream()
+								.map(item -> item.getBoolean())
+								.collect(Collectors.toList());
+					case "html":
+						return container.getHTMLList(schema.getName())
+								.getList()
+								.stream()
+								.map(item -> item.getHTML())
+								.collect(Collectors.toList());
+					case "string":
+						return container.getStringList(schema.getName())
+								.getList()
+								.stream()
+								.map(item -> item.getString())
+								.collect(Collectors.toList());
+					case "number":
+						return container.getNumberList(schema.getName())
+								.getList()
+								.stream()
+								.map(item -> item.getNumber())
+								.collect(Collectors.toList());
+					case "date":
+						return container.getDateList(schema.getName())
+								.getList()
+								.stream()
+								.map(item -> DateUtils.toISO8601(item.getDate(), 0))
+								.collect(Collectors.toList());
+					case "node":
+						return container.getNodeList(schema.getName())
+								.getList()
+								.stream()
+								.map(item -> item.getNode())
+								.collect(Collectors.toList());
+					case "micronode":
+						return null;
+					default:
+						return null;
 					}
-					return null;
 				})
 				.build();
 	}
@@ -324,14 +283,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		return newFieldDefinition().name(schema.getName())
 				.description(schema.getLabel())
 				.type(micronodeFieldTypeProvider.getMicroschemaFieldsType(project))
-				.dataFetcher(fetcher -> {
-					Object source = fetcher.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						MicronodeGraphField micronodeField = nodeContainer.getMicronode(schema.getName());
-						if (micronodeField != null) {
-							return micronodeField.getMicronode();
-						}
+				.dataFetcher(env -> {
+					GraphFieldContainer container = env.getSource();
+					MicronodeGraphField micronodeField = container.getMicronode(schema.getName());
+					if (micronodeField != null) {
+						return micronodeField.getMicronode();
 					}
 					return null;
 				})
@@ -349,21 +305,14 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				.description(schema.getLabel())
 				.type(new GraphQLTypeReference("Node"))
 				.dataFetcher(env -> {
-					Object source = env.getSource();
-					if (source instanceof NodeGraphFieldContainer) {
-						InternalActionContext ac = (InternalActionContext) env.getContext();
-						NodeGraphFieldContainer nodeContainer = (NodeGraphFieldContainer) source;
-						NodeGraphField nodeField = nodeContainer.getNode(schema.getName());
-						if (nodeField != null) {
-							Node node = nodeField.getNode();
-
+					GraphQLContext gc = env.getContext();
+					NodeGraphFieldContainer nodeContainer = env.getSource();
+					NodeGraphField nodeField = nodeContainer.getNode(schema.getName());
+					if (nodeField != null) {
+						Node node = nodeField.getNode();
+						if (node != null) {
 							// Check permissions for the linked node
-							if (node != null && (ac.getUser()
-									.hasPermission(node, READ_PERM)
-									|| ac.getUser()
-											.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM))) {
-								return node;
-							}
+							return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 						}
 					}
 					return null;

@@ -10,10 +10,10 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -50,12 +50,12 @@ public class GraphQLHandler {
 	 * @param body
 	 *            GraphQL query
 	 */
-	public void handleQuery(InternalActionContext ac, String body) {
+	public void handleQuery(GraphQLContext gc, String body) {
 		try (NoTx noTx = db.noTx()) {
 			JsonObject queryJson = new JsonObject(body);
 			String query = queryJson.getString("query");
-			GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(ac.getProject())).build();
-			ExecutionResult result = graphQL.execute(query, ac);
+			GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc.getProject())).build();
+			ExecutionResult result = graphQL.execute(query, gc);
 			List<GraphQLError> errors = result.getErrors();
 			JsonObject response = new JsonObject();
 			if (!errors.isEmpty()) {
@@ -72,7 +72,7 @@ public class GraphQLHandler {
 			boolean hasErrors = result.getErrors() != null && !result.getErrors()
 					.isEmpty();
 			HttpResponseStatus code = hasErrors ? BAD_REQUEST : OK;
-			ac.send(response.toString(), code);
+			gc.send(response.toString(), code);
 		}
 
 	}
@@ -95,9 +95,12 @@ public class GraphQLHandler {
 						PermissionException restException = (PermissionException) dataError.getException();
 						//TODO translate error
 						//TODO add i18n parameters
-						jsonError.put("message", restException.getMessage());
+						jsonError.put("message", restException.getI18nKey());
 						jsonError.put("type", restException.getType());
+						jsonError.put("elementId", restException.getElementId());
+						jsonError.put("elementType", restException.getElementType());
 					} else {
+						log.error("Error while fetching data.", dataError.getException());
 						jsonError.put("message", dataError.getMessage());
 						jsonError.put("type", dataError.getErrorType());
 					}

@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
@@ -7,12 +9,10 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 
-import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLTypeReference;
@@ -72,8 +72,8 @@ public class UserTypeProvider extends AbstractTypeProvider {
 		// .groups
 		root.field(newPagingFieldWithFetcher("groups", "Groups to which the user belongs.", (env) -> {
 			User user = env.getSource();
-			InternalActionContext ac = env.getContext();
-			return user.getGroups(ac.getUser(), getPagingInfo(env));
+			GraphQLContext gc = env.getContext();
+			return user.getGroups(gc.getUser(), getPagingInfo(env));
 		}, "Group"));
 
 		// .nodeReference
@@ -81,16 +81,11 @@ public class UserTypeProvider extends AbstractTypeProvider {
 				.description("User node reference")
 				.type(new GraphQLTypeReference("Node"))
 				.dataFetcher((env) -> {
+					GraphQLContext gc = env.getContext();
 					User user = env.getSource();
-					InternalActionContext ac = env.getContext();
 					Node node = user.getReferencedNode();
 					if (node != null) {
-						if (ac.getUser()
-								.hasPermission(node, GraphPermission.READ_PERM)
-								|| ac.getUser()
-										.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
-							return node;
-						}
+						return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 					}
 					return null;
 				}));

@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -8,13 +10,12 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
@@ -32,27 +33,17 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Object parentNodeFetcher(DataFetchingEnvironment env) {
-		InternalActionContext ac = env.getContext();
+		GraphQLContext gc = env.getContext();
 		NodeGraphFieldContainer container = env.getSource();
 		Node node = container.getParentNode();
-		if (ac.getUser()
-				.hasPermission(node, GraphPermission.READ_PERM)
-				|| ac.getUser()
-						.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
-			return node;
-		}
-		return null;
+		return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 	}
 
 	public Object editorFetcher(DataFetchingEnvironment env) {
+		GraphQLContext gc = env.getContext();
 		EditorTrackingVertex vertex = env.getSource();
-		InternalActionContext ac = env.getContext();
 		User user = vertex.getEditor();
-		if (ac.getUser()
-				.hasPermission(user, GraphPermission.READ_PERM)) {
-			return user;
-		}
-		return null;
+		return gc.requiresPerm(user, READ_PERM);
 	}
 
 	public GraphQLObjectType getContainerType(Project project) {
@@ -109,9 +100,9 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 				.description("Check whether the container is published")
 				.type(GraphQLBoolean)
 				.dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
 					NodeGraphFieldContainer container = env.getSource();
-					InternalActionContext ac = env.getContext();
-					return container.isPublished(ac.getRelease()
+					return container.isPublished(gc.getRelease()
 							.getUuid());
 				}));
 
@@ -120,9 +111,9 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 				.description("Check whether the container is a draft")
 				.type(GraphQLBoolean)
 				.dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
 					NodeGraphFieldContainer container = env.getSource();
-					InternalActionContext ac = env.getContext();
-					return container.isDraft(ac.getRelease()
+					return container.isDraft(gc.getRelease()
 							.getUuid());
 				}));
 
@@ -140,6 +131,7 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 		type.field(newFieldDefinition().name("fields")
 				.type(nodeFieldTypeProvider.getSchemaFieldsType(project))
 				.dataFetcher(env -> {
+					// The fields can be accessed via the container so we can directly pass it along.
 					NodeGraphFieldContainer container = env.getSource();
 					return container;
 				}));

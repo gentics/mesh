@@ -7,8 +7,8 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
@@ -39,16 +39,16 @@ public class GroupTypeProvider extends AbstractTypeProvider {
 
 		// .roles
 		groupType.field(newPagingFieldWithFetcher("roles", "Roles assigned to the group.", (env) -> {
+			GraphQLContext gc = env.getContext();
 			Group group = env.getSource();
-			InternalActionContext ac = env.getContext();
-			return group.getRoles(ac.getUser(), getPagingInfo(env));
+			return group.getRoles(gc.getUser(), getPagingInfo(env));
 		}, "Role"));
 
 		// .users
 		groupType.field(newPagingFieldWithFetcher("users", "Users assigned to the group.", (env) -> {
+			GraphQLContext gc = env.getContext();
 			Group group = env.getSource();
-			InternalActionContext ac = env.getContext();
-			return group.getVisibleUsers(ac.getUser(), getPagingInfo(env));
+			return group.getVisibleUsers(gc.getUser(), getPagingInfo(env));
 		}, "User"));
 		return groupType.build();
 	}

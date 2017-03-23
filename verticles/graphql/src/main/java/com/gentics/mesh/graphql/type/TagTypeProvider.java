@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
@@ -7,10 +8,9 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
@@ -45,22 +45,18 @@ public class TagTypeProvider extends AbstractTypeProvider {
 		tagType.field(newFieldDefinition().name("tagFamily")
 				.description("Tag family to which the tag belongs")
 				.dataFetcher((env) -> {
+					GraphQLContext gc = env.getContext();
 					Tag tag = env.getSource();
-					InternalActionContext ac = env.getContext();
 					TagFamily tagFamily = tag.getTagFamily();
-					if (ac.getUser()
-							.hasPermission(tagFamily, GraphPermission.READ_PERM)) {
-						return tagFamily;
-					}
-					return null;
+					return gc.requiresPerm(tagFamily, READ_PERM);
 				})
 				.type(new GraphQLTypeReference("TagFamily")));
 
 		// .nodes
 		tagType.field(newPagingFieldWithFetcher("nodes", "Nodes which are tagged with the tag.", (env) -> {
+			GraphQLContext gc = env.getContext();
 			Tag tag = env.getSource();
-			InternalActionContext ac = env.getContext();
-			return tag.findTaggedNodes(ac.getUser(), ac.getRelease(), null, null, getPagingInfo(env));
+			return tag.findTaggedNodes(gc.getUser(), gc.getRelease(), null, null, getPagingInfo(env));
 		}, "Node"));
 
 		return tagType.build();

@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -9,11 +10,11 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.graphdb.model.MeshElement;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import dagger.Lazy;
 import graphql.schema.GraphQLInterfaceType;
@@ -129,10 +130,10 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		builder.field(newFieldDefinition().name("etag")
 				.description("ETag of the element")
 				.type(GraphQLString)
-				.dataFetcher(fetcher -> {
-					TransformableElement<?> element = fetcher.getSource();
-					InternalActionContext ac = fetcher.getContext();
-					return element.getETag(ac);
+				.dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
+					TransformableElement<?> element = env.getSource();
+					return element.getETag(gc);
 				}));
 
 		// .permission
@@ -165,8 +166,9 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				.description("Creator of the element")
 				.type(new GraphQLTypeReference("User"))
 				.dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
 					CreatorTrackingVertex vertex = env.getSource();
-					return vertex.getCreator();
+					return gc.requiresPerm(vertex.getCreator(), READ_PERM);
 				}));
 
 		// .editor
@@ -174,8 +176,9 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 				.description("Editor of the element")
 				.type(new GraphQLTypeReference("User"))
 				.dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
 					EditorTrackingVertex vertex = env.getSource();
-					return vertex.getEditor();
+					return gc.requiresPerm(vertex.getEditor(), READ_PERM);
 				}));
 
 	}

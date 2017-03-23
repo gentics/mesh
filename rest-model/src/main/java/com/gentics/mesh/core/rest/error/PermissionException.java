@@ -7,13 +7,26 @@ public class PermissionException extends AbstractRestException {
 	private static final long serialVersionUID = 6097093959066715614L;
 	public static final String i18nKey = "graphql_error_missing_perm";
 
-	public PermissionException(String elementId, String type) {
-		super(null, i18nKey, elementId, type);
+	private String elementId;
+	private String elementType;
+
+	public PermissionException(String elementId, String elementType) {
+		super(null, i18nKey, elementId, elementType);
+		this.elementId = elementId;
+		this.elementType = elementType;
 	}
 
 	@Override
 	public String getType() {
 		return TYPE;
+	}
+
+	public String getElementType() {
+		return elementType;
+	}
+
+	public String getElementId() {
+		return elementId;
 	}
 
 }

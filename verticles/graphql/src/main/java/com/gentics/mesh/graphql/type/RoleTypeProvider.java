@@ -7,8 +7,8 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
@@ -37,8 +37,8 @@ public class RoleTypeProvider extends AbstractTypeProvider {
 		// .groups
 		roleType.field(newPagingFieldWithFetcher("groups", "Groups which reference the role.", (env) -> {
 			Role role = env.getSource();
-			InternalActionContext ac = env.getContext();
-			return role.getGroups(ac.getUser(), getPagingParameters(env));
+			GraphQLContext gc = env.getContext();
+			return role.getGroups(gc.getUser(), getPagingParameters(env));
 		}, "Group"));
 		return roleType.build();
 	}

@@ -3,10 +3,8 @@ package com.gentics.mesh.parameter.impl;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import org.raml.model.ParamType;
@@ -28,14 +26,6 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		super();
 	}
 
-	/**
-	 * @see #getExpandedFieldNames()
-	 * @return
-	 */
-	@Deprecated
-	public List<String> getExpandedFieldnameList() {
-		return Arrays.asList(getExpandedFieldNames());
-	}
 
 	/**
 	 * Return the <code>{@value #RESOLVE_LINKS_QUERY_PARAM_KEY}</code> query parameter flag value.

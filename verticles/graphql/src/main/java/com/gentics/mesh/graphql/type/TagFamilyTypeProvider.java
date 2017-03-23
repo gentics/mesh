@@ -7,8 +7,8 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.TagFamily;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.parameter.PagingParameters;
 
 import graphql.schema.GraphQLObjectType;
@@ -47,10 +47,10 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 
 		// .tags
 		tagFamilyType.field(newPagingFieldWithFetcher("tags", "Tags which are assigned to the tagfamily.", (env) -> {
+			GraphQLContext gc = env.getContext();
 			TagFamily tagFamily = env.getSource();
-			InternalActionContext ac = env.getContext();
 			PagingParameters pagingInfo = getPagingParameters(env);
-			return tagFamily.getTags(ac.getUser(), pagingInfo);
+			return tagFamily.getTags(gc.getUser(), pagingInfo);
 		}, "Tag"));
 		return tagFamilyType.build();
 	}

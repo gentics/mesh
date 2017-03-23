@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
@@ -7,10 +9,9 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
@@ -39,17 +40,10 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	private Node baseNodeFetcher(DataFetchingEnvironment env) {
+		GraphQLContext gc = env.getContext();
 		Project project = env.getSource();
-		InternalActionContext ac = env.getContext();
 		Node node = project.getBaseNode();
-
-		if (ac.getUser()
-				.hasPermission(node, GraphPermission.READ_PERM)
-				|| ac.getUser()
-						.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM)) {
-			return node;
-		}
-		return null;
+		return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 	}
 
 	public GraphQLObjectType createProjectType(Project project) {

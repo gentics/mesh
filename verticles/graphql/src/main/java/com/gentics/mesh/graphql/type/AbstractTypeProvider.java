@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLInt;
 import static graphql.Scalars.GraphQLLong;
@@ -15,11 +16,11 @@ import java.util.List;
 import org.apache.commons.lang.WordUtils;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -172,8 +173,9 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected MeshVertex handleUuidNameArgs(DataFetchingEnvironment env, RootVertex<?> root) {
+		GraphQLContext gc = env.getContext();
 		String uuid = env.getArgument("uuid");
-		MeshVertex element = null;
+		MeshCoreVertex<?, ?> element = null;
 		if (uuid != null) {
 			element = root.findByUuid(uuid);
 		}
@@ -186,13 +188,7 @@ public abstract class AbstractTypeProvider {
 		}
 
 		// Check permissions
-		InternalActionContext ac = env.getContext();
-		if (ac.getUser()
-				.hasPermission(element, GraphPermission.READ_PERM)) {
-			return element;
-		} else {
-			return null;
-		}
+		return gc.requiresPerm(element, READ_PERM);
 	}
 
 	/**
@@ -295,16 +291,29 @@ public abstract class AbstractTypeProvider {
 				.dataFetcher(dataFetcher);
 	}
 
-	protected GraphQLFieldDefinition newPagingField(String name, String description, Func1<InternalActionContext, RootVertex<?>> rootProvider,
+	protected GraphQLFieldDefinition newPagingField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
 			String referenceTypeName) {
 		return newPagingFieldWithFetcher(name, description, (env) -> {
-			InternalActionContext ac = env.getSource();
-			return rootProvider.call(ac)
-					.findAll(ac, getPagingInfo(env));
+			GraphQLContext gc = env.getContext();
+			return rootProvider.call(gc)
+					.findAll(gc, getPagingInfo(env));
 		}, referenceTypeName);
 	}
 
-	protected GraphQLFieldDefinition newElementField(String name, String description, Func1<InternalActionContext, RootVertex<?>> rootProvider,
+	/**
+	 * Create a new elements field which automatically allows to resolve the element using it's name or uuid.
+	 * 
+	 * @param name
+	 *            Name of the field
+	 * @param description
+	 *            Description of the field
+	 * @param rootProvider
+	 *            Function which will return the root vertex which is used to load the element
+	 * @param type
+	 *            Type of the element which can be loaded
+	 * @return
+	 */
+	protected GraphQLFieldDefinition newElementField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
 			GraphQLObjectType type) {
 		return newFieldDefinition().name(name)
 				.description(description)
@@ -312,8 +321,8 @@ public abstract class AbstractTypeProvider {
 				.argument(getNameArg("Name of the " + name + "."))
 				.type(type)
 				.dataFetcher(env -> {
-					InternalActionContext ac = env.getSource();
-					return handleUuidNameArgs(env, rootProvider.call(ac));
+					GraphQLContext gc = env.getContext();
+					return handleUuidNameArgs(env, rootProvider.call(gc));
 				})
 				.build();
 	}

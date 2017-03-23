@@ -133,4 +133,12 @@ public interface NodeParameters extends ParameterProvider {
 		return Arrays.asList(getLanguages());
 	}
 
+	/**
+	 * @see #getExpandedFieldNames()
+	 * @return
+	 */
+	@Deprecated
+	default List<String> getExpandedFieldnameList() {
+		return Arrays.asList(getExpandedFieldNames());
+	}
 }
