@@ -29,7 +29,7 @@ public class MeshExampleGenerator {
 	}
 
 	/**
-	 * Generate json example files for schema changes.
+	 * Generate JSON example files for schema changes.
 	 * 
 	 * @throws JsonProcessingException
 	 * @throws IOException
@@ -77,7 +77,7 @@ public class MeshExampleGenerator {
 
 		String baseDirProp = System.getProperty("baseDir");
 		if (baseDirProp == null) {
-			baseDirProp = "src" + File.separator + "main" + File.separator + "docs" + File.separator + "json";
+			baseDirProp = "src" + File.separator + "main" + File.separator + "docs" + File.separator + "examples";
 		}
 		new File(baseDirProp).mkdirs();
 		File outputFile = new File(baseDirProp, filename);

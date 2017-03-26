@@ -100,7 +100,7 @@ public class SearchModelGenerator {
 		initPaths();
 		String baseDirProp = System.getProperty("baseDir");
 		if (baseDirProp == null) {
-			baseDirProp = "src" + File.separator + "main" + File.separator + "docs" + File.separator + "json";
+			baseDirProp = "src" + File.separator + "main" + File.separator + "docs" + File.separator + "examples";
 		}
 		outputDir = new File(baseDirProp);
 		System.out.println("Writing files to  {" + outputDir.getAbsolutePath() + "}");

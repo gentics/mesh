@@ -6,3 +6,4 @@ node_modules
 bower_components
 src/main/changelog/test.html
 api.raml
+/src/main/docs/examples/*.json
