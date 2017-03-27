@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -112,6 +113,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			// 1. Upload image
 			return uploadImage(node, "en", "image").getVersion();
 		});
+
 		// 2. Transform the image
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
 		NodeResponse transformResponse = call(
@@ -121,11 +123,16 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 				.getWidth()
 				.intValue());
 
-		// 3. Download the image
+		// 3. Validate that a new version was created
+		String newNumber = transformResponse.getVersion().getNumber();
+		assertNotEquals("The version number should have changed.", version.getNumber(), newNumber);
+
+		// 4. Download the image
 		NodeDownloadResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image"));
 
-		// 4. Validate the resized image
+		// 5. Validate the resized image
 		validateResizeImage(result, null, params, 100, 118);
+
 
 	}
 

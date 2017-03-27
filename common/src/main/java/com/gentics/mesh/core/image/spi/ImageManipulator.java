@@ -20,6 +20,7 @@ public interface ImageManipulator {
 	 * Resize the given binary file and return a buffer to the resized image data.
 	 * 
 	 * @param binaryFile
+	 *            Binary file in the filesystem to be used for resizing
 	 * @param sha512sum
 	 * @param imageRequestParameter
 	 * @return
@@ -27,12 +28,12 @@ public interface ImageManipulator {
 	Single<Buffer> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters imageRequestParameter);
 
 	/**
-	 * Read the inputstream and resize the image data.
+	 * Read the {@link InputStream} and resize the image data.
 	 * 
 	 * @param ins
 	 * @param sha512sum
 	 * @param parameters
-	 * @return
+	 * @return Buffer which contains the resized image data
 	 */
 	Single<Buffer> handleResize(InputStream ins, String sha512sum, ImageManipulationParameters parameters);
 

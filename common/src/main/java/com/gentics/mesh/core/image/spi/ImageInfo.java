@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.image.spi;
 
+/**
+ * Container object which holds image information.
+ */
 public class ImageInfo {
 
 	private Integer width;

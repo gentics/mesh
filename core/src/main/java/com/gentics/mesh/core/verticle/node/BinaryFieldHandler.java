@@ -91,30 +91,35 @@ public class BinaryFieldHandler extends AbstractHandler {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
+			Node node = project.getNodeRoot()
+					.loadObjectByUuid(ac, uuid, READ_PERM);
 			//			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 			//			if (language == null) {
 			//				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			//			}
 
 			Release release = ac.getRelease(node.getProject());
-			NodeGraphFieldContainer fieldContainer = node.findNextMatchingFieldContainer(ac.getNodeParameters().getLanguageList(), release.getUuid(),
-					ac.getVersioningParameters().getVersion());
+			NodeGraphFieldContainer fieldContainer = node.findNextMatchingFieldContainer(ac.getNodeParameters()
+					.getLanguageList(), release.getUuid(),
+					ac.getVersioningParameters()
+							.getVersion());
 			if (fieldContainer == null) {
-				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters().getVersion());
+				throw error(NOT_FOUND, "object_not_found_for_version", ac.getVersioningParameters()
+						.getVersion());
 			}
 			BinaryGraphField binaryField = fieldContainer.getBinary(fieldName);
 			if (binaryField == null) {
 				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 			}
 			return Single.just(binaryField);
-		}).subscribe(binaryField -> {
-			db.noTx(() -> {
-				BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
-				handler.handle(binaryField);
-				return null;
-			});
-		}, ac::fail);
+		})
+				.subscribe(binaryField -> {
+					db.noTx(() -> {
+						BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
+						handler.handle(binaryField);
+						return null;
+					});
+				}, ac::fail);
 	}
 
 	/**
@@ -142,7 +147,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 			throw error(BAD_REQUEST, "upload_error_no_version");
 		}
 
-		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
+		MeshUploadOptions uploadOptions = Mesh.mesh()
+				.getOptions()
+				.getUploadOptions();
 		Set<FileUpload> fileUploads = ac.getFileUploads();
 		if (fileUploads.isEmpty()) {
 			throw error(BAD_REQUEST, "node_error_no_binarydata_found");
@@ -152,7 +159,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 		if (fileUploads.size() > 1) {
 			throw error(BAD_REQUEST, "node_error_more_than_one_binarydata_included");
 		}
-		FileUpload ul = fileUploads.iterator().next();
+		FileUpload ul = fileUploads.iterator()
+				.next();
 		long byteLimit = uploadOptions.getByteLimit();
 
 		if (ul.size() > byteLimit) {
@@ -170,9 +178,12 @@ public class BinaryFieldHandler extends AbstractHandler {
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Node node = project.getNodeRoot()
+					.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 
-			Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
+			Language language = boot.get()
+					.languageRoot()
+					.findByLanguageTag(languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
@@ -201,16 +212,21 @@ public class BinaryFieldHandler extends AbstractHandler {
 			List<FieldContainerChange> requestVersionDiff = Arrays.asList(new FieldContainerChange(fieldName, FieldChangeTypes.UPDATED));
 
 			// Compare both sets of change sets
-			List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());
+			List<FieldContainerChange> intersect = baseVersionDiff.stream()
+					.filter(requestVersionDiff::contains)
+					.collect(Collectors.toList());
 
 			// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
-			if (!latestDraftVersion.getVersion().equals(nodeVersion)) {
+			if (!latestDraftVersion.getVersion()
+					.equals(nodeVersion)) {
 
 				// Check whether a conflict has been detected
 				if (intersect.size() > 0) {
 					NodeVersionConflictException conflictException = new NodeVersionConflictException("node_error_conflict_detected");
-					conflictException.setOldVersion(baseVersionContainer.getVersion().toString());
-					conflictException.setNewVersion(latestDraftVersion.getVersion().toString());
+					conflictException.setOldVersion(baseVersionContainer.getVersion()
+							.toString());
+					conflictException.setNewVersion(latestDraftVersion.getVersion()
+							.toString());
 					for (FieldContainerChange fcc : intersect) {
 						conflictException.addConflict(fcc.getFieldCoordinates());
 					}
@@ -218,7 +234,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 				}
 			}
 
-			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion().getSchema().getField(fieldName);
+			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion()
+					.getSchema()
+					.getField(fieldName);
 			if (fieldSchema == null) {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
@@ -262,23 +280,33 @@ public class BinaryFieldHandler extends AbstractHandler {
 					return new TransformationResult(sha512sum, 0, imageInfo);
 				});
 
-				TransformationResult info = resultObs.toBlocking().value();
+				TransformationResult info = resultObs.toBlocking()
+						.value();
 				field.setFileName(fileName);
 				field.setFileSize(ul.size());
 				field.setMimeType(contentType);
 				field.setSHA512Sum(info.getHash());
-				field.setImageDominantColor(info.getImageInfo().getDominantColor());
-				field.setImageHeight(info.getImageInfo().getHeight());
-				field.setImageWidth(info.getImageInfo().getWidth());
+				field.setImageDominantColor(info.getImageInfo()
+						.getDominantColor());
+				field.setImageHeight(info.getImageInfo()
+						.getHeight());
+				field.setImageWidth(info.getImageInfo()
+						.getWidth());
 
 				// If the binary field is the segment field, we need to  update the webroot info in the node
-				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+				if (field.getFieldKey()
+						.equals(newDraftVersion.getSchemaContainerVersion()
+								.getSchema()
+								.getSegmentField())) {
 					newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
 				}
 
 				return batch.store(node, release.getUuid(), DRAFT, false);
-			}).processAsync().andThen(node.transformToRest(ac, 0));
-		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+			})
+					.processAsync()
+					.andThen(node.transformToRest(ac, 0));
+		})
+				.subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
 	/**
@@ -297,21 +325,26 @@ public class BinaryFieldHandler extends AbstractHandler {
 		}
 
 		db.operateNoTx(() -> {
-			// 1. Load needed elements
+			// Load needed elements
 			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Node node = project.getNodeRoot()
+					.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 
-			Language language = boot.get().languageRoot().findByLanguageTag(transformation.getLanguage());
+			Language language = boot.get()
+					.languageRoot()
+					.findByLanguageTag(transformation.getLanguage());
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", transformation.getLanguage());
 			}
 
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(language);
-			if (container == null) {
+			NodeGraphFieldContainer latestDraftVersion = node.getLatestDraftFieldContainer(language);
+			if (latestDraftVersion == null) {
 				throw error(NOT_FOUND, "error_language_not_found", language.getLanguageTag());
 			}
 
-			FieldSchema fieldSchema = container.getSchemaContainerVersion().getSchema().getField(fieldName);
+			FieldSchema fieldSchema = latestDraftVersion.getSchemaContainerVersion()
+					.getSchema()
+					.getField(fieldName);
 			if (fieldSchema == null) {
 				throw error(BAD_REQUEST, "error_schema_definition_not_found", fieldName);
 			}
@@ -319,73 +352,89 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
 
-			BinaryGraphField field = container.getBinary(fieldName);
-			if (field == null) {
+			BinaryGraphField initialField = latestDraftVersion.getBinary(fieldName);
+			if (initialField == null) {
 				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 			}
 
-			if (!field.hasImage()) {
+			if (!initialField.hasImage()) {
 				throw error(BAD_REQUEST, "error_transformation_non_image", fieldName);
 			}
 
 			try {
 				// Prepare the imageManipulationParameter using the transformation request as source
 				ImageManipulationParameters imageManipulationParameter = new ImageManipulationParametersImpl().setWidth(transformation.getWidth())
-						.setHeight(transformation.getHeight()).setStartx(transformation.getCropx()).setStarty(transformation.getCropy())
-						.setCropw(transformation.getCropw()).setCroph(transformation.getCroph());
+						.setHeight(transformation.getHeight())
+						.setStartx(transformation.getCropx())
+						.setStarty(transformation.getCropy())
+						.setCropw(transformation.getCropw())
+						.setCroph(transformation.getCroph());
 				if (!imageManipulationParameter.isSet()) {
 					throw error(BAD_REQUEST, "error_no_image_transformation", fieldName);
 				}
-				String fieldUuid = field.getUuid();
-				String fieldSegmentedPath = field.getSegmentedPath();
 
-				// Resize the image and store the result in the filesystem
-				Single<TransformationResult> obsTransformation = imageManipulator
-						.handleResize(field.getFile(), field.getSHA512Sum(), imageManipulationParameter).flatMap(buffer -> {
-							return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).flatMap(hash -> {
-								// The image was stored and hashed. Now we need to load the stored file again and check the image properties
-								return db.noTx(() -> {
-									String fieldPath = field.getFilePath();
+				// Update the binary field with the new information
+				SearchQueueBatch batch = searchQueue.create();
+				Node updatedNodeUuid = db.tx(() -> {
+					Release release = ac.getRelease();
+
+					// Create a new node version field container to store the upload
+					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+					BinaryGraphField field = newDraftVersion.createBinary(fieldName);
+					String fieldUuid = field.getUuid();
+					String fieldSegmentedPath = field.getSegmentedPath();
+					String fieldPath = field.getFilePath();
+
+					// 1. Resize the original image and store the result in the filesystem
+					Single<TransformationResult> obsTransformation = imageManipulator
+							.handleResize(initialField.getFile(), field.getSHA512Sum(), imageManipulationParameter)
+							.flatMap(buffer -> {
+								// 2. Hash the resized image data and store it using the computed fieldUuid + hash
+								return hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath).flatMap(hash -> {
+									// 3. The image was stored and hashed. Now we need to load the stored file again and check the image properties
 									return imageManipulator.readImageInfo(() -> {
 										try {
 											return new FileInputStream(fieldPath);
 										} catch (IOException e) {
 											throw new RuntimeException(e);
 										}
-									}).map(info -> {
-										// Return a POJO which hold all information that is needed to update the field
-										return new TransformationResult(hash, buffer.length(), info);
-									});
+									})
+											.map(info -> {
+												// Return a POJO which hold all information that is needed to update the field
+												return new TransformationResult(hash, buffer.length(), info);
+											});
 								});
 							});
-						});
 
-				return obsTransformation.flatMap(info -> {
+					TransformationResult result = obsTransformation.toBlocking()
+							.value();
 
-					// Update the binary field with the new information
-					SearchQueueBatch batch = searchQueue.create();
-					Node updatedNodeUuid = db.tx(() -> {
-
-						field.setSHA512Sum(info.getHash());
-						field.setFileSize(info.getSize());
-						// The resized image will always be a jpeg
-						field.setMimeType("image/jpeg");
-						// TODO should we rename the image, if the extension is wrong?
-						field.setImageHeight(info.getImageInfo().getHeight());
-						field.setImageWidth(info.getImageInfo().getWidth());
-						batch.store(container, node.getProject().getReleaseRoot().getLatestRelease().getUuid(), DRAFT, false);
-						return node;
-					});
-					// Finally update the search index and return the updated node
-					return batch.processAsync().andThen(updatedNodeUuid.transformToRest(ac, 0));
+					field.setSHA512Sum(result.getHash());
+					field.setFileSize(result.getSize());
+					// The resized image will always be a JPEG
+					field.setMimeType("image/jpeg");
+					// TODO should we rename the image, if the extension is wrong?
+					field.setImageHeight(result.getImageInfo()
+							.getHeight());
+					field.setImageWidth(result.getImageInfo()
+							.getWidth());
+					batch.store(newDraftVersion, node.getProject()
+							.getReleaseRoot()
+							.getLatestRelease()
+							.getUuid(), DRAFT, false);
+					return node;
 				});
+				// Finally update the search index and return the updated node
+				return batch.processAsync()
+						.andThen(updatedNodeUuid.transformToRest(ac, 0));
 			} catch (GenericRestException e) {
 				throw e;
 			} catch (Exception e) {
 				log.error("Error while transforming image", e);
 				throw error(INTERNAL_SERVER_ERROR, "error_internal");
 			}
-		}).subscribe(model -> ac.send(model, OK), ac::fail);
+		})
+				.subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -398,7 +447,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @return
 	 */
 	protected Single<String> hashAndMoveBinaryFile(FileUpload fileUpload, String uuid, String segmentedPath) {
-		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
+		MeshUploadOptions uploadOptions = Mesh.mesh()
+				.getOptions()
+				.getUploadOptions();
 		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
 		File targetFile = new File(uploadFolder, uuid + ".bin");
 		String targetPath = targetFile.getAbsolutePath();
@@ -407,10 +458,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 			checkUploadFolderExists(uploadFolder).await();
 			deletePotentialUpload(targetPath).await();
 			return moveUploadIntoPlace(fileUpload, targetPath).toSingleDefault(sha512sum);
-		}).doOnError(error -> {
-			log.error("Failed to handle upload file from {" + fileUpload.uploadedFileName() + "} / {" + targetPath + "}", error);
-			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
-		});
+		})
+				.doOnError(error -> {
+					log.error("Failed to handle upload file from {" + fileUpload.uploadedFileName() + "} / {" + targetPath + "}", error);
+					throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
+				});
 
 	}
 
@@ -426,7 +478,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @return single emitting the sha512 checksum
 	 */
 	public Single<String> hashAndStoreBinaryFile(Buffer buffer, String uuid, String segmentedPath) {
-		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
+		MeshUploadOptions uploadOptions = Mesh.mesh()
+				.getOptions()
+				.getUploadOptions();
 		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
 		File targetFile = new File(uploadFolder, uuid + ".bin");
 		String targetPath = targetFile.getAbsolutePath();
@@ -445,9 +499,10 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @return
 	 */
 	protected Single<String> hashFileupload(FileUpload fileUpload) {
-		return FileUtils.generateSha512Sum(fileUpload.uploadedFileName()).doOnError(error -> {
-			log.error("Error while hashing fileupload {" + fileUpload.uploadedFileName() + "}", error);
-		});
+		return FileUtils.generateSha512Sum(fileUpload.uploadedFileName())
+				.doOnError(error -> {
+					log.error("Error while hashing fileupload {" + fileUpload.uploadedFileName() + "}", error);
+				});
 	}
 
 	/**
@@ -458,10 +513,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @return single emitting the sha512 checksum
 	 */
 	protected Single<String> hashBuffer(Buffer buffer) {
-		Single<String> obsHash = FileUtils.generateSha512Sum(buffer).doOnError(error -> {
-			log.error("Error while hashing data", error);
-			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
-		});
+		Single<String> obsHash = FileUtils.generateSha512Sum(buffer)
+				.doOnError(error -> {
+					log.error("Error while hashing data", error);
+					throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
+				});
 		return obsHash;
 	}
 
@@ -475,13 +531,16 @@ public class BinaryFieldHandler extends AbstractHandler {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
 		// Deleting of existing binary file
-		Completable obsDeleteExisting = fileSystem.rxDelete(targetPath).toCompletable().doOnError(error -> {
-			log.error("Error while attempting to delete target file {" + targetPath + "}", error);
-		});
+		Completable obsDeleteExisting = fileSystem.rxDelete(targetPath)
+				.toCompletable()
+				.doOnError(error -> {
+					log.error("Error while attempting to delete target file {" + targetPath + "}", error);
+				});
 
-		Single<Boolean> obsUploadExistsCheck = fileSystem.rxExists(targetPath).doOnError(error -> {
-			log.error("Unable to check existence of file at location {" + targetPath + "}");
-		});
+		Single<Boolean> obsUploadExistsCheck = fileSystem.rxExists(targetPath)
+				.doOnError(error -> {
+					log.error("Unable to check existence of file at location {" + targetPath + "}");
+				});
 
 		return RxUtil.andThenCompletable(obsUploadExistsCheck, uploadAlreadyExists -> {
 			if (uploadAlreadyExists) {
@@ -501,13 +560,16 @@ public class BinaryFieldHandler extends AbstractHandler {
 	protected Completable moveUploadIntoPlace(FileUpload fileUpload, String targetPath) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		return fileSystem.rxMove(fileUpload.uploadedFileName(), targetPath).toCompletable().doOnError(error -> {
-			log.error("Failed to move upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}", error);
-		}).doOnCompleted(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Moved upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}");
-			}
-		});
+		return fileSystem.rxMove(fileUpload.uploadedFileName(), targetPath)
+				.toCompletable()
+				.doOnError(error -> {
+					log.error("Failed to move upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}", error);
+				})
+				.doOnCompleted(() -> {
+					if (log.isDebugEnabled()) {
+						log.debug("Moved upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}");
+					}
+				});
 	}
 
 	/**
@@ -522,10 +584,12 @@ public class BinaryFieldHandler extends AbstractHandler {
 	protected Completable storeBuffer(Buffer buffer, String targetPath) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		return fileSystem.rxWriteFile(targetPath, buffer).toCompletable().doOnError(error -> {
-			log.error("Failed to save file to {" + targetPath + "}", error);
-			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
-		});
+		return fileSystem.rxWriteFile(targetPath, buffer)
+				.toCompletable()
+				.doOnError(error -> {
+					log.error("Failed to save file to {" + targetPath + "}", error);
+					throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
+				});
 	}
 
 	/**
@@ -537,21 +601,25 @@ public class BinaryFieldHandler extends AbstractHandler {
 	protected Completable checkUploadFolderExists(File uploadFolder) {
 		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
-		Single<Boolean> obs = fileSystem.rxExists(uploadFolder.getAbsolutePath()).doOnError(error -> {
-			log.error("Could not check whether target directory {" + uploadFolder.getAbsolutePath() + "} exists.", error);
-			throw error(BAD_REQUEST, "node_error_upload_failed", error);
-		});
+		Single<Boolean> obs = fileSystem.rxExists(uploadFolder.getAbsolutePath())
+				.doOnError(error -> {
+					log.error("Could not check whether target directory {" + uploadFolder.getAbsolutePath() + "} exists.", error);
+					throw error(BAD_REQUEST, "node_error_upload_failed", error);
+				});
 
 		return RxUtil.andThenCompletable(obs, folderExists -> {
 			if (!folderExists) {
-				return fileSystem.rxMkdirs(uploadFolder.getAbsolutePath()).toCompletable().doOnError(error -> {
-					log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}", error);
-					throw error(BAD_REQUEST, "node_error_upload_failed", error);
-				}).doOnCompleted(() -> {
-					if (log.isDebugEnabled()) {
-						log.debug("Created folder {" + uploadFolder.getAbsolutePath() + "}");
-					}
-				});
+				return fileSystem.rxMkdirs(uploadFolder.getAbsolutePath())
+						.toCompletable()
+						.doOnError(error -> {
+							log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}", error);
+							throw error(BAD_REQUEST, "node_error_upload_failed", error);
+						})
+						.doOnCompleted(() -> {
+							if (log.isDebugEnabled()) {
+								log.debug("Created folder {" + uploadFolder.getAbsolutePath() + "}");
+							}
+						});
 			} else {
 				return Completable.complete();
 			}

@@ -54,7 +54,7 @@ public interface NodeBinaryFieldClientMethods {
 	 * @param projectName
 	 *            project name
 	 * @param nodeUuid
-	 *            uuid of hte node
+	 *            UUID of the node
 	 * @param languageTag
 	 *            language tag
 	 * @param version
