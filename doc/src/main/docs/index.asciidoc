@@ -1709,6 +1709,56 @@ The mesh-ui can be configured using the mesh-ui-config.js file.
 The mesh ui will provide a preview button when editing nodes. A post request to a configureable url is being dispatchen when the button will be triggered.
 The post request will contain the node JSON data of the current editing state. This way a preview page can be easily rendered by custom frontend implementations.
 
+==  JAVA REST client
+
+You can add the following maven dependency and repository to your project to get the mesh rest client.
+
+[source,xml]
+----
+…
+	<dependency>
+		<artifactId>mesh-rest-client</artifactId>
+		<groupId>com.gentics.mesh</groupId>
+		<version>${mesh.version}</version>
+	</dependency>
+…
+	<repositories>
+		<repository>
+			<id>maven.gentics.com</id>
+			<name>Gentics Maven Repository</name>
+			<url>https://maven.gentics.com/maven2</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+…
+----
+
+Usage:
+
+[source,java]
+----
+	MeshRestClient client = MeshRestClient.create("localhost", 8080, vertx, BASIC_AUTH);
+	client.setLogin("username", "password");
+	client.login().toCompletable().await();
+
+	client.findNodes("demo", new NodeRequestParameter().setExpandAll(true).setLanguages("en")).setHandler(rh -> {
+		if (rh.succeeded()) {
+			NodeListResponse list = rh.result();
+			for(NodeResponse nodeResponse : list.getData()) {
+				System.out.println(nodeResponse.getUuid());
+				System.out.println(nodeResponse.getFields().getStringField("name").getString());
+			}
+		} else {
+			rh.cause().printStackTrace();
+		}
+	});
+----
+
 == License
 
 * Gentics Mesh is published under a commercial license. http://getmesh.io/Terms[License Terms]

@@ -117,7 +117,7 @@ New structure:
 ----
 ____
 
-== 0.7.0 (SNAPSHOT)
+== 0.7.0
 
 icon:bullhorn[] Content releases support
 
@@ -152,6 +152,20 @@ icon:plus[] Project endpoint - The current project information can now be loaded
 icon:check[] When the search indices where recreated with the reindex endpoint, the mapping for the raw fields was not added. This has been fixed now.
 
 icon:check[] The search index mapping of fields of type "list" were incorrect and have been fixed now.
+
+icon:check[] Various issues with the schema node migration process have been fixed.
+
+== 0.6.29 (07.03.2017)
+
+icon:plus[] The documentation has been enhanced.
+
+icon:check[] Missing fields could cause error responses. Instead the missing fields will now be set to null instead.
+
+== 0.6.28 (21.10.2016)
+
+icon:check[] Missing fields could cause error responses. Instead the missing fields will now be set to null instead.
+
+== 0.6.27 (07.10.2016)
 
 icon:check[] Various issues with the schema node migration process have been fixed.
 

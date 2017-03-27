@@ -242,8 +242,6 @@
 					</excludes>
 				</configuration>
 			</plugin>
-			<!-- <plugin> <groupId>org.owasp</groupId> <artifactId>dependency-check-maven</artifactId> <version>1.4.0</version> <executions> <execution> <goals> <goal>check</goal> </goals> </execution> 
-				</executions> </plugin> -->
 		</plugins>
 	</build>
 
@@ -267,8 +265,6 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-		<!-- <repository> <id>sonatype-nexus-snapshots</id> <name>Sonatype Nexus Snapshots</name> <url>https://oss.sonatype.org/content/repositories/snapshots</url> <snapshots> <enabled>true</enabled> 
-			</snapshots> </repository> -->
 	</repositories>
 
 	<pluginRepositories>

@@ -104,6 +104,8 @@ node('dockerRoot') {
 	stage("Docker Build") {
 		if (Boolean.valueOf(runDocker)) {
 			withEnv(["DOCKER_HOST=" + dockerHost ]) {
+				sh "rm demo/target/*sources.jar"
+				sh "rm server/target/*sources.jar"
 				sh "captain build"
 			}
 		} else {
