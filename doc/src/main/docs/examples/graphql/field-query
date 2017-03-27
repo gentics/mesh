@@ -1,0 +1,16 @@
+++++
+<div class="graphql-example">
+{
+  node(path: "/Yachts/Pelorus") {
+    container(language: "en") {
+      fields {
+        ... on vehicle {
+          name
+          description
+        }
+      }
+    }
+  }
+}
+</div>
+++++
