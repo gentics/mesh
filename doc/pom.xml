@@ -203,6 +203,16 @@
 			<name>mulesoft repo</name>
 			<url>https://repository.mulesoft.org/nexus/content/groups/public/</url>
 		</repository>
+		<repository>
+			<id>graphql-snapshot</id>
+			<url>https://dl.bintray.com/andimarek/graphql-java/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
 	</repositories>
 
 	<dependencyManagement>

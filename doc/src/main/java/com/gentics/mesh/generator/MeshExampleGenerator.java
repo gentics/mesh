@@ -18,6 +18,7 @@ import org.apache.commons.io.FileUtils;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -69,22 +70,37 @@ public class MeshExampleGenerator {
 
 		MeshOptions conf = new MeshOptions();
 		conf.setTempDirectory("/opt/mesh/data/tmp");
-		conf.getUploadOptions().setTempDirectory("/opt/mesh/data/tmp/temp-uploads");
-		writeJson(conf, "mesh-config.json");
+		conf.getUploadOptions()
+				.setTempDirectory("/opt/mesh/data/tmp/temp-uploads");
+		writeYml(conf, "mesh-config.yml");
 	}
 
-	private static void writeJson(Object object, String filename) throws JsonProcessingException, IOException {
+	private static void writeYml(Object object, String filename) throws JsonProcessingException, IOException {
+		String baseDirProp = getBaseDir();
+		File outputFile = new File(baseDirProp, filename);
+		ObjectMapper ymlMapper = OptionsLoader.getYAMLMapper();
+		FileUtils.writeStringToFile(outputFile, ymlMapper.writeValueAsString(object));
+		System.out.println("Wrote: " + outputFile.getAbsolutePath());
+	}
 
+	private static String getBaseDir() {
 		String baseDirProp = System.getProperty("baseDir");
 		if (baseDirProp == null) {
 			baseDirProp = "src" + File.separator + "main" + File.separator + "docs" + File.separator + "examples";
 		}
 		new File(baseDirProp).mkdirs();
+		return baseDirProp;
+	}
+
+	private static void writeJson(Object object, String filename) throws JsonProcessingException, IOException {
+
+		String baseDirProp = getBaseDir();
 		File outputFile = new File(baseDirProp, filename);
 
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.setSerializationInclusion(Include.NON_NULL);
-		FileUtils.writeStringToFile(outputFile, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(object));
+		FileUtils.writeStringToFile(outputFile, mapper.writerWithDefaultPrettyPrinter()
+				.writeValueAsString(object));
 		System.out.println("Wrote: " + outputFile.getAbsolutePath());
 
 	}

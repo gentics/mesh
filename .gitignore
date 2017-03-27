@@ -11,6 +11,8 @@ hs_err_*.log
 dependency-reduced-pom.xml
 .checkstyle
 mesh.json
+mesh-config.yml
+mesh.yml
 .bak
 mesh.lock
 verticles/admin-gui/node_modules

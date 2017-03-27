@@ -27,11 +27,11 @@ Internally Gentics Mesh will resolve your query and traverse your content graph 
 
 === Examples
 
-include::json/tiny-query[]
+include::examples/graphql/tiny-query[]
 
 Field query:
 
-include::json/field-query[]
+include::examples/graphql/field-query[]
 
 === GraphiQL Browser
 
@@ -187,13 +187,13 @@ It is possible specify the schema uuid instead of the name. At least one propert
 
 [source]
 ----
-POST /api/v1/demo/nodes/2f2de9297c8143e8ade9297c8193e8fc HTTP/1.1
+POST /api/v1/demo/nodes HTTP/1.1
 Host: localhost:8080
 Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
 Content-Type: application/json
 Accept: application/json
 
-include::json/request/api/v1/:projectName/nodes/NodeCreateRequest.json[]
+include::examples/request/api/v1/\{project\}/nodes/request-body.json[]
 ----
 
 *Update an existing node*
@@ -208,7 +208,7 @@ Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
 Content-Type: application/json
 Accept: application/json
 
-include::json/request/api/v1/:projectName/nodes/:uuid/NodeUpdateRequest.json[]
+include::examples/request/api/v1/\{project\}/nodes/\{nodeUuid\}/request-body.json[]
 ----
 
 *Add a tag to a node*
@@ -260,7 +260,7 @@ Endpoint: ```/api/v1/users/:uuid```
 
 [source,json]
 ----
-include::json/response/api/v1/users/:uuid/200/UserResponse.json[]
+include::examples/response/api/v1/users/\{userUuid\}/200/example.json[]
 ----
 
 === Groups
@@ -288,7 +288,7 @@ Endpoint: ```/api/v1/groups/:uuid```
 
 [source,json]
 ----
-include::json/response/api/v1/groups/:uuid/200/GroupResponse.json[]
+include::examples/response/api/v1/groups/\{groupUuid\}/200/example.json[]
 ----
 
 === Roles
@@ -317,7 +317,7 @@ Endpoint: ```/api/v1/roles/:uuid```
 
 [source,json]
 ----
-include::json/response/api/v1/roles/:uuid/200/RoleResponse.json[]
+include::examples/response/api/v1/roles/\{roleUuid\}/200/example.json[]
 ----
 
 === Projects
@@ -345,7 +345,7 @@ Endpoint: ```/api/v1/projects/:uuid```
 
 [source,json]
 ----
-include::json/response/api/v1/projects/:uuid/200/ProjectResponse.json[]
+include::examples/response/api/v1/projects/\{projectUuid\}/200/example.json[]
 ----
 
 === Tag Families
@@ -373,7 +373,7 @@ Endpoint: ```/api/v1/:projectName/tagfamilies/:uuid```
 
 [source,json]
 ----
-include::json/response/api/v1/:projectName/tagFamilies/:uuid/200/TagFamilyResponse.json[]
+include::examples/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/200/example.json[]
 ----
 
 === Tags
@@ -401,7 +401,7 @@ Endpoint: ```/api/v1/:projectName/tagFamilies/:uuid/tags```
 
 [source,json]
 ----
-include::json/response/api/v1/:projectName/tagFamilies/:tagFamilyUuid/tags/:uuid/200/TagResponse.json[]
+include::examples/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/tags/\{tagUuid\}/200/example.json[]
 ----
 
 === Nodes
@@ -444,7 +444,7 @@ Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=de,en&version=draft&release=w
 
 [source,json]
 ----
-include::json/response/api/v1/:projectName/nodes/:uuid/200/NodeResponse.json[]
+include::examples/response/api/v1/\{project\}/nodes/\{nodeUuid\}/200/example.json[]
 ----
 
 ==== Query Parameters
@@ -479,7 +479,7 @@ Depending on the used schema it may also be mandatory to add fields to the reque
 
 [source,json]
 ----
-include::json/request/api/v1/:projectName/nodes/NodeCreateRequest.json[]
+include::examples/request/api/v1/\{project\}/nodes/request-body.json[]
 ----
 
 ==== Updating
@@ -494,7 +494,7 @@ Endpoint: ```/api/v1/schemas/:uuid```
 
 [source,json]
 ----
-include::json/response/api/v1/schemas/:uuid/200/SchemaModel.json[]
+include::examples/response/api/v1/schemas/\{schemaUuid\}/200/example.json[]
 ----
 
 ==== Configuration properties
@@ -597,7 +597,7 @@ Oracle Java Runtime 1.8.0_40 or newer is required to run Gentics Mesh.
 
 [source,bash]
 ----
-java -jar mesh-demo-0.6.0.jar
+java -jar mesh-demo-0.9.0.jar
 ----
 
 === Docker
@@ -654,7 +654,7 @@ The main ```mesh.yml``` configuration file contains various settings to configur
 
 [source,json]
 ----
-include::json/mesh-config.yml[]
+include::examples/mesh-config.yml[]
 ----
 
 [options="header"]
@@ -1097,7 +1097,7 @@ Gentics Mesh supports the following change operations:
 
 [source,json]
 ----
-include::json/addfield.json[]
+include::examples/addfield.json[]
 ----
 
 
@@ -1111,7 +1111,7 @@ include::json/addfield.json[]
 
 [source,json]
 ----
-include::json/removefield.json[]
+include::examples/removefield.json[]
 ----
 
 ==== Operation: changefieldtype
@@ -1126,7 +1126,7 @@ include::json/removefield.json[]
 
 [source,json]
 ----
-include::json/changefieldtype.json[]
+include::examples/changefieldtype.json[]
 ----
 
 ==== Operation: updatefield
@@ -1140,7 +1140,7 @@ include::json/changefieldtype.json[]
 
 [source,json]
 ----
-include::json/updatefield.json[]
+include::examples/updatefield.json[]
 ----
 
 ==== Operation: updateschema
@@ -1157,7 +1157,7 @@ include::json/updatefield.json[]
 
 [source,json]
 ----
-include::json/updateschema.json[]
+include::examples/updateschema.json[]
 ----
 
 ==== Operation: updatemicroschema
@@ -1170,7 +1170,7 @@ include::json/updateschema.json[]
 
 [source,json]
 ----
-include::json/updatemicroschema.json[]
+include::examples/updatemicroschema.json[]
 ----
 
 Each change may also provide a migration script. The migration script can be used to modify nodes that were affected by the migration.
@@ -1248,7 +1248,7 @@ Finally the changes can be applied by sending the request to ```/api/v1/schemas/
 
 [source,json]
 ----
-include::json/request/api/v1/schemas/:schemaUuid/changes/SchemaChangesListModel.json[]
+include::examples/request/api/v1/schemas/\{schemaUuid\}/changes/request-body.json[]
 ----
 
 
@@ -1289,7 +1289,7 @@ NOTE: Publishing node language variations requires the user to be assigned to a 
 
 [source,json]
 ----
-include::json/response/api/v1/:projectName/nodes/:uuid/published/200/PublishStatusResponse.json[]
+include::examples/response/api/v1/\{project\}/nodes/\{nodeUuid\}/published/200/example.json[]
 ----
 
 It is not possible to publish a specific version. Publish always affects the latest draft version of the language variant.
@@ -1362,14 +1362,14 @@ Assigning schema versions to the release via a ```PUT``` request to ```/api/v1/:
 
 [source,json]
 ----
-include::json/request/api/v1/:projectName/releases/:uuid/schemas/SchemaReferenceList.json[]
+include::examples/request/api/v1/\{project\}/releases/\{releaseUuid\}/schemas/request-body.json[]
 ----
 
 It is also possible to assign microschemas via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/microschemas``` to the release.
 
 [source,json]
 ----
-include::json/request/api/v1/:projectName/releases/:uuid/microschemas/MicroschemaReferenceList.json[]
+include::examples/request/api/v1/\{project\}/releases/\{releaseUuid\}/microschemas/request-body.json[]
 ----
 
 All nodes which reference the release via the updated schema version will automatically be migrated to use the newer schema version.
@@ -1487,7 +1487,7 @@ Endpoint: ```/api/v1/search/users```
 
 [source,json]
 ----
-include::json/user.search.json[]
+include::examples/user.search.json[]
 ----
 
 ==== Groups
@@ -1496,7 +1496,7 @@ Endpoint: ```/api/v1/search/groups```
 
 [source,json]
 ----
-include::json/group.search.json[]
+include::examples/group.search.json[]
 ----
 
 ==== Roles
@@ -1505,7 +1505,7 @@ Endpoint: ```/api/v1/search/roles```
 
 [source,json]
 ----
-include::json/role.search.json[]
+include::examples/role.search.json[]
 ----
 
 ==== Nodes
@@ -1514,7 +1514,7 @@ Endpoint: ```/api/v1/search/nodes```
 
 [source,json]
 ----
-include::json/node.search.json[]
+include::examples/node.search.json[]
 ----
 
 *Search nodes by schema name*
@@ -1575,7 +1575,7 @@ Find all nodes which have a micronode list field (vcardlist) that contain at lea
 
 [source,json]
 ----
-include::json/project.search.json[]
+include::examples/project.search.json[]
 ----
 
 ==== Tags
@@ -1584,7 +1584,7 @@ Endpoint: ```/api/v1/search/tags```
 
 [source,json]
 ----
-include::json/tag.search.json[]
+include::examples/tag.search.json[]
 ----
 
 ==== Tag Families
@@ -1593,7 +1593,7 @@ Endpoint: ```/api/v1/search/tagFamilies```
 
 [source,json]
 ----
-include::json/tagFamily.search.json[]
+include::examples/tagFamily.search.json[]
 ----
 
 ==== Schemas
@@ -1602,7 +1602,7 @@ Endpoint: ```/api/v1/search/schemas```
 
 [source,json]
 ----
-include::json/schema.search.json[]
+include::examples/schema.search.json[]
 ----
 
 ==== Microschemas
@@ -1611,7 +1611,7 @@ Endpoint: ```/api/v1/search/microschemas```
 
 [source,json]
 ----
-include::json/microschema.search.json[]
+include::examples/microschema.search.json[]
 ----
 
 === Clustering

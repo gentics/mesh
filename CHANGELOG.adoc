@@ -2,7 +2,7 @@
 
 = Gentics Mesh Changelog
 
-== 0.9.0
+== 0.9.0 (27.03.2017)
 
 icon:plus[] Gentics Mesh now supports GraphQL.
 
@@ -16,7 +16,7 @@ The endpoint `/api/v1/:projectName/nodes/:nodeUuid/tags` was enhanced. It is now
 
 The `tags` field within the node response was updated accordingly.
 
-== 0.8.3
+== 0.8.3 (24.02.2017)
 
 icon:plus[] Names, string fields and html field values will now be indexed using the https://www.elastic.co/guide/en/elasticsearch/guide/current/ngrams-compound-words.html[trigram analyzer].
 
@@ -117,7 +117,7 @@ New structure:
 ----
 ____
 
-== 0.7.0
+== 0.7.0 (19.01.2017)
 
 icon:bullhorn[] Content releases support
 
