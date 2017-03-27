@@ -269,7 +269,8 @@ icon:check[] Update checker. A bug that prevented the update checker from workin
 
 == 0.6.6 (06.04.2016)
 
-* Public open beta release
+icon:bullhorn[] Public open beta release
+
 icon:check[] A bug within the reindex changelog entry was fixed. The bug prevented the node index to be recreated.
 
 icon:check[] The mesh-ui-config.js default apiUrl parameter was changed to /api/v1 in order to allow access from hosts other than localhost.
@@ -306,7 +307,6 @@ icon:check[] It was not possible to update the *allow* flag for schema lists (e.
 icon:check[] The schema migration process did not update the node search index correctly. 
        In some cases duplicate nodes would be returned (the old node and the migrated one).
        This has been fixed. Only the latest version of nodes will be returned now.
-icon:check[] It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now.
 
 icon:check[] A NPE was fixed which occurred when updating or creating a node list which included elements which could not be found. (CL-358)
 
