@@ -164,9 +164,11 @@ node('dockerRoot') {
 		if (Boolean.valueOf(runReleaseBuild)) {
 			version = MavenHelper.getNextSnapShotVersion(version)
 			MavenHelper.setVersion(version)
-			GitHelper.addCommit('.', gitCommitTag + ' Prepare for the next development iteration (' + version + ')')
-			GitHelper.pushBranch(branchName)
-			GitHelper.pushTag(version)
+			sshagent([sshAgent]) {
+				GitHelper.addCommit('.', gitCommitTag + ' Prepare for the next development iteration (' + version + ')')
+				GitHelper.pushBranch(branchName)
+				GitHelper.pushTag(version)
+			}
 		} else {
 			echo "Push skipped.."
 		}
