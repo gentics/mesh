@@ -27,11 +27,11 @@ Internally Gentics Mesh will resolve your query and traverse your content graph 
 
 === Examples
 
-include::json/tiny-query[]
+include::examples/graphql/tiny-query[]
 
 Field query:
 
-include::json/field-query[]
+include::examples/graphql/field-query[]
 
 === GraphiQL Browser
 

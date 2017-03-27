@@ -81,7 +81,7 @@ public final class OptionsLoader {
 	 * 
 	 * @return
 	 */
-	private static ObjectMapper getYAMLMapper() {
+	public static ObjectMapper getYAMLMapper() {
 		YAMLFactory factory = new YAMLFactory();
 		ObjectMapper mapper = new ObjectMapper(factory);
 		mapper.setSerializationInclusion(Include.NON_NULL);
