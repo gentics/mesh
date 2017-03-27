@@ -13,10 +13,14 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.context.impl.GraphQLContextImpl;
 import com.gentics.mesh.rest.Endpoint;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.handler.StaticHandler;
 
 @Singleton
 public class GraphQLEndpoint extends AbstractProjectEndpoint {
+
+	private static final Logger log = LoggerFactory.getLogger(GraphQLEndpoint.class);
 
 	private GraphQLHandler queryHandler;
 
@@ -43,22 +47,31 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 			queryHandler.handleQuery(gc, body);
 		});
 
+		log.info("GraphiQL is owned and developed by Facebook, Inc. - Copyright (c) 2015, Facebook, Inc. All rights reserved.");
 		StaticHandler staticHandler = StaticHandler.create("graphiql");
 		staticHandler.setDirectoryListing(false);
 		staticHandler.setCachingEnabled(false);
 		staticHandler.setIndexPage("index.html");
-		route("/browser/*").method(GET).handler(staticHandler);
+		route("/browser/*").method(GET)
+				.handler(staticHandler);
 
 		// Redirect handler
-		route("/browser").method(GET).handler(rc -> {
-			if ("/browser".equals(rc.request().path())) {
-				rc.response().setStatusCode(302);
-				rc.response().headers().set("Location", rc.request().path() + "/");
-				rc.response().end();
-			} else {
-				rc.next();
-			}
-		});
+		route("/browser").method(GET)
+				.handler(rc -> {
+					if ("/browser".equals(rc.request()
+							.path())) {
+						rc.response()
+								.setStatusCode(302);
+						rc.response()
+								.headers()
+								.set("Location", rc.request()
+										.path() + "/");
+						rc.response()
+								.end();
+					} else {
+						rc.next();
+					}
+				});
 
 	}
 
