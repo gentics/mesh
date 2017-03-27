@@ -1,3 +1,10 @@
+// The GIT repository for this pipeline lib is defined in the global Jenkins setting
+@Library('jenkins-pipeline-library')
+import com.gentics.*
+
+// Make the helpers aware of this jobs environment
+JobContext.set(this)
+
 properties([disableConcurrentBuilds(),[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
 [$class: 'BooleanParameterDefinition', name: 'runTests', defaultValue: true],
 [$class: 'BooleanParameterDefinition', name: 'runPerformanceTests', defaultValue: true],
@@ -9,6 +16,11 @@ properties([disableConcurrentBuilds(),[$class: 'ParametersDefinitionProperty', p
  pipelineTriggers([[$class: 'GitHubPushTrigger'], pollSCM('H/5 * * * *')])
 ])
 
+final def sshAgent             = "601b6ce9-37f7-439a-ac0b-8e368947d98d"
+final def dockerHost           = "tcp://gemini.office:2375"
+final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
+
+
 node('dockerRoot') {
 
 	def mvnHome = tool 'M3'
@@ -16,24 +28,21 @@ node('dockerRoot') {
 		sh "rm -rf *"
 		sh "rm -rf .git"
 		checkout scm
-		//checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]], extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
 	}
+	def branchName = GitHelper.fetchCurrentBranchName()
 
 	stage("Set Version") {
 		if (Boolean.valueOf(runReleaseBuild)) {
-			def originalV = version();
-			def major = originalV[1];
-			def minor = originalV[2];
-			def patch  = Integer.parseInt(originalV[3]) + 1;
-			def v = "${major}.${minor}.${patch}"
-			if (v) {
-				echo "Building version ${v}"
+			version = MavenHelper.getVersion()
+			if (version) {
+				echo "Building version " + version
+				version = MavenHelper.transformSnapshotToReleaseVersion(version)
+				MavenHelper.setVersion(version)
 			}
-			sh "${mvnHome}/bin/mvn -B -U versions:set -DgenerateBackupPoms=false -DnewVersion=${v}"
 			//TODO only add pom.xml files
 			sh 'git add .'
 			sh "git commit -m 'Raise version'"
-			sh "git tag ${v}"
+			GitHelper.addTag(version, 'Release of version ' + version)
 		}
 	}
 
@@ -61,7 +70,7 @@ node('dockerRoot') {
 						}
 						echo "Setting correct inclusions file ${postfix}"
 						sh "mv includes-${postfix} inclusions.txt"
-						sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
+						sshagent([sshAgent]) {
 							try {
 								sh "${mvnHome}/bin/mvn -B -U -e -pl '!demo,!doc,!server,!performance-tests' clean test"
 							} finally {
@@ -84,7 +93,7 @@ node('dockerRoot') {
 
 	stage("Release Build") {
 		if (Boolean.valueOf(runReleaseBuild)) {
-			sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
+			sshagent([sshAgent]) {
 				sh "${mvnHome}/bin/mvn -B -DskipTests clean package"
 			}
 		} else {
@@ -94,7 +103,7 @@ node('dockerRoot') {
 
 	stage("Docker Build") {
 		if (Boolean.valueOf(runDocker)) {
-			withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
+			withEnv(["DOCKER_HOST=" + dockerHost ]) {
 				sh "captain build"
 			}
 		} else {
@@ -123,7 +132,7 @@ node('dockerRoot') {
 
 	stage("Integration Tests") {
 		if (Boolean.valueOf(runIntegrationTests)) {
-			withEnv(['DOCKER_HOST=tcp://gemini.office:2375', "MESH_VERSION=${v}"]) {
+			withEnv(["DOCKER_HOST=" + dockerHost, "MESH_VERSION=" + version]) {
 				sh "integration-tests/test.sh"
 			}
 		} else {
@@ -131,32 +140,33 @@ node('dockerRoot') {
 		}
 	}
 
-	stage("Deploy/Push") {
+	stage("Deploy") {
 		if (Boolean.valueOf(runDeploy)) {
 			if (Boolean.valueOf(runDocker)) {
-				withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
+				withEnv(["DOCKER_HOST=" + dockerHost]) {
 					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
 						sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD -e entwicklung@genitcs.com'
 						sh "captain push"
 					}
 				}
 			}
-			sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
+			sshagent([sshAgent]) {
 				sh "${mvnHome}/bin/mvn -U -B -DskipTests clean deploy"
-				if (Boolean.valueOf(runReleaseBuild)) {
-					def gitCommit = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
-					sh "git push origin " + gitCommit
-					sh "git push origin ${v}"
-				}
 			}
 		} else {
-			echo "Deploy/Push skipped.."
+			echo "Deploy skipped.."
 		}
 	}
 
-}
-
-def version() {
-	def matcher = readFile('pom.xml') =~ '<version>(\\d*)\\.(\\d*)\\.(\\d*)(-SNAPSHOT)*</version>'
-	matcher ? matcher[0] : null
+	stage("Git push") {
+		if (Boolean.valueOf(runReleaseBuild)) {
+			version = MavenHelper.getNextSnapShotVersion(version)
+			MavenHelper.setVersion(version)
+			GitHelper.addCommit('.', gitCommitTag + ' Prepare for the next development iteration (' + version + ')')
+			GitHelper.pushBranch(branchName)
+			GitHelper.pushTag(version)
+		} else {
+			echo "Push skipped.."
+		}
+	}
 }
