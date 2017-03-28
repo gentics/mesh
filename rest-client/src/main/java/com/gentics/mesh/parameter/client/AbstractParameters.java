@@ -10,7 +10,7 @@ import io.vertx.core.MultiMap;
 
 public abstract class AbstractParameters implements ParameterProvider {
 
-	protected MultiMap parameters;
+	protected MultiMap parameters = MultiMap.caseInsensitiveMultiMap();
 
 	@Override
 	public String getParameter(String name) {
