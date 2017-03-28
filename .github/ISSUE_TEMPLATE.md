@@ -1,6 +1,5 @@
 ## Gentics Mesh Version, operating system, or hardware.
-- v0.6.x[ ]
-- v0.7.x[ ]
+- [ ] v0.9.x
 
 ## Operating System
 - [ ] Linux
@@ -9,9 +8,13 @@
 - [ ] Other Unix
 - [ ] Other, name? 
 
+## JVM
+- [ ] Oracle JDK 8
+- [ ] Open JDK 8
+
 ## Problem
 
 ## Reproducer
 
-## Expected behavior and actual behavior
+## Expected behaviour and actual behaviour
 
