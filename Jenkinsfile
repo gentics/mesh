@@ -162,10 +162,11 @@ node('dockerRoot') {
 
 	stage("Git push") {
 		if (Boolean.valueOf(runReleaseBuild)) {
-			version = MavenHelper.getNextSnapShotVersion(version)
-			MavenHelper.setVersion(version)
+
 			sshagent([sshAgent]) {
-				GitHelper.addCommit('.', gitCommitTag + ' Prepare for the next development iteration (' + version + ')')
+				def snapshotVersion = MavenHelper.getNextSnapShotVersion(version)
+				MavenHelper.setVersion(snapshotVersion)
+				GitHelper.addCommit('.', gitCommitTag + ' Prepare for the next development iteration (' + snapshotVersion + ')')
 				GitHelper.pushBranch(branchName)
 				GitHelper.pushTag(version)
 			}
