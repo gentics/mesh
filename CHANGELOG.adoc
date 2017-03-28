@@ -22,9 +22,19 @@ The `tags` field within the node response was updated accordingly.
 
 == 0.8.3 (24.02.2017)
 
-icon:plus[] Names, string fields and html field values will now be indexed using the https://www.elastic.co/guide/en/elasticsearch/guide/current/ngrams-compound-words.html[trigram analyzer].
-
 icon:plus[] Tags are now also indexed in the node document in the field `tagFamilies`, grouped by tag families.
+
+== 0.8.2 (23.02.2017)
+
+icon:check[] The trigram filter configuration was updated so that all characters will be used to tokenize the content.
+
+== 0.8.1 (21.02.2017)
+
+icon:check[] A bug which prevented index creation in certain cases was fixed.
+
+== 0.8.0 (10.02.2017)
+
+icon:plus[] Names, string fields and html field values will now be indexed using the https://www.elastic.co/guide/en/elasticsearch/guide/current/ngrams-compound-words.html[trigram analyzer].
 
 icon:plus[] Binary Endpoint Overhaul
 
@@ -120,6 +130,8 @@ New structure:
 }
 ----
 ____
+
+
 
 == 0.7.0 (19.01.2017)
 
