@@ -8,6 +8,8 @@ icon:check[] The `Access-Control-Allow-Credentials: true` Header will now be ret
 
 icon:check[] A NullPointerException within the Java Rest Client was fixed.
 
+icon:check[] The AngularJS Demo was updated.
+
 == 0.9.0 (27.03.2017)
 
 icon:plus[] Gentics Mesh now supports GraphQL.
