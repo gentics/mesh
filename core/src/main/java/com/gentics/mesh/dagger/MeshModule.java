@@ -123,6 +123,7 @@ public class MeshModule {
 		corsHandler.allowedHeader("Authorization");
 		corsHandler.allowedHeader("Content-Type");
 		corsHandler.allowedHeader("Set-Cookie");
+		corsHandler.allowCredentials(true);
 		return corsHandler;
 	}
 
