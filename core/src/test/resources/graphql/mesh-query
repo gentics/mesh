@@ -1,0 +1,24 @@
+{
+	mesh {
+		# [$.data.mesh.meshVersion=<not-null>]
+		meshVersion
+
+		# [$.data.mesh.meshNodeId=<not-null>]
+		meshNodeId
+
+		# [$.data.mesh.databaseVendor=<not-null>]
+		databaseVendor
+
+		# [$.data.mesh.databaseVersion=<not-null>]
+		databaseVersion
+
+		# [$.data.mesh.searchVendor=<not-null>]
+		searchVendor
+
+		# [$.data.mesh.searchVersion=<not-null>]
+		searchVersion
+
+		# [$.data.mesh.vertxVersion=<not-null>]
+		vertxVersion
+	}
+}

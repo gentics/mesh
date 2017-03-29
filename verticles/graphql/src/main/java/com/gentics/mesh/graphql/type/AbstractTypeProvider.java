@@ -83,7 +83,7 @@ public abstract class AbstractTypeProvider {
 				.build();
 	}
 
-	public GraphQLArgument getLanguageTagListArg() {
+	public GraphQLArgument createLanguageTagListArg() {
 		return newArgument().name("languages")
 				.type(new GraphQLList(GraphQLString))
 				.description(
@@ -97,7 +97,7 @@ public abstract class AbstractTypeProvider {
 	 * @param description
 	 * @return
 	 */
-	public GraphQLArgument getUuidArg(String description) {
+	public GraphQLArgument createUuidArg(String description) {
 		return newArgument().name("uuid")
 				.type(GraphQLString)
 				.description(description)
@@ -109,7 +109,7 @@ public abstract class AbstractTypeProvider {
 	 * 
 	 * @return
 	 */
-	public GraphQLArgument getPathArg() {
+	public GraphQLArgument createPathArg() {
 		return newArgument().name("path")
 				.type(GraphQLString)
 				.description("Node webroot path")
@@ -122,7 +122,7 @@ public abstract class AbstractTypeProvider {
 	 * @param description
 	 * @return
 	 */
-	public GraphQLArgument getNameArg(String description) {
+	public GraphQLArgument createNameArg(String description) {
 		return newArgument().name("name")
 				.type(GraphQLString)
 				.description(description)
@@ -135,7 +135,7 @@ public abstract class AbstractTypeProvider {
 	 * @param fetcher
 	 * @return
 	 */
-	public PagingParameters getPagingParameters(DataFetchingEnvironment env) {
+	public PagingParameters createPagingParameters(DataFetchingEnvironment env) {
 		PagingParameters params = new PagingParametersImpl();
 		Long page = env.getArgument("page");
 		if (page != null) {
@@ -160,7 +160,7 @@ public abstract class AbstractTypeProvider {
 
 		return newArgument().name("linkType")
 				.type(linkTypeEnum)
-				.defaultValue(LinkType.OFF.name())
+				.defaultValue(LinkType.OFF)
 				.description("Specify the resolve type")
 				.build();
 	}
@@ -317,8 +317,8 @@ public abstract class AbstractTypeProvider {
 			GraphQLObjectType type) {
 		return newFieldDefinition().name(name)
 				.description(description)
-				.argument(getUuidArg("Uuid of the " + name + "."))
-				.argument(getNameArg("Name of the " + name + "."))
+				.argument(createUuidArg("Uuid of the " + name + "."))
+				.argument(createNameArg("Name of the " + name + "."))
 				.type(type)
 				.dataFetcher(env -> {
 					GraphQLContext gc = env.getContext();

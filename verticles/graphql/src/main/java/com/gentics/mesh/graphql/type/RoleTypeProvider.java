@@ -38,7 +38,7 @@ public class RoleTypeProvider extends AbstractTypeProvider {
 		roleType.field(newPagingFieldWithFetcher("groups", "Groups which reference the role.", (env) -> {
 			Role role = env.getSource();
 			GraphQLContext gc = env.getContext();
-			return role.getGroups(gc.getUser(), getPagingParameters(env));
+			return role.getGroups(gc.getUser(), createPagingParameters(env));
 		}, "Group"));
 		return roleType.build();
 	}

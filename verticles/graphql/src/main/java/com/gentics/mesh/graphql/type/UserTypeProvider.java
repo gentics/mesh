@@ -92,4 +92,5 @@ public class UserTypeProvider extends AbstractTypeProvider {
 
 		return root.build();
 	}
+
 }

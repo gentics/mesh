@@ -36,6 +36,9 @@ import graphql.schema.GraphQLTypeReference;
 public class QueryTypeProvider extends AbstractTypeProvider {
 
 	@Inject
+	public MeshTypeProvider meshTypeProvider;
+
+	@Inject
 	public NodeFieldTypeProvider nodeFieldTypeProvider;
 
 	@Inject
@@ -175,8 +178,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		// .node
 		root.field(newFieldDefinition().name("node")
 				.description("Load a node by uuid or webroot path.")
-				.argument(getUuidArg("Node uuid"))
-				.argument(getPathArg())
+				.argument(createUuidArg("Node uuid"))
+				.argument(createPathArg())
 				.dataFetcher(this::nodeFetcher)
 				.type(nodeTypeProvider.getNodeType(project))
 				.build());
@@ -243,6 +246,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		// .users
 		root.field(newPagingField("users", "Load page of users.", (ac) -> boot.userRoot(), "User"));
+
+		// .mesh
+		root.field(meshTypeProvider.createMeshFieldType());
 
 		return root.build();
 	}

@@ -46,7 +46,7 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 		return gc.requiresPerm(user, READ_PERM);
 	}
 
-	public GraphQLObjectType getContainerType(Project project) {
+	public GraphQLObjectType createContainerType(Project project) {
 
 		Builder type = newObject().name("Container")
 				.description("Language specific node container which contains the node fields");

@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLEnumType.newEnum;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
@@ -23,6 +24,7 @@ import com.gentics.mesh.graphql.model.LinkInfo;
 import com.gentics.mesh.parameter.LinkType;
 
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
@@ -46,9 +48,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	}
 
 	public Object languagePathsFetcher(DataFetchingEnvironment env) {
-		String typeName = env.getArgument("linkType");
-		if (typeName != null) {
-			LinkType type = LinkType.valueOf(typeName);
+		LinkType type = env.getArgument("linkType");
+		if (type != null) {
 			GraphQLContext gc = env.getContext();
 			Release release = gc.getRelease();
 			Node node = env.getSource();
@@ -87,7 +88,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	public Object tagsFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		Node node = env.getSource();
-		return node.getTags(gc.getUser(), getPagingParameters(env), gc.getRelease());
+		return node.getTags(gc.getUser(), createPagingParameters(env), gc.getRelease());
 	}
 
 	public Object containerFetcher(DataFetchingEnvironment env) {
@@ -97,6 +98,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			GraphQLContext gc = env.getContext();
 			Release release = gc.getRelease();
 			NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag);
+			// There might not be a container for the selected language
+			if (container == null) {
+				return null;
+			}
 
 			// Check whether the user is allowed to read the published container
 			boolean isPublished = container.isPublished(release.getUuid());
@@ -177,7 +182,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			return node.getChildren(gc.getUser(), languageTags, gc.getRelease()
 					.getUuid(), null, getPagingInfo(env));
 
-		}, "Node").argument(getLanguageTagListArg()));
+		}, "Node").argument(createLanguageTagListArg()));
 
 		// .parent
 		nodeType.field(newFieldDefinition().name("parent")
@@ -193,7 +198,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .container
 		nodeType.field(newFieldDefinition().name("container")
-				.type(containerTypeProvider.getContainerType(project))
+				.type(containerTypeProvider.createContainerType(project))
 				.argument(getLanguageTagArg())
 				.dataFetcher(this::containerFetcher));
 
@@ -207,6 +212,17 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		return nodeType.build();
 	}
 
+	private GraphQLEnumType getLinkEnumType() {
+		return newEnum().name("LinkType")
+				.description("Supported link types.")
+				.value(LinkType.OFF.name())
+				.value(LinkType.SHORT.name())
+				.value(LinkType.MEDIUM.name())
+				.value(LinkType.FULL.name())
+				.build();
+
+	}
+
 	private GraphQLType getLinkInfoType() {
 		Builder type = newObject().name("LinkInfo");
 
@@ -218,7 +234,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		// .link
 		type.field(newFieldDefinition().name("link")
 				.description("Resolved link")
-				.type(GraphQLString));
+				.type(getLinkEnumType()));
 		return type.build();
 	}
 }

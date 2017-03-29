@@ -3,7 +3,7 @@
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gentics.mesh/mesh/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gentics.mesh/mesh)
 [![JavaDoc](https://javadoc-emblem.rhcloud.com/doc/com.gentics.mesh/mesh/badge.svg)](http://www.javadoc.io/doc/com.gentics.mesh/mesh)
 [![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
-[![Stack Overflow](http://img.shields.io/:stack%20overflow-genticsmesh-brightgreen.svg)](http://stackoverflow.com/questions/tagged/genticsmesh)
+[![Stack Overflow](http://img.shields.io/:stack%20overflow-genticsmesh-brightgreen.svg)](http://stackoverflow.com/questions/tagged/mesh-cms)
 
 # Gentics Mesh
 

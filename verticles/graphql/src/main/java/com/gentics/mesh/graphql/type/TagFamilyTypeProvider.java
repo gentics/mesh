@@ -36,8 +36,8 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 		// .tag
 		tagFamilyType.field(newFieldDefinition().name("tag")
 				.description("Load a specific tag by name or uuid.")
-				.argument(getUuidArg("Uuid of the tag."))
-				.argument(getNameArg("Name of the tag."))
+				.argument(createUuidArg("Uuid of the tag."))
+				.argument(createNameArg("Name of the tag."))
 				.type(new GraphQLTypeReference("Tag"))
 				.dataFetcher(env -> {
 					TagFamily tagFamily = env.getSource();
@@ -49,7 +49,7 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 		tagFamilyType.field(newPagingFieldWithFetcher("tags", "Tags which are assigned to the tagfamily.", (env) -> {
 			GraphQLContext gc = env.getContext();
 			TagFamily tagFamily = env.getSource();
-			PagingParameters pagingInfo = getPagingParameters(env);
+			PagingParameters pagingInfo = createPagingParameters(env);
 			return tagFamily.getTags(gc.getUser(), pagingInfo);
 		}, "Tag"));
 		return tagFamilyType.build();

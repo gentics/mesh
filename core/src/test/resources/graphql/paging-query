@@ -22,7 +22,7 @@
 
 		# [$.data.users.elements.length()=1]
 		elements {
-			# [$.data.users.elements[0].username=joe1] 
+			# [$.data.users.elements[0].username=<not-null>] 
 			username
 
 			# [$.data.users.elements[0].uuid=<is-uuid>]

@@ -1,5 +1,9 @@
 {
 	node(path:"/Neuigkeiten/2015") {
+		# [$.data.node.ruContainer=<is-null>]
+		ruContainer: container(language: "ru") {
+			version
+		}
 		container(language: "en") {
 			# [$.data.node.container.version=1.0]
 			version
