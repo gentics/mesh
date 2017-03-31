@@ -181,7 +181,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 		endpoint.handler(rc -> {
 			try {
 				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getSelectedIndices(ac.getProject(), ac.getRelease(), ac.getVersioningParameters()), indexHandler.getReadPermission(ac));
+				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getSelectedIndices(ac), indexHandler.getReadPermission(ac));
 			} catch (Exception e) {
 				// fail(rc, "search_error_query");
 				rc.fail(e);

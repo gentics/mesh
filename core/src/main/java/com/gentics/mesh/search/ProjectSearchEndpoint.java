@@ -106,10 +106,7 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 		endpoint.handler(rc -> {
 			try {
 				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-				Project project = ac.getProject();
-				Release release = ac.getRelease();
-				VersioningParameters parameters = ac.getVersioningParameters();
-				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getSelectedIndices(project, release, parameters), indexHandler.getReadPermission(ac));
+				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getSelectedIndices(ac), indexHandler.getReadPermission(ac));
 			} catch (Exception e) {
 				rc.fail(e);
 			}

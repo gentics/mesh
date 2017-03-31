@@ -372,7 +372,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			 */
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
-			Set<String> indices = getSelectedIndices(ac.getProject(), ac.getRelease(), ac.getVersioningParameters());
+			Set<String> indices = getSelectedIndices(ac);
 			builder = client.prepareSearch(indices.toArray(new String[indices.size()]))
 					.setSource(queryStringObject.toString());
 		} catch (Exception e) {

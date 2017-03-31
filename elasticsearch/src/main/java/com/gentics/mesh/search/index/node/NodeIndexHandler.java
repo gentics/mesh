@@ -35,7 +35,6 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 
@@ -146,28 +145,28 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Set<String> getSelectedIndices(Project project, Release release, VersioningParameters versioningParameters) {
+	public Set<String> getSelectedIndices(InternalActionContext ac) {
 		return db.noTx(() -> {
 			Set<String> indices = new HashSet<>();
+			Project project = ac.getProject();
 			if (project != null) {
+				Release release = ac.getRelease();
 				for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
-					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), version.getUuid(),
-							ContainerType.forVersion(versioningParameters.getVersion())));
+					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
+							version.getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
 				}
 			} else {
 				// The project was not specified. Maybe a global search wants to
 				// know which indices must be searched. In that case we just
 				// iterate over all projects and collect index names per
 				// release.
-				List<? extends Project> projects = boot.meshRoot()
-						.getProjectRoot()
-						.findAll();
+				List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
 				for (Project currentProject : projects) {
-					for (Release currentRelease : currentProject.getReleaseRoot()
-							.findAll()) {
-						for (SchemaContainerVersion version : currentRelease.findAllSchemaVersions()) {
-							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), currentRelease.getUuid(),
-									version.getUuid(), ContainerType.forVersion(versioningParameters.getVersion())));
+					for (Release release : currentProject.getReleaseRoot().findAll()) {
+						for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(),
+									release.getUuid(), version.getUuid(),
+									ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
 						}
 					}
 				}

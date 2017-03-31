@@ -10,15 +10,14 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 
@@ -51,7 +50,8 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return TagFamily.composeIndexName(entry.getContext().getProjectUuid());
+		return TagFamily.composeIndexName(entry.getContext()
+				.getProjectUuid());
 	}
 
 	@Override
@@ -61,14 +61,17 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	public Completable store(TagFamily tagFamily, UpdateDocumentEntry entry) {
-		entry.getContext().setProjectUuid(tagFamily.getProject().getUuid());
+		entry.getContext()
+				.setProjectUuid(tagFamily.getProject()
+						.getUuid());
 		return super.store(tagFamily, entry);
 	}
 
 	@Override
 	public Map<String, String> getIndices() {
 		return db.noTx(() -> {
-			ProjectRoot root = boot.meshRoot().getProjectRoot();
+			ProjectRoot root = boot.meshRoot()
+					.getProjectRoot();
 			root.reload();
 			List<? extends Project> projects = root.findAll();
 			Map<String, String> indexInfo = new HashMap<>();
@@ -80,8 +83,9 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	}
 
 	@Override
-	public Set<String> getSelectedIndices(Project project, Release release, VersioningParameters parameters) {
+	public Set<String> getSelectedIndices(InternalActionContext ac) {
 		return db.noTx(() -> {
+			Project project = ac.getProject();
 			if (project != null) {
 				return Collections.singleton(TagFamily.composeIndexName(project.getUuid()));
 			} else {
@@ -92,7 +96,8 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	protected RootVertex<TagFamily> getRootVertex() {
-		return boot.meshRoot().getTagFamilyRoot();
+		return boot.meshRoot()
+				.getTagFamilyRoot();
 	}
 
 }
