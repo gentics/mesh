@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
-import static graphql.schema.GraphQLEnumType.newEnum;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
@@ -19,12 +18,14 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.model.LinkInfo;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
@@ -33,6 +34,9 @@ import graphql.schema.GraphQLTypeReference;
 
 @Singleton
 public class NodeTypeProvider extends AbstractTypeProvider {
+
+	@Inject
+	public NodeIndexHandler nodeIndexHandler;
 
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;
@@ -85,12 +89,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		return gc.requiresPerm(parentNode, READ_PERM, READ_PUBLISHED_PERM);
 	}
 
-	public Object tagsFetcher(DataFetchingEnvironment env) {
-		GraphQLContext gc = env.getContext();
-		Node node = env.getSource();
-		return node.getTags(gc.getUser(), createPagingParameters(env), gc.getRelease());
-	}
-
 	public Object containerFetcher(DataFetchingEnvironment env) {
 		Node node = env.getSource();
 		String languageTag = env.getArgument("language");
@@ -117,27 +115,13 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		return null;
 	}
 
-	public Object isContainerFetcher(DataFetchingEnvironment env) {
-		Node node = env.getSource();
-		return node.getSchemaContainer()
-				.getLatestVersion()
-				.getSchema()
-				.isContainer();
-	}
-
 	public Object breadcrumbFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		Node node = env.getSource();
 		return node.getBreadcrumbNodes(gc);
 	}
 
-	public Object languageNamesFetcher(DataFetchingEnvironment env) {
-		Node node = env.getSource();
-		//TODO handle release!
-		return node.getAvailableLanguageNames();
-	}
-
-	public GraphQLObjectType getNodeType(Project project) {
+	public GraphQLObjectType createNodeType(Project project) {
 		Builder nodeType = newObject();
 		nodeType.name("Node");
 		nodeType.description(
@@ -164,12 +148,16 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		// .availableLanguages
 		nodeType.field(newFieldDefinition().name("availableLanguages")
 				.type(new GraphQLList(GraphQLString))
-				.dataFetcher(this::languageNamesFetcher));
+				.dataFetcher((env) -> {
+					Node node = env.getSource();
+					//TODO handle release!
+					return node.getAvailableLanguageNames();
+				}));
 
 		// .languagePaths
 		nodeType.field(newFieldDefinition().name("languagePaths")
 				.argument(createLinkTypeArg())
-				.type(new GraphQLList(getLinkInfoType()))
+				.type(new GraphQLList(createLinkInfoType()))
 				.dataFetcher(this::languagePathsFetcher));
 
 		// .children
@@ -194,7 +182,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		nodeType.field(newFieldDefinition().name("tags")
 				.argument(getPagingArgs())
 				.type(tagTypeProvider.createTagType())
-				.dataFetcher(this::tagsFetcher));
+				.dataFetcher((env) -> {
+					GraphQLContext gc = env.getContext();
+					Node node = env.getSource();
+					return node.getTags(gc.getUser(), createPagingParameters(env), gc.getRelease());
+				}));
 
 		// .container
 		nodeType.field(newFieldDefinition().name("container")
@@ -207,23 +199,18 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		nodeType.field(newFieldDefinition().name("isContainer")
 				.description("Check whether the node can have subnodes via children")
 				.type(GraphQLBoolean)
-				.dataFetcher(this::isContainerFetcher));
+				.dataFetcher((env) -> {
+					Node node = env.getSource();
+					return node.getSchemaContainer()
+							.getLatestVersion()
+							.getSchema()
+							.isContainer();
+				}));
 
 		return nodeType.build();
 	}
 
-	private GraphQLEnumType getLinkEnumType() {
-		return newEnum().name("LinkType")
-				.description("Supported link types.")
-				.value(LinkType.OFF.name())
-				.value(LinkType.SHORT.name())
-				.value(LinkType.MEDIUM.name())
-				.value(LinkType.FULL.name())
-				.build();
-
-	}
-
-	private GraphQLType getLinkInfoType() {
+	private GraphQLType createLinkInfoType() {
 		Builder type = newObject().name("LinkInfo");
 
 		// .languageTag
@@ -234,7 +221,15 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		// .link
 		type.field(newFieldDefinition().name("link")
 				.description("Resolved link")
-				.type(getLinkEnumType()));
+				.type(GraphQLString));
 		return type.build();
+	}
+
+	public Page<? extends Node> handleSearch(GraphQLContext gc, String query, PagingParameters pagingInfo) {
+		try {
+			return nodeIndexHandler.query(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

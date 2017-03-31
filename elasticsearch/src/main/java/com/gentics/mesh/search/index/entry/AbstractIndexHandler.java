@@ -1,27 +1,48 @@
 package com.gentics.mesh.search.index.entry;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.Transformator;
 
@@ -49,8 +70,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 	private SearchQueue searchQueue;
 
-	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot,
-			SearchQueue searchQueue) {
+	public AbstractIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
 		this.searchProvider = searchProvider;
 		this.db = db;
 		this.boot = boot;
@@ -149,7 +169,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	/**
-	 * Check whether the search provider is available. Some tests are not starting an search provider and thus we must be able to determine whether we can use the search provider.
+	 * Check whether the search provider is available. Some tests are not starting an search provider and thus we must be able to determine whether we can use
+	 * the search provider.
 	 * 
 	 * @return
 	 */
@@ -171,7 +192,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			return Completable.create(sub -> {
 
 				org.elasticsearch.node.Node node = getESNode();
-				PutMappingRequestBuilder mappingRequestBuilder = node.client().admin().indices()
+				PutMappingRequestBuilder mappingRequestBuilder = node.client()
+						.admin()
+						.indices()
 						.preparePutMapping(indexName);
 				mappingRequestBuilder.setType(normalizedDocumentType);
 
@@ -212,8 +235,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		if (searchProvider.getNode() != null && searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
 			return (org.elasticsearch.node.Node) searchProvider.getNode();
 		} else {
-			throw new RuntimeException(
-					"Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
+			throw new RuntimeException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
 		}
 	}
 
@@ -233,8 +255,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			for (T element : getRootVertex().findAll()) {
 				if (element instanceof IndexableElement) {
 					IndexableElement indexableElement = (IndexableElement) element;
-					log.info("Invoking reindex in handler {" + getClass().getName() + "} for element {"
-							+ indexableElement.getUuid() + "}");
+					log.info("Invoking reindex in handler {" + getClass().getName() + "} for element {" + indexableElement.getUuid() + "}");
 					batch.store(indexableElement, false);
 				} else {
 					log.info("Found element {" + element.getUuid() + "} is not indexable. Ignoring element.");
@@ -254,7 +275,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			String documentType = indexInfo.get(indexName);
 			Set<Completable> obs = new HashSet<>();
 			obs.add(updateMapping(indexName, documentType));
-			return searchProvider.createIndex(indexName).andThen(Completable.merge(obs));
+			return searchProvider.createIndex(indexName)
+					.andThen(Completable.merge(obs));
 		} else {
 			throw error(INTERNAL_SERVER_ERROR, "error_index_unknown", indexName);
 		}
@@ -281,7 +303,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				String documentType = indexInfo.get(indexName);
 				mappingUpdateObs.add(updateMapping(indexName, documentType));
 			}
-			return Completable.merge(indexCreationObs).andThen(Completable.merge(mappingUpdateObs));
+			return Completable.merge(indexCreationObs)
+					.andThen(Completable.merge(mappingUpdateObs));
 		}
 	}
 
@@ -290,7 +313,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		Set<Completable> obs = new HashSet<>();
 		// Iterate over all indices which the handler is responsible for and
 		// clear all of them.
-		getIndices().keySet().forEach(index -> obs.add(searchProvider.clearIndex(index)));
+		getIndices().keySet()
+				.forEach(index -> obs.add(searchProvider.clearIndex(index)));
 		if (obs.isEmpty()) {
 			return Completable.complete();
 		} else {
@@ -301,6 +325,136 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public boolean accepts(Class<?> clazzOfElement) {
 		return getElementClass().isAssignableFrom(clazzOfElement);
+	}
+
+	/**
+	 * Invoke an elastic search query on the database and return a page which lists the found elements.
+	 * 
+	 * @param ac
+	 * @param query
+	 *            Elasticsearch query
+	 * @param pagingInfo
+	 *            Paging settings
+	 * @param permissions
+	 *            Permissions to check against
+	 * @return
+	 * @throws MeshConfigurationException
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 * @throws TimeoutException
+	 */
+	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
+			throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
+		User user = ac.getUser();
+
+		org.elasticsearch.node.Node esNode = null;
+		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
+			esNode = (org.elasticsearch.node.Node) searchProvider.getNode();
+		} else {
+			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
+		}
+		Client client = esNode.client();
+
+		if (log.isDebugEnabled()) {
+			log.debug("Invoking search with query {" + query + "} for {" + getElementClass().getName() + "}");
+		}
+
+		/*
+		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
+		 * to be written that deals with Document Level Permissions/Security (commonly known as DLS)
+		 */
+		SearchRequestBuilder builder = null;
+		try {
+			JSONObject queryStringObject = new JSONObject(query);
+			/**
+			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more
+			 * efficient ways to do deep scrolling.
+			 */
+			queryStringObject.put("from", 0);
+			queryStringObject.put("size", Integer.MAX_VALUE);
+			Set<String> indices = getSelectedIndices(ac.getProject(), ac.getRelease(), ac.getVersioningParameters());
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()]))
+					.setSource(queryStringObject.toString());
+		} catch (Exception e) {
+			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
+		}
+		CompletableFuture<Page<? extends T>> future = new CompletableFuture<>();
+		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+		builder.execute()
+				.addListener(new ActionListener<SearchResponse>() {
+
+					@Override
+					public void onResponse(SearchResponse response) {
+						Page<? extends T> page = db.noTx(() -> {
+							List<T> elementList = new ArrayList<T>();
+							for (SearchHit hit : response.getHits()) {
+
+								String id = hit.getId();
+								int pos = id.indexOf("-");
+								String uuid = pos > 0 ? id.substring(0, pos) : id;
+
+								// TODO check permissions without loading the vertex
+
+								// Locate the node
+								T element = getRootVertex().findByUuid(uuid);
+								if (element != null) {
+									// Check permissions and language
+									for (GraphPermission permission : permissions) {
+										if (user.hasPermission(element, permission)) {
+											elementList.add(element);
+											break;
+										}
+									}
+								}
+							}
+							return applyPaging(elementList, pagingInfo);
+						});
+						future.complete(page);
+					}
+
+					@Override
+					public void onFailure(Throwable e) {
+						log.error("Search query failed", e);
+						future.completeExceptionally(e);
+					}
+				});
+
+		return future.get(60, TimeUnit.SECONDS);
+
+	}
+
+	/**
+	 * Apply paging to the list of elements.
+	 * 
+	 * @param elementList
+	 * @param pagingInfo
+	 * @return
+	 */
+	public Page<? extends T> applyPaging(List<T> elementList, PagingParameters pagingInfo) {
+		// Internally we start with page 0
+		int page = pagingInfo.getPage() - 1;
+
+		int low = page * pagingInfo.getPerPage();
+		int upper = low + pagingInfo.getPerPage() - 1;
+
+		int n = 0;
+
+		List<T> pagedList = new ArrayList<>();
+		for (T element : elementList) {
+
+			// Only add elements that are within the page
+			if (n >= low && n <= upper) {
+				pagedList.add(element);
+			}
+			n++;
+		}
+
+		// Set meta information to the rest response
+		int totalPages = (int) Math.ceil(elementList.size() / (double) pagingInfo.getPerPage());
+		// Cap totalpages to 1
+		totalPages = totalPages == 0 ? 1 : totalPages;
+
+		return new PageImpl<>(pagedList, n, pagingInfo.getPage(), totalPages, elementList.size(), pagingInfo.getPerPage());
 	}
 
 }

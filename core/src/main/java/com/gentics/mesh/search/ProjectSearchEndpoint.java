@@ -12,6 +12,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.common.ListResponse;
@@ -20,6 +22,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
@@ -103,7 +106,10 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 		endpoint.handler(rc -> {
 			try {
 				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getSelectedIndices(ac), indexHandler.getReadPermission(ac));
+				Project project = ac.getProject();
+				Release release = ac.getRelease();
+				VersioningParameters parameters = ac.getVersioningParameters();
+				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getSelectedIndices(project, release, parameters), indexHandler.getReadPermission(ac));
 			} catch (Exception e) {
 				rc.fail(e);
 			}

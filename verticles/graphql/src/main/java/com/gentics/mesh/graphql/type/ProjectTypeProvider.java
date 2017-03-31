@@ -59,7 +59,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		// .rootNode
 		root.field(newFieldDefinition().name("rootNode")
 				.description("The root node of the project")
-				.type(nodeTypeProvider.getNodeType(project))
+				.type(nodeTypeProvider.createNodeType(project))
 				.dataFetcher(this::baseNodeFetcher));
 
 		return root.build();

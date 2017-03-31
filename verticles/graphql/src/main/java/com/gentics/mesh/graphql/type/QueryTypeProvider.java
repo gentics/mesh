@@ -12,8 +12,10 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 
 import graphql.schema.DataFetchingEnvironment;
@@ -181,12 +183,28 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				.argument(createUuidArg("Node uuid"))
 				.argument(createPathArg())
 				.dataFetcher(this::nodeFetcher)
-				.type(nodeTypeProvider.getNodeType(project))
+				.type(nodeTypeProvider.createNodeType(project))
 				.build());
 
 		// .nodes
-		root.field(newPagingField("nodes", "Load page of nodes.", (ac) -> ac.getProject()
-				.getNodeRoot(), "Node"));
+		root.field(newFieldDefinition().name("nodes")
+				.description("Load page of nodes.")
+				.argument(getPagingArgs())
+				.argument(getQueryArg())
+				.type(newPageType("nodes", new GraphQLTypeReference("Node")))
+				.dataFetcher((env) -> {
+					GraphQLContext gc = env.getContext();
+
+					PagingParameters pagingInfo = getPagingInfo(env);
+					String query = env.getArgument("query");
+					if (query != null) {
+						return nodeTypeProvider.handleSearch(gc, query, pagingInfo);
+					} else {
+						NodeRoot nodeRoot = gc.getProject()
+								.getNodeRoot();
+						return nodeRoot.findAll(gc, pagingInfo);
+					}
+				}));
 
 		// .baseNode
 		root.field(newFieldDefinition().name("rootNode")

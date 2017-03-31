@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
@@ -65,6 +66,7 @@ import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
@@ -78,7 +80,6 @@ import com.gentics.mesh.util.VersionNumber;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -1615,7 +1616,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Request the node with various language parameter values. Fallback to "de"
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("dv,nl,de,en");
-			VersioningParametersImpl versionParams = new VersioningParametersImpl().draft();
+			VersioningParameters versionParams = new VersioningParametersImpl().draft();
 			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams));
 			assertThat(folder("products")).matches(restNode);
 
@@ -1636,7 +1637,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("de");
-			VersioningParametersImpl versionParams = new VersioningParametersImpl().draft();
+			VersioningParameters versionParams = new VersioningParametersImpl().draft();
 			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams));
 			assertThat(folder("products")).matches(restNode);
 
@@ -1673,7 +1674,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Request the node in english en
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en");
-			VersioningParametersImpl versionParams = new VersioningParametersImpl().draft();
+			VersioningParameters versionParams = new VersioningParametersImpl().draft();
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, versionParams));
 			assertThat(response.getLanguage()).as("Node language")
 					.isNull();
@@ -1695,7 +1696,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("blabla", "edgsdg");
-			VersioningParametersImpl versionParams = new VersioningParametersImpl().draft();
+			VersioningParameters versionParams = new VersioningParametersImpl().draft();
 
 			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 			MeshResponse<NodeResponse> future = client().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams)

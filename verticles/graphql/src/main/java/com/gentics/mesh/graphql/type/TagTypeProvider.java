@@ -39,7 +39,11 @@ public class TagTypeProvider extends AbstractTypeProvider {
 		// .name
 		tagType.field(newFieldDefinition().name("name")
 				.description("Name of the tag")
-				.type(GraphQLString));
+				.type(GraphQLString)
+				.dataFetcher((env)-> {
+					Tag tag = env.getSource();
+					return tag.getName();
+				}));
 
 		// .tagFamily
 		tagType.field(newFieldDefinition().name("tagFamily")

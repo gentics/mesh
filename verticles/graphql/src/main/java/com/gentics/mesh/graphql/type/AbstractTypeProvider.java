@@ -40,6 +40,18 @@ import rx.functions.Func1;
 public abstract class AbstractTypeProvider {
 
 	/**
+	 * Return the elasticsearch query argument
+	 * 
+	 * @return
+	 */
+	public GraphQLArgument getQueryArg() {
+		return newArgument().name("query")
+				.description("Elasticsearch query to query the data.")
+				.type(GraphQLString)
+				.build();
+	}
+
+	/**
 	 * Return a new set of paging arguments.
 	 * 
 	 * @return
@@ -110,6 +122,7 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLArgument createPathArg() {
+
 		return newArgument().name("path")
 				.type(GraphQLString)
 				.description("Node webroot path")
@@ -277,6 +290,19 @@ public abstract class AbstractTypeProvider {
 		return type.build();
 	}
 
+	/**
+	 * Construct a new paging field which fetches specific data.
+	 * 
+	 * @param name
+	 *            Name of the field
+	 * @param description
+	 *            Description of the field
+	 * @param dataFetcher
+	 *            Data fetcher to be used
+	 * @param referenceTypeName
+	 *            Type of objects which the field yields
+	 * @return Field definition
+	 */
 	protected GraphQLFieldDefinition newPagingFieldWithFetcher(String name, String description, DataFetcher<?> dataFetcher,
 			String referenceTypeName) {
 		return newPagingFieldWithFetcherBuilder(name, description, dataFetcher, referenceTypeName).build();

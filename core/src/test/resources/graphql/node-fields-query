@@ -31,7 +31,7 @@
 							# [$.data.node.container.fields.nodeRef.container.isPublished=true]
 							isPublished
 
-							# [$.data.node.container.fields.nodeRef.container.isDraft=false]
+							# [$.data.node.container.fields.nodeRef.container.isDraft=true]
 							isDraft
 
 							fields {

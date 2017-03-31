@@ -8,6 +8,8 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 
@@ -27,7 +29,11 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		interfaceTypeProvider.addCommonFields(schemaType);
 
 		schemaType.field(newFieldDefinition().name("name")
-				.type(GraphQLString));
+				.type(GraphQLString)
+				.dataFetcher((env) -> {
+					SchemaContainer schemaContainer = env.getSource();
+					return schemaContainer.getName();
+				}));
 
 		schemaType.field(newFieldDefinition().name("isContainer")
 				.type(GraphQLBoolean));

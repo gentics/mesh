@@ -6,11 +6,9 @@ import java.util.Map;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.NavigationParameters;
-import com.gentics.mesh.util.NumberUtils;
 
 public class NavigationParametersImpl extends AbstractParameters implements NavigationParameters {
 

@@ -11,14 +11,11 @@ import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
+import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.util.VersionNumber;
 
-//TODO split this class into two since some actions are not versioing specific but release specific 
-public class VersioningParametersImpl extends AbstractParameters {
-
-	public static final String RELEASE_QUERY_PARAM_KEY = "release";
-
-	public static final String VERSION_QUERY_PARAM_KEY = "version";
+//TODO split this class into two since some actions are not versioning specific but release specific 
+public class VersioningParametersImpl extends AbstractParameters implements VersioningParameters {
 
 	public VersioningParametersImpl(ActionContext ac) {
 		super(ac);
@@ -27,18 +24,13 @@ public class VersioningParametersImpl extends AbstractParameters {
 	public VersioningParametersImpl() {
 	}
 
-	/**
-	 * Set the release by name or UUID.
-	 *
-	 * @param release
-	 *            name or uuid
-	 * @return fluent API
-	 */
-	public VersioningParametersImpl setRelease(String release) {
+	@Override
+	public VersioningParameters setRelease(String release) {
 		setParameter(RELEASE_QUERY_PARAM_KEY, release);
 		return this;
 	}
 
+	@Override
 	public String getVersion() {
 		String version = "draft";
 		String versionParameter = getParameter(VERSION_QUERY_PARAM_KEY);
@@ -56,37 +48,23 @@ public class VersioningParametersImpl extends AbstractParameters {
 		return version;
 	}
 
-	/**
-	 * Set the version. This can be either "draft", "published" or a version number
-	 *
-	 * @param version
-	 *            version
-	 * @return fluent API
-	 */
-
-	public VersioningParametersImpl setVersion(String version) {
+	@Override
+	public VersioningParameters setVersion(String version) {
 		setParameter(VERSION_QUERY_PARAM_KEY, version);
 		return this;
 	}
 
-	/**
-	 * Request the draft version. Alias for setVersion("draft")
-	 * 
-	 * @return fluent API
-	 */
-	public VersioningParametersImpl draft() {
+	@Override
+	public VersioningParameters draft() {
 		return setVersion("draft");
 	}
 
-	/**
-	 * Request the published version. Alias for setVersion("published")
-	 * 
-	 * @return fluent API
-	 */
-	public VersioningParametersImpl published() {
+	@Override
+	public VersioningParameters published() {
 		return setVersion("published");
 	}
 
+	@Override
 	public String getRelease() {
 		return getParameter(RELEASE_QUERY_PARAM_KEY);
 	}

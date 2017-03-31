@@ -32,7 +32,11 @@ public class RoleTypeProvider extends AbstractTypeProvider {
 		// .name
 		roleType.field(newFieldDefinition().name("name")
 				.description("The name of the role")
-				.type(GraphQLString));
+				.type(GraphQLString)
+				.dataFetcher((env) -> {
+					Role role = env.getSource();
+					return role.getName();
+				}));
 
 		// .groups
 		roleType.field(newPagingFieldWithFetcher("groups", "Groups which reference the role.", (env) -> {

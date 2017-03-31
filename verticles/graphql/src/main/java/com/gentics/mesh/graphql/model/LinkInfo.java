@@ -1,5 +1,8 @@
 package com.gentics.mesh.graphql.model;
 
+/**
+ * Container for link information.
+ */
 public class LinkInfo {
 
 	private String link;

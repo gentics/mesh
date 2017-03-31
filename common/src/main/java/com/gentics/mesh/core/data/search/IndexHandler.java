@@ -4,7 +4,10 @@ import java.util.Map;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.parameter.VersioningParameters;
 
 import rx.Completable;
 
@@ -69,14 +72,15 @@ public interface IndexHandler {
 	Map<String, String> getIndices();
 
 	/**
-	 * Get the names of all selected indices. The action context will be examined to determine the project scope and the release scope. If possible even the
-	 * version type will be extracted from the action context in order to generate the set of indices which are selected.
+	 * Get the names of all selected indices. The project will be used to determine the project scope. The release will define the release scope. If possible
+	 * even the version will be used in order to generate the set of indices which are selected.
 	 * 
-	 * @param ac
-	 *            action context
+	 * @param project
+	 * @param release
+	 * @param versioningParameters
 	 * @return name of selected indices
 	 */
-	Set<String> getSelectedIndices(InternalActionContext ac);
+	Set<String> getSelectedIndices(Project project, Release release, VersioningParameters versioningParameters);
 
 	/**
 	 * Get the permission required to read the elements found in the index.

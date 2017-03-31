@@ -84,6 +84,15 @@ public class UserTypeProvider extends AbstractTypeProvider {
 					GraphQLContext gc = env.getContext();
 					User user = env.getSource();
 					Node node = user.getReferencedNode();
+
+					// Ensure that the graphql traversal does not leave the scope of the current project.
+					if (!node.getProject()
+							.getUuid()
+							.equals(gc.getProject()
+									.getUuid())) {
+						//TODO throw error - We can't traverse across projects
+						return null;
+					}
 					if (node != null) {
 						return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 					}
