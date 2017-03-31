@@ -24,7 +24,7 @@ public interface Schema extends FieldSchemaContainer {
 	 * @param displayField
 	 *            Display field
 	 */
-	void setDisplayField(String displayField);
+	Schema setDisplayField(String displayField);
 
 	/**
 	 * Return the container flag. When enabled nodes of this schema can contain other nodes. (parent/child relationship)
@@ -39,7 +39,7 @@ public interface Schema extends FieldSchemaContainer {
 	 * @param flag
 	 *            Container flag value
 	 */
-	void setContainer(boolean flag);
+	Schema setContainer(boolean flag);
 
 	/**
 	 * Return the segment field name.
@@ -53,7 +53,7 @@ public interface Schema extends FieldSchemaContainer {
 	 * 
 	 * @param segmentField
 	 */
-	void setSegmentField(String segmentField);
+	Schema setSegmentField(String segmentField);
 
 	default void validate() {
 		FieldSchemaContainer.super.validate();

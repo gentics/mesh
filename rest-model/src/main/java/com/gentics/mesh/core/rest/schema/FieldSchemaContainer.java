@@ -37,7 +37,7 @@ public interface FieldSchemaContainer extends RestModel {
 	 * @param name
 	 *            Name of the container
 	 */
-	void setName(String name);
+	FieldSchemaContainer setName(String name);
 
 	/**
 	 * Return the container description.
@@ -52,7 +52,7 @@ public interface FieldSchemaContainer extends RestModel {
 	 * @param description
 	 *            Container description
 	 */
-	void setDescription(String description);
+	FieldSchemaContainer setDescription(String description);
 
 	/**
 	 * Return the field with the given name.
@@ -88,11 +88,12 @@ public interface FieldSchemaContainer extends RestModel {
 	 * 
 	 * @param name
 	 */
-	default void removeField(String name) {
+	default FieldSchemaContainer removeField(String name) {
 		if (name == null) {
-			return;
+			return this;
 		}
 		getFields().removeIf(field -> name.equals(field.getName()));
+		return this;
 	}
 
 	/**
@@ -121,10 +122,11 @@ public interface FieldSchemaContainer extends RestModel {
 	 * 
 	 * @param fieldSchema
 	 */
-	default void addField(FieldSchema fieldSchema) {
+	default FieldSchemaContainer addField(FieldSchema fieldSchema) {
 		Objects.requireNonNull(fieldSchema, "The field schema must not be null");
 		Objects.requireNonNull(fieldSchema.getName(), "The field schema must have a valid name");
 		getFields().add(fieldSchema);
+		return this;
 	}
 
 	/**
@@ -136,7 +138,7 @@ public interface FieldSchemaContainer extends RestModel {
 	 * @param afterFieldName
 	 *            Field name that identifies the position after which the field will be inserted
 	 */
-	default void addField(FieldSchema fieldSchema, String afterFieldName) {
+	default FieldSchemaContainer addField(FieldSchema fieldSchema, String afterFieldName) {
 		List<FieldSchema> fields = getFields();
 		int index = fields.size();
 		if (afterFieldName != null) {
@@ -152,6 +154,8 @@ public interface FieldSchemaContainer extends RestModel {
 			index = index + 1;
 		}
 		fields.add(index, fieldSchema);
+
+		return this;
 	}
 
 	/**
@@ -159,7 +163,7 @@ public interface FieldSchemaContainer extends RestModel {
 	 * 
 	 * @param fields
 	 */
-	void setFields(List<FieldSchema> fields);
+	FieldSchemaContainer setFields(List<FieldSchema> fields);
 
 	/**
 	 * Return the container version.
@@ -173,7 +177,7 @@ public interface FieldSchemaContainer extends RestModel {
 	 * 
 	 * @param version
 	 */
-	void setVersion(int version);
+	FieldSchemaContainer setVersion(int version);
 
 	/**
 	 * Validate the schema for correctness.

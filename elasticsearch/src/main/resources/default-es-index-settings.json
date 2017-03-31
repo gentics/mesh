@@ -3,20 +3,14 @@
     "analyzer": {
       "trigrams": {
         "tokenizer": "my_ngram_tokenizer",
-        "filter" : [ "lowercase" ]
+        "filter": [ "lowercase" ]
       }
     },
     "tokenizer": {
       "my_ngram_tokenizer": {
         "type": "nGram",
         "min_gram": "3",
-        "max_gram": "3",
-        "token_chars": [
-          "letter",
-          "digit",
-          "symbol",
-          "punctuation"
-        ]
+        "max_gram": "3"
       }
     }
   }

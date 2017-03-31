@@ -228,11 +228,9 @@ public final class MeshTestHelper {
 
 	public static String getSimpleTermQuery(String key, String value) throws JSONException {
 		QueryBuilder qb = QueryBuilders.termQuery(key, value);
-		BoolQueryBuilder bqb = QueryBuilders.boolQuery();
-		bqb.must(qb);
 
 		JSONObject request = new JSONObject();
-		request.put("query", new JSONObject(bqb.toString()));
+		request.put("query", new JSONObject(qb.toString()));
 		String query = request.toString();
 		if (log.isDebugEnabled()) {
 			log.debug(query);

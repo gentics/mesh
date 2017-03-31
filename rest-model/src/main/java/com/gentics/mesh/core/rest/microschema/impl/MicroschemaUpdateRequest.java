@@ -29,8 +29,9 @@ public class MicroschemaUpdateRequest implements RestModel, Microschema {
 	}
 
 	@Override
-	public void setVersion(int version) {
+	public MicroschemaUpdateRequest setVersion(int version) {
 		this.version = version;
+		return this;
 	}
 
 	@Override
@@ -39,8 +40,9 @@ public class MicroschemaUpdateRequest implements RestModel, Microschema {
 	}
 
 	@Override
-	public void setDescription(String description) {
+	public MicroschemaUpdateRequest setDescription(String description) {
 		this.description = description;
+		return this;
 	}
 
 	@Override
@@ -49,8 +51,9 @@ public class MicroschemaUpdateRequest implements RestModel, Microschema {
 	}
 
 	@Override
-	public void setName(String name) {
+	public MicroschemaUpdateRequest setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	@Override
@@ -59,8 +62,9 @@ public class MicroschemaUpdateRequest implements RestModel, Microschema {
 	}
 
 	@Override
-	public void setFields(List<FieldSchema> fields) {
+	public MicroschemaUpdateRequest setFields(List<FieldSchema> fields) {
 		this.fields = fields;
+		return this;
 	}
 
 	@Override
