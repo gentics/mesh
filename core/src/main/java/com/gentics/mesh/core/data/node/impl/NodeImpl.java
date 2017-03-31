@@ -97,6 +97,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
@@ -1176,7 +1177,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					.map(c -> publish(c.getLanguage(), release, ac.getUser()))
 					.collect(Collectors.toList());
 
-			PublishParametersImpl parameters = ac.getPublishParameters();
+			PublishParameters parameters = ac.getPublishParameters();
 			if (parameters.isRecursive()) {
 				for (Node node : getChildren()) {
 					obs.add(node.publish(ac, batch));
@@ -1190,7 +1191,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return Completable.merge(obs);
 	}
 
-	public SearchQueueBatch takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParametersImpl parameters) {
+	public SearchQueueBatch takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParameters parameters) {
 		List<? extends NodeGraphFieldContainer> published = getGraphFieldContainers(release, PUBLISHED);
 
 		String releaseUuid = release.getUuid();
@@ -1248,13 +1249,12 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 					.setPublishDate(date);
 		} else {
 			container = getGraphFieldContainer(languageTag, release.getUuid(), DRAFT);
-			if (container != null) {
-				return new PublishStatusModel().setPublished(false)
-						.setVersion(new VersionReference(container.getUuid(), container.getVersion()
-								.toString()));
-			} else {
+			if (container == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
+			return new PublishStatusModel().setPublished(false)
+					.setVersion(new VersionReference(container.getUuid(), container.getVersion()
+							.toString()));
 		}
 	}
 

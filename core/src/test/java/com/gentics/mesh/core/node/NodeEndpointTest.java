@@ -109,76 +109,74 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateNodeWithBogusLanguageCode() throws GenericRestException, Exception {
-		try (NoTx noTx = db().noTx()) {
-			NodeCreateRequest request = new NodeCreateRequest();
-			SchemaReference schemaReference = new SchemaReference();
-			schemaReference.setName("content");
-			schemaReference.setUuid(schemaContainer("content").getUuid());
-			schemaReference.setVersion(1);
-			request.setLanguage("BOGUS");
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setSchema(schemaReference);
-			request.setParentNodeUuid(folder("news").getUuid());
+		String schemaUuid = db().noTx(() -> schemaContainer("content").getUuid());
+		String folderUuid = db().noTx(() -> folder("news").getUuid());
 
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
-			call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "language_not_found", "BOGUS");
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
-		}
+		NodeCreateRequest request = new NodeCreateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("content");
+		schemaReference.setUuid(schemaUuid);
+		schemaReference.setVersion(1);
+		request.setLanguage("BOGUS");
+		request.getFields()
+				.put("name", FieldUtil.createStringField("some name"));
+		request.getFields()
+				.put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields()
+				.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setSchema(schemaReference);
+		request.setParentNodeUuid(folderUuid);
+
+		assertThat(dummySearchProvider()).recordedStoreEvents(0);
+		call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "language_not_found", "BOGUS");
+		assertThat(dummySearchProvider()).recordedStoreEvents(0);
 	}
 
 	@Test
 	public void testCreateNodeInBaseNode() {
-		try (NoTx noTx = db().noTx()) {
-			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setVersion(1)
-					.setName("content")
-					.setUuid(schemaContainer("content").getUuid()));
-			request.setLanguage("en");
-			request.getFields()
-					.put("title", FieldUtil.createStringField("some title"));
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setParentNodeUuid(project().getBaseNode()
-					.getUuid());
+		String schemaUuid = db().noTx(() -> schemaContainer("content").getUuid());
+		String folderUuid = db().noTx(() -> project().getBaseNode()
+				.getUuid());
 
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
-			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
-			assertThat(restNode).matches(request);
-			assertThat(dummySearchProvider()).recordedStoreEvents(1);
-		}
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setVersion(1)
+				.setName("content")
+				.setUuid(schemaUuid));
+		request.setLanguage("en");
+		request.getFields()
+				.put("title", FieldUtil.createStringField("some title"));
+		request.getFields()
+				.put("name", FieldUtil.createStringField("some name"));
+		request.getFields()
+				.put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields()
+				.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(folderUuid);
+
+		assertThat(dummySearchProvider()).recordedStoreEvents(0);
+		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
+		assertThat(restNode).matches(request);
+		assertThat(dummySearchProvider()).recordedStoreEvents(1);
 	}
 
 	@Test
 	public void testCreateFolder() {
-		try (NoTx noTx = db().noTx()) {
-			Node parentNode = folder("news");
-			String uuid = parentNode.getUuid();
-			assertNotNull(parentNode);
-			assertNotNull(parentNode.getUuid());
+		String schemaUuid = db().noTx(() -> schemaContainer("folder").getUuid());
+		String folderUuid = db().noTx(() -> folder("news").getUuid());
 
-			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("folder")
-					.setVersion(1)
-					.setUuid(schemaContainer("folder").getUuid()));
-			request.setLanguage("en");
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.setParentNodeUuid(uuid);
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("folder")
+				.setVersion(1)
+				.setUuid(schemaUuid));
+		request.setLanguage("en");
+		request.getFields()
+				.put("name", FieldUtil.createStringField("some name"));
+		request.setParentNodeUuid(folderUuid);
 
-			assertThat(dummySearchProvider()).recordedStoreEvents(0);
-			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
-			assertThat(restNode).matches(request);
-			assertThat(dummySearchProvider()).recordedStoreEvents(1);
-		}
+		assertThat(dummySearchProvider()).recordedStoreEvents(0);
+		NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
+		assertThat(restNode).matches(request);
+		assertThat(dummySearchProvider()).recordedStoreEvents(1);
 	}
 
 	@Test
@@ -455,8 +453,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setParentNodeUuid(folder("news").getUuid());
 
 			assertThat(dummySearchProvider()).recordedStoreEvents(0);
-			NodeResponse restNode = call(
-					() -> client().createNode(PROJECT_NAME, request, new NodeParametersImpl().setLanguages("de"), new VersioningParametersImpl().draft()));
+			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request, new NodeParametersImpl().setLanguages("de"),
+					new VersioningParametersImpl().draft()));
 			assertThat(dummySearchProvider()).recordedStoreEvents(1);
 			assertThat(restNode).matches(request);
 
@@ -805,7 +803,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(publishedNodes).hasSize(nodes.size());
 
 			// Read a bunch of nodes
-			listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(), new PagingParametersImpl(1, 1000)));
+			listResponse = call(
+					() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(), new PagingParametersImpl(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list")
 					.usingElementComparatorOnFields("uuid")
 					.containsOnlyElementsOf(publishedNodes);
@@ -852,7 +851,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 					.collect(Collectors.toList());
 			assertThat(publishedNodes).hasSize(nodes.size());
 
-			listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(), new PagingParametersImpl(1, 1000)));
+			listResponse = call(
+					() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(), new PagingParametersImpl(1, 1000)));
 			assertThat(listResponse.getData()).as("Published nodes list")
 					.usingElementComparatorOnFields("uuid")
 					.containsOnlyElementsOf(publishedNodes);
@@ -1184,17 +1184,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadByUUID() throws Exception {
+		String folderUuid = db().noTx(() -> folder("2015").getUuid());
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
 		try (NoTx noTx = db().noTx()) {
 			String releaseUuid = project().getLatestRelease()
 					.getUuid();
-			Node node = folder("2015");
-			String uuid = node.getUuid();
-			assertNotNull(node);
-			assertNotNull(node.getUuid());
-
-			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 			assertThat(folder("2015")).matches(response);
-
 			assertNotNull(response.getParentNode());
 			assertEquals(folder("2015").getParentNode(releaseUuid)
 					.getUuid(),
@@ -1204,6 +1199,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 					.getDisplayName());
 			assertEquals("en", response.getLanguage());
 		}
+
 	}
 
 	@Test
@@ -1282,9 +1278,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 					.hasStringField("name", "three");
 
 			// Test german versions
-			assertThat(call(
-					() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setLanguages("de"), new VersioningParametersImpl().draft())))
-							.as("German draft")
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setLanguages("de"),
+					new VersioningParametersImpl().draft()))).as("German draft")
 							.hasVersion("0.3")
 							.hasLanguage("de")
 							.hasStringField("name", "drei");
@@ -1405,8 +1400,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			updateRequest.getFields()
 					.put("name", FieldUtil.createStringField("2015 v1.1 initial release"));
 			updateRequest.setVersion(new VersionReference(null, "1.0"));
-			response = call(
-					() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setRelease(initialRelease.getName())));
+			response = call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest,
+					new VersioningParametersImpl().setRelease(initialRelease.getName())));
 			assertEquals("1.1", response.getVersion()
 					.getNumber());
 

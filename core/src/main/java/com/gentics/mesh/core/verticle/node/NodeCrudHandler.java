@@ -354,8 +354,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 							return Single.just(node.transformToPublishStatus(ac));
 						});
 					}));
-		})
-				.subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
