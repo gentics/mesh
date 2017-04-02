@@ -33,7 +33,6 @@ import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
-import rx.Completable;
 import rx.Single;
 
 /**
@@ -377,15 +376,16 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param batch
 	 * @return
 	 */
-	Completable publish(InternalActionContext ac, SearchQueueBatch batch);
+	void publish(InternalActionContext ac, SearchQueueBatch batch);
 
 	/**
 	 * Take the node offline (all languages)
 	 *
 	 * @param ac
+	 * @param batch
 	 * @return
 	 */
-	Completable takeOffline(InternalActionContext ac);
+	void takeOffline(InternalActionContext ac, SearchQueueBatch batch);
 
 	/**
 	 * Take the node offline.
@@ -396,7 +396,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param parameters
 	 * @return
 	 */
-	SearchQueueBatch takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParameters parameters);
+	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParameters parameters);
 
 	/**
 	 * Transform the node language into a publish status response rest model.
@@ -411,10 +411,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Publish a language of the node
 	 *
 	 * @param ac
+	 * @param batch
 	 * @param languageTag
 	 * @return
 	 */
-	Completable publish(InternalActionContext ac, String languageTag);
+	void publish(InternalActionContext ac, SearchQueueBatch batch, String languageTag);
 
 	/**
 	 * Set the graph field container to be the (only) published for the given release
@@ -428,10 +429,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Take a language of the node offline
 	 *
 	 * @param ac
+	 * @param batch
 	 * @param languageTag
 	 * @return
 	 */
-	Completable takeOffline(InternalActionContext ac, String languageTag);
+	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, String languageTag);
 
 	/**
 	 * Delete the language container for the given language from the release This will not actually delete the container, but will remove the DRAFT and
@@ -556,7 +558,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param release
 	 * @return
 	 */
-	List<Completable> publish(InternalActionContext ac, Release release);
+	void publish(InternalActionContext ac, Release release);
 
 	/**
 	 * Transform the node into a node list item.

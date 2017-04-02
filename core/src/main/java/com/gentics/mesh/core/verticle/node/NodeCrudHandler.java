@@ -64,8 +64,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	@Override
 	public RootVertex<Node> getRootVertex(InternalActionContext ac) {
-		return ac.getProject()
-				.getNodeRoot();
+		return ac.getProject().getNodeRoot();
 	}
 
 	@Override
@@ -74,10 +73,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		utils.operateNoTx(ac, () -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
-			if (node.getProject()
-					.getBaseNode()
-					.getUuid()
-					.equals(node.getUuid())) {
+			if (node.getProject().getBaseNode().getUuid().equals(node.getUuid())) {
 				throw error(METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 			}
 
@@ -86,8 +82,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			db.tx(() -> {
 				node.deleteFromRelease(ac.getRelease(), batch, false);
 				return batch;
-			})
-					.processSync();
+			}).processSync();
 			return null;
 		}, m -> ac.send(NO_CONTENT));
 	}
@@ -106,11 +101,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		utils.operateNoTx(ac, () -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, DELETE_PERM);
-			Language language = MeshInternal.get()
-					.boot()
-					.meshRoot()
-					.getLanguageRoot()
-					.findByLanguageTag(languageTag);
+			Language language = MeshInternal.get().boot().meshRoot().getLanguageRoot().findByLanguageTag(languageTag);
 			if (language == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
@@ -120,8 +111,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			db.tx(() -> {
 				node.deleteLanguageContainer(ac.getRelease(), language, batch);
 				return batch;
-			})
-					.processSync();
+			}).processSync();
 			return null;
 		}, m -> ac.send(NO_CONTENT));
 	}
@@ -143,17 +133,14 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Project project = ac.getProject();
 
 			// Load the node that should be moved
-			Node sourceNode = project.getNodeRoot()
-					.loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Node targetNode = project.getNodeRoot()
-					.loadObjectByUuid(ac, toUuid, UPDATE_PERM);
+			Node sourceNode = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Node targetNode = project.getNodeRoot().loadObjectByUuid(ac, toUuid, UPDATE_PERM);
 
 			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
 				sourceNode.moveTo(ac, targetNode, batch);
 				return batch;
-			})
-					.processSync();
+			}).processSync();
 			return null;
 		}, m -> ac.send(NO_CONTENT));
 
@@ -172,8 +159,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.operateNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			return node.transformToNavigation(ac);
-		})
-				.subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -190,20 +176,17 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			NodeParametersImpl nodeParams = ac.getNodeParameters();
 			PagingParametersImpl pagingParams = ac.getPagingParameters();
 			VersioningParametersImpl versionParams = ac.getVersioningParameters();
-			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters()
-					.getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
+			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
-			Page<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(), ac.getRelease(node.getProject())
-					.getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
+			Page<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(), ac.getRelease(node.getProject()).getUuid(),
+					ContainerType.forVersion(versionParams.getVersion()), pagingParams);
 			// Handle etag
 			String etag = page.getETag(ac);
 			ac.setEtag(etag, true);
 			if (ac.matches(etag, true)) {
 				throw new NotModifiedException();
 			} else {
-				return page.transformToRest(ac, 0)
-						.toBlocking()
-						.value();
+				return page.transformToRest(ac, 0).toBlocking().value();
 			}
 		}, model -> ac.send(model, OK));
 
@@ -211,8 +194,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 	public void handleRead(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters()
-				.getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
+		GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 		utils.readElement(ac, uuid, () -> getRootVertex(ac), requiredPermission);
 	}
 
@@ -241,8 +223,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			} catch (Exception e) {
 				throw error(INTERNAL_SERVER_ERROR, "Error while loading tags for node {" + node.getUuid() + "}", e);
 			}
-		})
-				.subscribe(model -> ac.send((RestModel) model, OK), ac::fail);
+		}).subscribe(model -> ac.send((RestModel) model, OK), ac::fail);
 	}
 
 	/**
@@ -262,11 +243,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease();
-			Node node = project.getNodeRoot()
-					.loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Tag tag = boot.meshRoot()
-					.getTagRoot()
-					.loadObjectByUuid(ac, tagUuid, READ_PERM);
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			// TODO check whether the tag has already been assigned to the node. In this case we need to do nothing.
 			SearchQueueBatch batch = searchQueue.create();
@@ -276,10 +254,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				batch.store(node, release.getUuid(), DRAFT, false);
 				return node;
 			});
-			return batch.processAsync()
-					.andThen(updatedNode.transformToRest(ac, 0));
-		})
-				.subscribe(model -> ac.send(model, OK), ac::fail);
+			return batch.processAsync().andThen(updatedNode.transformToRest(ac, 0));
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 
@@ -299,11 +275,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease();
-			Node node = project.getNodeRoot()
-					.loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			Tag tag = boot.meshRoot()
-					.getTagRoot()
-					.loadObjectByUuid(ac, tagUuid, READ_PERM);
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			Tag tag = boot.meshRoot().getTagRoot().loadObjectByUuid(ac, tagUuid, READ_PERM);
 
 			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
@@ -312,10 +285,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				node.removeTag(tag, release);
 				return node;
 			});
-			return batch.processAsync()
-					.andThen(Single.just(null));
-		})
-				.subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+			return batch.processAsync().andThen(Single.just(null));
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 	/**
@@ -347,13 +318,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.operateNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			SearchQueueBatch batch = searchQueue.create();
-			return node.publish(ac, batch)
-					.andThen(Single.defer(() -> {
-						return db.noTx(() -> {
-							node.reload();
-							return Single.just(node.transformToPublishStatus(ac));
-						});
-					}));
+			node.publish(ac, batch);
+			node.reload();
+			return batch.processAsync().andThen(Single.just(node.transformToPublishStatus(ac)));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -369,12 +336,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.operateNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
-			return node.takeOffline(ac)
-					.andThen(Single.defer(() -> {
-						return Single.just(null);
-					}));
-		})
-				.subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+			SearchQueueBatch batch = searchQueue.create();
+			node.takeOffline(ac, batch);
+			return batch.processAsync().andThen(Single.just(null));
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 	/**
@@ -382,7 +347,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 * 
 	 * @param ac
 	 * @param uuid
+	 *            Uuid of the node for which the status should be loaded
 	 * @param languageTag
+	 *            Language to check
 	 */
 	public void handleGetPublishStatus(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
@@ -403,18 +370,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	public void handlePublish(InternalActionContext ac, String uuid, String languageTag) {
 		validateParameter(uuid, "uuid");
 
-		// TODO handle SQB
 		db.operateNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
-			return node.publish(ac, languageTag)
-					.andThen(Single.defer(() -> {
-						return db.noTx(() -> {
-							node.reload();
-							return Single.just(node.transformToPublishStatus(ac, languageTag));
-						});
-					}));
-		})
-				.subscribe(model -> ac.send(model, OK), ac::fail);
+			SearchQueueBatch batch = searchQueue.create();
+			node.publish(ac, batch, languageTag);
+			node.reload();
+			return batch.processAsync().andThen(Single.just(node.transformToPublishStatus(ac, languageTag)));
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -431,14 +393,10 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.operateNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
-			// TODO sqb
-			return node.takeOffline(ac, languageTag)
-					.toSingle(() -> {
-						return Single.just(null);
-					})
-					.flatMap(x -> x);
-		})
-				.subscribe(model -> ac.send(NO_CONTENT), ac::fail);
+			SearchQueueBatch batch = searchQueue.create();
+			node.takeOffline(ac, batch, languageTag);
+			return batch.processAsync().andThen(Single.just(null));
+		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
 	/**
@@ -455,33 +413,33 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		utils.operateNoTx(ac, () -> {
 			RootVertex<Node> root = handler.call();
-			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters()
-					.getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
+			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 			Node node = root.loadObjectByUuid(ac, uuid, requiredPermission);
 			return node.transformToRestSync(ac, 0);
 		}, model -> {
-			HttpResponseStatus code = HttpResponseStatus.valueOf(NumberUtils.toInt(ac.data()
-					.getOrDefault("statuscode", "")
-					.toString(), OK.code()));
+			HttpResponseStatus code = HttpResponseStatus.valueOf(NumberUtils.toInt(ac.data().getOrDefault("statuscode", "").toString(), OK.code()));
 			ac.send(model, code);
 		});
 
 	}
 
+	/**
+	 * Handle a bulk tag update request.
+	 * 
+	 * @param ac
+	 * @param nodeUuid
+	 *            Uuid of the node which should be updated
+	 */
 	public void handleBulkTagUpdate(InternalActionContext ac, String nodeUuid) {
 		validateParameter(nodeUuid, "nodeUuid");
 
 		db.operateNoTx(() -> {
 			Project project = ac.getProject();
-			Node node = project.getNodeRoot()
-					.loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
-
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 			SearchQueueBatch batch = searchQueue.create();
 			Page<? extends Tag> tags = node.updateTags(ac, batch);
-			return batch.processAsync()
-					.andThen(tags.transformToRest(ac, 0));
-		})
-				.subscribe(model -> ac.send(model, OK), ac::fail);
+			return batch.processAsync().andThen(tags.transformToRest(ac, 0));
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
 }

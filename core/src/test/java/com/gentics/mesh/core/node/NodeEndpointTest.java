@@ -2076,8 +2076,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// 2. Publish the node
 			SearchQueueBatch batch = createBatch();
-			node.publish(mockActionContext(), batch)
-					.await();
+			node.publish(mockActionContext(), batch);
 
 			// 3. create new release
 			Project project = project();

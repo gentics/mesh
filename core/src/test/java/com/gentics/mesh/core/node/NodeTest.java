@@ -504,7 +504,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 						Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
 				SearchQueueBatch batch = createBatch();
-				folder.publish(mockActionContext(), batch).await();
+				folder.publish(mockActionContext(), batch);
 				return folder.getUuid();
 			});
 
@@ -570,7 +570,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 						Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
 				SearchQueueBatch batch = createBatch();
-				folder.publish(mockActionContext(), batch).await();
+				folder.publish(mockActionContext(), batch);
 				return folder.getUuid();
 			});
 
