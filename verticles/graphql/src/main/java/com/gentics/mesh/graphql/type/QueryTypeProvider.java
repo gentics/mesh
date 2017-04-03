@@ -213,6 +213,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				.type(nodeTypeProvider.createNodeType(project))
 				.build());
 
+		// .container
+		//TODO Add container
+		
 		// .containers
 		root.field(newFieldDefinition().name("containers")
 				.description("Search for node containers and return a page which includes the results.")

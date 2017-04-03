@@ -260,7 +260,7 @@ public class SearchRestHandler {
 				searchProvider.clear();
 
 				// Iterate over all index handlers update the index
-				for (IndexHandler handler : registry.getHandlers()) {
+				for (IndexHandler<?> handler : registry.getHandlers()) {
 					// Create all indices.
 					handler.init().await();
 
@@ -287,7 +287,7 @@ public class SearchRestHandler {
 	public void createMappings(InternalActionContext ac) {
 		utils.operateNoTx(ac, () -> {
 			if (ac.getUser().hasAdminRole()) {
-				for (IndexHandler handler : registry.getHandlers()) {
+				for (IndexHandler<?> handler : registry.getHandlers()) {
 					handler.init().await();
 				}
 				nodeIndexHandler.updateNodeIndexMappings();

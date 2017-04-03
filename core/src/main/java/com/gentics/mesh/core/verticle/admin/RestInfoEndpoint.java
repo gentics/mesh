@@ -80,7 +80,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 			info.setSearchVersion(searchProvider.getVersion());
 			info.setMeshVersion(Mesh.getPlainVersion());
 			info.setMeshNodeId(MeshNameProvider.getInstance().getName());
-			info.setVertxVersion(new VersionCommand().getVersion());
+			info.setVertxVersion(VersionCommand.getVersion());
 			ac.send(info, OK);
 		});
 	}

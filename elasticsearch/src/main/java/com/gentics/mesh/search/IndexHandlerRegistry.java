@@ -61,8 +61,8 @@ public class IndexHandlerRegistry {
 	 * 
 	 * @return
 	 */
-	public List<IndexHandler> getHandlers() {
-		List<IndexHandler> allIndexHandlers = new ArrayList<>();
+	public List<IndexHandler<?>> getHandlers() {
+		List<IndexHandler<?>> allIndexHandlers = new ArrayList<>();
 		allIndexHandlers.add(nodeIndexHandler);
 		allIndexHandlers.add(userIndexHandler);
 		allIndexHandlers.add(groupIndexHandler);
@@ -81,7 +81,7 @@ public class IndexHandlerRegistry {
 	 * @param element
 	 * @return
 	 */
-	public IndexHandler getForClass(IndexableElement element) {
+	public IndexHandler<?> getForClass(IndexableElement element) {
 		Class<?> clazzOfElement = element.getClass();
 		return getForClass(clazzOfElement);
 	}
@@ -92,10 +92,10 @@ public class IndexHandlerRegistry {
 	 * @param elementClass
 	 * @return
 	 */
-	public IndexHandler getForClass(Class<?> elementClass) {
-		for (IndexHandler handler : getHandlers()) {
+	public IndexHandler<?> getForClass(Class<?> elementClass) {
+		for (IndexHandler<?> handler : getHandlers()) {
 			if (handler.accepts(elementClass)) {
-				return (IndexHandler) handler;
+				return (IndexHandler<?>) handler;
 			}
 		}
 		return null;

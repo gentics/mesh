@@ -112,7 +112,7 @@ public class MeshTestContext extends TestWatcher {
 
 	protected void setupIndexHandlers() throws Exception {
 		// We need to call init() again in order create missing indices for the created test data
-		for (IndexHandler handler : meshDagger.indexHandlerRegistry().getHandlers()) {
+		for (IndexHandler<?> handler : meshDagger.indexHandlerRegistry().getHandlers()) {
 			handler.init().await();
 		}
 	}

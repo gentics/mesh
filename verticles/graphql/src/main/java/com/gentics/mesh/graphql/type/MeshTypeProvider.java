@@ -87,7 +87,7 @@ public class MeshTypeProvider extends AbstractTypeProvider {
 				.description("Vert.x version")
 				.type(GraphQLString)
 				.dataFetcher((env) -> {
-					return new VersionCommand().getVersion();
+					return VersionCommand.getVersion();
 				}));
 		return root.build();
 	}

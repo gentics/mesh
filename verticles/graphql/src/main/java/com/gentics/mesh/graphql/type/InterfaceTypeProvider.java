@@ -32,7 +32,7 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider() {
 	}
 
-	private GraphQLInterfaceType createCommonType() {
+	protected GraphQLInterfaceType createCommonType() {
 
 		Builder common = newInterface().name("MeshElement");
 		// .uuid

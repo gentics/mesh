@@ -61,6 +61,9 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 		Builder type = newObject().name("Container")
 				.description("Language specific node container which contains the node fields");
 
+		// .uuid
+		//TODO decide whether we want to return the node uuid here
+
 		// .node
 		type.field(newFieldDefinition().name("node")
 				.description("Node to which the container belongs")

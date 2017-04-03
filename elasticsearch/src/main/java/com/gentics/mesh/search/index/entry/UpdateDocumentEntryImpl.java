@@ -19,7 +19,7 @@ import rx.Completable;
 public class UpdateDocumentEntryImpl extends AbstractEntry implements UpdateDocumentEntry {
 
 	private String elementUuid;
-	private IndexHandler indexHandler;
+	private IndexHandler<?> indexHandler;
 	private HandleContext context;
 
 	/**
@@ -30,7 +30,7 @@ public class UpdateDocumentEntryImpl extends AbstractEntry implements UpdateDocu
 	 * @param context
 	 * @param action
 	 */
-	public UpdateDocumentEntryImpl(IndexHandler indexHandler, IndexableElement element, HandleContext context, SearchQueueEntryAction action) {
+	public UpdateDocumentEntryImpl(IndexHandler<?> indexHandler, IndexableElement element, HandleContext context, SearchQueueEntryAction action) {
 		super(action);
 		this.context = context;
 		this.elementUuid = element.getUuid();

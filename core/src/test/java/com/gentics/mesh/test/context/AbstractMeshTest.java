@@ -45,7 +45,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 				.searchProvider()
 				.clear();
 		// We need to call init() again in order create missing indices for the created test data
-		for (IndexHandler handler : MeshInternal.get()
+		for (IndexHandler<?> handler : MeshInternal.get()
 				.indexHandlerRegistry()
 				.getHandlers()) {
 			handler.init()
@@ -53,7 +53,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 		}
 		IndexHandlerRegistry registry = MeshInternal.get()
 				.indexHandlerRegistry();
-		for (IndexHandler handler : registry.getHandlers()) {
+		for (IndexHandler<?> handler : registry.getHandlers()) {
 			handler.reindexAll()
 					.await();
 		}

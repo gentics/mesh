@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
-
 import java.util.List;
 
 public class SchemaCreateRequest extends SchemaUpdateRequest {

@@ -111,7 +111,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		// 2. Recreate indices + mappings and reindex the documents
 		IndexHandlerRegistry registry = indexHandlerRegistry.get();
-		for (IndexHandler handler : registry.getHandlers()) {
+		for (IndexHandler<?> handler : registry.getHandlers()) {
 			String handlerName = handler.getClass().getSimpleName();
 			log.info("Invoking reindex on handler {" + handlerName + "}. This may take some time..");
 			handler.init().await();
@@ -249,7 +249,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void createSearchIndicesAndMappings() {
 		IndexHandlerRegistry registry = indexHandlerRegistry.get();
-		for (IndexHandler handler : registry.getHandlers()) {
+		for (IndexHandler<?> handler : registry.getHandlers()) {
 			handler.init().await();
 		}
 	}
