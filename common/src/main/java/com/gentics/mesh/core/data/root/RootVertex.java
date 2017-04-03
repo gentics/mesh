@@ -17,8 +17,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.impl.TransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -62,7 +62,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * 
 	 * @return
 	 */
-	default public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	default public TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 
 		int page = pagingInfo.getPage();
 		int perPage = pagingInfo.getPerPage();
@@ -126,7 +126,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 			totalPages = (int) Math.ceil(counter.get() / (double) (perPage));
 		}
 
-		return new PageImpl<T>(elementsOfPage, counter.get(), ++page, totalPages, elementsOfPage.size(), perPage);
+		return new TransformablePageImpl<T>(elementsOfPage, counter.get(), ++page, totalPages, elementsOfPage.size(), perPage);
 	}
 
 	/**

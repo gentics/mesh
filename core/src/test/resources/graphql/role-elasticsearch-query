@@ -1,0 +1,18 @@
+{
+	# [$.data.roles.elements.length()=1]
+	roles(query: "{\"query\":{\"query_string\":{\"query\":\"admin\"}}}") {
+		elements {
+			uuid
+			# [$.data.roles.elements[0].name=admin]
+			name
+		}
+	}
+
+	# [$.data.empty.elements.length()=0]
+	empty: roles(query: "{\"query\":{\"query_string\":{\"query\":\"blaar\"}}}") {
+		elements {
+			uuid
+			name
+		}
+	}
+}

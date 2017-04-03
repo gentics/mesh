@@ -4,11 +4,15 @@
 
 == 0.9.2
 
+icon:plus[] It is now possible to execute elasticsearch queries within the graphql query.
+
+icon:plus[] It is now possible to resolve a partial web root path using the `child` field of a node.
+
 icon:check[] Various issues with the linkType argument within the GraphQL API have been fixed.
 
 icon:check[] Fix NPE that occurred when loading a container for a language which did not exist.
 
-icon:plus[] It is now also possible to resolve information about the running mesh instance via graphql.
+icon:plus[] It is now possible to resolve information about the running mesh instance via graphql.
 
 == 0.9.1 (28.03.2017)
 

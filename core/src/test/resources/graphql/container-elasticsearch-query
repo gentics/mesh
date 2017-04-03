@@ -1,0 +1,16 @@
+{
+	# [$.data.containers.elements.length()=1]
+	containers(query: "{\"query\":{\"query_string\":{\"query\":\"supersonic\"}}}") {
+		elements {
+			node {uuid}
+			language
+		}
+	}
+
+	# [$.data.empty.elements.length()=0]
+	empty: containers(query: "{\"query\":{\"query_string\":{\"query\":\"blaar\"}}}") {
+		elements {
+			node {uuid}
+		}
+	}
+}

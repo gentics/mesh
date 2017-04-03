@@ -17,6 +17,16 @@
 			# [$.data.denode.parent.uuid=<is-uuid>]
 			uuid
 		}
+		# [$.data.denode.child.node.uuid=<is-uuid>]
+		child(path: "2015") {
+			language
+			node {uuid}
+		}
+
+		# [$.data.denode.nullChild=<is-null>]
+		nullChild: child(path: "20sfdhsfh15") {
+			node {uuid}
+		}
 	}
 	rootNode {
 		# [$.data.rootNode.uuid=<is-uuid>]

@@ -11,7 +11,7 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -20,8 +20,8 @@ import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.NodeParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
 
 /**
@@ -65,18 +65,14 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagUuid, "tagUuid");
 
 		db.operateNoTx(() -> {
-			PagingParametersImpl pagingParams = ac.getPagingParameters();
-			NodeParametersImpl nodeParams = ac.getNodeParameters();
+			PagingParameters pagingParams = ac.getPagingParameters();
+			NodeParameters nodeParams = ac.getNodeParameters();
 			Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
-			// try {
-			Page<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(), nodeParams.getLanguageList(),
+			TransformablePage<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(), nodeParams.getLanguageList(),
 					ContainerType.forVersion(ac.getVersioningParameters()
 							.getVersion()),
 					pagingParams);
 			return page.transformToRest(ac, 0);
-			// } catch (Exception e) {
-			// return Single.error(e);
-			// }
 		})
 				.subscribe(model -> ac.send(model, OK), ac::fail);
 	}

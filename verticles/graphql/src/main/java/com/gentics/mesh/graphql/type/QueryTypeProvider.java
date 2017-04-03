@@ -17,6 +17,12 @@ import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
+import com.gentics.mesh.search.index.group.GroupIndexHandler;
+import com.gentics.mesh.search.index.project.ProjectIndexHandler;
+import com.gentics.mesh.search.index.role.RoleIndexHandler;
+import com.gentics.mesh.search.index.tag.TagIndexHandler;
+import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
+import com.gentics.mesh.search.index.user.UserIndexHandler;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
@@ -77,7 +83,28 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	public SchemaTypeProvider schemaTypeProvider;
 
 	@Inject
+	public ContainerTypeProvider containerTypeProvider;
+
+	@Inject
 	public MicroschemaTypeProvider microschemaTypeProvider;
+
+	@Inject
+	public UserIndexHandler userIndexHandler;
+
+	@Inject
+	public RoleIndexHandler roleIndexHandler;
+
+	@Inject
+	public GroupIndexHandler groupIndexHandler;
+
+	@Inject
+	public ProjectIndexHandler projectIndexHandler;
+
+	@Inject
+	public TagFamilyIndexHandler tagFamilyIndexHandler;
+
+	@Inject
+	public TagIndexHandler tagIndexHandler;
 
 	@Inject
 	public QueryTypeProvider() {
@@ -186,9 +213,26 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				.type(nodeTypeProvider.createNodeType(project))
 				.build());
 
+		// .containers
+		root.field(newFieldDefinition().name("containers")
+				.description("Search for node containers and return a page which includes the results.")
+				.argument(getPagingArgs())
+				.argument(getQueryArg())
+				.type(newPageType("containers", new GraphQLTypeReference("Container")))
+				.dataFetcher((env) -> {
+					GraphQLContext gc = env.getContext();
+
+					PagingParameters pagingInfo = getPagingInfo(env);
+					String query = env.getArgument("query");
+					if (query != null) {
+						return containerTypeProvider.handleContainerSearch(gc, query, pagingInfo);
+					}
+					return null;
+				}));
+
 		// .nodes
 		root.field(newFieldDefinition().name("nodes")
-				.description("Load page of nodes.")
+				.description("Load a page of nodes.")
 				.argument(getPagingArgs())
 				.argument(getQueryArg())
 				.type(newPageType("nodes", new GraphQLTypeReference("Node")))
@@ -217,14 +261,14 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newElementField("tag", "Load tag by name or uuid.", (ac) -> boot.tagRoot(), tagTypeProvider.createTagType()));
 
 		// .tags
-		root.field(newPagingField("tags", "Load page of tags.", (ac) -> boot.tagRoot(), "Tag"));
+		root.field(newPagingSearchField("tags", "Load page of tags.", (ac) -> boot.tagRoot(), "Tag", tagIndexHandler));
 
 		// .tagFamily
 		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", (ac) -> ac.getProject()
 				.getTagFamilyRoot(), tagFamilyTypeProvider.getTagFamilyType()));
 
 		// .tagFamilies
-		root.field(newPagingField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), "TagFamily"));
+		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), "TagFamily", tagFamilyIndexHandler));
 
 		// .release
 		root.field(newElementField("release", "Load release by name or uuid.", (ac) -> ac.getProject()
@@ -251,19 +295,19 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newElementField("role", "Load role by name or uuid.", (ac) -> boot.roleRoot(), roleTypeProvider.createRoleType()));
 
 		// .roles
-		root.field(newPagingField("roles", "Load page of roles.", (ac) -> boot.roleRoot(), "Role"));
+		root.field(newPagingSearchField("roles", "Load page of roles.", (ac) -> boot.roleRoot(), "Role", roleIndexHandler));
 
 		// .group
 		root.field(newElementField("group", "Load group by name or uuid.", (ac) -> boot.groupRoot(), groupTypeProvider.createGroupType()));
 
 		// .groups
-		root.field(newPagingField("groups", "Load page of groups.", (ac) -> boot.groupRoot(), "Group"));
+		root.field(newPagingSearchField("groups", "Load page of groups.", (ac) -> boot.groupRoot(), "Group", groupIndexHandler));
 
 		// .user
 		root.field(newElementField("user", "Load user by name or uuid.", (ac) -> boot.userRoot(), userTypeProvider.getUserType()));
 
 		// .users
-		root.field(newPagingField("users", "Load page of users.", (ac) -> boot.userRoot(), "User"));
+		root.field(newPagingSearchField("users", "Load page of users.", (ac) -> boot.userRoot(), "User", userIndexHandler));
 
 		// .mesh
 		root.field(meshTypeProvider.createMeshFieldType());

@@ -30,7 +30,6 @@ import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
@@ -58,7 +57,7 @@ import rx.Completable;
  * @param <T>
  *            Type of the elements which are handled by the index handler
  */
-public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> implements IndexHandler {
+public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> implements IndexHandler<T> {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractIndexHandler.class);
 
@@ -327,22 +326,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return getElementClass().isAssignableFrom(clazzOfElement);
 	}
 
-	/**
-	 * Invoke an elastic search query on the database and return a page which lists the found elements.
-	 * 
-	 * @param ac
-	 * @param query
-	 *            Elasticsearch query
-	 * @param pagingInfo
-	 *            Paging settings
-	 * @param permissions
-	 *            Permissions to check against
-	 * @return
-	 * @throws MeshConfigurationException
-	 * @throws InterruptedException
-	 * @throws ExecutionException
-	 * @throws TimeoutException
-	 */
+	@Override
 	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
 			throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
 		User user = ac.getUser();
@@ -407,7 +391,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 									}
 								}
 							}
-							return applyPaging(elementList, pagingInfo);
+							Page<? extends T> elementPage = Page.applyPaging(elementList, pagingInfo);
+							return elementPage;
 						});
 						future.complete(page);
 					}
@@ -421,40 +406,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 		return future.get(60, TimeUnit.SECONDS);
 
-	}
-
-	/**
-	 * Apply paging to the list of elements.
-	 * 
-	 * @param elementList
-	 * @param pagingInfo
-	 * @return
-	 */
-	public Page<? extends T> applyPaging(List<T> elementList, PagingParameters pagingInfo) {
-		// Internally we start with page 0
-		int page = pagingInfo.getPage() - 1;
-
-		int low = page * pagingInfo.getPerPage();
-		int upper = low + pagingInfo.getPerPage() - 1;
-
-		int n = 0;
-
-		List<T> pagedList = new ArrayList<>();
-		for (T element : elementList) {
-
-			// Only add elements that are within the page
-			if (n >= low && n <= upper) {
-				pagedList.add(element);
-			}
-			n++;
-		}
-
-		// Set meta information to the rest response
-		int totalPages = (int) Math.ceil(elementList.size() / (double) pagingInfo.getPerPage());
-		// Cap totalpages to 1
-		totalPages = totalPages == 0 ? 1 : totalPages;
-
-		return new PageImpl<>(pagedList, n, pagingInfo.getPage(), totalPages, elementList.size(), pagingInfo.getPerPage());
 	}
 
 }

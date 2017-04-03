@@ -1,0 +1,17 @@
+{
+	# [$.data.groups.elements.length()=1]
+	groups(query: "{\"query\":{\"query_string\":{\"query\":\"admin\"}}}") {
+		elements {
+			uuid
+			name
+		}
+	}
+
+	# [$.data.empty.elements.length()=0]
+	empty: groups(query: "{\"query\":{\"query_string\":{\"query\":\"blaar\"}}}") {
+		elements {
+			uuid
+			name
+		}
+	}
+}

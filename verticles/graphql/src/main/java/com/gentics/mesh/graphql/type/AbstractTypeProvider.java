@@ -12,6 +12,8 @@ import static graphql.schema.GraphQLObjectType.newObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang.WordUtils;
 
@@ -20,6 +22,8 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -40,7 +44,7 @@ import rx.functions.Func1;
 public abstract class AbstractTypeProvider {
 
 	/**
-	 * Return the elasticsearch query argument
+	 * Return the elasticsearch query argument.
 	 * 
 	 * @return
 	 */
@@ -315,6 +319,45 @@ public abstract class AbstractTypeProvider {
 				.argument(getPagingArgs())
 				.type(newPageType(name, new GraphQLTypeReference(referenceTypeName)))
 				.dataFetcher(dataFetcher);
+	}
+
+	/**
+	 * Construct a field which can page the result set and also accept a elasticsearch query for processing.
+	 * 
+	 * @param name
+	 *            Name of the field
+	 * @param description
+	 *            Description of the field
+	 * @param rootProvider
+	 *            Provider of the root element (will only be used when no query was specified)
+	 * @param referenceTypeName
+	 *            Name of the type of elements returned
+	 * @param indexHandler
+	 *            Handler which will be used to invoke the query
+	 * @return
+	 */
+	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
+			String referenceTypeName, IndexHandler<?> indexHandler) {
+		return newFieldDefinition().name(name)
+				.description(description)
+				.argument(getPagingArgs())
+				.argument(getQueryArg())
+				.type(newPageType(name, new GraphQLTypeReference(referenceTypeName)))
+				.dataFetcher((env) -> {
+					GraphQLContext gc = env.getContext();
+					String query = env.getArgument("query");
+					if (query != null) {
+						try {
+							return indexHandler.query(gc, query, getPagingInfo(env), READ_PERM);
+						} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
+							throw new RuntimeException(e);
+						}
+					} else {
+						return rootProvider.call(gc)
+								.findAll(gc, getPagingInfo(env));
+					}
+				})
+				.build();
 	}
 
 	protected GraphQLFieldDefinition newPagingField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,

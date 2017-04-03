@@ -15,7 +15,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -180,7 +180,7 @@ public class HandlerUtilities {
 			RootVertex<T> root = handler.call();
 
 			PagingParameters pagingInfo = ac.getPagingParameters();
-			Page<? extends T> page = root.findAll(ac, pagingInfo);
+			TransformablePage<? extends T> page = root.findAll(ac, pagingInfo);
 
 			// Handle etag
 			String etag = page.getETag(ac);

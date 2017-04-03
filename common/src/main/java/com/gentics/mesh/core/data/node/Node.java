@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -99,7 +99,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param release
 	 * @return Page which contains the result
 	 */
-	Page<? extends Tag> getTags(User user, PagingParameters params, Release release);
+	TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Release release);
 
 	/**
 	 * Return the draft field container for the given language in the latest release.
@@ -313,7 +313,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param pagingParameter
 	 * @return
 	 */
-	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
+	TransformablePage<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
 			PagingParameters pagingParameter);
 
 	/**
@@ -573,7 +573,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param batch
 	 * @return Page which includes the new set of tags
 	 */
-	Page<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch);
+	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch);
 
 	/**
 	 * Return a map with language tags and resolved link types

@@ -26,7 +26,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -193,7 +193,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters()
 					.getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
-			Page<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(), ac.getRelease(node.getProject())
+			TransformablePage<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(), ac.getRelease(node.getProject())
 					.getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
 			// Handle etag
 			String etag = page.getETag(ac);
@@ -229,7 +229,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		db.operateNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			try {
-				Page<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getRelease());
+				TransformablePage<? extends Tag> tagPage = node.getTags(ac.getUser(), ac.getPagingParameters(), ac.getRelease());
 				// Handle etag
 				String etag = tagPage.getETag(ac);
 				ac.setEtag(etag, true);
@@ -478,7 +478,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 					.loadObjectByUuid(ac, nodeUuid, UPDATE_PERM);
 
 			SearchQueueBatch batch = searchQueue.create();
-			Page<? extends Tag> tags = node.updateTags(ac, batch);
+			TransformablePage<? extends Tag> tags = node.updateTags(ac, batch);
 			return batch.processAsync()
 					.andThen(tags.transformToRest(ac, 0));
 		})

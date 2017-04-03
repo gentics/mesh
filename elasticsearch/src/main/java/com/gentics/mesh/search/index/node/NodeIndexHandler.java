@@ -3,38 +3,56 @@ package com.gentics.mesh.search.index.node;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
+import org.elasticsearch.action.search.SearchRequestBuilder;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.client.Client;
+import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.HandleContext;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 
@@ -152,21 +170,25 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			if (project != null) {
 				Release release = ac.getRelease();
 				for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
-					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
-							version.getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
+					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), version.getUuid(),
+							ContainerType.forVersion(ac.getVersioningParameters()
+									.getVersion())));
 				}
 			} else {
 				// The project was not specified. Maybe a global search wants to
 				// know which indices must be searched. In that case we just
 				// iterate over all projects and collect index names per
 				// release.
-				List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
+				List<? extends Project> projects = boot.meshRoot()
+						.getProjectRoot()
+						.findAll();
 				for (Project currentProject : projects) {
-					for (Release release : currentProject.getReleaseRoot().findAll()) {
+					for (Release release : currentProject.getReleaseRoot()
+							.findAll()) {
 						for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
-							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(),
-									release.getUuid(), version.getUuid(),
-									ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
+							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), release.getUuid(), version.getUuid(),
+									ContainerType.forVersion(ac.getVersioningParameters()
+											.getVersion())));
 						}
 					}
 				}
@@ -430,6 +452,112 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				}
 			}
 		});
+	}
+
+	/**
+	 * Invoke the given query and return a page of node containers.
+	 * 
+	 * @param gc
+	 * @param query
+	 *            Elasticsearch query
+	 * @param pagingInfo
+	 * @return
+	 * @throws MeshConfigurationException
+	 * @throws TimeoutException
+	 * @throws ExecutionException
+	 * @throws InterruptedException
+	 */
+	public Page<? extends NodeGraphFieldContainer> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo,
+			GraphPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
+		User user = ac.getUser();
+
+		org.elasticsearch.node.Node esNode = null;
+		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
+			esNode = (org.elasticsearch.node.Node) searchProvider.getNode();
+		} else {
+			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
+		}
+		Client client = esNode.client();
+
+		if (log.isDebugEnabled()) {
+			log.debug("Invoking search with query {" + query + "} for {" + getElementClass().getName() + "}");
+		}
+
+		/*
+		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
+		 * to be written that deals with Document Level Permissions/Security (commonly known as DLS)
+		 */
+		SearchRequestBuilder builder = null;
+		try {
+			JSONObject queryStringObject = new JSONObject(query);
+			/**
+			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more
+			 * efficient ways to do deep scrolling.
+			 */
+			queryStringObject.put("from", 0);
+			queryStringObject.put("size", Integer.MAX_VALUE);
+			Set<String> indices = getSelectedIndices(ac);
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()]))
+					.setSource(queryStringObject.toString());
+		} catch (Exception e) {
+			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
+		}
+		CompletableFuture<Page<? extends NodeGraphFieldContainer>> future = new CompletableFuture<>();
+		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+		builder.execute()
+				.addListener(new ActionListener<SearchResponse>() {
+
+					@Override
+					public void onResponse(SearchResponse response) {
+						Page<? extends NodeGraphFieldContainer> page = db.noTx(() -> {
+							List<NodeGraphFieldContainer> elementList = new ArrayList<>();
+							for (SearchHit hit : response.getHits()) {
+
+								String id = hit.getId();
+								int pos = id.indexOf("-");
+								String language = pos > 0 ? id.substring(pos + 1) : null;
+								String uuid = pos > 0 ? id.substring(0, pos) : id;
+
+								// TODO check permissions without loading the vertex
+
+								// Locate the node
+								Node node = getRootVertex().findByUuid(uuid);
+								if (node != null) {
+									// Check permissions and language
+									for (GraphPermission permission : permissions) {
+										if (user.hasPermission(node, permission)) {
+											ContainerType type = ContainerType.forVersion(ac.getVersioningParameters()
+													.getVersion());
+											Language languageTag = boot.languageRoot()
+													.findByLanguageTag(language);
+											if (languageTag == null) {
+												log.debug("Could not find language {" + language + "}");
+												break;
+											}
+											// Locate the matching container and add it to the list of found containers
+											NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag, ac.getRelease(), type);
+											if (container != null) {
+												elementList.add(container);
+											}
+											break;
+										}
+									}
+								}
+							}
+							Page<? extends NodeGraphFieldContainer> containerPage = Page.applyPaging(elementList, pagingInfo);
+							return containerPage;
+						});
+						future.complete(page);
+					}
+
+					@Override
+					public void onFailure(Throwable e) {
+						log.error("Search query failed", e);
+						future.completeExceptionally(e);
+					}
+				});
+
+		return future.get(60, TimeUnit.SECONDS);
 
 	}
 

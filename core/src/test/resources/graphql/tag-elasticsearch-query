@@ -1,0 +1,18 @@
+{
+	# [$.data.tags.elements.length()=1]
+	tags(query: "{\"query\":{\"query_string\":{\"query\":\"red\"}}}") {
+		elements {
+			uuid
+			# [$.data.tags.elements[0].name=red]
+			name
+		}
+	}
+
+	# [$.data.empty.elements.length()=0]
+	empty: tags(query: "{\"query\":{\"query_string\":{\"query\":\"blaar\"}}}") {
+		elements {
+			uuid
+			name
+		}
+	}
+}

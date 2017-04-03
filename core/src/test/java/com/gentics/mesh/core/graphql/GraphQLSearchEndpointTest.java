@@ -26,7 +26,13 @@ public class GraphQLSearchEndpointTest extends AbstractMeshTest {
 	@Parameters(name = "query={0}")
 	public static List<String> paramData() {
 		List<String> testQueries = new ArrayList<>();
+		testQueries.add("user-elasticsearch-query");
+		testQueries.add("group-elasticsearch-query");
+		testQueries.add("role-elasticsearch-query");
 		testQueries.add("node-elasticsearch-query");
+		testQueries.add("container-elasticsearch-query");
+		testQueries.add("tag-elasticsearch-query");
+		testQueries.add("tagFamily-elasticsearch-query");
 		return testQueries;
 	}
 

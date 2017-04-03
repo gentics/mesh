@@ -2,20 +2,25 @@ package com.gentics.mesh.core.data.search;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.parameter.VersioningParameters;
+import com.gentics.mesh.error.MeshConfigurationException;
+import com.gentics.mesh.parameter.PagingParameters;
 
 import rx.Completable;
 
 /**
  * Index handlers are used to interact with the search provider index on a type specific level. Each domain model in mesh which is indexable needs to implement
  * an index handler in order to interact with search index specific documents in the index (CRUD on search index documents).
+ *
+ * @param <T>
  */
-public interface IndexHandler {
+public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 
 	/**
 	 * Clear the index. This will effectively remove all documents from the index without removing the index itself.
@@ -109,5 +114,24 @@ public interface IndexHandler {
 	 * @return
 	 */
 	Completable createIndex(CreateIndexEntry entry);
+
+	/**
+	 * Invoke an elastic search query on the database and return a page which lists the found elements.
+	 * 
+	 * @param ac
+	 * @param query
+	 *            Elasticsearch query
+	 * @param pagingInfo
+	 *            Paging settings
+	 * @param permissions
+	 *            Permissions to check against
+	 * @return
+	 * @throws MeshConfigurationException
+	 * @throws InterruptedException
+	 * @throws ExecutionException
+	 * @throws TimeoutException
+	 */
+	Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
+			throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException;
 
 }

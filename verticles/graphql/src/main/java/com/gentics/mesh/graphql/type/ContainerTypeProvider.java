@@ -7,6 +7,9 @@ import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -15,7 +18,11 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
@@ -27,6 +34,9 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public NodeFieldTypeProvider nodeFieldTypeProvider;
+
+	@Inject
+	public NodeIndexHandler nodeIndexHandler;
 
 	@Inject
 	public ContainerTypeProvider() {
@@ -123,5 +133,13 @@ public class ContainerTypeProvider extends AbstractTypeProvider {
 				}));
 
 		return type.build();
+	}
+
+	public Page<? extends NodeGraphFieldContainer> handleContainerSearch(GraphQLContext gc, String query, PagingParameters pagingInfo) {
+		try {
+			return nodeIndexHandler.handleContainerSearch(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);
+		} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

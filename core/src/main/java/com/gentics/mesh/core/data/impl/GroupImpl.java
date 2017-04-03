@@ -23,7 +23,7 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -130,7 +130,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) {
+	public TransformablePage<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark()
 				.in(GraphPermission.READ_PERM.label())
 				.out(HAS_ROLE)
@@ -142,10 +142,10 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public Page<? extends Role> getRoles(User user, PagingParameters pagingInfo) {
+	public TransformablePage<? extends Role> getRoles(User user, PagingParameters pagingInfo) {
 		//TODO handle request user / handle perms
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
-		Page<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, RoleImpl.class);
+		TransformablePage<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, RoleImpl.class);
 		return page;
 	}
 

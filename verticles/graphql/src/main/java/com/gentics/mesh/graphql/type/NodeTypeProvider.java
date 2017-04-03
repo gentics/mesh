@@ -6,23 +6,31 @@ import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.model.LinkInfo;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 import graphql.schema.DataFetchingEnvironment;
@@ -46,6 +54,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public ContainerTypeProvider containerTypeProvider;
+
+	@Inject
+	public BootstrapInitializer boot;
 
 	@Inject
 	public NodeTypeProvider() {
@@ -147,6 +158,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .availableLanguages
 		nodeType.field(newFieldDefinition().name("availableLanguages")
+				.description("List all available languages for the node")
 				.type(new GraphQLList(GraphQLString))
 				.dataFetcher((env) -> {
 					Node node = env.getSource();
@@ -156,9 +168,56 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .languagePaths
 		nodeType.field(newFieldDefinition().name("languagePaths")
+				.description("List all language paths for the node.")
 				.argument(createLinkTypeArg())
 				.type(new GraphQLList(createLinkInfoType()))
 				.dataFetcher(this::languagePathsFetcher));
+
+		// .child
+		nodeType.field(newFieldDefinition().name("child")
+				.description("Resolve a webroot path to a specific child container.")
+				.argument(createPathArg())
+				.type(new GraphQLTypeReference("Container"))
+				.dataFetcher((env) -> {
+					String nodePath = env.getArgument("path");
+					if (nodePath != null) {
+						GraphQLContext gc = env.getContext();
+
+						// Resolve the given path and return the found container
+						Node node = env.getSource();
+						Release release = gc.getRelease();
+						String releaseUuid = release.getUuid();
+						ContainerType type = ContainerType.forVersion(gc.getVersioningParameters()
+								.getVersion());
+						Stack<String> pathStack = new Stack<>();
+						pathStack.add(nodePath);
+						Path path = new Path();
+						try {
+							node.resolvePath(releaseUuid, type, path, pathStack);
+						} catch (GenericRestException e) {
+							// Check whether the path could not be resolved 
+							if (e.getStatus() == NOT_FOUND) {
+								return null;
+							} else {
+								throw e;
+							}
+						}
+						// Check whether the path could not be resolved. In those cases the segments is empty
+						if (path.getSegments()
+								.isEmpty()) {
+							return null;
+						}
+						// Otherwise return the last segment.
+						PathSegment lastSegment = path.getSegments()
+								.get(path.getSegments()
+										.size() - 1);
+						Language language = boot.languageRoot()
+								.findByLanguageTag(lastSegment.getLanguageTag());
+						// Locate the corresponding field container
+						return node.getGraphFieldContainer(language, release, type);
+					}
+					return null;
+				}));
 
 		// .children
 		nodeType.field(newPagingFieldWithFetcherBuilder("children", "Load child nodes of the node.", (env) -> {
@@ -225,6 +284,15 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		return type.build();
 	}
 
+	/**
+	 * Invoke the given query and return a page of nodes.
+	 * 
+	 * @param gc
+	 * @param query
+	 *            Elasticsearch query
+	 * @param pagingInfo
+	 * @return
+	 */
 	public Page<? extends Node> handleSearch(GraphQLContext gc, String query, PagingParameters pagingInfo) {
 		try {
 			return nodeIndexHandler.query(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);
@@ -232,4 +300,5 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			throw new RuntimeException(e);
 		}
 	}
+
 }

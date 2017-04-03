@@ -63,7 +63,7 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
-import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
@@ -1519,14 +1519,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
+	public TransformablePage<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
 			PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = getChildrenTraversal(requestUser, releaseUuid, languageTags, type);
 		return TraversalHelper.getPagedResult(traversal, pagingInfo, NodeImpl.class);
 	}
 
 	@Override
-	public Page<? extends Tag> getTags(User user, PagingParameters params, Release release) {
+	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Release release) {
 		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(user, this, release);
 		return TraversalHelper.getPagedResult(traversal, params, TagImpl.class);
 	}
@@ -1718,7 +1718,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public Page<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch) {
+	public TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch) {
 
 		Project project = getProject();
 		Release release = ac.getRelease();
@@ -1767,11 +1767,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 			return getTags(user, ac.getPagingParameters(), release);
 		});
-
-		/*
-		 * node.addTag(tag, release); batch.store(node, release.getUuid(), PUBLISHED, false); batch.store(node, release.getUuid(), DRAFT, false);
-		 */
-
 	}
 
 	@Override

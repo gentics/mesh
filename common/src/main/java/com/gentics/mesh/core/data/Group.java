@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data;
 import java.util.List;
 import java.util.Objects;
 
-import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -119,7 +119,7 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	 *            Paging information
 	 * @return Page which contains the retrieved items
 	 */
-	Page<? extends Role> getRoles(User user, PagingParameters pagingInfo);
+	TransformablePage<? extends Role> getRoles(User user, PagingParameters pagingInfo);
 
 	/**
 	 * Return a page with all users that the given user can see.
@@ -128,6 +128,6 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	 * @param pagingInfo
 	 * @return Page with found users, an empty page is returned when no users could be found
 	 */
-	Page<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo);
+	TransformablePage<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo);
 
 }

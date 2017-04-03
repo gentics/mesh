@@ -1,0 +1,17 @@
+{
+	# [$.data.users.elements.length()=1]
+	users(query: "{\"query\":{\"query_string\":{\"query\":\"admin\"}}}") {
+		elements {
+			uuid
+			username
+		}
+	}
+
+	# [$.data.empty.elements.length()=0]
+	empty: users(query: "{\"query\":{\"query_string\":{\"query\":\"blaar\"}}}") {
+		elements {
+			uuid
+			username
+		}
+	}
+}

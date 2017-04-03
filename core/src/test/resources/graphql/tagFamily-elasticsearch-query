@@ -1,0 +1,18 @@
+{
+	# [$.data.tagFamilies.elements.length()=1]
+	tagFamilies(query: "{\"query\":{\"query_string\":{\"query\":\"colors\"}}}") {
+		elements {
+			uuid
+			# [$.data.tagFamilies.elements[0].name=colors]
+			name
+		}
+	}
+
+	# [$.data.empty.elements.length()=0]
+	empty: tagFamilies(query: "{\"query\":{\"query_string\":{\"query\":\"blaar\"}}}") {
+		elements {
+			uuid
+			name
+		}
+	}
+}

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.rest.schema;
 
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 /**
@@ -89,6 +90,7 @@ public interface FieldSchema {
 	 * 
 	 * @return
 	 */
+	@JsonIgnore
 	Map<String, Object> getAllChangeProperties();
 
 }

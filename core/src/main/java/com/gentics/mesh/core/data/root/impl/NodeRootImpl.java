@@ -32,6 +32,7 @@ import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -88,7 +89,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Page<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
+	public TransformablePage<? extends Node> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		MeshAuthUser requestUser = ac.getUser();
 		Release release = ac.getRelease();
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters()

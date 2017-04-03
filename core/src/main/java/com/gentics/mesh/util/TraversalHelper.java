@@ -9,8 +9,8 @@ import java.util.List;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.impl.TransformablePageImpl;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -45,7 +45,7 @@ public final class TraversalHelper {
 	 *            Class that used to map the ferma objects that were found for the page query
 	 * @return
 	 */
-	private static <T extends TransformableElement<? extends RestModel>> Page<T> getPagedResult(VertexTraversal<?, ?, ?> traversal, String sortBy,
+	private static <T extends TransformableElement<? extends RestModel>> TransformablePage<T> getPagedResult(VertexTraversal<?, ?, ?> traversal, String sortBy,
 			SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) {
 
 		if (page < 1) {
@@ -87,7 +87,7 @@ public final class TraversalHelper {
 		}
 
 		// Internally the page size was reduced. We need to increment it now that we are finished.
-		return new PageImpl<T>(elementsOfPage, count, ++page, totalPages, elementsOfPage.size(), perPage);
+		return new TransformablePageImpl<T>(elementsOfPage, count, ++page, totalPages, elementsOfPage.size(), perPage);
 
 	}
 
@@ -102,7 +102,7 @@ public final class TraversalHelper {
 	 *            Type of the elements within the page
 	 * @return Page with the result information
 	 */
-	public static <T extends TransformableElement<? extends RestModel>> Page<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
+	public static <T extends TransformableElement<? extends RestModel>> TransformablePage<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
 			PagingParameters pagingInfo, Class<T> classOfT) {
 		return getPagedResult(traversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
 				pagingInfo.getPerPage(), classOfT);
