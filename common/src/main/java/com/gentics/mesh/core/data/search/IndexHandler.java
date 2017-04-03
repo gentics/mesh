@@ -102,7 +102,7 @@ public interface IndexHandler {
 
 	/**
 	 * Create the index, if it is one of the indices handled by this index handler. If the index name is not handled by this index handler, an error will be
-	 * thrown
+	 * thrown.
 	 * 
 	 * @param entry
 	 *            Search queue entry for create index action

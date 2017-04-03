@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.auth;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
@@ -7,12 +9,17 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class LoginRequest implements RestModel {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Username of the user which should be logged in.")
 	private String username;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Password of the user which should be logged in.")
 	private String password;
 
 	public LoginRequest() {
 	}
-	
+
 	/**
 	 * Return the password.
 	 * 
