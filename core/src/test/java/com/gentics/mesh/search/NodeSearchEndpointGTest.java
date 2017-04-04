@@ -8,6 +8,7 @@ import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -36,24 +37,32 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		String uuid = db().noTx(() -> content("concorde").getUuid());
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParametersImpl().draft()));
-		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
+		NodeListResponse response = call(
+				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParametersImpl().draft()));
+		assertThat(response.getData()).as("Search result")
+				.usingElementComparatorOnFields("uuid")
+				.containsOnly(concorde);
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParametersImpl().draft()));
-		assertThat(response.getData()).as("Search result").isEmpty();
+		assertThat(response.getData()).as("Search result")
+				.isEmpty();
 
 		// change draft version of content
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage("en");
-		update.getFields().put("content", FieldUtil.createHtmlField(newContent));
+		update.getFields()
+				.put("content", FieldUtil.createHtmlField(newContent));
 		update.setVersion(new VersionReference().setNumber("1.0"));
 		call(() -> client().updateNode(PROJECT_NAME, concorde.getUuid(), update));
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParametersImpl().draft()));
-		assertThat(response.getData()).as("Search result").isEmpty();
+		assertThat(response.getData()).as("Search result")
+				.isEmpty();
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent), new VersioningParametersImpl().draft()));
-		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
+		assertThat(response.getData()).as("Search result")
+				.usingElementComparatorOnFields("uuid")
+				.containsOnly(concorde);
 	}
 
 	@Test
@@ -73,11 +82,15 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		failingLatch(latch);
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic")));
-		assertThat(response.getData()).as("Search result").isEmpty();
+		assertThat(response.getData()).as("Search result")
+				.isEmpty();
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
-				new VersioningParametersImpl().setRelease(db().noTx(() -> project().getInitialRelease().getName()))));
-		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
+				new VersioningParametersImpl().setRelease(db().noTx(() -> project().getInitialRelease()
+						.getName()))));
+		assertThat(response.getData()).as("Search result")
+				.usingElementComparatorOnFields("uuid")
+				.containsOnly(concorde);
 	}
 
 	@Test
@@ -86,21 +99,15 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		String query = "{\n" +
-				"  \"query\": {\n" +
-				"    \"nested\": {\n" +
-				"      \"path\": \"tagFamilies\",\n" +
-				"      \"query\": {\n" +
-				"        \"match\": {\n" +
-				"          \"tagFamilies.colors.tags.name\": \"red\"\n" +
-				"        }\n" +
-				"      }\n" +
-				"    }\n" +
-				"  }\n" +
-				"}";
+		String query = getESQuery("tagFamilySearch.es");
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query));
 		assertThat(response.getData()).isNotEmpty();
+		
+		for(NodeResponse node : response.getData()) {
+			long count = node.getTags().stream().filter(tag -> tag.getName().equals("red")).count();
+			assertThat(count).as("The node should have the tag 'red'.").isGreaterThanOrEqualTo(1);
+		}
 	}
 
 }

@@ -117,8 +117,19 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	 * @return
 	 * @throws IOException
 	 */
-	protected String getQuery(String name) throws IOException {
+	protected String getGraphQLQuery(String name) throws IOException {
 		return IOUtils.toString(getClass().getResourceAsStream("/graphql/" + name));
+	}
+
+	/**
+	 * Return the es query for the given name.
+	 * 
+	 * @param name
+	 * @return
+	 * @throws IOException
+	 */
+	protected String getESQuery(String name) throws IOException {
+		return IOUtils.toString(getClass().getResourceAsStream("/elasticsearch/" + name));
 	}
 
 }

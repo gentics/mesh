@@ -4,8 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import org.json.JSONException;
 import org.junit.Test;
@@ -23,7 +22,7 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 
 	@Test
 	public void testIntrospection() {
-		JsonObject response = call(() -> client().graphql(PROJECT_NAME, getQuery("introspection-query")));
+		JsonObject response = call(() -> client().graphql(PROJECT_NAME, getGraphQLQuery("introspection-query")));
 		assertNotNull(response);
 	}
 
@@ -34,13 +33,15 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testEmptyQuery() {
-		JsonObject response = call(() -> client().graphqlQuery(PROJECT_NAME, ""));
+	public void testEmptyQuery() throws Throwable {
+		JsonObject response = call(() -> client().graphqlQuery(PROJECT_NAME, ""), BAD_REQUEST);
+		assertFalse("The errors array should not be empty.", response.getJsonArray("errors")
+				.isEmpty());
 	}
-	
+
 	@Test
 	public void testDataFetchingError() throws Throwable {
-		try(NoTx noTx = db().noTx()) {
+		try (NoTx noTx = db().noTx()) {
 			role().revokePermissions(project(), READ_PERM);
 		}
 		JsonObject response = call(() -> client().graphqlQuery(PROJECT_NAME, "{project{name}}"), BAD_REQUEST);

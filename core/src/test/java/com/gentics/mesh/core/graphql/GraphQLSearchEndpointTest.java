@@ -47,7 +47,7 @@ public class GraphQLSearchEndpointTest extends AbstractMeshTest {
 		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
-		JsonObject response = call(() -> client().graphqlQuery(PROJECT_NAME, getQuery(queryName)));
+		JsonObject response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
 		System.out.println(response.encodePrettily());
 		assertThat(response).compliesToAssertions(queryName);
 	}
