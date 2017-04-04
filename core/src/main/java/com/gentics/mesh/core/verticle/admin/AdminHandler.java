@@ -16,12 +16,10 @@ import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.shareddata.LocalMap;
-import io.vertx.ext.web.RoutingContext;
 import rx.Single;
 
 /**
@@ -45,8 +43,7 @@ public class AdminHandler extends AbstractHandler {
 	 * 
 	 * @param ac
 	 */
-	public void handleBackup(RoutingContext rc) {
-		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+	public void handleBackup(InternalActionContext ac) {
 		db.operateNoTx(() -> {
 			if (!ac.getUser()
 					.hasAdminRole()) {

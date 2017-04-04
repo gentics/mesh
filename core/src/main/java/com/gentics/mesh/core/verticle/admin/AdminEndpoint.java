@@ -80,7 +80,8 @@ public class AdminEndpoint extends AbstractEndpoint {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/import");
 		endpoint.method(GET);
-		endpoint.description("Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.");
+		endpoint.description(
+				"Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Database import command was invoked.");
 		endpoint.handler(rc -> {
@@ -110,7 +111,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Incremental backup was invoked.");
 		endpoint.handler(rc -> {
-			handler.handleBackup(rc);
+			handler.handleBackup(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
