@@ -140,13 +140,6 @@ public interface SearchQueueBatch {
 	List<? extends SearchQueueEntry> getEntries();
 
 	/**
-	 * Set the batch id.
-	 * 
-	 * @param batchId
-	 */
-	void setBatchId(String batchId);
-
-	/**
 	 * Return the batch id for this batch.
 	 * 
 	 * @return Id of the batch

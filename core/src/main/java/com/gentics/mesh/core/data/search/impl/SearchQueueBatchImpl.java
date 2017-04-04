@@ -200,11 +200,6 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public void setBatchId(String batchId) {
-		this.batchId = batchId;
-	}
-
-	@Override
 	public void printDebug() {
 		for (SearchQueueEntry entry : getEntries()) {
 			log.debug("Entry {" + entry.toString() + "} in batch {" + getBatchId() + "}");

@@ -64,11 +64,6 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 	}
 
 	@Override
-	public void setBatchId(String batchId) {
-
-	}
-
-	@Override
 	public String getBatchId() {
 		return null;
 	}

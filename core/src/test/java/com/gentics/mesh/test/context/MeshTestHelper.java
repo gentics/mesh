@@ -109,7 +109,7 @@ public final class MeshTestHelper {
 	 * @param handler
 	 * @param status
 	 * @return
-	 * @throws Throwable 
+	 * @throws Throwable
 	 */
 	public static JsonObject call(ClientHandler<JsonObject> handler, HttpResponseStatus status) throws Throwable {
 		MeshResponse<JsonObject> future;
@@ -192,6 +192,17 @@ public final class MeshTestHelper {
 		}
 	}
 
+	/**
+	 * Wait for all responses and assert that the requests did not fail.
+	 * 
+	 * @param set
+	 * @param barrier
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 * @throws NoSuchMethodException
+	 * @throws SecurityException
+	 */
 	public static void validateCreation(Set<MeshResponse<?>> set, CyclicBarrier barrier)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		Set<String> uuids = new HashSet<>();

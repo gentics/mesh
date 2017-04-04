@@ -29,8 +29,12 @@ public abstract class AbstractDatabase implements Database {
 			log.debug("Clearing graph");
 		}
 		try (Tx tx = tx()) {
-			tx.getGraph().e().removeAll();
-			tx.getGraph().v().removeAll();
+			tx.getGraph()
+					.e()
+					.removeAll();
+			tx.getGraph()
+					.v()
+					.removeAll();
 			tx.success();
 		}
 		if (log.isDebugEnabled()) {
@@ -69,7 +73,9 @@ public abstract class AbstractDatabase implements Database {
 	public <T> T noTx(TxHandler<T> txHandler) {
 		// Avoid creating a transaction if possible
 		if (Database.threadLocalGraph.get() != null) {
-			log.error("Bogus noTx() call detected. Avoid creating nested transactions for threads which already use an active transaction.");
+			if (log.isDebugEnabled()) {
+				log.debug("Bogus noTx() call detected. Avoid creating nested transactions for threads which already use an active transaction.");
+			}
 			try {
 				T result = txHandler.call();
 				return result;

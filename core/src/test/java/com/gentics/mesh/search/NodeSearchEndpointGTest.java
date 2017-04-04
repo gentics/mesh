@@ -8,7 +8,6 @@ import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.stream.Collectors;
 
 import org.junit.Test;
 
