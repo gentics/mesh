@@ -190,7 +190,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			englishContainer.createString(fieldName).setString("content");
 			englishContainer.createString("name").setString("someName");
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
-			node.publish(ac, "en").await();
+			node.publish(ac, createBatch(),  "en");
 
 			doSchemaMigration(container, versionA, versionB);
 
@@ -225,7 +225,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		try (NoTx tx = db().noTx()) {
 			node.reload();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
-			node.publish(ac, "en").await();
+			node.publish(ac, createBatch(), "en");
 		}
 
 		try (NoTx tx = db().noTx()) {

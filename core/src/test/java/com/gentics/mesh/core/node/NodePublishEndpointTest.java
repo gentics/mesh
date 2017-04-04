@@ -56,7 +56,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			Node parentFolder = folder("news");
 			SearchQueueBatch batch = createBatch();
 			parentFolder.publish(ac, batch);
-			subFolder.takeOffline(ac);
+			subFolder.takeOffline(ac, batch);
 			subFolderUuid = subFolder.getUuid();
 			parentFolderUuid = parentFolder.getUuid();
 		}

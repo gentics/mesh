@@ -336,8 +336,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// 2. Publish nodes
 		try (NoTx noTx = db().noTx()) {
 			SearchQueueBatch batch = createBatch();
-			folder("news").publish(mockActionContext(), batch).await();
-			folder("2015").publish(mockActionContext(), batch).await();
+			folder("news").publish(mockActionContext(), batch);
+			folder("2015").publish(mockActionContext(), batch);
 		}
 
 		// 3. Assert that published path can be found
@@ -355,8 +355,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// 1. Publish nodes
 		db().noTx(() -> {
 			SearchQueueBatch batch = createBatch();
-			folder("news").publish(mockActionContext(), batch).await();
-			folder("2015").publish(mockActionContext(), batch).await();
+			folder("news").publish(mockActionContext(), batch);
+			folder("2015").publish(mockActionContext(), batch);
 			return null;
 		});
 

@@ -3,43 +3,23 @@ package com.gentics.mesh.parameter.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.BooleanUtils;
 import org.raml.model.ParamType;
 import org.raml.model.parameter.QueryParameter;
 
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
-import com.gentics.mesh.parameter.ParameterProvider;
+import com.gentics.mesh.parameter.PublishParameters;
 
-public class PublishParametersImpl extends AbstractParameters {
-
-	public static final String RECURSIVE_PARAMETER_KEY = "recursive";
+/**
+ * @see PublishParameters
+ */
+public class PublishParametersImpl extends AbstractParameters implements PublishParameters {
 
 	public PublishParametersImpl(ActionContext ac) {
 		super(ac);
 	}
 
 	public PublishParametersImpl() {
-	}
-
-	/**
-	 * Set the recursive flag which can be used to recursively publish a subtree of nodes.
-	 * 
-	 * @param flag
-	 * @return
-	 */
-	public ParameterProvider setRecursive(boolean flag) {
-		setParameter(RECURSIVE_PARAMETER_KEY, String.valueOf(flag));
-		return this;
-	}
-
-	/**
-	 * Check whether the recursive flag for recursively publishing is enabled.
-	 * 
-	 * @return
-	 */
-	public boolean isRecursive() {
-		return BooleanUtils.toBooleanDefaultIfNull(Boolean.valueOf(getParameter(RECURSIVE_PARAMETER_KEY)), false);
 	}
 
 	@Override

@@ -15,6 +15,7 @@ import org.mockito.Mockito;
 import org.raml.emitter.RamlEmitter;
 import org.raml.model.Action;
 import org.raml.model.ActionType;
+import org.raml.model.MimeType;
 import org.raml.model.Protocol;
 import org.raml.model.Raml;
 import org.raml.model.Resource;
@@ -75,10 +76,13 @@ public class RAMLGenerator {
 	public String generate() {
 		log.info("Starting RAML generation...");
 		raml.setTitle("Gentics Mesh REST API");
-		raml.setVersion(Mesh.getBuildInfo().getVersion());
+		raml.setVersion(Mesh.getBuildInfo()
+				.getVersion());
 		raml.setBaseUri("http://localhost:8080/api/v1");
-		raml.getProtocols().add(Protocol.HTTP);
-		raml.getProtocols().add(Protocol.HTTPS);
+		raml.getProtocols()
+				.add(Protocol.HTTP);
+		raml.getProtocols()
+				.add(Protocol.HTTPS);
 		raml.setMediaType("application/json");
 
 		try {
@@ -103,8 +107,7 @@ public class RAMLGenerator {
 	 *            Endpoint which provides endpoints
 	 * @throws IOException
 	 */
-	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractEndpoint verticle)
-			throws IOException {
+	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractEndpoint verticle) throws IOException {
 
 		String ramlPath = basePath + "/" + verticle.getBasePath();
 		// Check whether the resource was already added. Maybe we just need to extend it
@@ -115,7 +118,10 @@ public class RAMLGenerator {
 			verticleResource.setDescription(verticle.getDescription());
 			resources.put(ramlPath, verticleResource);
 		}
-		for (Endpoint endpoint : verticle.getEndpoints().stream().sorted().collect(Collectors.toList())) {
+		for (Endpoint endpoint : verticle.getEndpoints()
+				.stream()
+				.sorted()
+				.collect(Collectors.toList())) {
 
 			String fullPath = "api/v1" + basePath + "/" + verticle.getBasePath() + endpoint.getRamlPath();
 			if (isEmpty(verticle.getBasePath())) {
@@ -128,30 +134,49 @@ public class RAMLGenerator {
 			action.setQueryParameters(endpoint.getQueryParameters());
 
 			// Add response examples
-			for (Entry<Integer, Response> entry : endpoint.getExampleResponses().entrySet()) {
+			for (Entry<Integer, Response> entry : endpoint.getExampleResponses()
+					.entrySet()) {
 				String key = String.valueOf(entry.getKey());
 				Response response = entry.getValue();
 				// write example response to dedicated file
-				String filename = "response/" + fullPath + "/" + key + "/example.json";
-				if (response.getBody() != null && response.getBody().get("application/json") != null) {
-					String json = response.getBody().get("application/json").getExample();
+				if (response.getBody() != null && response.getBody()
+						.get("application/json") != null) {
+					String filename = "response/" + fullPath + "/" + key + "/example.json";
+					MimeType responseMimeType = response.getBody()
+							.get("application/json");
+					String json = responseMimeType.getExample();
 					writeFile(filename, json);
+
+					// Write JSON schema to dedicated file
+					String schemaFilename = "response/" + fullPath + "/" + key + "/request-schema.json";
+					String schema = responseMimeType.getSchema();
+					writeFile(schemaFilename, schema);
 				}
-				action.getResponses().put(key, response);
+
+				action.getResponses()
+						.put(key, response);
 			}
 
 			// Add request example
 			if (endpoint.getExampleRequestMap() != null) {
 				action.setBody(endpoint.getExampleRequestMap());
 
-				for (String mimeType : endpoint.getExampleRequestMap().keySet()) {
-					String body = endpoint.getExampleRequestMap().get(mimeType).getExample();
+				for (String mimeType : endpoint.getExampleRequestMap()
+						.keySet()) {
+					MimeType request = endpoint.getExampleRequestMap()
+							.get(mimeType);
+					String body = request.getExample();
 					if (mimeType.equalsIgnoreCase("application/json")) {
-						// write example request to dedicated file
-						String filename = "request/" + fullPath + "/request-body.json";
-						writeFile(filename, body);
+						// Write example request to dedicated file
+						String requestFilename = "request/" + fullPath + "/request-body.json";
+						writeFile(requestFilename, body);
+
+						// Write JSON schema to dedicated file
+						String filename = "request/" + fullPath + "/request-schema.json";
+						String schema = request.getSchema();
+						writeFile(filename, schema);
 					} else if (mimeType.equalsIgnoreCase("text/plain")) {
-						// write example request to dedicated file
+						// Write example request to dedicated file
 						String filename = "request/" + fullPath + "/request-body.txt";
 						writeFile(filename, body);
 					}
@@ -160,19 +185,22 @@ public class RAMLGenerator {
 
 			String path = endpoint.getRamlPath();
 			if (path == null) {
-				throw new RuntimeException("Could not determine path for endpoint of verticle " + verticle.getClass()
-						+ " " + endpoint.getPathRegex());
+				throw new RuntimeException(
+						"Could not determine path for endpoint of verticle " + verticle.getClass() + " " + endpoint.getPathRegex());
 			}
-			Resource pathResource = verticleResource.getResources().get(path);
+			Resource pathResource = verticleResource.getResources()
+					.get(path);
 			if (pathResource == null) {
 				pathResource = new Resource();
 			}
 			if (endpoint.getMethod() == null) {
 				continue;
 			}
-			pathResource.getActions().put(getActionType(endpoint.getMethod()), action);
+			pathResource.getActions()
+					.put(getActionType(endpoint.getMethod()), action);
 			pathResource.setUriParameters(endpoint.getUriParameters());
-			verticleResource.getResources().put(path, pathResource);
+			verticleResource.getResources()
+					.put(path, pathResource);
 
 		}
 
@@ -207,7 +235,8 @@ public class RAMLGenerator {
 
 	private void initEndpoint(AbstractEndpoint endpoint) {
 		Vertx vertx = mock(Vertx.class);
-		Mockito.when(endpoint.getRouter()).thenReturn(Router.router(vertx));
+		Mockito.when(endpoint.getRouter())
+				.thenReturn(Router.router(vertx));
 		endpoint.registerEndPoints();
 	}
 
