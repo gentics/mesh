@@ -2,7 +2,7 @@
 
 = Gentics Mesh Changelog
 
-== 0.9.2
+== 0.9.2 (04.04.2017)
 
 icon:plus[] The `/api/v1/admin/backup`, `/api/v1/admin/restore`, `/api/v1/admin/import`, `/api/v1/admin/export` endpoints were added to the REST API. These endpoint allow the creation of backup dumps.
 
