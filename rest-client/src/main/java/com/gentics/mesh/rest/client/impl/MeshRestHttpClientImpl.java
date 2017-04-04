@@ -643,9 +643,11 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		String requestUri = BASEURI + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
 		ResponseHandler<WebRootResponse> handler = new WebRootResponseHandler(HttpMethod.GET, requestUri);
 		HttpClientRequest request = client.request(GET, requestUri, handler);
-		authentication.addAuthenticationInformation(request).subscribe(() -> {
-			request.headers().add("Accept", "*/*");
-		});
+		authentication.addAuthenticationInformation(request)
+				.subscribe(() -> {
+					request.headers()
+							.add("Accept", "*/*");
+				});
 
 		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
 
@@ -775,6 +777,26 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<GenericMessageResponse> invokeBackup() {
+		return prepareRequest(GET, "/admin/backup", GenericMessageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeExport() {
+		return prepareRequest(GET, "/admin/export", GenericMessageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeImport() {
+		return prepareRequest(GET, "/admin/import", GenericMessageResponse.class);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeRestore() {
+		return prepareRequest(GET, "/admin/restore", GenericMessageResponse.class);
+	}
+
+	@Override
 	public MeshRequest<GenericMessageResponse> schemaMigrationStatus() {
 		return prepareRequest(GET, "/admin/status/migrations", GenericMessageResponse.class);
 	}
@@ -793,7 +815,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(fileName, "fileName must not be null");
 		Objects.requireNonNull(version, "version must not be null");
 		Objects.requireNonNull(contentType, "contentType must not be null");
-		
+
 		// TODO handle escaping of filename
 		String boundary = "--------Geg2Oob";
 		Buffer multiPartFormData = Buffer.buffer(fileData.length());
@@ -832,9 +854,11 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 		MeshBinaryResponseHandler handler = new MeshBinaryResponseHandler(GET, uri);
 		HttpClientRequest request = client.request(GET, uri, handler);
-		authentication.addAuthenticationInformation(request).subscribe(() -> {
-			request.headers().add("Accept", "application/json");
-		});
+		authentication.addAuthenticationInformation(request)
+				.subscribe(() -> {
+					request.headers()
+							.add("Accept", "application/json");
+				});
 		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
 	}
 
@@ -848,9 +872,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(fieldKey, "field key must not be null");
 
 		BinaryFieldTransformRequest transformRequest = new BinaryFieldTransformRequest().setWidth(imageManipulationParameter.getWidth())
-				.setHeight(imageManipulationParameter.getHeight()).setCropx(imageManipulationParameter.getStartx())
-				.setCropy(imageManipulationParameter.getStarty()).setCroph(imageManipulationParameter.getCroph())
-				.setCropw(imageManipulationParameter.getCropw()).setLanguage(languageTag).setVersion(new VersionReference().setNumber(version));
+				.setHeight(imageManipulationParameter.getHeight())
+				.setCropx(imageManipulationParameter.getStartx())
+				.setCropy(imageManipulationParameter.getStarty())
+				.setCroph(imageManipulationParameter.getCroph())
+				.setCropw(imageManipulationParameter.getCropw())
+				.setLanguage(languageTag)
+				.setVersion(new VersionReference().setNumber(version));
 
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binaryTransform/" + fieldKey, NodeResponse.class,
 				transformRequest);
@@ -1018,7 +1046,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<JsonObject> graphqlQuery(String projectName, String query, ParameterProvider... parameters) {
-		String json = new JsonObject().put("query", query).toString();
+		String json = new JsonObject().put("query", query)
+				.toString();
 		if (log.isDebugEnabled()) {
 			log.debug(json);
 		}
@@ -1034,14 +1063,16 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		String uri = BASEURI + path;
 		Buffer buffer = Buffer.buffer();
 		buffer.appendString(query);
-//		return MeshRestRequestUtil.prepareRequest(POST, path, JsonObject.class, buffer,
-//				"application/json", client, authentication);
-		
+		//		return MeshRestRequestUtil.prepareRequest(POST, path, JsonObject.class, buffer,
+		//				"application/json", client, authentication);
+
 		GraphQLResponseHandler handler = new GraphQLResponseHandler(uri);
 		HttpClientRequest request = client.request(POST, uri, handler);
-		authentication.addAuthenticationInformation(request).subscribe(() -> {
-			request.headers().add("Accept", "application/json");
-		});
+		authentication.addAuthenticationInformation(request)
+				.subscribe(() -> {
+					request.headers()
+							.add("Accept", "application/json");
+				});
 		return new MeshHttpRequestImpl<>(request, handler, buffer, "application/json", authentication, "application/json");
 	}
 }

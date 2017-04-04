@@ -4,6 +4,8 @@
 
 == 0.9.2
 
+icon:plus[] The `/api/v1/admin/backup`, `/api/v1/admin/restore`, `/api/v1/admin/import`, `/api/v1/admin/export` endpoints were added to the REST API. These endpoint allow the creation of backup dumps.
+
 icon:plus[] It is now possible to execute elasticsearch queries within the graphql query.
 
 icon:plus[] It is now possible to resolve a partial web root path using the `child` field of a node.

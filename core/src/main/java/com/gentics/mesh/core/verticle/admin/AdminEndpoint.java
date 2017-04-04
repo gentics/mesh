@@ -42,11 +42,11 @@ public class AdminEndpoint extends AbstractEndpoint {
 		addStatusHandler();
 		addMigrationStatusHandler();
 
-		// TODO secure handlers below
-		// addBackupHandler();
-		// addRestoreHandler();
-		// addImportHandler();
-		// addExportHandler();
+		secureAll();
+		addBackupHandler();
+		addRestoreHandler();
+		addImportHandler();
+		addExportHandler();
 		// addVerticleHandler();
 		// addServiceHandler();
 
@@ -68,11 +68,11 @@ public class AdminEndpoint extends AbstractEndpoint {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/export");
 		endpoint.method(GET);
-		endpoint.description("Invoke a graph database export");
+		endpoint.description("Invoke a orientdb graph database export.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Export process was invoked.");
 		endpoint.handler(rc -> {
-			handler.handleExport(rc);
+			handler.handleExport(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
@@ -80,23 +80,24 @@ public class AdminEndpoint extends AbstractEndpoint {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/import");
 		endpoint.method(GET);
-		endpoint.description("Invoke a graph database import");
+		endpoint.description("Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Database import command was invoked.");
 		endpoint.handler(rc -> {
-			handler.handleImport(rc);
+			handler.handleImport(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
 	private void addRestoreHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/restore");
-		endpoint.description("Invoke a graph database restore");
+		endpoint.description(
+				"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effecivly destroy all previously stored data.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Database restore command was invoked.");
 		endpoint.method(GET);
 		endpoint.handler(rc -> {
-			handler.handleRestore(rc);
+			handler.handleRestore(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
@@ -104,7 +105,8 @@ public class AdminEndpoint extends AbstractEndpoint {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/backup");
 		endpoint.method(GET);
-		endpoint.description("Invoke an incremental graph database backup.");
+		endpoint.description(
+				"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Incremental backup was invoked.");
 		endpoint.handler(rc -> {

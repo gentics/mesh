@@ -1174,4 +1174,28 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeBackup() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeExport() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeRestore() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeImport() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

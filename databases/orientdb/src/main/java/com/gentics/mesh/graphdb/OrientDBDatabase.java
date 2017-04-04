@@ -76,7 +76,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void stop() {
 		factory.close();
-		Orient.instance().shutdown();
+		Orient.instance()
+				.shutdown();
 		Database.setThreadLocalGraph(null);
 	}
 
@@ -114,8 +115,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		super.init(options, vertx);
 		// resolver = new OrientDBTypeResolver(basePaths);
 		resolver = new MeshTypeResolver(basePaths);
-		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
-			this.maxRetry = Integer.valueOf(options.getParameters().get("maxTransactionRetry"));
+		if (options != null && options.getParameters() != null && options.getParameters()
+				.get("maxTransactionRetry") != null) {
+			this.maxRetry = Integer.valueOf(options.getParameters()
+					.get("maxTransactionRetry"));
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
 		}
 	}
@@ -137,7 +140,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void start() throws Exception {
-		Orient.instance().startup();
+		Orient.instance()
+				.startup();
 		if (options == null || options.getDirectory() == null) {
 			log.info("No graph database settings found. Fallback to in memory mode.");
 			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(5, 100);
@@ -165,8 +169,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 			log.debug("Effective orientdb server configuration:" + configString);
 		}
 
-		String safeParentDirPath = StringEscapeUtils
-				.escapeJava(StringEscapeUtils.escapeXml11(new File(options.getDirectory()).getParentFile().getAbsolutePath()));
+		String safeParentDirPath = StringEscapeUtils.escapeJava(StringEscapeUtils.escapeXml11(new File(options.getDirectory()).getParentFile()
+				.getAbsolutePath()));
 		configString = configString.replaceAll("%MESH_DB_PARENT_PATH%", safeParentDirPath);
 		System.out.println(configString);
 		InputStream stream = new ByteArrayInputStream(configString.getBytes(StandardCharsets.UTF_8));
@@ -284,7 +288,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 		FramedGraph graph = Database.getThreadLocalGraph();
 		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
-		return orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
+		return orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues)
+				.iterator();
 	}
 
 	/**
@@ -302,8 +307,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void enableMassInsert() {
 		OrientBaseGraph tx = unwrapCurrentGraph();
-		tx.getRawGraph().getTransaction().setUsingLog(false);
-		tx.declareIntent(new OIntentMassiveInsert().setDisableHooks(true).setDisableValidation(true).setDisableSecurity(true));
+		tx.getRawGraph()
+				.getTransaction()
+				.setUsingLog(false);
+		tx.declareIntent(new OIntentMassiveInsert().setDisableHooks(true)
+				.setDisableValidation(true)
+				.setDisableSecurity(true));
 	}
 
 	@Override
@@ -409,13 +418,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 		FramedGraph graph = Database.getThreadLocalGraph();
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 
-		OrientVertexType vertexType = orientBaseGraph.getVertexType(element.getClass().getSimpleName());
+		OrientVertexType vertexType = orientBaseGraph.getVertexType(element.getClass()
+				.getSimpleName());
 		if (vertexType != null) {
 			OIndex<?> index = vertexType.getClassIndex(indexName);
 			if (index != null) {
 				Object recordId = index.get(key);
 				if (recordId != null) {
-					if (recordId.equals(element.getElement().getId())) {
+					if (recordId.equals(element.getElement()
+							.getId())) {
 						return null;
 					} else {
 						return (T) graph.getFramedVertexExplicit(element.getClass(), recordId);
@@ -511,6 +522,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void backupGraph(String backupDirectory) throws IOException {
+		if (log.isDebugEnabled()) {
+			log.debug("Running backup to backup directory {" + backupDirectory + "}.");
+		}
 		ODatabaseDocumentTx db = factory.getDatabase();
 		try {
 			OCommandOutputListener listener = new OCommandOutputListener() {
@@ -521,6 +535,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			};
 			String dateString = formatter.format(new Date());
 			String backupFile = "backup_" + dateString + ".zip";
+			new File(backupDirectory).mkdirs();
 			OutputStream out = new FileOutputStream(new File(backupDirectory, backupFile).getAbsolutePath());
 			db.backup(out, null, null, listener, 9, 2048);
 		} finally {
@@ -530,6 +545,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void restoreGraph(String backupFile) throws IOException {
+		if (log.isDebugEnabled()) {
+			log.debug("Running restore using {" + backupFile + "} backup file.");
+		}
 		ODatabaseDocumentTx db = factory.getDatabase();
 		try {
 			OCommandOutputListener listener = new OCommandOutputListener() {
@@ -543,11 +561,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} finally {
 			db.close();
 		}
-
 	}
 
 	@Override
 	public void exportGraph(String outputDirectory) throws IOException {
+		if (log.isDebugEnabled()) {
+			log.debug("Running export to {" + outputDirectory + "} directory.");
+		}
 		ODatabaseDocumentTx db = factory.getDatabase();
 		try {
 			OCommandOutputListener listener = new OCommandOutputListener() {
@@ -559,7 +579,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 			String dateString = formatter.format(new Date());
 			String exportFile = "export_" + dateString;
-
+			new File(outputDirectory).mkdirs();
 			ODatabaseExport export = new ODatabaseExport(db, new File(outputDirectory, exportFile).getAbsolutePath(), listener);
 			export.exportDatabase();
 			export.close();

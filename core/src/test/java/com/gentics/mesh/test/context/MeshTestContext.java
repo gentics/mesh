@@ -42,6 +42,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 public class MeshTestContext extends TestWatcher {
 
+	private List<File> tmpFolders = new ArrayList<>();
 	private static final Logger log = LoggerFactory.getLogger(MeshTestContext.class);
 	private MeshComponent meshDagger;
 	private TestDataProvider dataProvider;
@@ -66,7 +67,7 @@ public class MeshTestContext extends TestWatcher {
 			// Setup the dagger context and orientdb,es once
 			if (description.isSuite()) {
 				removeDataDirectory();
-				init(settings.useElasticsearch());
+				init(settings);
 				initDagger(settings.testSize());
 			} else {
 				setupData();
@@ -95,11 +96,13 @@ public class MeshTestContext extends TestWatcher {
 					closeClient();
 				}
 				if (settings.useElasticsearch()) {
-					meshDagger.searchProvider().clear();
+					meshDagger.searchProvider()
+							.clear();
 				} else {
-					meshDagger.dummySearchProvider().clear();
+					meshDagger.dummySearchProvider()
+							.clear();
 				}
-				resetDatabase();
+				resetDatabase(settings);
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
@@ -112,8 +115,10 @@ public class MeshTestContext extends TestWatcher {
 
 	protected void setupIndexHandlers() throws Exception {
 		// We need to call init() again in order create missing indices for the created test data
-		for (IndexHandler<?> handler : meshDagger.indexHandlerRegistry().getHandlers()) {
-			handler.init().await();
+		for (IndexHandler<?> handler : meshDagger.indexHandlerRegistry()
+				.getHandlers()) {
+			handler.init()
+					.await();
 		}
 	}
 
@@ -131,7 +136,10 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	private void setupRestEndpoints() throws Exception {
-		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
+		Mesh.mesh()
+				.getOptions()
+				.getUploadOptions()
+				.setByteLimit(Long.MAX_VALUE);
 
 		port = com.gentics.mesh.test.performance.TestUtils.getRandomPort();
 		vertx = Mesh.vertx();
@@ -154,7 +162,8 @@ public class MeshTestContext extends TestWatcher {
 
 		// Start rest verticle
 		CountDownLatch latch2 = new CountDownLatch(1);
-		restVerticle = MeshInternal.get().restApiVerticle();
+		restVerticle = MeshInternal.get()
+				.restApiVerticle();
 		vertx.deployVerticle(restVerticle, new DeploymentOptions().setConfig(config), rh -> {
 			String deploymentId = rh.result();
 			deploymentIds.add(deploymentId);
@@ -165,8 +174,13 @@ public class MeshTestContext extends TestWatcher {
 		// Setup the rest client
 		try (NoTx trx = db().noTx()) {
 			client = MeshRestClient.create("localhost", getPort(), vertx);
-			client.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
-			client.login().toBlocking().value();
+			client.setLogin(getData().user()
+					.getUsername(),
+					getData().getUserInfo()
+							.getPassword());
+			client.login()
+					.toBlocking()
+					.value();
 		}
 		if (dummySearchProvider != null) {
 			dummySearchProvider.clear();
@@ -191,10 +205,13 @@ public class MeshTestContext extends TestWatcher {
 	 * @throws Exception
 	 */
 	private void setupData() throws Exception {
-		meshDagger.database().setMassInsertIntent();
-		meshDagger.boot().createSearchIndicesAndMappings();
+		meshDagger.database()
+				.setMassInsertIntent();
+		meshDagger.boot()
+				.createSearchIndicesAndMappings();
 		dataProvider.setup();
-		meshDagger.database().resetIntent();
+		meshDagger.database()
+				.resetIntent();
 	}
 
 	private void undeployAndReset() throws Exception {
@@ -211,11 +228,30 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Clear the test data.
+	 * 
+	 * @param settings
+	 * @throws Exception
 	 */
-	private void resetDatabase() {
+	private void resetDatabase(MeshTestSetting settings) throws Exception {
 		BootstrapInitializerImpl.clearReferences();
 		long start = System.currentTimeMillis();
-		MeshInternal.get().database().clear();
+		if (settings.inMemoryDB()) {
+			MeshInternal.get()
+					.database()
+					.clear();
+		} else {
+			MeshInternal.get()
+					.database()
+					.stop();
+			File dbDir = new File(Mesh.mesh()
+					.getOptions()
+					.getStorageOptions()
+					.getDirectory());
+			FileUtils.deleteDirectory(dbDir);
+			MeshInternal.get()
+					.database()
+					.start();
+		}
 		long duration = System.currentTimeMillis() - start;
 		log.info("Clearing DB took {" + duration + "} ms.");
 		if (dummySearchProvider != null) {
@@ -224,9 +260,9 @@ public class MeshTestContext extends TestWatcher {
 	}
 
 	private void cleanupFolders() throws IOException {
-		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getImageOptions().getImageCacheDirectory()));
-		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory()));
-		FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getUploadOptions().getTempDirectory()));
+		for (File folder : tmpFolders) {
+			FileUtils.deleteDirectory(folder);
+		}
 		// if (Mesh.mesh().getOptions().getSearchOptions().getDirectory() != null) {
 		// FileUtils.deleteDirectory(new File(Mesh.mesh().getOptions().getSearchOptions().getDirectory()));
 		// }
@@ -244,37 +280,48 @@ public class MeshTestContext extends TestWatcher {
 	/**
 	 * Initialise mesh options.
 	 * 
-	 * @param useElasticSearch
+	 * @param settings
 	 * @throws IOException
 	 */
-	public void init(boolean useElasticSearch) throws IOException {
+	public void init(MeshTestSetting settings) throws IOException {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 
-		String uploads = "target/testuploads_" + UUIDUtil.randomUUID();
-		File uploadDir = new File(uploads);
-		FileUtils.deleteDirectory(uploadDir);
-		uploadDir.mkdirs();
-		options.getUploadOptions().setDirectory(uploads);
+		String uploads = newFolder("testuploads");
+		options.getUploadOptions()
+				.setDirectory(uploads);
 
-		String targetTmpDir = "target/tmp_" + UUIDUtil.randomUUID();
-		File tmpDir = new File(targetTmpDir);
-		FileUtils.deleteDirectory(tmpDir);
-		tmpDir.mkdirs();
-		options.getUploadOptions().setTempDirectory(targetTmpDir);
+		String targetTmpDir = newFolder("tmpdir");
+		options.getUploadOptions()
+				.setTempDirectory(targetTmpDir);
 
-		String imageCacheDir = "target/image_cache_" + UUIDUtil.randomUUID();
-		File cacheDir = new File(imageCacheDir);
-		FileUtils.deleteDirectory(cacheDir);
-		cacheDir.mkdirs();
-		options.getImageOptions().setImageCacheDirectory(imageCacheDir);
+		String imageCacheDir = newFolder("image_cache");
+		options.getImageOptions()
+				.setImageCacheDirectory(imageCacheDir);
 
-		options.getHttpServerOptions().setPort(TestUtils.getRandomPort());
+		String backupPath = newFolder("backups");
+		options.getStorageOptions()
+				.setBackupDirectory(backupPath);
+
+		String exportPath = newFolder("exports");
+		options.getStorageOptions()
+				.setExportDirectory(exportPath);
+
+		options.getHttpServerOptions()
+				.setPort(TestUtils.getRandomPort());
 		// The database provider will switch to in memory mode when no directory has been specified.
-		options.getStorageOptions().setDirectory(null);
 
+		String graphPath = null;
+		if (!settings.inMemoryDB()) {
+			graphPath = "target/graphdb_" + UUIDUtil.randomUUID();
+			File directory = new File(graphPath);
+			directory.deleteOnExit();
+			directory.mkdirs();
+		}
+		options.getStorageOptions()
+				.setDirectory(graphPath);
 		ElasticSearchOptions searchOptions = new ElasticSearchOptions();
-		if (useElasticSearch) {
+		if (settings.useElasticsearch()) {
 			searchOptions.setDirectory("target/elasticsearch_data_" + System.currentTimeMillis());
 		} else {
 			searchOptions.setDirectory(null);
@@ -282,6 +329,23 @@ public class MeshTestContext extends TestWatcher {
 		searchOptions.setHttpEnabled(true);
 		options.setSearchOptions(searchOptions);
 		Mesh.mesh(options);
+	}
+
+	/**
+	 * Create a new folder which will be automatically be deleted once the rule finishes.
+	 * 
+	 * @param prefix
+	 * @return
+	 * @throws IOException
+	 */
+	private String newFolder(String prefix) throws IOException {
+		String path = "target/" + prefix + "_" + UUIDUtil.randomUUID();
+		File directory = new File(path);
+		FileUtils.deleteDirectory(directory);
+		directory.deleteOnExit();
+		directory.mkdirs();
+		tmpFolders.add(directory);
+		return path;
 	}
 
 	/**

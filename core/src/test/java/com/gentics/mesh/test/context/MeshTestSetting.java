@@ -16,4 +16,11 @@ public @interface MeshTestSetting {
 
 	boolean startServer() default false;
 
+	/**
+	 * Flag which indicates whether the graph database should run in-memory mode.
+	 * 
+	 * @return
+	 */
+	boolean inMemoryDB() default true;
+
 }
