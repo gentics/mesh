@@ -74,7 +74,7 @@ If you want to retieve deeply nested data you may use the GraphiQL browser
 
 * http://localhost:8080/api/v1/demo/graphql/browser/
 
-Or try our [live demo](http://getmesh.io/api/v1/demo/graphql/browser/.
+Or try our [live demo](http://getmesh.io/api/v1/demo/graphql/browser/).
 
 ### Example JSON
 
