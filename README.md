@@ -23,20 +23,60 @@ Gentics Mesh is an Open Source API-first CMS for developers. All contents can be
 
 ![alt tag](http://getmesh.io/assets/mesh-heroimg.png)
 
-### Download
+### Getting Started
+
+You need to have at least JRE 8 of Java installed. See the [Getting Started page](http://getmesh.io/docs/beta/getting-started.html) for more information.
+
+You can either download the all-in-one jar or fire-up one of the Docker images.
 
 * [Download from getmesh.io](http://getmesh.io/Download)
 * [Docker Hub](https://hub.docker.com/r/gentics/mesh-demo/)
 * [Maven Central](http://mvnrepository.com/artifact/com.gentics.mesh)
 
-### Changelog
-
-http://getmesh.io/docs/beta/changelog.html
+### [Changelog](http://getmesh.io/docs/beta/changelog.html)
 
 ### Documentation
 
 * http://getmesh.io/docs/beta/
 * http://getmesh.io/docs/beta/raml/
+
+### UI
+
+Gentics Mesh automatically ships with a UI which allows you to brows your contents.
+
+The UI is can be accessed via http://localhost:8080/mesh-ui
+
+### Typical usage
+
+You can retrieved stored contents via the REST or GraphQL API.
+
+First things first - You need to authenticate. Otherwise you will not be able to access your data.
+
+* http://localhost:8080/api/v1/auth/login
+
+You can post your credentials via JSON, use basic auth or send a JWT header - The choice is yours. If you open that URL in a browser you will most likly authenticate using basic auth.
+
+#### REST API
+
+Now that your are authenticated you can load content via the REST API.
+
+Load a list of projects:
+
+* http://localhost:8080/api/v1/projects
+
+Or a list of contents
+
+* http://localhost:8080/api/v1/demo/nodes
+
+#### GraphQL
+
+If you want to retieve deeply nested data you may use the GraphiQL browser
+
+* http://localhost:8080/api/v1/demo/graphql/browser/
+
+Or try our [live demo](http://getmesh.io/api/v1/demo/graphql/browser/.
+
+### Example JSON
 
 Typical Request/Response:
 
