@@ -1,16 +1,28 @@
 {
-	denode: node(path:"/Neuigkeiten/2015/News_2015.en.html") {
-		uuid,
-		container(language: "de") {
-			fields {
-				... on content { name }
-			}
-			language,
-			version,
-			node { uuid },
-			editor {username},
-			edited
-		},
-		breadcrumb { uuid }
+	content(path:"/Neuigkeiten/2015/News_2015.en.html") {
+		fields {
+			... on content { name }
+		}
+		# [$.data.content.language=en]
+		language
+		version
+		editor {username}
+		edited
+		node {
+			# [$.data.content.node.uuid=<is-uuid>]
+			uuid,
+			content(language: "de") {
+				fields {
+					... on content { name }
+				}
+				# [$.data.content.node.content.language=de]
+				language,
+				version,
+				node { uuid },
+				editor {username},
+				edited
+			},
+			breadcrumb { uuid }
+		}
 	}
 }

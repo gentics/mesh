@@ -1673,7 +1673,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (field != null) {
 				String fieldValue = field.getString();
 				if (segment.equals(fieldValue)) {
-					return new PathSegment(this, field, container.getLanguage().getLanguageTag());
+					return new PathSegment(container, field, container.getLanguage().getLanguageTag());
 				}
 			}
 
@@ -1686,7 +1686,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			} else {
 				String binaryFilename = binaryField.getFileName();
 				if (segment.equals(binaryFilename)) {
-					return new PathSegment(this, binaryField, container.getLanguage().getLanguageTag());
+					return new PathSegment(container, binaryField, container.getLanguage().getLanguageTag());
 				}
 			}
 		}

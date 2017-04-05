@@ -14,11 +14,11 @@
 			# [$.data.project.rootNode.uuid=<is-uuid>]
 			uuid
 			
-			container(language: "en") {
+			content(language: "en") {
 				fields {
 					...on folder {
 						# The root node has initially no fields thus the name is null
-						# [$.data.project.rootNode.container.fields.name=<is-null>]
+						# [$.data.project.rootNode.content.fields.name=<is-null>]
 						name
 					}
 				}

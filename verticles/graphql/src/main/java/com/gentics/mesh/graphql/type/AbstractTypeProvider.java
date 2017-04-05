@@ -129,7 +129,7 @@ public abstract class AbstractTypeProvider {
 
 		return newArgument().name("path")
 				.type(GraphQLString)
-				.description("Node webroot path")
+				.description("Webroot path which points to a container of a node.")
 				.build();
 	}
 

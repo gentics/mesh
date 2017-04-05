@@ -1,41 +1,41 @@
 package com.gentics.mesh.path;
 
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.GraphField;
 
 /**
  * A webroot path is build using multiple path segments. Each node is able to provide multiple path segments. Each language of the node may provide different
- * path segments.
+ * path segments. The path segment will store a reference to the found container.
  */
 public class PathSegment {
 
-	private Node node;
+	private NodeGraphFieldContainer container;
 	private GraphField pathField;
 	private String languageTag;
 
 	/**
 	 * Create a new path segment.
 	 * 
-	 * @param node
-	 *            Node that provides this segment
+	 * @param container
+	 *            Container that provides this segment
 	 * @param pathField
 	 *            Graph field which is the source of the segment
 	 * @param languageTag
 	 *            Language of the segment field
 	 */
-	public PathSegment(Node node, GraphField pathField, String languageTag) {
-		this.node = node;
+	public PathSegment(NodeGraphFieldContainer container, GraphField pathField, String languageTag) {
+		this.container = container;
 		this.pathField = pathField;
 		this.languageTag = languageTag;
 	}
 
 	/**
-	 * Return the node for the segment.
+	 * Return the container for the segment.
 	 * 
 	 * @return
 	 */
-	public Node getNode() {
-		return node;
+	public NodeGraphFieldContainer getContainer() {
+		return container;
 	}
 
 	/**

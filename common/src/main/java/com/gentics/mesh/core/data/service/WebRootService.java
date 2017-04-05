@@ -10,6 +10,7 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.path.Path;
@@ -39,7 +40,9 @@ public class WebRootService {
 
 		// Handle path to project root (baseNode)
 		if ("/".equals(path) || path.isEmpty()) {
-			nodePath.addSegment(new PathSegment(baseNode, null, null));
+			//TODO Why this container? Any other container would also be fine?
+			NodeGraphFieldContainer container = baseNode.getGraphFieldContainers().get(0);
+			nodePath.addSegment(new PathSegment(container, null, null));
 			return nodePath;
 		}
 

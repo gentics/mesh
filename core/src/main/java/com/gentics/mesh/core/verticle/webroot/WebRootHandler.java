@@ -17,6 +17,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
@@ -72,10 +73,11 @@ public class WebRootHandler {
 			if (lastSegment == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 			}
-			Node node = lastSegment.getNode();
-			if (node == null) {
+			NodeGraphFieldContainer container = lastSegment.getContainer();
+			if (container == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 			}
+			Node node = container.getParentNode();
 			if (!requestUser.hasPermission(node, READ_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
 			}

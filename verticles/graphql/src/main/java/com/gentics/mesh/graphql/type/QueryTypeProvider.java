@@ -83,7 +83,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	public SchemaTypeProvider schemaTypeProvider;
 
 	@Inject
-	public ContainerTypeProvider containerTypeProvider;
+	public ContentTypeProvider contentTypeProvider;
 
 	@Inject
 	public MicroschemaTypeProvider microschemaTypeProvider;
@@ -124,13 +124,22 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 					.findByUuid(uuid);
 			return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 		}
+		return null;
+	}
 
+	/**
+	 * Data fetcher for the content.
+	 *
+	 * @param env
+	 * @return
+	 */
+	public Object contentFetcher(DataFetchingEnvironment env) {
 		String path = env.getArgument("path");
 		if (path != null) {
 			GraphQLContext gc = env.getContext();
 			Path pathResult = webrootService.findByProjectPath(gc, path);
 			return pathResult.getLast()
-					.getNode();
+					.getContainer();
 		}
 		return null;
 	}
@@ -195,7 +204,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		//.project
 		root.field(newFieldDefinition().name("project")
-				.description("Load project current")
+				.description("Load the project that is active for this graphql query.")
 				.type(projectTypeProvider.createProjectType(project))
 				.dataFetcher(this::projectFetcher)
 				.build());
@@ -206,29 +215,32 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		// .node
 		root.field(newFieldDefinition().name("node")
-				.description("Load a node by uuid or webroot path.")
+				.description("Load a node by uuid.")
 				.argument(createUuidArg("Node uuid"))
-				.argument(createPathArg())
 				.dataFetcher(this::nodeFetcher)
 				.type(nodeTypeProvider.createNodeType(project))
 				.build());
 
-		// .container
-		//TODO Add container
-		
-		// .containers
-		root.field(newFieldDefinition().name("containers")
-				.description("Search for node containers and return a page which includes the results.")
+		// .content
+		root.field(newFieldDefinition().name("content")
+				.description("Load a node content by its webroot path.")
+				.argument(createPathArg())
+				.type(contentTypeProvider.createContentType(project))
+				.dataFetcher(this::contentFetcher));
+
+		// .contents
+		root.field(newFieldDefinition().name("contents")
+				.description("Search for node contents and return a page which includes the results.")
 				.argument(getPagingArgs())
 				.argument(getQueryArg())
-				.type(newPageType("containers", new GraphQLTypeReference("Container")))
+				.type(newPageType("contents", new GraphQLTypeReference("Content")))
 				.dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
 
 					PagingParameters pagingInfo = getPagingInfo(env);
 					String query = env.getArgument("query");
 					if (query != null) {
-						return containerTypeProvider.handleContainerSearch(gc, query, pagingInfo);
+						return contentTypeProvider.handleContentSearch(gc, query, pagingInfo);
 					}
 					return null;
 				}));
@@ -271,7 +283,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				.getTagFamilyRoot(), tagFamilyTypeProvider.getTagFamilyType()));
 
 		// .tagFamilies
-		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), "TagFamily", tagFamilyIndexHandler));
+		root.field(
+				newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), "TagFamily", tagFamilyIndexHandler));
 
 		// .release
 		root.field(newElementField("release", "Load release by name or uuid.", (ac) -> ac.getProject()

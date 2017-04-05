@@ -3,7 +3,7 @@
 	users(query: "{\"query\":{\"query_string\":{\"query\":\"admin\"}}}") {
 		elements {
 			uuid
-			# [$.data.users.elements[0]=admin]
+			# [$.data.users.elements[0].username=admin]
 			username
 		}
 	}

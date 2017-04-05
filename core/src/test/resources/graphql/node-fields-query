@@ -1,72 +1,71 @@
 {
-	node(path:"/Neuigkeiten/2015") {
-	
-		# [$.data.node.uuid=<is-uuid>]
-		uuid, 
-		languagePaths(linkType: FULL) {
-			# First language path should be english
-			# [$.data.node.languagePaths[0].languageTag=en]
-			languageTag
+	content(path:"/Neuigkeiten/2015") {
+		fields {
+		... on content { title },
+		... on folder { 
+				# [$.data.content.fields.name=2015]
+				name
 
-			# [$.data.node.languagePaths[0].link=/api/v1/dummy/webroot/News/2015]
-			link
-		}
-		# [$.data.node.availableLanguages[0]=en]
-		availableLanguages
-		container(language: "en") {
-			fields {
-				... on content { title },
-				... on folder { 
-					# [$.data.node.container.fields.name=2015]
-					name
+				nodeRef {
+					# [$.data.content.fields.nodeRef.uuid=<is-uuid>]
+					uuid
 
-					nodeRef {
-						# [$.data.node.container.fields.nodeRef.uuid=<is-uuid>]
-						uuid
+					# [$.data.content.fields.nodeRef.isContainer=false]
+					isContainer
 
-						# [$.data.node.container.fields.nodeRef.isContainer=false]
-						isContainer
+					content(language: "en") {
+						# [$.data.content.fields.nodeRef.content.isPublished=true]
+						isPublished
 
-						container(language: "en") {
-							# [$.data.node.container.fields.nodeRef.container.isPublished=true]
-							isPublished
+						# [$.data.content.fields.nodeRef.content.isDraft=true]
+						isDraft
 
-							# [$.data.node.container.fields.nodeRef.container.isDraft=true]
-							isDraft
-
-							fields {
-							# [$.data.node.container.fields.nodeRef.container.fields.title=News Overview english title]
-							... on content { title }
-							... on folder { name }
-							}
+						fields {
+						# [$.data.content.fields.nodeRef.content.fields.title=News Overview english title]
+						... on content { title }
+						... on folder { name }
 						}
-					},
-					binary {
-						sha512sum, 
-						height,
-						width,
-						mimeType,
-						dominantColor,
-						fileSize
-					},
-					stringList,
-					dateList,
-					nodeList { uuid },
-					booleanList,
-					numberList,
-					boolean,
-					number,
-					date,
-					htmlList,
-					html
-					micronode {
-						... on vcard {
-							firstName,
-							lastName
-						}
+					}
+				},
+				binary {
+					sha512sum
+					height
+					width
+					mimeType
+					dominantColor
+					fileSize
+				}
+				stringList
+				dateList
+				nodeList { uuid }
+				booleanList
+				numberList
+				boolean
+				number
+				date
+				htmlList
+				html
+				micronode {
+					... on vcard {
+						firstName
+						lastName
 					}
 				}
 			}
+		}
+		node {
+			# [$.data.content.node.uuid=<is-uuid>]
+			uuid
+			languagePaths(linkType: FULL) {
+				# First language path should be english
+				# [$.data.content.node.languagePaths[0].languageTag=en]
+				languageTag
+	
+				# [$.data.content.node.languagePaths[0].link=/api/v1/dummy/webroot/News/2015]
+				link
+			}
+			# [$.data.content.node.availableLanguages[0]=en]
+			availableLanguages
 		}
 	}
 }

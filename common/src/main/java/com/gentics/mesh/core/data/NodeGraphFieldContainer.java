@@ -125,7 +125,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	String getDisplayFieldValue();
 
 	/**
-	 * Get the parent node.
+	 * Get the parent node to which this container belongs.
 	 *
 	 * @return
 	 */

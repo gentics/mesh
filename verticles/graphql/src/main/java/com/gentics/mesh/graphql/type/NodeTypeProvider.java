@@ -18,7 +18,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -53,7 +52,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	public TagTypeProvider tagTypeProvider;
 
 	@Inject
-	public ContainerTypeProvider containerTypeProvider;
+	public ContentTypeProvider contentTypeProvider;
 
 	@Inject
 	public BootstrapInitializer boot;
@@ -100,7 +99,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		return gc.requiresPerm(parentNode, READ_PERM, READ_PUBLISHED_PERM);
 	}
 
-	public Object containerFetcher(DataFetchingEnvironment env) {
+	public Object contentFetcher(DataFetchingEnvironment env) {
 		Node node = env.getSource();
 		String languageTag = env.getArgument("language");
 		if (languageTag != null) {
@@ -175,9 +174,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .child
 		nodeType.field(newFieldDefinition().name("child")
-				.description("Resolve a webroot path to a specific child container.")
+				.description("Resolve a webroot path to a specific child content.")
 				.argument(createPathArg())
-				.type(new GraphQLTypeReference("Container"))
+				.type(new GraphQLTypeReference("Content"))
 				.dataFetcher((env) -> {
 					String nodePath = env.getArgument("path");
 					if (nodePath != null) {
@@ -211,10 +210,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						PathSegment lastSegment = path.getSegments()
 								.get(path.getSegments()
 										.size() - 1);
-						Language language = boot.languageRoot()
-								.findByLanguageTag(lastSegment.getLanguageTag());
-						// Locate the corresponding field container
-						return node.getGraphFieldContainer(language, release, type);
+						return lastSegment.getContainer();
 					}
 					return null;
 				}));
@@ -247,11 +243,11 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					return node.getTags(gc.getUser(), createPagingParameters(env), gc.getRelease());
 				}));
 
-		// .container
-		nodeType.field(newFieldDefinition().name("container")
-				.type(containerTypeProvider.createContainerType(project))
+		// .content
+		nodeType.field(newFieldDefinition().name("content")
+				.type(contentTypeProvider.createContentType(project))
 				.argument(getLanguageTagArg())
-				.dataFetcher(this::containerFetcher));
+				.dataFetcher(this::contentFetcher));
 
 		// TODO Fix name confusion and check what version of schema should be used to determine this type
 		// .isContainer

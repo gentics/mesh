@@ -44,7 +44,7 @@ public class GraphQLHandler {
 	}
 
 	/**
-	 * Handle the GraphQL query
+	 * Handle the GraphQL query.
 	 * 
 	 * @param ac
 	 * @param body
@@ -114,7 +114,7 @@ public class GraphQLHandler {
 						for (SourceLocation location : error.getLocations()) {
 							JsonObject errorLocation = new JsonObject();
 							errorLocation.put("line", location.getLine());
-							errorLocation.put("column", location.getLine());
+							errorLocation.put("column", location.getColumn());
 							errorLocations.add(errorLocation);
 						}
 					}

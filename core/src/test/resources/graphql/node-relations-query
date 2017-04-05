@@ -1,32 +1,35 @@
 {
-	denode: node(path:"/Neuigkeiten") {
-		# [$.data.denode.uuid=<is-uuid>]
-		uuid,
-		children(languages: ["en","de"]) {
-			elements {
-				# [$.data.denode.children.elements[0].uuid=<is-uuid>]
-				# [$.data.denode.children.elements[1].uuid=<is-uuid>]
-				# [$.data.denode.children.elements[2].uuid=<is-uuid>]
+	decontent: content(path:"/Neuigkeiten") {
+		node {
+			# [$.data.decontent.node.uuid=<is-uuid>]
+			uuid
+			children(languages: ["en","de"]) {
+				elements {
+					# [$.data.decontent.node.children.elements[0].uuid=<is-uuid>]
+					# [$.data.decontent.node.children.elements[1].uuid=<is-uuid>]
+					# [$.data.decontent.node.children.elements[2].uuid=<is-uuid>]
+					uuid
+				}
+			}
+			languagePaths {
+				link
+			}
+			parent {
+				# [$.data.decontent.node.parent.uuid=<is-uuid>]
 				uuid
 			}
+			# [$.data.decontent.node.child.node.uuid=<is-uuid>]
+			child(path: "2015") {
+				language
+				node {uuid}
+			}
+	
+			# [$.data.decontent.node.nullChild=<is-null>]
+			nullChild: child(path: "20sfdhsfh15") {
+				node {uuid}
+			}
 		}
-		languagePaths {
-			link
-		}
-		parent {
-			# [$.data.denode.parent.uuid=<is-uuid>]
-			uuid
-		}
-		# [$.data.denode.child.node.uuid=<is-uuid>]
-		child(path: "2015") {
-			language
-			node {uuid}
-		}
-
-		# [$.data.denode.nullChild=<is-null>]
-		nullChild: child(path: "20sfdhsfh15") {
-			node {uuid}
-		}
+		
 	}
 	rootNode {
 		# [$.data.rootNode.uuid=<is-uuid>]

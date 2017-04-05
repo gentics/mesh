@@ -6,10 +6,13 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.awt.Container;
+
 import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -45,10 +48,11 @@ public class NavRootHandler {
 			if (lastSegment == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 			}
-			Node node = lastSegment.getNode();
-			if (node == null) {
+			NodeGraphFieldContainer container = lastSegment.getContainer();
+			if (container == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 			}
+			Node node = container.getParentNode();
 			if (!requestUser.hasPermission(node, READ_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
 			}
