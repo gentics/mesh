@@ -241,14 +241,13 @@ public class NodeMigrationHandler extends AbstractHandler {
 			return Completable.error(e);
 		}
 
-		SearchQueueBatch batch = searchQueue.create();
-
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
 		ac.setRelease(release);
 
 		for (NodeGraphFieldContainer container : fieldContainers) {
-			Exception e = db.tx(() -> {
+			Tuple<Exception, SearchQueueBatch> tuple = db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 				try {
 					Node node = container.getParentNode();
 					String languageTag = container.getLanguage().getLanguageTag();
@@ -273,9 +272,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 							// migrate
 							migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
-
 							batch.store(migrated, releaseUuid, PUBLISHED, false);
-
 							ac.getVersioningParameters().setVersion("draft");
 						}
 					}
@@ -295,15 +292,17 @@ public class NodeMigrationHandler extends AbstractHandler {
 						batch.store(node, releaseUuid, PUBLISHED, false);
 					}
 
-					return null;
+					return Tuple.tuple(null, batch);
 				} catch (Exception e1) {
-					return e1;
+					return Tuple.tuple(e1, null);
 				}
 			});
 
-			if (e != null) {
-				return Completable.error(e);
+			if (tuple.v1() != null) {
+				return Completable.error(tuple.v1());
 			}
+
+			tuple.v2().processSync();
 
 			if (statusMBean != null) {
 				statusMBean.incNodesDone();
@@ -343,7 +342,6 @@ public class NodeMigrationHandler extends AbstractHandler {
 		String newReleaseUuid = db.noTx(() -> newRelease.getUuid());
 		List<? extends Node> nodes = db.noTx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
 
-		SearchQueueBatch batch = searchQueue.create();
 		for (Node node : nodes) {
 			db.tx(() -> {
 				if (!node.getGraphFieldContainers(newRelease, INITIAL).isEmpty()) {
@@ -360,6 +358,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 					draftEdge.setType(DRAFT);
 					draftEdge.setReleaseUuid(newReleaseUuid);
 				});
+				SearchQueueBatch batch = searchQueue.create();
 				batch.store(node, newReleaseUuid, DRAFT, false);
 
 				node.getGraphFieldContainers(oldRelease, PUBLISHED).stream().forEach(container -> {
@@ -377,17 +376,17 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 				// migrate tags
 				node.getTags(oldRelease).forEach(tag -> node.addTag(tag, newRelease));
-				return null;
-			});
+				return batch;
+			}).processSync();
 		}
+		
 
 		db.tx(() -> {
 			newRelease.setMigrated(true);
 			return null;
 		});
 
-		// Process the search queue batch in order to update the search index
-		return batch.processAsync();
+		return Completable.complete();
 	}
 
 	/**

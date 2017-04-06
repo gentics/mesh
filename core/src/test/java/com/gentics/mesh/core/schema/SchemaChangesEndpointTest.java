@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.ComparisonFailure;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -632,7 +633,6 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// Read node and check additional field
 			NodeResponse response = call(
 					() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParametersImpl().draft()));
-			assertNotNull(response);
 			assertNull(response.getFields().getStringField("content"));
 		}
 	}
