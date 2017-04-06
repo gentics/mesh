@@ -375,12 +375,13 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 
 		db.operateNoTx(() -> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
-			return db.tx(() -> {
+			SearchQueueBatch sqb = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
 				node.publish(ac, batch, languageTag);
-				node.reload();
 				return batch;
-			}).processAsync().andThen(Single.just(node.transformToPublishStatus(ac, languageTag)));
+			});
+			node.reload();
+			return sqb.processAsync().andThen(Single.just(node.transformToPublishStatus(ac, languageTag)));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 

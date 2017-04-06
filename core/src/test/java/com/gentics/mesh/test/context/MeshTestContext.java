@@ -173,7 +173,7 @@ public class MeshTestContext extends TestWatcher {
 
 		// Setup the rest client
 		try (NoTx trx = db().noTx()) {
-			client = MeshRestClient.create("localhost", getPort(), Vertx.vertx());
+			client = MeshRestClient.create("localhost", getPort(), Mesh.vertx());
 			client.setLogin(getData().user()
 					.getUsername(),
 					getData().getUserInfo()

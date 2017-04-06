@@ -181,16 +181,17 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 					return Tuple.tuple(null, batch);
 				} catch (Exception e1) {
-					return Tuple.tuple(e1, batch);
+					return Tuple.tuple(e1, null);
 				}
 			});
 
-			// Process the search queue batch in order to update the search index
-			tuple.v2().processSync();
 			Exception e = tuple.v1();
 			if (e != null) {
 				return Completable.error(e);
 			}
+
+			// Process the search queue batch in order to update the search index
+			tuple.v2().processSync();
 
 			if (statusMBean != null) {
 				statusMBean.incNodesDone();
@@ -240,13 +241,14 @@ public class NodeMigrationHandler extends AbstractHandler {
 			return Completable.error(e);
 		}
 
+		SearchQueueBatch batch = searchQueue.create();
+
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
 		ac.setRelease(release);
 
 		for (NodeGraphFieldContainer container : fieldContainers) {
-			Tuple<Exception, SearchQueueBatch> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			Exception e = db.tx(() -> {
 				try {
 					Node node = container.getParentNode();
 					String languageTag = container.getLanguage().getLanguageTag();
@@ -293,13 +295,12 @@ public class NodeMigrationHandler extends AbstractHandler {
 						batch.store(node, releaseUuid, PUBLISHED, false);
 					}
 
-					return Tuple.tuple(null, batch);
+					return null;
 				} catch (Exception e1) {
-					return Tuple.tuple(e1, batch);
+					return e1;
 				}
 			});
-			Exception e = tuple.v1();
-			tuple.v2().processSync();
+
 			if (e != null) {
 				return Completable.error(e);
 			}
@@ -342,9 +343,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 		String newReleaseUuid = db.noTx(() -> newRelease.getUuid());
 		List<? extends Node> nodes = db.noTx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
 
+		SearchQueueBatch batch = searchQueue.create();
 		for (Node node : nodes) {
 			db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
 				if (!node.getGraphFieldContainers(newRelease, INITIAL).isEmpty()) {
 					return null;
 				}
@@ -376,9 +377,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 				// migrate tags
 				node.getTags(oldRelease).forEach(tag -> node.addTag(tag, newRelease));
-				return batch;
-				// Process the search queue batch in order to update the search index
-			}).processSync();
+				return null;
+			});
 		}
 
 		db.tx(() -> {
@@ -386,7 +386,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 			return null;
 		});
 
-		return Completable.complete();
+		// Process the search queue batch in order to update the search index
+		return batch.processAsync();
 	}
 
 	/**
