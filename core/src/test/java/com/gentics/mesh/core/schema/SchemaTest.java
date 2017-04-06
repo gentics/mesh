@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -27,6 +28,8 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
+
+import io.vertx.core.json.JsonObject;
 
 public class SchemaTest {
 
@@ -58,6 +61,28 @@ public class SchemaTest {
 				.setName("Name")
 				.setRequired(true));
 		validateSchema(schema);
+	}
+
+	@Test
+	public void testSchemaWithNoFieldType() throws IOException {
+		Schema schema = new SchemaModel();
+		schema.setName("dummySchema");
+		schema.setContainer(true);
+		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label")
+				.setName("Name")
+				.setRequired(true));
+		JsonObject json = new JsonObject(JsonUtil.toJson(schema));
+		// Remove the type
+		json.getJsonArray("fields")
+				.getJsonObject(0)
+				.remove("type");
+
+		try {
+			JsonUtil.readValue(json.encodePrettily(), SchemaModel.class);
+			fail("An error should have been thrown");
+		} catch (GenericRestException e) {
+			assertThat(e).matches("error_json_structure_invalid", "9", "4", "fields", "Missing type property for field {Name}");
+		}
 	}
 
 	@Test

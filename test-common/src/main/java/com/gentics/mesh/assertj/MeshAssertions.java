@@ -8,6 +8,7 @@ import com.gentics.mesh.assertj.impl.BufferedImageAssert;
 import com.gentics.mesh.assertj.impl.DummySearchProviderAssert;
 import com.gentics.mesh.assertj.impl.FieldMapAssert;
 import com.gentics.mesh.assertj.impl.FieldSchemaContainerAssert;
+import com.gentics.mesh.assertj.impl.GenericRestExceptionAssert;
 import com.gentics.mesh.assertj.impl.GroupResponseAssert;
 import com.gentics.mesh.assertj.impl.JsonArrayAssert;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
@@ -42,6 +43,7 @@ import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -178,12 +180,16 @@ public class MeshAssertions extends Assertions {
 	public static PermissionInfoAssert assertThat(PermissionInfo actual) {
 		return new PermissionInfoAssert(actual);
 	}
-	
+
 	public static TagListResponseAssert assertThat(TagListResponse actual) {
 		return new TagListResponseAssert(actual);
 	}
-	
+
 	public static BufferedImageAssert assertThat(BufferedImage actual) {
 		return new BufferedImageAssert(actual);
+	}
+
+	public static GenericRestExceptionAssert assertThat(GenericRestException actual) {
+		return new GenericRestExceptionAssert(actual);
 	}
 }

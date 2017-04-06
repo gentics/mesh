@@ -4,6 +4,8 @@
 
 == 0.9.3 (TBD)
 
+icon:check[] Error handling: A much more verbose error will be returned when creating a schema which lacks the type field for certain schema fields.
+
 icon:check[] GraphQL: A bug which lead to incorrect column values for graphql errors was fixed.
 
 icon:plus[] GraphQL: The container/s field was renamed to content/s to ease usage.

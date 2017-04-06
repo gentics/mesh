@@ -154,7 +154,7 @@ public final class JsonUtil {
 			if (e.getPath() != null && e.getPath().size() >= 1) {
 				field = e.getPath().get(0).getFieldName();
 			}
-			throw new GenericRestException(BAD_REQUEST, "error_json_structure_invalid", line, column, field);
+			throw new GenericRestException(BAD_REQUEST, "error_json_structure_invalid", line, column, field, e.getOriginalMessage());
 		} catch (JsonParseException e) {
 			String msg = e.getOriginalMessage();
 			String line = "unknown";

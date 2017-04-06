@@ -25,11 +25,12 @@ public class RestExceptionDeserializer extends JsonDeserializer<AbstractRestExce
 		JsonNode node = oc.readTree(jsonParser);
 		ObjectMapper mapper = (ObjectMapper) jsonParser.getCodec();
 		if (node.get("type") != null) {
-			String type = node.get("type").textValue();
+			String type = node.get("type")
+					.textValue();
 			Errors et = Errors.valueByName(type);
 			if (et == null) {
 				log.error("Could not find matching error type for type id {" + type + "}");
-				throw new MeshJsonException("Invalid error type {" + type+ "}");
+				throw new MeshJsonException("Invalid error type {" + type + "}");
 			}
 			return (AbstractRestException) mapper.convertValue(node, et.getClazz());
 		}
