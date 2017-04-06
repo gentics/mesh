@@ -552,13 +552,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer publish(Language language, Release release, User user);
 
 	/**
-	 * Publish the node for the specified create.
+	 * Publish the node for the specified release.
 	 * 
 	 * @param ac
 	 * @param release
+	 * @param batch
 	 * @return
 	 */
-	void publish(InternalActionContext ac, Release release);
+	void publish(InternalActionContext ac, Release release, SearchQueueBatch batch);
 
 	/**
 	 * Transform the node into a node list item.

@@ -245,8 +245,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
 
-			SearchQueueBatch batch = searchQueue.create();
 			return db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 				// Create a new node version field container to store the upload
 				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
 				BinaryGraphField field = newDraftVersion.createBinary(fieldName);
@@ -374,8 +374,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 				}
 
 				// Update the binary field with the new information
-				SearchQueueBatch batch = searchQueue.create();
-				Node updatedNodeUuid = db.tx(() -> {
+				SearchQueueBatch sqb = db.tx(() -> {
+					SearchQueueBatch batch = searchQueue.create();
 					Release release = ac.getRelease();
 
 					// Create a new node version field container to store the upload
@@ -422,11 +422,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 							.getReleaseRoot()
 							.getLatestRelease()
 							.getUuid(), DRAFT, false);
-					return node;
+					return batch;
 				});
 				// Finally update the search index and return the updated node
-				return batch.processAsync()
-						.andThen(updatedNodeUuid.transformToRest(ac, 0));
+				return sqb.processAsync()
+						.andThen(node.transformToRest(ac, 0));
 			} catch (GenericRestException e) {
 				throw e;
 			} catch (Exception e) {

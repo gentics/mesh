@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
+import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -55,16 +56,16 @@ public class HandlerUtilities {
 	 * @param ac
 	 * @param handler
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac,
-			TxHandler<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
-			SearchQueueBatch batch = searchQueue.create();
+
 			ResultInfo info = database.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 				RootVertex<T> root = handler.call();
 				T created = root.create(ac, batch);
 				RM model = created.transformToRestSync(ac, 0);
 				String path = created.getAPIPath(ac);
-				ResultInfo resultInfo = new ResultInfo(model);
+				ResultInfo resultInfo = new ResultInfo(model, batch);
 				resultInfo.setProperty("path", path);
 				return resultInfo;
 			});
@@ -73,7 +74,7 @@ public class HandlerUtilities {
 			String path = info.getProperty("path");
 
 			ac.setLocation(path);
-			batch.processSync();
+			info.getBatch().processSync();
 			return model;
 		}, model -> ac.send(model, CREATED));
 
@@ -88,24 +89,23 @@ public class HandlerUtilities {
 	 * @param uuid
 	 *            Uuid of the element which should be deleted
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac,
-			TxHandler<RootVertex<T>> handler, String uuid) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxHandler<RootVertex<T>> handler,
+			String uuid) {
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
 			T element = root.loadObjectByUuid(ac, uuid, DELETE_PERM);
-			SearchQueueBatch batch = searchQueue.create();
 			String elementUuid = element.getUuid();
 			database.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 				// Check whether the element is indexable. Indexable elements must also be purged from the search index.
 				if (element instanceof IndexableElement) {
 					element.delete(batch);
-					return element;
+					return batch;
 				} else {
 					throw error(INTERNAL_SERVER_ERROR, "Could not determine object name");
 				}
-			});
+			}).processSync();
 			log.info("Deleted element {" + elementUuid + "} for type {" + root.getClass().getSimpleName() + "}");
-			batch.processSync();
 			return (RM) null;
 		}, model -> ac.send(NO_CONTENT));
 	}
@@ -120,8 +120,8 @@ public class HandlerUtilities {
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 * 
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac,
-			String uuid, TxHandler<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
+			TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
 
@@ -129,15 +129,15 @@ public class HandlerUtilities {
 			T element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 
 			// 2. Create a batch before starting the update to prevent creation of duplicate batches due to trx retry actions
-			SearchQueueBatch batch = searchQueue.create();
-			RM model = database.tx(() -> {
+			ResultInfo info = database.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 				T updatedElement = element.update(ac, batch);
-				return updatedElement.transformToRestSync(ac, 0);
+				return new ResultInfo(updatedElement.transformToRestSync(ac, 0), batch);
 			});
 
 			// 3. The updating transaction has succeeded. Now lets store it in the index
-			batch.processSync();
-			return model;
+			info.getBatch().processSync();
+			return info.getModel();
 		}, model -> ac.send(model, OK));
 	}
 
@@ -149,10 +149,11 @@ public class HandlerUtilities {
 	 *            Uuid of the element which should be loaded
 	 * @param handler
 	 *            Handler which provides the root vertex which should be used when loading the element
-	 * @param perm Permission to check against when loading the element
+	 * @param perm
+	 *            Permission to check against when loading the element
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac,
-			String uuid, TxHandler<RootVertex<T>> handler, GraphPermission perm) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
+			TxHandler<RootVertex<T>> handler, GraphPermission perm) {
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
 			T element = root.loadObjectByUuid(ac, uuid, perm);
@@ -174,8 +175,7 @@ public class HandlerUtilities {
 	 * @param handler
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac,
-			TxHandler<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxHandler<RootVertex<T>> handler) {
 		operateNoTx(ac, () -> {
 			RootVertex<T> root = handler.call();
 
@@ -202,8 +202,7 @@ public class HandlerUtilities {
 	 * @param action
 	 *            Action which will be invoked once the handler has finished
 	 */
-	public <RM extends RestModel> void operateNoTx(InternalActionContext ac, TxHandler<RM> handler,
-			Action1<RM> action) {
+	public <RM extends RestModel> void operateNoTx(InternalActionContext ac, TxHandler<RM> handler, Action1<RM> action) {
 		operate(ac, () -> {
 			return database.noTx(handler);
 		}, action);

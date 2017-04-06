@@ -91,8 +91,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			}
 
 			List<DeliveryOptions> events = new ArrayList<>();
-			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 				// 3. Apply the found changes to the schema
 				SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
@@ -253,12 +253,11 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 		utils.operateNoTx(ac, () -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-			SearchQueueBatch batch = searchQueue.create();
 			db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 				schema.getLatestVersion().applyChanges(ac, batch);
-				return null;
-			});
-			batch.processSync();
+				return batch;
+			}).processSync();
 			return message(ac, "migration_invoked", schema.getName());
 		}, model -> ac.send(model, OK));
 

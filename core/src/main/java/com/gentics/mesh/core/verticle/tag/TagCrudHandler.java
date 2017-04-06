@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -45,9 +44,7 @@ public class TagCrudHandler extends AbstractHandler {
 	public TagFamily getTagFamily(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		return ac.getProject()
-				.getTagFamilyRoot()
-				.findByUuid(tagFamilyUuid);
+		return ac.getProject().getTagFamilyRoot().findByUuid(tagFamilyUuid);
 	}
 
 	/**
@@ -69,12 +66,9 @@ public class TagCrudHandler extends AbstractHandler {
 			NodeParameters nodeParams = ac.getNodeParameters();
 			Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
 			TransformablePage<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(), nodeParams.getLanguageList(),
-					ContainerType.forVersion(ac.getVersioningParameters()
-							.getVersion()),
-					pagingParams);
+					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 			return page.transformToRest(ac, 0);
-		})
-				.subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -104,24 +98,22 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
 		utils.operateNoTx(ac, () -> {
-			Database db = MeshInternal.get()
-					.database();
-			SearchQueueBatch batch = searchQueue.create();
+			Database db = MeshInternal.get().database();
 			ResultInfo info = db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
 				TagResponse model = tag.transformToRestSync(ac, 0);
 				String path = tag.getAPIPath(ac);
-				ResultInfo resultInfo = new ResultInfo(model);
+				ResultInfo resultInfo = new ResultInfo(model, batch);
 				resultInfo.setProperty("path", path);
 				return resultInfo;
 			});
 
-			RestModel model = info.getModel();
 			String path = info.getProperty("path");
 			ac.setLocation(path);
 			// TODO don't wait forever in order to prevent locking the thread
-			batch.processSync();
-			return model;
+			info.getBatch().processSync();
+			return info.getModel();
 		}, model -> ac.send(model, CREATED));
 
 	}

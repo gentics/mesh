@@ -39,6 +39,7 @@ import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ResultInfo;
+import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Observable;
@@ -71,14 +72,14 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	public void handleCreate(InternalActionContext ac) {
 		utils.operateNoTx(ac, () -> {
 			Database db = MeshInternal.get().database();
-			SearchQueueBatch batch = searchQueue.create();
 
 			ResultInfo info = db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 				RootVertex<Release> root = getRootVertex(ac);
 				Release created = root.create(ac, batch);
 				Project project = created.getProject();
 				ReleaseResponse model = created.transformToRestSync(ac, 0);
-				ResultInfo resultInfo = new ResultInfo(model);
+				ResultInfo resultInfo = new ResultInfo(model, batch);
 				resultInfo.setProperty("path", created.getAPIPath(ac));
 				resultInfo.setProperty("projectUuid", project.getUuid());
 				resultInfo.setProperty("releaseUuid", created.getUuid());
@@ -93,7 +94,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 			ac.setLocation(info.getProperty("path"));
 			// Finally process the batch
-			batch.processSync();
+			info.getBatch().processSync();
 			return info.getModel();
 		}, model -> ac.send(model, CREATED));
 
@@ -131,8 +132,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 			List<DeliveryOptions> events = new ArrayList<>();
 
-			SearchQueueBatch batch = searchQueue.create();
-			Single<SchemaReferenceList> ref = db.tx(() -> {
+			Tuple<Single<SchemaReferenceList>, SearchQueueBatch> tuple = db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList) {
@@ -159,17 +160,17 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					events.add(options);
 				}
 
-				return getSchemaVersions(release);
+				return Tuple.tuple(getSchemaVersions(release), batch);
 			});
 
 			// 1. Process batch and create need indices
-			batch.processSync();
+			tuple.v2().processSync();
 
 			// 2. Invoke migrations which will populate the created index
 			for (DeliveryOptions option : events) {
 				Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, option);
 			}
-			return ref;
+			return tuple.v1();
 
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 

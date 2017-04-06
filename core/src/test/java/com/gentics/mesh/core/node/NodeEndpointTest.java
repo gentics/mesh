@@ -92,12 +92,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			schemaReference.setName("content");
 			schemaReference.setUuid(schemaContainer("content").getUuid());
 			// No language code set
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.getFields().put("name", FieldUtil.createStringField("some name"));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setSchema(schemaReference);
 			request.setParentNodeUuid(folder("news").getUuid());
 
@@ -118,12 +115,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		schemaReference.setUuid(schemaUuid);
 		schemaReference.setVersion(1);
 		request.setLanguage("BOGUS");
-		request.getFields()
-				.put("name", FieldUtil.createStringField("some name"));
-		request.getFields()
-				.put("filename", FieldUtil.createStringField("new-page.html"));
-		request.getFields()
-				.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setSchema(schemaReference);
 		request.setParentNodeUuid(folderUuid);
 
@@ -135,22 +129,15 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testCreateNodeInBaseNode() {
 		String schemaUuid = db().noTx(() -> schemaContainer("content").getUuid());
-		String folderUuid = db().noTx(() -> project().getBaseNode()
-				.getUuid());
+		String folderUuid = db().noTx(() -> project().getBaseNode().getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference().setVersion(1)
-				.setName("content")
-				.setUuid(schemaUuid));
+		request.setSchema(new SchemaReference().setVersion(1).setName("content").setUuid(schemaUuid));
 		request.setLanguage("en");
-		request.getFields()
-				.put("title", FieldUtil.createStringField("some title"));
-		request.getFields()
-				.put("name", FieldUtil.createStringField("some name"));
-		request.getFields()
-				.put("filename", FieldUtil.createStringField("new-page.html"));
-		request.getFields()
-				.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(folderUuid);
 
 		assertThat(dummySearchProvider()).recordedStoreEvents(0);
@@ -165,12 +152,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid = db().noTx(() -> folder("news").getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference().setName("folder")
-				.setVersion(1)
-				.setUuid(schemaUuid));
+		request.setSchema(new SchemaReference().setName("folder").setVersion(1).setUuid(schemaUuid));
 		request.setLanguage("en");
-		request.getFields()
-				.put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
 		request.setParentNodeUuid(folderUuid);
 
 		assertThat(dummySearchProvider()).recordedStoreEvents(0);
@@ -192,21 +176,15 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			for (int i = 1; i < 100; i++) {
 				dummySearchProvider().reset();
 				NodeCreateRequest request = new NodeCreateRequest();
-				request.setSchema(new SchemaReference().setName("content")
-						.setUuid(schemaContainer("content").getUuid()));
+				request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 				request.setLanguage("en");
-				request.getFields()
-						.put("title", FieldUtil.createStringField("some title " + i));
-				request.getFields()
-						.put("name", FieldUtil.createStringField("some name " + i));
-				request.getFields()
-						.put("filename", FieldUtil.createStringField("new-page_" + i + ".html"));
-				request.getFields()
-						.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+				request.getFields().put("title", FieldUtil.createStringField("some title " + i));
+				request.getFields().put("name", FieldUtil.createStringField("some name " + i));
+				request.getFields().put("filename", FieldUtil.createStringField("new-page_" + i + ".html"));
+				request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 				request.setParentNodeUuid(uuid);
 
-				MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request)
-						.invoke();
+				MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request).invoke();
 				latchFor(future);
 				assertSuccess(future);
 				long duration = System.currentTimeMillis() - start;
@@ -223,14 +201,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReference().setName("content"));
 		request.setLanguage("en");
-		request.getFields()
-				.put("title", FieldUtil.createStringField("some title"));
-		request.getFields()
-				.put("name", FieldUtil.createStringField("some name"));
-		request.getFields()
-				.put("filename", FieldUtil.createStringField("new-page.html"));
-		request.getFields()
-				.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(parentNodeUuid);
 
 		try (NoTx noTx = db().noTx()) {
@@ -251,14 +225,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReference().setName("content"));
 		request.setLanguage("en");
-		request.getFields()
-				.put("title", FieldUtil.createStringField("some title"));
-		request.getFields()
-				.put("name", FieldUtil.createStringField("some name"));
-		request.getFields()
-				.put("filename", FieldUtil.createStringField("new-page.html"));
-		request.getFields()
-				.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("name", FieldUtil.createStringField("some name"));
+		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(parentNodeUuid);
 
 		try (NoTx noTx = db().noTx()) {
@@ -273,40 +243,29 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateForReleaseByName() {
 		try (NoTx noTx = db().noTx()) {
 			Project project = project();
-			Release initialRelease = project.getReleaseRoot()
-					.getInitialRelease();
-			Release newRelease = project.getReleaseRoot()
-					.create("newrelease", user());
+			Release initialRelease = project.getReleaseRoot().getInitialRelease();
+			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("content")
-					.setUuid(schemaContainer("content").getUuid()));
+			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
-			request.getFields()
-					.put("title", FieldUtil.createStringField("some title"));
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.getFields().put("title", FieldUtil.createStringField("some title"));
+			request.getFields().put("name", FieldUtil.createStringField("some name"));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
 			NodeResponse nodeResponse = call(
 					() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setRelease(initialRelease.getName())));
 
-			meshRoot().getNodeRoot()
-					.reload();
-			Node newNode = meshRoot().getNodeRoot()
-					.findByUuid(nodeResponse.getUuid());
+			meshRoot().getNodeRoot().reload();
+			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type)).as(type + " Field container for initial release")
-						.isNotNull()
-						.hasVersion("0.1");
-				assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type)).as(type + " Field Container for new release")
-						.isNull();
+						.isNotNull().hasVersion("0.1");
+				assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type)).as(type + " Field Container for new release").isNull();
 			}
 		}
 	}
@@ -315,40 +274,29 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateForReleaseByUuid() {
 		try (NoTx noTx = db().noTx()) {
 			Project project = project();
-			Release initialRelease = project.getReleaseRoot()
-					.getInitialRelease();
-			Release newRelease = project.getReleaseRoot()
-					.create("newrelease", user());
+			Release initialRelease = project.getReleaseRoot().getInitialRelease();
+			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("content")
-					.setUuid(schemaContainer("content").getUuid()));
+			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
-			request.getFields()
-					.put("title", FieldUtil.createStringField("some title"));
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.getFields().put("title", FieldUtil.createStringField("some title"));
+			request.getFields().put("name", FieldUtil.createStringField("some name"));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
 			NodeResponse nodeResponse = call(
 					() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setRelease(initialRelease.getUuid())));
 
-			meshRoot().getNodeRoot()
-					.reload();
-			Node newNode = meshRoot().getNodeRoot()
-					.findByUuid(nodeResponse.getUuid());
+			meshRoot().getNodeRoot().reload();
+			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type)).as(type + " Field container for initial release")
-						.isNotNull()
-						.hasVersion("0.1");
-				assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type)).as(type + " Field Container for new release")
-						.isNull();
+						.isNotNull().hasVersion("0.1");
+				assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type)).as(type + " Field Container for new release").isNull();
 			}
 		}
 	}
@@ -357,39 +305,29 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateForLatestRelease() {
 		try (NoTx noTx = db().noTx()) {
 			Project project = project();
-			Release initialRelease = project.getReleaseRoot()
-					.getInitialRelease();
-			Release newRelease = project.getReleaseRoot()
-					.create("newrelease", user());
+			Release initialRelease = project.getReleaseRoot().getInitialRelease();
+			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("content")
-					.setUuid(schemaContainer("content").getUuid()));
+			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
-			request.getFields()
-					.put("title", FieldUtil.createStringField("some title"));
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.getFields().put("title", FieldUtil.createStringField("some title"));
+			request.getFields().put("name", FieldUtil.createStringField("some name"));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
 			NodeResponse nodeResponse = call(() -> client().createNode(project.getName(), request));
 
-			meshRoot().getNodeRoot()
-					.reload();
-			Node newNode = meshRoot().getNodeRoot()
-					.findByUuid(nodeResponse.getUuid());
+			meshRoot().getNodeRoot().reload();
+			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type)).as(type + " Field container for initial release")
 						.isNull();
-				assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type)).as(type + " Field Container for new release")
-						.isNotNull()
+				assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type)).as(type + " Field Container for new release").isNotNull()
 						.hasVersion("0.1");
 			}
 		}
@@ -399,23 +337,17 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testCreateForBogusRelease() {
 		try (NoTx noTx = db().noTx()) {
 			Project project = project();
-			project.getReleaseRoot()
-					.create("newrelease", user());
+			project.getReleaseRoot().create("newrelease", user());
 
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("content")
-					.setUuid(schemaContainer("content").getUuid()));
+			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
-			request.getFields()
-					.put("title", FieldUtil.createStringField("some title"));
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.getFields().put("title", FieldUtil.createStringField("some title"));
+			request.getFields().put("name", FieldUtil.createStringField("some name"));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
 			call(() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setRelease("bogusrelease")), BAD_REQUEST,
@@ -442,14 +374,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setSchema(schemaReference);
 
 			request.setLanguage("de");
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.getFields()
-					.put("title", FieldUtil.createStringField("Title"));
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.getFields().put("name", FieldUtil.createStringField("some name"));
+			request.getFields().put("title", FieldUtil.createStringField("Title"));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(folder("news").getUuid());
 
 			assertThat(dummySearchProvider()).recordedStoreEvents(0);
@@ -458,8 +386,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(dummySearchProvider()).recordedStoreEvents(1);
 			assertThat(restNode).matches(request);
 
-			Node node = meshRoot().getNodeRoot()
-					.findByUuid(restNode.getUuid());
+			Node node = meshRoot().getNodeRoot().findByUuid(restNode.getUuid());
 			assertNotNull(node);
 			assertThat(node).matches(request);
 
@@ -468,15 +395,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 					new VersioningParametersImpl().draft()));
 
 			// Delete the node
-			MeshResponse<Void> deleteFut = client().deleteNode(PROJECT_NAME, restNode2.getUuid())
-					.invoke();
+			MeshResponse<Void> deleteFut = client().deleteNode(PROJECT_NAME, restNode2.getUuid()).invoke();
 			latchFor(deleteFut);
 			assertSuccess(deleteFut);
 
-			meshRoot().getNodeRoot()
-					.reload();
-			Node deletedNode = meshRoot().getNodeRoot()
-					.findByUuid(restNode2.getUuid());
+			meshRoot().getNodeRoot().reload();
+			Node deletedNode = meshRoot().getNodeRoot().findByUuid(restNode2.getUuid());
 			assertNull("The node should have been deleted.", deletedNode);
 		}
 	}
@@ -488,17 +412,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			SchemaReference schemaReference = new SchemaReference();
 			schemaReference.setName("node");
 			request.setSchema(schemaReference);
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setSchema(new SchemaReference().setName("content")
-					.setUuid(schemaContainer("content").getUuid()));
+			request.getFields().put("name", FieldUtil.createStringField("some name"));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 
-			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request)
-					.invoke();
+			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "node_missing_parentnode_field");
 		}
@@ -512,22 +431,16 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			role().revokePermissions(schemaContainer("content"), READ_PERM);
 
 			NodeCreateRequest request = new NodeCreateRequest();
-			SchemaReference schemaReference = new SchemaReference().setName("content")
-					.setUuid(schemaContainer("content").getUuid());
+			SchemaReference schemaReference = new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid());
 			request.setSchema(schemaReference);
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setSchema(new SchemaReference().setName("content")
-					.setUuid(schemaContainer("content").getUuid()));
+			request.getFields().put("name", FieldUtil.createStringField("some name"));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
 
-			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request)
-					.invoke();
+			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, request).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", schemaContainer("content").getUuid());
 		}
@@ -545,17 +458,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node node = folder("news");
 			String uuid = node.getUuid();
 			NodeCreateRequest request = new NodeCreateRequest();
-			SchemaReference schemaReference = new SchemaReference().setName("content")
-					.setUuid(schemaContainer("content").getUuid());
+			SchemaReference schemaReference = new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid());
 			request.setSchema(schemaReference);
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-			request.setSchema(new SchemaReference().setName("content")
-					.setUuid(schemaContainer("content").getUuid()));
+			request.getFields().put("name", FieldUtil.createStringField("some name"));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
 
@@ -577,12 +485,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		NodeListResponse restResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().draft()));
 
 		assertNotNull(restResponse);
-		assertEquals(25, restResponse.getMetainfo()
-				.getPerPage());
-		assertEquals(1, restResponse.getMetainfo()
-				.getCurrentPage());
-		assertEquals(getNodeCount(), restResponse.getData()
-				.size());
+		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(getNodeCount(), restResponse.getData().size());
 	}
 
 	@Test
@@ -601,13 +506,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				NodeListResponse response = call(
 						() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 100), new VersioningParametersImpl().draft()));
 				if (firstUuid == null) {
-					firstUuid = response.getData()
-							.get(0)
-							.getUuid();
+					firstUuid = response.getData().get(0).getUuid();
 				}
-				assertEquals("The first element in the page should not change but it changed in run {" + i + "}", firstUuid, response.getData()
-						.get(0)
-						.getUuid());
+				assertEquals("The first element in the page should not change but it changed in run {" + i + "}", firstUuid,
+						response.getData().get(0).getUuid());
 			}
 		}
 
@@ -627,8 +529,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			for (int i = 0; i < nNodes; i++) {
 				NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 				nodeCreateRequest.setSchema(new SchemaReference().setName("content"));
-				nodeCreateRequest.getFields()
-						.put("name", FieldUtil.createStringField("test"));
+				nodeCreateRequest.getFields().put("name", FieldUtil.createStringField("test"));
 				nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
 				nodeCreateRequest.setLanguage("en");
 				call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
@@ -638,28 +539,21 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			int perPage = 11;
 			NodeListResponse restResponse = call(
 					() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(3, perPage), new VersioningParametersImpl().draft()));
-			assertEquals(perPage, restResponse.getData()
-					.size());
+			assertEquals(perPage, restResponse.getData().size());
 
 			// Extra Nodes + permitted nodes
 			int totalNodes = getNodeCount() + nNodes;
 			int totalPages = (int) Math.ceil(totalNodes / (double) perPage);
-			assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData()
-					.size());
-			assertEquals(3, restResponse.getMetainfo()
-					.getCurrentPage());
-			assertEquals(totalNodes, restResponse.getMetainfo()
-					.getTotalCount());
-			assertEquals(totalPages, restResponse.getMetainfo()
-					.getPageCount());
-			assertEquals(perPage, restResponse.getMetainfo()
-					.getPerPage());
+			assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+			assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+			assertEquals(totalNodes, restResponse.getMetainfo().getTotalCount());
+			assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
+			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
 
 			List<NodeResponse> allNodes = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
 				MeshResponse<NodeListResponse> pageFuture = client()
-						.findNodes(PROJECT_NAME, new PagingParametersImpl(page, perPage), new VersioningParametersImpl().draft())
-						.invoke();
+						.findNodes(PROJECT_NAME, new PagingParametersImpl(page, perPage), new VersioningParametersImpl().draft()).invoke();
 				latchFor(pageFuture);
 				assertSuccess(pageFuture);
 				restResponse = pageFuture.result();
@@ -668,39 +562,29 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals("Somehow not all nodes were loaded when loading all pages.", totalNodes, allNodes.size());
 
 			// Verify that the no_perm_node is not part of the response
-			List<NodeResponse> filteredUserList = allNodes.parallelStream()
-					.filter(restNode -> restNode.getUuid()
-							.equals(noPermNodeUUID))
+			List<NodeResponse> filteredUserList = allNodes.parallelStream().filter(restNode -> restNode.getUuid().equals(noPermNodeUUID))
 					.collect(Collectors.toList());
 			assertTrue("The no perm node should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-			MeshResponse<NodeListResponse> pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(-1, 25))
-					.invoke();
+			MeshResponse<NodeListResponse> pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(-1, 25)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(0, 25))
-					.invoke();
+			pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(0, 25)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_page_parameter_must_be_positive", "0");
 
-			pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, -1))
-					.invoke();
+			pageFuture = client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, -1)).invoke();
 			latchFor(pageFuture);
 			expectException(pageFuture, BAD_REQUEST, "error_pagesize_parameter", "-1");
 
 			NodeListResponse list = call(
 					() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(4242, 25), new VersioningParametersImpl().draft()));
-			assertEquals(4242, list.getMetainfo()
-					.getCurrentPage());
-			assertEquals(0, list.getData()
-					.size());
-			assertEquals(25, list.getMetainfo()
-					.getPerPage());
-			assertEquals(2, list.getMetainfo()
-					.getPageCount());
-			assertEquals(getNodeCount() + nNodes, list.getMetainfo()
-					.getTotalCount());
+			assertEquals(4242, list.getMetainfo().getCurrentPage());
+			assertEquals(0, list.getData().size());
+			assertEquals(25, list.getMetainfo().getPerPage());
+			assertEquals(2, list.getMetainfo().getPageCount());
+			assertEquals(getNodeCount() + nNodes, list.getMetainfo().getTotalCount());
 		}
 	}
 
@@ -708,8 +592,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadMultipleOnlyMetadata() {
 		NodeListResponse listResponse = call(
 				() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 0), new VersioningParametersImpl().draft()));
-		assertEquals(0, listResponse.getData()
-				.size());
+		assertEquals(0, listResponse.getData().size());
 	}
 
 	@Test
@@ -719,17 +602,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		NodeListResponse restResponse = call(
 				() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 10), new VersioningParametersImpl().draft()));
 
-		int nElements = restResponse.getData()
-				.size();
+		int nElements = restResponse.getData().size();
 		assertEquals("The amount of elements in the list did not match the expected count", 10, nElements);
-		assertEquals(1, restResponse.getMetainfo()
-				.getCurrentPage());
-		assertEquals(2, restResponse.getMetainfo()
-				.getPageCount());
-		assertEquals(10, restResponse.getMetainfo()
-				.getPerPage());
-		assertEquals(getNodeCount(), restResponse.getMetainfo()
-				.getTotalCount());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(2, restResponse.getMetainfo().getPageCount());
+		assertEquals(10, restResponse.getMetainfo().getPerPage());
+		assertEquals(getNodeCount(), restResponse.getMetainfo().getTotalCount());
 	}
 
 	@Test
@@ -737,37 +615,30 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (NoTx noTx = db().noTx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot()
-					.create("newrelease", user());
+			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			NodeListResponse restResponse = call(
 					() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000), new VersioningParametersImpl().draft()));
-			assertThat(restResponse.getData()).as("Node List for latest release")
-					.isEmpty();
+			assertThat(restResponse.getData()).as("Node List for latest release").isEmpty();
 
 			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000),
-					new VersioningParametersImpl().setRelease(initialRelease.getName())
-							.draft()));
-			assertThat(restResponse.getData()).as("Node List for initial release")
-					.hasSize(getNodeCount());
+					new VersioningParametersImpl().setRelease(initialRelease.getName()).draft()));
+			assertThat(restResponse.getData()).as("Node List for initial release").hasSize(getNodeCount());
 
 			// update a single node in the new release
 			Node node = folder("2015");
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
-			update.getFields()
-					.put("name", FieldUtil.createStringField("2015 new release"));
+			update.getFields().put("name", FieldUtil.createStringField("2015 new release"));
 			call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update));
 
 			// check whether there is one node in the new release now
 			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000), new VersioningParametersImpl().draft()));
-			assertThat(restResponse.getData()).as("Node List for latest release")
-					.hasSize(1);
+			assertThat(restResponse.getData()).as("Node List for latest release").hasSize(1);
 
-			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000), new VersioningParametersImpl().draft()
-					.setRelease(newRelease.getName())));
-			assertThat(restResponse.getData()).as("Node List for latest release")
-					.hasSize(1);
+			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000),
+					new VersioningParametersImpl().draft().setRelease(newRelease.getName())));
+			assertThat(restResponse.getData()).as("Node List for latest release").hasSize(1);
 		}
 	}
 
@@ -777,14 +648,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			List<Node> nodes = Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015"));
 
 			// 1. Take all nodes offline
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode()
-					.getUuid(), new PublishParametersImpl().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 
 			// 2. Assert that all nodes are offline. The findNodes method should not find any node because it searches for published nodes by default.
 			NodeListResponse listResponse = call(
 					() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(), new PagingParametersImpl(1, 1000)));
-			assertThat(listResponse.getData()).as("Published nodes list")
-					.isEmpty();
+			assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
 
 			// 3. Assert that the offline nodes are also not loadable if requests via uuid
 			for (Node node : nodes) {
@@ -793,20 +662,17 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			}
 
 			// Publish a few nodes
-			nodes.stream()
-					.forEach(node -> call(() -> client().publishNode(PROJECT_NAME, node.getUuid())));
+			nodes.stream().forEach(node -> call(() -> client().publishNode(PROJECT_NAME, node.getUuid())));
 
 			// Read each node individually
-			List<NodeResponse> publishedNodes = nodes.stream()
-					.map(node -> call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid())))
+			List<NodeResponse> publishedNodes = nodes.stream().map(node -> call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid())))
 					.collect(Collectors.toList());
 			assertThat(publishedNodes).hasSize(nodes.size());
 
 			// Read a bunch of nodes
 			listResponse = call(
 					() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(), new PagingParametersImpl(1, 1000)));
-			assertThat(listResponse.getData()).as("Published nodes list")
-					.usingElementComparatorOnFields("uuid")
+			assertThat(listResponse.getData()).as("Published nodes list").usingElementComparatorOnFields("uuid")
 					.containsOnlyElementsOf(publishedNodes);
 		}
 	}
@@ -814,8 +680,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadPublishedNodesNoPermission() {
 
-		String baseNodeUuid = db().noTx(() -> project().getBaseNode()
-				.getUuid());
+		String baseNodeUuid = db().noTx(() -> project().getBaseNode().getUuid());
 
 		// Take all nodes offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
@@ -823,14 +688,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// Assert that the list is now empty since all nodes are offline
 		NodeListResponse listResponse = call(
 				() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(), new PagingParametersImpl(1, 1000)));
-		assertThat(listResponse.getData()).as("Published nodes list")
-				.isEmpty();
+		assertThat(listResponse.getData()).as("Published nodes list").isEmpty();
 
 		// Republish all listed
 		List<Node> nodes = db().noTx(() -> {
 			ArrayList<Node> list = new ArrayList<>(Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015")));
-			list.stream()
-					.forEach(node -> call(() -> client().publishNode(PROJECT_NAME, node.getUuid())));
+			list.stream().forEach(node -> call(() -> client().publishNode(PROJECT_NAME, node.getUuid())));
 			return list;
 		});
 
@@ -843,18 +706,15 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			});
 
 			// Load all nodes and check whether they are readable
-			List<NodeResponse> publishedNodes = nodes.stream()
-					.map(node -> {
-						String uuid = db().noTx(() -> node.getUuid());
-						return call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
-					})
-					.collect(Collectors.toList());
+			List<NodeResponse> publishedNodes = nodes.stream().map(node -> {
+				String uuid = db().noTx(() -> node.getUuid());
+				return call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
+			}).collect(Collectors.toList());
 			assertThat(publishedNodes).hasSize(nodes.size());
 
 			listResponse = call(
 					() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(), new PagingParametersImpl(1, 1000)));
-			assertThat(listResponse.getData()).as("Published nodes list")
-					.usingElementComparatorOnFields("uuid")
+			assertThat(listResponse.getData()).as("Published nodes list").usingElementComparatorOnFields("uuid")
 					.containsOnlyElementsOf(publishedNodes);
 		}
 	}
@@ -865,8 +725,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// Republish all listed nodes
 		List<Node> nodes = db().noTx(() -> {
 			ArrayList<Node> list = new ArrayList<>(Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015")));
-			list.stream()
-					.forEach(node -> call(() -> client().publishNode(PROJECT_NAME, node.getUuid())));
+			list.stream().forEach(node -> call(() -> client().publishNode(PROJECT_NAME, node.getUuid())));
 			return list;
 		});
 
@@ -891,20 +750,16 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Verify also that the read nodes endpoint still finds all nodes
 			NodeListResponse listResponse = call(
 					() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().published(), new PagingParametersImpl(1, 1000)));
-			assertThat(listResponse.getData()).as("Published nodes list")
-					.hasSameSizeAs(initialListResponse.getData());
+			assertThat(listResponse.getData()).as("Published nodes list").hasSameSizeAs(initialListResponse.getData());
 			listResponse = call(() -> client().findNodes(PROJECT_NAME, new VersioningParametersImpl().draft(), new PagingParametersImpl(1, 1000)));
-			assertThat(listResponse.getData()).as("Draft nodes list")
-					.hasSize(initialListResponse.getData()
-							.size() - revoked);
+			assertThat(listResponse.getData()).as("Draft nodes list").hasSize(initialListResponse.getData().size() - revoked);
 		}
 	}
 
 	@Test
 	@Ignore("Disabled until custom 404 handler has been added")
 	public void testReadNodeWithBogusProject() {
-		MeshResponse<NodeResponse> future = client().findNodeByUuid("BOGUS", "someUuuid")
-				.invoke();
+		MeshResponse<NodeResponse> future = client().findNodeByUuid("BOGUS", "someUuuid").invoke();
 		latchFor(future);
 		expectException(future, BAD_REQUEST, "project_not_found", "BOGUS");
 	}
@@ -922,72 +777,51 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 
-			long nNodesFound = meshRoot().getNodeRoot()
-					.findAll()
-					.size();
+			long nNodesFound = meshRoot().getNodeRoot().findAll().size();
 
 			NodeCreateRequest createRequest = new NodeCreateRequest();
-			createRequest.setSchema(new SchemaReference().setName("content")
-					.setUuid(schemaContainer("content").getUuid()));
+			createRequest.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 			createRequest.setLanguage("en");
-			createRequest.getFields()
-					.put("title", FieldUtil.createStringField("some title"));
-			createRequest.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			createRequest.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			createRequest.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			createRequest.getFields().put("title", FieldUtil.createStringField("some title"));
+			createRequest.getFields().put("name", FieldUtil.createStringField("some name"));
+			createRequest.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			createRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			createRequest.setParentNodeUuid(uuid);
 
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setLanguage("en");
-			updateRequest.getFields()
-					.put("name", FieldUtil.createStringField("UPDATED"));
+			updateRequest.getFields().put("name", FieldUtil.createStringField("UPDATED"));
 
 			// Create various nodes and update them directly after creation. Ensure that update was successful.
 			for (int i = 0; i < nJobs; i++) {
 				log.info("Invoking createNode REST call for job {" + i + "}");
-				MeshResponse<NodeResponse> createFuture = client().createNode(PROJECT_NAME, createRequest)
-						.invoke();
+				MeshResponse<NodeResponse> createFuture = client().createNode(PROJECT_NAME, createRequest).invoke();
 
 				createFuture.setHandler(rh -> {
 					if (rh.failed()) {
-						fail(rh.cause()
-								.getMessage());
+						fail(rh.cause().getMessage());
 					} else {
-						log.info("Created {" + rh.result()
-								.getUuid() + "}");
+						log.info("Created {" + rh.result().getUuid() + "}");
 						NodeResponse response = rh.result();
-						MeshResponse<NodeResponse> updateFuture = client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest)
-								.invoke();
+						MeshResponse<NodeResponse> updateFuture = client().updateNode(PROJECT_NAME, response.getUuid(), updateRequest).invoke();
 						updateFuture.setHandler(uh -> {
 							if (uh.failed()) {
-								fail(uh.cause()
-										.getMessage());
+								fail(uh.cause().getMessage());
 							} else {
-								log.info("Updated {" + uh.result()
-										.getUuid() + "}");
-								MeshResponse<NodeResponse> readFuture = client().findNodeByUuid(PROJECT_NAME, uh.result()
-										.getUuid(), new VersioningParametersImpl().draft())
-										.invoke();
+								log.info("Updated {" + uh.result().getUuid() + "}");
+								MeshResponse<NodeResponse> readFuture = client()
+										.findNodeByUuid(PROJECT_NAME, uh.result().getUuid(), new VersioningParametersImpl().draft()).invoke();
 								readFuture.setHandler(rf -> {
 									if (rh.failed()) {
-										fail(rh.cause()
-												.getMessage());
+										fail(rh.cause().getMessage());
 									} else {
-										log.info("Read {" + rf.result()
-												.getUuid() + "}");
-										MeshResponse<Void> deleteFuture = client().deleteNode(PROJECT_NAME, rf.result()
-												.getUuid())
-												.invoke();
+										log.info("Read {" + rf.result().getUuid() + "}");
+										MeshResponse<Void> deleteFuture = client().deleteNode(PROJECT_NAME, rf.result().getUuid()).invoke();
 										deleteFuture.setHandler(df -> {
 											if (df.failed()) {
-												fail(df.cause()
-														.getMessage());
+												fail(df.cause().getMessage());
 											} else {
-												log.info("Deleted {" + rf.result()
-														.getUuid() + "}");
+												log.info("Deleted {" + rf.result().getUuid() + "}");
 												latch.countDown();
 											}
 										});
@@ -1005,9 +839,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			failingLatch(latch);
 
-			long nNodesFoundAfterRest = meshRoot().getNodeRoot()
-					.findAll()
-					.size();
+			long nNodesFoundAfterRest = meshRoot().getNodeRoot().findAll().size();
 			assertEquals("All created nodes should have been created.", nNodesFound, nNodesFoundAfterRest);
 			// for (Future<NodeResponse> future : set) {
 			// latchFor(future);
@@ -1036,29 +868,23 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 					NodeCreateRequest request = new NodeCreateRequest();
 					request.setSchema(new SchemaReference().setName("content"));
 					request.setLanguage("en");
-					request.getFields()
-							.put("title", FieldUtil.createStringField("some title"));
-					request.getFields()
-							.put("name", FieldUtil.createStringField("some name"));
-					request.getFields()
-							.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+					request.getFields().put("title", FieldUtil.createStringField("some title"));
+					request.getFields().put("name", FieldUtil.createStringField("some name"));
+					request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 					request.setParentNodeUuid(uuid);
-					request.getFields()
-							.put("filename", FieldUtil.createStringField("new-page" + e.incrementAndGet() + ".html"));
-					set.add(client().createNode(PROJECT_NAME, request)
-							.invoke());
+					request.getFields().put("filename", FieldUtil.createStringField("new-page" + e.incrementAndGet() + ".html"));
+					set.add(client().createNode(PROJECT_NAME, request).invoke());
 				}).start();
 			}
 
 			Thread.sleep(10000);
 			//
-			//			// Check each call response
+			// // Check each call response
 			Set<String> uuids = new HashSet<>();
 			for (MeshResponse<NodeResponse> future : set) {
 				latchFor(future);
 				assertSuccess(future);
-				String currentUuid = future.result()
-						.getUuid();
+				String currentUuid = future.result().getUuid();
 				assertFalse("The rest api returned a node response with a uuid that was returned before. Each create request must always be atomic.",
 						uuids.contains(currentUuid));
 				uuids.add(currentUuid);
@@ -1075,11 +901,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		final String newName = "english renamed name";
 		String uuid = db().noTx(() -> folder("2015").getUuid());
-		assertEquals("2015", db().noTx(() -> folder("2015").getLatestDraftFieldContainer(english())
-				.getString("name")
-				.getString()));
-		VersionNumber version = db().noTx(() -> folder("2015").getLatestDraftFieldContainer(english())
-				.getVersion());
+		assertEquals("2015", db().noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getString("name").getString()));
+		VersionNumber version = db().noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getVersion());
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		request.setLanguage("en");
@@ -1095,13 +918,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		for (int i = 0; i < nJobs; i++) {
 			System.out.println(version.getFullVersion());
 			request.setVersion(new VersionReference().setNumber(version.getFullVersion()));
-			request.getFields()
-					.put("name", FieldUtil.createStringField(newName + ":" + i));
-			set.add(client().updateNode(PROJECT_NAME, uuid, request, parameters)
-					.invoke());
-			//			version = version.nextDraft();
-			//			VersionNumber currentVersion = db().noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getVersion());
-			//			System.out.println("CurrentVersion: " + currentVersion.getFullVersion());
+			request.getFields().put("name", FieldUtil.createStringField(newName + ":" + i));
+			set.add(client().updateNode(PROJECT_NAME, uuid, request, parameters).invoke());
+			// version = version.nextDraft();
+			// VersionNumber currentVersion = db().noTx(() -> folder("2015").getLatestDraftFieldContainer(english()).getVersion());
+			// System.out.println("CurrentVersion: " + currentVersion.getFullVersion());
 		}
 
 		for (MeshResponse<NodeResponse> response : set) {
@@ -1125,8 +946,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// Trx.setBarrier(barrier);
 		Set<MeshResponse<Void>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(client().deleteNode(PROJECT_NAME, uuid)
-					.invoke());
+			set.add(client().deleteNode(PROJECT_NAME, uuid).invoke());
 		}
 
 		validateDeletion(set, null);
@@ -1141,8 +961,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (NoTx noTx = db().noTx()) {
 			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft())
-						.invoke());
+				set.add(client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).invoke());
 			}
 			for (MeshResponse<NodeResponse> future : set) {
 				latchFor(future);
@@ -1158,8 +977,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (NoTx noTx = db().noTx()) {
 			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
-				set.add(client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft())
-						.invoke());
+				set.add(client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).invoke());
 			}
 			for (MeshResponse<NodeResponse> future : set) {
 				latchFor(future);
@@ -1187,16 +1005,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid = db().noTx(() -> folder("2015").getUuid());
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
 		try (NoTx noTx = db().noTx()) {
-			String releaseUuid = project().getLatestRelease()
-					.getUuid();
+			String releaseUuid = project().getLatestRelease().getUuid();
 			assertThat(folder("2015")).matches(response);
 			assertNotNull(response.getParentNode());
-			assertEquals(folder("2015").getParentNode(releaseUuid)
-					.getUuid(),
-					response.getParentNode()
-							.getUuid());
-			assertEquals("News", response.getParentNode()
-					.getDisplayName());
+			assertEquals(folder("2015").getParentNode(releaseUuid).getUuid(), response.getParentNode().getUuid());
+			assertEquals("News", response.getParentNode().getDisplayName());
 			assertEquals("en", response.getLanguage());
 		}
 
@@ -1210,93 +1023,66 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// Load node and assert initial versions and field values
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
-			assertThat(response).hasVersion("1.0")
-					.hasLanguage("en")
-					.hasStringField("name", "2015");
+			assertThat(response).hasVersion("1.0").hasLanguage("en").hasStringField("name", "2015");
 
 			// create version 1.1
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setLanguage("en");
 			updateRequest.setVersion(new VersionReference(null, "1.0"));
-			updateRequest.getFields()
-					.put("name", FieldUtil.createStringField("one"));
+			updateRequest.getFields().put("name", FieldUtil.createStringField("one"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest));
 
 			// create version 1.2
 			updateRequest.setVersion(new VersionReference(null, "1.1"));
-			updateRequest.getFields()
-					.put("name", FieldUtil.createStringField("two"));
+			updateRequest.getFields().put("name", FieldUtil.createStringField("two"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest));
 
 			// create version 1.3
 			updateRequest.setVersion(new VersionReference(null, "1.2"));
-			updateRequest.getFields()
-					.put("name", FieldUtil.createStringField("three"));
+			updateRequest.getFields().put("name", FieldUtil.createStringField("three"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest));
 
 			// create german version 0.1
 			updateRequest.setLanguage("de");
 			updateRequest.setVersion(null);
-			updateRequest.getFields()
-					.put("name", FieldUtil.createStringField("eins"));
+			updateRequest.getFields().put("name", FieldUtil.createStringField("eins"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest));
 
 			// create german version 0.2
 			updateRequest.setVersion(new VersionReference(null, "0.1"));
-			updateRequest.getFields()
-					.put("name", FieldUtil.createStringField("zwei"));
+			updateRequest.getFields().put("name", FieldUtil.createStringField("zwei"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest));
 
 			// create german version 0.3
 			updateRequest.setVersion(new VersionReference(null, "0.2"));
-			updateRequest.getFields()
-					.put("name", FieldUtil.createStringField("drei"));
+			updateRequest.getFields().put("name", FieldUtil.createStringField("drei"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest));
 
 			// Test english versions
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()))).as("Draft")
-					.hasVersion("1.3")
-					.hasLanguage("en")
-					.hasStringField("name", "three");
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()))).as("Draft").hasVersion("1.3")
+					.hasLanguage("en").hasStringField("name", "three");
 
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("1.0")))).as("Version 1.0")
-					.hasVersion("1.0")
-					.hasLanguage("en")
-					.hasStringField("name", "2015");
+					.hasVersion("1.0").hasLanguage("en").hasStringField("name", "2015");
 
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("1.1")))).as("Version 1.1")
-					.hasVersion("1.1")
-					.hasLanguage("en")
-					.hasStringField("name", "one");
+					.hasVersion("1.1").hasLanguage("en").hasStringField("name", "one");
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("1.2")))).as("Version 1.2")
-					.hasVersion("1.2")
-					.hasLanguage("en")
-					.hasStringField("name", "two");
+					.hasVersion("1.2").hasLanguage("en").hasStringField("name", "two");
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("1.3")))).as("Version 1.3")
-					.hasVersion("1.3")
-					.hasLanguage("en")
-					.hasStringField("name", "three");
+					.hasVersion("1.3").hasLanguage("en").hasStringField("name", "three");
 
 			// Test german versions
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setLanguages("de"),
-					new VersioningParametersImpl().draft()))).as("German draft")
-							.hasVersion("0.3")
-							.hasLanguage("de")
-							.hasStringField("name", "drei");
+					new VersioningParametersImpl().draft()))).as("German draft").hasVersion("0.3").hasLanguage("de").hasStringField("name", "drei");
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setLanguages("de"),
-					new VersioningParametersImpl().setVersion("0.1")))).as("German version 0.1")
-							.hasVersion("0.1")
-							.hasLanguage("de")
+					new VersioningParametersImpl().setVersion("0.1")))).as("German version 0.1").hasVersion("0.1").hasLanguage("de")
 							.hasStringField("name", "eins");
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setLanguages("de"),
-					new VersioningParametersImpl().setVersion("0.2")))).as("German version 0.2")
-							.hasVersion("0.2")
-							.hasLanguage("de")
+					new VersioningParametersImpl().setVersion("0.2")))).as("German version 0.2").hasVersion("0.2").hasLanguage("de")
 							.hasStringField("name", "zwei");
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setLanguages("de"),
-					new VersioningParametersImpl().setVersion("0.3")))).as("German version 0.3")
-							.hasVersion("0.3")
-							.hasLanguage("de")
+					new VersioningParametersImpl().setVersion("0.3")))).as("German version 0.3").hasVersion("0.3").hasLanguage("de")
 							.hasStringField("name", "drei");
 		}
 	}
@@ -1326,13 +1112,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadPublishedVersion() {
 		String uuid = db().noTx(() -> folder("2015").getUuid());
-		String releaseUuid = db().noTx(() -> project().getLatestRelease()
-				.getUuid());
+		String releaseUuid = db().noTx(() -> project().getLatestRelease().getUuid());
 
 		// 1. Take node offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, uuid, new PublishParametersImpl().setRecursive(true)));
 
-		// 2. Load node using published options. 
+		// 2. Load node using published options.
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()), NOT_FOUND,
 				"node_error_published_not_found_for_uuid_release_language", uuid, "en", releaseUuid);
 
@@ -1341,9 +1126,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 4. Assert that the node can be found.
 		NodeResponse nodeResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
-		assertThat(nodeResponse).as("Published node")
-				.hasLanguage("en")
-				.hasVersion("2.0");
+		assertThat(nodeResponse).as("Published node").hasLanguage("en").hasVersion("2.0");
 	}
 
 	@Test
@@ -1352,25 +1135,20 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			Project project = project();
-			Release initialRelease = project.getReleaseRoot()
-					.getInitialRelease();
-			Release newRelease = project.getReleaseRoot()
-					.create("newrelease", user());
+			Release initialRelease = project.getReleaseRoot().getInitialRelease();
+			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setLanguage("en");
-			updateRequest.getFields()
-					.put("name", FieldUtil.createStringField("2015 in new release"));
+			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 in new release"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setRelease(newRelease.getName())));
 
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(initialRelease.getName())
-					.draft()))).as("Initial Release Version")
-							.hasVersion("1.0")
-							.hasStringField("name", "2015");
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(newRelease.getName())
-					.draft()))).as("New Release Version")
-							.hasVersion("0.1")
-							.hasStringField("name", "2015 in new release");
+			assertThat(call(
+					() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(initialRelease.getName()).draft())))
+							.as("Initial Release Version").hasVersion("1.0").hasStringField("name", "2015");
+			assertThat(
+					call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(newRelease.getName()).draft())))
+							.as("New Release Version").hasVersion("0.1").hasStringField("name", "2015 in new release");
 		}
 	}
 
@@ -1380,55 +1158,43 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			Project project = project();
-			Release initialRelease = project.getReleaseRoot()
-					.getInitialRelease();
-			Release newRelease = project.getReleaseRoot()
-					.create("newrelease", user());
+			Release initialRelease = project.getReleaseRoot().getInitialRelease();
+			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setLanguage("en");
 
 			// create version 0.1 in new release
-			updateRequest.getFields()
-					.put("name", FieldUtil.createStringField("2015 v0.1 new release"));
+			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.1 new release"));
 			NodeResponse response = call(
 					() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setRelease(newRelease.getName())));
-			assertEquals("0.1", response.getVersion()
-					.getNumber());
+			assertEquals("0.1", response.getVersion().getNumber());
 
 			// create version 1.1 in initial release (1.0 is the current published en node)
-			updateRequest.getFields()
-					.put("name", FieldUtil.createStringField("2015 v1.1 initial release"));
+			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v1.1 initial release"));
 			updateRequest.setVersion(new VersionReference(null, "1.0"));
 			response = call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest,
 					new VersioningParametersImpl().setRelease(initialRelease.getName())));
-			assertEquals("1.1", response.getVersion()
-					.getNumber());
+			assertEquals("1.1", response.getVersion().getNumber());
 
 			// create version 0.2 in new release
-			updateRequest.getFields()
-					.put("name", FieldUtil.createStringField("2015 v0.2 new release"));
+			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.2 new release"));
 			updateRequest.setVersion(new VersionReference(null, "0.1"));
 			response = call(
 					() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setRelease(newRelease.getName())));
-			assertEquals("0.2", response.getVersion()
-					.getNumber());
+			assertEquals("0.2", response.getVersion().getNumber());
 
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(initialRelease.getName())
-					.setVersion("0.1")))).as("Initial Release Version")
-							.hasVersion("0.1")
-							.hasStringField("name", "2015");
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(newRelease.getName())
-					.setVersion("0.1")))).as("New Release Version")
-							.hasVersion("0.1")
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
+					new VersioningParametersImpl().setRelease(initialRelease.getName()).setVersion("0.1")))).as("Initial Release Version")
+							.hasVersion("0.1").hasStringField("name", "2015");
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
+					new VersioningParametersImpl().setRelease(newRelease.getName()).setVersion("0.1")))).as("New Release Version").hasVersion("0.1")
 							.hasStringField("name", "2015 v0.1 new release");
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(initialRelease.getName())
-					.setVersion("1.1")))).as("Initial Release Version")
-							.hasVersion("1.1")
-							.hasStringField("name", "2015 v1.1 initial release");
-			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(newRelease.getName())
-					.setVersion("0.2")))).as("New Release Version")
-							.hasVersion("0.2")
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
+					new VersioningParametersImpl().setRelease(initialRelease.getName()).setVersion("1.1")))).as("Initial Release Version")
+							.hasVersion("1.1").hasStringField("name", "2015 v1.1 initial release");
+			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
+					new VersioningParametersImpl().setRelease(newRelease.getName()).setVersion("0.2")))).as("New Release Version").hasVersion("0.2")
 							.hasStringField("name", "2015 v0.2 new release");
 		}
 	}
@@ -1441,16 +1207,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (NoTx noTx = db().noTx()) {
 			Node node = folder("news");
 			// Update the schema
-			Schema schema = node.getSchemaContainer()
-					.getLatestVersion()
-					.getSchema();
+			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.setSegmentField(null);
-			node.getSchemaContainer()
-					.getLatestVersion()
-					.setSchema(schema);
-			MeshInternal.get()
-					.serverSchemaStorage()
-					.clear();
+			node.getSchemaContainer().getLatestVersion().setSchema(schema);
+			MeshInternal.get().serverSchemaStorage().clear();
 
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(),
 					new NodeParametersImpl().setResolveLinks(LinkType.FULL), new VersioningParametersImpl().draft()));
@@ -1474,43 +1234,36 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadBreadcrumbWithLangfallback() {
-		String baseNodeUuid = db().noTx(() -> project().getBaseNode()
-				.getUuid());
+		String baseNodeUuid = db().noTx(() -> project().getBaseNode().getUuid());
 
 		// level 0
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setSchema(new SchemaReference().setName("folder"));
 		request.setLanguage("en");
-		request.getFields()
-				.put("name", FieldUtil.createStringField("english folder-0"));
+		request.getFields().put("name", FieldUtil.createStringField("english folder-0"));
 		request.setParentNodeUuid(baseNodeUuid);
 		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
 
 		// level 1
 		request.setParentNodeUuid(response.getUuid());
-		request.getFields()
-				.put("name", FieldUtil.createStringField("english folder-1"));
+		request.getFields().put("name", FieldUtil.createStringField("english folder-1"));
 		response = call(() -> client().createNode(PROJECT_NAME, request));
 
 		// level 2
 		request.setLanguage("de");
 		request.setParentNodeUuid(response.getUuid());
-		request.getFields()
-				.put("name", FieldUtil.createStringField("german folder-2"));
+		request.getFields().put("name", FieldUtil.createStringField("german folder-2"));
 		response = call(() -> client().createNode(PROJECT_NAME, request));
 
 		// Load the german folder
 		String uuid = response.getUuid();
-		response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL)
-				.setLanguages("de", "en"), new VersioningParametersImpl().setVersion("draft")));
+		response = call(
+				() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL).setLanguages("de", "en"),
+						new VersioningParametersImpl().setVersion("draft")));
 
 		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2", response.getPath());
-		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1", response.getBreadcrumb()
-				.getFirst()
-				.getPath());
-		assertEquals("/api/v1/dummy/webroot/english%20folder-0", response.getBreadcrumb()
-				.getLast()
-				.getPath());
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1", response.getBreadcrumb().getFirst().getPath());
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0", response.getBreadcrumb().getLast().getPath());
 
 	}
 
@@ -1520,56 +1273,22 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node node = content("news_2014");
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(),
 					new NodeParametersImpl().setResolveLinks(LinkType.FULL), new VersioningParametersImpl().draft()));
-			assertTrue(response.getBreadcrumb()
-					.getFirst()
-					.getUuid()
-					.equals(folder("2014").getUuid()));
-			assertTrue(response.getBreadcrumb()
-					.getFirst()
-					.getDisplayName()
-					.equals("2014"));
-			assertTrue(response.getBreadcrumb()
-					.getLast()
-					.getUuid()
-					.equals(folder("news").getUuid()));
-			assertTrue(response.getBreadcrumb()
-					.getLast()
-					.getDisplayName()
-					.equals("News"));
-			assertEquals("/api/v1/dummy/webroot/News/2014", response.getBreadcrumb()
-					.getFirst()
-					.getPath());
-			assertEquals("/api/v1/dummy/webroot/News", response.getBreadcrumb()
-					.getLast()
-					.getPath());
-			assertEquals("Only two items should be listed in the breadcrumb", 2, response.getBreadcrumb()
-					.size());
+			assertTrue(response.getBreadcrumb().getFirst().getUuid().equals(folder("2014").getUuid()));
+			assertTrue(response.getBreadcrumb().getFirst().getDisplayName().equals("2014"));
+			assertTrue(response.getBreadcrumb().getLast().getUuid().equals(folder("news").getUuid()));
+			assertTrue(response.getBreadcrumb().getLast().getDisplayName().equals("News"));
+			assertEquals("/api/v1/dummy/webroot/News/2014", response.getBreadcrumb().getFirst().getPath());
+			assertEquals("/api/v1/dummy/webroot/News", response.getBreadcrumb().getLast().getPath());
+			assertEquals("Only two items should be listed in the breadcrumb", 2, response.getBreadcrumb().size());
 
 			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
-			assertTrue(response.getBreadcrumb()
-					.getFirst()
-					.getUuid()
-					.equals(folder("2014").getUuid()));
-			assertTrue(response.getBreadcrumb()
-					.getFirst()
-					.getDisplayName()
-					.equals("2014"));
-			assertTrue(response.getBreadcrumb()
-					.getLast()
-					.getUuid()
-					.equals(folder("news").getUuid()));
-			assertTrue(response.getBreadcrumb()
-					.getLast()
-					.getDisplayName()
-					.equals("News"));
-			assertNull("No path should be rendered since by default the linkType is OFF", response.getBreadcrumb()
-					.getFirst()
-					.getPath());
-			assertNull("No path should be rendered since by default the linkType is OFF", response.getBreadcrumb()
-					.getLast()
-					.getPath());
-			assertEquals("Only two items should be listed in the breadcrumb", 2, response.getBreadcrumb()
-					.size());
+			assertTrue(response.getBreadcrumb().getFirst().getUuid().equals(folder("2014").getUuid()));
+			assertTrue(response.getBreadcrumb().getFirst().getDisplayName().equals("2014"));
+			assertTrue(response.getBreadcrumb().getLast().getUuid().equals(folder("news").getUuid()));
+			assertTrue(response.getBreadcrumb().getLast().getDisplayName().equals("News"));
+			assertNull("No path should be rendered since by default the linkType is OFF", response.getBreadcrumb().getFirst().getPath());
+			assertNull("No path should be rendered since by default the linkType is OFF", response.getBreadcrumb().getLast().getPath());
+			assertEquals("Only two items should be listed in the breadcrumb", 2, response.getBreadcrumb().size());
 		}
 	}
 
@@ -1581,17 +1300,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 			assertNotNull(response);
-			assertEquals("folder", response.getSchema()
-					.getName());
+			assertEquals("folder", response.getSchema().getName());
 			assertThat(response.getAvailableLanguages()).containsExactly("en");
 			assertEquals("en", response.getLanguage());
 
 			response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 			assertNotNull(response);
-			assertEquals("folder", response.getSchema()
-					.getName());
-			assertEquals("/api/v1/dummy/webroot/", response.getLanguagePaths()
-					.get("en"));
+			assertEquals("folder", response.getSchema().getName());
+			assertEquals("/api/v1/dummy/webroot/", response.getLanguagePaths().get("en"));
 		}
 	}
 
@@ -1600,8 +1316,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = db().tx()) {
 			Node node = folder("products");
 			SearchQueueBatch batch = createBatch();
-			node.getLatestDraftFieldContainer(english())
-					.delete(batch);
+			node.getLatestDraftFieldContainer(english()).delete(batch);
 		}
 
 		try (NoTx noTx = db().noTx()) {
@@ -1616,8 +1331,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(folder("products")).matches(restNode);
 
 			// Ensure "de" version was returned
-			StringField field = restNode.getFields()
-					.getStringField("name");
+			StringField field = restNode.getFields().getStringField("name");
 			String nameText = field.getString();
 			assertEquals("Produkte", nameText);
 		}
@@ -1636,8 +1350,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams));
 			assertThat(folder("products")).matches(restNode);
 
-			StringField field = restNode.getFields()
-					.getStringField("name");
+			StringField field = restNode.getFields().getStringField("name");
 			String nameText = field.getString();
 			assertEquals("Produkte", nameText);
 		}
@@ -1648,22 +1361,15 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (NoTx noTx = db().noTx()) {
 			// Create node with nl language
 			Node parentNode = folder("products");
-			Language languageNl = meshRoot().getLanguageRoot()
-					.findByLanguageTag("nl");
+			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
 			SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
 			Node node = parentNode.create(user(), version, project());
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl, node.getProject()
-					.getLatestRelease(), user());
-			englishContainer.createString("name")
-					.setString("name");
-			englishContainer.createString("title")
-					.setString("title");
-			englishContainer.createString("displayName")
-					.setString("displayName");
-			englishContainer.createString("filename")
-					.setString("filename.nl.html");
-			englishContainer.createHTML("content")
-					.setHtml("nl content");
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(languageNl, node.getProject().getLatestRelease(), user());
+			englishContainer.createString("name").setString("name");
+			englishContainer.createString("title").setString("title");
+			englishContainer.createString("displayName").setString("displayName");
+			englishContainer.createString("filename").setString("filename.nl.html");
+			englishContainer.createHTML("content").setHtml("nl content");
 			role().grantPermissions(node, READ_PERM);
 
 			// Request the node in english en
@@ -1671,12 +1377,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			parameters.setLanguages("en");
 			VersioningParameters versionParams = new VersioningParametersImpl().draft();
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, versionParams));
-			assertThat(response.getLanguage()).as("Node language")
-					.isNull();
-			assertThat(response.getAvailableLanguages()).as("Available languages")
-					.containsOnly("nl");
-			assertThat(response.getFields()).as("Node Fields")
-					.isEmpty();
+			assertThat(response.getLanguage()).as("Node language").isNull();
+			assertThat(response.getAvailableLanguages()).as("Available languages").containsOnly("nl");
+			assertThat(response.getFields()).as("Node Fields").isEmpty();
 		}
 	}
 
@@ -1694,8 +1397,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			VersioningParameters versionParams = new VersioningParametersImpl().draft();
 
 			assertThat(dummySearchProvider()).recordedStoreEvents(0);
-			MeshResponse<NodeResponse> future = client().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams)
-					.invoke();
+			MeshResponse<NodeResponse> future = client().findNodeByUuid(PROJECT_NAME, uuid, parameters, versionParams).invoke();
 			latchFor(future);
 			expectException(future, BAD_REQUEST, "error_language_not_found", "blabla");
 			assertThat(dummySearchProvider()).recordedStoreEvents(0);
@@ -1709,8 +1411,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
-			MeshResponse<NodeResponse> future = client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft())
-					.invoke();
+			MeshResponse<NodeResponse> future = client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 		}
@@ -1740,46 +1441,34 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		NodeGraphFieldContainer origContainer = db().noTx(() -> {
 			Node prod = content("concorde");
 			NodeGraphFieldContainer container = prod.getLatestDraftFieldContainer(english());
-			assertEquals("Concorde_english_name", container.getString("name")
-					.getString());
-			assertEquals("Concorde english title", container.getString("title")
-					.getString());
+			assertEquals("Concorde_english_name", container.getString("name").getString());
+			assertEquals("Concorde english title", container.getString("title").getString());
 			UserInfo userInfo = data().createUserInfo("dummy", "Dummy Firstname", "Dummy Lastname");
 			group().addUser(userInfo.getUser());
 			return container;
 		});
 
 		// Now login with a different user to see that the editor field gets updated correctly
-		client().logout()
-				.toBlocking()
-				.value();
+		client().logout().toBlocking().value();
 		client().setLogin("dummy", "test123");
-		client().login()
-				.toBlocking()
-				.value();
+		client().login().toBlocking().value();
 
 		// 2. Prepare the update request (change name field of english node)
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		request.setLanguage("en");
 		request.setVersion(new VersionReference(null, "0.1"));
-		request.getFields()
-				.put("name", FieldUtil.createStringField(newName));
+		request.getFields().put("name", FieldUtil.createStringField(newName));
 
 		// 3. Invoke update
 		searchProvider().clear();
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("en", "de")));
 		// Assert updater information
-		assertEquals("Dummy Firstname", restNode.getEditor()
-				.getFirstName());
-		assertEquals("Dummy Lastname", restNode.getEditor()
-				.getLastName());
+		assertEquals("Dummy Firstname", restNode.getEditor().getFirstName());
+		assertEquals("Dummy Lastname", restNode.getEditor().getLastName());
 
 		String projectUuid = db().noTx(() -> project().getUuid());
-		String releaseUuid = db().noTx(() -> project().getLatestRelease()
-				.getUuid());
-		String schemaContainerVersionUuid = db().noTx(() -> node.getLatestDraftFieldContainer(english())
-				.getSchemaContainerVersion()
-				.getUuid());
+		String releaseUuid = db().noTx(() -> project().getLatestRelease().getUuid());
+		String schemaContainerVersionUuid = db().noTx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
 		assertThat(dummySearchProvider()).hasStore(
 				NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, ContainerType.DRAFT),
@@ -1787,11 +1476,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
-		assertThat(restNode).as("update response")
-				.isNotNull()
-				.hasLanguage("en")
-				.hasVersion("1.1")
-				.hasStringField("name", newName)
+		assertThat(restNode).as("update response").isNotNull().hasLanguage("en").hasVersion("1.1").hasStringField("name", newName)
 				.hasStringField("title", "Concorde english title");
 
 		// 5. Assert graph changes
@@ -1800,35 +1485,25 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			origContainer.reload();
 
 			// First check whether the objects we check are the correct ones
-			assertEquals("The original container should be 1.0 (the latest published version)", "1.0", origContainer.getVersion()
-					.toString());
+			assertEquals("The original container should be 1.0 (the latest published version)", "1.0", origContainer.getVersion().toString());
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.reload();
-			assertEquals("The loaded container did not match the latest version.", "1.1", container.getVersion()
-					.toString());
+			assertEquals("The loaded container did not match the latest version.", "1.1", container.getVersion().toString());
 
 			// Assert applied changes
-			assertEquals("The string field was not updated within the new container", newName, container.getString("name")
-					.getString());
-			assertEquals("Concorde english title", container.getString("title")
-					.getString());
+			assertEquals("The string field was not updated within the new container", newName, container.getString("name").getString());
+			assertEquals("Concorde english title", container.getString("title").getString());
 
 			// Assert that the containers were linked together as expected
 			// 0.1 -> 1.0 -> 1.1
-			assertThat(container).as("new container")
-					.hasPrevious(origContainer);
-			assertThat(container).as("new container")
-					.isLast();
-			assertThat(origContainer).as("orig container")
-					.hasNext(container);
+			assertThat(container).as("new container").hasPrevious(origContainer);
+			assertThat(container).as("new container").isLast();
+			assertThat(origContainer).as("orig container").hasNext(container);
 			assertThat(origContainer.getPreviousVersion()).isFirst();
 
 			// Verify that exactly the selected language was updated
-			String indexName = NodeGraphFieldContainer.composeIndexName(project().getUuid(), project().getLatestRelease()
-					.getUuid(),
-					origContainer.getSchemaContainerVersion()
-							.getUuid(),
-					ContainerType.DRAFT);
+			String indexName = NodeGraphFieldContainer.composeIndexName(project().getUuid(), project().getLatestRelease().getUuid(),
+					origContainer.getSchemaContainerVersion().getUuid(), ContainerType.DRAFT);
 			String indexType = NodeGraphFieldContainer.composeIndexType();
 			String documentId = NodeGraphFieldContainer.composeDocumentId(uuid, "en");
 			assertThat(dummySearchProvider()).hasStore(indexName, indexType, documentId);
@@ -1846,15 +1521,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		request.setLanguage("de");
 		request.setVersion(new VersionReference(null, "0.1"));
-		request.getFields()
-				.put("name", FieldUtil.createStringField(germanName));
+		request.getFields().put("name", FieldUtil.createStringField(germanName));
 
 		String projectUuid = db().noTx(() -> project().getUuid());
-		String releaseUuid = db().noTx(() -> project().getLatestRelease()
-				.getUuid());
-		String schemaContainerVersionUuid = db().noTx(() -> node.getLatestDraftFieldContainer(english())
-				.getSchemaContainerVersion()
-				.getUuid());
+		String releaseUuid = db().noTx(() -> project().getLatestRelease().getUuid());
+		String schemaContainerVersionUuid = db().noTx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
 		searchProvider().clear();
 		NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, uuid, request, new NodeParametersImpl().setLanguages("de")));
@@ -1905,19 +1576,13 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertNotNull(parentNode.getUuid());
 
 			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("content")
-					.setUuid(schemaContainer("content").getUuid()));
+			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
-			request.getFields()
-					.put("title", FieldUtil.createStringField("some title"));
-			request.getFields()
-					.put("extrafield", FieldUtil.createStringField("some extra field value"));
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.getFields().put("title", FieldUtil.createStringField("some title"));
+			request.getFields().put("extrafield", FieldUtil.createStringField("some extra field value"));
+			request.getFields().put("name", FieldUtil.createStringField("some name"));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
 			call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "node_unhandled_fields", "content", "[extrafield]");
@@ -1934,15 +1599,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertNotNull(parentNode.getUuid());
 
 			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("content")
-					.setUuid(schemaContainer("content").getUuid()));
+			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
 			// non required title field is missing
 			// required name field is missing
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
 			call(() -> client().createNode(PROJECT_NAME, request), BAD_REQUEST, "node_error_missing_required_field_value", "name", "content");
@@ -1958,16 +1620,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertNotNull(parentNode.getUuid());
 
 			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("content")
-					.setUuid(schemaContainer("content").getUuid()));
+			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
 			// title field is missing
-			request.getFields()
-					.put("name", FieldUtil.createStringField("some name"));
-			request.getFields()
-					.put("filename", FieldUtil.createStringField("new-page.html"));
-			request.getFields()
-					.put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+			request.getFields().put("name", FieldUtil.createStringField("some name"));
+			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
@@ -1987,20 +1645,17 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			final String newName = "english renamed name";
 			final String newDisplayName = "display name changed";
 
-			request.getFields()
-					.put("name", FieldUtil.createStringField(newName));
+			request.getFields().put("name", FieldUtil.createStringField(newName));
 
 			// Add another field which has not been specified in the content schema
-			request.getFields()
-					.put("someField", FieldUtil.createStringField(newDisplayName));
+			request.getFields().put("someField", FieldUtil.createStringField(newDisplayName));
 
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("de", "en");
 			call(() -> client().updateNode(PROJECT_NAME, uuid, request, parameters), BAD_REQUEST, "node_unhandled_fields", "folder", "[someField]");
 
 			NodeGraphFieldContainer englishContainer = folder("2015").getLatestDraftFieldContainer(english());
-			assertNotEquals("The name should not have been changed.", newName, englishContainer.getString("name")
-					.getString());
+			assertNotEquals("The name should not have been changed.", newName, englishContainer.getString("name").getString());
 		}
 	}
 
@@ -2012,8 +1667,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			call(() -> client().deleteNode(PROJECT_NAME, uuid), METHOD_NOT_ALLOWED, "node_basenode_not_deletable");
 
-			Node foundNode = meshRoot().getNodeRoot()
-					.findByUuid(uuid);
+			Node foundNode = meshRoot().getNodeRoot().findByUuid(uuid);
 			assertNotNull("The node should still exist.", foundNode);
 		}
 	}
@@ -2042,17 +1696,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// 2. create new release
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot()
-					.create("newrelease", user());
+			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 3. migrate nodes
-			meshDagger().nodeMigrationHandler()
-					.migrateNodes(newRelease)
-					.await();
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()
-					.setRelease(initialRelease.getUuid())));
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()
-					.setRelease(newRelease.getUuid())));
+			meshDagger().nodeMigrationHandler().migrateNodes(newRelease).await();
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(initialRelease.getUuid())));
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(newRelease.getUuid())));
 
 			// 4. delete node in new release
 			call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(newRelease.getUuid())));
@@ -2060,10 +1709,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// 5. Assert
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
 			node.reload();
-			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.DRAFT)).as("draft containers for initial release")
-					.isNotEmpty();
-			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.DRAFT)).as("draft containers for new release")
-					.isEmpty();
+			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.DRAFT)).as("draft containers for initial release").isNotEmpty();
+			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.DRAFT)).as("draft containers for new release").isEmpty();
 		}
 	}
 
@@ -2081,17 +1728,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// 3. create new release
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot()
-					.create("newrelease", user());
+			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 4. migrate nodes
-			meshDagger().nodeMigrationHandler()
-					.migrateNodes(newRelease)
-					.await();
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()
-					.setRelease(initialRelease.getUuid())));
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()
-					.setRelease(newRelease.getUuid())));
+			meshDagger().nodeMigrationHandler().migrateNodes(newRelease).await();
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(initialRelease.getUuid())));
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(newRelease.getUuid())));
 
 			// 5. delete node in new release
 			call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(newRelease.getUuid())));
@@ -2099,14 +1741,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// 6. Assert
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
 			node.reload();
-			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.DRAFT)).as("draft containers for initial release")
-					.isNotEmpty();
+			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.DRAFT)).as("draft containers for initial release").isNotEmpty();
 			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.PUBLISHED)).as("published containers for initial release")
 					.isNotEmpty();
-			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.DRAFT)).as("draft containers for new release")
-					.isEmpty();
-			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.PUBLISHED)).as("published containers for new release")
-					.isEmpty();
+			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.DRAFT)).as("draft containers for new release").isEmpty();
+			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.PUBLISHED)).as("published containers for new release").isEmpty();
 		}
 	}
 
@@ -2118,13 +1757,11 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			String uuid = node.getUuid();
 			role().revokePermissions(node, DELETE_PERM);
 
-			MeshResponse<Void> future = client().deleteNode(PROJECT_NAME, uuid)
-					.invoke();
+			MeshResponse<Void> future = client().deleteNode(PROJECT_NAME, uuid).invoke();
 			latchFor(future);
 			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
 
-			assertNotNull(meshRoot().getNodeRoot()
-					.findByUuid(uuid));
+			assertNotNull(meshRoot().getNodeRoot().findByUuid(uuid));
 		}
 	}
 
@@ -2136,8 +1773,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
-			update.getFields()
-					.put("name", FieldUtil.createStringField("2015"));
+			update.getFields().put("name", FieldUtil.createStringField("2015"));
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update), CONFLICT, "node_conflicting_segmentfield_update", "name", "2015");
 			// TODO also assert message properties
 		}

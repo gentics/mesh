@@ -26,7 +26,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)	
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -104,8 +104,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			role().revokePermissions(extraProject, UPDATE_PERM);
 		}
 
-		call(() -> client().assignMicroschemaToProject("extraProject", microschemaUuid), FORBIDDEN, "error_missing_perm",
-				projectUuid);
+		call(() -> client().assignMicroschemaToProject("extraProject", microschemaUuid), FORBIDDEN, "error_missing_perm", projectUuid);
 
 		try (NoTx noTx = db().noTx()) {
 			// Reload the microschema and check for expected changes

@@ -89,26 +89,6 @@ public interface TestHelperMethods {
 
 	MeshTestContext getTestContext();
 
-	// MeshRestClient client();
-	//
-	// int port();
-	//
-	// Tag tag(String key);
-	//
-	// Project project();
-	//
-	// Node folder(String key);
-	//
-	// Node content(String key);
-	//
-	// TagFamily tagFamily(String key);
-	//
-	// SchemaContainer schemaContainer(String key);
-	//
-	// Database db();
-	//
-	// TestDataProvider data();
-
 	default public Database db() {
 		return MeshInternal.get().database();
 	}
@@ -131,7 +111,7 @@ public interface TestHelperMethods {
 
 	default public User user() {
 		User user = data().user();
-		//		user.reload();
+		// user.reload();
 		return user;
 	}
 

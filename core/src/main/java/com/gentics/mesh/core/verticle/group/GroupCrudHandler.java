@@ -22,6 +22,8 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.util.ResultInfo;
+import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
 import rx.Single;
@@ -78,16 +80,16 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			SearchQueueBatch batch = searchQueue.create();
-			Group updatedGroup = db.tx(() -> {
+			Tuple<Group, SearchQueueBatch> tuple = db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 				group.addRole(role);
 				group.setEditor(ac.getUser());
 				group.setLastEditedTimestamp();
 				// No need to update users as well. Those documents are not affected by this modification
 				batch.store(group, false);
-				return group;
+				return Tuple.tuple(group, batch);
 			});
-			return batch.processAsync().andThen(updatedGroup.transformToRest(ac, 0));
+			return tuple.v2().processAsync().andThen(tuple.v1().transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -110,8 +112,8 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 
-			SearchQueueBatch batch = searchQueue.create();
 			return db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 				group.removeRole(role);
 				group.setEditor(ac.getUser());
 				group.setLastEditedTimestamp();
@@ -119,6 +121,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 				batch.store(group, false);
 				return batch;
 			}).processAsync().andThen(Single.just(null));
+
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}
 
@@ -157,13 +160,14 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		db.operateNoTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			SearchQueueBatch batch = searchQueue.create();
-			Group updatedGroup = db.tx(() -> {
+			ResultInfo info = db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 				group.addUser(user);
 				batch.store(group, true);
-				return group;
+				GroupResponse model = group.transformToRestSync(ac, 0);
+				return new ResultInfo(model, batch);
 			});
-			return batch.processAsync().andThen(updatedGroup.transformToRest(ac, 0));
+			return info.getBatch().processAsync().andThen(Single.just(info.getModel()));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -184,8 +188,9 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		db.operateNoTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
-			SearchQueueBatch batch = searchQueue.create();
+
 			return db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
 				batch.store(group, true);
 				batch.store(user, false);
 				group.removeUser(user);

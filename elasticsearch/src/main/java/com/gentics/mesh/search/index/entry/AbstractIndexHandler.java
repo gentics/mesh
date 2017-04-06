@@ -133,13 +133,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
 		String indexType = composeIndexTypeFromEntry(entry);
-		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformator().toDocument(object))
-				.doOnCompleted(() -> {
-					if (log.isDebugEnabled()) {
-						log.debug("Stored object in index.");
-					}
-					searchProvider.refreshIndex();
-				});
+		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformator().toDocument(object)).doOnCompleted(() -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Stored object in index.");
+			}
+			searchProvider.refreshIndex();
+		});
 	}
 
 	@Override
@@ -191,10 +190,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			return Completable.create(sub -> {
 
 				org.elasticsearch.node.Node node = getESNode();
-				PutMappingRequestBuilder mappingRequestBuilder = node.client()
-						.admin()
-						.indices()
-						.preparePutMapping(indexName);
+				PutMappingRequestBuilder mappingRequestBuilder = node.client().admin().indices().preparePutMapping(indexName);
 				mappingRequestBuilder.setType(normalizedDocumentType);
 
 				// Generate the mapping for the specific type
@@ -274,8 +270,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			String documentType = indexInfo.get(indexName);
 			Set<Completable> obs = new HashSet<>();
 			obs.add(updateMapping(indexName, documentType));
-			return searchProvider.createIndex(indexName)
-					.andThen(Completable.merge(obs));
+			return searchProvider.createIndex(indexName).andThen(Completable.merge(obs));
 		} else {
 			throw error(INTERNAL_SERVER_ERROR, "error_index_unknown", indexName);
 		}
@@ -302,8 +297,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				String documentType = indexInfo.get(indexName);
 				mappingUpdateObs.add(updateMapping(indexName, documentType));
 			}
-			return Completable.merge(indexCreationObs)
-					.andThen(Completable.merge(mappingUpdateObs));
+			return Completable.merge(indexCreationObs).andThen(Completable.merge(mappingUpdateObs));
 		}
 	}
 
@@ -312,8 +306,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		Set<Completable> obs = new HashSet<>();
 		// Iterate over all indices which the handler is responsible for and
 		// clear all of them.
-		getIndices().keySet()
-				.forEach(index -> obs.add(searchProvider.clearIndex(index)));
+		getIndices().keySet().forEach(index -> obs.add(searchProvider.clearIndex(index)));
 		if (obs.isEmpty()) {
 			return Completable.complete();
 		} else {
@@ -357,52 +350,50 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
 			Set<String> indices = getSelectedIndices(ac);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()]))
-					.setSource(queryStringObject.toString());
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryStringObject.toString());
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
 		CompletableFuture<Page<? extends T>> future = new CompletableFuture<>();
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		builder.execute()
-				.addListener(new ActionListener<SearchResponse>() {
+		builder.execute().addListener(new ActionListener<SearchResponse>() {
 
-					@Override
-					public void onResponse(SearchResponse response) {
-						Page<? extends T> page = db.noTx(() -> {
-							List<T> elementList = new ArrayList<T>();
-							for (SearchHit hit : response.getHits()) {
+			@Override
+			public void onResponse(SearchResponse response) {
+				Page<? extends T> page = db.noTx(() -> {
+					List<T> elementList = new ArrayList<T>();
+					for (SearchHit hit : response.getHits()) {
 
-								String id = hit.getId();
-								int pos = id.indexOf("-");
-								String uuid = pos > 0 ? id.substring(0, pos) : id;
+						String id = hit.getId();
+						int pos = id.indexOf("-");
+						String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-								// TODO check permissions without loading the vertex
+						// TODO check permissions without loading the vertex
 
-								// Locate the node
-								T element = getRootVertex().findByUuid(uuid);
-								if (element != null) {
-									// Check permissions and language
-									for (GraphPermission permission : permissions) {
-										if (user.hasPermission(element, permission)) {
-											elementList.add(element);
-											break;
-										}
-									}
+						// Locate the node
+						T element = getRootVertex().findByUuid(uuid);
+						if (element != null) {
+							// Check permissions and language
+							for (GraphPermission permission : permissions) {
+								if (user.hasPermission(element, permission)) {
+									elementList.add(element);
+									break;
 								}
 							}
-							Page<? extends T> elementPage = Page.applyPaging(elementList, pagingInfo);
-							return elementPage;
-						});
-						future.complete(page);
+						}
 					}
-
-					@Override
-					public void onFailure(Throwable e) {
-						log.error("Search query failed", e);
-						future.completeExceptionally(e);
-					}
+					Page<? extends T> elementPage = Page.applyPaging(elementList, pagingInfo);
+					return elementPage;
 				});
+				future.complete(page);
+			}
+
+			@Override
+			public void onFailure(Throwable e) {
+				log.error("Search query failed", e);
+				future.completeExceptionally(e);
+			}
+		});
 
 		return future.get(60, TimeUnit.SECONDS);
 

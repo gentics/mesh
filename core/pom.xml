@@ -16,6 +16,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mesh.version>${project.version}</mesh.version>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
+		<surefire.jvm.postfix></surefire.jvm.postfix>
 	</properties>
 
 	<profiles>
@@ -256,7 +257,7 @@
 					<!-- <rerunFailingTestsCount>2</rerunFailingTestsCount> -->
 					<trimStackTrace>false</trimStackTrace>
 					<forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
-					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
+					<jvm>${JAVA_1_8_HOME}/bin/java${surefire.jvm.postfix}</jvm>
 					<!-- <includes> <include>**/*Test.java</include> <include>**/*TestSuite.java</include> </includes> -->
 					<excludes>
 						<exclude>**/*AbstractTest.java</exclude>
