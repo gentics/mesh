@@ -24,6 +24,8 @@
 		<rx.version>1.2.3</rx.version>
 
 		<surefire.forkcount>8</surefire.forkcount>
+                <surefire.jvm.postfix></surefire.jvm.postfix>
+
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
 	</properties>
