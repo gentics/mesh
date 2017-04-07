@@ -127,7 +127,7 @@ public interface Database {
 	 * @return
 	 */
 	default <T> Single<T> operateNoTx(TxHandler<Single<T>> trxHandler) {
-		// Create an exception which we can use to enhance error information in case of timeout or other tranaction errors
+		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
 		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
 		try {
 			throw new Exception("Transaction timeout exception");
@@ -297,7 +297,7 @@ public interface Database {
 	void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String... fields);
 
 	/**
-	 * Check whether the values can be put into the given index for the given element
+	 * Check whether the values can be put into the given index for the given element.
 	 * 
 	 * @param indexName
 	 *            index name
@@ -310,7 +310,7 @@ public interface Database {
 	<T extends MeshElement> T checkIndexUniqueness(String indexName, T element, Object key);
 
 	/**
-	 * Check whether the value can be put into the given index for a new element of given class
+	 * Check whether the value can be put into the given index for a new element of given class.
 	 * 
 	 * @param indexName
 	 *            index name

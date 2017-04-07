@@ -72,7 +72,7 @@ node('dockerRoot') {
 						sh "mv includes-${postfix} inclusions.txt"
 						sshagent([sshAgent]) {
 							try {
-								sh "${mvnHome}/bin/mvn -B -U -e -pl '!demo,!doc,!server,!performance-tests' clean test"
+								sh "${mvnHome}/bin/mvn -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests,!integration-tests' clean test"
 							} finally {
 								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 							}
