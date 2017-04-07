@@ -19,11 +19,6 @@
 	</properties>
 
 	<dependencies>
-	<dependency>
-			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-rest-model</artifactId>
-			<version>${project.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>com.google.dagger</groupId>
 			<artifactId>dagger</artifactId>
