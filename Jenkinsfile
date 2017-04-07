@@ -50,7 +50,7 @@ node('dockerRoot') {
 		if (Boolean.valueOf(runTests)) {
 			sshagent([sshAgent]) {
 				try {
-					sh "${mvnHome}/bin/mvn -fae -B -U -e -pl '!demo,!doc,!server,!performance-tests' clean test"
+					sh "${mvnHome}/bin/mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -pl '!demo,!doc,!server,!performance-tests' clean test"
 				} finally {
 					step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 				}
