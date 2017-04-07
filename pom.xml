@@ -18,7 +18,7 @@
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
 		<ferma.version>2.2.1</ferma.version>
 		<elasticsearch.version>2.4.4</elasticsearch.version>
-		<orientdb.version>2.2.17</orientdb.version>
+		<orientdb.version>2.2.18</orientdb.version>
 		<ferma.extensions.version>0.0.4</ferma.extensions.version>
 		<dagger.version>2.6</dagger.version>
 		<rx.version>1.2.3</rx.version>
