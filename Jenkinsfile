@@ -48,43 +48,12 @@ node('dockerRoot') {
 
 	stage("Test") {
 		if (Boolean.valueOf(runTests)) {
-			def splits = 25;
-			sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
-			sh "split -a 2 -d -n l/${splits} alltests  includes-"
-			stash includes: '*', name: 'project'
-			def branches = [:]
-			for (int i = 0; i < splits; i++) {
-				def current = i
-				branches["split${i}"] = {
-					node('mesh') {
-						echo "Preparing slave environment for ${current}"
-						//sh "ls -la"
-						sh "rm -rf *"
-						checkout scm
-						//checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]],extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
-						unstash 'project'
-						sh "ls -la"
-						def postfix = current;
-						if (current <= 9) {
-							postfix = "0" + current 
-						}
-						echo "Setting correct inclusions file ${postfix}"
-						sh "mv includes-${postfix} inclusions.txt"
-						sshagent([sshAgent]) {
-							try {
-								sh "${mvnHome}/bin/mvn -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
-							} finally {
-								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
-							}
-						}
-					}
+			sshagent([sshAgent]) {
+				try {
+					sh "${mvnHome}/bin/mvn -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
+				} finally {
+					step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 				}
-			}
-			try {
-				parallel branches
-			} catch (err) {
-				echo "Failed " + err.getMessage()
-				error err.getMessage()
 			}
 		} else {
 			echo "Tests skipped.."
