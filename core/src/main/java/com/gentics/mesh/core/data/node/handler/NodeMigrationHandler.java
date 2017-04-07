@@ -125,6 +125,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		ac.setRelease(release);
 
 		Schema newSchema = toVersion.getSchema();
+		List<Completable> batches = new ArrayList<>();
 
 		// Iterate over all containers and invoke a migration for each one
 		for (NodeGraphFieldContainer container : fieldContainers) {
@@ -191,14 +192,14 @@ public class NodeMigrationHandler extends AbstractHandler {
 			}
 
 			// Process the search queue batch in order to update the search index
-			tuple.v2().processSync();
+			batches.add(tuple.v2().processAsync());
 
 			if (statusMBean != null) {
 				statusMBean.incNodesDone();
 			}
 		}
 
-		return Completable.complete();
+		return Completable.merge(batches);
 	}
 
 	/**
@@ -245,6 +246,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		ac.setProject(project);
 		ac.setRelease(release);
 
+		List<Completable> batches = new ArrayList<>();
 		for (NodeGraphFieldContainer container : fieldContainers) {
 			Tuple<Exception, SearchQueueBatch> tuple = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
@@ -302,14 +304,14 @@ public class NodeMigrationHandler extends AbstractHandler {
 				return Completable.error(tuple.v1());
 			}
 
-			tuple.v2().processSync();
+			batches.add(tuple.v2().processAsync());
 
 			if (statusMBean != null) {
 				statusMBean.incNodesDone();
 			}
 		}
 
-		return Completable.complete();
+		return Completable.merge(batches);
 	}
 
 	/**
@@ -341,9 +343,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 		String oldReleaseUuid = db.noTx(() -> oldRelease.getUuid());
 		String newReleaseUuid = db.noTx(() -> newRelease.getUuid());
 		List<? extends Node> nodes = db.noTx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
-
+		List<Completable> batches = new ArrayList<>();
 		for (Node node : nodes) {
-			db.tx(() -> {
+			SearchQueueBatch sqb = db.tx(() -> {
 				if (!node.getGraphFieldContainers(newRelease, INITIAL).isEmpty()) {
 					return null;
 				}
@@ -377,16 +379,16 @@ public class NodeMigrationHandler extends AbstractHandler {
 				// migrate tags
 				node.getTags(oldRelease).forEach(tag -> node.addTag(tag, newRelease));
 				return batch;
-			}).processSync();
+			});
+			batches.add(sqb.processAsync());
 		}
-		
 
 		db.tx(() -> {
 			newRelease.setMigrated(true);
 			return null;
 		});
 
-		return Completable.complete();
+		return Completable.merge(batches);
 	}
 
 	/**

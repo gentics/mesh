@@ -307,6 +307,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				.dataFetcher(env -> {
 					GraphQLContext gc = env.getContext();
 					NodeGraphFieldContainer nodeContainer = env.getSource();
+					//TODO decide whether we want to reference the default content by default
 					NodeGraphField nodeField = nodeContainer.getNode(schema.getName());
 					if (nodeField != null) {
 						Node node = nodeField.getNode();

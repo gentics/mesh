@@ -877,7 +877,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		createMicronodefield(folder("2015"), micronodeFieldName, versionA, dataProvider, fieldName);
 
 		// migrate the node
-		CompletableFuture<Void> future = new CompletableFuture<>();
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null)
 				.await(10, TimeUnit.SECONDS);
 	}
