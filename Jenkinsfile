@@ -48,13 +48,46 @@ node('dockerRoot') {
 
 	stage("Test") {
 		if (Boolean.valueOf(runTests)) {
-			sshagent([sshAgent]) {
-				try {
-					sh "${mvnHome}/bin/mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -pl '!demo,!doc,!server,!performance-tests' clean test"
-				} finally {
-					step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
-				}
+			def splits = 25;
+			sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
+			sh "split -a 2 -d -n l/${splits} alltests  includes-"
+			stash includes: '*', name: 'project'
+			def branches = [:]
+			for (int i = 0; i < splits; i++) {
+				def current = i
+				branches["split${i}"] = {
+					node('mesh') {
+						echo "Preparing slave environment for ${current}"
+						sh "rm -rf *"
+						checkout scm
+						unstash 'project'
+						def postfix = current;
+						if (current <= 9) {
+							postfix = "0" + current 
+						}
+						echo "Setting correct inclusions file ${postfix}"
+						sh "mv includes-${postfix} inclusions.txt"
+						sshagent([sshAgent]) {
+							try {
+								sh "${mvnHome}/bin/mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
+							} finally {
+								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+							}
+						}
+					}
+			try {
+				parallel branches
+			} catch (err) {
+				echo "Failed " + err.getMessage()
+				error err.getMessage()
 			}
+//			sshagent([sshAgent]) {
+//				try {
+//					sh "${mvnHome}/bin/mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -pl '!demo,!doc,!server,!performance-tests' clean test"
+//				} finally {
+//					step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+//				}
+//			}
 		} else {
 			echo "Tests skipped.."
 		}
