@@ -75,6 +75,8 @@ node('dockerRoot') {
 							}
 						}
 					}
+				}
+			}
 			try {
 				parallel branches
 			} catch (err) {
