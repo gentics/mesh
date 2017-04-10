@@ -16,6 +16,7 @@ import org.apache.commons.lang.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.google.common.base.Strings;
 
 /**
  * A field schema container is a named container that contains field schemas. Typical containers are {@link Schema} or {@link Microschema}.
@@ -201,7 +202,7 @@ public interface FieldSchemaContainer extends RestModel {
 				}
 			}
 
-			if (field.getLabel() != null) {
+			if (!Strings.isNullOrEmpty(field.getLabel())) {
 				if (!fieldLabels.add(field.getLabel())) {
 					throw error(BAD_REQUEST, "schema_error_duplicate_field_label", field.getName(), field.getLabel());
 				}

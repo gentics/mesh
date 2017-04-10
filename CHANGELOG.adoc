@@ -2,13 +2,17 @@
 
 = Gentics Mesh Changelog
 
-== 0.9.3 (TBD)
+== 0.9.3 (10.04.2017)
+
+icon:check[] The Admin UI was updated. A bug which prevented assigning created schemas to projects was fixed.
 
 icon:check[] A bug which could lead to concurrent request failing was fixed.
 
 icon:check[] Error handling: A much more verbose error will be returned when creating a schema which lacks the type field for certain schema fields.
 
 icon:check[] GraphQL: A bug which lead to incorrect column values for graphql errors was fixed.
+
+icon:plus[] The OrientDB dependency was updated to version 2.2.18.
 
 icon:plus[] GraphQL: The container/s field was renamed to content/s to ease usage.
 

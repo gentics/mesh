@@ -652,11 +652,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		container.setName(UUIDUtil.randomUUID());
 		SchemaContainerVersion versionA = createSchemaVersion(container, schemaName, 1, oldField);
 
-		// create version 2 of the schema (with the field renamed)
+		// Create version 2 of the schema (with the field renamed)
 		FieldSchema newField = creator.create(fieldName);
 		SchemaContainerVersion versionB = createSchemaVersion(container, schemaName, 2, newField);
 
-		// link the schemas with the changes in between
+		// Link the schemas with the changes in between
 		UpdateFieldChangeImpl updateFieldChange = Database.getThreadLocalGraph()
 				.addFramedVertex(UpdateFieldChangeImpl.class);
 		updateFieldChange.setFieldName(fieldName);
