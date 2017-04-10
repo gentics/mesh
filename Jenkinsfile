@@ -83,13 +83,6 @@ node('dockerRoot') {
 				echo "Failed " + err.getMessage()
 				error err.getMessage()
 			}
-//			sshagent([sshAgent]) {
-//				try {
-//					sh "${mvnHome}/bin/mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -pl '!demo,!doc,!server,!performance-tests' clean test"
-//				} finally {
-//					step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
-//				}
-//			}
 		} else {
 			echo "Tests skipped.."
 		}
@@ -125,7 +118,7 @@ node('dockerRoot') {
 				checkout scm
 				//checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]], extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
 				try {
-					sh "${mvnHome}/bin/mvn -B -U clean package -pl '!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false"
+					sh "${mvnHome}/bin/mvn -B -U clean package -pl '!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
 				} finally {
 					//step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 					step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])

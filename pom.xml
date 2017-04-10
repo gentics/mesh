@@ -26,6 +26,7 @@
 
 		<surefire.forkcount>6</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
+		<skip.unit.tests>false</skip.unit.tests>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
 		<mesh.image.provider>mesh-service-image-imgscalr</mesh.image.provider>
 	</properties>
@@ -249,7 +250,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-					<!-- <argLine>${surefireArgLine}</argLine> -->
+					<skip>${skip.unit.tests}</skip>
 					<jvm>${JAVA_1_8_HOME}/bin/java${surefire.jvm.postfix}</jvm>
 					<argLine>-Xmx256m -XX:MaxDirectMemorySize=1524m</argLine>
 					<forkedProcessTimeoutInSeconds>2700</forkedProcessTimeoutInSeconds>
