@@ -52,26 +52,19 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 		staticHandler.setDirectoryListing(false);
 		staticHandler.setCachingEnabled(false);
 		staticHandler.setIndexPage("index.html");
-		route("/browser/*").method(GET)
-				.handler(staticHandler);
 
 		// Redirect handler
-		route("/browser").method(GET)
-				.handler(rc -> {
-					if ("/browser".equals(rc.request()
-							.path())) {
-						rc.response()
-								.setStatusCode(302);
-						rc.response()
-								.headers()
-								.set("Location", rc.request()
-										.path() + "/");
-						rc.response()
-								.end();
-					} else {
-						rc.next();
-					}
-				});
+		route("/browser").method(GET).handler(rc -> {
+			if (rc.request().path().endsWith("/browser")) {
+				rc.response().setStatusCode(302);
+				rc.response().headers().set("Location", rc.request().path() + "/");
+				rc.response().end();
+			} else {
+				rc.next();
+			}
+		});
+
+		route("/browser/*").method(GET).handler(staticHandler);
 
 	}
 
