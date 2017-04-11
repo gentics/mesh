@@ -7,6 +7,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.*;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
 
 import com.gentics.mesh.graphdb.NoTx;
@@ -53,5 +54,18 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 		JsonObject response = call(() -> client().graphqlQuery(PROJECT_NAME, "{bogus{firstname}}"), BAD_REQUEST);
 		assertFalse("The errors array should not be empty.", response.getJsonArray("errors")
 				.isEmpty());
+	}
+
+	@Test
+	public void testVariables() throws Throwable {
+		JsonObject query = new JsonObject()
+				.put("query", "query test($var: String) { content(path: $var) { node { uuid } } }")
+				.put("variables", new JsonObject()
+						.put("var", "/News")
+				);
+		JsonObject response = call(() -> client().graphql(PROJECT_NAME, query.toString()));
+		String uuid = response.getJsonObject("data").getJsonObject("content").getJsonObject("node").getString("uuid");
+
+		assertTrue("There should be a uuid", uuid.length() > 0);
 	}
 }
