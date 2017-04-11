@@ -9,6 +9,7 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.search.verticle.ElasticsearchHeadVerticle;
 import com.gentics.mesh.util.DeploymentUtil;
 import com.gentics.mesh.verticle.admin.AdminGUIVerticle;
 
@@ -42,21 +43,28 @@ public class DemoRunner {
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
-//		options.getSearchOptions().setHttpEnabled(true);
-//		options.getStorageOptions().setStartServer(false);
-//		options.getSearchOptions().setHttpEnabled(true);
-		//options.getStorageOptions().setDirectory(null);
+		// options.getSearchOptions().setHttpEnabled(true);
+		// options.getStorageOptions().setStartServer(false);
+		//options.getSearchOptions().setHttpEnabled(true);
+		// options.getStorageOptions().setDirectory(null);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
 
-			DemoVerticle demoVerticle = new DemoVerticle(new DemoDataProvider(MeshInternal.get().database(), MeshInternal.get().meshLocalClientImpl()),
+			DemoVerticle demoVerticle = new DemoVerticle(
+					new DemoDataProvider(MeshInternal.get().database(), MeshInternal.get().meshLocalClientImpl()),
 					MeshInternal.get().routerStorage());
-			AdminGUIVerticle adminVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorage());
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
+
+			AdminGUIVerticle adminVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorage());
 			DeploymentUtil.deployAndWait(vertx, config, adminVerticle, false);
+
+			if (options.getSearchOptions().isHttpEnabled()) {
+				ElasticsearchHeadVerticle headVerticle = new ElasticsearchHeadVerticle(MeshInternal.get().routerStorage());
+				DeploymentUtil.deployAndWait(vertx, config, headVerticle, false);
+			}
 		});
 		mesh.run();
 	}
