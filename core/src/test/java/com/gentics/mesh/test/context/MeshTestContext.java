@@ -18,6 +18,7 @@ import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.dagger.DaggerTestMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
@@ -353,7 +354,8 @@ public class MeshTestContext extends TestWatcher {
 	 */
 	public void initDagger(TestSize size) {
 		log.info("Initializing dagger context");
-		meshDagger = MeshInternal.create();
+		meshDagger = DaggerTestMeshComponent.create();
+		MeshInternal.set(meshDagger);
 		dataProvider = new TestDataProvider(size, meshDagger.boot(), meshDagger.database());
 		routerStorage = meshDagger.routerStorage();
 		if (meshDagger.searchProvider() instanceof DummySearchProvider) {

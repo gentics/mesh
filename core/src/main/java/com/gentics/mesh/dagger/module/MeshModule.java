@@ -1,4 +1,4 @@
-package com.gentics.mesh.dagger;
+package com.gentics.mesh.dagger.module;
 
 import javax.inject.Provider;
 import javax.inject.Singleton;
@@ -6,15 +6,11 @@ import javax.inject.Singleton;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.cli.BootstrapInitializerImpl;
-import com.gentics.mesh.cli.CoreVerticleLoader;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
-import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
@@ -22,11 +18,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
 import com.gentics.mesh.image.ImgscalrImageManipulator;
 import com.gentics.mesh.search.DummySearchProvider;
-import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
-import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Handler;
@@ -49,24 +43,13 @@ public class MeshModule {
 
 	@Provides
 	@Singleton
-	public BootstrapInitializer bootstrapInitializer(Database db, SearchProvider searchProvider, Lazy<IndexHandlerRegistry> indexHandlerRegistry,
-			BCryptPasswordEncoder encoder, RouterStorage routerStorage, Lazy<CoreVerticleLoader> loader) {
-		return new BootstrapInitializerImpl(db, searchProvider, indexHandlerRegistry, encoder, routerStorage, loader);
-	}
-
-	@Provides
-	@Singleton
-	public ImageManipulatorService imageProviderService() {
+	public static ImageManipulatorService imageProviderService() {
 		return ImageManipulatorService.getInstance();
 	}
 
 	@Provides
 	@Singleton
-	public ImageManipulator imageProvider() {
-		// ImageManipulator provider =
-		// imageProviderService().getImageProvider();
-		// TODO assert provider
-		// return provider;
+	public static ImageManipulator imageProvider() {
 		return new ImgscalrImageManipulator();
 	}
 
@@ -102,7 +85,7 @@ public class MeshModule {
 
 	@Provides
 	@Singleton
-	public BCryptPasswordEncoder passwordEncoder() {
+	public static BCryptPasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder(PASSWORD_HASH_LOGROUND_COUNT);
 	}
 
@@ -113,7 +96,7 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public CorsHandler corsHandler() {
+	public static CorsHandler corsHandler() {
 		String pattern = Mesh.mesh().getOptions().getHttpServerOptions().getCorsAllowedOriginPattern();
 		CorsHandler corsHandler = CorsHandler.create(pattern);
 		corsHandler.allowedMethod(HttpMethod.GET);
@@ -134,7 +117,7 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public Handler<RoutingContext> bodyHandler() {
+	public static Handler<RoutingContext> bodyHandler() {
 		String tempDirectory = Mesh.mesh().getOptions().getUploadOptions().getTempDirectory();
 		BodyHandler handler = new MeshBodyHandlerImpl(tempDirectory);
 		handler.setBodyLimit(Mesh.mesh().getOptions().getUploadOptions().getByteLimit());
@@ -151,7 +134,7 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public SearchProvider searchProvider() {
+	public static SearchProvider searchProvider() {
 		ElasticSearchOptions options = Mesh.mesh().getOptions().getSearchOptions();
 		SearchProvider searchProvider = null;
 		// Automatically select the dummy search provider if no directory or

@@ -2,6 +2,8 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.4 (PENDING)
+
 == 0.9.3 (10.04.2017)
 
 icon:check[] The Admin UI was updated. A bug which prevented assigning created schemas to projects was fixed.

@@ -1,11 +1,29 @@
 package com.gentics.mesh.core.data.root;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
 
 /**
  * The mesh root is the primary graph element. All other aggregation nodes for users, roles, groups, projects connect to this element.
  */
 public interface MeshRoot extends MeshVertex {
+
+	public static final String MESH_VERSION = "meshVersion";
+
+	/**
+	 * Returns the mesh version which was last used to access the graph. This version is usually updated by the {@link BootstrapInitializer} during startup of
+	 * mesh.
+	 * 
+	 * @return Plain text version or null if this information has not yet been stored
+	 */
+	String getMeshVersion();
+
+	/**
+	 * Set the plain text mesh version which was last used to access the graph.
+	 * 
+	 * @param version
+	 */
+	void setMeshVersion(String version);
 
 	/**
 	 * Returns the user aggregation vertex.

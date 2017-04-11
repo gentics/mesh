@@ -14,8 +14,8 @@ import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.dagger.module.ConsoleModule;
 import com.gentics.mesh.dagger.module.ExtraModule;
+import com.gentics.mesh.dagger.module.FakeConsoleModule;
 import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -36,12 +36,9 @@ import com.gentics.mesh.search.index.user.UserIndexHandler;
 
 import dagger.Component;
 
-/**
- * Central dagger mesh component which will expose dependencies.
- */
 @Singleton
-@Component(modules = { MeshModule.class, ExtraModule.class, ConsoleModule.class })
-public interface MeshComponent {
+@Component(modules = { MeshModule.class, ExtraModule.class, FakeConsoleModule.class })
+public interface TestMeshComponent extends MeshComponent {
 
 	BootstrapInitializer boot();
 
@@ -98,5 +95,4 @@ public interface MeshComponent {
 	SchemaComparator schemaComparator();
 
 	RestAPIVerticle restApiVerticle();
-
 }

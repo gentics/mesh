@@ -175,4 +175,9 @@ public interface BootstrapInitializer {
 	 */
 	Collection<? extends String> getAllLanguageTags();
 
+	/**
+	 * Compare the current version of the mesh graph with the version which is currently being executed.
+	 */
+	void handleMeshVersion();
+
 }

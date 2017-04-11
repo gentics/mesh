@@ -24,9 +24,8 @@
 			<artifactId>dagger</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>com.google.dagger</groupId>
-			<artifactId>dagger-compiler</artifactId>
-			<optional>true</optional>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>com.syncleus.ferma</groupId>

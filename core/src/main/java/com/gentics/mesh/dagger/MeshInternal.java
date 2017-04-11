@@ -19,7 +19,6 @@ public interface MeshInternal {
 	 * @return
 	 */
 	static MeshComponent create() {
-
 		if (applicationComponent.get() == null) {
 			applicationComponent.set(DaggerMeshComponent.builder().build());
 		}
@@ -39,8 +38,18 @@ public interface MeshInternal {
 	 * 
 	 * @return Created dagger context or null if none has been created previously
 	 */
+	@SuppressWarnings("unchecked")
 	static <T extends MeshComponent> T get() {
 		return (T) applicationComponent.get();
+	}
+
+	/**
+	 * Set the component (useful for testing)
+	 * 
+	 * @param component
+	 */
+	static void set(MeshComponent component) {
+		applicationComponent.set(component);
 	}
 
 }

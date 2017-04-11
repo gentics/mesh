@@ -16,6 +16,7 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 
+import dagger.Lazy;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -28,7 +29,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(ServerSchemaStorage.class);
 
-	private BootstrapInitializer boot;
+	private Lazy<BootstrapInitializer> boot;
 
 	/**
 	 * Map holding the schemas per name and version
@@ -38,13 +39,13 @@ public class ServerSchemaStorage implements SchemaStorage {
 	private Map<String, Map<Integer, Microschema>> microschemas = new HashMap<>();
 
 	@Inject
-	public ServerSchemaStorage(BootstrapInitializer boot) {
+	public ServerSchemaStorage(Lazy<BootstrapInitializer> boot) {
 		this.boot = boot;
 	}
 
 	public void init() {
 		// Iterate over all schemas and load them into the storage
-		boot.schemaContainerRoot().findAll().stream().forEach(container -> {
+		boot.get().schemaContainerRoot().findAll().stream().forEach(container -> {
 			for (SchemaContainerVersion version : container.findAll()) {
 				Schema restSchema = version.getSchema();
 				schemas.computeIfAbsent(restSchema.getName(), k -> new HashMap<>()).put(restSchema.getVersion(),
@@ -53,7 +54,7 @@ public class ServerSchemaStorage implements SchemaStorage {
 		});
 
 		// load all microschemas and add to storage
-		boot.microschemaContainerRoot().findAll().stream().forEach(container -> {
+		boot.get().microschemaContainerRoot().findAll().stream().forEach(container -> {
 			for (MicroschemaContainerVersion version : container.findAll()) {
 				Microschema restMicroschema = version.getSchema();
 				microschemas.computeIfAbsent(restMicroschema.getName(), k -> new HashMap<>())

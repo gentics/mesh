@@ -1,18 +1,25 @@
 package com.gentics.mesh.core;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
+
+import rx.functions.Action0;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MeshRootTest extends AbstractMeshTest {
@@ -24,17 +31,14 @@ public class MeshRootTest extends AbstractMeshTest {
 			expectSuccess("projects", meshRoot().getProjectRoot());
 			expectSuccess("projects/" + project().getUuid(), project());
 			expectSuccess("projects/" + project().getUuid() + "/schemas", project().getSchemaContainerRoot());
-			expectSuccess("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid(),
-					schemaContainer("folder"));
+			expectSuccess("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid(), schemaContainer("folder"));
 			expectSuccess("projects/" + project().getUuid() + "/tagFamilies", project().getTagFamilyRoot());
-			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(),
-					tagFamily("colors"));
+			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), tagFamily("colors"));
 			expectSuccess("projects/" + project().getUuid() + "/nodes", project().getNodeRoot());
 			expectSuccess("projects/" + project().getUuid() + "/nodes/" + folder("2015").getUuid(), folder("2015"));
-			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags",
-					tagFamily("colors"));
-			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags/"
-					+ tag("red").getUuid(), tag("red"));
+			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags", tagFamily("colors"));
+			expectSuccess("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags/" + tag("red").getUuid(),
+					tag("red"));
 
 			expectSuccess("users", meshRoot().getUserRoot());
 			expectSuccess("users/" + user().getUuid(), user());
@@ -63,8 +67,7 @@ public class MeshRootTest extends AbstractMeshTest {
 			expectFailure("projects/" + project().getUuid() + "/tagFamilies/");
 			expectFailure("projects/" + project().getUuid() + "/tagFamilies/bogus");
 			expectFailure("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/");
-			expectFailure(
-					"projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/bogus");
+			expectFailure("projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/bogus");
 
 			expectFailure("projects/" + project().getUuid() + "/nodes/");
 			expectFailure("projects/" + project().getUuid() + "/nodes/bogus");
@@ -79,8 +82,7 @@ public class MeshRootTest extends AbstractMeshTest {
 			expectFailure("projects/" + project().getUuid() + "/schemas/");
 			expectFailure("projects/" + project().getUuid() + "/schemas/bogus");
 			expectFailure("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid() + "/");
-			expectFailure(
-					"projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid() + "/bogus");
+			expectFailure("projects/" + project().getUuid() + "/schemas/" + schemaContainer("folder").getUuid() + "/bogus");
 
 			expectFailure("users/");
 			expectFailure("users/bogus");
@@ -96,10 +98,71 @@ public class MeshRootTest extends AbstractMeshTest {
 		}
 	}
 
+	@Test
+	public void testCheckVersion() throws IOException {
+
+		// Same version
+		setMeshVersions("1.0.0", "1.0.0");
+		boot().handleMeshVersion();
+		boot().handleMeshVersion();
+
+		// Minor upgrade
+		setMeshVersions("1.0.0", "1.0.1");
+		boot().handleMeshVersion();
+		boot().handleMeshVersion();
+
+		// Same snapshot version
+		setMeshVersions("1.0.0-SNAPSHOT", "1.0.0-SNAPSHOT");
+		boot().handleMeshVersion();
+		boot().handleMeshVersion();
+
+		// Downgrade one bugfix version
+		setMeshVersions("1.0.1", "1.0.0");
+		expectException(() -> {
+			boot().handleMeshVersion();
+		});
+
+		// Upgrade from snapshot to release
+		setMeshVersions("1.0.0-SNAPSHOT", "1.0.0");
+		expectException(() -> {
+			boot().handleMeshVersion();
+		});
+
+		// Downgrade to snapshot version
+		setMeshVersions("1.0.0", "1.0.0-SNAPSHOT");
+		expectException(() -> {
+			boot().handleMeshVersion();
+		});
+
+		// Upgrade from snapshot to release - With ignore flag
+		System.setProperty("ignoreSnapshotUpgradeCheck", "true");
+		setMeshVersions("1.0.0-SNAPSHOT", "1.0.0");
+		boot().handleMeshVersion();
+
+	}
+
+	private void setMeshVersions(String graphVersion, String buildVersion) throws IOException {
+		File versionFile = new File("target/classes/mesh.build.properties");
+		FileUtils.writeStringToFile(versionFile, "mesh.version=" + buildVersion);
+		assertEquals(buildVersion, Mesh.getPlainVersion());
+
+		try (NoTx noTx = db().noTx()) {
+			meshRoot().setMeshVersion(graphVersion);
+		}
+	}
+
+	private void expectException(Action0 action) {
+		try {
+			action.call();
+			fail("An exception should have been thrown.");
+		} catch (Exception e) {
+			assertEquals("Downgrade not allowed", e.getMessage());
+		}
+	}
+
 	private void expectSuccess(String path, MeshVertex vertex) throws InterruptedException {
 		MeshVertex resolvedVertex = resolve(path);
-		assertNotNull("We expected that the path {" + path + "} could be resolved but resolving failed.",
-				resolvedVertex);
+		assertNotNull("We expected that the path {" + path + "} could be resolved but resolving failed.", resolvedVertex);
 		assertEquals(vertex.getUuid(), resolvedVertex.getUuid());
 	}
 

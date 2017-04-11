@@ -51,11 +51,6 @@
 
 		<!-- Common Tools -->
 		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>18.0</version>
-		</dependency>
-		<dependency>
 			<groupId>commons-cli</groupId>
 			<artifactId>commons-cli</artifactId>
 			<version>1.2</version>
@@ -113,8 +108,6 @@
 			</exclusions>
 		</dependency>
 
-		<!-- <dependency> <groupId>com.kjetland</groupId> <artifactId>mbknor-jackson-jsonschema_2.12</artifactId> <version>1.0.16</version> </dependency> -->
-
 		<!-- Caching -->
 		<dependency>
 			<groupId>com.github.ben-manes.caffeine</groupId>
@@ -125,7 +118,7 @@
 		<!-- Dagger -->
 		<dependency>
 			<groupId>com.google.dagger</groupId>
-			<artifactId>dagger-compiler</artifactId>
+			<artifactId>dagger</artifactId>
 		</dependency>
 
 		<!-- Metrics -->
@@ -171,6 +164,12 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>com.google.dagger</groupId>
+			<artifactId>dagger-compiler</artifactId>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
 
 
@@ -193,7 +192,6 @@
 		</resources>
 
 		<plugins>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -242,6 +240,7 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+					<forceJavacCompilerUse>true</forceJavacCompilerUse>
 				</configuration>
 				<dependencies>
 					<dependency>
@@ -249,6 +248,33 @@
 						<artifactId>dagger-compiler</artifactId>
 						<version>${dagger.version}</version>
 						<optional>true</optional>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+
+			<plugin>
+				<groupId>com.mysema.maven</groupId>
+				<artifactId>maven-apt-plugin</artifactId>
+				<version>1.0.4</version>
+				<executions>
+					<execution>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>process</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>target/generated-sources/annotations</outputDirectory>
+							<processor>com.mysema.query.apt.jpa.JPAAnnotationProcessor</processor>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<!-- Workaround for eclipse compiler. We need to inject guava 20.0-rc1 or dagger processing will fail -->
+					<dependency>
+						<groupId>com.google.guava</groupId>
+						<artifactId>guava</artifactId>
+						<version>20.0-rc1</version>
 					</dependency>
 				</dependencies>
 			</plugin>

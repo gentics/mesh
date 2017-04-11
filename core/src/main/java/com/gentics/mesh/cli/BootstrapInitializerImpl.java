@@ -14,6 +14,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -24,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
+import com.gentics.mesh.core.console.ConsoleProvider;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -66,6 +69,7 @@ import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.MavenVersionNumber;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -78,23 +82,34 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 /**
  * @see BootstrapInitializer
  */
+@Singleton
 public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
 
-	private ServerSchemaStorage schemaStorage;
+	@Inject
+	public ServerSchemaStorage schemaStorage;
 
-	private Database db;
+	@Inject
+	public Database db;
 
-	private SearchProvider searchProvider;
+	@Inject
+	public SearchProvider searchProvider;
 
-	private BCryptPasswordEncoder encoder;
+	@Inject
+	public BCryptPasswordEncoder encoder;
 
-	private RouterStorage routerStorage;
+	@Inject
+	public RouterStorage routerStorage;
 
-	private Lazy<IndexHandlerRegistry> indexHandlerRegistry;
+	@Inject
+	public Lazy<IndexHandlerRegistry> indexHandlerRegistry;
 
-	private Lazy<CoreVerticleLoader> loader;
+	@Inject
+	public Lazy<CoreVerticleLoader> loader;
+
+	@Inject
+	public ConsoleProvider console;
 
 	private static MeshRoot meshRoot;
 
@@ -122,19 +137,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 	});
 
-	public BootstrapInitializerImpl(Database db, SearchProvider searchProvider, Lazy<IndexHandlerRegistry> indexHandlerRegistry,
-			BCryptPasswordEncoder encoder, RouterStorage routerStorage, Lazy<CoreVerticleLoader> loader) {
-
+	@Inject
+	public BootstrapInitializerImpl() {
 		clearReferences();
-
-		this.db = db;
-		this.searchProvider = searchProvider;
-		this.indexHandlerRegistry = indexHandlerRegistry;
-		this.schemaStorage = new ServerSchemaStorage(this);
-		this.encoder = encoder;
-		this.routerStorage = routerStorage;
-		this.loader = loader;
-
 	}
 
 	/**
@@ -184,12 +189,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
 		initMandatoryData();
 
+		handleMeshVersion();
+
 		if (isEmptyInstallation) {
 			initPermissions();
 		}
 
-		// An old lock file has been detected. Normally the lock file should be removed during shutdown. 
-		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of 
+		// An old lock file has been detected. Normally the lock file should be removed during shutdown.
+		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of
 		// the ES index in those cases in order to ensure consistency.
 		if (hasOldLock) {
 			REINDEX_ACTION.invoke();
@@ -215,7 +222,61 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Finally fire the startup event and log that bootstrap has completed
 		log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
+	}
 
+	@Override
+	public void handleMeshVersion() {
+		String currentVersion = Mesh.getPlainVersion();
+		if (currentVersion.equals("Unknown")) {
+			throw new RuntimeException("Current version could not be determined!");
+		}
+		try (NoTx noTx = db.noTx()) {
+			String graphVersion = meshRoot().getMeshVersion();
+
+			// Check whether the information was already saved once. Otherwise set it.
+			if (graphVersion == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("Mesh version was not yet stored. Saving current version {" + currentVersion + "}");
+				}
+				meshRoot().setMeshVersion(currentVersion);
+				graphVersion = currentVersion;
+			}
+
+			// Check whether the graph version is newer compared to the current runtime version
+			MavenVersionNumber current = MavenVersionNumber.parse(currentVersion);
+			MavenVersionNumber graph = MavenVersionNumber.parse(graphVersion);
+			int diff = graph.compareTo(current);
+			// SNAPSHOT -> RELEASE
+			boolean isSnapshotUpgrade = diff == -1 && graph.compareTo(current, false) == 0 && graph.isSnapshot() && !current.isSnapshot();
+
+			boolean ignoreSnapshotUpgrade = System.getProperty("ignoreSnapshotUpgradeCheck") != null;
+			if (ignoreSnapshotUpgrade) {
+				log.warn(
+						"You disabled the upgrade check for snapshot upgrades. Please note that upgrading a snapshot version to a release version could create unforseen errors since the snapshot may have altered your data in a way which was not anticipated by the release.");
+				log.warn("Press any key to continue. This warning will only be shown once.");
+				try {
+					console.read();
+				} catch (IOException e) {
+					throw new RuntimeException("Startup aborted", e);
+				}
+			}
+			if (isSnapshotUpgrade && !ignoreSnapshotUpgrade) {
+				log.error("You are currently trying to run release version {" + currentVersion
+						+ "} but your instance was last run using a snapshot version. {" + graphVersion
+						+ "}. Running this version could cause unforseen errors.");
+				throw new RuntimeException("Downgrade not allowed");
+			}
+
+			boolean isVersionDowngrade = diff >= 1;
+			if (isVersionDowngrade) {
+				log.error("You are currently trying to run version {" + currentVersion + "} on a dump which was last used by version {" + graphVersion
+						+ "}. This is not supported. You can't downgrade your mesh instance. Doing so would cause unforseen errors. Aborting startup.");
+				throw new RuntimeException("Downgrade not allowed");
+			}
+
+			// Version is okay. So lets store it.
+			meshRoot().setMeshVersion(currentVersion);
+		}
 	}
 
 	/**

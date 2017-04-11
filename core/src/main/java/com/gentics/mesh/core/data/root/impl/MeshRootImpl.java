@@ -76,6 +76,16 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	@Override
+	public String getMeshVersion() {
+		return getProperty(MESH_VERSION);
+	}
+
+	@Override
+	public void setMeshVersion(String version) {
+		setProperty(MESH_VERSION, version);
+	}
+
+	@Override
 	public UserRoot getUserRoot() {
 		if (userRoot == null) {
 			synchronized (MeshRootImpl.class) {
