@@ -6,12 +6,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
+import com.gentics.mesh.BuildInfo;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -142,8 +141,7 @@ public class MeshRootTest extends AbstractMeshTest {
 	}
 
 	private void setMeshVersions(String graphVersion, String buildVersion) throws IOException {
-		File versionFile = new File("target/classes/mesh.build.properties");
-		FileUtils.writeStringToFile(versionFile, "mesh.version=" + buildVersion);
+		Mesh.buildInfo.set(new BuildInfo(buildVersion, null));
 		assertEquals(buildVersion, Mesh.getPlainVersion());
 
 		try (NoTx noTx = db().noTx()) {

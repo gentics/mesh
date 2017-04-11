@@ -177,6 +177,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		boolean isEmptyInstallation = isEmptyInstallation();
+		if (!isEmptyInstallation) {
+			handleMeshVersion();
+		}
 
 		// Only execute the changelog if there are any elements in the graph
 		if (!isEmptyInstallation) {
@@ -189,9 +192,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
 		initMandatoryData();
 
-		handleMeshVersion();
-
 		if (isEmptyInstallation) {
+			handleMeshVersion();
 			initPermissions();
 		}
 
@@ -230,6 +232,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		if (currentVersion.equals("Unknown")) {
 			throw new RuntimeException("Current version could not be determined!");
 		}
+
+		MavenVersionNumber current = MavenVersionNumber.parse(currentVersion);
+		if (current.isSnapshot()) {
+			log.warn("You are running snapshot version {" + currentVersion
+					+ "} of Gentics Mesh. Be aware that this version could potentially alter your instance in unexpected ways.");
+		}
 		try (NoTx noTx = db.noTx()) {
 			String graphVersion = meshRoot().getMeshVersion();
 
@@ -243,7 +251,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Check whether the graph version is newer compared to the current runtime version
-			MavenVersionNumber current = MavenVersionNumber.parse(currentVersion);
 			MavenVersionNumber graph = MavenVersionNumber.parse(graphVersion);
 			int diff = graph.compareTo(current);
 			// SNAPSHOT -> RELEASE
