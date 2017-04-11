@@ -4,9 +4,17 @@
 
 == 0.9.4 (PENDING)
 
+icon:check[] UI: The global search was fixed.
+
+icon:check[] UI: The translation feature was fixed.
+
+icon:plus[] Demo: It is now possible to access elasticsearch head UI directly from mesh via http://localhost:8080/elastichead - The UI will only provided if the elasticsearch http ports are enabled. Only enable this for development since mesh will not protect the Elasticsearch HTTP server. 
+
+icon:plus[] Core: Downgrade and upgrade checks have been added. It is no longer possible to run Gentics Mesh using a dump which contains data which was touched by a newer mesh version. Upgrading a snapshot version of Gentics Mesh to a release version can be performed under advisement.
+
 == 0.9.3 (10.04.2017)
 
-icon:check[] The Admin UI was updated. A bug which prevented assigning created schemas to projects was fixed.
+icon:check[] UI: A bug which prevented assigning created schemas to projects was fixed.
 
 icon:check[] A bug which could lead to concurrent request failing was fixed.
 
