@@ -4,6 +4,7 @@ import static graphql.GraphQL.newGraphQL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -45,8 +46,8 @@ public class GraphQLHandler {
 
 	/**
 	 * Handle the GraphQL query.
-	 * 
-	 * @param ac
+	 *
+	 * @param gc
 	 * @param body
 	 *            GraphQL query
 	 */
@@ -55,7 +56,7 @@ public class GraphQLHandler {
 			JsonObject queryJson = new JsonObject(body);
 			String query = queryJson.getString("query");
 			GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc.getProject())).build();
-			ExecutionResult result = graphQL.execute(query, gc);
+			ExecutionResult result = graphQL.execute(query, gc, extractVariables(queryJson));
 			List<GraphQLError> errors = result.getErrors();
 			JsonObject response = new JsonObject();
 			if (!errors.isEmpty()) {
@@ -75,6 +76,20 @@ public class GraphQLHandler {
 			gc.send(response.toString(), code);
 		}
 
+	}
+
+	/**
+	 * Extracts the variables of a query as a map. Returns empty map if no variables are found.
+	 *
+	 * @param request The request body
+	 */
+	private Map<String, Object> extractVariables(JsonObject request) {
+		JsonObject variables = request.getJsonObject("variables");
+		if (variables == null) {
+			return Collections.emptyMap();
+		} else {
+			return variables.getMap();
+		}
 	}
 
 	/**
