@@ -5,6 +5,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -66,6 +67,6 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 		JsonObject response = call(() -> client().graphql(PROJECT_NAME, query.toString()));
 		String uuid = response.getJsonObject("data").getJsonObject("content").getJsonObject("node").getString("uuid");
 
-		assertTrue("There should be a uuid", uuid.length() > 0);
+		assertThat(uuid).isNotEmpty();
 	}
 }

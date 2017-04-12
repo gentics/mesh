@@ -82,6 +82,7 @@ public class GraphQLHandler {
 	 * Extracts the variables of a query as a map. Returns empty map if no variables are found.
 	 *
 	 * @param request The request body
+	 * @return GraphQL variables
 	 */
 	private Map<String, Object> extractVariables(JsonObject request) {
 		JsonObject variables = request.getJsonObject("variables");
