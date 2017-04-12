@@ -18,6 +18,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -436,13 +437,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				adminUser.setEditor(adminUser);
 				adminUser.setLastEditedTimestamp();
 
-				log.debug("Enter admin password:");
-				// Scanner scanIn = new Scanner(System.in);
-				// String pw = scanIn.nextLine();
-				// TODO remove later on
-				String pw = "admin";
-				// scanIn.close();
-				adminUser.setPasswordHash(encoder.encode(pw));
+				String password = System.getProperty("MESH_ADMIN_PASSWORD");
+				if (StringUtils.isEmpty(password)) {
+					log.info("Enter admin password:");
+					password = console.readPassword();
+				}
+				adminUser.setPasswordHash(encoder.encode(password));
 				log.debug("Created admin user {" + adminUser.getUuid() + "}");
 			}
 

@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import javax.inject.Inject;
 
+import com.gentics.mesh.util.UUIDUtil;
+
 import groovy.lang.Singleton;
 
 /**
@@ -19,6 +21,11 @@ public class FakeConsoleProviderImpl implements ConsoleProvider {
 	@Override
 	public int read() throws IOException {
 		return 0;
+	}
+
+	@Override
+	public String readPassword() {
+		return UUIDUtil.randomUUID();
 	}
 
 }

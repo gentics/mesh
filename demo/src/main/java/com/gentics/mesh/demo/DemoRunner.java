@@ -31,6 +31,8 @@ public class DemoRunner {
 		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
 		log = LoggerFactory.getLogger(DemoRunner.class);
+
+		System.setProperty("MESH_ADMIN_PASSWORD", "admin");
 	}
 
 	public static void main(String[] args) throws Exception {
@@ -45,7 +47,7 @@ public class DemoRunner {
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setStartServer(false);
-		//options.getSearchOptions().setHttpEnabled(true);
+		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setDirectory(null);
 
 		Mesh mesh = Mesh.mesh(options);

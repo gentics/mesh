@@ -84,7 +84,6 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 			throw conflict(conflictingRole.getUuid(), roleName, "role_conflicting_name");
 		}
 
-		// TODO use non-blocking code here
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
 		}

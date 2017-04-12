@@ -6,15 +6,12 @@ import java.io.IOException;
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.node.Node;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshConfigurationException;
-import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.search.SearchProvider;
@@ -26,12 +23,14 @@ import com.gentics.mesh.search.SearchProvider;
 public class DemoDumpGenerator {
 
 	public static void main(String[] args) throws Exception {
-		FileUtils.deleteDirectory(new File("target/dump"));
-		initPaths();
+		cleanup();
+		init();
 		new DemoDumpGenerator().dump();
 	}
 
-	public static void initPaths() {
+	public static void init() {
+		System.setProperty("MESH_ADMIN_PASSWORD", "admin");
+
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 
@@ -59,7 +58,7 @@ public class DemoDumpGenerator {
 	 * 
 	 * @throws Exception
 	 */
-	private void dump() throws Exception {
+	public void dump() throws Exception {
 		// 1. Cleanup in preparation for dumping the demo data
 		cleanup();
 
@@ -89,8 +88,6 @@ public class DemoDumpGenerator {
 			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
 		}
 		esNode.close();
-
-		System.exit(0);
 	}
 
 	/**
@@ -98,7 +95,7 @@ public class DemoDumpGenerator {
 	 * 
 	 * @throws IOException
 	 */
-	public void cleanup() throws IOException {
+	public static void cleanup() throws IOException {
 		FileUtils.deleteDirectory(new File("target" + File.separator + "dump"));
 		File confFile = new File("mesh.json");
 		if (confFile.exists()) {
@@ -111,14 +108,9 @@ public class DemoDumpGenerator {
 	 * 
 	 * @param boot
 	 * @param provider
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
-	 * @throws IOException
-	 * @throws MeshSchemaException
-	 * @throws InterruptedException
+	 * @throws Exception
 	 */
-	public void invokeDump(BootstrapInitializer boot, DemoDataProvider provider)
-			throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
+	private void invokeDump(BootstrapInitializer boot, DemoDataProvider provider) throws Exception {
 		boot.initMandatoryData();
 		boot.initPermissions();
 		boot.markChangelogApplied();

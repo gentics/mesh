@@ -17,4 +17,11 @@ public interface ConsoleProvider {
 	 */
 	int read() throws IOException;
 
+	/**
+	 * Read password and return it.
+	 * 
+	 * @return
+	 */
+	String readPassword();
+
 }
