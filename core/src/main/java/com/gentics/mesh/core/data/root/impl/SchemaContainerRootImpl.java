@@ -20,9 +20,9 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -62,7 +62,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public SchemaContainer create(Schema schema, User creator) {
+	public SchemaContainer create(SchemaModel schema, User creator) {
 		schema.validate();
 		SchemaContainerImpl container = getGraph().addFramedVertex(SchemaContainerImpl.class);
 		SchemaContainerVersion version = getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
@@ -103,7 +103,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	@Override
 	public SchemaContainer create(InternalActionContext ac, SearchQueueBatch batch) {
 		MeshAuthUser requestUser = ac.getUser();
-		Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
+		SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid());

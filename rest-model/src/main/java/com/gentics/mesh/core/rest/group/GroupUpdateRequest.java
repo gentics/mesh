@@ -29,9 +29,11 @@ public class GroupUpdateRequest implements RestModel {
 	 * Set the new name of the group.
 	 * 
 	 * @param name
+	 * @return Fluent API
 	 */
-	public void setName(String name) {
+	public GroupUpdateRequest setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 }

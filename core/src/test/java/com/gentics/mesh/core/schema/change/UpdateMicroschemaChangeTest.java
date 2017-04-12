@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.UpdateMicroschemaChange;
 import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.graphdb.NoTx;
@@ -37,7 +37,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	public void testApply() {
 		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
-			MicroschemaModel schema = new MicroschemaModel();
+			MicroschemaModelImpl schema = new MicroschemaModelImpl();
 
 			UpdateMicroschemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.setName("updated");

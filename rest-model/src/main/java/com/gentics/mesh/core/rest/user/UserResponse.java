@@ -11,10 +11,10 @@ import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 
 /**
- * User response model.
+ * POJO for user response model.
  */
 public class UserResponse extends AbstractGenericRestResponse {
-	
+
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Lastname of the user.")
 	private String lastname;

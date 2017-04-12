@@ -6,14 +6,14 @@ import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 
 /**
  * @see Schema
  */
-public class SchemaModel implements RestModel, Schema {
+public class SchemaModelImpl implements SchemaModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the display field.")
@@ -32,11 +32,11 @@ public class SchemaModel implements RestModel, Schema {
 	 * 
 	 * @param name
 	 */
-	public SchemaModel(String name) {
+	public SchemaModelImpl(String name) {
 		setName(name);
 	}
 
-	public SchemaModel() {
+	public SchemaModelImpl() {
 	}
 
 	@JsonProperty(required = false)
@@ -61,7 +61,7 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public SchemaModel setVersion(int version) {
+	public SchemaModelImpl setVersion(int version) {
 		this.version = version;
 		return this;
 	}
@@ -72,7 +72,7 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public SchemaModel setDescription(String description) {
+	public SchemaModelImpl setDescription(String description) {
 		this.description = description;
 		return this;
 	}
@@ -83,7 +83,7 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public SchemaModel setName(String name) {
+	public SchemaModelImpl setName(String name) {
 		this.name = name;
 		return this;
 	}
@@ -94,7 +94,7 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public SchemaModel setSegmentField(String segmentField) {
+	public SchemaModelImpl setSegmentField(String segmentField) {
 		this.segmentField = segmentField;
 		return this;
 	}
@@ -105,7 +105,7 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public SchemaModel setFields(List<FieldSchema> fields) {
+	public SchemaModelImpl setFields(List<FieldSchema> fields) {
 		this.fields = fields;
 		return this;
 	}
@@ -116,7 +116,7 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public SchemaModel setContainer(boolean flag) {
+	public SchemaModelImpl setContainer(boolean flag) {
 		this.container = flag;
 		return this;
 	}
@@ -127,7 +127,7 @@ public class SchemaModel implements RestModel, Schema {
 	}
 
 	@Override
-	public SchemaModel setDisplayField(String displayField) {
+	public SchemaModelImpl setDisplayField(String displayField) {
 		this.displayField = displayField;
 		return this;
 	}

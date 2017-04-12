@@ -26,7 +26,7 @@ import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
@@ -92,7 +92,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 		try (NoTx noTx = db().noTx()) {
 			Node newsNode = folder("news");
 			Node node = folder("2015");
-			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 
 			// 1. Create the node field schema and add it to the schema of the node
 			NodeFieldSchema nodeFieldSchema = createFieldSchema(true);

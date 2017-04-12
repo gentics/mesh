@@ -30,9 +30,11 @@ public class RoleUpdateRequest implements RestModel {
 	 * 
 	 * @param name
 	 *            Name of the role
+	 * @return Fluent API
 	 */
-	public void setName(String name) {
+	public RoleUpdateRequest setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 }

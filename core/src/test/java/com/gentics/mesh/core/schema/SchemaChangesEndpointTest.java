@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
@@ -21,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.ComparisonFailure;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -44,6 +44,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
@@ -56,7 +57,6 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.json.JsonObject;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
@@ -115,7 +115,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			status = call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
 			expectResponseMessage(status, "migration_invoked", "content");
 
-			Schema schema = call(() -> client().findSchemaByUuid(container.getUuid()));
+			SchemaResponse schema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
 					new SchemaReference().setName("content").setVersion(schema.getVersion())));
 
@@ -182,7 +182,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			GenericMessageResponse status = call(
 					() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
 			expectResponseMessage(status, "migration_invoked", "content");
-			Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
+			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
 					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 
@@ -231,7 +231,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
 			expectResponseMessage(status, "migration_invoked", schema.getName());
 			// 5. assign the new schema version to the release (which will start the migration)
-			Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
+			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
 					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 			failingLatch(latch);
@@ -347,7 +347,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertNull("The schema should not yet have any changes", container.getLatestVersion().getNextChange());
 			SchemaContainerVersion currentVersion = container.getLatestVersion();
 			call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
-			Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
+			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
 					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 
@@ -384,7 +384,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			GenericMessageResponse status = call(
 					() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
 			expectResponseMessage(status, "migration_invoked", "content");
-			Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
+			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
 					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 
@@ -471,7 +471,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// 3. Invoke migration
 			GenericMessageResponse status = call(() -> client().applyChangesToSchema(containerUuid, listOfChanges));
 			expectResponseMessage(status, "migration_invoked", "content");
-			Schema updatedSchema = call(() -> client().findSchemaByUuid(containerUuid));
+			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(containerUuid));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid,
 					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 
@@ -570,7 +570,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
 
 			// 4. assign the new schema version to the release
-			Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
+			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
 					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 			failingLatch(latch);
@@ -622,7 +622,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// Update the schema server side
 			call(() -> client().updateSchema(container.getUuid(), schema));
 
-			Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
+			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
 					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 
@@ -660,7 +660,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
 
 			// 4. assign the new schema version to the initial release
-			Schema updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
+			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialRelease.getUuid(),
 					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 			failingLatch(latch);

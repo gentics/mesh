@@ -12,22 +12,24 @@ public class TagFamilyResponse extends AbstractGenericRestResponse {
 	private String name;
 
 	/**
-	 * Set the tag family name.
-	 * 
-	 * @param name
-	 *            Name of the tag family
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	/**
 	 * Return the tag family name.
 	 * 
 	 * @return Name of the tag family
 	 */
 	public String getName() {
 		return name;
+	}
+
+	/**
+	 * Set the tag family name.
+	 * 
+	 * @param name
+	 *            Name of the tag family
+	 * @return Fluent API
+	 */
+	public TagFamilyResponse setName(String name) {
+		this.name = name;
+		return this;
 	}
 
 }

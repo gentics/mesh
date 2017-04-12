@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
@@ -106,7 +106,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 			Node node = folder("2015");
 
 			// Add html field schema to the schema
-			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			DateFieldSchema dateFieldSchema = createFieldSchema(true);
 			schema.addField(dateFieldSchema);
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);

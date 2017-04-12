@@ -13,12 +13,24 @@ public class TagListUpdateRequest implements RestModel {
 	@JsonProperty(required = true)
 	private List<TagReference> tags = new ArrayList<>();
 
+	/**
+	 * Return a list of tag references.
+	 * 
+	 * @return
+	 */
 	public List<TagReference> getTags() {
 		return tags;
 	}
 
-	public void setTags(List<TagReference> tags) {
+	/**
+	 * Set the list of tag references.
+	 * 
+	 * @param tags
+	 * @return Fluent API
+	 */
+	public TagListUpdateRequest setTags(List<TagReference> tags) {
 		this.tags = tags;
+		return this;
 	}
 
 }

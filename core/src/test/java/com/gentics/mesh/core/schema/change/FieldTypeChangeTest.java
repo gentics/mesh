@@ -16,7 +16,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -43,7 +43,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			SchemaModel schema = new SchemaModel();
+			SchemaModelImpl schema = new SchemaModelImpl();
 			schema.setName("testschema");
 
 			StringFieldSchema stringField = new StringFieldSchemaImpl();
@@ -71,7 +71,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			SchemaModel schema = new SchemaModel();
+			SchemaModelImpl schema = new SchemaModelImpl();
 			schema.setName("testschema");
 
 			StringFieldSchema stringField = new StringFieldSchemaImpl();

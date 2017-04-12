@@ -27,13 +27,14 @@ import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.release.ReleaseReference;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -461,7 +462,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	 * @throws Exception
 	 */
 	protected SchemaContainer createSchemaDirect(String name) throws Exception {
-		Schema schema = new SchemaModel();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName(name);
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
 		schema.setDisplayField("name");
@@ -480,7 +481,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	protected void updateSchema(SchemaContainer schemaContainer, String newName) throws Exception {
 		Schema schema = schemaContainer.getLatestVersion().getSchema();
 
-		Schema updatedSchema = new SchemaModel();
+		Schema updatedSchema = new SchemaModelImpl();
 		updatedSchema.setName(schema.getName());
 		updatedSchema.setDisplayField(schema.getDisplayField());
 		updatedSchema.getFields().addAll(schema.getFields());
@@ -504,7 +505,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	 * @throws Exception
 	 */
 	protected MicroschemaContainer createMicroschemaDirect(String name) throws Exception {
-		MicroschemaModel microschema = new MicroschemaModel();
+		MicroschemaModelImpl microschema = new MicroschemaModelImpl();
 		microschema.setName(name);
 		microschema.addField(FieldUtil.createStringFieldSchema("name"));
 		return meshRoot().getMicroschemaContainerRoot().create(microschema, user());
@@ -522,7 +523,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	protected void updateMicroschema(MicroschemaContainer microschemaContainer, String newName) throws Exception {
 		Microschema microschema = microschemaContainer.getLatestVersion().getSchema();
 
-		Microschema updatedMicroschema = new MicroschemaModel();
+		Microschema updatedMicroschema = new MicroschemaModelImpl();
 		updatedMicroschema.setName(microschema.getName());
 		updatedMicroschema.getFields().addAll(microschema.getFields());
 		updatedMicroschema.addField(FieldUtil.createStringFieldSchema(newName));

@@ -15,7 +15,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
@@ -31,7 +31,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 
 	private Microschema getMicroschema() {
-		Microschema vcardMicroschema = new MicroschemaModel();
+		Microschema vcardMicroschema = new MicroschemaModelImpl();
 		vcardMicroschema.setName("vcard");
 		vcardMicroschema.setDescription("Microschema for a vcard");
 

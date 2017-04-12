@@ -5,11 +5,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
 
-public class MicroschemaUpdateRequest implements RestModel, Microschema {
+public class MicroschemaUpdateRequest implements MicroschemaModel {
 
 	@JsonPropertyDescription("Version of the microschema")
 	private int version;

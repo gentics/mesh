@@ -74,9 +74,9 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
-import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -84,7 +84,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -134,7 +134,7 @@ public final class Mocks {
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer(microschemaName, user);
 		MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
 		when(micronode.getSchemaContainerVersion()).thenReturn(latestVersion);
-		Microschema microschema = microschemaContainer.getLatestVersion().getSchema();
+		MicroschemaModel microschema = microschemaContainer.getLatestVersion().getSchema();
 		when(micronode.getSchemaContainerVersion().getSchema()).thenReturn(microschema);
 
 		// longitude field
@@ -257,8 +257,8 @@ public final class Mocks {
 		return container;
 	}
 
-	public static Schema mockContentSchema() {
-		Schema schema = new SchemaModel();
+	public static SchemaModel mockContentSchema() {
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("content");
 		schema.setDescription("Content schema");
 		schema.setDisplayField("string");
@@ -283,8 +283,8 @@ public final class Mocks {
 		return schema;
 	}
 
-	public static Microschema mockGeolocationMicroschema() {
-		Microschema microschema = new MicroschemaModel();
+	public static MicroschemaModel mockGeolocationMicroschema() {
+		MicroschemaModel microschema = new MicroschemaModelImpl();
 		microschema.setName("geolocation");
 		microschema.setDescription("Microschema for Geolocations");
 

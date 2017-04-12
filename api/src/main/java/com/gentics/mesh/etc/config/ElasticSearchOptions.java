@@ -27,9 +27,11 @@ public class ElasticSearchOptions {
 	 * 
 	 * @param httpEnabled
 	 *            Server flag
+	 * @return Fluent API
 	 */
-	public void setHttpEnabled(boolean httpEnabled) {
+	public ElasticSearchOptions setHttpEnabled(boolean httpEnabled) {
 		this.httpEnabled = httpEnabled;
+		return this;
 	}
 
 	/**
@@ -47,9 +49,11 @@ public class ElasticSearchOptions {
 	 * 
 	 * @param directory
 	 *            Path to the search index filesystem directory
+	 * @return Fluent API
 	 */
-	public void setDirectory(String directory) {
+	public ElasticSearchOptions setDirectory(String directory) {
 		this.directory = directory;
+		return this;
 	}
 
 }

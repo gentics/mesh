@@ -22,7 +22,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -33,7 +33,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 	private Schema getSchema() {
-		Schema request = new SchemaModel();
+		Schema request = new SchemaModelImpl();
 		request.setName("content");
 		request.setDisplayField("title");
 		request.setSegmentField("filename");

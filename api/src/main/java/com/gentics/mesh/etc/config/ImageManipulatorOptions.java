@@ -25,9 +25,11 @@ public class ImageManipulatorOptions {
 	 * Set the binary image cache directory.
 	 * 
 	 * @param imageCacheDirectory
+	 * @return Fluent API
 	 */
-	public void setImageCacheDirectory(String imageCacheDirectory) {
+	public ImageManipulatorOptions setImageCacheDirectory(String imageCacheDirectory) {
 		this.imageCacheDirectory = imageCacheDirectory;
+		return this;
 	}
 
 	/**
@@ -43,9 +45,11 @@ public class ImageManipulatorOptions {
 	 * Set the maximum image height.
 	 * 
 	 * @param maxHeight
+	 * @return Fluent API
 	 */
-	public void setMaxHeight(int maxHeight) {
+	public ImageManipulatorOptions setMaxHeight(int maxHeight) {
 		this.maxHeight = maxHeight;
+		return this;
 	}
 
 	/**
@@ -61,8 +65,10 @@ public class ImageManipulatorOptions {
 	 * Set the maximum allowed image width.
 	 * 
 	 * @param maxWidth
+	 * @return Fluent API
 	 */
-	public void setMaxWidth(int maxWidth) {
+	public ImageManipulatorOptions setMaxWidth(int maxWidth) {
 		this.maxWidth = maxWidth;
+		return this;
 	}
 }

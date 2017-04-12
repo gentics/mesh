@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.node;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -17,7 +18,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
@@ -25,7 +26,6 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
@@ -34,7 +34,7 @@ public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 	public void testUpdateNodeAndOmitRequiredField() throws IOException {
 		try (NoTx noTx = db().noTx()) {
 			// 1. create required field
-			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 			htmlFieldSchema.setName("htmlField");
 			htmlFieldSchema.setLabel("Some label");

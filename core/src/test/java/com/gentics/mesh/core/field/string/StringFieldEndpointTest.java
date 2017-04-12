@@ -18,7 +18,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
@@ -40,7 +40,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws IOException {
 		try (NoTx noTx = db().noTx()) {
-			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 
 			// add non restricted string field
 			StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();

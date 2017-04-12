@@ -24,7 +24,7 @@ import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
@@ -40,7 +40,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws IOException {
 		try (NoTx noTx = db().noTx()) {
-			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 			numberFieldSchema.setName(FIELD_NAME);
 			// numberFieldSchema.setMin(10);

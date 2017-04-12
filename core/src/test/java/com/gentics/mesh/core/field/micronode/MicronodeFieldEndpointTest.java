@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.field.micronode;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,16 +22,16 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -41,7 +42,6 @@ import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -51,7 +51,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws IOException {
 		try (NoTx noTx = db().noTx()) {
-			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 			microschemaFieldSchema.setName(FIELD_NAME);
 			microschemaFieldSchema.setLabel("Some label");
@@ -275,7 +275,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			Node node = folder("2015");
 
 			// 1. Create microschema noderef with nodefield
-			Microschema nodeMicroschema = new MicroschemaModel();
+			MicroschemaModel nodeMicroschema = new MicroschemaModelImpl();
 			nodeMicroschema.setName("noderef");
 			for (int i = 0; i < 10; i++) {
 				nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield_" + i));
@@ -283,7 +283,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			microschemaContainers().put("noderef", project().getMicroschemaContainerRoot().create(nodeMicroschema, getRequestUser()));
 
 			// 2. Update the folder schema and add a micronode field
-			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 			microschemaFieldSchema.setName("noderef");
 			microschemaFieldSchema.setLabel("Micronode field");
@@ -315,7 +315,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			Node newsFolder = folder("news");
 
 			// 1. Create microschema that includes all field types
-			Microschema fullMicroschema = new MicroschemaModel();
+			MicroschemaModel fullMicroschema = new MicroschemaModelImpl();
 			fullMicroschema.setName("full");
 			// TODO implement BinaryField in Micronode
 			//		fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
@@ -338,7 +338,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			microschemaContainers().put("full", project().getMicroschemaContainerRoot().create(fullMicroschema, getRequestUser()));
 
 			// 3. Update the folder schema and inject a micronode field which uses the full schema
-			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 			microschemaFieldSchema.setName("full");
 			microschemaFieldSchema.setLabel("Micronode field");

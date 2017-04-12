@@ -55,9 +55,11 @@ public class MeshOptions {
 	 * 
 	 * @param clusterMode
 	 *            Flag value
+	 * @return Fluent API
 	 */
-	public void setClusterMode(boolean clusterMode) {
+	public MeshOptions setClusterMode(boolean clusterMode) {
 		this.clusterMode = clusterMode;
+		return this;
 	}
 
 	/**
@@ -82,9 +84,11 @@ public class MeshOptions {
 	 * Set the default max depth for navigations.
 	 * 
 	 * @param defaultMaxDepth
+	 * @return Fluent API
 	 */
-	public void setDefaultMaxDepth(int defaultMaxDepth) {
+	public MeshOptions setDefaultMaxDepth(int defaultMaxDepth) {
 		this.defaultMaxDepth = defaultMaxDepth;
+		return this;
 	}
 
 	/**
@@ -152,9 +156,11 @@ public class MeshOptions {
 	 * 
 	 * @param searchOptions
 	 *            Search options
+	 * @return Fluent API
 	 */
-	public void setSearchOptions(ElasticSearchOptions searchOptions) {
+	public MeshOptions setSearchOptions(ElasticSearchOptions searchOptions) {
 		this.searchOptions = searchOptions;
+		return this;
 	}
 
 	/**
@@ -172,9 +178,11 @@ public class MeshOptions {
 	 * 
 	 * @param authenticationOptions
 	 *            Authentication options
+	 * @return Fluent API
 	 */
-	public void setAuthenticationOptions(AuthenticationOptions authenticationOptions) {
+	public MeshOptions setAuthenticationOptions(AuthenticationOptions authenticationOptions) {
 		this.authenticationOptions = authenticationOptions;
+		return this;
 	}
 
 	/**
@@ -210,9 +218,11 @@ public class MeshOptions {
 	 * Set the image manipulation options.
 	 * 
 	 * @param imageOptions
+	 * @return Fluent API
 	 */
-	public void setImageOptions(ImageManipulatorOptions imageOptions) {
+	public MeshOptions setImageOptions(ImageManipulatorOptions imageOptions) {
 		this.imageOptions = imageOptions;
+		return this;
 	}
 
 	/**
@@ -229,9 +239,11 @@ public class MeshOptions {
 	 * Set the update checker flag. If set to true a update check will be invoked during mesh server startup.
 	 * 
 	 * @param updateCheck
+	 * @return Fluent API
 	 */
-	public void setUpdateCheck(boolean updateCheck) {
+	public MeshOptions setUpdateCheck(boolean updateCheck) {
 		this.updateCheck = updateCheck;
+		return this;
 	}
 
 }

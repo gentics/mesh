@@ -36,7 +36,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
@@ -130,7 +130,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			Node parentNode = folder("2015");
 			// Update content schema and add node field
 			SchemaContainer folderSchema = schemaContainer("folder");
-			Schema schema = folderSchema.getLatestVersion().getSchema();
+			SchemaModel schema = folderSchema.getLatestVersion().getSchema();
 			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
 			folderSchema.getLatestVersion().setSchema(schema);
 			MeshInternal.get().serverSchemaStorage().addSchema(schema);

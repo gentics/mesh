@@ -2,11 +2,13 @@
 
 = Gentics Mesh Changelog
 
-== 0.9.4 (PENDING)
+== 0.9.4 (12.04.2017)
 
-icon:check[] UI: The global search was fixed.
+icon:check[] JWT: The `signatureSecret` property within the Gentics Mesh configuration has been renamed to `keystorePassword`.
 
-icon:check[] UI: The translation feature was fixed.
+icon:plus[] JWT: It is now possible to configure the algorithm which is used to sign the JWT tokens.
+
+icon:plus[] Java: The Java model classes have been updated to provide fluent API's.
 
 icon:plus[] Demo: It is now possible to access elasticsearch head UI directly from mesh via http://localhost:8080/elastichead - The UI will only provided if the elasticsearch http ports are enabled. Only enable this for development since mesh will not protect the Elasticsearch HTTP server. 
 

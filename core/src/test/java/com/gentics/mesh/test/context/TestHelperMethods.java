@@ -49,6 +49,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -463,7 +464,7 @@ public interface TestHelperMethods {
 	 */
 	default public void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
 		// Update the schema and enable binary support for folders
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		MeshInternal.get().serverSchemaStorage().clear();

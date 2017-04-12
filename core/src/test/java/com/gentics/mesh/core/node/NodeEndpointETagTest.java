@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -108,7 +108,7 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			Node node = content();
 
 			// Inject the reference node field
-			Schema schema = node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema();
+			SchemaModel schema = node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
 			node.getGraphFieldContainer("en").getSchemaContainerVersion().setSchema(schema);
 			node.getGraphFieldContainer("en").createNode("reference", folder("2015"));

@@ -18,8 +18,10 @@ public class SchemaReferenceInfo {
 	 * 
 	 * @param schema
 	 *            Schema reference
+	 * @return Fluent API
 	 */
-	public void setSchema(SchemaReference schema) {
+	public SchemaReferenceInfo setSchema(SchemaReference schema) {
 		this.schema = schema;
+		return this;
 	}
 }

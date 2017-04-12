@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -22,8 +23,9 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.graphdb.NoTx;
@@ -32,7 +34,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class SchemaContainerTest extends AbstractMeshTest implements BasicObjectTestcases {
@@ -76,7 +77,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 		try (NoTx noTx = db().noTx()) {
 			SchemaContainerRoot root = meshRoot().getSchemaContainerRoot();
 			int nSchemasBefore = root.findAll().size();
-			Schema schema = FieldUtil.createMinimalValidSchema();
+			SchemaModel schema = FieldUtil.createMinimalValidSchema();
 			assertNotNull(root.create(schema, user()));
 			int nSchemasAfter = root.findAll().size();
 			assertEquals(nSchemasBefore + 1, nSchemasAfter);
@@ -150,11 +151,11 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	public void testTransformation() throws IOException {
 		try (NoTx noTx = db().noTx()) {
 			SchemaContainer container = getSchemaContainer();
-			Schema schema = container.getLatestVersion().getSchema();
+			SchemaModel schema = container.getLatestVersion().getSchema();
 			assertNotNull(schema);
 			String json = JsonUtil.toJson(schema);
 			assertNotNull(json);
-			Schema deserializedSchema = JsonUtil.readValue(json, SchemaModel.class);
+			Schema deserializedSchema = JsonUtil.readValue(json, SchemaModelImpl.class);
 			assertNotNull(deserializedSchema);
 		}
 	}
@@ -163,7 +164,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (NoTx noTx = db().noTx()) {
-			Schema schema = FieldUtil.createMinimalValidSchema();
+			SchemaModel schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			assertNotNull(newContainer);
 			String uuid = newContainer.getUuid();
@@ -177,7 +178,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	@Override
 	public void testCRUDPermissions() throws MeshSchemaException {
 		try (NoTx noTx = db().noTx()) {
-			Schema schema = FieldUtil.createMinimalValidSchema();
+			SchemaModel schema = FieldUtil.createMinimalValidSchema();
 			SchemaContainer newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, newContainer));
 			getRequestUser().addCRUDPermissionOnRole(meshRoot().getSchemaContainerRoot(), GraphPermission.CREATE_PERM, newContainer);
@@ -211,7 +212,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 		try (NoTx noTx = db().noTx()) {
 			SchemaContainer schemaContainer = meshRoot().getSchemaContainerRoot().findByName("content");
 			SchemaContainerVersion currentVersion = schemaContainer.getLatestVersion();
-			Schema schema = currentVersion.getSchema();
+			SchemaModel schema = currentVersion.getSchema();
 			schema.setName("changed");
 			currentVersion.setSchema(schema);
 			assertEquals("changed", currentVersion.getSchema().getName());
@@ -241,7 +242,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	public void testReadPermission() throws MeshSchemaException {
 		try (NoTx noTx = db().noTx()) {
 			SchemaContainer newContainer;
-			Schema schema = FieldUtil.createMinimalValidSchema();
+			SchemaModel schema = FieldUtil.createMinimalValidSchema();
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			testPermission(GraphPermission.READ_PERM, newContainer);
 		}
@@ -252,7 +253,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	public void testDeletePermission() throws MeshSchemaException {
 		try (NoTx noTx = db().noTx()) {
 			SchemaContainer newContainer;
-			Schema schema = FieldUtil.createMinimalValidSchema();
+			SchemaModel schema = FieldUtil.createMinimalValidSchema();
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			testPermission(GraphPermission.DELETE_PERM, newContainer);
 		}
@@ -263,7 +264,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	public void testUpdatePermission() throws MeshSchemaException {
 		try (NoTx noTx = db().noTx()) {
 			SchemaContainer newContainer;
-			Schema schema = FieldUtil.createMinimalValidSchema();
+			SchemaModel schema = FieldUtil.createMinimalValidSchema();
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			testPermission(GraphPermission.UPDATE_PERM, newContainer);
 		}
@@ -274,7 +275,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 	public void testCreatePermission() throws MeshSchemaException {
 		try (NoTx noTx = db().noTx()) {
 			SchemaContainer newContainer;
-			Schema schema = FieldUtil.createMinimalValidSchema();
+			SchemaModel schema = FieldUtil.createMinimalValidSchema();
 			newContainer = meshRoot().getSchemaContainerRoot().create(schema, user());
 			testPermission(GraphPermission.CREATE_PERM, newContainer);
 		}

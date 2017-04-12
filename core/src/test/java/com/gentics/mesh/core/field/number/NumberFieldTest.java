@@ -25,7 +25,7 @@ import com.gentics.mesh.core.rest.node.field.NumberField;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
@@ -104,7 +104,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 			Node node = folder("2015");
 
 			// Update the schema
-			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 			numberFieldSchema.setName("numberField");
 			//		numberFieldSchema.setMin(10);

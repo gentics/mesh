@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.schema;
 
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+
 /**
  * A schema storage is a store which hold schemas. Schema storages are used to quickly load a schema in order to deserialize or serialize a node. TODO: add
  * version
@@ -30,7 +32,7 @@ public interface SchemaStorage {
 	 *            Schema name
 	 * @return Found schema or null when no schema could be found
 	 */
-	Schema getSchema(String name);
+	SchemaModel getSchema(String name);
 
 	/**
 	 * Return the schema with the given name in the given version.
@@ -41,7 +43,7 @@ public interface SchemaStorage {
 	 *            Schema version
 	 * @return Found schema or null when no schema could be found
 	 */
-	Schema getSchema(String name, int version);
+	SchemaModel getSchema(String name, int version);
 
 	/**
 	 * Add the given schema to the storage. Existing schemas will be updated.
@@ -49,7 +51,7 @@ public interface SchemaStorage {
 	 * @param schema
 	 *            Schema
 	 */
-	void addSchema(Schema schema);
+	void addSchema(SchemaModel schema);
 
 	/**
 	 * Get the microschema with the given name in the newest version
@@ -58,7 +60,7 @@ public interface SchemaStorage {
 	 *            microschema name
 	 * @return microschema instance or null if the schema could not be found
 	 */
-	Microschema getMicroschema(String name);
+	MicroschemaModel getMicroschema(String name);
 
 	/**
 	 * Return the microschema with the given name in the given version.
@@ -69,7 +71,7 @@ public interface SchemaStorage {
 	 *            Microschema version
 	 * @return Found microschema or null when no microschema could be found
 	 */
-	Microschema getMicroschema(String name, int version);
+	MicroschemaModel getMicroschema(String name, int version);
 
 	/**
 	 * Add the given microschema to the storage
@@ -77,7 +79,7 @@ public interface SchemaStorage {
 	 * @param microschema
 	 *            microschema instance
 	 */
-	void addMicroschema(Microschema microschema);
+	void addMicroschema(MicroschemaModel microschema);
 
 	/**
 	 * Remove the microschema with the given name from the storage

@@ -67,8 +67,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 		// Use the mesh jwt options in order to setup the JWTAuth provider
 		AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
-		String secret = options.getSignatureSecret();
-		if (secret == null) {
+		String keystorePassword = options.getKeystorePassword();
+		if (keystorePassword == null) {
 			throw new RuntimeException(
 					"Options file is missing the keystore secret password. This should be set in mesh configuration file: authenticationOptions.signatureSecret");
 		}
@@ -90,7 +90,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		}
 
 		JsonObject config = new JsonObject().put("keyStore",
-				new JsonObject().put("path", keyStorePath).put("type", type).put("password", secret));
+				new JsonObject().put("path", keyStorePath).put("type", type).put("password", keystorePassword));
 		jwtProvider = JWTAuth.create(Mesh.vertx(), config);
 
 	}
@@ -210,9 +210,10 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 */
 	public String generateToken(User user) {
 		if (user instanceof MeshAuthUser) {
+			AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
 			JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, ((MeshAuthUser) user).getUuid());
-			return jwtProvider.generateToken(tokenData, new JWTOptions()
-					.setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()));
+			return jwtProvider.generateToken(tokenData, new JWTOptions().setAlgorithm(options.getAlgorithm())
+					.setExpiresInSeconds(options.getTokenExpirationTime()));
 		} else {
 			log.error("Can't generate token for user of type {" + user.getClass().getName() + "}");
 			throw error(INTERNAL_SERVER_ERROR, "error_internal");

@@ -43,7 +43,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
@@ -124,7 +124,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		ac.setProject(project);
 		ac.setRelease(release);
 
-		Schema newSchema = toVersion.getSchema();
+		SchemaModel newSchema = toVersion.getSchema();
 		List<Completable> batches = new ArrayList<>();
 
 		// Iterate over all containers and invoke a migration for each one

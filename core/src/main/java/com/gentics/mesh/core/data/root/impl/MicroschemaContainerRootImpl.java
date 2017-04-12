@@ -21,8 +21,8 @@ import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -56,7 +56,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public MicroschemaContainer create(Microschema microschema, User user) {
+	public MicroschemaContainer create(MicroschemaModel microschema, User user) {
 		microschema.validate();
 		MicroschemaContainer container = getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 		MicroschemaContainerVersion version = getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
@@ -81,7 +81,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	@Override
 	public MicroschemaContainer create(InternalActionContext ac, SearchQueueBatch batch) {
 		MeshAuthUser requestUser = ac.getUser();
-		Microschema microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
+		MicroschemaModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 		microschema.validate();
 		if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid());

@@ -20,9 +20,11 @@ public class TagFamilyCreateRequest implements RestModel {
 	 * Set the name of the tag.
 	 * 
 	 * @param name
+	 * @return Fluent API
 	 */
-	public void setName(String name) {
+	public TagFamilyCreateRequest setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	/**

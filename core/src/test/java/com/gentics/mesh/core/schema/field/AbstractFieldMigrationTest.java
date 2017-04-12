@@ -8,7 +8,6 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -40,14 +39,14 @@ import com.gentics.mesh.core.field.DataAsserter;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.FieldFetcher;
 import com.gentics.mesh.core.field.FieldSchemaCreator;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -896,7 +895,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	protected SchemaContainerVersion createSchemaVersion(SchemaContainer container, String name, int version,
 			FieldSchema... fields) {
-		Schema schema = new SchemaModel();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName(name);
 		schema.setVersion(version);
 		for (FieldSchema field : fields) {
@@ -926,7 +925,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	protected MicroschemaContainerVersion createMicroschemaVersion(MicroschemaContainer container, String name,
 			int version, FieldSchema... fields) {
-		Microschema schema = new MicroschemaModel();
+		MicroschemaModel schema = new MicroschemaModelImpl();
 		schema.setName(name);
 		schema.setVersion(version);
 		for (FieldSchema field : fields) {
@@ -963,7 +962,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		latestVersion.reload();
 
 		// Add a micronode field to the schema of the node.
-		Schema schema = latestVersion.getSchema();
+		SchemaModel schema = latestVersion.getSchema();
 		if (schema.getField(micronodeFieldName) == null) {
 			schema.addField(new MicronodeFieldSchemaImpl().setName(micronodeFieldName).setLabel("Micronode Field"));
 		}

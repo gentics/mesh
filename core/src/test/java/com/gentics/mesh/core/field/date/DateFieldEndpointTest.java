@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.date;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.DateUtils.fromISO8601;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,11 +22,10 @@ import com.gentics.mesh.core.rest.node.field.DateField;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -34,7 +34,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Before
 	public void updateSchema() throws IOException {
 		try (NoTx noTx = db().noTx()) {
-			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			DateFieldSchema dateFieldSchema = new DateFieldSchemaImpl();
 			dateFieldSchema.setName(FIELD_NAME);
 			dateFieldSchema.setLabel("Some label");

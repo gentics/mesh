@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema.change;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -17,12 +18,12 @@ import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 /**
  * Test {@link UpdateSchemaChangeImpl} methods
@@ -60,7 +61,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	public void testApply() {
 		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModelImpl();
 			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setName("updated");
 			version.setSchema(schema);
@@ -83,7 +84,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			// 1. Create the schema container
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModelImpl();
 			schema.setSegmentField("someField");
 			schema.addField(FieldUtil.createHtmlFieldSchema("first"));
 			schema.addField(FieldUtil.createHtmlFieldSchema("second"));
@@ -110,7 +111,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModelImpl();
 			schema.setSegmentField("someField");
 
 			// 2. Create schema update change
@@ -132,7 +133,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModelImpl();
 
 			// 2. Create schema update change
 			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);

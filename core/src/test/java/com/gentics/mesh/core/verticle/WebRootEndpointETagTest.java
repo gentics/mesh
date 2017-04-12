@@ -17,7 +17,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.LinkType;
@@ -106,7 +106,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 			Node node = content("news_2015");
 
 			// Inject the reference node field
-			Schema schema = node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema();
+			SchemaModel schema = node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
 			node.getGraphFieldContainer("en").getSchemaContainerVersion().setSchema(schema);
 			node.getGraphFieldContainer("en").createNode("reference", folder("2015"));

@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.micronode.MicronodeFieldHelper.FILL;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.DateUtils.fromISO8601;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -39,15 +40,15 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.field.AbstractFieldTest;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -63,7 +64,6 @@ import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 /**
  * Test cases for fields of type "micronode"
@@ -91,7 +91,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	 * @throws MeshJsonException
 	 */
 	protected MicroschemaContainer createDummyMicroschema() throws MeshJsonException {
-		Microschema dummyMicroschema = new MicroschemaModel();
+		MicroschemaModel dummyMicroschema = new MicroschemaModelImpl();
 		dummyMicroschema.setName("dummymicroschema");
 
 		StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
@@ -121,7 +121,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			Node newOverview = content("news overview");
 			Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
 
-			Microschema fullMicroschema = new MicroschemaModel();
+			MicroschemaModel fullMicroschema = new MicroschemaModelImpl();
 			fullMicroschema.setName("full");
 
 			// fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
@@ -142,7 +142,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			MicroschemaContainer microschemaContainer = boot().microschemaContainerRoot().create(fullMicroschema, getRequestUser());
 
 			Node node = folder("2015");
-			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
@@ -255,7 +255,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			MicronodeGraphField field = container.createMicronode("testMicronodeField", dummyMicroschema.getLatestVersion());
 			Micronode micronode = field.getMicronode();
 
-			Microschema schema = micronode.getSchemaContainerVersion().getSchema();
+			MicroschemaModel schema = micronode.getSchemaContainerVersion().getSchema();
 			schema.addField(FieldUtil.createStringFieldSchema("stringfield"));
 			micronode.getSchemaContainerVersion().setSchema(schema);
 			InternalActionContext ac = mockActionContext();
@@ -351,7 +351,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			// Create microschema for the micronode
 			MicroschemaContainerVersion containerVersion = noTx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
-			Microschema microschema = new MicroschemaModel();
+			MicroschemaModel microschema = new MicroschemaModelImpl();
 			microschema.setVersion(1);
 			microschema.addField(FieldUtil.createStringFieldSchema("string"));
 			microschema.addField(FieldUtil.createDateFieldSchema("date"));

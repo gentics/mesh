@@ -17,7 +17,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -26,7 +26,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 /**
  * @see SchemaContainer
  */
-public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<SchemaResponse, Schema, SchemaReference, SchemaContainer, SchemaContainerVersion>
+public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<SchemaResponse, SchemaModel, SchemaReference, SchemaContainer, SchemaContainerVersion>
 		implements SchemaContainer {
 
 	@Override

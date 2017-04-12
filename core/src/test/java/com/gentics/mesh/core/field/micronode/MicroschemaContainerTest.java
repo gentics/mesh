@@ -28,7 +28,8 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
@@ -144,7 +145,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testCreate() throws IOException {
 		try (NoTx noTx = db().noTx()) {
-			Microschema schema = new MicroschemaModel();
+			MicroschemaModel schema = new MicroschemaModelImpl();
 			schema.setName("test");
 			MicroschemaContainer container = MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().create(schema, user());
 			assertNotNull("The container was not created.", container);
@@ -171,7 +172,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testDelete() throws MeshJsonException {
 		try (Tx tx = db().tx()) {
-			Microschema schema = new MicroschemaModel();
+			MicroschemaModel schema = new MicroschemaModelImpl();
 			schema.setName("test");
 			MicroschemaContainer container = MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().create(schema, user());
 			assertNotNull(MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().findByName("test"));
@@ -192,7 +193,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testReadPermission() throws MeshJsonException {
 		try (NoTx noTx = db().noTx()) {
-			Microschema microschema = new MicroschemaModel();
+			MicroschemaModel microschema = new MicroschemaModelImpl();
 			microschema.setName("someNewMicroschema");
 			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
 			testPermission(GraphPermission.READ_PERM, microschemaContainer);
@@ -203,7 +204,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testDeletePermission() throws MeshJsonException {
 		try (NoTx noTx = db().noTx()) {
-			Microschema microschema = new MicroschemaModel();
+			MicroschemaModel microschema = new MicroschemaModelImpl();
 			microschema.setName("someNewMicroschema");
 			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
 			testPermission(GraphPermission.DELETE_PERM, microschemaContainer);
@@ -215,7 +216,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testUpdatePermission() throws MeshJsonException {
 		try (NoTx noTx = db().noTx()) {
-			Microschema microschema = new MicroschemaModel();
+			MicroschemaModel microschema = new MicroschemaModelImpl();
 			microschema.setName("someNewMicroschema");
 			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
 			testPermission(GraphPermission.UPDATE_PERM, microschemaContainer);
@@ -226,7 +227,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Override
 	public void testCreatePermission() throws MeshJsonException {
 		try (NoTx noTx = db().noTx()) {
-			Microschema microschema = new MicroschemaModel();
+			MicroschemaModel microschema = new MicroschemaModelImpl();
 			microschema.setName("someNewMicroschema");
 			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
 			testPermission(GraphPermission.CREATE_PERM, microschemaContainer);
@@ -259,7 +260,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 		try (NoTx noTx = db().noTx()) {
 			MicroschemaContainerRoot root = meshRoot().getMicroschemaContainerRoot();
 
-			Microschema microschema = new MicroschemaModel();
+			MicroschemaModel microschema = new MicroschemaModelImpl();
 			microschema.setName("someNewMicroschema");
 			MicroschemaContainer container = root.create(microschema, user());
 
@@ -281,7 +282,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 			MicroschemaContainerVersion vcard = microschemaContainer("vcard").getLatestVersion();
 
 			Microschema microschema = vcard.getSchema();
-			Microschema updatedMicroschema = new MicroschemaModel();
+			Microschema updatedMicroschema = new MicroschemaModelImpl();
 			updatedMicroschema.setName(microschema.getName());
 			updatedMicroschema.getFields().addAll(microschema.getFields());
 			updatedMicroschema.addField(FieldUtil.createStringFieldSchema("newfield"));

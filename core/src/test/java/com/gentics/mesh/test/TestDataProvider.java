@@ -37,8 +37,8 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
@@ -410,7 +410,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addVCardMicroschema() throws MeshJsonException {
-		Microschema vcardMicroschema = new MicroschemaModel();
+		MicroschemaModel vcardMicroschema = new MicroschemaModelImpl();
 		vcardMicroschema.setName("vcard");
 		vcardMicroschema.setDescription("Microschema for a vcard");
 
@@ -452,7 +452,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
-		Microschema captionedImageMicroschema = new MicroschemaModel();
+		MicroschemaModel captionedImageMicroschema = new MicroschemaModelImpl();
 		captionedImageMicroschema.setName("captionedImage");
 		captionedImageMicroschema.setDescription("Microschema for a captioned image");
 

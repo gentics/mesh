@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
@@ -46,8 +47,9 @@ import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
@@ -58,7 +60,6 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -125,10 +126,10 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			int totalSchemas;
 			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
 			final int nSchemas = 22;
-			Schema schema = FieldUtil.createMinimalValidSchema();
+			SchemaModel schema = FieldUtil.createMinimalValidSchema();
 			schema.setName("No_Perm_Schema");
 			SchemaContainer noPermSchema = schemaRoot.create(schema, user());
-			Schema dummySchema = new SchemaModel();
+			SchemaModel dummySchema = new SchemaModelImpl();
 			dummySchema.setName("dummy");
 			noPermSchema.getLatestVersion().setSchema(dummySchema);
 			for (int i = 0; i < nSchemas; i++) {
@@ -269,6 +270,26 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setName(name);
 
 		call(() -> client().createSchema(request), CONFLICT, "schema_conflicting_name", name);
+	}
+
+	@Test
+	public void testUpdateWithConflictingName() {
+		String name = "newschema";
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setSegmentField("name");
+		request.getFields().add(FieldUtil.createStringFieldSchema("name").setRequired(true));
+		request.setDisplayField("name");
+		request.setName(name);
+
+		SchemaResponse response = call(() -> client().createSchema(request));
+
+		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
+		updateRequest.setSegmentField("name");
+		updateRequest.getFields().add(FieldUtil.createStringFieldSchema("name").setRequired(true));
+		updateRequest.setDisplayField("name");
+		updateRequest.setName("folder");
+
+		call(() -> client().updateSchema(response.getUuid(), updateRequest), CONFLICT, "schema_conflicting_name", "folder");
 	}
 
 	@Test

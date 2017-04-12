@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
  * Base class for named references. A named reference is a reference to a element within mesh that can be identified by uuid and name.
  *
  * @param <T>
+ *            Specific type which is referenced. Used for fluent API
  */
 public abstract class NameUuidReference<T> {
 

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.field.micronode;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -35,11 +36,10 @@ import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
@@ -49,7 +49,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Before
 	public void updateSchema() throws IOException {
 		try (NoTx noTx = db().noTx()) {
-			Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 			listFieldSchema.setName(FIELD_NAME);
 			listFieldSchema.setLabel("Some label");

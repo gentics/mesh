@@ -35,7 +35,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -55,7 +55,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	public void testNullOperation() {
 		try (NoTx noTx = db().noTx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			SchemaModel schema = new SchemaModel();
+			SchemaModelImpl schema = new SchemaModelImpl();
 			version.setSchema(schema);
 			Schema updatedSchema = mutator.apply(version);
 			assertNotNull(updatedSchema);
@@ -69,7 +69,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			SchemaModel schema = new SchemaModel("testschema");
+			SchemaModelImpl schema = new SchemaModelImpl("testschema");
 
 			NumberFieldSchema numberField = new NumberFieldSchemaImpl();
 			numberField.setName("testField");
@@ -100,7 +100,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			SchemaModel schema = new SchemaModel("testschema");
+			SchemaModelImpl schema = new SchemaModelImpl("testschema");
 
 			StringFieldSchema stringField = new StringFieldSchemaImpl();
 			stringField.setAllowedValues("blub");
@@ -131,7 +131,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			SchemaModel schema = new SchemaModel("testschema");
+			SchemaModelImpl schema = new SchemaModelImpl("testschema");
 
 			BinaryFieldSchema binaryField = new BinaryFieldSchemaImpl();
 			binaryField.setName("binaryField");

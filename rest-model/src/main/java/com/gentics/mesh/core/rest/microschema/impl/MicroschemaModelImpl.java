@@ -5,14 +5,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
 
 /**
- * POJO for a microschema response.
+ * Implementation of Microschema
  */
-public class MicroschemaResponse extends AbstractGenericRestResponse implements Microschema {
+public class MicroschemaModelImpl implements MicroschemaModel {
 
 	@JsonPropertyDescription("Version of the microschema")
 	private int version;
@@ -26,22 +25,13 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	@JsonPropertyDescription("List of microschema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
 
-	/**
-	 * Return the container version.
-	 * 
-	 * @return
-	 */
+	@Override
 	public int getVersion() {
 		return version;
 	}
 
-	/**
-	 * Set the container version.
-	 * 
-	 * @param version
-	 * @return Fluent API
-	 */
-	public MicroschemaResponse setVersion(int version) {
+	@Override
+	public MicroschemaModel setVersion(int version) {
 		this.version = version;
 		return this;
 	}
@@ -52,7 +42,7 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	}
 
 	@Override
-	public MicroschemaResponse setDescription(String description) {
+	public MicroschemaModel setDescription(String description) {
 		this.description = description;
 		return this;
 	}
@@ -63,7 +53,7 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	}
 
 	@Override
-	public MicroschemaResponse setName(String name) {
+	public MicroschemaModel setName(String name) {
 		this.name = name;
 		return this;
 	}
@@ -74,7 +64,7 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	}
 
 	@Override
-	public MicroschemaResponse setFields(List<FieldSchema> fields) {
+	public MicroschemaModel setFields(List<FieldSchema> fields) {
 		this.fields = fields;
 		return this;
 	}
@@ -85,4 +75,5 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 		return getName() + " fields: {" + fields + "}";
 	}
 
+	
 }

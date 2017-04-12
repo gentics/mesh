@@ -17,9 +17,11 @@ public class TagFamilyUpdateRequest implements RestModel {
 	 * Set the name of the tag family.
 	 * 
 	 * @param name
+	 * @return Fluent API
 	 */
-	public void setName(String name) {
+	public TagFamilyUpdateRequest setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	/**

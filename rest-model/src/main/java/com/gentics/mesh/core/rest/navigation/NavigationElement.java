@@ -35,9 +35,11 @@ public class NavigationElement {
 	 * Set the element uuid.
 	 * 
 	 * @param uuid
+	 * @return Fluent API
 	 */
-	public void setUuid(String uuid) {
+	public NavigationElement setUuid(String uuid) {
 		this.uuid = uuid;
+		return this;
 	}
 
 	/**
@@ -53,9 +55,11 @@ public class NavigationElement {
 	 * Set the navigation children.
 	 * 
 	 * @param children
+	 * @return Fluent API
 	 */
-	public void setChildren(List<NavigationElement> children) {
+	public NavigationElement setChildren(List<NavigationElement> children) {
 		this.children = children;
+		return this;
 	}
 
 	/**
@@ -71,9 +75,11 @@ public class NavigationElement {
 	 * Set the node response object for this navigation element.
 	 * 
 	 * @param node
+	 * @return Fluent API
 	 */
-	public void setNode(NodeResponse node) {
+	public NavigationElement setNode(NodeResponse node) {
 		this.node = node;
+		return this;
 	}
 
 }

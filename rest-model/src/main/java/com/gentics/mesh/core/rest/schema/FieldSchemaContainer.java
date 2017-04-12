@@ -167,20 +167,6 @@ public interface FieldSchemaContainer extends RestModel {
 	FieldSchemaContainer setFields(List<FieldSchema> fields);
 
 	/**
-	 * Return the container version.
-	 * 
-	 * @return
-	 */
-	int getVersion();
-
-	/**
-	 * Set the container version.
-	 * 
-	 * @param version
-	 */
-	FieldSchemaContainer setVersion(int version);
-
-	/**
 	 * Validate the schema for correctness.
 	 */
 	default void validate() {

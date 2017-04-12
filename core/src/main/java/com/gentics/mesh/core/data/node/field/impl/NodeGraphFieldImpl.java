@@ -41,6 +41,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		if (graphNodeField == null) {
 			return null;
 		} else {
+			//TODO check permissions
 			return graphNodeField.transformToRest(ac, fieldKey, languageTags, level);
 		}
 	};

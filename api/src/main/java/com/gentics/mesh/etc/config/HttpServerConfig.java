@@ -10,6 +10,7 @@ public class HttpServerConfig {
 	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "";
 
 	public static final String HTTP_PORT_KEY = "httpPort";
+
 	public static final int DEFAULT_HTTP_PORT = 8080;
 
 	private int port = DEFAULT_HTTP_PORT;
@@ -35,9 +36,11 @@ public class HttpServerConfig {
 	 * 
 	 * @param port
 	 *            Http server port
+	 * @return Fluent API
 	 */
-	public void setPort(int port) {
+	public HttpServerConfig setPort(int port) {
 		this.port = port;
+		return this;
 	}
 
 	/**
@@ -50,13 +53,15 @@ public class HttpServerConfig {
 	}
 
 	/**
-	 * Set the flag which will enable cors.
+	 * Set the flag which will enable CORS.
 	 * 
 	 * @param enableCors
 	 *            CORS enabled flag
+	 * @return Fluent API
 	 */
-	public void setEnableCors(Boolean enableCors) {
+	public HttpServerConfig setEnableCors(Boolean enableCors) {
 		this.enableCors = enableCors;
+		return this;
 	}
 
 	/**
@@ -83,9 +88,11 @@ public class HttpServerConfig {
 	 * 
 	 * @param corsAllowedOriginPattern
 	 *            CORS allowed pattern
+	 * @return Fluent API
 	 */
-	public void setCorsAllowedOriginPattern(String corsAllowedOriginPattern) {
+	public HttpServerConfig setCorsAllowedOriginPattern(String corsAllowedOriginPattern) {
 		this.corsAllowedOriginPattern = corsAllowedOriginPattern;
+		return this;
 	}
 
 }

@@ -1,5 +1,6 @@
 package com.gentics.mesh.linkrenderer;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
@@ -16,14 +17,13 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class LinkRendererTest extends AbstractMeshTest {
@@ -262,7 +262,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 			// Transform the node into a node with a binary field.
 			String fileName = "somefile.dat";
-			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary").setLabel("Binary content"));
 			schema.setSegmentField("binary");
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);

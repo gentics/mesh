@@ -10,7 +10,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 public class TagUpdateRequest implements RestModel {
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("New tag name")
+	@JsonPropertyDescription("New name of the tag.")
 	private String name;
 
 	public TagUpdateRequest() {
@@ -29,9 +29,11 @@ public class TagUpdateRequest implements RestModel {
 	 * Set the name of the tag.
 	 * 
 	 * @param name
+	 * @return Fluent API
 	 */
-	public void setName(String name) {
+	public TagUpdateRequest setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 }

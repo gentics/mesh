@@ -2,6 +2,7 @@ package com.gentics.mesh.core.field.binary;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -27,7 +28,7 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.LinkType;
@@ -40,7 +41,6 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.vertx.core.buffer.Buffer;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
@@ -126,7 +126,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			Node node = folder("news");
 
 			// Add a schema called nonBinary
-			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new StringFieldSchemaImpl().setName("nonBinary").setLabel("No Binary content"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
 
@@ -287,7 +287,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			prepareSchema(folder2014, "", "binary");
 
 			// make binary field the segment field
-			Schema schema = folder2014.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaModel schema = folder2014.getSchemaContainer().getLatestVersion().getSchema();
 			schema.setSegmentField("binary");
 			folder2014.getSchemaContainer().getLatestVersion().setSchema(schema);
 		}

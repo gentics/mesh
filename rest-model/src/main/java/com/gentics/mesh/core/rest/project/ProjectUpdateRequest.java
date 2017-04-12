@@ -26,9 +26,11 @@ public class ProjectUpdateRequest implements RestModel {
 	 * Set the project name.
 	 * 
 	 * @param name
+	 * @return Fluent API
 	 */
-	public void setName(String name) {
+	public ProjectUpdateRequest setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 }

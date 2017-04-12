@@ -1,60 +1,118 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
-import com.gentics.mesh.core.rest.schema.FieldSchema;
+import java.util.ArrayList;
 import java.util.List;
 
-public class SchemaCreateRequest extends SchemaUpdateRequest {
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
+
+public class SchemaCreateRequest implements Schema {
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Name of the display field.")
+	private String displayField;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Name of the segment field. This field is used to construct the webroot path to the node.")
+	private String segmentField;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
+	private boolean container = false;
+
+	// @JsonProperty(required = true)
+	// @JsonPropertyDescription("Version of the schema")
+	// private int version;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Description of the schema")
+	private String description;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Name of the schema")
+	private String name;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("List of schema fields")
+	private List<FieldSchema> fields = new ArrayList<>();
+
+	// @Override
+	// public int getVersion() {
+	// return version;
+	// }
+	//
+	// @Override
+	// public SchemaCreateRequest setVersion(int version) {
+	// this.version = version;
+	// return this;
+	// }
+
 	@Override
-	public SchemaCreateRequest setVersion(int version) {
-		super.setVersion(version);
-		return this;
+	public String getDescription() {
+		return description;
 	}
 
 	@Override
 	public SchemaCreateRequest setDescription(String description) {
-		super.setDescription(description);
+		this.description = description;
 		return this;
 	}
 
 	@Override
+	public String getName() {
+		return name;
+	}
+
+	@Override
 	public SchemaCreateRequest setName(String name) {
-		super.setName(name);
+		this.name = name;
 		return this;
 	}
 
 	@Override
 	public SchemaCreateRequest setSegmentField(String segmentField) {
-		super.setSegmentField(segmentField);
+		this.segmentField = segmentField;
 		return this;
+	}
+
+	@Override
+	public String getSegmentField() {
+		return segmentField;
+	}
+
+	@Override
+	public List<FieldSchema> getFields() {
+		return fields;
 	}
 
 	@Override
 	public SchemaCreateRequest setFields(List<FieldSchema> fields) {
-		super.setFields(fields);
+		this.fields = fields;
 		return this;
+	}
+
+	@Override
+	public boolean isContainer() {
+		return container;
 	}
 
 	@Override
 	public SchemaCreateRequest setContainer(boolean flag) {
-		super.setContainer(flag);
+		this.container = flag;
 		return this;
 	}
 
 	@Override
-	public SchemaCreateRequest addField(FieldSchema fieldSchema) {
-		super.addField(fieldSchema);
-		return this;
+	public String getDisplayField() {
+		return displayField;
 	}
 
 	@Override
 	public SchemaCreateRequest setDisplayField(String displayField) {
-		super.setDisplayField(displayField);
+		this.displayField = displayField;
 		return this;
 	}
 
-	@Override
-	public SchemaCreateRequest addField(FieldSchema fieldSchema, String afterFieldName) {
-		super.addField(fieldSchema, afterFieldName);
-		return this;
-	}
 }

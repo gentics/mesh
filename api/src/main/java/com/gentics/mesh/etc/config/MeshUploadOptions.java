@@ -26,9 +26,11 @@ public class MeshUploadOptions {
 	 * 
 	 * @param byteLimit
 	 *            Limit in bytes
+	 * @return Fluent API
 	 */
-	public void setByteLimit(long byteLimit) {
+	public MeshUploadOptions setByteLimit(long byteLimit) {
 		this.byteLimit = byteLimit;
+		return this;
 	}
 
 	/**
@@ -45,9 +47,11 @@ public class MeshUploadOptions {
 	 * 
 	 * @param directory
 	 *            Binary storage filesystem directory
+	 * @return Fluent API
 	 */
-	public void setDirectory(String directory) {
+	public MeshUploadOptions setDirectory(String directory) {
 		this.directory = directory;
+		return this;
 	}
 
 	/**
@@ -64,9 +68,11 @@ public class MeshUploadOptions {
 	 * 
 	 * @param tempDirectory
 	 *            Temporary filesystem directory
+	 * @return Fluent API
 	 */
-	public void setTempDirectory(String tempDirectory) {
+	public MeshUploadOptions setTempDirectory(String tempDirectory) {
 		this.tempDirectory = tempDirectory;
+		return this;
 	}
 
 }

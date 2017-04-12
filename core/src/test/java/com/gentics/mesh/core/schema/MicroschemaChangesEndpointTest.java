@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -16,13 +17,13 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
@@ -32,7 +33,6 @@ import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.TestUtils;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
@@ -57,7 +57,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 			// 4. Invoke migration
 			assertNull("The schema should not yet have any changes", container.getLatestVersion().getNextChange());
 			call(() -> client().applyChangesToMicroschema(container.getUuid(), listOfChanges));
-			Microschema microschema = call(() -> client().findMicroschemaByUuid(container.getUuid()));
+			MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
 					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
 
@@ -79,7 +79,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 	private Node createMicronodeNode() {
 
 		// 1. Update folder schema
-		Schema schema = schemaContainer("folder").getLatestVersion().getSchema();
+		SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 		MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 		microschemaFieldSchema.setName("micronodeField");
 		microschemaFieldSchema.setLabel("Some label");
@@ -119,7 +119,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 			// 3. Invoke migration
 			call(() -> client().applyChangesToMicroschema(container.getUuid(), listOfChanges));
-			Microschema microschema = call(() -> client().findMicroschemaByUuid(container.getUuid()));
+			MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
 					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
 
@@ -149,7 +149,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 			// 3. Invoke migration
 			call(() -> client().updateMicroschema(vcardContainer.getUuid(), request, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
-			Microschema microschema = call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()));
+			MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()));
 			call(() -> client().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
 					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
 

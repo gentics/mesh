@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -35,7 +36,7 @@ import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -46,7 +47,6 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -543,7 +543,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	public void testAssignUnassignedSchemaVersion() throws Exception {
 		try (NoTx noTx = db().noTx()) {
-			Schema schema = createSchema("schemaname");
+			SchemaModel schema = createSchema("schemaname");
 			Project project = project();
 
 			call(() -> client().assignReleaseSchemaVersions(project.getName(), project.getInitialRelease().getUuid(),
@@ -734,7 +734,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	public void testAssignUnassignedMicroschemaVersion() throws Exception {
 		try (NoTx noTx = db().noTx()) {
-			Schema schema = createSchema("microschemaname");
+			SchemaModel schema = createSchema("microschemaname");
 			Project project = project();
 
 			call(() -> client().assignReleaseMicroschemaVersions(project.getName(), project.getInitialRelease().getUuid(),

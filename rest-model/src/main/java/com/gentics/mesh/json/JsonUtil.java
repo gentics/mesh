@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.module.jsonSchema.JsonSchemaGenerator;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.ListableField;
@@ -35,7 +35,7 @@ import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 
 import io.vertx.core.logging.Logger;
@@ -91,8 +91,8 @@ public final class JsonUtil {
 
 			@Override
 			public void setupModule(SetupContext context) {
-				context.addAbstractTypeResolver(new SimpleAbstractTypeResolver().addMapping(Schema.class, SchemaModel.class));
-				context.addAbstractTypeResolver(new SimpleAbstractTypeResolver().addMapping(Microschema.class, MicroschemaModel.class));
+				context.addAbstractTypeResolver(new SimpleAbstractTypeResolver().addMapping(Schema.class, SchemaModelImpl.class));
+				context.addAbstractTypeResolver(new SimpleAbstractTypeResolver().addMapping(Microschema.class, MicroschemaModelImpl.class));
 			}
 		});
 

@@ -35,9 +35,11 @@ public class GraphStorageOptions {
 	 * 
 	 * @param directory
 	 *            Graph storage filesystem directory
+	 * @return Fluent API
 	 */
-	public void setDirectory(String directory) {
+	public GraphStorageOptions setDirectory(String directory) {
 		this.directory = directory;
+		return this;
 	}
 
 	/**
@@ -54,9 +56,11 @@ public class GraphStorageOptions {
 	 * 
 	 * @param key
 	 * @param value
+	 * @return Fluent API
 	 */
-	public void setParameter(String key, String value) {
+	public GraphStorageOptions setParameter(String key, String value) {
 		this.parameters.put(key, value);
+		return this;
 	}
 
 	/**
@@ -73,9 +77,11 @@ public class GraphStorageOptions {
 	 * 
 	 * @param backupDirectory
 	 *            Backup directory
+	 * @return Fluent API
 	 */
-	public void setBackupDirectory(String backupDirectory) {
+	public GraphStorageOptions setBackupDirectory(String backupDirectory) {
 		this.backupDirectory = backupDirectory;
+		return this;
 	}
 
 	/**
@@ -92,9 +98,11 @@ public class GraphStorageOptions {
 	 * 
 	 * @param exportDirectory
 	 *            Export directory
+	 * @return Fluent API
 	 */
-	public void setExportDirectory(String exportDirectory) {
+	public GraphStorageOptions setExportDirectory(String exportDirectory) {
 		this.exportDirectory = exportDirectory;
+		return this;
 	}
 
 	/**
@@ -110,8 +118,10 @@ public class GraphStorageOptions {
 	 * Set the start server flag.
 	 * 
 	 * @param startServer
+	 * @return Fluent API
 	 */
-	public void setStartServer(Boolean startServer) {
+	public GraphStorageOptions setStartServer(Boolean startServer) {
 		this.startServer = startServer;
+		return this;
 	}
 }

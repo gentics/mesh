@@ -33,9 +33,11 @@ public class TagResponse extends AbstractGenericRestResponse {
 	 * Set the tag family reference.
 	 * 
 	 * @param tagFamily
+	 * @return Fluent API
 	 */
-	public void setTagFamily(TagFamilyReference tagFamily) {
+	public TagResponse setTagFamily(TagFamilyReference tagFamily) {
 		this.tagFamily = tagFamily;
+		return this;
 	}
 
 	/**
@@ -51,9 +53,11 @@ public class TagResponse extends AbstractGenericRestResponse {
 	 * Set the name of the tag.
 	 * 
 	 * @param name
+	 * @return Fluent API
 	 */
-	public void setName(String name) {
+	public TagResponse setName(String name) {
 		this.name = name;
+		return this;
 	}
 
 	@Override

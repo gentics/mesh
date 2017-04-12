@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
 public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContainer> {
@@ -33,7 +33,7 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	 *            User that is used to set creator and editor references.
 	 * @return
 	 */
-	MicroschemaContainer create(Microschema microschema, User user);
+	MicroschemaContainer create(MicroschemaModel microschema, User user);
 
 	/**
 	 * Check whether the given microschema is assigned to this root node.

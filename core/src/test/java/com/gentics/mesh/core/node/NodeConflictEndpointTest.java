@@ -30,7 +30,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -291,7 +291,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		micronodeFieldSchema.setAllowedMicroSchemas("vcard");
 
 		// Add the field schemas to the schema
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(stringListFieldSchema);
 		schema.addField(micronodeFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);

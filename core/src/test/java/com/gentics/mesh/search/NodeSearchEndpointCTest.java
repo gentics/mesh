@@ -1,6 +1,7 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
@@ -18,7 +19,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.LinkType;
@@ -26,7 +27,6 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
@@ -66,7 +66,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		try (NoTx noTx = db().noTx()) {
 			Node nodeA = content("concorde");
 			Node nodeB = content();
-			Schema schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
+			SchemaModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new BinaryFieldSchemaImpl().setName("binary"));
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 

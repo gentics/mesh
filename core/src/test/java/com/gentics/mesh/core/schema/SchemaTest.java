@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
@@ -25,7 +25,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 
@@ -54,7 +54,7 @@ public class SchemaTest {
 
 	@Test
 	public void testSimpleSchema() throws IOException {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 		schema.setName("dummySchema");
 		schema.setContainer(true);
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label")
@@ -65,7 +65,7 @@ public class SchemaTest {
 
 	@Test
 	public void testSchemaWithNoFieldType() throws IOException {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 		schema.setName("dummySchema");
 		schema.setContainer(true);
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label")
@@ -78,7 +78,7 @@ public class SchemaTest {
 				.remove("type");
 
 		try {
-			JsonUtil.readValue(json.encodePrettily(), SchemaModel.class);
+			JsonUtil.readValue(json.encodePrettily(), SchemaModelImpl.class);
 			fail("An error should have been thrown");
 		} catch (GenericRestException e) {
 			assertThat(e).matches("error_json_structure_invalid", "9", "4", "fields", "Missing type property for field {Name}");
@@ -87,7 +87,7 @@ public class SchemaTest {
 
 	@Test
 	public void testSchemaNameValidation() {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 		schema.setContainer(true);
 		schema.addField(new HtmlFieldSchemaImpl().setLabel("Label")
 				.setName("Name")
@@ -120,7 +120,7 @@ public class SchemaTest {
 
 	@Test
 	public void testComplexSchema() throws IOException {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 		schema.setName("dummySchema");
 		schema.setDisplayField("name");
 		schema.setSegmentField("name_2");
@@ -170,7 +170,7 @@ public class SchemaTest {
 		String json = JsonUtil.toJson(schema);
 		System.out.println(json);
 		assertNotNull(json);
-		Schema deserializedSchema = JsonUtil.readValue(json, SchemaModel.class);
+		Schema deserializedSchema = JsonUtil.readValue(json, SchemaModelImpl.class);
 		assertEquals(schema.getFields()
 				.size(),
 				deserializedSchema.getFields()
@@ -180,13 +180,13 @@ public class SchemaTest {
 
 	@Test
 	public void testNoNameInvalid() throws MeshJsonException {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 		expectErrorOnValidate(schema, "schema_error_no_name");
 	}
 
 	@Test
 	public void testNoFields() throws MeshJsonException {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.validate();
 	}
@@ -200,7 +200,7 @@ public class SchemaTest {
 
 	@Test
 	public void testSegmentFieldInvalid() throws MeshJsonException {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("invalid");
 		schema.setDisplayField("name");
@@ -216,7 +216,7 @@ public class SchemaTest {
 
 	@Test
 	public void testDisplayFieldNotSet() throws MeshJsonException {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.addField(FieldUtil.createStringFieldSchema("name"));
@@ -225,7 +225,7 @@ public class SchemaTest {
 
 	@Test
 	public void testDuplicateLabelCheckWithNullValues() {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("fieldA");
 		schema.setDisplayField("fieldB");
@@ -259,7 +259,7 @@ public class SchemaTest {
 
 	@Test
 	public void testDisplayFieldInvalid() {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("invalid");
@@ -269,7 +269,7 @@ public class SchemaTest {
 
 	@Test
 	public void testDuplicateFieldSchemaName() {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
@@ -280,7 +280,7 @@ public class SchemaTest {
 
 	@Test
 	public void testDuplicateFieldSchemaLabel() {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
@@ -296,7 +296,7 @@ public class SchemaTest {
 	 */
 	@Test
 	public void testDisplayFieldToNoStringFieldInvalid() {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 		schema.setName("test");
 		schema.setSegmentField("name");
 		schema.setDisplayField("name");
@@ -325,7 +325,7 @@ public class SchemaTest {
 
 	@Test
 	public void testMicroschemaUnsupportedFieldTypeBinary() {
-		Microschema schema = new MicroschemaModel();
+		Microschema schema = new MicroschemaModelImpl();
 		schema.setName("test");
 		schema.setDescription("some blub");
 		schema.addField(FieldUtil.createBinaryFieldSchema("binary"));
@@ -334,7 +334,7 @@ public class SchemaTest {
 
 	@Test
 	public void testMicroschemaUnsupportedFieldTypeMicronode() {
-		Microschema schema = new MicroschemaModel();
+		Microschema schema = new MicroschemaModelImpl();
 		schema.setName("test");
 		schema.setDescription("some blub");
 		schema.addField(FieldUtil.createMicronodeFieldSchema("micronode"));
@@ -343,7 +343,7 @@ public class SchemaTest {
 
 	@Test
 	public void testMicroschemaUnsupportedFieldTypeMicronodeList() {
-		Microschema schema = new MicroschemaModel();
+		Microschema schema = new MicroschemaModelImpl();
 		schema.setName("test");
 		schema.setDescription("some blub");
 		schema.addField(FieldUtil.createListFieldSchema("list")
@@ -353,7 +353,7 @@ public class SchemaTest {
 
 	@Test
 	public void testMicroschemaUnsupportedFieldTypeBinaryList() {
-		Microschema schema = new MicroschemaModel();
+		Microschema schema = new MicroschemaModelImpl();
 		schema.setName("test");
 		schema.setDescription("some blub");
 		schema.addField(FieldUtil.createListFieldSchema("list")
