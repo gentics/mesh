@@ -33,7 +33,7 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
+import com.gentics.mesh.parameter.SchemaUpdateParameters;
 
 import dagger.Lazy;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -82,7 +82,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				SearchQueueBatch batch = searchQueue.create();
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
-				SchemaUpdateParametersImpl updateParams = ac.getSchemaUpdateParameters();
+				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 				if (updateParams.getUpdateAssignedReleases()) {
 					Map<Release, MicroschemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
 

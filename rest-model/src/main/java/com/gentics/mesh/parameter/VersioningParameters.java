@@ -27,7 +27,10 @@ public interface VersioningParameters extends ParameterProvider {
 	 *            name or uuid
 	 * @return fluent API
 	 */
-	VersioningParameters setRelease(String release);
+	default VersioningParameters setRelease(String release) {
+		setParameter(RELEASE_QUERY_PARAM_KEY, release);
+		return this;
+	}
 
 	/**
 	 * Set the version. This can be either "draft", "published" or a version number

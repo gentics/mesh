@@ -43,4 +43,9 @@ public class StringFieldSchemaImpl extends AbstractFieldSchema implements String
 			setAllowedValues((String[]) fieldProperties.get(ALLOW_KEY));
 		}
 	}
+
+	@Override
+	public String toString() {
+		return "name:" + getName() + ",label:" + getLabel() + ",type:" + getType();
+	}
 }

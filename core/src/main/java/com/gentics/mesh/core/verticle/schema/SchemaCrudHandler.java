@@ -40,7 +40,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
+import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
@@ -98,7 +98,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 				// Check whether the assigned releases of the schema should also directly be updated.
 				// This will trigger a node migration.
-				SchemaUpdateParametersImpl updateParams = ac.getSchemaUpdateParameters();
+				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 				if (updateParams.getUpdateAssignedReleases()) {
 					Map<Release, SchemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
 

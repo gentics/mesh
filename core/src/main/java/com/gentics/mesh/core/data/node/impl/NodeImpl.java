@@ -97,8 +97,8 @@ import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
+import com.gentics.mesh.parameter.VersioningParameters;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
-import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -541,7 +541,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Increment level for each node transformation to avoid stackoverflow situations
 		level = level + 1;
-		VersioningParametersImpl versioiningParameters = ac.getVersioningParameters();
+		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 
 		NodeResponse restNode = new NodeResponse();
 		SchemaContainer container = getSchemaContainer();
@@ -597,8 +597,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @return
 	 */
 	private void setFields(InternalActionContext ac, Release release, NodeResponse restNode, int level, String... languageTags) {
-		VersioningParametersImpl versioiningParameters = ac.getVersioningParameters();
-		NodeParametersImpl nodeParameters = ac.getNodeParameters();
+		VersioningParameters versioiningParameters = ac.getVersioningParameters();
+		NodeParameters nodeParameters = ac.getNodeParameters();
 
 		List<String> requestedLanguageTags = null;
 		if (languageTags != null && languageTags.length > 0) {
@@ -754,7 +754,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 * @return
 	 */
 	private void setPathsToRest(InternalActionContext ac, NodeResponse restNode, Release release) {
-		VersioningParametersImpl versioiningParameters = ac.getVersioningParameters();
+		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 			String releaseUuid = ac.getRelease(getProject()).getUuid();
 			ContainerType type = forVersion(versioiningParameters.getVersion());
@@ -773,7 +773,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, Release release) {
-		VersioningParametersImpl versioiningParameters = ac.getVersioningParameters();
+		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		String releaseUuid = ac.getRelease(getProject()).getUuid();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
@@ -1373,7 +1373,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public String getDisplayName(InternalActionContext ac) {
 		NodeParameters nodeParameters = ac.getNodeParameters();
-		VersioningParametersImpl versioningParameters = ac.getVersioningParameters();
+		VersioningParameters versioningParameters = ac.getVersioningParameters();
 
 		NodeGraphFieldContainer container = findNextMatchingFieldContainer(nodeParameters.getLanguageList(), ac.getRelease(getProject()).getUuid(),
 				versioningParameters.getVersion());
@@ -1706,7 +1706,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public String getETag(InternalActionContext ac) {
 		// Parameters
 		Release release = ac.getRelease(getProject());
-		VersioningParametersImpl versioiningParameters = ac.getVersioningParameters();
+		VersioningParameters versioiningParameters = ac.getVersioningParameters();
 		ContainerType type = forVersion(versioiningParameters.getVersion());
 
 		Node parentNode = getParentNode(release.getUuid());

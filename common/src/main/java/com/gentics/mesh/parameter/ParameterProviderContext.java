@@ -15,7 +15,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
  */
 public interface ParameterProviderContext extends ActionContext {
 
-	default NodeParametersImpl getNodeParameters() {
+	default NodeParameters getNodeParameters() {
 		return new NodeParametersImpl(this);
 	}
 
@@ -23,27 +23,27 @@ public interface ParameterProviderContext extends ActionContext {
 		return new UserParametersImpl(this);
 	}
 
-	default VersioningParametersImpl getVersioningParameters() {
+	default VersioningParameters getVersioningParameters() {
 		return new VersioningParametersImpl(this);
 	}
 
-	default PagingParametersImpl getPagingParameters() {
+	default PagingParameters getPagingParameters() {
 		return new PagingParametersImpl(this);
 	}
 
-	default RolePermissionParametersImpl getRolePermissionParameters() {
+	default RolePermissionParameters getRolePermissionParameters() {
 		return new RolePermissionParametersImpl(this);
 	}
 
-	default ImageManipulationParametersImpl getImageParameters() {
+	default ImageManipulationParameters getImageParameters() {
 		return new ImageManipulationParametersImpl(this);
 	}
 
-	default PublishParametersImpl getPublishParameters() {
+	default PublishParameters getPublishParameters() {
 		return new PublishParametersImpl(this);
 	}
 
-	default SchemaUpdateParametersImpl getSchemaUpdateParameters() {
+	default SchemaUpdateParameters getSchemaUpdateParameters() {
 		return new SchemaUpdateParametersImpl(this);
 	}
 

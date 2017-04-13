@@ -50,9 +50,7 @@ public interface NodeParameters extends ParameterProvider {
 			languages = value.split(",");
 		}
 		if (languages == null) {
-			languages = new String[] { Mesh.mesh()
-					.getOptions()
-					.getDefaultLanguage() };
+			languages = new String[] { Mesh.mesh().getOptions().getDefaultLanguage() };
 		}
 		return languages;
 	}
@@ -64,9 +62,21 @@ public interface NodeParameters extends ParameterProvider {
 	 * @return Fluent API
 	 */
 	default NodeParameters setResolveLinks(LinkType type) {
-		setParameter(RESOLVE_LINKS_QUERY_PARAM_KEY, type.name()
-				.toLowerCase());
+		setParameter(RESOLVE_LINKS_QUERY_PARAM_KEY, type.name().toLowerCase());
 		return this;
+	}
+
+	/**
+	 * Return the <code>{@value #RESOLVE_LINKS_QUERY_PARAM_KEY}</code> query parameter flag value.
+	 * 
+	 * @return
+	 */
+	default LinkType getResolveLinks() {
+		String value = getParameter(RESOLVE_LINKS_QUERY_PARAM_KEY);
+		if (value != null) {
+			return LinkType.valueOf(value.toUpperCase());
+		}
+		return LinkType.OFF;
 	}
 
 	/**

@@ -126,6 +126,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 		SchemaModel newSchema = toVersion.getSchema();
 		List<Completable> batches = new ArrayList<>();
+		SearchQueueBatch indexCreatingBatch = searchQueue.create();
+		indexCreatingBatch.createNodeIndex(project.getUuid(), releaseUuid, toVersion.getUuid(), DRAFT, toVersion.getSchema());
+		indexCreatingBatch.createNodeIndex(project.getUuid(), releaseUuid, toVersion.getUuid(), PUBLISHED, toVersion.getSchema());
 
 		// Iterate over all containers and invoke a migration for each one
 		for (NodeGraphFieldContainer container : fieldContainers) {
@@ -199,7 +202,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			}
 		}
 
-		return Completable.merge(batches);
+		return indexCreatingBatch.processAsync().andThen(Completable.merge(batches));
 	}
 
 	/**

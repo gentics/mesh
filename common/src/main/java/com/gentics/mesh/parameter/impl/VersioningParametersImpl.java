@@ -25,12 +25,6 @@ public class VersioningParametersImpl extends AbstractParameters implements Vers
 	}
 
 	@Override
-	public VersioningParameters setRelease(String release) {
-		setParameter(RELEASE_QUERY_PARAM_KEY, release);
-		return this;
-	}
-
-	@Override
 	public String getVersion() {
 		String version = "draft";
 		String versionParameter = getParameter(VERSION_QUERY_PARAM_KEY);
