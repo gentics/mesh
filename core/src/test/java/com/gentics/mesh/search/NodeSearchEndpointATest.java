@@ -5,8 +5,13 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -18,6 +23,8 @@ import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
+import java.util.List;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
@@ -106,4 +113,27 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
+	@Test
+	public void testSearchAfterSchemaUpdate() throws Exception {
+		String query = getSimpleTermQuery("schema.name.raw", "content");
+		long oldCount, newCount;
+
+		oldCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
+
+		SchemaResponse schema = call(() -> client().findSchemas(PROJECT_NAME)).getData().stream().filter(it -> it.getName().equals("content")).findAny().get();
+
+		List<FieldSchema> fields = schema.getFields();
+		fields.add(new StringFieldSchemaImpl().setName("test").setLabel("Test"));
+
+		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest()
+				.setFields(fields)
+				.setName(schema.getName());s
+
+		call(() -> client().updateSchema(schema.getUuid(), updateRequest));
+
+		newCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
+
+
+		assertThat(oldCount).isEqualTo(newCount);
+	}
 }
