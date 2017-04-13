@@ -178,7 +178,7 @@ public interface FieldSchemaContainer extends RestModel {
 			throw error(BAD_REQUEST, "schema_error_invalid_name", getName());
 		}
 
-		Set<String> fieldLabels = new HashSet<>();
+//		Set<String> fieldLabels = new HashSet<>();
 		Set<String> fieldNames = new HashSet<>();
 
 		for (FieldSchema field : getFields()) {
@@ -188,11 +188,11 @@ public interface FieldSchemaContainer extends RestModel {
 				}
 			}
 
-			if (!Strings.isNullOrEmpty(field.getLabel())) {
-				if (!fieldLabels.add(field.getLabel())) {
-					throw error(BAD_REQUEST, "schema_error_duplicate_field_label", field.getName(), field.getLabel());
-				}
-			}
+//			if (!Strings.isNullOrEmpty(field.getLabel())) {
+//				if (!fieldLabels.add(field.getLabel())) {
+//					throw error(BAD_REQUEST, "schema_error_duplicate_field_label", field.getName(), field.getLabel());
+//				}
+//			}
 			field.validate();
 		}
 	}
