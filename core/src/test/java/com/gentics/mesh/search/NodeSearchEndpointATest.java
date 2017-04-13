@@ -118,6 +118,10 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchAfterSchemaUpdate() throws Exception {
+		try (NoTx noTx = db().noTx()) {
+			recreateIndices();
+		}
+
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 		String query = getSimpleTermQuery("schema.name.raw", "content");
