@@ -6,6 +6,7 @@ import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -23,8 +24,10 @@ import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.performance.TestUtils;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
@@ -115,24 +118,27 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchAfterSchemaUpdate() throws Exception {
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
+
 		String query = getSimpleTermQuery("schema.name.raw", "content");
 		long oldCount, newCount;
 
 		oldCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
 
-		SchemaResponse schema = call(() -> client().findSchemas(PROJECT_NAME)).getData().stream().filter(it -> it.getName().equals("content")).findAny().get();
+		SchemaResponse schema = call(() -> client().findSchemas(PROJECT_NAME)).getData().stream().filter(it -> it.getName().equals("content"))
+				.findAny().get();
 
 		List<FieldSchema> fields = schema.getFields();
 		fields.add(new StringFieldSchemaImpl().setName("test").setLabel("Test"));
 
-		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest()
-				.setFields(fields)
-				.setName(schema.getName());s
+		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest().setFields(fields).setName(schema.getName());
 
 		call(() -> client().updateSchema(schema.getUuid(), updateRequest));
 
-		newCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
+		// Wait for migration to complete
+		failingLatch(latch);
 
+		newCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
 
 		assertThat(oldCount).isEqualTo(newCount);
 	}
