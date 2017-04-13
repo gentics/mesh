@@ -18,7 +18,7 @@ icon:plus[] JWT: It is now possible to configure the algorithm which is used to 
 
 icon:plus[] Java: The Java model classes have been updated to provide fluent API's.
 
-icon:plus[] Demo: It is now possible to access elasticsearch head UI directly from mesh via http://localhost:8080/elastichead - The UI will only provided if the elasticsearch http ports are enabled. Only enable this for development since mesh will not protect the Elasticsearch HTTP server. 
+icon:plus[] Demo: It is now possible to access elasticsearch head UI directly from mesh via http://localhost:8080/elastichead - The UI will only be provided if the elasticsearch http ports are enabled. Only enable this for development since mesh will not protect the Elasticsearch HTTP server.
 
 icon:plus[] Core: Downgrade and upgrade checks have been added. It is no longer possible to run Gentics Mesh using a dump which contains data which was touched by a newer mesh version. Upgrading a snapshot version of Gentics Mesh to a release version can be performed under advisement.
 
