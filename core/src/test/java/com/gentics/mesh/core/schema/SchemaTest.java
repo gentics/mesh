@@ -279,20 +279,6 @@ public class SchemaTest {
 		expectErrorOnValidate(schema, "schema_error_duplicate_field_name", "name");
 	}
 
-	@Test
-	@Ignore
-	public void testDuplicateFieldSchemaLabel() {
-		Schema schema = new SchemaModelImpl();
-		schema.setName("test");
-		schema.setSegmentField("name");
-		schema.setDisplayField("name");
-		schema.addField(FieldUtil.createStringFieldSchema("name")
-				.setLabel("conflict"));
-		schema.addField(FieldUtil.createStringFieldSchema("name2")
-				.setLabel("conflict"));
-		expectErrorOnValidate(schema, "schema_error_duplicate_field_label", "name2", "conflict");
-	}
-
 	/**
 	 * The display field must always point to a string field.
 	 */

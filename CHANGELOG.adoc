@@ -2,6 +2,10 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.5 (13.04.2017)
+
+icon:check[] Core: The schema check for duplicate field labels has been removed. The check previously caused schema updates to fail.
+
 == 0.9.4 (13.04.2017)
 
 icon:check[] UI: Fix project creation.

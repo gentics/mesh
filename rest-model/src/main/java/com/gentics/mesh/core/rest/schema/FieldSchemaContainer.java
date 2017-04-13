@@ -62,11 +62,7 @@ public interface FieldSchemaContainer extends RestModel {
 	 * @return
 	 */
 	default FieldSchema getField(String fieldName) {
-		return (FieldSchema) getFields().stream()
-				.filter(f -> f.getName()
-						.equals(fieldName))
-				.findFirst()
-				.orElse(null);
+		return (FieldSchema) getFields().stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null);
 	}
 
 	/**
@@ -77,11 +73,7 @@ public interface FieldSchemaContainer extends RestModel {
 	 * @return
 	 */
 	default <T> T getField(String fieldName, Class<T> classOfT) {
-		return (T) getFields().stream()
-				.filter(f -> f.getName()
-						.equals(fieldName))
-				.findFirst()
-				.orElse(null);
+		return (T) getFields().stream().filter(f -> f.getName().equals(fieldName)).findFirst().orElse(null);
 	}
 
 	/**
@@ -144,8 +136,7 @@ public interface FieldSchemaContainer extends RestModel {
 		int index = fields.size();
 		if (afterFieldName != null) {
 			for (int i = 0; i < fields.size(); i++) {
-				if (afterFieldName.equals(fields.get(i)
-						.getName())) {
+				if (afterFieldName.equals(fields.get(i).getName())) {
 					index = i;
 					break;
 				}
@@ -174,25 +165,17 @@ public interface FieldSchemaContainer extends RestModel {
 			throw error(BAD_REQUEST, "schema_error_no_name");
 		}
 
-		if(!getName().matches(NAME_REGEX)) {
+		if (!getName().matches(NAME_REGEX)) {
 			throw error(BAD_REQUEST, "schema_error_invalid_name", getName());
 		}
 
-//		Set<String> fieldLabels = new HashSet<>();
 		Set<String> fieldNames = new HashSet<>();
-
 		for (FieldSchema field : getFields()) {
 			if (field.getName() != null) {
 				if (!fieldNames.add(field.getName())) {
 					throw error(BAD_REQUEST, "schema_error_duplicate_field_name", field.getName());
 				}
 			}
-
-//			if (!Strings.isNullOrEmpty(field.getLabel())) {
-//				if (!fieldLabels.add(field.getLabel())) {
-//					throw error(BAD_REQUEST, "schema_error_duplicate_field_label", field.getName(), field.getLabel());
-//				}
-//			}
 			field.validate();
 		}
 	}
