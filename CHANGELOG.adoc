@@ -2,7 +2,15 @@
 
 = Gentics Mesh Changelog
 
-== 0.9.4 (12.04.2017)
+== 0.9.4 (13.04.2017)
+
+icon:check[] UI: Fix project creation.
+
+icon:check[] UI: Fix error when attempting to translate a node.
+
+icon:check[] UI: Fix incorrect search query.
+
+icon:check[] UI: Display error when attempting to publish a node with an unpublished ancestor
 
 icon:check[] JWT: The `signatureSecret` property within the Gentics Mesh configuration has been renamed to `keystorePassword`.
 
