@@ -40,9 +40,9 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.TxHandler;
-import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
+import com.gentics.mesh.parameter.NodeParameters;
+import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.parameter.VersioningParameters;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import rx.Single;
@@ -174,9 +174,9 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 		validateParameter(uuid, "uuid");
 
 		utils.operateNoTx(ac, () -> {
-			NodeParametersImpl nodeParams = ac.getNodeParameters();
-			PagingParametersImpl pagingParams = ac.getPagingParameters();
-			VersioningParametersImpl versionParams = ac.getVersioningParameters();
+			NodeParameters nodeParams = ac.getNodeParameters();
+			PagingParameters pagingParams = ac.getPagingParameters();
+			VersioningParameters versionParams = ac.getVersioningParameters();
 			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
 			TransformablePage<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(),

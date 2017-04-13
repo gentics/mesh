@@ -69,8 +69,8 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
@@ -432,7 +432,7 @@ public interface TestHelperMethods {
 		return call(() -> client().findSchemaByUuid(uuid));
 	}
 
-	default public GenericMessageResponse updateSchema(String uuid, String schemaName, SchemaUpdateParametersImpl... updateParameters) {
+	default public GenericMessageResponse updateSchema(String uuid, String schemaName, SchemaUpdateParameters... updateParameters) {
 		SchemaUpdateRequest schema = new SchemaUpdateRequest();
 		schema.setName(schemaName);
 		return call(() -> client().updateSchema(uuid, schema, updateParameters));
@@ -448,7 +448,7 @@ public interface TestHelperMethods {
 		return call(() -> client().createMicroschema(microschema));
 	}
 
-	default public GenericMessageResponse updateMicroschema(String uuid, String microschemaName, SchemaUpdateParametersImpl... parameters) {
+	default public GenericMessageResponse updateMicroschema(String uuid, String microschemaName, SchemaUpdateParameters... parameters) {
 		MicroschemaUpdateRequest microschema = FieldUtil.createMinimalValidMicroschemaUpdateRequest();
 		microschema.setName(microschemaName);
 		return call(() -> client().updateMicroschema(uuid, microschema, parameters));

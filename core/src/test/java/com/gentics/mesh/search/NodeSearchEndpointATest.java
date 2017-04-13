@@ -5,7 +5,12 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
@@ -15,9 +20,15 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.performance.TestUtils;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
@@ -106,4 +117,32 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
+	@Test
+	public void testSearchAfterSchemaUpdate() throws Exception {
+		try (NoTx noTx = db().noTx()) {
+			recreateIndices();
+		}
+
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
+
+		String query = getSimpleTermQuery("schema.name.raw", "content");
+		long oldCount, newCount;
+
+		oldCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
+
+		SchemaResponse schema = call(() -> client().findSchemas(PROJECT_NAME)).getData().stream().filter(it -> it.getName().equals("content"))
+				.findAny().get();
+		List<FieldSchema> fields = schema.getFields();
+		fields.add(new StringFieldSchemaImpl().setName("test").setLabel("Test"));
+
+		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest().setFields(fields).setName(schema.getName());
+		call(() -> client().updateSchema(schema.getUuid(), updateRequest, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true)));
+
+		// Wait for migration to complete
+		failingLatch(latch);
+
+		newCount = call(() -> client().searchNodes(PROJECT_NAME, query)).getMetainfo().getTotalCount();
+
+		assertThat(newCount).isEqualTo(oldCount);
+	}
 }

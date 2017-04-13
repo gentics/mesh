@@ -6,6 +6,8 @@
 
 icon:plus[] Auth: The Java keystore file will now automatically be created if none could be found. The keystore password will be taken from the `mesh.yml` file or randomly generated and stored in the config.
 
+icon:check[] Core: Fix node migration search index handling. Previous migrations did not correctly update the index. A automatic reindex will be invoked during startup.
+
 == 0.9.5 (13.04.2017)
 
 icon:check[] Core: The schema check for duplicate field labels has been removed. The check previously caused schema updates to fail.

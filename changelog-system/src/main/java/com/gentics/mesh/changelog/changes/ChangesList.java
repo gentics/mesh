@@ -13,7 +13,7 @@ public final class ChangesList {
 
 	public static List<Change> getList() {
 		List<Change> list = new ArrayList<>();
-		//list.add(new Change_A36C972476C147F3AC972476C157F3EF());
+		// list.add(new Change_A36C972476C147F3AC972476C157F3EF());
 		list.add(new ChangeAddPublishFlag());
 		list.add(new ChangeAddVersioning());
 		list.add(new ChangeFixReleaseRelationship());
@@ -22,6 +22,8 @@ public final class ChangesList {
 		list.add(new ChangeSanitizeSchemaJson());
 		list.add(new AddTagFamiliesToNodeIndex());
 		list.add(new RestructureTags());
+		list.add(new ReindexAllToFixFailedMigrations());
+		// ADD NEW CHANGES HERE!
 		return list;
 	}
 }

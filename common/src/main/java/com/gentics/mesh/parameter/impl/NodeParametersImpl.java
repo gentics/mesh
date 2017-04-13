@@ -27,19 +27,6 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 	}
 
 
-	/**
-	 * Return the <code>{@value #RESOLVE_LINKS_QUERY_PARAM_KEY}</code> query parameter flag value.
-	 * 
-	 * @return
-	 */
-	public LinkType getResolveLinks() {
-		String value = getParameter(RESOLVE_LINKS_QUERY_PARAM_KEY);
-		if (value != null) {
-			return LinkType.valueOf(value.toUpperCase());
-		}
-		return LinkType.OFF;
-	}
-
 	@Override
 	public void validate() {
 		// Check whether all given language tags exists
