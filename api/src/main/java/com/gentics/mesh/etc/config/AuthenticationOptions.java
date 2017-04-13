@@ -11,11 +11,9 @@ public class AuthenticationOptions {
 
 	public static final String DEFAULT_KEYSTORE_PATH = "keystore.jceks";
 
-	public static final String DEFAULT_KEYSTORE_PASSWORD = "secret";
-
 	private long tokenExpirationTime = DEFAULT_TOKEN_EXPIRATION_TIME;
 
-	private String keystorePassword = DEFAULT_KEYSTORE_PASSWORD;
+	private String keystorePassword = null;
 
 	private String keystorePath = DEFAULT_KEYSTORE_PATH;
 

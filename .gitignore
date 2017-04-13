@@ -24,6 +24,7 @@ examples/demo-java/data
 core/tmp
 mesh-searchindex
 mesh-graphdb
+keystore.jceks
 /bower_components/
 mesh.lock
 /build

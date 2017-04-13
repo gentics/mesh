@@ -4,15 +4,9 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -75,20 +69,6 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 		String keyStorePath = options.getKeystorePath();
 		String type = "jceks";
-		// Copy the demo keystore file to the destination
-		if (!new File(keyStorePath).exists()) {
-			try {
-				InputStream ins = getClass().getResourceAsStream("/keystore.jceks");
-				if (ins != null) {
-					FileOutputStream fos = new FileOutputStream(keyStorePath);
-					IOUtils.copy(ins, fos);
-					fos.close();
-				}
-			} catch (IOException e) {
-				log.error("Could not copy keystore for path {" + keyStorePath + "}", e);
-			}
-		}
-
 		JsonObject config = new JsonObject().put("keyStore",
 				new JsonObject().put("path", keyStorePath).put("type", type).put("password", keystorePassword));
 		jwtProvider = JWTAuth.create(Mesh.vertx(), config);

@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -65,6 +66,7 @@ public final class OptionsLoader {
 			ObjectMapper mapper = getYAMLMapper();
 			try {
 				options = new MeshOptions();
+				options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
 				FileUtils.writeStringToFile(confFile, mapper.writeValueAsString(options));
 				log.info("Saved default configuration to file {" + confFile.getAbsolutePath() + "}.");
 			} catch (IOException e) {
