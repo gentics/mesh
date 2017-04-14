@@ -75,7 +75,9 @@ public class DemoDumpGenerator {
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
 		String keyStorePath = options.getAuthenticationOptions().getKeystorePath();
 		String keyStorePass = options.getAuthenticationOptions().getKeystorePassword();
-		KeyStoreHelper.gen(keyStorePath, keyStorePass);
+		if (!new File(keyStorePath).exists()) {
+			KeyStoreHelper.gen(keyStorePath, keyStorePass);
+		}
 
 		// 4. Initialise mesh
 		BootstrapInitializer boot = meshDagger.boot();
