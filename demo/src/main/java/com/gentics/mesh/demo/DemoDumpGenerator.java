@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
+import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshConfigurationException;
@@ -18,6 +19,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * The demo dump generator is used to create a mesh database dump which contains the demo data. This dump is packaged and later placed within the final mesh jar
@@ -69,7 +71,11 @@ public class DemoDumpGenerator {
 		// 3. Setup GraphDB
 		new DatabaseHelper(meshDagger.database()).init();
 
-		Mesh.mesh().getOptions().getAuthenticationOptions().setKeystorePassword("secret");
+		MeshOptions options = Mesh.mesh().getOptions();
+		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
+		String keyStorePath = options.getAuthenticationOptions().getKeystorePath();
+		String keyStorePass = options.getAuthenticationOptions().getKeystorePassword();
+		KeyStoreHelper.gen(keyStorePath, keyStorePass);
 
 		// 4. Initialise mesh
 		BootstrapInitializer boot = meshDagger.boot();
