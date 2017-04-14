@@ -18,6 +18,7 @@ import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerTestMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -257,11 +258,20 @@ public class MeshTestContext extends TestWatcher {
 	 * Initialise mesh options.
 	 * 
 	 * @param settings
-	 * @throws IOException
+	 * @throws Exception
 	 */
-	public void init(MeshTestSetting settings) throws IOException {
+	public void init(MeshTestSetting settings) throws Exception {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
+
+		// Setup the keystore
+		File keystoreFile = new File("target", "keystore.jceks");
+		String keystorePassword = "finger";
+		if (!keystoreFile.exists()) {
+			KeyStoreHelper.gen(keystoreFile.getAbsolutePath(), keystorePassword);
+		}
+		options.getAuthenticationOptions().setKeystorePassword(keystorePassword);
+		options.getAuthenticationOptions().setKeystorePath(keystoreFile.getAbsolutePath());
 
 		String uploads = newFolder("testuploads");
 		options.getUploadOptions().setDirectory(uploads);
