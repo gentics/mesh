@@ -17,7 +17,7 @@ public interface Page<T> extends Iterable<T> {
 	 * 
 	 * @return
 	 */
-	long getPerPage();
+	int getPerPage();
 
 	/**
 	 * Return the number of element which this page is currently providing.
@@ -95,5 +95,11 @@ public interface Page<T> extends Iterable<T> {
 
 		return new PageImpl<>(pagedList, n, pagingInfo.getPage(), totalPages, elementList.size(), pagingInfo.getPerPage());
 	}
+
+	/**
+	 * Returns the wrapped list which contains the results.
+	 * @return
+	 */
+	List<? extends T> getWrappedList();
 
 }

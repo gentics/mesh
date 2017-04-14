@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -86,6 +87,22 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		VertexTraversal<?, ?, ?> traversal = requestUser.getPermTraversal(READ_PERM);
 		Page<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, pagingInfo, NodeImpl.class);
 		return nodePage;
+	}
+	
+	@Override
+	public Page<? extends NodeGraphFieldContainer> findAllContents(InternalActionContext ac, PagingParameters pagingInfo) {
+		
+		VertexTraversal<?, ?, ?> traversal = out(getRootLabel()).filter(vertex -> {
+			return ac.getUser().hasPermissionForId(vertex.getId(), READ_PERM);
+		})
+				.mark()
+				.outE(HAS_FIELD_CONTAINER)
+				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, ac.getRelease().getUuid())
+				//.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode())
+				.outV();
+
+		Page<? extends NodeGraphFieldContainer> containerPage = TraversalHelper.getPagedResult2(traversal, pagingInfo, NodeGraphFieldContainerImpl.class);
+		return containerPage;
 	}
 
 	@Override

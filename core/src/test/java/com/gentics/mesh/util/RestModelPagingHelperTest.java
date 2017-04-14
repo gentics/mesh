@@ -24,7 +24,7 @@ public class RestModelPagingHelperTest {
 		long nCurrentPage = 0;
 		long nTotalElements = 1000;
 		long nElements = 200;
-		long nPageSize = 21;
+		int nPageSize = 21;
 
 		PagingParametersImpl info = new PagingParametersImpl((int) (nCurrentPage + 1), (int) nPageSize);
 

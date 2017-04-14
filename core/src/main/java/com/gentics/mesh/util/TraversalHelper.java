@@ -9,7 +9,9 @@ import java.util.List;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.page.impl.TransformablePageImpl;
 import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -45,9 +47,35 @@ public final class TraversalHelper {
 	 *            Class that used to map the ferma objects that were found for the page query
 	 * @return
 	 */
-	private static <T extends TransformableElement<? extends RestModel>> TransformablePage<T> getPagedResult(VertexTraversal<?, ?, ?> traversal, String sortBy,
-			SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) {
+	private static <T extends TransformableElement<? extends RestModel>> TransformablePage<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
+			String sortBy, SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) {
 
+		Page<T> resultPage = getPagedResult2(traversal, sortBy, order, page, pageSize, perPage, classOfT);
+
+		return new TransformablePageImpl<T>(resultPage);
+	}
+
+	/**
+	 * Create a page result for the given traversal and the specified paging parameters. Due to Tinkerpop Gremlin limitation it is needed to manually duplicate
+	 * the traversals. TP 3.x will be able to reuse existing traversals.
+	 * 
+	 * @param traversal
+	 *            Base traversal that is used to find the affected elements
+	 * @param sortBy
+	 *            Order by element property (eg. name, creator..). When null no extra sorting will be applied.
+	 * @param order
+	 *            Sortorder
+	 * @param page
+	 *            Page that is currently selected
+	 * @param pageSize
+	 *            Page size that is used to calculate the skip item amount
+	 * @param perPage
+	 *            Per page parameter
+	 * @param classOfT
+	 *            Class that used to map the ferma objects that were found for the page query
+	 */
+	public static <T> Page<T> getPagedResult2(VertexTraversal<?, ?, ?> traversal, String sortBy, SortOrder order, int page, int pageSize, int perPage,
+			Class<T> classOfT) {
 		if (page < 1) {
 			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(page));
 		}
@@ -85,10 +113,8 @@ public final class TraversalHelper {
 		if (perPage != 0) {
 			totalPages = (long) Math.ceil(count / (double) (perPage));
 		}
-
 		// Internally the page size was reduced. We need to increment it now that we are finished.
-		return new TransformablePageImpl<T>(elementsOfPage, count, ++page, totalPages, elementsOfPage.size(), perPage);
-
+		return new PageImpl<T>(elementsOfPage, count, ++page, totalPages, elementsOfPage.size(), perPage);
 	}
 
 	/**
@@ -105,6 +131,23 @@ public final class TraversalHelper {
 	public static <T extends TransformableElement<? extends RestModel>> TransformablePage<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
 			PagingParameters pagingInfo, Class<T> classOfT) {
 		return getPagedResult(traversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
+				pagingInfo.getPerPage(), classOfT);
+	}
+	
+	/**
+	 * Return a paged result for the given traversal and paging parameters.
+	 * 
+	 * @param traversal
+	 *            Traversal to be used to load the vertices for the page
+	 * @param pagingInfo
+	 *            Paging information to be used to apply paging
+	 * @param classOfT
+	 *            Type of the elements within the page
+	 * @return Page with the result information
+	 */
+	public static <T> Page<T> getPagedResult2(VertexTraversal<?, ?, ?> traversal,
+			PagingParameters pagingInfo, Class<T> classOfT) {
+		return getPagedResult2(traversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
 				pagingInfo.getPerPage(), classOfT);
 	}
 
@@ -128,12 +171,7 @@ public final class TraversalHelper {
 	 */
 	public static void debug(EdgeTraversal<?, ?, ?> traversal) {
 		for (MeshEdgeImpl e : traversal.toListExplicit(MeshEdgeImpl.class)) {
-			System.out.println(e.getElement()
-					.getId() + "from "
-					+ e.inV()
-							.next()
-					+ " to " + e.outV()
-							.next());
+			System.out.println(e.getElement().getId() + "from " + e.inV().next() + " to " + e.outV().next());
 			System.out.println(e.getLabel() + " type: " + e.getFermaType() + " json: " + e.toJson());
 		}
 	}
@@ -142,8 +180,7 @@ public final class TraversalHelper {
 	 * Simple debug method for printing all existing vertices.
 	 */
 	public static void printDebugVertices() {
-		for (VertexFrame frame : Database.getThreadLocalGraph()
-				.v()) {
+		for (VertexFrame frame : Database.getThreadLocalGraph().v()) {
 			System.out.println(
 					frame.getId() + " " + frame.getProperty("ferma_type") + " " + frame.getProperty("name") + " " + frame.getProperty("uuid"));
 		}

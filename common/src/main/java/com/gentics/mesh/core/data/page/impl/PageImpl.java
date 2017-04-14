@@ -76,7 +76,7 @@ public class PageImpl<T> implements Iterable<T>, Page<T> {
 	}
 
 	@Override
-	public long getPerPage() {
+	public int getPerPage() {
 		return perPage;
 	}
 
@@ -87,6 +87,11 @@ public class PageImpl<T> implements Iterable<T>, Page<T> {
 		info.setPageCount(getTotalPages());
 		info.setPerPage(getPerPage());
 		info.setTotalCount(getTotalElements());
+	}
+
+	@Override
+	public List<? extends T> getWrappedList() {
+		return wrappedList;
 	}
 
 }

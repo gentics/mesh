@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.TransformableElement;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -24,6 +25,15 @@ public class TransformablePageImpl<T extends TransformableElement<? extends Rest
 		super(wrappedList, totalElements, pageNumber, totalPages, numberOfElements, perPage);
 	}
 
+	/**
+	 * Transform a page into a transformable page.
+	 * 
+	 * @param page
+	 */
+	public TransformablePageImpl(Page<T> page) {
+		super(page.getWrappedList(), page.getTotalElements(), page.getNumber(), page.getTotalPages(), page.getSize(), page.getPerPage());
+	}
+
 	@Override
 	public Single<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac, int level) {
 		List<Single<? extends RestModel>> obs = new ArrayList<>();
@@ -36,16 +46,11 @@ public class TransformablePageImpl<T extends TransformableElement<? extends Rest
 			return Single.just(listResponse);
 		}
 
-		return Observable.from(obs)
-				.concatMapEager(s -> s.toObservable())
-				.toList()
-				.toSingle()
-				.map(list -> {
-					setPaging(listResponse);
-					listResponse.getData()
-							.addAll(list);
-					return listResponse;
-				});
+		return Observable.from(obs).concatMapEager(s -> s.toObservable()).toList().toSingle().map(list -> {
+			setPaging(listResponse);
+			listResponse.getData().addAll(list);
+			return listResponse;
+		});
 	}
 
 	@Override

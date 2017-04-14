@@ -241,8 +241,11 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 					String query = env.getArgument("query");
 					if (query != null) {
 						return contentTypeProvider.handleContentSearch(gc, query, pagingInfo);
+					} else {
+						NodeRoot nodeRoot = gc.getProject()
+							.getNodeRoot();
+						return nodeRoot.findAllContents(gc, pagingInfo);
 					}
-					return null;
 				}));
 
 		// .nodes
