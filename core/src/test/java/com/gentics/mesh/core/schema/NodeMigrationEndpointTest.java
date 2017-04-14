@@ -118,6 +118,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 					user);
 			secondEnglishContainer.createString(fieldName).setString("second content");
 
+			project().getLatestRelease().assignSchemaVersion(versionB);
 			doSchemaMigration(container, versionA, versionB);
 
 			// assert that migration worked
@@ -133,7 +134,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 			assertThat(secondNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value")
 					.isEqualTo("modified second content");
-			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 2);
 		}
 	}
 
@@ -159,6 +160,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			firstEnglishContainer.createString(fieldName).setString("first content");
 
 			// do the schema migration twice
+			project().getLatestRelease().assignSchemaVersion(versionB);
 			doSchemaMigration(container, versionA, versionB);
 			doSchemaMigration(container, versionA, versionB);
 
@@ -192,6 +194,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
 			node.publish(ac, createBatch(),  "en");
 
+			project().getLatestRelease().assignSchemaVersion(versionB);
 			doSchemaMigration(container, versionA, versionB);
 
 			node.reload();
@@ -233,6 +236,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			NodeGraphFieldContainer updatedEnglishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
 			updatedEnglishContainer.getString(fieldName).setString("new content");
 
+			project().getLatestRelease().assignSchemaVersion(versionB);
 			doSchemaMigration(container, versionA, versionB);
 
 			node.reload();

@@ -53,6 +53,8 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 
+import rx.exceptions.CompositeException;
+
 /**
  * Base class for all field migration tests
  */
@@ -313,6 +315,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		dataProvider.set(englishContainer, oldFieldName);
 
 		// migrate the node
+		project().getLatestRelease().assignSchemaVersion(versionB);
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
@@ -782,9 +785,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 				} else {
 					invalidSchemaMigrationScript(creator, dataProvider, script);
 				}
-			} catch (RuntimeException e) {
-				e.printStackTrace();
-				throw e.getCause();
+			} catch (CompositeException e) {
+				Throwable nestedError = e.getExceptions().get(0).getCause();
+				System.out.println("------------");
+				nestedError.printStackTrace();
+				throw nestedError;
 			}
 		}
 	}
