@@ -93,8 +93,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
-		return NodeGraphFieldContainer.composeDocumentId(entry.getElementUuid(), entry.getContext()
-				.getLanguageTag());
+		return NodeGraphFieldContainer.composeDocumentId(entry.getElementUuid(), entry.getContext().getLanguageTag());
 	}
 
 	@Override
@@ -135,15 +134,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Map<String, String> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
-			boot.meshRoot()
-					.getProjectRoot()
-					.reload();
-			List<? extends Project> projects = boot.meshRoot()
-					.getProjectRoot()
-					.findAll();
+			boot.meshRoot().getProjectRoot().reload();
+			List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
 			for (Project project : projects) {
-				List<? extends Release> releases = project.getReleaseRoot()
-						.findAll();
+				List<? extends Release> releases = project.getReleaseRoot().findAll();
 				// Add the draft and published index names per release to the map
 				for (Release release : releases) {
 					// Each release specific index has also document type specific mappings
@@ -171,24 +165,19 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				Release release = ac.getRelease();
 				for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
 					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), version.getUuid(),
-							ContainerType.forVersion(ac.getVersioningParameters()
-									.getVersion())));
+							ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
 				}
 			} else {
 				// The project was not specified. Maybe a global search wants to
 				// know which indices must be searched. In that case we just
 				// iterate over all projects and collect index names per
 				// release.
-				List<? extends Project> projects = boot.meshRoot()
-						.getProjectRoot()
-						.findAll();
+				List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
 				for (Project currentProject : projects) {
-					for (Release release : currentProject.getReleaseRoot()
-							.findAll()) {
+					for (Release release : currentProject.getReleaseRoot().findAll()) {
 						for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
 							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), release.getUuid(), version.getUuid(),
-									ContainerType.forVersion(ac.getVersioningParameters()
-											.getVersion())));
+									ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
 						}
 					}
 				}
@@ -199,8 +188,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	protected RootVertex<Node> getRootVertex() {
-		return boot.meshRoot()
-				.getNodeRoot();
+		return boot.meshRoot().getNodeRoot();
 	}
 
 	@Override
@@ -213,12 +201,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}
 
 			// Now merge all store actions and refresh the affected indices
-			return Observable.from(obs)
-					.map(x -> x.toObservable())
-					.flatMap(x -> x)
-					.distinct()
-					.doOnNext(indexName -> searchProvider.refreshIndex(indexName))
-					.toCompletable();
+			return Observable.from(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct()
+					.doOnNext(indexName -> searchProvider.refreshIndex(indexName)).toCompletable();
 		});
 	}
 
@@ -231,9 +215,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	private void store(Set<Single<String>> obs, Node node, HandleContext context) {
 		if (context.getReleaseUuid() == null) {
-			for (Release release : node.getProject()
-					.getReleaseRoot()
-					.findAll()) {
+			for (Release release : node.getProject().getReleaseRoot().findAll()) {
 				store(obs, node, release.getUuid(), context);
 			}
 		} else {
@@ -306,21 +288,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	public Single<String> storeContainer(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
 		JsonObject doc = transformator.toDocument(container, releaseUuid);
-		String projectUuid = container.getParentNode()
-				.getProject()
-				.getUuid();
-		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, container.getSchemaContainerVersion()
-				.getUuid(), type);
+		String projectUuid = container.getParentNode().getProject().getUuid();
+		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, container.getSchemaContainerVersion().getUuid(), type);
 		if (log.isDebugEnabled()) {
-			log.debug("Storing node {" + container.getParentNode()
-					.getUuid() + "} into index {" + indexName + "}");
+			log.debug("Storing node {" + container.getParentNode().getUuid() + "} into index {" + indexName + "}");
 		}
-		String languageTag = container.getLanguage()
-				.getLanguageTag();
-		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode()
-				.getUuid(), languageTag);
-		return searchProvider.storeDocument(indexName, NodeGraphFieldContainer.composeIndexType(), documentId, doc)
-				.andThen(Single.just(indexName));
+		String languageTag = container.getLanguage().getLanguageTag();
+		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
+		return searchProvider.storeDocument(indexName, NodeGraphFieldContainer.composeIndexType(), documentId, doc).andThen(Single.just(indexName));
 	}
 
 	@Override
@@ -332,8 +307,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			// completables which will create/update the mapping
 			Set<Completable> obs = new HashSet<>();
 			obs.add(updateNodeIndexMapping(indexName, entry.getSchema()));
-			return searchProvider.createIndex(indexName)
-					.andThen(Completable.merge(obs));
+			return searchProvider.createIndex(indexName).andThen(Completable.merge(obs));
 		} else {
 			throw error(INTERNAL_SERVER_ERROR, "error_index_unknown", indexName);
 		}
@@ -389,10 +363,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 		return Completable.create(sub -> {
 			org.elasticsearch.node.Node esNode = getESNode();
-			PutMappingRequestBuilder mappingRequestBuilder = esNode.client()
-					.admin()
-					.indices()
-					.preparePutMapping(indexName);
+			PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
 			mappingRequestBuilder.setType(type);
 
 			try {
@@ -423,8 +394,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public GraphPermission getReadPermission(InternalActionContext ac) {
-		switch (ContainerType.forVersion(ac.getVersioningParameters()
-				.getVersion())) {
+		switch (ContainerType.forVersion(ac.getVersioningParameters().getVersion())) {
 		case PUBLISHED:
 			return GraphPermission.READ_PUBLISHED_PERM;
 		default:
@@ -436,12 +406,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * Update all node specific index mappings for all projects and all releases.
 	 */
 	public void updateNodeIndexMappings() {
-		List<? extends Project> projects = boot.meshRoot()
-				.getProjectRoot()
-				.findAll();
+		List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
 		projects.forEach((project) -> {
-			List<? extends Release> releases = project.getReleaseRoot()
-					.findAll();
+			List<? extends Release> releases = project.getReleaseRoot().findAll();
 			// Add the draft and published index names per release to the map
 			for (Release release : releases) {
 				// Each release specific index has also document type specific
@@ -497,65 +464,61 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
 			Set<String> indices = getSelectedIndices(ac);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()]))
-					.setSource(queryStringObject.toString());
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryStringObject.toString());
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
 		CompletableFuture<Page<? extends NodeGraphFieldContainer>> future = new CompletableFuture<>();
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		builder.execute()
-				.addListener(new ActionListener<SearchResponse>() {
+		builder.execute().addListener(new ActionListener<SearchResponse>() {
 
-					@Override
-					public void onResponse(SearchResponse response) {
-						Page<? extends NodeGraphFieldContainer> page = db.noTx(() -> {
-							List<NodeGraphFieldContainer> elementList = new ArrayList<>();
-							for (SearchHit hit : response.getHits()) {
+			@Override
+			public void onResponse(SearchResponse response) {
+				Page<? extends NodeGraphFieldContainer> page = db.noTx(() -> {
+					List<NodeGraphFieldContainer> elementList = new ArrayList<>();
+					for (SearchHit hit : response.getHits()) {
 
-								String id = hit.getId();
-								int pos = id.indexOf("-");
-								String language = pos > 0 ? id.substring(pos + 1) : null;
-								String uuid = pos > 0 ? id.substring(0, pos) : id;
+						String id = hit.getId();
+						int pos = id.indexOf("-");
+						String language = pos > 0 ? id.substring(pos + 1) : null;
+						String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-								// TODO check permissions without loading the vertex
+						// TODO check permissions without loading the vertex
 
-								// Locate the node
-								Node node = getRootVertex().findByUuid(uuid);
-								if (node != null) {
-									// Check permissions and language
-									for (GraphPermission permission : permissions) {
-										if (user.hasPermission(node, permission)) {
-											ContainerType type = ContainerType.forVersion(ac.getVersioningParameters()
-													.getVersion());
-											Language languageTag = boot.languageRoot()
-													.findByLanguageTag(language);
-											if (languageTag == null) {
-												log.debug("Could not find language {" + language + "}");
-												break;
-											}
-											// Locate the matching container and add it to the list of found containers
-											NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag, ac.getRelease(), type);
-											if (container != null) {
-												elementList.add(container);
-											}
-											break;
-										}
+						// Locate the node
+						Node node = getRootVertex().findByUuid(uuid);
+						if (node != null) {
+							// Check permissions and language
+							for (GraphPermission permission : permissions) {
+								if (user.hasPermission(node, permission)) {
+									ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+									Language languageTag = boot.languageRoot().findByLanguageTag(language);
+									if (languageTag == null) {
+										log.debug("Could not find language {" + language + "}");
+										break;
 									}
+									// Locate the matching container and add it to the list of found containers
+									NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag, ac.getRelease(), type);
+									if (container != null) {
+										elementList.add(container);
+									}
+									break;
 								}
 							}
-							Page<? extends NodeGraphFieldContainer> containerPage = Page.applyPaging(elementList, pagingInfo);
-							return containerPage;
-						});
-						future.complete(page);
+						}
 					}
-
-					@Override
-					public void onFailure(Throwable e) {
-						log.error("Search query failed", e);
-						future.completeExceptionally(e);
-					}
+					Page<? extends NodeGraphFieldContainer> containerPage = Page.applyPaging(elementList, pagingInfo);
+					return containerPage;
 				});
+				future.complete(page);
+			}
+
+			@Override
+			public void onFailure(Throwable e) {
+				log.error("Search query failed", e);
+				future.completeExceptionally(e);
+			}
+		});
 
 		return future.get(60, TimeUnit.SECONDS);
 

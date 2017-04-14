@@ -145,6 +145,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		dataProvider.set(englishContainer, removedFieldName);
 
 		// migrate the node
+		project().getLatestRelease().assignSchemaVersion(versionB);
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
@@ -203,6 +204,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the node
+		project().getLatestRelease().assignMicroschemaVersion(versionB);
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null)
 				.await(10, TimeUnit.SECONDS);
 
@@ -381,6 +383,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the micronode
+		project().getLatestRelease().assignMicroschemaVersion(versionB);
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null)
 				.await(10, TimeUnit.SECONDS);
 
@@ -486,6 +489,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNotNull();
 
 		// migrate the node
+		project().getLatestRelease().assignSchemaVersion(versionB);
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 		node.reload();
 		englishContainer.reload();
@@ -676,6 +680,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		dataProvider.set(englishContainer, fieldName);
 
 		// migrate the node
+		project().getLatestRelease().assignSchemaVersion(versionB);
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 		node.reload();
 		node.getGraphFieldContainer("en").reload();
@@ -739,6 +744,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the micronode
+		project().getLatestRelease().assignMicroschemaVersion(versionB);
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null)
 				.await(10, TimeUnit.SECONDS);
 
@@ -777,6 +783,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 					invalidSchemaMigrationScript(creator, dataProvider, script);
 				}
 			} catch (RuntimeException e) {
+				e.printStackTrace();
 				throw e.getCause();
 			}
 		}
@@ -830,6 +837,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		dataProvider.set(englishContainer, fieldName);
 
 		// migrate the node
+		project().getLatestRelease().assignSchemaVersion(versionB);
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 	}
 
@@ -876,6 +884,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		createMicronodefield(folder("2015"), micronodeFieldName, versionA, dataProvider, fieldName);
 
 		// migrate the node
+		project().getLatestRelease().assignMicroschemaVersion(versionB);
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null)
 				.await(10, TimeUnit.SECONDS);
 	}
