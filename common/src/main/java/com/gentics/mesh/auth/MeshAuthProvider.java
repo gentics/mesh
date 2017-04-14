@@ -64,7 +64,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		String keystorePassword = options.getKeystorePassword();
 		if (keystorePassword == null) {
 			throw new RuntimeException(
-					"Options file is missing the keystore secret password. This should be set in mesh configuration file: authenticationOptions.signatureSecret");
+					"The keystore password could not be found within the authentication options.");
 		}
 
 		String keyStorePath = options.getKeystorePath();

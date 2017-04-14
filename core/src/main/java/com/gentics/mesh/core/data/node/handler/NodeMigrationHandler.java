@@ -59,6 +59,7 @@ import io.vertx.rxjava.core.buffer.Buffer;
 import jdk.nashorn.api.scripting.ClassFilter;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import rx.Completable;
+import rx.exceptions.CompositeException;
 
 /**
  * Handler for node migrations after schema updates
@@ -135,7 +136,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		indexCreatingBatch.createNodeIndex(project.getUuid(), releaseUuid, toVersion.getUuid(), DRAFT, toVersion.getSchema());
 		indexCreatingBatch.createNodeIndex(project.getUuid(), releaseUuid, toVersion.getUuid(), PUBLISHED, toVersion.getSchema());
 
-		boolean errorsDetected = false;
+		List<Exception> errorsDetected = new ArrayList<>();
 
 		// Iterate over all containers and invoke a migration for each one
 		for (NodeGraphFieldContainer container : fieldContainers) {
@@ -193,9 +194,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 					}
 					tx.success();
 				} catch (Exception e1) {
-					errorsDetected = true;
-					tx.failure();
 					log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
+					tx.failure();
+					errorsDetected.add(e1);
 					continue;
 				}
 			}
@@ -209,8 +210,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 		}
 
 		Completable result = Completable.complete();
-		if (errorsDetected) {
-			result = Completable.error(error(BAD_REQUEST, "Encountered errors during node migration."));
+		if (!errorsDetected.isEmpty()) {
+			result = Completable.error(new CompositeException(errorsDetected));
 		}
 
 		return indexCreatingBatch.processAsync().andThen(Completable.merge(batches)).andThen(result);

@@ -787,7 +787,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 				}
 			} catch (CompositeException e) {
 				Throwable nestedError = e.getExceptions().get(0).getCause();
-				System.out.println("------------");
 				nestedError.printStackTrace();
 				throw nestedError;
 			}

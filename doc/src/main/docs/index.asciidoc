@@ -100,7 +100,7 @@ Example:
 ----
 security:
   tokenExpirationTime: 3600
-  signatureSecret: "secret"
+  keystorePassword: "secret"
   keystorePath: "keystore.jceks"
 ----
 

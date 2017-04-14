@@ -221,7 +221,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		} else {
 			store(obs, node, context.getReleaseUuid(), context);
 		}
-
 	}
 
 	/**
