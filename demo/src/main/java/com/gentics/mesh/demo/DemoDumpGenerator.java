@@ -69,6 +69,8 @@ public class DemoDumpGenerator {
 		// 3. Setup GraphDB
 		new DatabaseHelper(meshDagger.database()).init();
 
+		Mesh.mesh().getOptions().getAuthenticationOptions().setKeystorePassword("secret");
+
 		// 4. Initialise mesh
 		BootstrapInitializer boot = meshDagger.boot();
 		boot.initMandatoryData();
