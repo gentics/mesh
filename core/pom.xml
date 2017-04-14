@@ -251,33 +251,6 @@
 					</dependency>
 				</dependencies>
 			</plugin>
-
-
-			<plugin>
-				<groupId>com.mysema.maven</groupId>
-				<artifactId>maven-apt-plugin</artifactId>
-				<version>1.0.4</version>
-				<executions>
-					<execution>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>process</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>target/generated-sources/annotations</outputDirectory>
-							<processor>com.mysema.query.apt.jpa.JPAAnnotationProcessor</processor>
-						</configuration>
-					</execution>
-				</executions>
-				<dependencies>
-					<!-- Workaround for eclipse compiler. We need to inject guava 20.0-rc1 or dagger processing will fail -->
-					<dependency>
-						<groupId>com.google.guava</groupId>
-						<artifactId>guava</artifactId>
-						<version>20.0-rc1</version>
-					</dependency>
-				</dependencies>
-			</plugin>
 		</plugins>
 		<pluginManagement>
 			<plugins>

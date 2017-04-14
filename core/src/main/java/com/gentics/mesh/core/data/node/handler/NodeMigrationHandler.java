@@ -262,9 +262,12 @@ public class NodeMigrationHandler extends AbstractHandler {
 		ac.setRelease(release);
 
 		List<Completable> batches = new ArrayList<>();
+		List<Exception> errorsDetected = new ArrayList<>();
+
 		for (NodeGraphFieldContainer container : fieldContainers) {
-			Tuple<Exception, SearchQueueBatch> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+			SearchQueueBatch batch = null;
+			try (Tx tx = db.tx()) {
+				batch = searchQueue.create();
 				try {
 					Node node = container.getParentNode();
 					String languageTag = container.getLanguage().getLanguageTag();
@@ -308,25 +311,36 @@ public class NodeMigrationHandler extends AbstractHandler {
 					if (publish) {
 						batch.store(node, releaseUuid, PUBLISHED, false);
 					}
-
-					return Tuple.tuple(null, batch);
+					tx.success();
 				} catch (Exception e1) {
-					return Tuple.tuple(e1, null);
+					log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
+					tx.failure();
+					errorsDetected.add(e1);
+					continue;
 				}
-			});
 
-			if (tuple.v1() != null) {
-				return Completable.error(tuple.v1());
+				// Process the search queue batch in order to update the search index
+				batches.add(batch.processAsync());
+
+				if (statusMBean != null) {
+					statusMBean.incNodesDone();
+				}
 			}
 
-			batches.add(tuple.v2().processAsync());
+			// Process the search queue batch in order to update the search index
+			batches.add(batch.processAsync());
 
 			if (statusMBean != null) {
 				statusMBean.incNodesDone();
 			}
 		}
 
-		return Completable.merge(batches);
+		Completable result = Completable.complete();
+		if (!errorsDetected.isEmpty()) {
+			result = Completable.error(new CompositeException(errorsDetected));
+		}
+
+		return Completable.merge(batches).andThen(result);
 	}
 
 	/**

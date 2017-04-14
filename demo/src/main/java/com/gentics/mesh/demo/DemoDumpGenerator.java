@@ -28,7 +28,7 @@ import com.gentics.mesh.util.UUIDUtil;
 public class DemoDumpGenerator {
 
 	public static void main(String[] args) throws Exception {
-		FileUtils.deleteDirectory(new File("target/dump"));
+		FileUtils.deleteDirectory(new File("target", "dump"));
 		initPaths();
 		new DemoDumpGenerator().dump();
 	}
@@ -65,33 +65,35 @@ public class DemoDumpGenerator {
 		// 1. Cleanup in preparation for dumping the demo data
 		cleanup();
 
-		// 2. Setup dagger
-		MeshComponent meshDagger = MeshInternal.create();
-
-		// 3. Setup GraphDB
-		new DatabaseHelper(meshDagger.database()).init();
-
+		// 2. Setup the java keystore
 		MeshOptions options = Mesh.mesh().getOptions();
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
-		String keyStorePath = options.getAuthenticationOptions().getKeystorePath();
+		File keyStoreFile = new File("target", "keystore_" + UUIDUtil.randomUUID() + ".jks");
+		options.getAuthenticationOptions().setKeystorePath(keyStoreFile.getAbsolutePath());
 		String keyStorePass = options.getAuthenticationOptions().getKeystorePassword();
-		if (!new File(keyStorePath).exists()) {
-			KeyStoreHelper.gen(keyStorePath, keyStorePass);
+		if (!keyStoreFile.exists()) {
+			KeyStoreHelper.gen(keyStoreFile.getAbsolutePath(), keyStorePass);
 		}
 
-		// 4. Initialise mesh
+		// 3. Setup dagger
+		MeshComponent meshDagger = MeshInternal.create();
+
+		// 4. Setup GraphDB
+		new DatabaseHelper(meshDagger.database()).init();
+
+		// 5. Initialise mesh
 		BootstrapInitializer boot = meshDagger.boot();
 		boot.initMandatoryData();
 		boot.initPermissions();
 		boot.markChangelogApplied();
 		boot.createSearchIndicesAndMappings();
 
-		// 5. Init demo data
+		// 6. Initialise demo data
 		DemoDataProvider provider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl());
 		SearchProvider searchProvider = meshDagger.searchProvider();
 		invokeDump(boot, provider);
 
-		// Close the elastic search instance
+		// 7. Close the elastic search instance
 		org.elasticsearch.node.Node esNode = null;
 		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
 			esNode = (Node) searchProvider.getNode();
