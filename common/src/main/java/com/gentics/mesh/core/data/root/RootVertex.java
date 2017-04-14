@@ -136,8 +136,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	default public T findByName(String name) {
-		return out(getRootLabel()).has("name", name)
-				.nextOrDefaultExplicit(getPersistanceClass(), null);
+		return out(getRootLabel()).has("name", name).nextOrDefaultExplicit(getPersistanceClass(), null);
 	}
 
 	/**
@@ -184,8 +183,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 			// 2. Use the edge index to determine whether the element is part of this root vertex
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
 					database().createComposedIndexKey(potentialElement.getId(), getId()));
-			if (edges.iterator()
-					.hasNext()) {
+			if (edges.iterator().hasNext()) {
 				return graph.frameElementExplicit(potentialElement, getPersistanceClass());
 			}
 		}

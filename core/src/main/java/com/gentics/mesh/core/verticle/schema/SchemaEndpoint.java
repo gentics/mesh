@@ -22,8 +22,6 @@ import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
-import io.vertx.ext.web.Route;
-
 /**
  * Verticle for /api/v1/schemas endpoint
  */
@@ -57,16 +55,6 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		addCreateHandler();
 		addUpdateHandler();
 		addDeleteHandler();
-	}
-
-	private void addNodeMigrationHandler() {
-
-		Route route = route("/:schemaUuid/migrate").method(GET).produces(APPLICATION_JSON);
-		route.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			crudHandler.handleMigrateRemaining(ac);
-		});
-
 	}
 
 	private void addChangesHandler() {

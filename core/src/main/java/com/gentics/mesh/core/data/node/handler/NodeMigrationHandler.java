@@ -48,10 +48,13 @@ import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.buffer.Buffer;
 import jdk.nashorn.api.scripting.ClassFilter;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
@@ -62,6 +65,8 @@ import rx.Completable;
  */
 @SuppressWarnings("restriction")
 public class NodeMigrationHandler extends AbstractHandler {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeMigrationHandler.class);
 
 	private BinaryFieldHandler nodeFieldAPIHandler;
 
@@ -130,10 +135,14 @@ public class NodeMigrationHandler extends AbstractHandler {
 		indexCreatingBatch.createNodeIndex(project.getUuid(), releaseUuid, toVersion.getUuid(), DRAFT, toVersion.getSchema());
 		indexCreatingBatch.createNodeIndex(project.getUuid(), releaseUuid, toVersion.getUuid(), PUBLISHED, toVersion.getSchema());
 
+		boolean errorsDetected = false;
+
 		// Iterate over all containers and invoke a migration for each one
 		for (NodeGraphFieldContainer container : fieldContainers) {
-			Tuple<Exception, SearchQueueBatch> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
+
+			SearchQueueBatch batch = null;
+			try (Tx tx = db.tx()) {
+				batch = searchQueue.create();
 
 				try {
 					Node node = container.getParentNode();
@@ -182,27 +191,29 @@ public class NodeMigrationHandler extends AbstractHandler {
 					if (publish) {
 						batch.store(node, releaseUuid, PUBLISHED, false);
 					}
-
-					return Tuple.tuple(null, batch);
+					tx.success();
 				} catch (Exception e1) {
-					return Tuple.tuple(e1, null);
+					errorsDetected = true;
+					tx.failure();
+					log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
+					continue;
 				}
-			});
-
-			Exception e = tuple.v1();
-			if (e != null) {
-				return Completable.error(e);
 			}
 
 			// Process the search queue batch in order to update the search index
-			batches.add(tuple.v2().processAsync());
+			batches.add(batch.processAsync());
 
 			if (statusMBean != null) {
 				statusMBean.incNodesDone();
 			}
 		}
 
-		return indexCreatingBatch.processAsync().andThen(Completable.merge(batches));
+		Completable result = Completable.complete();
+		if (errorsDetected) {
+			result = Completable.error(error(BAD_REQUEST, "Encountered errors during node migration."));
+		}
+
+		return indexCreatingBatch.processAsync().andThen(Completable.merge(batches)).andThen(result);
 	}
 
 	/**

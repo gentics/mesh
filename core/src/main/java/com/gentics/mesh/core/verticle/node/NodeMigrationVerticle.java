@@ -20,11 +20,8 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus.Type;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 import dagger.Lazy;
 import io.vertx.core.AbstractVerticle;
@@ -121,45 +118,50 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 
 			try {
 				ObjectName statusMBeanName = new ObjectName(JMX_MBEAN_NAME + ",name=" + schemaUuid);
-				if (isRunning(statusMBeanName)) {
-					fail(message, "Migration for schema {" + schemaUuid + "} is already running");
-					return;
-				} else {
-					db.noTx(() -> {
-						// Load the identified elements
-						Project project = boot.get().projectRoot().findByUuid(projectUuid);
-						if (project == null) {
-							throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
-						}
-						Release release = project.getReleaseRoot().findByUuid(releaseUuid);
-						if (release == null) {
-							throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
-						}
-						SchemaContainer schemaContainer = boot.get().schemaContainerRoot().findByUuid(schemaUuid);
-						if (schemaContainer == null) {
-							throw error(BAD_REQUEST, "Schema container for uuid {" + schemaUuid + "} can't be found.");
-						}
-						SchemaContainerVersion fromContainerVersion = schemaContainer.findVersionByUuid(fromVersionUuid);
-						if (fromContainerVersion == null) {
-							throw error(BAD_REQUEST, "Source version {" + fromVersionUuid + "} of schema {" + schemaUuid + "} could not be found.");
-						}
-						SchemaContainerVersion toContainerVersion = schemaContainer.findVersionByUuid(toVersionUuid);
-						if (toContainerVersion == null) {
-							throw error(BAD_REQUEST, "Target version {" + toVersionUuid + "} of schema {" + schemaUuid + "} could not be found.");
-						}
-						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
-								Type.schema);
-						setRunning(statusBean, statusMBeanName);
+				try {
+					if (isRunning(statusMBeanName)) {
+						fail(message, "Migration for schema {" + schemaUuid + "} is already running");
+						return;
+					} else {
+						db.noTx(() -> {
+							// Load the identified elements
+							Project project = boot.get().projectRoot().findByUuid(projectUuid);
+							if (project == null) {
+								throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
+							}
+							Release release = project.getReleaseRoot().findByUuid(releaseUuid);
+							if (release == null) {
+								throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
+							}
+							SchemaContainer schemaContainer = boot.get().schemaContainerRoot().findByUuid(schemaUuid);
+							if (schemaContainer == null) {
+								throw error(BAD_REQUEST, "Schema container for uuid {" + schemaUuid + "} can't be found.");
+							}
+							SchemaContainerVersion fromContainerVersion = schemaContainer.findVersionByUuid(fromVersionUuid);
+							if (fromContainerVersion == null) {
+								throw error(BAD_REQUEST,
+										"Source version {" + fromVersionUuid + "} of schema {" + schemaUuid + "} could not be found.");
+							}
+							SchemaContainerVersion toContainerVersion = schemaContainer.findVersionByUuid(toVersionUuid);
+							if (toContainerVersion == null) {
+								throw error(BAD_REQUEST, "Target version {" + toVersionUuid + "} of schema {" + schemaUuid + "} could not be found.");
+							}
+							NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
+									Type.schema);
+							setRunning(statusBean, statusMBeanName);
 
-						// Invoke the migration using the located elements
-						nodeMigrationHandler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
-						return null;
-					});
-					setDone(schemaUuid, statusMBeanName);
-					message.reply(null);
+							// Invoke the migration using the located elements
+							nodeMigrationHandler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
+							return null;
+						});
+						setDone(schemaUuid, statusMBeanName);
+						message.reply(null);
+					}
+				} catch (Exception e) {
+					setError(schemaUuid, statusMBeanName, message, e);
 				}
 			} catch (Exception e) {
-				message.fail(0, "Migration for schema {" + schemaUuid + "} failed: " + e.getLocalizedMessage());
+				log.error("Error while generation jmx bean name", e);
 			}
 		});
 
@@ -194,46 +196,50 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 
 			try {
 				ObjectName statusMBeanName = new ObjectName(JMX_MBEAN_NAME + ",name=" + microschemaUuid);
-				if (isRunning(statusMBeanName)) {
-					message.fail(0, "Migration for microschema " + microschemaUuid + " is already running");
-				} else {
-					db.noTx(() -> {
-						Project project = boot.get().projectRoot().findByUuid(projectUuid);
-						if (project == null) {
-							throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
-						}
-						Release release = project.getReleaseRoot().findByUuid(releaseUuid);
-						if (release == null) {
-							throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
-						}
+				try {
+					if (isRunning(statusMBeanName)) {
+						message.fail(0, "Migration for microschema " + microschemaUuid + " is already running");
+					} else {
+						db.noTx(() -> {
+							Project project = boot.get().projectRoot().findByUuid(projectUuid);
+							if (project == null) {
+								throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
+							}
+							Release release = project.getReleaseRoot().findByUuid(releaseUuid);
+							if (release == null) {
+								throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
+							}
 
-						MicroschemaContainer schemaContainer = boot.get().microschemaContainerRoot().findByUuid(microschemaUuid);
+							MicroschemaContainer schemaContainer = boot.get().microschemaContainerRoot().findByUuid(microschemaUuid);
 
-						if (schemaContainer == null) {
-							throw error(BAD_REQUEST, "Microschema container for uuid {" + microschemaUuid + "} can't be found.");
-						}
-						MicroschemaContainerVersion fromContainerVersion = schemaContainer.findVersionByUuid(fromVersionUuid);
-						if (fromContainerVersion == null) {
-							throw error(BAD_REQUEST,
-									"Source version uuid {" + fromVersionUuid + "} of microschema {" + microschemaUuid + "} could not be found.");
-						}
-						MicroschemaContainerVersion toContainerVersion = schemaContainer.findVersionByUuid(toVersionUuuid);
-						if (toContainerVersion == null) {
-							throw error(BAD_REQUEST,
-									"Target version uuid {" + toVersionUuuid + "} of microschema {" + microschemaUuid + "} could not be found.");
-						}
+							if (schemaContainer == null) {
+								throw error(BAD_REQUEST, "Microschema container for uuid {" + microschemaUuid + "} can't be found.");
+							}
+							MicroschemaContainerVersion fromContainerVersion = schemaContainer.findVersionByUuid(fromVersionUuid);
+							if (fromContainerVersion == null) {
+								throw error(BAD_REQUEST,
+										"Source version uuid {" + fromVersionUuid + "} of microschema {" + microschemaUuid + "} could not be found.");
+							}
+							MicroschemaContainerVersion toContainerVersion = schemaContainer.findVersionByUuid(toVersionUuuid);
+							if (toContainerVersion == null) {
+								throw error(BAD_REQUEST,
+										"Target version uuid {" + toVersionUuuid + "} of microschema {" + microschemaUuid + "} could not be found.");
+							}
 
-						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
-								Type.microschema);
-						setRunning(statusBean, statusMBeanName);
-						nodeMigrationHandler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
-						return null;
-					});
-					setDone(microschemaUuid, statusMBeanName);
-					message.reply(null);
+							NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
+									Type.microschema);
+							setRunning(statusBean, statusMBeanName);
+							nodeMigrationHandler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
+							return null;
+						});
+						setDone(microschemaUuid, statusMBeanName);
+						message.reply(null);
+					}
+				} catch (Exception e) {
+					setError(microschemaUuid, statusMBeanName, message, e);
 				}
 			} catch (Exception e) {
-				message.fail(0, "Migration for microschema " + microschemaUuid + " failed: " + e.getLocalizedMessage());
+				log.error("Error while generation jmx bean name", e);
 			}
 		});
 	}
@@ -320,5 +326,21 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 		msg.put("type", "completed");
 		Mesh.vertx().sharedData().getLocalMap("migrationStatus").put("status", "migration_status_idle");
 		Mesh.vertx().eventBus().publish(MESH_MIGRATION.toString(), msg);
+	}
+
+	private void setError(String schemaUuid, ObjectName statusMBeanName, Message<Object> message, Exception e) {
+		log.error("Migration for schema/microschema {" + schemaUuid + "} failed with error.", e);
+		message.fail(0, "Migration for schema/microschema {" + schemaUuid + "} failed: " + e.getLocalizedMessage());
+		try {
+			mbs.unregisterMBean(statusMBeanName);
+		} catch (Exception e1) {
+		}
+		//TODO set error 
+		/*
+		JsonObject msg = new JsonObject();
+		msg.put("type", "completed");
+		Mesh.vertx().sharedData().getLocalMap("migrationStatus").put("status", "migration_status_idle");
+		Mesh.vertx().eventBus().publish(MESH_MIGRATION.toString(), msg);
+		*/
 	}
 }

@@ -4,6 +4,8 @@
 
 == 0.9.6 (PENDING)
 
+icon:plus[] It is now possible to resume previously aborted schema migrations via the `/api/v1/:projectName/releases/:releaseUuid/migrateSchemas` endpoint.
+
 icon:plus[] Auth: The Java keystore file will now automatically be created if none could be found. The keystore password will be taken from the `mesh.yml` file or randomly generated and stored in the config.
 
 icon:check[] Core: Fix node migration search index handling. Previous migrations did not correctly update the index. A automatic reindex will be invoked during startup.
