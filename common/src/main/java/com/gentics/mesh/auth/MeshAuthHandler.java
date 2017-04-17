@@ -7,7 +7,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.http.MeshHttpHeaders;
 
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -63,23 +65,32 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 	@Override
 	public void handle(RoutingContext context) {
 
-		// 1. Mesh accepts JWT tokens via the cookie as well in order to handle JWT even for regular HTTP Download requests (eg. non ajax requests (static file downloads)).
-		// Store the found token value into the authentication header value. This will effectively overwrite the AUTHORIZATION header value. 
-		Cookie tokenCookie = context.getCookie(MeshAuthProvider.TOKEN_COOKIE_KEY);
-		if (tokenCookie != null) {
-			context.request().headers().set(HttpHeaders.AUTHORIZATION, "Bearer " + tokenCookie.getValue());
-		}
-
+		// 1. Check whether the user is already authenticated
 		User user = context.user();
 		if (user != null) {
 			// Already authenticated in, just authorise
 			authorise(user, context);
 			return;
 		}
+
+		MultiMap headers = context.request().headers();
+		String apiKey = headers.get(MeshHttpHeaders.APIKEY);
+		if (apiKey != null) {
+			//TODO handle api key
+		}
+
+		// Mesh accepts JWT tokens via the cookie as well in order to handle JWT even for regular HTTP Download requests (eg. non ajax requests (static file downloads)).
+		// Store the found token value into the authentication header value. This will effectively overwrite the AUTHORIZATION header value. 
+		Cookie tokenCookie = context.getCookie(MeshAuthProvider.TOKEN_COOKIE_KEY);
+		if (tokenCookie != null) {
+			context.request().headers().set(HttpHeaders.AUTHORIZATION, "Bearer " + tokenCookie.getValue());
+		}
+
+	
 		final HttpServerRequest request = context.request();
 		String token = null;
 
-		// 2. Try to load the token from the AUTHORIZATION header value
+		// Try to load the token from the AUTHORIZATION header value
 		final String authorization = request.headers().get(HttpHeaders.AUTHORIZATION);
 		if (authorization != null) {
 			String[] parts = authorization.split(" ");
@@ -100,7 +111,7 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 			return;
 		}
 
-		// 3. Check whether an actual token value was found otherwise we can exit early
+		// Check whether an actual token value was found otherwise we can exit early
 		if (token == null) {
 			log.warn("No Authorization token value was found");
 			handle401(context);

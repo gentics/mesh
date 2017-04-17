@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.rest.user.UserAPIKeyResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserTokenResponse;
@@ -110,6 +111,26 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 			String created = DateUtils.toISO8601(tokenTimestamp, 0);
 			response.setCreated(created);
 			response.setToken(token);
+			return Single.just(response);
+		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
+	}
+
+	/**
+	 * Handle the api key generation action for the user.
+	 * 
+	 * @param ac
+	 * @param userUuid
+	 */
+	public void handleGenerateAPIKey(InternalActionContext ac, String userUuid) {
+		validateParameter(userUuid, "The userUuid must not be empty");
+
+		db.operateNoTx(() -> {
+			// 1. Load the user that should be used
+			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, CREATE_PERM);
+			String key = TokenUtil.randomToken();
+			user.setAPIKey(key);
+			UserAPIKeyResponse response = new UserAPIKeyResponse();
+			response.setApiKey(key);
 			return Single.just(response);
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}

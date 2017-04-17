@@ -33,7 +33,9 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	static final String TYPE = "user";
+	static String TYPE = "user";
+	
+	static String API_KEY_PROPERTY_NAME ="APIKey";
 
 	@Override
 	default String getType() {
@@ -386,6 +388,26 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 			return false;
 		}
 		return isTokenMatch && !isExpired;
+	}
+
+	/**
+	 * Return the currently stored API key.
+	 * 
+	 * @return API Key or null if no API key has been generated.
+	 */
+	default String getAPIKey() {
+		return getProperty(API_KEY_PROPERTY_NAME);
+	}
+
+	/**
+	 * Set the user API key.
+	 * 
+	 * @param key
+	 * @return Fluent API
+	 */
+	default User setAPIKey(String key) {
+		setProperty(API_KEY_PROPERTY_NAME , key);
+		return this;
 	}
 
 }

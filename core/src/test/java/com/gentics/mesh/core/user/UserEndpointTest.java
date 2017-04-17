@@ -59,6 +59,7 @@ import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.UserAPIKeyResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
@@ -211,8 +212,18 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserTokenResponse response = call(() -> client().getUserToken(uuid));
 		assertThat(response.getToken()).isNotEmpty();
 		String storedToken = db().noTx(() -> user().getResetToken());
-		assertEquals("The token that is currently stored did not match up with the returned token by the api",
+		assertEquals("The token that is currently stored did not match up with the returned token by the API",
 				storedToken, response.getToken());
+	}
+
+	@Test
+	public void testFetchAPIKey() {
+		String uuid = db().noTx(() -> user().getUuid());
+		UserAPIKeyResponse response = call(() -> client().generateAPIKey(uuid));
+		assertThat(response.getApiKey()).isNotEmpty();
+		String storedKey= db().noTx(() -> user().getAPIKey());
+		assertEquals("The key that is currently stored did not match up with the returned key by the API",
+				storedKey, response.getApiKey());
 	}
 
 	@Test
