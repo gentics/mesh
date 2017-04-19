@@ -122,6 +122,10 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			GraphQLContext gc = env.getContext();
 			Node node = boot.nodeRoot()
 					.findByUuid(uuid);
+			if (node == null) {
+				//TODO Throw graphql aware not found exception
+				return null;
+			}
 			return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 		}
 		return null;

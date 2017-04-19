@@ -1,4 +1,8 @@
 {
+	# [$.data.node=<is-null>]
+	node(uuid: "bogus") {
+		uuid
+	}
 	content(path:"/Neuigkeiten/2015/News_2015.en.html") {
 		fields {
 			... on content { name }
