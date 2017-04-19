@@ -2,6 +2,7 @@
 	contents {
 		elements {
 			language
+			path
 		}
 	}
 }

@@ -1,5 +1,12 @@
 {
 	content(path:"/Neuigkeiten/2015") {
+		# 2015 is an english container - thus the path is actually "/News/2015"
+		# [$.data.content.path=/News/2015]
+		path
+
+		# [$.data.content.language=en]
+		language
+
 		# [$.data.content.node.ruContainer=<is-null>]
 		node {
 			ruContainer: content(language: "ru") {

@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
@@ -330,18 +331,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		});
 	}
 
-	//	@Override
-	//	public void handleRelatedEntries(Action2<IndexableElement, Boolean> action) {
-	//
-	//		Node node = getParentNode();
-	//		SearchQueueEntry entry = batch.addEntry(node.getUuid(), node.getType(), action);
-	//		entry.set(NodeIndexHandler.CUSTOM_LANGUAGE_TAG, getLanguage().getLanguageTag());
-	//		entry.set(NodeIndexHandler.CUSTOM_RELEASE_UUID, releaseUuid);
-	//		entry.set(NodeIndexHandler.CUSTOM_VERSION, type.toString().toLowerCase());
-	//		entry.set(NodeIndexHandler.CUSTOM_PROJECT_UUID, node.getProject().getUuid());
-	//		entry.set(NodeIndexHandler.CUSTOM_SCHEMAVERSION_UUID, getSchemaContainerVersion().getUuid());
-	//	}
-
 	@Override
 	public List<FieldContainerChange> compareTo(FieldMap fieldMap) {
 		List<FieldContainerChange> changes = new ArrayList<>();
@@ -459,6 +448,30 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public User getEditor() {
 		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+	}
+	
+	@Override
+	public String getSegmentFieldValue() {
+		String segmentFieldKey = getSchemaContainerVersion().getSchema().getSegmentField();
+		// 1. The container may reference a schema which has no segment	field set thus no path segment can be determined
+		if (segmentFieldKey == null) {
+			return null;
+		}
+
+		// 2. Try to load the path segment using the string field
+		StringGraphField stringField = getString(segmentFieldKey);
+		if (stringField != null) {
+			return stringField.getString();
+		}
+
+		// 3. Try to load the path segment using the binary field since the string field could not be found
+		if (stringField == null) {
+			BinaryGraphField binaryField = getBinary(segmentFieldKey);
+			if (binaryField != null) {
+				return binaryField.getFileName();
+			}
+		}
+		return null;
 	}
 
 }

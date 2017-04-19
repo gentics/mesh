@@ -142,6 +142,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (getParentNode(releaseUuid) == null) {
 			return "";
 		}
+
+		// Find the first matching container and fallback to other listed languages
 		NodeGraphFieldContainer container = null;
 		for (String tag : languageTag) {
 			if ((container = getGraphFieldContainer(tag, releaseUuid, type)) != null) {
@@ -149,25 +151,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 		if (container != null) {
-			String segmentFieldKey = container.getSchemaContainerVersion().getSchema().getSegmentField();
-			// 1. The container may reference a schema which has no segment	field set thus no path segment can be determined
-			if (segmentFieldKey == null) {
-				return null;
-			}
-
-			// 2. Try to load the path segment using the string field
-			StringGraphField stringField = container.getString(segmentFieldKey);
-			if (stringField != null) {
-				return stringField.getString();
-			}
-
-			// 3. Try to load the path segment using the binary field since the string field could not be found
-			if (stringField == null) {
-				BinaryGraphField binaryField = container.getBinary(segmentFieldKey);
-				if (binaryField != null) {
-					return binaryField.getFileName();
-				}
-			}
+			return container.getSegmentFieldValue();
 		}
 		return null;
 	}
@@ -181,10 +165,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		segments.add(segment);
 
-		// for the path segments of the container, we add all (additional)
-		// project languages to the list of languages for the fallback
+		// For the path segments of the container, we add all (additional)
+		// project languages to the list of languages for the fallback.
 		List<String> langList = new ArrayList<>();
 		langList.addAll(Arrays.asList(languageTag));
+
 		// TODO maybe we only want to get the project languages?
 		langList.addAll(MeshInternal.get().boot().getAllLanguageTags());
 		String[] projectLanguages = langList.toArray(new String[langList.size()]);
@@ -194,8 +179,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (current == null || current.getParentNode(releaseUuid) == null) {
 				break;
 			}
-			// for the path segments of the container, we allow ANY language (of
-			// the project)
+			// For the path segments of the container, we allow ANY language (of the project)
 			segment = current.getPathSegment(releaseUuid, type, projectLanguages);
 
 			// Abort early if one of the path segments could not be resolved. We

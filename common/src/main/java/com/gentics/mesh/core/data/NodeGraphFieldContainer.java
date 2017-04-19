@@ -268,4 +268,11 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 */
 	void updateDisplayFieldValue();
 
+	/**
+	 * Returns the segment field value of this container.
+	 * 
+	 * @return Determined segment field value or null if no segment field was specified or yet set
+	 */
+	String getSegmentFieldValue();
+
 }

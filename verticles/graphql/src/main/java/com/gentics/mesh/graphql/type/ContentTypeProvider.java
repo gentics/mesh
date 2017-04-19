@@ -13,6 +13,7 @@ import java.util.concurrent.TimeoutException;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -72,6 +73,19 @@ public class ContentTypeProvider extends AbstractTypeProvider {
 				.description("Node which the content belongs to.")
 				.type(new GraphQLTypeReference("Node"))
 				.dataFetcher(this::parentNodeFetcher));
+
+		// .path
+		type.field(newFieldDefinition().name("path")
+				.description("Webroot path of the content.")
+				.type(GraphQLString)
+				.dataFetcher(env -> {
+					GraphQLContext gc = env.getContext();
+					NodeGraphFieldContainer container = env.getSource();
+					ContainerType containerType = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
+					String releaseUuid = gc.getRelease().getUuid();
+					String languageTag = container.getLanguage().getLanguageTag();
+					return container.getParentNode().getPath(releaseUuid, containerType, languageTag);
+				}));
 
 		// .edited
 		type.field(newFieldDefinition().name("edited")
