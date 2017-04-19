@@ -140,8 +140,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void start() throws Exception {
-		Orient.instance()
-				.startup();
+		Orient.instance().startup();
 		if (options == null || options.getDirectory() == null) {
 			log.info("No graph database settings found. Fallback to in memory mode.");
 			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(5, 100);

@@ -109,6 +109,7 @@ public class TestDataProvider {
 
 		try (Tx tx = db.tx()) {
 			boot.initMandatoryData();
+			boot.initOptionalData(true);
 			tx.getGraph().commit();
 			schemaContainers.clear();
 			microschemaContainers.clear();
@@ -656,5 +657,9 @@ public class TestDataProvider {
 
 	public Group group() {
 		return getUserInfo().getGroup();
+	}
+
+	public Role getAnonymousRole() {
+		return roles.get("anonymous");
 	}
 }

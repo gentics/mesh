@@ -93,21 +93,18 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	@Override
 	public User findByUsername(String username) {
-		return out(HAS_USER).has(UserImpl.USERNAME_PROPERTY_KEY, username)
-				.nextOrDefaultExplicit(UserImpl.class, null);
+		return out(HAS_USER).has(UserImpl.USERNAME_PROPERTY_KEY, username).nextOrDefaultExplicit(UserImpl.class, null);
 	}
 
 	@Override
 	public MeshAuthUser findMeshAuthUserByUsername(String username) {
 		// TODO use index
-		return out(HAS_USER).has(UserImpl.USERNAME_PROPERTY_KEY, username)
-				.nextOrDefaultExplicit(MeshAuthUserImpl.class, null);
+		return out(HAS_USER).has(UserImpl.USERNAME_PROPERTY_KEY, username).nextOrDefaultExplicit(MeshAuthUserImpl.class, null);
 	}
 
 	@Override
 	public MeshAuthUser findMeshAuthUserByUuid(String userUuid) {
-		Database db = MeshInternal.get()
-				.database();
+		Database db = MeshInternal.get().database();
 		Iterator<Vertex> it = db.getVertices(UserImpl.class, new String[] { "uuid" }, new Object[] { userUuid });
 		if (!it.hasNext()) {
 			return null;
@@ -117,16 +114,13 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		if (it.hasNext()) {
 			throw new RuntimeException("Found multiple nodes with the same UUID");
 		}
-		Iterator<Vertex> roots = user.getElement()
-				.getVertices(Direction.IN, HAS_USER)
-				.iterator();
+		Iterator<Vertex> roots = user.getElement().getVertices(Direction.IN, HAS_USER).iterator();
 		Vertex root = roots.next();
 		if (roots.hasNext()) {
 			throw new RuntimeException("Found multiple nodes with the same UUID");
 		}
 
-		if (root.getId()
-				.equals(getId())) {
+		if (root.getId().equals(getId())) {
 			return user;
 		} else {
 			throw new RuntimeException("User does not belong to the UserRoot");
@@ -140,8 +134,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	@Override
 	public User create(InternalActionContext ac, SearchQueueBatch batch) {
-		BootstrapInitializer boot = MeshInternal.get()
-				.boot();
+		BootstrapInitializer boot = MeshInternal.get().boot();
 		MeshAuthUser requestUser = ac.getUser();
 
 		UserCreateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserCreateRequest.class);
@@ -169,16 +162,13 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		user.setUsername(requestModel.getUsername());
 		user.setLastname(requestModel.getLastname());
 		user.setEmailAddress(requestModel.getEmailAddress());
-		user.setPasswordHash(MeshInternal.get()
-				.passwordEncoder()
-				.encode(requestModel.getPassword()));
+		user.setPasswordHash(MeshInternal.get().passwordEncoder().encode(requestModel.getPassword()));
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, user);
 		ExpandableNode reference = requestModel.getNodeReference();
 		batch.store(user, true);
 
 		if (!isEmpty(groupUuid)) {
-			Group parentGroup = boot.groupRoot()
-					.loadObjectByUuid(ac, groupUuid, CREATE_PERM);
+			Group parentGroup = boot.groupRoot().loadObjectByUuid(ac, groupUuid, CREATE_PERM);
 			parentGroup.addUser(user);
 			batch.store(parentGroup, false);
 			requestUser.addCRUDPermissionOnRole(parentGroup, CREATE_PERM, user);
@@ -194,13 +184,11 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			}
 
 			// TODO decide whether we need to check perms on the project as well
-			Project project = boot.projectRoot()
-					.findByName(projectName);
+			Project project = boot.projectRoot().findByName(projectName);
 			if (project == null) {
 				throw error(BAD_REQUEST, "project_not_found", projectName);
 			}
-			Node node = project.getNodeRoot()
-					.loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, referencedNodeUuid, READ_PERM);
 			user.setReferencedNode(node);
 		} else if (reference != null) {
 			// TODO handle user create using full node rest model.

@@ -14,7 +14,6 @@ import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.verticle.ElasticsearchHeadVerticle;
 import com.gentics.mesh.util.DeploymentUtil;
-import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.verticle.admin.AdminGUIVerticle;
 
 import io.vertx.core.json.JsonObject;
@@ -43,7 +42,6 @@ public class DemoRunner {
 		setupDemo();
 
 		MeshOptions options = OptionsLoader.createOrloadOptions();
-		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
 		// options.getSearchOptions().setHttpEnabled(true);

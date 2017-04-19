@@ -191,6 +191,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
 		initMandatoryData();
+		initOptionalData(isEmptyInstallation);
 
 		if (isEmptyInstallation) {
 			handleMeshVersion();
@@ -543,6 +544,48 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			tx.success();
 		}
 
+	}
+
+	@Override
+	public void initOptionalData(boolean isEmptyInstallation) {
+
+		// Only setup optional data for empty installations
+		if (isEmptyInstallation) {
+			try (Tx tx = db.tx()) {
+				meshRoot = meshRoot();
+
+				UserRoot userRoot = meshRoot().getUserRoot();
+				// Verify that an anonymous user exists
+				User anonymousUser = userRoot.findByUsername("anonymous");
+				if (anonymousUser == null) {
+					anonymousUser = userRoot.create("anonymous", anonymousUser);
+					anonymousUser.setCreator(anonymousUser);
+					anonymousUser.setCreationTimestamp();
+					anonymousUser.setEditor(anonymousUser);
+					anonymousUser.setLastEditedTimestamp();
+					anonymousUser.setPasswordHash(null);
+					log.debug("Created anonymous user {" + anonymousUser.getUuid() + "}");
+				}
+
+				GroupRoot groupRoot = meshRoot.getGroupRoot();
+				Group anonymousGroup = groupRoot.findByName("anonymous");
+				if (anonymousGroup == null) {
+					anonymousGroup = groupRoot.create("anonymous", anonymousUser);
+					anonymousGroup.addUser(anonymousUser);
+					log.debug("Created anonymous group {" + anonymousGroup.getUuid() + "}");
+				}
+
+				RoleRoot roleRoot = meshRoot.getRoleRoot();
+				Role anonymousRole = roleRoot.findByName("anonymous");
+				if (anonymousRole == null) {
+					anonymousRole = roleRoot.create("anonymous", anonymousUser);
+					anonymousGroup.addRole(anonymousRole);
+					log.debug("Created anonymous role {" + anonymousRole.getUuid() + "}");
+				}
+
+				tx.success();
+			}
+		}
 	}
 
 	@Override

@@ -22,7 +22,9 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 	@Override
 	public Completable addAuthenticationInformation(HttpClientRequest request) {
 		// TODO: request new Token when old one expires
-		request.headers().add("Cookie", "mesh.token=" + token);
+		if (token != null) {
+			request.headers().add("Cookie", "mesh.token=" + token);
+		}
 		return Completable.complete();
 	}
 

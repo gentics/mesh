@@ -110,6 +110,7 @@ public class DemoDataProvider {
 		addNodes();
 		publishAllNodes();
 		addWebclientPermissions();
+		addAnonymousPermissions();
 		// updatePermissions();
 		// invokeFullIndex();
 		log.info("Demo data setup completed");
@@ -124,6 +125,17 @@ public class DemoDataProvider {
 		for (ProjectResponse project : projects.values()) {
 			call(() -> client.publishNode(PROJECT_NAME, project.getRootNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 		}
+	}
+
+	/**
+	 * Add the anonymous read permissions
+	 */
+	private void addAnonymousPermissions() {
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(true);
+		request.getPermissions().add(READ);
+		call(() -> client.updateRolePermissions(getRole("anonymous").getUuid(), "projects/" + getProject("demo").getUuid(), request));
+		call(() -> client.updateRolePermissions(getRole("anonymous").getUuid(), "users/" + users.get("anonymous").getUuid(), request));
 	}
 
 	/**
@@ -345,7 +357,8 @@ public class DemoDataProvider {
 				byte[] bytes = IOUtils.toByteArray(ins);
 				Buffer fileData = Buffer.buffer(bytes);
 
-				call(() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", createdNode.getVersion().toString(), "image", fileData, filenName, contentType));
+				call(() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", createdNode.getVersion().toString(), "image",
+						fileData, filenName, contentType));
 
 			}
 

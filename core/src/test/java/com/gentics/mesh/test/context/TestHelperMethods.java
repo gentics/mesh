@@ -90,55 +90,57 @@ public interface TestHelperMethods {
 
 	MeshTestContext getTestContext();
 
-	default public Database db() {
+	default Database db() {
 		return MeshInternal.get().database();
 	}
 
-	default public BootstrapInitializer boot() {
+	default BootstrapInitializer boot() {
 		return MeshInternal.get().boot();
 	}
 
-	default public TestDataProvider data() {
+	default TestDataProvider data() {
 		return getTestContext().getData();
 	}
 
-	default public Role role() {
+	default Role role() {
 		return data().role();
 	}
 
-	default public MeshAuthUser getRequestUser() {
+	default MeshAuthUser getRequestUser() {
 		return data().getUserInfo().getUser().reframe(MeshAuthUserImpl.class);
 	}
 
-	default public User user() {
-		User user = data().user();
-		// user.reload();
-		return user;
+	default User user() {
+		return data().user();
 	}
 
-	default public MeshRoot meshRoot() {
+	default Role anonymousRole() {
+		return data().getAnonymousRole();
+	}
+
+	default MeshRoot meshRoot() {
 		return data().getMeshRoot();
 	}
 
-	default public Group group() {
+	default Group group() {
 		Group group = data().getUserInfo().getGroup();
 		group.reload();
 		return group;
 	}
 
-	default public MeshRestClient client() {
+	default MeshRestClient client() {
 		return getTestContext().getClient();
 	}
 
-	default public DummySearchProvider dummySearchProvider() {
+	default DummySearchProvider dummySearchProvider() {
 		return getTestContext().getDummySearchProvider();
 	}
 
-	default public Project project() {
+	default Project project() {
 		return data().getProject();
 	}
 
-	default public int port() {
+	default int port() {
 		return getTestContext().getPort();
 	}
 
@@ -148,79 +150,79 @@ public interface TestHelperMethods {
 		return node;
 	}
 
-	default public Node content(String key) {
+	default Node content(String key) {
 		return data().getContent(key);
 	}
 
-	default public TagFamily tagFamily(String key) {
+	default TagFamily tagFamily(String key) {
 		TagFamily family = data().getTagFamily(key);
 		family.reload();
 		return family;
 	}
 
-	default public Tag tag(String key) {
+	default Tag tag(String key) {
 		Tag tag = data().getTag(key);
 		tag.reload();
 		return tag;
 	}
 
-	default public SchemaContainer schemaContainer(String key) {
+	default SchemaContainer schemaContainer(String key) {
 		SchemaContainer container = data().getSchemaContainer(key);
 		container.reload();
 		return container;
 	}
 
-	default public Map<String, SchemaContainer> schemaContainers() {
+	default Map<String, SchemaContainer> schemaContainers() {
 		return data().getSchemaContainers();
 	}
 
-	default public Map<String, Role> roles() {
+	default Map<String, Role> roles() {
 		return data().getRoles();
 	}
 
-	default public Map<String, ? extends Tag> tags() {
+	default Map<String, ? extends Tag> tags() {
 		return data().getTags();
 	}
 
-	default public Language english() {
+	default Language english() {
 		Language language = data().getEnglish();
 		language.reload();
 		return language;
 	}
 
-	default public Language german() {
+	default Language german() {
 		Language language = data().getGerman();
 		language.reload();
 		return language;
 	}
 
-	default public Map<String, Group> groups() {
+	default Map<String, Group> groups() {
 		return data().getGroups();
 	}
 
-	default public Map<String, MicroschemaContainer> microschemaContainers() {
+	default Map<String, MicroschemaContainer> microschemaContainers() {
 		return data().getMicroschemaContainers();
 	}
 
-	default public MicroschemaContainer microschemaContainer(String key) {
+	default MicroschemaContainer microschemaContainer(String key) {
 		MicroschemaContainer container = data().getMicroschemaContainers().get(key);
 		container.reload();
 		return container;
 	}
 
-	default public RoutingContext mockRoutingContext() {
+	default RoutingContext mockRoutingContext() {
 		return getMockedRoutingContext("", false, user(), project());
 	}
 
-	default public RoutingContext mockRoutingContext(String query) {
+	default RoutingContext mockRoutingContext(String query) {
 		return getMockedRoutingContext(query, false, user(), project());
 	}
 
-	default public InternalActionContext mockActionContext() {
+	default InternalActionContext mockActionContext() {
 		return getMockedInternalActionContext("", user(), project());
 	}
 
-	default public InternalActionContext mockActionContext(String query) {
+	default InternalActionContext mockActionContext(String query) {
 		return getMockedInternalActionContext(query, user(), project());
 	}
 
@@ -229,7 +231,7 @@ public interface TestHelperMethods {
 	 * 
 	 * @return
 	 */
-	default public Node content() {
+	default Node content() {
 		Node content = data().getContent("news overview");
 		content.reload();
 		return content;
@@ -240,21 +242,21 @@ public interface TestHelperMethods {
 	 * 
 	 * @return
 	 */
-	default public Release release() {
+	default Release release() {
 		return project().getLatestRelease();
 	}
 
-	default public UserResponse readUser(String uuid) {
+	default UserResponse readUser(String uuid) {
 		return call(() -> client().findUserByUuid(uuid));
 	}
 
-	default public UserResponse updateUser(String uuid, String newUserName) {
+	default UserResponse updateUser(String uuid, String newUserName) {
 		UserUpdateRequest userUpdateRequest = new UserUpdateRequest();
 		userUpdateRequest.setUsername(newUserName);
 		return call(() -> client().updateUser(uuid, userUpdateRequest));
 	}
 
-	default public void deleteUser(String uuid) {
+	default void deleteUser(String uuid) {
 		call(() -> client().deleteUser(uuid));
 	}
 

@@ -7,6 +7,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
@@ -33,14 +36,22 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 
 	private static final Pattern BEARER = Pattern.compile("^Bearer$", Pattern.CASE_INSENSITIVE);
 
+	public static final String ANONYMOUS_USERNAME = "anonymous";
+
 	private final JsonObject options;
 
 	private MeshAuthProvider authProvider;
 
+	private BootstrapInitializer boot;
+
+	private Database database;
+
 	@Inject
-	public MeshAuthHandler(MeshAuthProvider authProvider) {
+	public MeshAuthHandler(MeshAuthProvider authProvider, BootstrapInitializer boot, Database database) {
 		super(authProvider);
 		this.authProvider = authProvider;
+		this.boot = boot;
+		this.database = database;
 		options = new JsonObject();
 	}
 
@@ -111,9 +122,21 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 				return;
 			}
 		} else {
-			log.warn("No Authorization header was found");
-			handle401(context);
-			return;
+			if (log.isDebugEnabled()) {
+				log.debug("No Authorization header was found. Using anonymous user.");
+			}
+			MeshAuthUser anonymousUser = database.noTx(() -> boot.userRoot().findMeshAuthUserByUsername(ANONYMOUS_USERNAME));
+			if (anonymousUser == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("No anonymous user and authorization header was found. Can't authenticate request.");
+				}
+				handle401(context);
+				return;
+			} else {
+				context.setUser(anonymousUser);
+				authorise(anonymousUser, context);
+				return;
+			}
 		}
 
 		// Check whether an actual token value was found otherwise we can exit early
