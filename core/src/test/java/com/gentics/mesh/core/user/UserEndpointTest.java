@@ -228,9 +228,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// Now invalidate the api key by generating a new one
 		String oldKey = response.getApiKey();
 		response = call(() -> client().issueAPIKey(uuid));
-		assertNotEquals("Each key should be unique.",oldKey, response.getApiKey());
-		assertNotNull("The key was already requested once. Thus the date should be set.",response.getPreviousIssueDate());
-	
+		assertNotEquals("Each key should be unique.", oldKey, response.getApiKey());
+		assertNotNull("The key was already requested once. Thus the date should be set.", response.getPreviousIssueDate());
+
 		// And continue invoking requests
 		call(() -> client().findUserByUuid(uuid), UNAUTHORIZED, "error_not_authorized");
 
@@ -243,6 +243,34 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertNull(db().noTx(() -> user().getAPIKeyTokenCode()));
 		assertNull(db().noTx(() -> user().getAPIKeyTokenCodeIssueTimestamp()));
 		call(() -> client().findUserByUuid(uuid), UNAUTHORIZED, "error_not_authorized");
+	}
+
+	@Test
+	public void testIssueAPIKeyWithoutPerm() {
+		String uuid = db().noTx(() -> {
+			User user = user();
+			role().revokePermissions(user, UPDATE_PERM);
+			return user.getUuid();
+		});
+
+		call(() -> client().findUserByUuid(uuid));
+		call(() -> client().issueAPIKey(uuid), FORBIDDEN, "error_missing_perm", uuid);
+	}
+
+	@Test
+	public void testRevokeAPIKeyWithoutPerm() {
+		String uuid = db().noTx(() -> user().getUuid());
+
+		call(() -> client().findUserByUuid(uuid));
+
+		call(() -> client().issueAPIKey(uuid));
+		db().noTx(() -> {
+			User user = user();
+			role().revokePermissions(user, UPDATE_PERM);
+			return null;
+		});
+
+		call(() -> client().invalidateAPIKey(uuid), FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
