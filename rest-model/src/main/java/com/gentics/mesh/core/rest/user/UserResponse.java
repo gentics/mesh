@@ -15,11 +15,11 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
  */
 public class UserResponse extends AbstractGenericRestResponse {
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Lastname of the user.")
 	private String lastname;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Firstname of the user.")
 	private String firstname;
 
@@ -27,7 +27,7 @@ public class UserResponse extends AbstractGenericRestResponse {
 	@JsonPropertyDescription("Username of the user.")
 	private String username;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Email address of the user")
 	private String emailAddress;
 

@@ -10,12 +10,14 @@ import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.core.rest.user.UserAPIKeyResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.util.UUIDUtil;
 
 public class UserExamples extends AbstractExamples {
 
@@ -108,6 +110,10 @@ public class UserExamples extends AbstractExamples {
 
 	public UserTokenResponse getTokenResponse() {
 		return new UserTokenResponse().setToken(randomToken()).setCreated(getTimestamp());
+	}
+
+	public UserAPIKeyResponse getAPIKeyResponse() {
+		return new UserAPIKeyResponse().setApiKey(UUIDUtil.randomUUID());
 	}
 
 }

@@ -80,5 +80,13 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 */
 	void close();
 
+	/**
+	 * Set the API key. This is an alternative way for authentication. Use {@link #setLogin(String, String)} if you prefer to use regular JWT tokens.
+	 * 
+	 * @param apiKey
+	 * @return Fluent API
+	 */
+	MeshRestClient setAPIKey(String apiKey);
+
 
 }

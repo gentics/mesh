@@ -150,8 +150,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		}
 		if (container != null) {
 			String segmentFieldKey = container.getSchemaContainerVersion().getSchema().getSegmentField();
-			// 1. The container may reference a schema which has no segment
-			// field set thus no path segment can be determined
+			// 1. The container may reference a schema which has no segment	field set thus no path segment can be determined
 			if (segmentFieldKey == null) {
 				return null;
 			}
@@ -162,8 +161,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return stringField.getString();
 			}
 
-			// 3. Try to load the path segment using the binary field since the
-			// string field could not be found
+			// 3. Try to load the path segment using the binary field since the string field could not be found
 			if (stringField == null) {
 				BinaryGraphField binaryField = container.getBinary(segmentFieldKey);
 				if (binaryField != null) {

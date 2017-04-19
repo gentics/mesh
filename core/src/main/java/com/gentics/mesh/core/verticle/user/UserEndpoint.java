@@ -53,9 +53,39 @@ public class UserEndpoint extends AbstractEndpoint {
 		addCreateHandler();
 		addReadHandler();
 		addDeleteHandler();
-		addTokenHandler();
-
+		addAuthTokenHandler();
+		addAPIKeyHandler();
 		addReadPermissionHandler();
+	}
+
+	private void addAPIKeyHandler() {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:userUuid/apiKey");
+		endpoint.setRAMLPath("/{userUuid}/apiKey");
+		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
+		endpoint.description("Return API Key which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.");
+		endpoint.method(GET);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API Key response.");
+		endpoint.blockingHandler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String uuid = ac.getParameter("userUuid");
+			crudHandler.handleIssueAPIKey(ac, uuid);
+		});
+
+		Endpoint deleteEndpoint = createEndpoint();
+		deleteEndpoint.path("/:userUuid/apiKey");
+		deleteEndpoint.setRAMLPath("/{userUuid}/apiKey");
+		deleteEndpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
+		deleteEndpoint.description("Invalidate the issued API key.");
+		deleteEndpoint.method(DELETE);
+		deleteEndpoint.produces(APPLICATION_JSON);
+		deleteEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Message confirming the invalidation of the API key.");
+		deleteEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String uuid = ac.getParameter("userUuid");
+			crudHandler.handleDeleteAPIKey(ac, uuid);
+		});
 	}
 
 	private void addReadPermissionHandler() {
@@ -76,7 +106,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		});
 	}
 
-	private void addTokenHandler() {
+	private void addAuthTokenHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:userUuid/token");
 		endpoint.setRAMLPath("/{userUuid}/token");

@@ -265,7 +265,8 @@ public class MeshTestContext extends TestWatcher {
 		MeshOptions options = new MeshOptions();
 
 		// Setup the keystore
-		File keystoreFile = new File("target", "keystore.jceks");
+		File keystoreFile = new File("target", "keystore_"  + UUIDUtil.randomUUID() +".jceks");
+		keystoreFile.deleteOnExit();
 		String keystorePassword = "finger";
 		if (!keystoreFile.exists()) {
 			KeyStoreHelper.gen(keystoreFile.getAbsolutePath(), keystorePassword);

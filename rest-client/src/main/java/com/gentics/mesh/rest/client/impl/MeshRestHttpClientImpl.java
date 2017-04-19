@@ -66,6 +66,7 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
+import com.gentics.mesh.core.rest.user.UserAPIKeyResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
@@ -447,6 +448,18 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	public MeshRequest<UserTokenResponse> getUserToken(String userUuid) {
 		Objects.requireNonNull(userUuid, "userUuid must not be null");
 		return prepareRequest(GET, "/users/" + userUuid + "/token", UserTokenResponse.class);
+	}
+
+	@Override
+	public MeshRequest<UserAPIKeyResponse> issueAPIKey(String userUuid) {
+		Objects.requireNonNull(userUuid, "userUuid must not be null");
+		return prepareRequest(GET, "/users/" + userUuid + "/apiKey", UserAPIKeyResponse.class);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invalidateAPIKey(String userUuid) {
+		Objects.requireNonNull(userUuid, "userUuid must not be null");
+		return prepareRequest(DELETE, "/users/" + userUuid + "/apiKey", GenericMessageResponse.class);
 	}
 
 	@Override

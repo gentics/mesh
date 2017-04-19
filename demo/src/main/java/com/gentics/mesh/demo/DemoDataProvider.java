@@ -165,14 +165,13 @@ public class DemoDataProvider {
 			request.setFirstname(firstname);
 			request.setLastname(lastname);
 			request.setPassword(password);
-			MeshResponse<UserResponse> future = client.createUser(request).invoke();
-			latchFor(future);
-			users.put(username, future.result());
+			UserResponse response = call(() -> client.createUser(request));
+			users.put(username, response);
 
 			JsonArray groupArray = userJson.getJsonArray("groups");
 			for (int e = 0; e < groupArray.size(); e++) {
 				String groupUuid = groups.get(groupArray.getString(e)).getUuid();
-				call(() -> client.addUserToGroup(groupUuid, future.result().getUuid()));
+				call(() -> client.addUserToGroup(groupUuid, response.getUuid()));
 			}
 		}
 

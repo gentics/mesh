@@ -22,7 +22,9 @@ import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
 import io.vertx.ext.web.handler.impl.JWTAuthHandlerImpl;
 
 /**
- * This class extends the Vert.x AuthHandler, so that it also works when the token is set as a cookie. Central authentication handler for mesh.
+ * This class extends the Vert.x AuthHandler, so that it also works when the token is set as a cookie.
+ * 
+ * Central authentication handler for mesh. All requests to secured resources must pass this handler.
  */
 @Singleton
 public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
@@ -63,23 +65,37 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 	@Override
 	public void handle(RoutingContext context) {
 
-		// 1. Mesh accepts JWT tokens via the cookie as well in order to handle JWT even for regular HTTP Download requests (eg. non ajax requests (static file downloads)).
-		// Store the found token value into the authentication header value. This will effectively overwrite the AUTHORIZATION header value. 
-		Cookie tokenCookie = context.getCookie(MeshAuthProvider.TOKEN_COOKIE_KEY);
-		if (tokenCookie != null) {
-			context.request().headers().set(HttpHeaders.AUTHORIZATION, "Bearer " + tokenCookie.getValue());
-		}
-
+		// 1. Check whether the user is already authenticated
 		User user = context.user();
 		if (user != null) {
 			// Already authenticated in, just authorise
 			authorise(user, context);
 			return;
 		}
+
+		handleJWTAuth(context);
+
+	}
+
+	/**
+	 * Handle the JWT authentication part.
+	 * 
+	 * @param context
+	 */
+	private void handleJWTAuth(RoutingContext context) {
+
+		// Mesh accepts JWT tokens via the cookie as well in order to handle JWT even for regular HTTP Download requests (eg. non ajax requests (static file
+		// downloads)).
+		// Store the found token value into the authentication header value. This will effectively overwrite the AUTHORIZATION header value.
+		Cookie tokenCookie = context.getCookie(MeshAuthProvider.TOKEN_COOKIE_KEY);
+		if (tokenCookie != null) {
+			context.request().headers().set(HttpHeaders.AUTHORIZATION, "Bearer " + tokenCookie.getValue());
+		}
+
 		final HttpServerRequest request = context.request();
 		String token = null;
 
-		// 2. Try to load the token from the AUTHORIZATION header value
+		// Try to load the token from the AUTHORIZATION header value
 		final String authorization = request.headers().get(HttpHeaders.AUTHORIZATION);
 		if (authorization != null) {
 			String[] parts = authorization.split(" ");
@@ -100,7 +116,7 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 			return;
 		}
 
-		// 3. Check whether an actual token value was found otherwise we can exit early
+		// Check whether an actual token value was found otherwise we can exit early
 		if (token == null) {
 			log.warn("No Authorization token value was found");
 			handle401(context);
@@ -109,24 +125,27 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 
 		// 4. Authenticate the found token using JWT
 		JsonObject authInfo = new JsonObject().put("jwt", token).put("options", options);
-		authProvider.authenticate(authInfo, res -> {
+		authProvider.authenticateJWT(authInfo, res -> {
 
 			// Authentication was successful. Lets update the token cookie to keep it alive
 			if (res.succeeded()) {
-				final User user2 = res.result();
-				context.setUser(user2);
-				String jwtToken = authProvider.generateToken(user2);
-				// Remove the original cookie and set the new one
-				context.removeCookie(MeshAuthProvider.TOKEN_COOKIE_KEY);
-				context.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, jwtToken)
-						.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
-				authorise(user2, context);
+				AuthenticationResult result = res.result();
+				User authenticatedUser = result.getUser();
+				context.setUser(authenticatedUser);
+
+				if (!result.isUsingAPIKey()) {
+					String jwtToken = authProvider.generateToken(authenticatedUser);
+					// Remove the original cookie and set the new one
+					context.removeCookie(MeshAuthProvider.TOKEN_COOKIE_KEY);
+					context.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, jwtToken)
+							.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
+				}
+				authorise(authenticatedUser, context);
 			} else {
 				log.warn("JWT decode failure", res.cause());
 				handle401(context);
 			}
 		});
-
 	}
 
 	private void handle401(RoutingContext context) {

@@ -122,7 +122,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 
 		db().noTx(() -> {
 			// create the initial content
-			NodeCreateRequest create = new NodeCreateRequest();
+			final NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
@@ -130,32 +130,26 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.getFields().put("name", FieldUtil.createStringField("some name"));
 			create.getFields().put("filename", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, create).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, create));
 
 			// create a new content
-			create = new NodeCreateRequest();
-			create.setParentNodeUuid(parent.getUuid());
-			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
-			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("name", FieldUtil.createStringField("some name"));
-			create.getFields().put("filename", FieldUtil.createStringField(nonConflictingName));
-			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
-			future = client().createNode(PROJECT_NAME, create).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			String uuid = future.result().getUuid();
+			NodeCreateRequest create2 = new NodeCreateRequest();
+			create2.setParentNodeUuid(parent.getUuid());
+			create2.setLanguage("en");
+			create2.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create2.getFields().put("title", FieldUtil.createStringField("some title"));
+			create2.getFields().put("name", FieldUtil.createStringField("some name"));
+			create2.getFields().put("filename", FieldUtil.createStringField(nonConflictingName));
+			create2.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
+			response = call(() -> client().createNode(PROJECT_NAME, create2));
+			String uuid = response.getUuid();
 
 			// try to update with conflict
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
 			update.getFields().put("filename", FieldUtil.createStringField(conflictingName));
-			future = client().updateNode(PROJECT_NAME, uuid, update).invoke();
-			latchFor(future);
-			expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "filename", conflictingName);
+			call(() -> client().updateNode(PROJECT_NAME, uuid, update), CONFLICT, "node_conflicting_segmentfield_update", "filename", conflictingName);
 			return null;
 		});
 	}

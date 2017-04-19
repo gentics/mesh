@@ -32,6 +32,13 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRestClient setAPIKey(String apiKey) {
+		// Internally the API is just a regular JWT which does not expire.
+		authentication.setToken(apiKey);
+		return this;
+	}
+
+	@Override
 	public HttpClient getClient() {
 		return client;
 	}

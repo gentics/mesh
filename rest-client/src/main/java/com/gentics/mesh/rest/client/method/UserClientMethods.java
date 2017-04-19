@@ -1,5 +1,7 @@
 package com.gentics.mesh.rest.client.method;
 
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.user.UserAPIKeyResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
@@ -90,8 +92,24 @@ public interface UserClientMethods {
 	 * Fetch a new user token for the user with the given uuid. Note that any previously fetched token for that particular user will be invalidated by this
 	 * action.
 	 * 
-	 * @param userUuid
+	 * @param userUuid User uuid
 	 * @return
 	 */
 	MeshRequest<UserTokenResponse> getUserToken(String userUuid);
+
+	/**
+	 * Generate a new API Key for the user. The API is valid until a new key is generated. Generating a new key will invalidate the previously generated key.
+	 * 
+	 * @param userUuid User uuid
+	 * @return
+	 */
+	MeshRequest<UserAPIKeyResponse> issueAPIKey(String userUuid);
+
+	/**
+	 * Invalidate the currently active API key.
+	 * 
+	 * @param userUuid
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> invalidateAPIKey(String userUuid);
 }

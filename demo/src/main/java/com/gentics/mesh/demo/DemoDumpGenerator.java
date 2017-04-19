@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
+import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshConfigurationException;
@@ -18,6 +19,7 @@ import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * The demo dump generator is used to create a mesh database dump which contains the demo data. This dump is packaged and later placed within the final mesh jar
@@ -26,7 +28,7 @@ import com.gentics.mesh.search.SearchProvider;
 public class DemoDumpGenerator {
 
 	public static void main(String[] args) throws Exception {
-		FileUtils.deleteDirectory(new File("target/dump"));
+		FileUtils.deleteDirectory(new File("target", "dump"));
 		initPaths();
 		new DemoDumpGenerator().dump();
 	}
@@ -63,25 +65,35 @@ public class DemoDumpGenerator {
 		// 1. Cleanup in preparation for dumping the demo data
 		cleanup();
 
-		// 2. Setup dagger
+		// 2. Setup the java keystore
+		MeshOptions options = Mesh.mesh().getOptions();
+		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
+		File keyStoreFile = new File("target", "keystore_" + UUIDUtil.randomUUID() + ".jks");
+		options.getAuthenticationOptions().setKeystorePath(keyStoreFile.getAbsolutePath());
+		String keyStorePass = options.getAuthenticationOptions().getKeystorePassword();
+		if (!keyStoreFile.exists()) {
+			KeyStoreHelper.gen(keyStoreFile.getAbsolutePath(), keyStorePass);
+		}
+
+		// 3. Setup dagger
 		MeshComponent meshDagger = MeshInternal.create();
 
-		// 3. Setup GraphDB
+		// 4. Setup GraphDB
 		new DatabaseHelper(meshDagger.database()).init();
 
-		// 4. Initialise mesh
+		// 5. Initialise mesh
 		BootstrapInitializer boot = meshDagger.boot();
 		boot.initMandatoryData();
 		boot.initPermissions();
 		boot.markChangelogApplied();
 		boot.createSearchIndicesAndMappings();
 
-		// 5. Init demo data
+		// 6. Initialise demo data
 		DemoDataProvider provider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl());
 		SearchProvider searchProvider = meshDagger.searchProvider();
 		invokeDump(boot, provider);
 
-		// Close the elastic search instance
+		// 7. Close the elastic search instance
 		org.elasticsearch.node.Node esNode = null;
 		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
 			esNode = (Node) searchProvider.getNode();
