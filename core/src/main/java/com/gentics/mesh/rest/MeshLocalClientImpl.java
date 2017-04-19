@@ -975,7 +975,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public void eventbus(Handler<WebSocket> wsConnect) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -986,6 +985,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRestClient setAPIKey(String apiKey) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1201,7 +1206,13 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<UserAPIKeyResponse> generateAPIKey(String userUuid) {
+	public MeshRequest<UserAPIKeyResponse> issueAPIKey(String userUuid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invalidateAPIKey(String userUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}

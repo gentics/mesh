@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.method;
 
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserAPIKeyResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
@@ -102,5 +103,13 @@ public interface UserClientMethods {
 	 * @param userUuid User uuid
 	 * @return
 	 */
-	MeshRequest<UserAPIKeyResponse> generateAPIKey(String userUuid);
+	MeshRequest<UserAPIKeyResponse> issueAPIKey(String userUuid);
+
+	/**
+	 * Invalidate the currently active API key.
+	 * 
+	 * @param userUuid
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> invalidateAPIKey(String userUuid);
 }

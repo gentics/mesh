@@ -2,6 +2,10 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.7 (PENDING)
+
+icon:plus[] It is now possible to issue API keys via the `GET /api/v1/users/:userUuid/apiKey` endpoint. API keys do not expire and work in conjunction with the regular JWT authentication mechanism. These keys should only be used when SSL is enabled. The `DELETE /api/v1/users/:userUuid/apiKey` endpoint can be used to revoke the issued API. Only one API key is supported for one user. Generating a new API key will invalidate the previously issued key.
+
 == 0.9.6 (14.04.2017)
 
 icon:plus[] It is now possible to resume previously aborted schema migrations via the `/api/v1/:projectName/releases/:releaseUuid/migrateSchemas` endpoint.

@@ -451,9 +451,15 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<UserAPIKeyResponse> generateAPIKey(String userUuid) {
+	public MeshRequest<UserAPIKeyResponse> issueAPIKey(String userUuid) {
 		Objects.requireNonNull(userUuid, "userUuid must not be null");
-		return prepareRequest(GET, "/users/" + userUuid + "/generateAPIKey", UserAPIKeyResponse.class);
+		return prepareRequest(GET, "/users/" + userUuid + "/apiKey", UserAPIKeyResponse.class);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invalidateAPIKey(String userUuid) {
+		Objects.requireNonNull(userUuid, "userUuid must not be null");
+		return prepareRequest(DELETE, "/users/" + userUuid + "/apiKey", GenericMessageResponse.class);
 	}
 
 	@Override

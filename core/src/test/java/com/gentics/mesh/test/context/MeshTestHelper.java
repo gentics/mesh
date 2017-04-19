@@ -145,8 +145,7 @@ public final class MeshTestHelper {
 	public static <T> void call(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
 		MeshResponse<T> future;
 		try {
-			future = handler.handle()
-					.invoke();
+			future = handler.handle().invoke();
 		} catch (Exception e) {
 			future = new MeshResponse<>(Future.failedFuture(e));
 		}

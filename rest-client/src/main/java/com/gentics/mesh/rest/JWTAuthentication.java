@@ -73,4 +73,5 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 		this.token = token;
 		return this;
 	}
+
 }

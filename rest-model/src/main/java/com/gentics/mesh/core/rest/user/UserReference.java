@@ -9,9 +9,11 @@ import com.gentics.mesh.core.rest.common.RestModel;
  */
 public class UserReference implements RestModel {
 
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Firstname of the user")
 	private String firstName;
 
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Lastname of the user")
 	private String lastName;
 

@@ -12,6 +12,7 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.DateUtils;
 
 /**
  * The User Domain Model interface.
@@ -34,8 +35,16 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * Type Value: {@value #TYPE}
 	 */
 	static String TYPE = "user";
-	
-	static String API_KEY_PROPERTY_NAME ="APIKey";
+
+	/**
+	 * API key token property name {@value #API_KEY_TOKEN_CODE}
+	 */
+	static String API_KEY_TOKEN_CODE = "APIKeyTokenCode";
+
+	/**
+	 * API key token timestamp property name {@value #API_KEY_TOKEN_CODE_ISSUE_TIMESTAMP}
+	 */
+	static String API_KEY_TOKEN_CODE_ISSUE_TIMESTAMP = "APIKeyTokenCodeTimestamp";
 
 	@Override
 	default String getType() {
@@ -391,23 +400,74 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	}
 
 	/**
-	 * Return the currently stored API key.
+	 * Return the currently stored API key token code.
 	 * 
-	 * @return API Key or null if no API key has been generated.
+	 * @return API key token code or null if no code has yet been generated.
 	 */
-	default String getAPIKey() {
-		return getProperty(API_KEY_PROPERTY_NAME);
+	default String getAPIKeyTokenCode() {
+		return getProperty(API_KEY_TOKEN_CODE);
 	}
 
 	/**
-	 * Set the user API key.
+	 * Set the user API key token code.
 	 * 
-	 * @param key
+	 * @param code
 	 * @return Fluent API
 	 */
-	default User setAPIKey(String key) {
-		setProperty(API_KEY_PROPERTY_NAME , key);
+	default User setAPIKeyTokenCode(String code) {
+		setProperty(API_KEY_TOKEN_CODE, code);
 		return this;
+	}
+
+	/**
+	 * Return the timestamp when the api key token code was last issued.
+	 * 
+	 * @return
+	 */
+	default Long getAPIKeyTokenCodeIssueTimestamp() {
+		return getProperty(API_KEY_TOKEN_CODE_ISSUE_TIMESTAMP);
+	}
+
+	/**
+	 * Set the API Key token code issue timestamp to the current time.
+	 * 
+	 * @return Fluent API
+	 */
+	default User setAPIKeyTokenCodeIssueTimestamp() {
+		setAPIKeyTokenCodeIssueTimestamp(System.currentTimeMillis());
+		return this;
+	}
+
+	/**
+	 * Set the API key token code issue timestamp.
+	 * 
+	 * @param timestamp
+	 * @return Fluent API
+	 */
+	default User setAPIKeyTokenCodeIssueTimestamp(Long timestamp) {
+		setProperty(API_KEY_TOKEN_CODE_ISSUE_TIMESTAMP, timestamp);
+		return this;
+	}
+
+	/**
+	 * Return the api key token issue date.
+	 * 
+	 * @return ISO8601 formatted date or null if the date has not yet been set
+	 */
+	default String getAPIKeyTokenCodeIssueDate() {
+		Long timestamp = getAPIKeyTokenCodeIssueTimestamp();
+		if (timestamp == null) {
+			return null;
+		}
+		return DateUtils.toISO8601(timestamp, System.currentTimeMillis());
+	}
+
+	/**
+	 * Reset the API key token code and issue timestamp.
+	 */
+	default void deleteAPIKeyTokenCode() {
+		setProperty(API_KEY_TOKEN_CODE, null);
+		setProperty(API_KEY_TOKEN_CODE_ISSUE_TIMESTAMP, null);
 	}
 
 }

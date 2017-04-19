@@ -34,7 +34,7 @@ import io.vertx.ext.auth.jwt.JWTOptions;
 import io.vertx.ext.web.Cookie;
 
 /**
- * Mesh authentication provider.
+ * Central mesh authentication provider which will handle JWT.
  */
 @Singleton
 public class MeshAuthProvider implements AuthProvider, JWTAuth {
@@ -46,6 +46,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	public static final String TOKEN_COOKIE_KEY = "mesh.token";
 
 	private static final String USERID_FIELD_NAME = "userUuid";
+
+	private static final String API_KEY_TOKEN_CODE_FIELD_NAME = "apiKeyTokenCode";
 
 	protected Database db;
 
@@ -59,12 +61,11 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		this.db = database;
 		this.boot = boot;
 
-		// Use the mesh jwt options in order to setup the JWTAuth provider
+		// Use the mesh JWT options in order to setup the JWTAuth provider
 		AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
 		String keystorePassword = options.getKeystorePassword();
 		if (keystorePassword == null) {
-			throw new RuntimeException(
-					"The keystore password could not be found within the authentication options.");
+			throw new RuntimeException("The keystore password could not be found within the authentication options.");
 		}
 
 		String keyStorePath = options.getKeystorePath();
@@ -75,17 +76,25 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	}
 
-	@Override
-	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
+	public void authenticateJWT(JsonObject authInfo, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
 		if (authInfo.getString("jwt") != null) {
+			// Decode and validate the JWT. A JWTUser will be returned which contains the decoded token.
+			// We will use this information to load the Mesh User from the graph.
 			jwtProvider.authenticate(authInfo, rh -> {
 				if (rh.failed()) {
 					log.error("Could not authenticate token", rh.cause());
 					resultHandler.handle(Future.failedFuture("Invalid Token"));
 				} else {
+					JsonObject decodedJwt = rh.result().principal();
 					try {
-						User user = getUserByJWT(rh.result());
-						resultHandler.handle(Future.succeededFuture(user));
+						User user = loadUserByJWT(decodedJwt);
+						AuthenticationResult result = new AuthenticationResult(user);
+
+						// Check whether an api key was used to authenticate the user.
+						if (decodedJwt.containsKey(API_KEY_TOKEN_CODE_FIELD_NAME)) {
+							result.setUsingAPIKey(true);
+						}
+						resultHandler.handle(Future.succeededFuture(result));
 					} catch (Exception e) {
 						resultHandler.handle(Future.failedFuture(e));
 					}
@@ -103,7 +112,13 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 */
 	@Override
 	public String generateToken(JsonObject arg0, JWTOptions arg1) {
-		// The Mesh Auth Provider is not using this method to generate the token.
+		// The mesh auth provider is not using this method to generate the token.
+		throw new NotImplementedException();
+	}
+
+	@Override
+	public void authenticate(JsonObject authInfo, Handler<AsyncResult<User>> resultHandler) {
+		// The mesh auth provider is not using this method to authenticate a user.
 		throw new NotImplementedException();
 	}
 
@@ -122,7 +137,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			if (rh.failed()) {
 				resultHandler.handle(Future.failedFuture(rh.cause()));
 			} else {
-				User user = rh.result();
+				User user = rh.result().getUser();
 				String uuid = null;
 				if (user instanceof MeshAuthUser) {
 					uuid = ((MeshAuthUser) user).getUuid();
@@ -130,9 +145,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 					uuid = user.principal().getString("uuid");
 				}
 				JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, uuid);
-				resultHandler.handle(Future
-						.succeededFuture(jwtProvider.generateToken(tokenData, new JWTOptions().setExpiresInSeconds(
-								Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
+				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData,
+						new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
 			}
 		});
 	}
@@ -147,7 +161,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 * @param resultHandler
 	 *            Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
 	 */
-	private void authenticate(String username, String password, Handler<AsyncResult<User>> resultHandler) {
+	private void authenticate(String username, String password, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
 		try (NoTx noTx = db.noTx()) {
 			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUsername(username);
 			if (user != null) {
@@ -166,7 +180,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 					hashMatches = passwordEncoder.matches(password, accountPasswordHash);
 				}
 				if (hashMatches) {
-					resultHandler.handle(Future.succeededFuture(user));
+					resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
 				} else {
 					resultHandler.handle(Future.failedFuture("Invalid credentials!"));
 				}
@@ -192,8 +206,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 		if (user instanceof MeshAuthUser) {
 			AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
 			JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, ((MeshAuthUser) user).getUuid());
-			return jwtProvider.generateToken(tokenData, new JWTOptions().setAlgorithm(options.getAlgorithm())
-					.setExpiresInSeconds(options.getTokenExpirationTime()));
+			JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm()).setExpiresInSeconds(options.getTokenExpirationTime());
+			return jwtProvider.generateToken(tokenData, jwtOptions);
 		} else {
 			log.error("Can't generate token for user of type {" + user.getClass().getName() + "}");
 			throw error(INTERNAL_SERVER_ERROR, "error_internal");
@@ -201,28 +215,53 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	}
 
 	/**
-	 * Gets the {@link MeshAuthUser} by JWT token.
+	 * Generate a new JWT which can be used as an API key.
 	 *
-	 * @param vertxUser
-	 *            Vert.x user
+	 * @param user
+	 * @param tokenCode
+	 *            Code which will be part of the JWT. This code is used to verify that the JWT is still valid
+	 * @return Generated API key
+	 */
+	public String generateAPIKey(com.gentics.mesh.core.data.User user, String tokenCode) {
+		AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
+		JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, user.getUuid()).put(API_KEY_TOKEN_CODE_FIELD_NAME, tokenCode);
+		JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm());
+		return jwtProvider.generateToken(tokenData, jwtOptions);
+	}
+
+	/**
+	 * Gets the corresponding {@link MeshAuthUser} by the Vert.x User.
+	 *
+	 * @param jwt
+	 *            Decoded JWT
 	 * @return Mesh user
 	 * @throws Exception
 	 */
-	private User getUserByJWT(User vertxUser) throws Exception {
+	private User loadUserByJWT(JsonObject jwt) throws Exception {
 		try (NoTx noTx = db.noTx()) {
-			JsonObject authInfo = vertxUser.principal();
-			String userUuid = authInfo.getString(USERID_FIELD_NAME);
+			String userUuid = jwt.getString(USERID_FIELD_NAME);
 			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);
 			if (user == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Could not load user with UUID {" + userUuid + "}.");
 				}
-				//TODO use NoStackTraceThrowable?
+				// TODO use NoStackTraceThrowable?
 				throw new Exception("Invalid credentials!");
 			}
 			if (!user.isEnabled()) {
 				throw new Exception("User is disabled");
 			}
+
+			// Check whether the token might be an API key token
+			if (!jwt.containsKey("exp")) {
+				String apiKeyToken = jwt.getString(API_KEY_TOKEN_CODE_FIELD_NAME);
+				String storedApiKey = user.getAPIKeyTokenCode();
+				// Verify that the API token is invalid.
+				if (apiKeyToken != null && !apiKeyToken.equals(storedApiKey)) {
+					throw new Exception("API key token is invalid.");
+				}
+			}
+
 			// Load the uuid to cache it
 			user.getUuid();
 			return user;
@@ -245,8 +284,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				throw error(UNAUTHORIZED, "auth_login_failed", rh.cause());
 			} else {
 				ac.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, rh.result())
-						.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime())
-						.setPath("/"));
+						.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 				ac.send(JsonUtil.toJson(new TokenResponse(rh.result())));
 			}
 		});
