@@ -13,7 +13,6 @@ import org.raml.model.parameter.QueryParameter;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
-import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NodeParameters;
 
 public class NodeParametersImpl extends AbstractParameters implements NodeParameters {

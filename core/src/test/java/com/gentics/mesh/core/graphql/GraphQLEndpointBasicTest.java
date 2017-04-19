@@ -8,7 +8,6 @@ import static org.junit.Assert.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Test;
 
 import com.gentics.mesh.graphdb.NoTx;

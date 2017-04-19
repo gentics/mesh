@@ -6,8 +6,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.awt.Container;
-
 import javax.inject.Inject;
 
 import com.gentics.mesh.context.InternalActionContext;

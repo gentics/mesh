@@ -16,7 +16,6 @@ import org.apache.commons.lang.StringUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.google.common.base.Strings;
 
 /**
  * A field schema container is a named container that contains field schemas. Typical containers are {@link Schema} or {@link Microschema}.

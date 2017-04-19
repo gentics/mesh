@@ -32,7 +32,6 @@ import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
-import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 
 @Singleton
@@ -233,21 +232,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				}));
 
 		return nodeType.build();
-	}
-
-	private GraphQLType createLinkInfoType() {
-		Builder type = newObject().name("LinkInfo");
-
-		// .languageTag
-		type.field(newFieldDefinition().name("languageTag")
-				.description("Language tag")
-				.type(GraphQLString));
-
-		// .link
-		type.field(newFieldDefinition().name("link")
-				.description("Resolved link")
-				.type(GraphQLString));
-		return type.build();
 	}
 
 	/**
