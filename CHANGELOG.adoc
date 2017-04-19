@@ -4,7 +4,7 @@
 
 == 0.9.7 (PENDING)
 
-icon:plus[] GraphQL: It is now possible to retrieve the path for a content using the `path` field.
+icon:plus[] GraphQL: It is now possible to retrieve the path for a content using the `path` field. The `Node.languagePaths` has been removed in favour of this new field.
 
 icon:plus[] GraphQL: Contents can now directly be queried via the `contents` field.
 

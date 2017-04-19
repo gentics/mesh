@@ -9,9 +9,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -25,8 +23,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
-import com.gentics.mesh.graphql.model.LinkInfo;
-import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -59,25 +55,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public NodeTypeProvider() {
-	}
-
-	public Object languagePathsFetcher(DataFetchingEnvironment env) {
-		LinkType type = env.getArgument("linkType");
-		if (type != null) {
-			GraphQLContext gc = env.getContext();
-			Release release = gc.getRelease();
-			Node node = env.getSource();
-			// We only need to render links for - non off types
-			if (type != LinkType.OFF) {
-				Map<String, String> map = node.getLanguagePaths(gc, type, release);
-				return map.entrySet()
-						.stream()
-						.map(entry -> new LinkInfo(entry.getKey(), entry.getValue()))
-						.collect(Collectors.toList());
-			}
-		}
-		return null;
-
 	}
 
 	/**
@@ -164,13 +141,6 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					//TODO handle release!
 					return node.getAvailableLanguageNames();
 				}));
-
-		// .languagePaths
-		nodeType.field(newFieldDefinition().name("languagePaths")
-				.description("List all language paths for the node.")
-				.argument(createLinkTypeArg())
-				.type(new GraphQLList(createLinkInfoType()))
-				.dataFetcher(this::languagePathsFetcher));
 
 		// .child
 		nodeType.field(newFieldDefinition().name("child")

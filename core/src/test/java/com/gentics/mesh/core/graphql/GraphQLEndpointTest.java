@@ -65,7 +65,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testQueries.add("node-fields-query");
 		testQueries.add("content-query");
 		testQueries.add("contents-query");
-		testQueries.add("node2-query");
+		testQueries.add("node-query");
 		testQueries.add("project-query");
 		testQueries.add("tag-query");
 		testQueries.add("release-query");

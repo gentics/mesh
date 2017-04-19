@@ -5,12 +5,18 @@
 		}
 		# [$.data.content.language=en]
 		language
+
 		version
 		editor {username}
 		edited
 		node {
 			# [$.data.content.node.uuid=<is-uuid>]
-			uuid,
+			uuid
+
+			# [$.data.content.node.availableLanguages[0]=en]
+			# [$.data.content.node.availableLanguages[1]=de]
+			availableLanguages
+
 			content(language: "de") {
 				fields {
 					... on content { name }
