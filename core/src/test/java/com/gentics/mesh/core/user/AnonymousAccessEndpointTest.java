@@ -6,6 +6,7 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -38,6 +39,12 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 			anonymousRole().grantPermissions(content(), READ_PERM);
 		}
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
+
+		// Verify that anonymous access does not work if the anonymous user is deleted
+		try (NoTx noTx = db().noTx()) {
+			users().get(MeshAuthHandler.ANONYMOUS_USERNAME).remove();
+		}
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), UNAUTHORIZED, "error_not_authorized");
 	}
 
 }
