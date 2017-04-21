@@ -63,38 +63,19 @@ The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncd
 
 ==== Overview
 
-Gentics Mesh currently supports multiple ways of authentication.
-You can login via:
+In order to be able to store and retrieve content, a Gentics Mesh user needs to authenticate (`username:password`). Gentics Mesh provides multiple ways of authentication:
 
-* sending Basic Authentication header 
-* sending JSON Data 
-* sending a JWT token
+* using basic authentication header
+* posting JSON Data
+* sending a valid JSON Web token (JWT)
 
-Each way will store a JWT in the cookie which is used to authenticate the user for succeeding requests.
+Each way will store a JWT in a cookie which is used to authenticate the user for succeeding requests. The token only lasts a certain amount of time (which can be configured in the `mesh.yml` file), so it might be necessary to refresh the token. The JWT will be automatically renewed with every request on the Gentics Mesh API. 
 
-The token only lasts a certain amount of time (which can be configured in the `mesh.yml` file), so it might be necessary to refresh the token. 
-The JWT will be automatically renewed by every request on the Gentics Mesh API. Additionally it is also possible to manually refresh the token using a GET request on the `/api/v1/auth/refresh` endpoint.
-This will set create new token which has a refreshed expire time.
+NOTE: Currently, all data including media assets such as images, videos, and documents are secured and need authentication to be retrieved.
 
 ===== JWT Configuration
-
-The _Json Web Token_ store can be configured within the main `mesh.yml` config file.
-
-You also have to set the keystore secret and the path to the keystore file. See above for an example.
-
-Before using JWT you have to create a keystore which holds the secret to generate the signature for the token.
-Currently only the HS256 algorithm is supported. You can use the java `keytool` to create a new keystore.
-
-Here is an example on how to create a keystore:
-
-[source,bash]
-----
-keytool -genseckey -keystore keystore.jceks -storetype jceks -storepass secret -keyalg HMacSHA256 -keysize 2048 -alias HS256 -keypass secret
-----
-
-After creating the keystore, set the file path of the keystore and the password to access the keystore in the `mesh.yml` configuration file.
-
-Example:
+The JWT auth provider requires a keystore for signing and verifying the generated tokens. 
+It can be configured within the `mesh.yml` configuration file. 
 
 [source,bash]
 ----
@@ -102,32 +83,108 @@ security:
   tokenExpirationTime: 3600
   keystorePassword: "secret"
   keystorePath: "keystore.jceks"
+  algorithm: “HS256”
 ----
 
-===== Basic Auth
+Typically, if no keystore file has been provided, Gentics Mesh will create one on the basis of the configuration details in `mesh.yml`. If the `keystorePassword` property is omitted, a password will be generated randomly and stored in the configuration file.
 
-A user can be authenticated by invoking a regular GET request to `/api/v1/auth/login` which includes a http://tools.ietf.org/html/rfc1945#section-11.1[[Basic Authentication HTTP header].
+Alternatively, you can use the https://docs.oracle.com/javase/8/docs/technotes/tools/windows/keytool.html[Java keytool] to create a new keystore. Here is an example on how to create a keystore:
+[source,bash]
+----
+keytool -genseckey -keystore keystore.jceks -storetype jceks -storepass secret -keyalg HMacSHA256 -keysize 2048 -alias HS256 -keypass secret
+----
+After creating the keystore, you need to set the keystore password, the path to the keystore file, and the used algorithm in the `mesh.yml` configuration file.
 
-===== Json Web Token (JWT)
+WARNING: Sending user credentials as base64 encoded string, or as plaintext is highly insecure to be used on an open network. This method MUST not be used in scenarios other than debugging and development when the connection between server and client is trusted.
 
-The JWT token can be provided in two ways. By default it is passed along with a cookie value. This is useful for embedding binary image nodes directly in HTML.
+==== Basic Authentication Header
+In basic authentication, when a client requests a URL that requires authentication, the server requests the client to authenticate itself by sending a `401-Not Authorized` code. The client, in return, answers with login credentials sent in the `authorization` header:
 
-Alternativly the token can be passed along within the `Authorization` header which includes the regular JWT `"Bearer <Token>"`, where `<Token>` is the token you received from the login/cookie.
+[source,bash]
+----
+authorization: Basic {base64_encode(username:password)}
+----
 
-===== JSON
+In Gentics Mesh, a user can be authenticated by invoking a regular `GET` request to the `/api/v1/auth/login` end point including a basic authentication HTTP header.
 
-Alternatively the user can POST his credentials to `/api/v1/auth/login` in order to retrieve a token.
+Example:
 
-The JSON object must containing these fields:
+[source,bash]
+----
+curl -v -X GET   http://localhost:8080/api/v1/auth/login   -H 'authorization: Basic YWRtaW46YWRtaW4='
+----
+
+The response will be a valid JWT as well as set a cookie with the token.
+
+[source,bash]
+----
+{
+  "token" : "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzczMDYzLCJleHAiOjE0OTE3NzY2NjN9.8iG3I0Pe1M7J43pwbsBXiBOd6p0sn9dRxO3NfazVbOk="
+}
+----
+
+==== POST JSON Data
+Alternatively, the user can `POST` his or her credentials to the `/api/v1/auth/login` end point in order to retrieve a token.
+The JSON object must contain these fields:
 
 * `username` The username of the user
 * `password` The password of the user
 
-If the authentication was successful, the server will respond with a JSON object containing a single field:
+If the authentication was successful, the server will respond with a JSON object containing a single property:
 
 * `token` The token to be sent on every subsequent request.
 
-Additionally the token will also be provided via a cookie.
+Additionally, the token will also be provided in a cookie.
+
+Example:
+[source,bash]
+----
+curl -v -X POST \
+  http://localhost:8080/api/v1/auth/login \
+  -H 'content-type: application/json' \
+  -d '{
+  "username" : "admin",
+  "password" : "admin"
+}'
+----
+
+[source,bash]
+----
+
+*   Trying ::1...
+* TCP_NODELAY set
+* Connected to localhost (::1) port 8080 (#0)
+> POST /api/v1/auth/login HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/7.50.3
+> Accept: */*
+> content-type: application/json
+> Content-Length: 50
+> 
+* upload completely sent off: 50 out of 50 bytes
+< HTTP/1.1 200 OK
+< Content-Type: application/json; charset=utf-8
+< Cache-Control: no-cache
+< Content-Length: 208
+< Set-Cookie: mesh.token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzczODU0LCJleHAiOjE0OTE3Nzc0NTR9._qt3Eufi7-3jnvgQ8lfe_KwJbd5ePwx5jOFrCK9w76A=; Max-Age=3600; Expires=Sun, 9 Apr 2017 22:37:34 GMT; Path=/
+< 
+{
+  "token" : "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzczODU0LCJleHAiOjE0OTE3Nzc0NTR9._qt3Eufi7-3jnvgQ8lfe_KwJbd5ePwx5jOFrCK9w76A="
+* Curl_http_done: called premature == 0
+* Connection #0 to host localhost left intact
+}
+----
+
+==== JSON Web Token
+The JWT can be provided in two ways. By default it is passed along with a cookie value. This is useful for embedding binary image nodes directly in HTML, since the browser will automatically handle authentication on the basis of the cookie.
+Alternatively, the token can be passed along within the authorization header which includes the regular JWT `Bearer <Token>`, where `<Token>` is the token you received from the login/cookie.
+
+[source,bash]
+----
+curl -X GET \
+  http://localhost:8080/api/v1/demo/nodes \
+  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzY1NDEzLCJleHAiOjE0OTE3NjkwMTN9.UY8OgjiK5qyZobAWt6X1Vd1Z-zg68BeJgGZKbW4Ucj0=' \
+----
 
 === Encoding
 
