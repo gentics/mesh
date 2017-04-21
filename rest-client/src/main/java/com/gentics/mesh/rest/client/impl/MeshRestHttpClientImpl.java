@@ -66,12 +66,12 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.core.rest.user.UserAPIKeyResponse;
+import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.rest.user.UserTokenResponse;
+import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -445,21 +445,21 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<UserTokenResponse> getUserToken(String userUuid) {
+	public MeshRequest<UserResetTokenResponse> getUserResetToken(String userUuid) {
 		Objects.requireNonNull(userUuid, "userUuid must not be null");
-		return prepareRequest(GET, "/users/" + userUuid + "/token", UserTokenResponse.class);
+		return prepareRequest(POST, "/users/" + userUuid + "/reset_token", UserResetTokenResponse.class);
 	}
 
 	@Override
-	public MeshRequest<UserAPIKeyResponse> issueAPIKey(String userUuid) {
+	public MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid) {
 		Objects.requireNonNull(userUuid, "userUuid must not be null");
-		return prepareRequest(GET, "/users/" + userUuid + "/apiKey", UserAPIKeyResponse.class);
+		return prepareRequest(POST, "/users/" + userUuid + "/token", UserAPITokenResponse.class);
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invalidateAPIKey(String userUuid) {
+	public MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid) {
 		Objects.requireNonNull(userUuid, "userUuid must not be null");
-		return prepareRequest(DELETE, "/users/" + userUuid + "/apiKey", GenericMessageResponse.class);
+		return prepareRequest(DELETE, "/users/" + userUuid + "/token", GenericMessageResponse.class);
 	}
 
 	@Override

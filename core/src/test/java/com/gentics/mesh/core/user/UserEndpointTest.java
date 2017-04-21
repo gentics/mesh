@@ -59,12 +59,12 @@ import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.core.rest.user.UserAPIKeyResponse;
+import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
+import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.rest.user.UserTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
@@ -103,7 +103,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertNull("Initially the token issue timestamp should be null", db().noTx(() -> user().getResetTokenIssueTimestamp()));
 
 		// 1. Get new token
-		UserTokenResponse response = call(() -> client().getUserToken(uuid));
+		UserResetTokenResponse response = call(() -> client().getUserResetToken(uuid));
 		assertNotNull("The user token code should now be set to a non-null value but it was not.", db().noTx(() -> user().getResetToken()));
 		assertNotNull("The token code issue timestamp should be set.", db().noTx(() -> user().getResetTokenIssueTimestamp()));
 
@@ -135,7 +135,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertNull("Initially the token code should have been set to null", db().noTx(() -> user().getResetToken()));
 
 		// 1. Get new token
-		UserTokenResponse response = call(() -> client().getUserToken(uuid));
+		UserResetTokenResponse response = call(() -> client().getUserResetToken(uuid));
 		assertNotNull("The user token code should now be set to a non-null value but it was not", db().noTx(() -> user().getResetToken()));
 
 		// 2. Logout the current client user
@@ -160,7 +160,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertNull("Initially the token code should have been set to null", db().noTx(() -> user().getResetToken()));
 
 		// 1. Get new token
-		call(() -> client().getUserToken(uuid));
+		call(() -> client().getUserResetToken(uuid));
 
 		// 2. Logout the current client user
 		client().logout().toBlocking().value();
@@ -178,12 +178,13 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testUpdateWithNoToken() {
+		disableAnonymousAccess();
 		String uuid = db().noTx(() -> user().getUuid());
 		String oldHash = db().noTx(() -> user().getPasswordHash());
 		assertNull("Initially the token code should have been set to null", db().noTx(() -> user().getResetToken()));
 
 		// 1. Get new token
-		call(() -> client().getUserToken(uuid));
+		call(() -> client().getUserResetToken(uuid));
 
 		// 2. Logout the current client user
 		client().logout().toBlocking().value();
@@ -202,22 +203,22 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testFetchUserToken() {
 		String uuid = db().noTx(() -> user().getUuid());
 
-		UserTokenResponse response = call(() -> client().getUserToken(uuid));
+		UserResetTokenResponse response = call(() -> client().getUserResetToken(uuid));
 		assertThat(response.getToken()).isNotEmpty();
 		String storedToken = db().noTx(() -> user().getResetToken());
 		assertEquals("The token that is currently stored did not match up with the returned token by the API", storedToken, response.getToken());
 	}
 
 	@Test
-	public void testAPIKey() {
+	public void testAPIToken() {
 		String uuid = db().noTx(() -> user().getUuid());
-		UserAPIKeyResponse response = call(() -> client().issueAPIKey(uuid));
+		UserAPITokenResponse response = call(() -> client().issueAPIToken(uuid));
 		assertNull("The key was previously not issued.", response.getPreviousIssueDate());
-		assertThat(response.getApiKey()).isNotEmpty();
+		assertThat(response.getToken()).isNotEmpty();
 
 		assertNotNull(db().noTx(() -> user().getAPIKeyTokenCode()));
 		client().setLogin(null, null);
-		client().setAPIKey(response.getApiKey());
+		client().setAPIKey(response.getToken());
 
 		// Check whether new cookies are generated when using an API key
 		MeshRequest<UserResponse> userRequest = client().findUserByUuid(uuid);
@@ -226,22 +227,22 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(userResponse.getResponse().cookies()).as("Requests using the api key should not yield a new cookie").isEmpty();
 
 		// Now invalidate the api key by generating a new one
-		String oldKey = response.getApiKey();
-		response = call(() -> client().issueAPIKey(uuid));
-		assertNotEquals("Each key should be unique.", oldKey, response.getApiKey());
+		String oldKey = response.getToken();
+		response = call(() -> client().issueAPIToken(uuid));
+		assertNotEquals("Each key should be unique.", oldKey, response.getToken());
 		assertNotNull("The key was already requested once. Thus the date should be set.", response.getPreviousIssueDate());
 
 		// And continue invoking requests
 		call(() -> client().findUserByUuid(uuid), UNAUTHORIZED, "error_not_authorized");
 
 		// Now set the active key and verify that the request works
-		client().setAPIKey(response.getApiKey());
+		client().setAPIKey(response.getToken());
 
 		call(() -> client().findUserByUuid(uuid));
 
-		call(() -> client().invalidateAPIKey(uuid));
+		call(() -> client().invalidateAPIToken(uuid));
 		assertNull(db().noTx(() -> user().getAPIKeyTokenCode()));
-		assertNull(db().noTx(() -> user().getAPIKeyTokenCodeIssueTimestamp()));
+		assertNull(db().noTx(() -> user().getAPITokenIssueTimestamp()));
 		call(() -> client().findUserByUuid(uuid), UNAUTHORIZED, "error_not_authorized");
 	}
 
@@ -254,7 +255,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		});
 
 		call(() -> client().findUserByUuid(uuid));
-		call(() -> client().issueAPIKey(uuid), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().issueAPIToken(uuid), FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
@@ -263,14 +264,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		call(() -> client().findUserByUuid(uuid));
 
-		call(() -> client().issueAPIKey(uuid));
+		call(() -> client().issueAPIToken(uuid));
 		db().noTx(() -> {
 			User user = user();
 			role().revokePermissions(user, UPDATE_PERM);
 			return null;
 		});
 
-		call(() -> client().invalidateAPIKey(uuid), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().invalidateAPIToken(uuid), FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
@@ -379,6 +380,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
+		int intialUserCount = users().size();
 		try (NoTx noTx = db().noTx()) {
 			UserRoot root = meshRoot().getUserRoot();
 
@@ -399,7 +401,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			invisibleUser.setEmailAddress("should_not_be_listed");
 			invisibleUser.addGroup(group());
 
-			assertEquals("We did not find the expected count of users attached to the user root vertex.", 2 + nUsers + 1, root.findAll().size());
+			assertEquals("We did not find the expected count of users attached to the user root vertex.", intialUserCount + nUsers + 1, root.findAll().size());
 
 			// Test default paging parameters
 			MeshResponse<UserListResponse> future = client().findUsers().invoke();
@@ -409,11 +411,11 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals(25, restResponse.getMetainfo().getPerPage());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 			// Admin User + Guest User + Dummy User = 3
-			assertEquals(2 + nUsers, restResponse.getMetainfo().getTotalCount());
-			assertEquals(2 + nUsers, restResponse.getData().size());
+			assertEquals(intialUserCount + nUsers, restResponse.getMetainfo().getTotalCount());
+			assertEquals(intialUserCount + nUsers, restResponse.getData().size());
 
 			int perPage = 2;
-			int totalUsers = 2 + nUsers;
+			int totalUsers = intialUserCount + nUsers;
 			int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
 			future = client().findUsers(new PagingParametersImpl(3, perPage)).invoke();
 			latchFor(future);
@@ -457,7 +459,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 					future.result().getData().size());
 			assertEquals("The requested page should be set in the response but it was not", 4242, future.result().getMetainfo().getCurrentPage());
 			assertEquals("The page count value was not correct.", 1, future.result().getMetainfo().getPageCount());
-			assertEquals("We did not find the correct total count value in the response", nUsers + 2, future.result().getMetainfo().getTotalCount());
+			assertEquals("We did not find the correct total count value in the response", nUsers + intialUserCount, future.result().getMetainfo().getTotalCount());
 			assertEquals(25, future.result().getMetainfo().getPerPage());
 		}
 	}

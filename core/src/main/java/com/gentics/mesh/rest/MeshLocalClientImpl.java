@@ -65,12 +65,12 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
-import com.gentics.mesh.core.rest.user.UserAPIKeyResponse;
+import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.rest.user.UserTokenResponse;
+import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.admin.AdminHandler;
 import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
@@ -1158,7 +1158,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<UserTokenResponse> getUserToken(String userUuid) {
+	public MeshRequest<UserResetTokenResponse> getUserResetToken(String userUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1206,13 +1206,13 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<UserAPIKeyResponse> issueAPIKey(String userUuid) {
+	public MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> invalidateAPIKey(String userUuid) {
+	public MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}

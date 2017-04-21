@@ -37,14 +37,14 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	static String TYPE = "user";
 
 	/**
-	 * API key token property name {@value #API_KEY_TOKEN_CODE}
+	 * API token id property name {@value #API_TOKEN_ID}
 	 */
-	static String API_KEY_TOKEN_CODE = "APIKeyTokenCode";
+	static String API_TOKEN_ID = "APITokenId";
 
 	/**
-	 * API key token timestamp property name {@value #API_KEY_TOKEN_CODE_ISSUE_TIMESTAMP}
+	 * API token timestamp property name {@value #API_TOKEN_ISSUE_TIMESTAMP}
 	 */
-	static String API_KEY_TOKEN_CODE_ISSUE_TIMESTAMP = "APIKeyTokenCodeTimestamp";
+	static String API_TOKEN_ISSUE_TIMESTAMP = "APITokenTimestamp";
 
 	@Override
 	default String getType() {
@@ -400,22 +400,22 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	}
 
 	/**
-	 * Return the currently stored API key token code.
+	 * Return the currently stored API token id.
 	 * 
-	 * @return API key token code or null if no code has yet been generated.
+	 * @return API token id or null if no token has yet been generated.
 	 */
 	default String getAPIKeyTokenCode() {
-		return getProperty(API_KEY_TOKEN_CODE);
+		return getProperty(API_TOKEN_ID);
 	}
 
 	/**
-	 * Set the user API key token code.
+	 * Set the user API token id.
 	 * 
 	 * @param code
 	 * @return Fluent API
 	 */
-	default User setAPIKeyTokenCode(String code) {
-		setProperty(API_KEY_TOKEN_CODE, code);
+	default User setAPITokenId(String code) {
+		setProperty(API_TOKEN_ID, code);
 		return this;
 	}
 
@@ -424,38 +424,38 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * 
 	 * @return
 	 */
-	default Long getAPIKeyTokenCodeIssueTimestamp() {
-		return getProperty(API_KEY_TOKEN_CODE_ISSUE_TIMESTAMP);
+	default Long getAPITokenIssueTimestamp() {
+		return getProperty(API_TOKEN_ISSUE_TIMESTAMP);
 	}
 
 	/**
-	 * Set the API Key token code issue timestamp to the current time.
+	 * Set the API token issue timestamp to the current time.
 	 * 
 	 * @return Fluent API
 	 */
-	default User setAPIKeyTokenCodeIssueTimestamp() {
-		setAPIKeyTokenCodeIssueTimestamp(System.currentTimeMillis());
+	default User setAPITokenIssueTimestamp() {
+		setAPITokenIssueTimestamp(System.currentTimeMillis());
 		return this;
 	}
 
 	/**
-	 * Set the API key token code issue timestamp.
+	 * Set the API token issue timestamp.
 	 * 
 	 * @param timestamp
 	 * @return Fluent API
 	 */
-	default User setAPIKeyTokenCodeIssueTimestamp(Long timestamp) {
-		setProperty(API_KEY_TOKEN_CODE_ISSUE_TIMESTAMP, timestamp);
+	default User setAPITokenIssueTimestamp(Long timestamp) {
+		setProperty(API_TOKEN_ISSUE_TIMESTAMP, timestamp);
 		return this;
 	}
 
 	/**
-	 * Return the api key token issue date.
+	 * Return the API token issue date.
 	 * 
 	 * @return ISO8601 formatted date or null if the date has not yet been set
 	 */
-	default String getAPIKeyTokenCodeIssueDate() {
-		Long timestamp = getAPIKeyTokenCodeIssueTimestamp();
+	default String getAPITokenIssueDate() {
+		Long timestamp = getAPITokenIssueTimestamp();
 		if (timestamp == null) {
 			return null;
 		}
@@ -463,11 +463,11 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	}
 
 	/**
-	 * Reset the API key token code and issue timestamp.
+	 * Reset the API token id and issue timestamp and thus invalidating the token.
 	 */
-	default void deleteAPIKeyTokenCode() {
-		setProperty(API_KEY_TOKEN_CODE, null);
-		setProperty(API_KEY_TOKEN_CODE_ISSUE_TIMESTAMP, null);
+	default void resetAPIToken() {
+		setProperty(API_TOKEN_ID, null);
+		setProperty(API_TOKEN_ISSUE_TIMESTAMP, null);
 	}
 
 }

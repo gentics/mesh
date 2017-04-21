@@ -1,12 +1,12 @@
 package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.user.UserAPIKeyResponse;
+import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.rest.user.UserTokenResponse;
+import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -95,21 +95,21 @@ public interface UserClientMethods {
 	 * @param userUuid User uuid
 	 * @return
 	 */
-	MeshRequest<UserTokenResponse> getUserToken(String userUuid);
+	MeshRequest<UserResetTokenResponse> getUserResetToken(String userUuid);
 
 	/**
-	 * Generate a new API Key for the user. The API is valid until a new key is generated. Generating a new key will invalidate the previously generated key.
+	 * Generate a new API token for the user. The token is valid until a new token is generated. Generating a new token will invalidate the previously generated one.
 	 * 
 	 * @param userUuid User uuid
 	 * @return
 	 */
-	MeshRequest<UserAPIKeyResponse> issueAPIKey(String userUuid);
+	MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid);
 
 	/**
-	 * Invalidate the currently active API key.
+	 * Invalidate the currently active API token.
 	 * 
 	 * @param userUuid
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> invalidateAPIKey(String userUuid);
+	MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid);
 }

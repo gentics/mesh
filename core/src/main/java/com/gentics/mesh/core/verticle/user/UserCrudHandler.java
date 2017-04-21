@@ -20,10 +20,10 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.core.rest.user.UserAPIKeyResponse;
+import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.rest.user.UserTokenResponse;
+import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -112,12 +112,12 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, CREATE_PERM);
 
 			// 2. Generate a new token and store it for the user
-			UserTokenResponse tokenResponse = db.tx(() -> {
+			UserResetTokenResponse tokenResponse = db.tx(() -> {
 				String token = TokenUtil.randomToken();
 				Long tokenTimestamp = System.currentTimeMillis();
 				user.setResetToken(token);
 				user.setResetTokenIssueTimestamp(tokenTimestamp);
-				UserTokenResponse response = new UserTokenResponse();
+				UserResetTokenResponse response = new UserResetTokenResponse();
 				String created = DateUtils.toISO8601(tokenTimestamp, 0);
 				response.setCreated(created);
 				response.setToken(token);
@@ -133,7 +133,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	 * @param ac
 	 * @param userUuid
 	 */
-	public void handleIssueAPIKey(InternalActionContext ac, String userUuid) {
+	public void handleIssueAPIToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
 		db.operateNoTx(() -> {
@@ -141,16 +141,16 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
 			// 2. Generate the api key for the user
-			UserAPIKeyResponse apiKeyRespose = db.tx(() -> {
-				String tokenCode = TokenUtil.randomToken(); 
-				String apiKey = authProvider.generateAPIKey(user, tokenCode);
-				UserAPIKeyResponse response = new UserAPIKeyResponse();
-				response.setPreviousIssueDate(user.getAPIKeyTokenCodeIssueDate());
+			UserAPITokenResponse apiKeyRespose = db.tx(() -> {
+				String tokenId = TokenUtil.randomToken(); 
+				String apiToken = authProvider.generateAPIToken(user, tokenId);
+				UserAPITokenResponse response = new UserAPITokenResponse();
+				response.setPreviousIssueDate(user.getAPITokenIssueDate());
 
 				// 3. Issue a new token and update the issue timestamp
-				user.setAPIKeyTokenCode(tokenCode);
-				user.setAPIKeyTokenCodeIssueTimestamp();
-				response.setApiKey(apiKey);
+				user.setAPITokenId(tokenId);
+				user.setAPITokenIssueTimestamp();
+				response.setToken(apiToken);
 				return response;
 			});
 			return Single.just(apiKeyRespose);
@@ -163,7 +163,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	 * @param ac
 	 * @param userUuid
 	 */
-	public void handleDeleteAPIKey(InternalActionContext ac, String userUuid) {
+	public void handleDeleteAPIToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
 		db.operateNoTx(() -> {
@@ -172,7 +172,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 
 			// 2. Generate the api key for the user
 			GenericMessageResponse message = db.tx(() -> {
-				user.deleteAPIKeyTokenCode();
+				user.resetAPIToken();
 				return message(ac, "api_key_invalidated");
 			});
 			return Single.just(message);

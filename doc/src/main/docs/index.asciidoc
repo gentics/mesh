@@ -63,7 +63,12 @@ The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncd
 
 ==== Overview
 
-In order to be able to store and retrieve content, a Gentics Mesh user needs to authenticate (`username:password`). Gentics Mesh provides multiple ways of authentication:
+Gentics Mesh provides multiple ways of authentication:
+
+* Authentication via basic authentication header
+* Authentication via API key
+
+In order to be able to store and retrieve content, a Gentics Mesh user needs to authenticate (`username:password`). 
 
 * using basic authentication header
 * posting JSON Data

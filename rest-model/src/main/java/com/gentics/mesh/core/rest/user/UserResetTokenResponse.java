@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
-public class UserTokenResponse implements RestModel {
+public class UserResetTokenResponse implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("JSON Web Token which was issued by the API.")
@@ -20,7 +20,7 @@ public class UserTokenResponse implements RestModel {
 	 * @param token
 	 * @return Fluent API
 	 */
-	public UserTokenResponse setToken(String token) {
+	public UserResetTokenResponse setToken(String token) {
 		this.token = token;
 		return this;
 	}
@@ -49,7 +49,7 @@ public class UserTokenResponse implements RestModel {
 	 * @param created
 	 * @return Fluent API
 	 */
-	public UserTokenResponse setCreated(String created) {
+	public UserResetTokenResponse setCreated(String created) {
 		this.created = created;
 		return this;
 	}

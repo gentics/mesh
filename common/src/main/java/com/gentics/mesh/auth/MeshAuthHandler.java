@@ -1,5 +1,7 @@
 package com.gentics.mesh.auth;
 
+import static io.vertx.core.http.HttpHeaders.AUTHORIZATION;
+
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -11,7 +13,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.graphdb.spi.Database;
 
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -100,14 +101,14 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 		// Store the found token value into the authentication header value. This will effectively overwrite the AUTHORIZATION header value.
 		Cookie tokenCookie = context.getCookie(MeshAuthProvider.TOKEN_COOKIE_KEY);
 		if (tokenCookie != null) {
-			context.request().headers().set(HttpHeaders.AUTHORIZATION, "Bearer " + tokenCookie.getValue());
+			context.request().headers().set(AUTHORIZATION, "Bearer " + tokenCookie.getValue());
 		}
 
 		final HttpServerRequest request = context.request();
 		String token = null;
 
 		// Try to load the token from the AUTHORIZATION header value
-		final String authorization = request.headers().get(HttpHeaders.AUTHORIZATION);
+		final String authorization = request.headers().get(AUTHORIZATION);
 		if (authorization != null) {
 			String[] parts = authorization.split(" ");
 			if (parts.length == 2) {

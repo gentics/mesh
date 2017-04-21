@@ -69,17 +69,18 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
+		int groupCount = groups().size();
 		try (NoTx noTx = db().noTx()) {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Page<? extends Group> page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 19));
 
-			assertEquals(groups().size(), page.getTotalElements());
-			assertEquals(groups().size(), page.getSize());
+			assertEquals(groupCount, page.getTotalElements());
+			assertEquals(groupCount, page.getSize());
 
 			page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 3));
-			assertEquals(groups().size(), page.getTotalElements());
-			assertEquals(2, page.getSize());
+			assertEquals(groupCount, page.getTotalElements());
+			assertEquals("We expected one page per group.",groupCount, page.getSize());
 		}
 	}
 

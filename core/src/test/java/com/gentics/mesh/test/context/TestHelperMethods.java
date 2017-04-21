@@ -545,4 +545,8 @@ public interface TestHelperMethods {
 		return data().getUsers();
 	}
 
+	default void disableAnonymousAccess() {
+		Mesh.mesh().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(false);
+	}
+
 }

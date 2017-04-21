@@ -47,7 +47,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 	private static final String USERID_FIELD_NAME = "userUuid";
 
-	private static final String API_KEY_TOKEN_CODE_FIELD_NAME = "apiKeyTokenCode";
+	private static final String API_KEY_TOKEN_CODE_FIELD_NAME = "jti";
 
 	protected Database db;
 
@@ -222,7 +222,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 *            Code which will be part of the JWT. This code is used to verify that the JWT is still valid
 	 * @return Generated API key
 	 */
-	public String generateAPIKey(com.gentics.mesh.core.data.User user, String tokenCode) {
+	public String generateAPIToken(com.gentics.mesh.core.data.User user, String tokenCode) {
 		AuthenticationOptions options = Mesh.mesh().getOptions().getAuthenticationOptions();
 		JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, user.getUuid()).put(API_KEY_TOKEN_CODE_FIELD_NAME, tokenCode);
 		JWTOptions jwtOptions = new JWTOptions().setAlgorithm(options.getAlgorithm());

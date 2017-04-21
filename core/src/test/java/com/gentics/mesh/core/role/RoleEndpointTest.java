@@ -225,6 +225,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
+		int initialRolesCount = roles().size();
 		try (NoTx noTx = db().noTx()) {
 			final int nRoles = 21;
 			String noPermRoleName;
@@ -249,7 +250,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			RoleListResponse restResponse = call(() -> client().findRoles());
 			assertEquals(25, restResponse.getMetainfo().getPerPage());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-			assertEquals(23, restResponse.getData().size());
+			assertEquals(nRoles + initialRolesCount, restResponse.getData().size());
 
 			int perPage = 11;
 			final int currentPage = 1;
@@ -290,7 +291,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertEquals(0, response.getData().size());
 			assertEquals(4242, response.getMetainfo().getCurrentPage());
 			assertEquals(1, response.getMetainfo().getPageCount());
-			assertEquals(23, response.getMetainfo().getTotalCount());
+			assertEquals(nRoles + initialRolesCount, response.getMetainfo().getTotalCount());
 			assertEquals(25, response.getMetainfo().getPerPage());
 		}
 	}

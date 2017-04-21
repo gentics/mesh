@@ -4,35 +4,41 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
-public class UserAPIKeyResponse implements RestModel {
+public class UserAPITokenResponse implements RestModel {
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Issued client API key.")
-	private String apiKey;
+	@JsonPropertyDescription("Issued client API token.")
+	private String token;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Date of the last time the API key was issued.")
+	@JsonPropertyDescription("Date of the last time the API token was issued.")
 	private String previousIssueDate;
 
-	public UserAPIKeyResponse() {
-	}
-
-	public String getApiKey() {
-		return apiKey;
+	public UserAPITokenResponse() {
 	}
 
 	/**
+	 * Return the API token.
 	 * 
-	 * @param apiKey
+	 * @return
+	 */
+	public String getToken() {
+		return token;
+	}
+
+	/**
+	 * Set the token for the response.
+	 * 
+	 * @param token
 	 * @return Fluent API
 	 */
-	public UserAPIKeyResponse setApiKey(String apiKey) {
-		this.apiKey = apiKey;
+	public UserAPITokenResponse setToken(String token) {
+		this.token = token;
 		return this;
 	}
 
 	/**
-	 * Returns the date the api key was last issued.
+	 * Returns the date the API token was last issued.
 	 * 
 	 * @return
 	 */
@@ -46,8 +52,8 @@ public class UserAPIKeyResponse implements RestModel {
 	 * @param previousIssueDate
 	 * @return Fluent API
 	 */
-	
-	public UserAPIKeyResponse setPreviousIssueDate(String previousIssueDate) {
+
+	public UserAPITokenResponse setPreviousIssueDate(String previousIssueDate) {
 		this.previousIssueDate = previousIssueDate;
 		return this;
 	}

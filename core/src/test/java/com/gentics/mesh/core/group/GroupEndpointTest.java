@@ -189,6 +189,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
+		int initialGroupCount = groups().size();
 		try (NoTx noTx = db().noTx()) {
 			int totalGroups = 0;
 			String extraGroupName = "no_perm_group";
@@ -203,38 +204,30 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 			totalGroups = nGroups + data().getGroups().size();
 			// Test default paging parameters
-			MeshResponse<GroupListResponse> future = client().findGroups().invoke();
-			latchFor(future);
-			assertSuccess(future);
-			GroupListResponse restResponse = future.result();
-			assertEquals(25, restResponse.getMetainfo().getPerPage());
-			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-			assertEquals(23, restResponse.getData().size());
+			GroupListResponse listResponse = call(() -> client().findGroups());
+			assertEquals(25, listResponse.getMetainfo().getPerPage());
+			assertEquals(1, listResponse.getMetainfo().getCurrentPage());
+			assertEquals(initialGroupCount + nGroups, listResponse.getData().size());
 
 			int perPage = 6;
-			future = client().findGroups(new PagingParametersImpl(3, perPage)).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			restResponse = future.result();
+			listResponse = call(() -> client().findGroups(new PagingParametersImpl(3, perPage)));
 
-			assertEquals(perPage, restResponse.getData().size());
+			assertEquals(perPage, listResponse.getData().size());
 
 			// created groups + test data group
 			int totalPages = (int) Math.ceil(totalGroups / (double) perPage);
-			assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
-			assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+			assertEquals("The response did not contain the correct amount of items", perPage, listResponse.getData().size());
+			assertEquals(3, listResponse.getMetainfo().getCurrentPage());
 			assertEquals("We expect {" + totalGroups + "} groups and with a paging size of {" + perPage + "} exactly {" + totalPages + "} pages.",
-					totalPages, restResponse.getMetainfo().getPageCount());
-			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-			assertEquals(totalGroups, restResponse.getMetainfo().getTotalCount());
+					totalPages, listResponse.getMetainfo().getPageCount());
+			assertEquals(perPage, listResponse.getMetainfo().getPerPage());
+			assertEquals(totalGroups, listResponse.getMetainfo().getTotalCount());
 
 			List<GroupResponse> allGroups = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
-				MeshResponse<GroupListResponse> pageFuture = client().findGroups(new PagingParametersImpl(page, perPage)).invoke();
-				latchFor(pageFuture);
-				assertSuccess(pageFuture);
-				restResponse = pageFuture.result();
-				allGroups.addAll(restResponse.getData());
+				final int currentPage = page;
+				listResponse = call(() -> client().findGroups(new PagingParametersImpl(currentPage, perPage)));
+				allGroups.addAll(listResponse.getData());
 			}
 			assertEquals("Somehow not all groups were loaded when loading all pages.", totalGroups, allGroups.size());
 
@@ -245,19 +238,15 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 			call(() -> client().findGroups(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = client().findGroups(new PagingParametersImpl(1, -1)).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
+			call(() -> client().findGroups(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = client().findGroups(new PagingParametersImpl(4242, 1)).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			GroupListResponse response = call(() -> client().findGroups(new PagingParametersImpl(4242, 1)));
 
-			assertEquals(0, future.result().getData().size());
-			assertEquals(4242, future.result().getMetainfo().getCurrentPage());
-			assertEquals(23, future.result().getMetainfo().getPageCount());
-			assertEquals(23, future.result().getMetainfo().getTotalCount());
-			assertEquals(1, future.result().getMetainfo().getPerPage());
+			assertEquals(0, response.getData().size());
+			assertEquals(4242, response.getMetainfo().getCurrentPage());
+			assertEquals(nGroups + initialGroupCount, response.getMetainfo().getPageCount());
+			assertEquals(nGroups + initialGroupCount, response.getMetainfo().getTotalCount());
+			assertEquals(1, response.getMetainfo().getPerPage());
 		}
 	}
 

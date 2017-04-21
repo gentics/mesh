@@ -272,16 +272,17 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
+		int roleCount = roles().size();
 		try (NoTx noTx = db().noTx()) {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Page<? extends Role> page = boot().roleRoot().findAll(ac, new PagingParametersImpl(1, 5));
-			assertEquals(roles().size(), page.getTotalElements());
-			assertEquals(2, page.getSize());
+			assertEquals(roleCount, page.getTotalElements());
+			assertEquals(roleCount, page.getSize());
 
 			page = boot().roleRoot().findAll(ac, new PagingParametersImpl(1, 15));
-			assertEquals(roles().size(), page.getTotalElements());
-			assertEquals(2, page.getSize());
+			assertEquals(roleCount, page.getTotalElements());
+			assertEquals(roleCount, page.getSize());
 		}
 	}
 

@@ -53,38 +53,38 @@ public class UserEndpoint extends AbstractEndpoint {
 		addCreateHandler();
 		addReadHandler();
 		addDeleteHandler();
-		addAuthTokenHandler();
+		addResetTokenHandler();
 		addAPIKeyHandler();
 		addReadPermissionHandler();
 	}
 
 	private void addAPIKeyHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:userUuid/apiKey");
-		endpoint.setRAMLPath("/{userUuid}/apiKey");
+		endpoint.path("/:userUuid/token");
+		endpoint.setRAMLPath("/{userUuid}/token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
-		endpoint.description("Return API Key which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.");
-		endpoint.method(GET);
+		endpoint.description("Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.");
+		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API Key response.");
+		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API token response.");
 		endpoint.blockingHandler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
-			crudHandler.handleIssueAPIKey(ac, uuid);
+			crudHandler.handleIssueAPIToken(ac, uuid);
 		});
 
 		Endpoint deleteEndpoint = createEndpoint();
-		deleteEndpoint.path("/:userUuid/apiKey");
-		deleteEndpoint.setRAMLPath("/{userUuid}/apiKey");
+		deleteEndpoint.path("/:userUuid/token");
+		deleteEndpoint.setRAMLPath("/{userUuid}/token");
 		deleteEndpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
-		deleteEndpoint.description("Invalidate the issued API key.");
+		deleteEndpoint.description("Invalidate the issued API token.");
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.produces(APPLICATION_JSON);
-		deleteEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Message confirming the invalidation of the API key.");
+		deleteEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Message confirming the invalidation of the API token.");
 		deleteEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
-			crudHandler.handleDeleteAPIKey(ac, uuid);
+			crudHandler.handleDeleteAPIToken(ac, uuid);
 		});
 	}
 
@@ -106,13 +106,13 @@ public class UserEndpoint extends AbstractEndpoint {
 		});
 	}
 
-	private void addAuthTokenHandler() {
+	private void addResetTokenHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:userUuid/token");
-		endpoint.setRAMLPath("/{userUuid}/token");
+		endpoint.path("/:userUuid/reset_token");
+		endpoint.setRAMLPath("/{userUuid}/reset_token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.description("Return a one time token which can be used by any user to update a user (e.g.: Reset the password)");
-		endpoint.method(GET);
+		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getTokenResponse(), "User token response.");
 		endpoint.blockingHandler(rc -> {
