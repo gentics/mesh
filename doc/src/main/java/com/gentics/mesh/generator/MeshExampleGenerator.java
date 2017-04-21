@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.util.TokenUtil;
 
 public class MeshExampleGenerator {
 
@@ -72,6 +73,7 @@ public class MeshExampleGenerator {
 		conf.setTempDirectory("/opt/mesh/data/tmp");
 		conf.getUploadOptions()
 				.setTempDirectory("/opt/mesh/data/tmp/temp-uploads");
+		conf.getAuthenticationOptions().setKeystorePassword(TokenUtil.randomToken());
 		writeYml(conf, "mesh-config.yml");
 	}
 

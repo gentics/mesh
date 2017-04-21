@@ -122,21 +122,23 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 				return;
 			}
 		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("No Authorization header was found. Using anonymous user.");
-			}
-			MeshAuthUser anonymousUser = database.noTx(() -> boot.userRoot().findMeshAuthUserByUsername(ANONYMOUS_USERNAME));
-			if (anonymousUser == null) {
+			if (Mesh.mesh().getOptions().getAuthenticationOptions().isEnableAnonymousAccess()) {
 				if (log.isDebugEnabled()) {
-					log.debug("No anonymous user and authorization header was found. Can't authenticate request.");
+					log.debug("No Authorization header was found. Using anonymous user.");
 				}
-				handle401(context);
-				return;
-			} else {
-				context.setUser(anonymousUser);
-				authorise(anonymousUser, context);
-				return;
+				MeshAuthUser anonymousUser = database.noTx(() -> boot.userRoot().findMeshAuthUserByUsername(ANONYMOUS_USERNAME));
+				if (anonymousUser == null) {
+					if (log.isDebugEnabled()) {
+						log.debug("No anonymous user and authorization header was found. Can't authenticate request.");
+					}
+				} else {
+					context.setUser(anonymousUser);
+					authorise(anonymousUser, context);
+					return;
+				}
 			}
+			handle401(context);
+			return;
 		}
 
 		// Check whether an actual token value was found otherwise we can exit early

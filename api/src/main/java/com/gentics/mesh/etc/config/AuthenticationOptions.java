@@ -19,6 +19,8 @@ public class AuthenticationOptions {
 
 	private String algorithm = DEFAULT_ALGORITHM;
 
+	private boolean enableAnonymousAccess = true;
+
 	/**
 	 * Gets the time after which an authentication token should expire.
 	 * 
@@ -99,6 +101,15 @@ public class AuthenticationOptions {
 	 */
 	public AuthenticationOptions setAlgorithm(String algorithm) {
 		this.algorithm = algorithm;
+		return this;
+	}
+
+	public boolean isEnableAnonymousAccess() {
+		return enableAnonymousAccess;
+	}
+
+	public AuthenticationOptions setEnableAnonymousAccess(boolean enableAnonymousAccess) {
+		this.enableAnonymousAccess = enableAnonymousAccess;
 		return this;
 	}
 }
