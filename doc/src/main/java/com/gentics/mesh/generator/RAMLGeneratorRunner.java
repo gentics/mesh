@@ -8,7 +8,7 @@ import com.gentics.mesh.OptionsLoader;
 
 public class RAMLGeneratorRunner {
 
-	private static File outputFolder = new File("target", "api");
+	private static File outputFolder = new File("src/main/docs/examples", "api");
 
 	public static void main(String[] args) throws Exception {
 		if (outputFolder.exists()) {

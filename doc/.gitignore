@@ -5,5 +5,8 @@ node_modules
 /target/
 bower_components
 src/main/changelog/test.html
+src/main/docs/examples/api
+src/main/docs/examples/models
 api.raml
 /src/main/docs/examples/*.json
+

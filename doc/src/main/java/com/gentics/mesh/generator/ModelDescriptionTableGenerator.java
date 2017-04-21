@@ -1,5 +1,6 @@
 package com.gentics.mesh.generator;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -9,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.reflections.Reflections;
 
@@ -29,24 +31,29 @@ public class ModelDescriptionTableGenerator {
 
 	private final String templateSource;
 
-	public ModelDescriptionTableGenerator() throws IOException {
-		this.templateSource = getTemplate();
-	}
+	private File outputFolder;
 
 	public static void main(String[] args) throws IOException {
-		new ModelDescriptionTableGenerator().run();
+		new ModelDescriptionTableGenerator(new File("src/main/docs/examples", "models")).run();
+	}
+
+	public ModelDescriptionTableGenerator(File outputFolder) throws IOException {
+		this.outputFolder = outputFolder;
+		this.templateSource = getTemplate();
+		outputFolder.mkdirs();
 	}
 
 	private void run() throws IOException {
 		for (Class<?> clazz : allFoundClassesAnnotatedWithEntityToBeScanned()) {
+			String name = clazz.getSimpleName();
 			String jsonSchema = JsonUtil.getJsonSchema(clazz);
 			JsonObject schema = new JsonObject(jsonSchema);
 			ArrayList<Map<String, String>> list = new ArrayList<>();
 			flattenSchema(list, null, schema);
 			Map<String, Object> context = new HashMap<>();
 			context.put("entries", list);
-			context.put("name", clazz.getSimpleName());
-			renderTable(context);
+			context.put("name", name);
+			renderTable(name, context);
 		}
 	}
 
@@ -62,10 +69,11 @@ public class ModelDescriptionTableGenerator {
 		return IOUtils.toString(ins);
 	}
 
-	private void renderTable(Map<String, Object> context) throws IOException {
+	private void renderTable(String name, Map<String, Object> context) throws IOException {
 		Handlebars handlebars = new Handlebars();
 		Template template = handlebars.compileInline(templateSource);
-		System.out.println(template.apply(context));
+		String output = template.apply(context);
+		writeFile(name + ".adoc", output);
 	}
 
 	/**
@@ -103,9 +111,25 @@ public class ModelDescriptionTableGenerator {
 					}
 					flattenSchema(list, newKey, (JsonObject) entry.getValue());
 				} catch (ClassCastException e) {
-					//Ignored
+					// Ignored
 				}
 			}
+		}
+	}
+
+	/**
+	 * Save the string content to the given file in the output folder.
+	 * 
+	 * @param filename
+	 *            Name of the file to be written to
+	 * @param content
+	 *            Content to be written
+	 * @throws IOException
+	 */
+	public void writeFile(String filename, String content) throws IOException {
+		if (outputFolder != null) {
+			File outputFile = new File(outputFolder, filename);
+			FileUtils.writeStringToFile(outputFile, content);
 		}
 	}
 

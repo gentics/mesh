@@ -65,21 +65,17 @@ The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncd
 
 Gentics Mesh provides multiple ways of authentication:
 
-* Authentication via basic authentication header
-* Authentication via API key
+* Authentication via login
+* Authentication via API token
+* No authentication - Access via anonymous user
 
-In order to be able to store and retrieve content, a Gentics Mesh user needs to authenticate (`username:password`). 
+WARNING: Sending user credentials as base64 encoded string, or as plaintext is highly insecure to be used on an open network. This method MUST not be used in scenarios other than debugging and development when the connection between server and client is trusted.
 
-* using basic authentication header
-* posting JSON Data
-* sending a valid JSON Web token (JWT)
+===== Authentication Configuration
 
-Each way will store a JWT in a cookie which is used to authenticate the user for succeeding requests. The token only lasts a certain amount of time (which can be configured in the `mesh.yml` file), so it might be necessary to refresh the token. The JWT will be automatically renewed with every request on the Gentics Mesh API. 
+Gentics Mesh uses JWT (JSON Web Token) to handle authentication. It is thus required to create a cryptograph key to sign the sign and verify the generated JWT's. 
+Typically, if no keystore file has been provided, Gentics Mesh will create one on the basis of the configuration details in `mesh.yml`. If the `keystorePassword` property is omitted, a password will be generated randomly and stored in the configuration file.
 
-NOTE: Currently, all data including media assets such as images, videos, and documents are secured and need authentication to be retrieved.
-
-===== JWT Configuration
-The JWT auth provider requires a keystore for signing and verifying the generated tokens. 
 It can be configured within the `mesh.yml` configuration file. 
 
 [source,bash]
@@ -88,21 +84,28 @@ security:
   tokenExpirationTime: 3600
   keystorePassword: "secret"
   keystorePath: "keystore.jceks"
-  algorithm: “HS256”
+  algorithm: "HS256"
 ----
 
-Typically, if no keystore file has been provided, Gentics Mesh will create one on the basis of the configuration details in `mesh.yml`. If the `keystorePassword` property is omitted, a password will be generated randomly and stored in the configuration file.
-
-Alternatively, you can use the https://docs.oracle.com/javase/8/docs/technotes/tools/windows/keytool.html[Java keytool] to create a new keystore. Here is an example on how to create a keystore:
+Alternatively, you can use the https://docs.oracle.com/javase/8/docs/technotes/tools/windows/keytool.html[Java keytool] to create a new keystore. Here is an example on how to create a keystore which contains a HMacSHA256 key:
 [source,bash]
 ----
 keytool -genseckey -keystore keystore.jceks -storetype jceks -storepass secret -keyalg HMacSHA256 -keysize 2048 -alias HS256 -keypass secret
 ----
+
 After creating the keystore, you need to set the keystore password, the path to the keystore file, and the used algorithm in the `mesh.yml` configuration file.
 
-WARNING: Sending user credentials as base64 encoded string, or as plaintext is highly insecure to be used on an open network. This method MUST not be used in scenarios other than debugging and development when the connection between server and client is trusted.
+==== JWT 
 
-==== Basic Authentication Header
+In order to be able to store and retrieve content, a Gentics Mesh user needs to authenticate (`username:password`). 
+
+Each way will store a JWT in a cookie which is used to authenticate the user for succeeding requests. The token only lasts a certain amount of time (which can be configured in the `mesh.yml` file), so it might be necessary to refresh the token. The JWT will be automatically renewed with every request on the Gentics Mesh API. 
+
+NOTE: Currently, all data including media assets such as images, videos, and documents are secured and need authentication to be retrieved.
+
+==== Login
+
+===== Basic Authentication Header
 In basic authentication, when a client requests a URL that requires authentication, the server requests the client to authenticate itself by sending a `401-Not Authorized` code. The client, in return, answers with login credentials sent in the `authorization` header:
 
 [source,bash]
@@ -128,7 +131,7 @@ The response will be a valid JWT as well as set a cookie with the token.
 }
 ----
 
-==== POST JSON Data
+===== POST JSON Data
 Alternatively, the user can `POST` his or her credentials to the `/api/v1/auth/login` end point in order to retrieve a token.
 The JSON object must contain these fields:
 
@@ -180,16 +183,51 @@ curl -v -X POST \
 }
 ----
 
-==== JSON Web Token
+All the login method will yield a JSON web token. To make this easy mesh will directly set this token within a cookie.
+
 The JWT can be provided in two ways. By default it is passed along with a cookie value. This is useful for embedding binary image nodes directly in HTML, since the browser will automatically handle authentication on the basis of the cookie.
-Alternatively, the token can be passed along within the authorization header which includes the regular JWT `Bearer <Token>`, where `<Token>` is the token you received from the login/cookie.
+Alternatively, the token can be passed along within the `Authorization` header which includes the regular JWT `Bearer <Token>`, where `<Token>` is the token you received from the login/cookie.
 
 [source,bash]
 ----
 curl -X GET \
   http://localhost:8080/api/v1/demo/nodes \
-  -H 'authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzY1NDEzLCJleHAiOjE0OTE3NjkwMTN9.UY8OgjiK5qyZobAWt6X1Vd1Z-zg68BeJgGZKbW4Ucj0=' \
+  -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzY1NDEzLCJleHAiOjE0OTE3NjkwMTN9.UY8OgjiK5qyZobAWt6X1Vd1Z-zg68BeJgGZKbW4Ucj0=' \
 ----
+
+==== API token
+
+An API token can be used to authenticate a user. The API token will never expire. This is different from regular tokens which will be issued when calling `/api/v1/auth/login`. 
+Leaking an API token is potentially dangerous and thus the API token should only be used in combination with a secure connection.
+
+Typical usecases are backend implementations which constantly communicate with Gentics Mesh via a secure or local connection.
+
+The token can be issued per user via `POST /api/v1/users/:userUuid/token`.
+
+NOTE: Creating a new API token will automatically invalidate the previously issued token.
+
+Since the token is just a regular JWT you just need to add it to your request `Authorization` header field.
+
+[source,bash]
+----
+curl -X GET \
+  http://localhost:8080/api/v1/demo/nodes \
+  -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzY1NDEzLCJleHAiOjE0OTE3NjkwMTN9.UY8OgjiK5qyZobAWt6X1Vd1Z-zg68BeJgGZKbW4Ucj0=' \
+----
+
+It is possible to manually revoke the issued token via `DELETE /api/v1/users/:userUuid/token`
+
+==== Anonymous Access 
+
+Sometimes it may be desirable to serve public content via Gentics Mesh. All Gentics Mesh instances ship with a included `anonymous` user/role/group. Requests to mesh which are not authenticated will automatically use the user with the username `anonymous` to authenticate and check the needed permissions.
+
+You can assign `read` permissions to the `anonymous` role for all elements you want to be public.
+
+NOTE: Assigning other permissions would of course allow for other operations to be granted. 
+
+It is of course possible to disable this feature by deleting the `anonymous` and disabling the `enableAnonymousAccess` flag in the `security` section of the `mesh.yml` file.
+
+NOTE: Recreating the `anonymous` user would automatically re-enable the feature if the configuration setting `enableAnonymousAccess` is set to `true`.
 
 === Encoding
 
@@ -255,7 +293,7 @@ Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
 Content-Type: application/json
 Accept: application/json
 
-include::examples/request/api/v1/\{project\}/nodes/request-body.json[]
+include::examples/api/request/api/v1/\{project\}/nodes/request-body.json[]
 ----
 
 *Update an existing node*
@@ -270,7 +308,7 @@ Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
 Content-Type: application/json
 Accept: application/json
 
-include::examples/request/api/v1/\{project\}/nodes/\{nodeUuid\}/request-body.json[]
+include::examples/api/request/api/v1/\{project\}/nodes/\{nodeUuid\}/request-body.json[]
 ----
 
 *Add a tag to a node*
@@ -322,7 +360,7 @@ Endpoint: ```/api/v1/users/:uuid```
 
 [source,json]
 ----
-include::examples/response/api/v1/users/\{userUuid\}/200/example.json[]
+include::examples/api/response/api/v1/users/\{userUuid\}/200/example.json[]
 ----
 
 === Groups
@@ -350,7 +388,7 @@ Endpoint: ```/api/v1/groups/:uuid```
 
 [source,json]
 ----
-include::examples/response/api/v1/groups/\{groupUuid\}/200/example.json[]
+include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
 ----
 
 === Roles
@@ -379,7 +417,7 @@ Endpoint: ```/api/v1/roles/:uuid```
 
 [source,json]
 ----
-include::examples/response/api/v1/roles/\{roleUuid\}/200/example.json[]
+include::examples/api/response/api/v1/roles/\{roleUuid\}/200/example.json[]
 ----
 
 === Projects
@@ -407,7 +445,7 @@ Endpoint: ```/api/v1/projects/:uuid```
 
 [source,json]
 ----
-include::examples/response/api/v1/projects/\{projectUuid\}/200/example.json[]
+include::examples/api/response/api/v1/projects/\{projectUuid\}/200/example.json[]
 ----
 
 === Tag Families
@@ -435,7 +473,7 @@ Endpoint: ```/api/v1/:projectName/tagfamilies/:uuid```
 
 [source,json]
 ----
-include::examples/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/200/example.json[]
+include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/200/example.json[]
 ----
 
 === Tags
@@ -463,7 +501,7 @@ Endpoint: ```/api/v1/:projectName/tagFamilies/:uuid/tags```
 
 [source,json]
 ----
-include::examples/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/tags/\{tagUuid\}/200/example.json[]
+include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/tags/\{tagUuid\}/200/example.json[]
 ----
 
 === Nodes
@@ -476,37 +514,13 @@ You can query individual language variants by appending the ```?lang``` request 
 
 Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=de,en&version=draft&release=winter2016```
 
-
-[options="header"]
-|======
-| Property                       | Description
-| uuid                           | Uuid of the node
-| fields                         | Node fields of the current language
-| parentNode                     | Node reference to the parent node. The project basenode has no parent node.
-| language                       | Language tag of the current language
-| availableLanguages             | List of available languages
-| languagePaths                  | Map with languages and the corresponding webroot path. Note that the field will only be added when a `resolveLinks` parameter has been specified.
-| tags                           | List of tags that were used to tag the node
-| project                        | Project reference
-| schema                         | Schema reference of the node
-| isContainer                    | Flag that indicates that the node is a container and may contain children
-| childrenInfo                   | JSON structure which contains information on the amount and type of child elements
-| published                      | Published flag
-| displayField                   | Key of the field that will be used to retrieve the display name value. (eg. "title" for blogpost nodes and "filename" for binary nodes)
-| segmentField                   | Key of the field that will be used to build a path segment of this node. The path segments create the webroot path to the element.
-| creator                        | User reference of the creator
-| created                        | Epoch creation date
-| editor                         | User reference of the last editor
-| edited                         | Epoch last edited date
-| rolePerms                      | Role permissions on the element
-| permissions                    | User permissions on the element
-|======
+include::examples/models/NodeResponse.adoc[]
 
 *Response Sample*
 
 [source,json]
 ----
-include::examples/response/api/v1/\{project\}/nodes/\{nodeUuid\}/200/example.json[]
+include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/200/example.json[]
 ----
 
 ==== Query Parameters
@@ -541,7 +555,7 @@ Depending on the used schema it may also be mandatory to add fields to the reque
 
 [source,json]
 ----
-include::examples/request/api/v1/\{project\}/nodes/request-body.json[]
+include::examples/api/request/api/v1/\{project\}/nodes/request-body.json[]
 ----
 
 ==== Updating
@@ -556,7 +570,7 @@ Endpoint: ```/api/v1/schemas/:uuid```
 
 [source,json]
 ----
-include::examples/response/api/v1/schemas/\{schemaUuid\}/200/example.json[]
+include::examples/api/response/api/v1/schemas/\{schemaUuid\}/200/example.json[]
 ----
 
 ==== Configuration properties
@@ -585,7 +599,6 @@ In addition to the above, certain types expose additional properties with which 
 properties are defined in the [Types](#types) section.
 
 ==== Schema Field Types
-
 
 [options="header",cols="3*"]
 |======
@@ -1176,6 +1189,7 @@ include::examples/addfield.json[]
 include::examples/removefield.json[]
 ----
 
+
 ==== Operation: changefieldtype
 
 [options="header"]
@@ -1310,7 +1324,7 @@ Finally the changes can be applied by sending the request to ```/api/v1/schemas/
 
 [source,json]
 ----
-include::examples/request/api/v1/schemas/\{schemaUuid\}/changes/request-body.json[]
+include::examples/api/request/api/v1/schemas/\{schemaUuid\}/changes/request-body.json[]
 ----
 
 
@@ -1351,7 +1365,7 @@ NOTE: Publishing node language variations requires the user to be assigned to a 
 
 [source,json]
 ----
-include::examples/response/api/v1/\{project\}/nodes/\{nodeUuid\}/published/200/example.json[]
+include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/published/200/example.json[]
 ----
 
 It is not possible to publish a specific version. Publish always affects the latest draft version of the language variant.
@@ -1424,14 +1438,14 @@ Assigning schema versions to the release via a ```PUT``` request to ```/api/v1/:
 
 [source,json]
 ----
-include::examples/request/api/v1/\{project\}/releases/\{releaseUuid\}/schemas/request-body.json[]
+include::examples/api/request/api/v1/\{project\}/releases/\{releaseUuid\}/schemas/request-body.json[]
 ----
 
 It is also possible to assign microschemas via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/microschemas``` to the release.
 
 [source,json]
 ----
-include::examples/request/api/v1/\{project\}/releases/\{releaseUuid\}/microschemas/request-body.json[]
+include::examples/api/request/api/v1/\{project\}/releases/\{releaseUuid\}/microschemas/request-body.json[]
 ----
 
 All nodes which reference the release via the updated schema version will automatically be migrated to use the newer schema version.
@@ -1465,6 +1479,7 @@ Deleting nodes is also release specific. Deleting a node via ```DELETE``` to ```
 The node will be completely removed from the system if no more language variants are referenced within any release.
 
 It is also possible to just delete a specific language variant via ```DELETE``` to ```/api/v1/:projectName/node/:uuid/languages/en?release=winter2016``` from release _winter2016_.
+
 
 ==== Updating Nodes
 
@@ -1524,6 +1539,7 @@ It is mandatory to specify all four crop parameters when cropping an image.
 |=====
 
 
+
 === Language Fallback
 
 Nodes are translated into different languages. Requests for nodes should contain the requested languages (as comma separated list) as query parameter:
@@ -1543,6 +1559,7 @@ The JSON format of stored documents within the elasticsearch differ from the JSO
 
 NOTE: It is not possible to search for specific individual versions. Instead only published and draft versions per release are stored in the search index.
 
+
 ==== Users
 
 Endpoint: ```/api/v1/search/users```
@@ -1561,6 +1578,7 @@ Endpoint: ```/api/v1/search/groups```
 include::examples/group.search.json[]
 ----
 
+
 ==== Roles
 
 Endpoint: ```/api/v1/search/roles```
@@ -1578,6 +1596,7 @@ Endpoint: ```/api/v1/search/nodes```
 ----
 include::examples/node.search.json[]
 ----
+
 
 *Search nodes by schema name*
 
@@ -1599,6 +1618,8 @@ The found nodes will be sorted ascending by creator.
   }
 }
 ----
+
+
 
 *Search nodes by micronode field values*
 
@@ -1631,9 +1652,10 @@ Find all nodes which have a micronode list field (vcardlist) that contain at lea
 }
 ----
 
+
 ==== Projects
 
-* ```/api/v1/search/projects```
+Endpoint: ```/api/v1/search/projects```
 
 [source,json]
 ----
