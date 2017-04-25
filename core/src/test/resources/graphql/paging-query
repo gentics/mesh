@@ -1,15 +1,19 @@
 {
 	users(perPage: 1, page: 2) {
-		# [$.data.users.totalElements=3]
-		totalElements
+		# [$.data.users.totalCount=4]
+		totalCount
 
-		# [$.data.users.number=2]
-		number
-		totalPages
+		# [$.data.users.currentPage=2]
+		currentPage
+
+		# [$.data.users.pageCount=4]
+		pageCount
 
 		# [$.data.users.perPage=1]
 		perPage
-		count
+
+		# [$.data.users.totalCount=4]
+		totalCount
 
 		# [$.data.users.hasPreviousPage=true]
 		hasPreviousPage
@@ -30,21 +34,19 @@
 		}
 	}
 	roles {
-		totalElements
-
-		# [$.data.roles.number=1]
-		number
-		totalPages
+		# [$.data.roles.currentPage=1]
+		currentPage
+		pageCount
 
 		# [$.data.roles.perPage=25]
 		perPage
-		count
+		totalCount
 		size
 		elements {
 			name
 			uuid
 		}
-	},
+	}
 	lessStuff: roles {
 		elements {
 			name

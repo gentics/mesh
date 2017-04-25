@@ -5,6 +5,8 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +34,7 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
@@ -40,6 +43,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -61,11 +65,14 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testQueries.add("microschema-query");
 		testQueries.add("paging-query");
 		testQueries.add("tagFamily-query");
+		testQueries.add("node-query");
+		testQueries.add("node-query");
+		testQueries.add("nodes-query");
+		testQueries.add("node-language-fallback-query");
+		testQueries.add("node-webroot-query");
 		testQueries.add("node-relations-query");
 		testQueries.add("node-fields-query");
-		testQueries.add("content-query");
-		testQueries.add("contents-query");
-		testQueries.add("node-query");
+		testQueries.add("node-fields-link-resolve-query");
 		testQueries.add("project-query");
 		testQueries.add("tag-query");
 		testQueries.add("release-query");
@@ -81,18 +88,19 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testNodeQuery() throws JSONException, IOException {
-//		String contentUuid = db().noTx(() -> content().getUuid());
-//		String creationDate = db().noTx(() -> content().getCreationDate());
-//		String uuid = db().noTx(() -> folder("2015").getUuid());
+	public void testNodeQuery() throws JSONException, IOException, ParseException {
+		String staticUuid = "43ee8f9ff71e4016ae8f9ff71e10161c";
+		// String contentUuid = db().noTx(() -> content().getUuid());
+		// String creationDate = db().noTx(() -> content().getCreationDate());
+		// String uuid = db().noTx(() -> folder("2015").getUuid());
 		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			Node node2 = content();
+			node2.setUuid(staticUuid);
 			Node node3 = folder("2014");
 
 			// Update schema
-			SchemaModel schema = schemaContainer("folder").getLatestVersion()
-					.getSchema();
+			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 			nodeFieldSchema.setName("nodeRef");
 			nodeFieldSchema.setLabel("Some label");
@@ -114,6 +122,18 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 			htmlFieldSchema.setName("html");
 			schema.addField(htmlFieldSchema);
+
+			HtmlFieldSchema htmlLinkFieldSchema = new HtmlFieldSchemaImpl();
+			htmlLinkFieldSchema.setName("htmlLink");
+			schema.addField(htmlLinkFieldSchema);
+
+			StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
+			stringFieldSchema.setName("string");
+			schema.addField(stringFieldSchema);
+
+			StringFieldSchema stringLinkFieldSchema = new StringFieldSchemaImpl();
+			stringLinkFieldSchema.setName("stringLink");
+			schema.addField(stringLinkFieldSchema);
 
 			BooleanFieldSchema booleanFieldSchema = new BooleanFieldSchemaImpl();
 			booleanFieldSchema.setName("boolean");
@@ -154,61 +174,63 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			micronodeFieldSchema.setName("micronode");
 			schema.addField(micronodeFieldSchema);
 
-			schemaContainer("folder").getLatestVersion()
-					.setSchema(schema);
+			schemaContainer("folder").getLatestVersion().setSchema(schema);
 
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 			// node
 			container.createNode("nodeRef", node2);
 
-			//number
-			container.createNumber("number")
-					.setNumber(42.1);
+			// number
+			container.createNumber("number").setNumber(42.1);
 
-			//date
-			container.createDate("date")
-					.setDate(System.currentTimeMillis());
+			// date
+			long milisec = dateToMilis("2012-07-11 10:55:21");
+			container.createDate("date").setDate(milisec);
 
-			//html
-			container.createHTML("html")
-					.setHtml("some html");
+			// html
+			container.createHTML("html").setHtml("some html");
 
-			//boolean
-			container.createBoolean("boolean")
-					.setBoolean(true);
+			// htmlLink
+			container.createHTML("htmlLink").setHtml("Link: {{mesh.link(\"" + staticUuid + "\", \"en\")}}");
+
+			// string
+			container.createString("string").setString("some string");
+
+			// stringLink
+			container.createString("stringLink").setString("Link: {{mesh.link(\"" + staticUuid + "\", \"en\")}}");
+
+			// boolean
+			container.createBoolean("boolean").setBoolean(true);
 
 			// binary
-			container.createBinary("binary")
-					.setSHA512Sum("hashsumvalue")
-					.setImageHeight(10)
-					.setImageWidth(20)
-					.setImageDominantColor("00FF00")
-					.setMimeType("image/jpeg")
-					.setFileSize(2048);
+			container.createBinary("binary").setSHA512Sum("hashsumvalue").setImageHeight(10).setImageWidth(20).setImageDominantColor("00FF00")
+					.setMimeType("image/jpeg").setFileSize(2048);
 
 			// stringList
 			StringGraphFieldList stringList = container.createStringList("stringList");
 			stringList.createString("A");
 			stringList.createString("B");
 			stringList.createString("C");
+			stringList.createString("D Link: {{mesh.link(\"" + staticUuid + "\", \"en\")}}");
 
 			// htmlList
 			HtmlGraphFieldList htmlList = container.createHTMLList("htmlList");
 			htmlList.createHTML("A");
 			htmlList.createHTML("B");
 			htmlList.createHTML("C");
+			htmlList.createHTML("D Link: {{mesh.link(\"" + staticUuid + "\", \"en\")}}");
 
 			// dateList
 			DateGraphFieldList dateList = container.createDateList("dateList");
-			dateList.createDate(System.currentTimeMillis());
-			dateList.createDate(System.currentTimeMillis());
-			dateList.createDate(System.currentTimeMillis());
+			dateList.createDate(dateToMilis("2012-07-11 10:55:21"));
+			dateList.createDate(dateToMilis("2014-07-11 10:55:30"));
+			dateList.createDate(dateToMilis("2000-07-11 10:55:00"));
 
 			// numberList
 			NumberGraphFieldList numberList = container.createNumberList("numberList");
-			numberList.createNumber(System.currentTimeMillis());
-			numberList.createNumber(System.currentTimeMillis());
-			numberList.createNumber(System.currentTimeMillis());
+			numberList.createNumber(42L);
+			numberList.createNumber(1337);
+			numberList.createNumber(0.314f);
 
 			// booleanList
 			BooleanGraphFieldList booleanList = container.createBooleanList("booleanList");
@@ -223,32 +245,31 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 			// micronode
 			MicronodeGraphField micronodeField = container.createMicronode("micronode", microschemaContainer("vcard").getLatestVersion());
-			micronodeField.getMicronode()
-					.createString("firstName")
-					.setString("Joe");
-			micronodeField.getMicronode()
-					.createString("lastName")
-					.setString("Doe");
-			micronodeField.getMicronode()
-					.createString("address")
-					.setString("Somewhere");
-			micronodeField.getMicronode()
-					.createString("postcode")
-					.setString("1010");
+			micronodeField.getMicronode().createString("firstName").setString("Joe");
+			micronodeField.getMicronode().createString("lastName").setString("Doe");
+			micronodeField.getMicronode().createString("address").setString("Somewhere");
+			micronodeField.getMicronode().createString("postcode").setString("1010");
 
-			//folder("news").getChildren().forEach(e -> role().revokePermissions(e, GraphPermission.READ_PERM));
+			// folder("news").getChildren().forEach(e -> role().revokePermissions(e, GraphPermission.READ_PERM));
 		}
-		//JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{ tagFamilies(name: \"colors\") { name, creator {firstname, lastname}, tags(page: 1, perPage:1) {name}}, schemas(name:\"content\") {name}, nodes(uuid:\"" + contentUuid + "\"){uuid, languagePaths(linkType: FULL) {languageTag, link}, availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
+		// JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{ tagFamilies(name: \"colors\") { name, creator {firstname, lastname}, tags(page: 1,
+		// perPage:1) {name}}, schemas(name:\"content\") {name}, nodes(uuid:\"" + contentUuid + "\"){uuid, languagePaths(linkType: FULL) {languageTag, link},
+		// availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
 
 		JsonObject response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
 		System.out.println(response.encodePrettily());
 		assertThat(response).compliesToAssertions(queryName);
 
-		//		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "', 'created': '" + creationDate + "'}}}", response);
+		// MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "', 'created': '" + creationDate + "'}}}", response);
 
-		//		JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + contentUuid + "\") {uuid, fields { ... on content { name, content }}}}"));
-		//		System.out.println(response.toString());
-		//		MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "'}}}", response);
+		// JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + contentUuid + "\") {uuid, fields { ... on content { name, content
+		// }}}}"));
+		// System.out.println(response.toString());
+		// MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "'}}}", response);
+	}
+
+	private long dateToMilis(String date) throws ParseException {
+		return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(date).getTime();
 	}
 
 }

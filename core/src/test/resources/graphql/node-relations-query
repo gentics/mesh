@@ -1,35 +1,30 @@
 {
-	decontent: content(path:"/Neuigkeiten") {
-		node {
-			# [$.data.decontent.node.uuid=<is-uuid>]
-			uuid
-			children(languages: ["en","de"]) {
-				elements {
-					# [$.data.decontent.node.children.elements[0].uuid=<is-uuid>]
-					# [$.data.decontent.node.children.elements[1].uuid=<is-uuid>]
-					# [$.data.decontent.node.children.elements[2].uuid=<is-uuid>]
-					uuid
-				}
-			}
-			languagePaths {
-				link
-			}
-			parent {
-				# [$.data.decontent.node.parent.uuid=<is-uuid>]
+	deNode: node(path:"/Neuigkeiten") {
+		# [$.data.deNode.uuid=<is-uuid>]
+		uuid
+		children(lang: ["en","de"]) {
+			elements {
+				# [$.data.deNode.children.elements[0].uuid=<is-uuid>]
+				# [$.data.deNode.children.elements[1].uuid=<is-uuid>]
+				# [$.data.deNode.children.elements[2].uuid=<is-uuid>]
 				uuid
 			}
-			# [$.data.decontent.node.child.node.uuid=<is-uuid>]
-			child(path: "2015") {
-				language
-				node {uuid}
-			}
-	
-			# [$.data.decontent.node.nullChild=<is-null>]
-			nullChild: child(path: "20sfdhsfh15") {
-				node {uuid}
-			}
 		}
-		
+		parent {
+			# [$.data.deNode.parent.uuid=<is-uuid>]
+			uuid
+		}
+		child(path: "2015") {
+			# [$.data.deNode.child.language=en]
+			language
+			# [$.data.deNode.child.uuid=<is-uuid>]
+			uuid
+		}
+
+		# [$.data.deNode.nullChild=<is-null>]
+		nullChild: child(path: "20sfdhsfh15") {
+			node {uuid}
+		}
 	}
 	rootNode {
 		# [$.data.rootNode.uuid=<is-uuid>]

@@ -70,8 +70,7 @@ public class GraphQLHandler {
 				response.put("data", new JsonObject(JsonUtil.toJson(data)));
 			}
 
-			boolean hasErrors = result.getErrors() != null && !result.getErrors()
-					.isEmpty();
+			boolean hasErrors = result.getErrors() != null && !result.getErrors().isEmpty();
 			HttpResponseStatus code = hasErrors ? BAD_REQUEST : OK;
 			gc.send(response.toString(), code);
 		}
@@ -81,7 +80,8 @@ public class GraphQLHandler {
 	/**
 	 * Extracts the variables of a query as a map. Returns empty map if no variables are found.
 	 *
-	 * @param request The request body
+	 * @param request
+	 *            The request body
 	 * @return GraphQL variables
 	 */
 	private Map<String, Object> extractVariables(JsonObject request) {
@@ -109,8 +109,8 @@ public class GraphQLHandler {
 					ExceptionWhileDataFetching dataError = (ExceptionWhileDataFetching) error;
 					if (dataError.getException() instanceof PermissionException) {
 						PermissionException restException = (PermissionException) dataError.getException();
-						//TODO translate error
-						//TODO add i18n parameters
+						// TODO translate error
+						// TODO add i18n parameters
 						jsonError.put("message", restException.getI18nKey());
 						jsonError.put("type", restException.getType());
 						jsonError.put("elementId", restException.getElementId());
@@ -123,8 +123,7 @@ public class GraphQLHandler {
 				} else {
 					jsonError.put("message", error.getMessage());
 					jsonError.put("type", error.getErrorType());
-					if (error.getLocations() != null && !error.getLocations()
-							.isEmpty()) {
+					if (error.getLocations() != null && !error.getLocations().isEmpty()) {
 						JsonArray errorLocations = new JsonArray();
 						jsonError.put("locations", errorLocations);
 						for (SourceLocation location : error.getLocations()) {

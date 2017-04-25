@@ -1,0 +1,58 @@
+{
+	nodeByUuid: node(uuid: "43ee8f9ff71e4016ae8f9ff71e10161c") {
+		# [$.data.nodeByUuid.uuid=43ee8f9ff71e4016ae8f9ff71e10161c]
+		uuid
+		# [$.data.nodeByUuid.language=en]
+		language
+		fields {
+			# [$.data.nodeByUuid.fields.title=News Overview english title]
+			... on content { title }
+		}
+		
+	}
+	nodeByUuidRu: node(uuid: "43ee8f9ff71e4016ae8f9ff71e10161c", lang: "ru") {
+		# [$.data.nodeByUuidRu.uuid=43ee8f9ff71e4016ae8f9ff71e10161c]
+		uuid
+		# [$.data.nodeByUuidRu.language=en]
+		language
+		fields {
+			# [$.data.nodeByUuidRu.fields.title=News Overview english title]
+			... on content { title }
+		}
+	}
+	nodeByUuidDe: node(uuid: "43ee8f9ff71e4016ae8f9ff71e10161c", lang: "de") {
+		# [$.data.nodeByUuidDe.uuid=43ee8f9ff71e4016ae8f9ff71e10161c]
+		uuid
+		# [$.data.nodeByUuidDe.language=de]
+		language
+		fields {
+			# [$.data.nodeByUuidDe.fields.title=News Overview german title]
+			... on content { title }
+		}
+		
+	}
+	
+	node(path:"/Neuigkeiten") {
+		# [$.data.node.uuid=<is-uuid>]
+		uuid
+		fields {
+			# [$.data.node.fields.name=Neuigkeiten]
+			... on folder { name }
+		}
+
+		# This should yield the english content of the node (english is the default language)
+		enNode: node {
+			fields {
+				# [$.data.node.enNode.fields.name=News]
+				... on folder { name }
+			}
+		}
+
+		deNode: node(lang: "de") {
+			fields {
+				# [$.data.node.deNode.fields.name=Neuigkeiten]
+				... on folder { name }
+			}
+		}
+	}
+}

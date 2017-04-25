@@ -325,17 +325,28 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	String getDisplayName(InternalActionContext ac);
 
 	/**
-	 * Find a node field container that matches the nearest possible value for the ?lang= request parameter. When a user requests a node using ?lang=de,en and
-	 * there is no de version the en version will be selected and returned.
+	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there
+	 * is no de version the en version will be selected and returned.
 	 * 
 	 * @param languageTags
 	 * @param releaseUuid
 	 *            release Uuid
 	 * @param version
 	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
-	 * @return Next matching field container or null when no language matched
+	 * @return Next matching field container or null when no language matches
 	 */
 	NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags, String releaseUuid, String version);
+
+	/**
+	 * Find a node field container that matches the nearest possible value for the language parameter.
+	 * 
+	 * @param ac
+	 * @param languageTags
+	 * @return Next matching field container or null when no language matches
+	 */
+	default NodeGraphFieldContainer findNextMatchingFieldContainer(InternalActionContext ac, List<String> languageTags) {
+		return findNextMatchingFieldContainer(languageTags, ac.getRelease().getUuid(), ac.getVersioningParameters().getVersion());
+	}
 
 	/**
 	 * Move this node into the target node.

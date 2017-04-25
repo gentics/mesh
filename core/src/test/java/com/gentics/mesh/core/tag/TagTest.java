@@ -337,7 +337,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		assertEquals("The page did not contain the correct amount of tags", expectedTagCount, nTags);
 		assertEquals(expectedTagCount, page.getTotalElements());
 		assertEquals(1, page.getNumber());
-		assertEquals(1, page.getTotalPages());
+		assertEquals(1, page.getPageCount());
 
 	}
 

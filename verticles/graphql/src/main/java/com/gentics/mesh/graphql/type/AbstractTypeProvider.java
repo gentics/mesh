@@ -11,6 +11,7 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
@@ -48,11 +49,8 @@ public abstract class AbstractTypeProvider {
 	 * 
 	 * @return
 	 */
-	public GraphQLArgument getQueryArg() {
-		return newArgument().name("query")
-				.description("Elasticsearch query to query the data.")
-				.type(GraphQLString)
-				.build();
+	public GraphQLArgument createQueryArg() {
+		return newArgument().name("query").description("Elasticsearch query to query the data.").type(GraphQLString).build();
 	}
 
 	/**
@@ -60,51 +58,55 @@ public abstract class AbstractTypeProvider {
 	 * 
 	 * @return
 	 */
-	public List<GraphQLArgument> getPagingArgs() {
+	public List<GraphQLArgument> createPagingArgs() {
 		List<GraphQLArgument> arguments = new ArrayList<>();
 
-		// .page
-		arguments.add(newArgument().name("page")
-				.defaultValue(1L)
-				.description("Page to be selected")
-				.type(GraphQLLong)
-				.build());
+		// #page
+		arguments.add(newArgument().name("page").defaultValue(1L).description("Page to be selected").type(GraphQLLong).build());
 
-		// .perPage
-		arguments.add(newArgument().name("perPage")
-				.defaultValue(25)
-				.description("Max count of elements per page")
-				.type(GraphQLInt)
-				.build());
+		// #perPage
+		arguments.add(newArgument().name("perPage").defaultValue(25).description("Max count of elements per page").type(GraphQLInt).build());
 		return arguments;
 	}
 
 	public GraphQLArgument getReleaseUuidArg() {
-		// .release
-		return newArgument().name("release")
-				.type(GraphQLString)
-				.description("Release Uuid")
-				.build();
+		// #release
+		return newArgument().name("release").type(GraphQLString).description("Release Uuid").build();
 	}
 
-	public GraphQLArgument getLanguageTagArg() {
-		// .language
-		String defaultLanguage = Mesh.mesh()
-				.getOptions()
-				.getDefaultLanguage();
-		return newArgument().name("language")
-				.type(GraphQLString)
-				.description("Language tag")
-				.defaultValue(defaultLanguage)
-				.build();
+	/**
+	 * Return the lang argument values. The default language will automatically added to the list in order to provide a language fallback.
+	 * 
+	 * @param env
+	 * @return
+	 */
+	public List<String> getLanguageArgument(DataFetchingEnvironment env) {
+		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
+		List<String> languageTags = new ArrayList<>();
+		List<String> argumentList = env.getArgument("lang");
+		if (argumentList != null) {
+			languageTags.addAll(argumentList);
+		}
+		// Check whether the default language is already part of the languages.
+		if (!languageTags.contains(defaultLanguage)) {
+			languageTags.add(defaultLanguage);
+		}
+		return languageTags;
 	}
 
-	public GraphQLArgument createLanguageTagListArg() {
-		return newArgument().name("languages")
-				.type(new GraphQLList(GraphQLString))
+	/**
+	 * Create a new argument for the lang.
+	 * 
+	 * @return
+	 */
+	public GraphQLArgument createLanguageTagArg() {
+
+		// #lang
+		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
+		return newArgument().name("lang").type(new GraphQLList(GraphQLString))
 				.description(
 						"Language tags to filter by. When set only nodes which contain at least one of the provided language tags will be returned")
-				.build();
+				.defaultValue(Arrays.asList(defaultLanguage)).build();
 	}
 
 	/**
@@ -114,10 +116,7 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLArgument createUuidArg(String description) {
-		return newArgument().name("uuid")
-				.type(GraphQLString)
-				.description(description)
-				.build();
+		return newArgument().name("uuid").type(GraphQLString).description(description).build();
 	}
 
 	/**
@@ -127,10 +126,7 @@ public abstract class AbstractTypeProvider {
 	 */
 	public GraphQLArgument createPathArg() {
 
-		return newArgument().name("path")
-				.type(GraphQLString)
-				.description("Webroot path which points to a container of a node.")
-				.build();
+		return newArgument().name("path").type(GraphQLString).description("Webroot path which points to a container of a node.").build();
 	}
 
 	/**
@@ -140,10 +136,7 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLArgument createNameArg(String description) {
-		return newArgument().name("name")
-				.type(GraphQLString)
-				.description(description)
-				.build();
+		return newArgument().name("name").type(GraphQLString).description(description).build();
 	}
 
 	/**
@@ -166,20 +159,16 @@ public abstract class AbstractTypeProvider {
 	}
 
 	public GraphQLArgument createLinkTypeArg() {
-
-		GraphQLEnumType linkTypeEnum = newEnum().name("LinkType")
-				.description("Mesh resolve link type")
-				.value(LinkType.FULL.name(), LinkType.FULL, "Render full links")
-				.value(LinkType.MEDIUM.name(), LinkType.MEDIUM, "Render medium links")
-				.value(LinkType.SHORT.name(), LinkType.SHORT, "Render short links")
-				.value(LinkType.OFF.name(), LinkType.OFF, "Don't render links")
+		GraphQLEnumType linkTypeEnum = newEnum().name("LinkType").description("Mesh resolve link type")
+				.value(LinkType.FULL.name(), LinkType.FULL, "Render full links").value(LinkType.MEDIUM.name(), LinkType.MEDIUM, "Render medium links")
+				.value(LinkType.SHORT.name(), LinkType.SHORT, "Render short links").value(LinkType.OFF.name(), LinkType.OFF, "Don't render links")
 				.build();
 
-		return newArgument().name("linkType")
-				.type(linkTypeEnum)
-				.defaultValue(LinkType.OFF)
-				.description("Specify the resolve type")
-				.build();
+		return newArgument().name("linkType").type(linkTypeEnum).defaultValue(LinkType.OFF).description("Specify the resolve type").build();
+	}
+
+	public LinkType getLinkType(DataFetchingEnvironment env) {
+		return env.getArgument("linkType");
 	}
 
 	/**
@@ -218,78 +207,53 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected GraphQLObjectType newPageType(String name, GraphQLType elementType) {
-		Builder type = newObject().name("Page" + WordUtils.capitalize(name))
-				.description("Paged result");
-		type.field(newFieldDefinition().name("elements")
-				.type(new GraphQLList(elementType))
-				.dataFetcher(env -> {
-					return env.getSource();
-				}));
+		Builder type = newObject().name("Page" + WordUtils.capitalize(name)).description("Paged result");
+		type.field(newFieldDefinition().name("elements").type(new GraphQLList(elementType)).dataFetcher(env -> {
+			return env.getSource();
+		}));
 
-		type.field(newFieldDefinition().name("totalElements")
-				.description("Return the total item count which the resource could provide.")
+		type.field(newFieldDefinition().name("totalCount").description("Return the total item count which the resource could provide.")
 				.dataFetcher(env -> {
 					Page<?> page = env.getSource();
 					return page.getTotalElements();
-				})
-				.type(GraphQLLong));
+				}).type(GraphQLLong));
 
-		type.field(newFieldDefinition().name("number")
-				.description("Return the page number of the page.")
+		type.field(newFieldDefinition().name("currentPage").description("Return the current page number.").dataFetcher(env -> {
+			Page<?> page = env.getSource();
+			return page.getNumber();
+		}).type(GraphQLLong));
+
+		type.field(newFieldDefinition().name("pageCount").description("Return the total amount of pages which the resource can provide.")
 				.dataFetcher(env -> {
 					Page<?> page = env.getSource();
-					return page.getNumber();
-				})
-				.type(GraphQLLong));
+					return page.getPageCount();
+				}).type(GraphQLLong));
 
-		type.field(newFieldDefinition().name("totalPages")
-				.description("Return the total amount of pages which the resource can provide.")
-				.dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.getTotalPages();
-				})
-				.type(GraphQLLong));
-
-		type.field(newFieldDefinition().name("perPage")
-				.description("Return the per page parameter value that was used to load the page.")
+		type.field(newFieldDefinition().name("perPage").description("Return the per page parameter value that was used to load the page.")
 				.dataFetcher(env -> {
 					Page<?> page = env.getSource();
 					return page.getPerPage();
-				})
-				.type(GraphQLLong));
+				}).type(GraphQLLong));
 
-		type.field(newFieldDefinition().name("count")
+		type.field(newFieldDefinition().name("size")
 				.description(
 						"Return the amount of items which the page is containing. Please note that a page may always contain less items compared to its maximum capacity.")
 				.dataFetcher(env -> {
 					Page<?> page = env.getSource();
-					return page.getNumberOfElements();
-				})
-				.type(GraphQLLong));
+					return page.getSize();
+				}).type(GraphQLLong));
 
-		type.field(newFieldDefinition().name("hasNextPage")
-				.description("Check whether the paged resource could serve another page")
-				.type(GraphQLBoolean)
-				.dataFetcher(env -> {
+		type.field(newFieldDefinition().name("hasNextPage").description("Check whether the paged resource could serve another page")
+				.type(GraphQLBoolean).dataFetcher(env -> {
 					Page<?> page = env.getSource();
-					return page.getTotalPages() > page.getNumber();
+					return page.getPageCount() > page.getNumber();
 				}));
 
-		type.field(newFieldDefinition().name("hasPreviousPage")
-				.description("Check whether the current page has a previous page.")
-				.type(GraphQLBoolean)
-				.dataFetcher(env -> {
+		type.field(newFieldDefinition().name("hasPreviousPage").description("Check whether the current page has a previous page.")
+				.type(GraphQLBoolean).dataFetcher(env -> {
 					Page<?> page = env.getSource();
 					return page.getNumber() > 1;
 				}));
-
-		type.field(newFieldDefinition().name("size")
-				.description("Return the amount of elements which the page can hold.")
-				.dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.getSize();
-				})
-				.type(GraphQLInt));
 
 		return type.build();
 	}
@@ -314,11 +278,8 @@ public abstract class AbstractTypeProvider {
 
 	protected graphql.schema.GraphQLFieldDefinition.Builder newPagingFieldWithFetcherBuilder(String name, String description,
 			DataFetcher<?> dataFetcher, String referenceTypeName) {
-		return newFieldDefinition().name(name)
-				.description(description)
-				.argument(getPagingArgs())
-				.type(newPageType(name, new GraphQLTypeReference(referenceTypeName)))
-				.dataFetcher(dataFetcher);
+		return newFieldDefinition().name(name).description(description).argument(createPagingArgs())
+				.type(newPageType(name, new GraphQLTypeReference(referenceTypeName))).dataFetcher(dataFetcher);
 	}
 
 	/**
@@ -338,12 +299,8 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
 			String referenceTypeName, IndexHandler<?> indexHandler) {
-		return newFieldDefinition().name(name)
-				.description(description)
-				.argument(getPagingArgs())
-				.argument(getQueryArg())
-				.type(newPageType(name, new GraphQLTypeReference(referenceTypeName)))
-				.dataFetcher((env) -> {
+		return newFieldDefinition().name(name).description(description).argument(createPagingArgs()).argument(createQueryArg())
+				.type(newPageType(name, new GraphQLTypeReference(referenceTypeName))).dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
 					String query = env.getArgument("query");
 					if (query != null) {
@@ -353,19 +310,16 @@ public abstract class AbstractTypeProvider {
 							throw new RuntimeException(e);
 						}
 					} else {
-						return rootProvider.call(gc)
-								.findAll(gc, getPagingInfo(env));
+						return rootProvider.call(gc).findAll(gc, getPagingInfo(env));
 					}
-				})
-				.build();
+				}).build();
 	}
 
 	protected GraphQLFieldDefinition newPagingField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
 			String referenceTypeName) {
 		return newPagingFieldWithFetcher(name, description, (env) -> {
 			GraphQLContext gc = env.getContext();
-			return rootProvider.call(gc)
-					.findAll(gc, getPagingInfo(env));
+			return rootProvider.call(gc).findAll(gc, getPagingInfo(env));
 		}, referenceTypeName);
 	}
 
@@ -384,16 +338,11 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected GraphQLFieldDefinition newElementField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
 			GraphQLObjectType type) {
-		return newFieldDefinition().name(name)
-				.description(description)
-				.argument(createUuidArg("Uuid of the " + name + "."))
-				.argument(createNameArg("Name of the " + name + "."))
-				.type(type)
-				.dataFetcher(env -> {
+		return newFieldDefinition().name(name).description(description).argument(createUuidArg("Uuid of the " + name + "."))
+				.argument(createNameArg("Name of the " + name + ".")).type(type).dataFetcher(env -> {
 					GraphQLContext gc = env.getContext();
 					return handleUuidNameArgs(env, rootProvider.call(gc));
-				})
-				.build();
+				}).build();
 	}
 
 	/**

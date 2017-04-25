@@ -11,9 +11,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.LinkType;
 
@@ -30,6 +30,9 @@ public class WebRootLinkReplacer {
 	private static final String END_TAG = ")}}";
 
 	private static final Logger log = LoggerFactory.getLogger(WebRootLinkReplacer.class);
+
+	@Inject
+	public BootstrapInitializer boot;
 
 	@Inject
 	public WebRootLinkReplacer() {
@@ -133,7 +136,7 @@ public class WebRootLinkReplacer {
 	public String resolve(String releaseUuid, ContainerType edgeType, String uuid, LinkType type, String projectName, String... languageTags) {
 		// Get rid of additional whitespaces
 		uuid = uuid.trim();
-		Node node = MeshInternal.get().boot().meshRoot().getNodeRoot().findByUuid(uuid);
+		Node node = boot.meshRoot().getNodeRoot().findByUuid(uuid);
 
 		// check for null
 		if (node == null) {

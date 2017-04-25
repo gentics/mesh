@@ -1,0 +1,19 @@
+{
+	node(path:"/Neuigkeiten/2015") {
+		fields {
+			... on folder {
+				# [$.data.node.fields.html=some html]
+				html(linkType: FULL)
+	
+				# [$.data.node.fields.htmlLink=Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
+				htmlLink(linkType: FULL)
+	
+				# [$.data.node.fields.string=some string]
+				string(linkType: FULL)
+	
+				# [$.data.node.fields.stringLink=Link: /api/v1/dummy/webroot/News/News%20Overview.en.html]
+				stringLink(linkType: FULL)
+			}
+		}
+	}
+}

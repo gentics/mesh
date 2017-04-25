@@ -9,8 +9,10 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.DataFetchingEnvironment;
@@ -39,11 +41,13 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 	 * @param env
 	 * @return
 	 */
-	private Node baseNodeFetcher(DataFetchingEnvironment env) {
+	private NodeContent baseNodeFetcher(DataFetchingEnvironment env) {
 		GraphQLContext gc = env.getContext();
 		Project project = env.getSource();
 		Node node = project.getBaseNode();
-		return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+		gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+		NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, getLanguageArgument(env));
+		return new NodeContent(node, container);
 	}
 
 	public GraphQLObjectType createProjectType(Project project) {
@@ -60,6 +64,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		root.field(newFieldDefinition().name("rootNode")
 				.description("The root node of the project")
 				.type(nodeTypeProvider.createNodeType(project))
+				.argument(createLanguageTagArg())
 				.dataFetcher(this::baseNodeFetcher));
 
 		return root.build();

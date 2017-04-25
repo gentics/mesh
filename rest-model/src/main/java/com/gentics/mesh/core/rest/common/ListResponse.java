@@ -16,7 +16,7 @@ public class ListResponse<T> implements RestModel {
 	private List<T> data = new ArrayList<>();
 
 	@JsonPropertyDescription("Paging information of the list result.")
-	@JsonProperty("_metainfo")
+	@JsonProperty(value = "_metainfo", required = true)
 	private PagingMetaInfo metainfo = new PagingMetaInfo();
 
 	public ListResponse() {
@@ -46,8 +46,8 @@ public class ListResponse<T> implements RestModel {
 	 * 
 	 * @return List data
 	 */
-	//@JsonTypeInfo(use = Id.CLASS)
-	//@JsonTypeInfo(use = Id.NONE )
+	// @JsonTypeInfo(use = Id.CLASS)
+	// @JsonTypeInfo(use = Id.NONE )
 	public List<T> getData() {
 		return data;
 	}

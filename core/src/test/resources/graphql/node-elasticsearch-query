@@ -2,7 +2,8 @@
 	# [$.data.nodes.elements.length()=1]
 	nodes(query: "{\"query\":{\"query_string\":{\"query\":\"supersonic\"}}}") {
 		elements {
-			uuid
+			node {uuid}
+			language
 		}
 	}
 

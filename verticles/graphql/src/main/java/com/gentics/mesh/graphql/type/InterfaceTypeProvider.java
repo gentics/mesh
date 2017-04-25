@@ -13,6 +13,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.TransformableElement;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
@@ -36,36 +37,24 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 
 		Builder common = newInterface().name("MeshElement");
 		// .uuid
-		common.field(newFieldDefinition().name("uuid")
-				.description("UUID of the element")
-				.type(GraphQLString));
+		common.field(newFieldDefinition().name("uuid").description("UUID of the element").type(GraphQLString));
 
 		// .edited
-		common.field(newFieldDefinition().name("edited")
-				.description("ISO8601 formatted edit timestamp")
-				.type(GraphQLString));
+		common.field(newFieldDefinition().name("edited").description("ISO8601 formatted edit timestamp").type(GraphQLString));
 
 		// .created
-		common.field(newFieldDefinition().name("created")
-				.description("ISO8601 formatted created date string")
-				.type(GraphQLString));
+		common.field(newFieldDefinition().name("created").description("ISO8601 formatted created date string").type(GraphQLString));
 
 		// .permissions
-		common.field(newFieldDefinition().name("permissions")
-				.description("Permission information of the element")
-				.type(createPermInfoType()));
+		common.field(newFieldDefinition().name("permissions").description("Permission information of the element").type(createPermInfoType()));
 
-		//TODO add rolePerms
+		// TODO add rolePerms
 
 		// .creator
-		common.field(newFieldDefinition().name("creator")
-				.description("Creator of the element")
-				.type(new GraphQLTypeReference("User")));
+		common.field(newFieldDefinition().name("creator").description("Creator of the element").type(new GraphQLTypeReference("User")));
 
 		// .editor
-		common.field(newFieldDefinition().name("editor")
-				.description("Editor of the element")
-				.type(new GraphQLTypeReference("User")));
+		common.field(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference("User")));
 
 		common.typeResolver(resolver -> {
 			return null;
@@ -79,42 +68,34 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	private GraphQLObjectType createPermInfoType() {
-		graphql.schema.GraphQLObjectType.Builder builder = newObject().name("permissions")
-				.description("Permission information");
+		graphql.schema.GraphQLObjectType.Builder builder = newObject().name("permissions").description("Permission information");
 
 		// .create
-		builder.field(newFieldDefinition().name("create")
-				.type(GraphQLBoolean)
+		builder.field(newFieldDefinition().name("create").type(GraphQLBoolean)
 				.description("Flag which idicates whether the create permission is granted."));
 
 		// .read
-		builder.field(newFieldDefinition().name("read")
-				.type(GraphQLBoolean)
-				.description("Flag which idicates whether the read permission is granted."));
+		builder.field(
+				newFieldDefinition().name("read").type(GraphQLBoolean).description("Flag which idicates whether the read permission is granted."));
 
 		// .update
-		builder.field(newFieldDefinition().name("update")
-				.type(GraphQLBoolean)
+		builder.field(newFieldDefinition().name("update").type(GraphQLBoolean)
 				.description("Flag which idicates whether the update permission is granted."));
 
 		// .delete
-		builder.field(newFieldDefinition().name("delete")
-				.type(GraphQLBoolean)
+		builder.field(newFieldDefinition().name("delete").type(GraphQLBoolean)
 				.description("Flag which idicates whether the delete permission is granted."));
 
 		// .publish
-		builder.field(newFieldDefinition().name("publish")
-				.type(GraphQLBoolean)
+		builder.field(newFieldDefinition().name("publish").type(GraphQLBoolean)
 				.description("Flag which idicates whether the publish permission is granted."));
 
 		// .readPublished
-		builder.field(newFieldDefinition().name("readPublished")
-				.type(GraphQLBoolean)
+		builder.field(newFieldDefinition().name("readPublished").type(GraphQLBoolean)
 				.description("Flag which idicates whether the read published permission is granted."));
 		return builder.build();
 	}
-	
-	
+
 	public void addCommonFields(graphql.schema.GraphQLObjectType.Builder builder) {
 		addCommonFields(builder, false);
 	}
@@ -127,67 +108,70 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 	 *            Flag which indicates whether the builder is for a node. Nodes do not require certain common fields. Those fields will be excluded.
 	 */
 	public void addCommonFields(graphql.schema.GraphQLObjectType.Builder builder, boolean isNode) {
-		//builder.withInterface(createCommonType());
+		// builder.withInterface(createCommonType());
 
 		// .uuid
-		builder.field(newFieldDefinition().name("uuid")
-				.description("UUID of the element")
-				.type(GraphQLString)
-				.dataFetcher(env -> {
-					MeshElement element = env.getSource();
-					return element.getUuid();
-				}));
+		builder.field(newFieldDefinition().name("uuid").description("UUID of the element").type(GraphQLString).dataFetcher(env -> {
+			MeshElement element = null;
+			Object source = env.getSource();
+			if (source instanceof NodeContent) {
+				element = ((NodeContent) source).getNode();
+			} else {
+				element = env.getSource();
+			}
+			return element.getUuid();
+		}));
 
 		// .etag
-		builder.field(newFieldDefinition().name("etag")
-				.description("ETag of the element")
-				.type(GraphQLString)
-				.dataFetcher(env -> {
-					GraphQLContext gc = env.getContext();
-					TransformableElement<?> element = env.getSource();
-					return element.getETag(gc);
-				}));
+		builder.field(newFieldDefinition().name("etag").description("ETag of the element").type(GraphQLString).dataFetcher(env -> {
+			GraphQLContext gc = env.getContext();
+			TransformableElement<?> element = env.getSource();
+			return element.getETag(gc);
+		}));
 
 		// .permission
-		builder.field(newFieldDefinition().name("permissions")
-				.description("Permission information of the element")
-				.type(createPermInfoType()));
+		builder.field(newFieldDefinition().name("permissions").description("Permission information of the element").type(createPermInfoType()));
 
-		//TODO rolePerms
+		// TODO rolePerms
 
 		// .created
-		builder.field(newFieldDefinition().name("created")
-				.description("ISO8601 formatted created date string")
-				.type(GraphQLString)
-				.dataFetcher(env -> {
-					CreatorTrackingVertex vertex = env.getSource();
+		builder.field(
+				newFieldDefinition().name("created").description("ISO8601 formatted created date string").type(GraphQLString).dataFetcher(env -> {
+					// The source element might be a NGFC. These containers have no creator. The creator is stored for it's Node instead
+					Object source = env.getSource();
+					CreatorTrackingVertex vertex = null;
+					if (source instanceof NodeContent) {
+						vertex = ((NodeContent) source).getNode();
+					} else {
+						vertex = env.getSource();
+					}
 					return vertex.getCreationDate();
 				}));
 
 		// .creator
-		builder.field(newFieldDefinition().name("creator")
-				.description("Creator of the element")
-				.type(new GraphQLTypeReference("User"))
-				.dataFetcher(env -> {
+		builder.field(
+				newFieldDefinition().name("creator").description("Creator of the element").type(new GraphQLTypeReference("User")).dataFetcher(env -> {
 					GraphQLContext gc = env.getContext();
-					CreatorTrackingVertex vertex = env.getSource();
+					// The source element might be a NGFC. These containers have no creator. The creator is stored for it's Node instead
+					Object source = env.getSource();
+					CreatorTrackingVertex vertex = null;
+					if (source instanceof NodeContent) {
+						vertex = ((NodeContent) source).getNode();
+					} else {
+						vertex = env.getSource();
+					}
 					return gc.requiresPerm(vertex.getCreator(), READ_PERM);
 				}));
 
 		if (!isNode) {
 			// .edited
-			builder.field(newFieldDefinition().name("edited")
-					.description("ISO8601 formatted edit timestamp")
-					.type(GraphQLString)
-					.dataFetcher(env -> {
-						EditorTrackingVertex vertex = env.getSource();
-						return vertex.getLastEditedDate();
-					}));
+			builder.field(newFieldDefinition().name("edited").description("ISO8601 formatted edit timestamp").type(GraphQLString).dataFetcher(env -> {
+				EditorTrackingVertex vertex = env.getSource();
+				return vertex.getLastEditedDate();
+			}));
 
 			// .editor
-			builder.field(newFieldDefinition().name("editor")
-					.description("Editor of the element")
-					.type(new GraphQLTypeReference("User"))
+			builder.field(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference("User"))
 					.dataFetcher(env -> {
 						GraphQLContext gc = env.getContext();
 						EditorTrackingVertex vertex = env.getSource();

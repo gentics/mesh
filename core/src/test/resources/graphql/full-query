@@ -21,32 +21,26 @@
 		uuid
 		name
 	}
-	content(path:"/Neuigkeiten/News Overview.de.html") {
-		node {
-			# [ $.data.content.node.uuid=<is-uuid>]
-			uuid,
-			languagePaths(linkType: FULL) {
-				languageTag, 
-				link
-			}
-			content(language: "en") {
-				# [ $.data.content.node.content.language=en]
-				language
-			}
-			availableLanguages, 
-			project { 
-				name, 
-				rootNode { uuid }
-			}
-			created,
-			creator {
-				username, 
-				groups(page:1, perPage:1) {
-					elements { 
-						name
-						roles { 
-							elements { name } 
-						}
+	node(path:"/Neuigkeiten/News Overview.de.html") {
+		# [ $.data.node.uuid=<is-uuid>]
+		uuid
+		node(lang: "en") {
+			# [ $.data.node.node.language=en]
+			language
+		}
+		availableLanguages
+		project { 
+			name 
+			rootNode { uuid }
+		}
+		created
+		creator {
+			username
+			groups(page:1, perPage:1) {
+				elements { 
+					name
+					roles { 
+						elements { name } 
 					}
 				}
 			}

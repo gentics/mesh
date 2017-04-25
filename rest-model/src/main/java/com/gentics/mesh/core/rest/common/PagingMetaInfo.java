@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.rest.common;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 
 /**
@@ -7,15 +8,19 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
  */
 public class PagingMetaInfo {
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Number of the current page.")
 	private long currentPage;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Number of elements which can be included in a single page.")
 	private long perPage;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Number of the pages which can be found for the given per page count.")
 	private long pageCount;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Number of all elements which could be found.")
 	private long totalCount;
 

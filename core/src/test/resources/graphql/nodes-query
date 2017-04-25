@@ -1,0 +1,29 @@
+{
+	nodes {
+		# [$.data.nodes.totalCount=16]
+		totalCount
+
+		# [$.data.nodes.currentPage=1]
+		currentPage
+
+		# [$.data.nodes.pageCount=1]
+		pageCount
+
+		# [$.data.nodes.perPage=25]
+		perPage
+
+		# [$.data.nodes.size=16]
+		size
+
+		# [$.data.nodes.hasPreviousPage=false]
+		hasPreviousPage
+
+		# [$.data.nodes.hasNextPage=false]
+		hasNextPage
+
+		elements {
+			language
+			path
+		}
+	}
+}

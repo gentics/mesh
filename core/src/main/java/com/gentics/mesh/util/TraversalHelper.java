@@ -114,7 +114,7 @@ public final class TraversalHelper {
 			totalPages = (long) Math.ceil(count / (double) (perPage));
 		}
 		// Internally the page size was reduced. We need to increment it now that we are finished.
-		return new PageImpl<T>(elementsOfPage, count, ++page, totalPages, elementsOfPage.size(), perPage);
+		return new PageImpl<T>(elementsOfPage, count, ++page, totalPages, perPage);
 	}
 
 	/**

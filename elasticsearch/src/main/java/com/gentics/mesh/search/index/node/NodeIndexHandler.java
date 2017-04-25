@@ -40,6 +40,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -433,7 +434,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	public Page<? extends NodeGraphFieldContainer> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo,
+	public Page<? extends NodeContent> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo,
 			GraphPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
 		User user = ac.getUser();
 
@@ -467,14 +468,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
-		CompletableFuture<Page<? extends NodeGraphFieldContainer>> future = new CompletableFuture<>();
+		CompletableFuture<Page<? extends NodeContent>> future = new CompletableFuture<>();
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
 		builder.execute().addListener(new ActionListener<SearchResponse>() {
 
 			@Override
 			public void onResponse(SearchResponse response) {
-				Page<? extends NodeGraphFieldContainer> page = db.noTx(() -> {
-					List<NodeGraphFieldContainer> elementList = new ArrayList<>();
+				Page<? extends NodeContent> page = db.noTx(() -> {
+					List<NodeContent> elementList = new ArrayList<>();
 					for (SearchHit hit : response.getHits()) {
 
 						String id = hit.getId();
@@ -499,14 +500,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 									// Locate the matching container and add it to the list of found containers
 									NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag, ac.getRelease(), type);
 									if (container != null) {
-										elementList.add(container);
+										elementList.add(new NodeContent(node, container));
 									}
 									break;
 								}
 							}
 						}
 					}
-					Page<? extends NodeGraphFieldContainer> containerPage = Page.applyPaging(elementList, pagingInfo);
+					Page<? extends NodeContent> containerPage = Page.applyPaging(elementList, pagingInfo);
 					return containerPage;
 				});
 				future.complete(page);

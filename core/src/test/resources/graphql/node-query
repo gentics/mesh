@@ -1,38 +1,37 @@
 {
-	# [$.data.node=<is-null>]
-	node(uuid: "bogus") {
+	# [$.data.bogus=<is-null>]
+	bogus: node(uuid: "bogus") {
 		uuid
 	}
-	content(path:"/Neuigkeiten/2015/News_2015.en.html") {
+	node(path:"/Neuigkeiten/2015/News_2015.en.html") {
 		fields {
+			# [$.data.node.fields.name=News_2015_english_name]
 			... on content { name }
 		}
-		# [$.data.content.language=en]
+		# [$.data.node.language=en]
 		language
 
 		version
 		editor {username}
 		edited
-		node {
-			# [$.data.content.node.uuid=<is-uuid>]
-			uuid
+		# [$.data.node.uuid=<is-uuid>]
+		uuid
 
-			# [$.data.content.node.availableLanguages[0]=en]
-			# [$.data.content.node.availableLanguages[1]=de]
-			availableLanguages
+		# [$.data.node.availableLanguages[0]=en]
+		# [$.data.node.availableLanguages[1]=de]
+		availableLanguages
 
-			content(language: "de") {
-				fields {
-					... on content { name }
-				}
-				# [$.data.content.node.content.language=de]
-				language,
-				version,
-				node { uuid },
-				editor {username},
-				edited
-			},
-			breadcrumb { uuid }
+		node(lang: "de") {
+			fields {
+				# [$.data.node.node.fields.name=News_2015 german]
+				... on content { name }
+			}
+			# [$.data.node.node.language=de]
+			language
+			version
+			editor {username}
+			edited
 		}
+		breadcrumb { uuid }
 	}
 }

@@ -20,18 +20,11 @@ public interface Page<T> extends Iterable<T> {
 	int getPerPage();
 
 	/**
-	 * Return the number of element which this page is currently providing.
-	 * 
-	 * @return
-	 */
-	long getNumberOfElements();
-
-	/**
 	 * Return the total amount of pages which the resources that provided this page could return.
 	 * 
 	 * @return
 	 */
-	long getTotalPages();
+	long getPageCount();
 
 	/**
 	 * Return the current page number.
@@ -48,7 +41,7 @@ public interface Page<T> extends Iterable<T> {
 	long getTotalElements();
 
 	/**
-	 * Return the page size.
+	 * Return the number of elements which are currently contained within the page.
 	 * 
 	 * @return
 	 */
@@ -93,7 +86,7 @@ public interface Page<T> extends Iterable<T> {
 		// Cap totalpages to 1
 		totalPages = totalPages == 0 ? 1 : totalPages;
 
-		return new PageImpl<>(pagedList, n, pagingInfo.getPage(), totalPages, elementList.size(), pagingInfo.getPerPage());
+		return new PageImpl<>(pagedList, n, pagingInfo.getPage(), totalPages, pagingInfo.getPerPage());
 	}
 
 	/**

@@ -5,13 +5,20 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLI
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -83,9 +90,6 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	public SchemaTypeProvider schemaTypeProvider;
 
 	@Inject
-	public ContentTypeProvider contentTypeProvider;
-
-	@Inject
 	public MicroschemaTypeProvider microschemaTypeProvider;
 
 	@Inject
@@ -120,30 +124,22 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		String uuid = env.getArgument("uuid");
 		if (uuid != null) {
 			GraphQLContext gc = env.getContext();
-			Node node = boot.nodeRoot()
-					.findByUuid(uuid);
+			Node node = boot.nodeRoot().findByUuid(uuid);
 			if (node == null) {
-				//TODO Throw graphql aware not found exception
+				// TODO Throw graphql aware not found exception
 				return null;
 			}
-			return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+			List<String> languageTags = getLanguageArgument(env);
+			NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
+			return new NodeContent(node, container);
 		}
-		return null;
-	}
-
-	/**
-	 * Data fetcher for the content.
-	 *
-	 * @param env
-	 * @return
-	 */
-	public Object contentFetcher(DataFetchingEnvironment env) {
 		String path = env.getArgument("path");
 		if (path != null) {
 			GraphQLContext gc = env.getContext();
 			Path pathResult = webrootService.findByProjectPath(gc, path);
-			return pathResult.getLast()
-					.getContainer();
+			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
+			return new NodeContent(container);
 		}
 		return null;
 	}
@@ -184,7 +180,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		Project project = gc.getProject();
 		if (project != null) {
 			Node node = project.getBaseNode();
-			return gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+			NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, getLanguageArgument(env));
+			return new NodeContent(node, container);
 		}
 		return null;
 	}
@@ -200,84 +198,48 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.name("Query");
 
 		// .me
-		root.field(newFieldDefinition().name("me")
-				.description("The current user")
-				.type(userTypeProvider.getUserType())
-				.dataFetcher(this::userMeFetcher)
-				.build());
+		root.field(newFieldDefinition().name("me").description("The current user").type(userTypeProvider.getUserType())
+				.dataFetcher(this::userMeFetcher).build());
 
-		//.project
-		root.field(newFieldDefinition().name("project")
-				.description("Load the project that is active for this graphql query.")
-				.type(projectTypeProvider.createProjectType(project))
-				.dataFetcher(this::projectFetcher)
-				.build());
+		// .project
+		root.field(newFieldDefinition().name("project").description("Load the project that is active for this graphql query.")
+				.type(projectTypeProvider.createProjectType(project)).dataFetcher(this::projectFetcher).build());
 
 		// NOT ALLOWED - See class description for details
 		// .projects
-		//	root.field(newPagingField("projects", "Load page of projects.", (ac) -> boot.projectRoot(), "Project"));
+		// root.field(newPagingField("projects", "Load page of projects.", (ac) -> boot.projectRoot(), "Project"));
 
 		// .node
-		root.field(newFieldDefinition().name("node")
-				.description("Load a node by uuid.")
-				.argument(createUuidArg("Node uuid"))
-				.dataFetcher(this::nodeFetcher)
-				.type(nodeTypeProvider.createNodeType(project))
-				.build());
-
-		// .content
-		root.field(newFieldDefinition().name("content")
-				.description("Load a node content by its webroot path.")
-				.argument(createPathArg())
-				.type(contentTypeProvider.createContentType(project))
-				.dataFetcher(this::contentFetcher));
-
-		// .contents
-		root.field(newFieldDefinition().name("contents")
-				.description("Search for node contents and return a page which includes the results.")
-				.argument(getPagingArgs())
-				.argument(getQueryArg())
-				.type(newPageType("contents", new GraphQLTypeReference("Content")))
-				.dataFetcher((env) -> {
-					GraphQLContext gc = env.getContext();
-
-					PagingParameters pagingInfo = getPagingInfo(env);
-					String query = env.getArgument("query");
-					if (query != null) {
-						return contentTypeProvider.handleContentSearch(gc, query, pagingInfo);
-					} else {
-						NodeRoot nodeRoot = gc.getProject()
-							.getNodeRoot();
-						return nodeRoot.findAllContents(gc, pagingInfo);
-					}
-				}));
+		root.field(newFieldDefinition().name("node").description("Load a node by uuid, uuid and language or webroot path.")
+				.argument(createUuidArg("Node uuid")).argument(createLanguageTagArg()).argument(createPathArg()).dataFetcher(this::nodeFetcher)
+				.type(nodeTypeProvider.createNodeType(project)).build());
 
 		// .nodes
-		root.field(newFieldDefinition().name("nodes")
-				.description("Load a page of nodes.")
-				.argument(getPagingArgs())
-				.argument(getQueryArg())
-				.type(newPageType("nodes", new GraphQLTypeReference("Node")))
-				.dataFetcher((env) -> {
+		root.field(newFieldDefinition().name("nodes").description("Load a page of nodes via the regular nodes list or via a search.")
+				.argument(createPagingArgs()).argument(createQueryArg()).argument(createLanguageTagArg())
+				.type(newPageType("nodes", new GraphQLTypeReference("Node"))).dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
-
 					PagingParameters pagingInfo = getPagingInfo(env);
 					String query = env.getArgument("query");
+
+					// Check whether we need to load the nodes via a query or regular project-wide paging
 					if (query != null) {
-						return nodeTypeProvider.handleSearch(gc, query, pagingInfo);
+						return nodeTypeProvider.handleContentSearch(gc, query, pagingInfo);
 					} else {
-						NodeRoot nodeRoot = gc.getProject()
-								.getNodeRoot();
-						return nodeRoot.findAll(gc, pagingInfo);
+						NodeRoot nodeRoot = gc.getProject().getNodeRoot();
+						TransformablePage<? extends Node> nodes = nodeRoot.findAll(gc, pagingInfo);
+						List<String> languageTags = getLanguageArgument(env);
+						List<NodeContent> contents = nodes.getWrappedList().stream().map(node -> {
+							NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
+							return new NodeContent(node, container);
+						}).collect(Collectors.toList());
+						return new PageImpl<>(contents, nodes.getTotalElements(), nodes.getNumber(), nodes.getPageCount(), nodes.getPerPage());
 					}
 				}));
 
 		// .baseNode
-		root.field(newFieldDefinition().name("rootNode")
-				.description("Return the project root node.")
-				.type(new GraphQLTypeReference("Node"))
-				.dataFetcher(this::rootNodeFetcher)
-				.build());
+		root.field(newFieldDefinition().name("rootNode").description("Return the project root node.").argument(createLanguageTagArg())
+				.type(new GraphQLTypeReference("Node")).dataFetcher(this::rootNodeFetcher).build());
 
 		// .tag
 		root.field(newElementField("tag", "Load tag by name or uuid.", (ac) -> boot.tagRoot(), tagTypeProvider.createTagType()));
@@ -286,20 +248,19 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newPagingSearchField("tags", "Load page of tags.", (ac) -> boot.tagRoot(), "Tag", tagIndexHandler));
 
 		// .tagFamily
-		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", (ac) -> ac.getProject()
-				.getTagFamilyRoot(), tagFamilyTypeProvider.getTagFamilyType()));
+		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", (ac) -> ac.getProject().getTagFamilyRoot(),
+				tagFamilyTypeProvider.getTagFamilyType()));
 
 		// .tagFamilies
 		root.field(
 				newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), "TagFamily", tagFamilyIndexHandler));
 
 		// .release
-		root.field(newElementField("release", "Load release by name or uuid.", (ac) -> ac.getProject()
-				.getReleaseRoot(), releaseTypeProvider.getReleaseType()));
+		root.field(newElementField("release", "Load release by name or uuid.", (ac) -> ac.getProject().getReleaseRoot(),
+				releaseTypeProvider.getReleaseType()));
 
-		//.releases
-		root.field(newPagingField("releases", "Load page of releases.", (ac) -> ac.getProject()
-				.getReleaseRoot(), "Release"));
+		// .releases
+		root.field(newPagingField("releases", "Load page of releases.", (ac) -> ac.getProject().getReleaseRoot(), "Release"));
 
 		// .schema
 		root.field(newElementField("schema", "Load schema by name or uuid.", (ac) -> boot.schemaContainerRoot(), schemaTypeProvider.getSchemaType()));
@@ -346,8 +307,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 */
 	public GraphQLSchema getRootSchema(Project project) {
 		graphql.schema.GraphQLSchema.Builder schema = GraphQLSchema.newSchema();
-		return schema.query(getRootType(project))
-				.build();
+		return schema.query(getRootType(project)).build();
 	}
 
 }

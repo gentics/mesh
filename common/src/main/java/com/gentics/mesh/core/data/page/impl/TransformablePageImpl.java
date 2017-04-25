@@ -22,7 +22,7 @@ public class TransformablePageImpl<T extends TransformableElement<? extends Rest
 
 	public TransformablePageImpl(List<? extends T> wrappedList, long totalElements, long pageNumber, long totalPages, int numberOfElements,
 			int perPage) {
-		super(wrappedList, totalElements, pageNumber, totalPages, numberOfElements, perPage);
+		super(wrappedList, totalElements, pageNumber, totalPages, perPage);
 	}
 
 	/**
@@ -31,7 +31,7 @@ public class TransformablePageImpl<T extends TransformableElement<? extends Rest
 	 * @param page
 	 */
 	public TransformablePageImpl(Page<T> page) {
-		super(page.getWrappedList(), page.getTotalElements(), page.getNumber(), page.getTotalPages(), page.getSize(), page.getPerPage());
+		super(page.getWrappedList(), page.getTotalElements(), page.getNumber(), page.getPageCount(), page.getPerPage());
 	}
 
 	@Override

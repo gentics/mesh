@@ -30,7 +30,6 @@ public class GraphQLSearchEndpointTest extends AbstractMeshTest {
 		testQueries.add("group-elasticsearch-query");
 		testQueries.add("role-elasticsearch-query");
 		testQueries.add("node-elasticsearch-query");
-		testQueries.add("content-elasticsearch-query");
 		testQueries.add("tag-elasticsearch-query");
 		testQueries.add("tagFamily-elasticsearch-query");
 		return testQueries;
