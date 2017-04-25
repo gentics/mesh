@@ -49,6 +49,8 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			assertNotNull(me);
 			assertEquals(uuid, me.getUuid());
 
+			disableAnonymousAccess();
+
 			Single<GenericMessageResponse> logoutFuture = client.logout();
 			logoutFuture.toBlocking().value();
 

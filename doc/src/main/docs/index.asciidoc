@@ -11,6 +11,7 @@ Gentics Mesh will also provide you a lot of powerful tools build around and for 
 
  * Document level permission system
  * Search API
+ * GraphQL API
  * Webroot API for easy integration with modern routing frameworks
  * Image Manipulation API
  * Tagging system

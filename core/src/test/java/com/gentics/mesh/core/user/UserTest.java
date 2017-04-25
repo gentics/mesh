@@ -120,7 +120,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			Page<? extends User> page = boot().userRoot().findAll(ac, new PagingParametersImpl(1, 6));
 			assertEquals(users().size(), page.getTotalElements());
-			assertEquals(3, page.getSize());
+			assertEquals(users().size(), page.getSize());
 
 			page = boot().userRoot().findAll(ac, new PagingParametersImpl(1, 15));
 			assertEquals(users().size(), page.getTotalElements());
