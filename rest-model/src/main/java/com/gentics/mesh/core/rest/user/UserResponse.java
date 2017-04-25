@@ -36,11 +36,11 @@ public class UserResponse extends AbstractGenericRestResponse {
 	private ExpandableNode nodeReference;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Flag which indicates whether the user is enabled or disabled. Deleting a user will disable it.")
+	@JsonPropertyDescription("Flag which indicates whether the user is enabled or disabled. Disabled users can no longer log into Gentics Mesh. Deleting a user user will not remove it. Instead the user will just be disabled.")
 	private boolean enabled;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("List of groups to which the user belongs")
+	@JsonPropertyDescription("List of group references to which the user belongs.")
 	private List<GroupReference> groups = new ArrayList<>();
 
 	public UserResponse() {
