@@ -180,33 +180,49 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 */
 	public GraphQLFieldDefinition createListDef(ListFieldSchema schema) {
 		GraphQLType type = getElementTypeOfList(schema);
-		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLList(type)).argument(createPagingArgs())
-				.dataFetcher(env -> {
-					GraphFieldContainer container = env.getSource();
+		graphql.schema.GraphQLFieldDefinition.Builder fieldType = newFieldDefinition().name(schema.getName()).description(schema.getLabel())
+				.type(new GraphQLList(type)).argument(createPagingArgs());
 
-					switch (schema.getListType()) {
-					case "boolean":
-						return container.getBooleanList(schema.getName()).getList().stream().map(item -> item.getBoolean())
-								.collect(Collectors.toList());
-					case "html":
-						return container.getHTMLList(schema.getName()).getList().stream().map(item -> item.getHTML()).collect(Collectors.toList());
-					case "string":
-						return container.getStringList(schema.getName()).getList().stream().map(item -> item.getString())
-								.collect(Collectors.toList());
-					case "number":
-						return container.getNumberList(schema.getName()).getList().stream().map(item -> item.getNumber())
-								.collect(Collectors.toList());
-					case "date":
-						return container.getDateList(schema.getName()).getList().stream().map(item -> DateUtils.toISO8601(item.getDate(), 0))
-								.collect(Collectors.toList());
-					case "node":
-						return container.getNodeList(schema.getName()).getList().stream().map(item -> item.getNode()).collect(Collectors.toList());
-					case "micronode":
-						return null;
-					default:
-						return null;
-					}
-				}).build();
+		// Add link resolving arg to html and string lists
+		switch (schema.getListType()) {
+		case "html":
+		case "string":
+			fieldType.argument(createLinkTypeArg());
+			break;
+		}
+
+		return fieldType.dataFetcher(env -> {
+			GraphFieldContainer container = env.getSource();
+			GraphQLContext gc = env.getContext();
+
+			switch (schema.getListType()) {
+			case "boolean":
+				return container.getBooleanList(schema.getName()).getList().stream().map(item -> item.getBoolean()).collect(Collectors.toList());
+			case "html":
+				return container.getHTMLList(schema.getName()).getList().stream().map(item -> {
+					String content = item.getHTML();
+					LinkType linkType = getLinkType(env);
+					return linkReplacer.replace(null, null, content, linkType, gc.getProject().getName(), Arrays.asList());
+				}).collect(Collectors.toList());
+			case "string":
+				return container.getStringList(schema.getName()).getList().stream().map(item -> {
+					String content = item.getString();
+					LinkType linkType = getLinkType(env);
+					return linkReplacer.replace(null, null, content, linkType, gc.getProject().getName(), Arrays.asList());
+				}).collect(Collectors.toList());
+			case "number":
+				return container.getNumberList(schema.getName()).getList().stream().map(item -> item.getNumber()).collect(Collectors.toList());
+			case "date":
+				return container.getDateList(schema.getName()).getList().stream().map(item -> DateUtils.toISO8601(item.getDate(), 0))
+						.collect(Collectors.toList());
+			case "node":
+				return container.getNodeList(schema.getName()).getList().stream().map(item -> item.getNode()).collect(Collectors.toList());
+			case "micronode":
+				return null;
+			default:
+				return null;
+			}
+		}).build();
 	}
 
 	private GraphQLType getElementTypeOfList(ListFieldSchema schema) {

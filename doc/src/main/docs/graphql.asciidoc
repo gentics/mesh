@@ -1,0 +1,24 @@
+= GraphQL
+
+Gentics Mesh is also able to process http://graphql.org/[GraphQL] queries. You can use GraphQL to directly specify what fields should be retrieved and retrieve deeply nested data sets.
+Internally Gentics Mesh will resolve your query and traverse your content graph to fetch only the data you specified.
+
+== Examples
+
+include::examples/graphql/tiny-query[]
+
+Field query:
+
+include::examples/graphql/field-query[]
+
+== GraphiQL Browser
+
+Once authenticated you can access the interactive GraphiQL browser. ```/api/v1/:projectName/graphql/browser/``` .
+
+Try our link:/api/v1/demo/graphql/browser/[Live Demo].
+
+== Limitations
+
+* The GraphQL API can currently only be used for read-only operations. Modifying data with via mutations is currently not supported.
+* GraphQL queries are restricted to a specific project. It is not possible to query data across multiple projects.
+* GraphQL queries are restricted to a specific release. The scope of the release can be changed by adding the `?release` query parameter.
