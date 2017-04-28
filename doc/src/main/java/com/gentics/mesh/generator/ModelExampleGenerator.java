@@ -23,9 +23,13 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.TokenUtil;
 
-public class MeshExampleGenerator {
+public class ModelExampleGenerator extends AbstractGenerator {
 
-	public static void main(String[] args) throws JsonProcessingException, IOException {
+	public ModelExampleGenerator(File outputFolder) throws IOException {
+		super(new File(outputFolder, "models"));
+	}
+
+	public void run() throws JsonProcessingException, IOException {
 		writeMeshConfig();
 		writeChangeExamples();
 	}
@@ -36,7 +40,7 @@ public class MeshExampleGenerator {
 	 * @throws JsonProcessingException
 	 * @throws IOException
 	 */
-	private static void writeChangeExamples() throws JsonProcessingException, IOException {
+	private void writeChangeExamples() throws JsonProcessingException, IOException {
 		SchemaChangeModel addFieldChange = SchemaChangeModel.createAddFieldChange("fieldToBeAdded", "list", "Field Label Value");
 		addFieldChange.setProperty(ADD_FIELD_AFTER_KEY, "firstField");
 		addFieldChange.setProperty(LIST_TYPE_KEY, "html");
@@ -67,42 +71,26 @@ public class MeshExampleGenerator {
 
 	}
 
-	private static void writeMeshConfig() throws JsonProcessingException, IOException {
-
+	private void writeMeshConfig() throws JsonProcessingException, IOException {
 		MeshOptions conf = new MeshOptions();
 		conf.setTempDirectory("/opt/mesh/data/tmp");
-		conf.getUploadOptions()
-				.setTempDirectory("/opt/mesh/data/tmp/temp-uploads");
+		conf.getUploadOptions().setTempDirectory("/opt/mesh/data/tmp/temp-uploads");
 		conf.getAuthenticationOptions().setKeystorePassword(TokenUtil.randomToken());
 		writeYml(conf, "mesh-config.yml");
 	}
 
-	private static void writeYml(Object object, String filename) throws JsonProcessingException, IOException {
-		String baseDirProp = getBaseDir();
-		File outputFile = new File(baseDirProp, filename);
+	private void writeYml(Object object, String filename) throws JsonProcessingException, IOException {
+		File outputFile = new File(outputFolder, filename);
 		ObjectMapper ymlMapper = OptionsLoader.getYAMLMapper();
 		FileUtils.writeStringToFile(outputFile, ymlMapper.writeValueAsString(object));
 		System.out.println("Wrote: " + outputFile.getAbsolutePath());
 	}
 
-	private static String getBaseDir() {
-		String baseDirProp = System.getProperty("baseDir");
-		if (baseDirProp == null) {
-			baseDirProp = "src" + File.separator + "main" + File.separator + "docs" + File.separator + "examples";
-		}
-		new File(baseDirProp).mkdirs();
-		return baseDirProp;
-	}
-
-	private static void writeJson(Object object, String filename) throws JsonProcessingException, IOException {
-
-		String baseDirProp = getBaseDir();
-		File outputFile = new File(baseDirProp, filename);
-
+	private void writeJson(Object object, String filename) throws JsonProcessingException, IOException {
+		File outputFile = new File(outputFolder, filename);
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.setSerializationInclusion(Include.NON_NULL);
-		FileUtils.writeStringToFile(outputFile, mapper.writerWithDefaultPrettyPrinter()
-				.writeValueAsString(object));
+		FileUtils.writeStringToFile(outputFile, mapper.writerWithDefaultPrettyPrinter().writeValueAsString(object));
 		System.out.println("Wrote: " + outputFile.getAbsolutePath());
 
 	}

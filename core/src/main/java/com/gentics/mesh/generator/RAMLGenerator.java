@@ -56,16 +56,18 @@ import io.vertx.ext.web.Router;
 /**
  * Generator for RAML documentation.
  */
-public class RAMLGenerator {
+public class RAMLGenerator extends AbstractGenerator {
 
 	private static final Logger log = LoggerFactory.getLogger(RAMLGenerator.class);
 
 	private Raml raml = new Raml();
 
-	private File outputFolder;
+	public RAMLGenerator(File outputFolder) throws IOException {
+		super(new File(outputFolder, "api"));
+	}
 
-	public RAMLGenerator(File outputFolder) {
-		this.outputFolder = outputFolder;
+	public RAMLGenerator() {
+		super();
 	}
 
 	/**
@@ -76,13 +78,10 @@ public class RAMLGenerator {
 	public String generate() {
 		log.info("Starting RAML generation...");
 		raml.setTitle("Gentics Mesh REST API");
-		raml.setVersion(Mesh.getBuildInfo()
-				.getVersion());
+		raml.setVersion(Mesh.getBuildInfo().getVersion());
 		raml.setBaseUri("http://localhost:8080/api/v1");
-		raml.getProtocols()
-				.add(Protocol.HTTP);
-		raml.getProtocols()
-				.add(Protocol.HTTPS);
+		raml.getProtocols().add(Protocol.HTTP);
+		raml.getProtocols().add(Protocol.HTTPS);
 		raml.setMediaType("application/json");
 
 		try {
@@ -118,10 +117,7 @@ public class RAMLGenerator {
 			verticleResource.setDescription(verticle.getDescription());
 			resources.put(ramlPath, verticleResource);
 		}
-		for (Endpoint endpoint : verticle.getEndpoints()
-				.stream()
-				.sorted()
-				.collect(Collectors.toList())) {
+		for (Endpoint endpoint : verticle.getEndpoints().stream().sorted().collect(Collectors.toList())) {
 
 			String fullPath = "api/v1" + basePath + "/" + verticle.getBasePath() + endpoint.getRamlPath();
 			if (isEmpty(verticle.getBasePath())) {
@@ -134,16 +130,13 @@ public class RAMLGenerator {
 			action.setQueryParameters(endpoint.getQueryParameters());
 
 			// Add response examples
-			for (Entry<Integer, Response> entry : endpoint.getExampleResponses()
-					.entrySet()) {
+			for (Entry<Integer, Response> entry : endpoint.getExampleResponses().entrySet()) {
 				String key = String.valueOf(entry.getKey());
 				Response response = entry.getValue();
 				// write example response to dedicated file
-				if (response.getBody() != null && response.getBody()
-						.get("application/json") != null) {
+				if (response.getBody() != null && response.getBody().get("application/json") != null) {
 					String filename = "response/" + fullPath + "/" + key + "/example.json";
-					MimeType responseMimeType = response.getBody()
-							.get("application/json");
+					MimeType responseMimeType = response.getBody().get("application/json");
 					String json = responseMimeType.getExample();
 					writeFile(filename, json);
 
@@ -153,18 +146,15 @@ public class RAMLGenerator {
 					writeFile(schemaFilename, schema);
 				}
 
-				action.getResponses()
-						.put(key, response);
+				action.getResponses().put(key, response);
 			}
 
 			// Add request example
 			if (endpoint.getExampleRequestMap() != null) {
 				action.setBody(endpoint.getExampleRequestMap());
 
-				for (String mimeType : endpoint.getExampleRequestMap()
-						.keySet()) {
-					MimeType request = endpoint.getExampleRequestMap()
-							.get(mimeType);
+				for (String mimeType : endpoint.getExampleRequestMap().keySet()) {
+					MimeType request = endpoint.getExampleRequestMap().get(mimeType);
 					String body = request.getExample();
 					if (mimeType.equalsIgnoreCase("application/json")) {
 						// Write example request to dedicated file
@@ -188,19 +178,16 @@ public class RAMLGenerator {
 				throw new RuntimeException(
 						"Could not determine path for endpoint of verticle " + verticle.getClass() + " " + endpoint.getPathRegex());
 			}
-			Resource pathResource = verticleResource.getResources()
-					.get(path);
+			Resource pathResource = verticleResource.getResources().get(path);
 			if (pathResource == null) {
 				pathResource = new Resource();
 			}
 			if (endpoint.getMethod() == null) {
 				continue;
 			}
-			pathResource.getActions()
-					.put(getActionType(endpoint.getMethod()), action);
+			pathResource.getActions().put(getActionType(endpoint.getMethod()), action);
 			pathResource.setUriParameters(endpoint.getUriParameters());
-			verticleResource.getResources()
-					.put(path, pathResource);
+			verticleResource.getResources().put(path, pathResource);
 
 		}
 
@@ -235,8 +222,7 @@ public class RAMLGenerator {
 
 	private void initEndpoint(AbstractEndpoint endpoint) {
 		Vertx vertx = mock(Vertx.class);
-		Mockito.when(endpoint.getRouter())
-				.thenReturn(Router.router(vertx));
+		Mockito.when(endpoint.getRouter()).thenReturn(Router.router(vertx));
 		endpoint.registerEndPoints();
 	}
 
@@ -345,5 +331,10 @@ public class RAMLGenerator {
 		initEndpoint(projectInfoEndpoint);
 		addEndpoints(coreBasePath, resources, projectInfoEndpoint);
 
+	}
+
+	public void run() throws IOException {
+		String raml = generate();
+		writeFile("api.raml", raml);
 	}
 }

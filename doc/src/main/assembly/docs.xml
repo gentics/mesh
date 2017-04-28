@@ -16,14 +16,6 @@
 				<include>**/*</include>
 			</includes>
 		</fileSet>
-		<!-- Also include raml files -->
-		<fileSet>
-			<outputDirectory>/examples</outputDirectory>
-			<directory>${basedir}/target/api</directory>
-			<includes>
-				<include>**/*</include>
-			</includes>
-		</fileSet>
 	</fileSets>
 	<files>
 		<file>

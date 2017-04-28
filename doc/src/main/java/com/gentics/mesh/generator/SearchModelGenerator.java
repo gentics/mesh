@@ -16,6 +16,7 @@ import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,9 +60,7 @@ import io.vertx.core.json.JsonObject;
  * 
  * This generator will create JSON files which represent the JSON documents that are stored within the elastic search index.
  */
-public class SearchModelGenerator {
-
-	private File outputDir;
+public class SearchModelGenerator extends AbstractGenerator {
 
 	private ObjectMapper mapper = new ObjectMapper();
 
@@ -69,8 +68,8 @@ public class SearchModelGenerator {
 
 	private static MeshComponent meshDagger;
 
-	public static void main(String[] args) throws Exception {
-		new SearchModelGenerator().start();
+	public SearchModelGenerator(File outputDir) throws IOException {
+		super(new File(outputDir, "search"));
 	}
 
 	public static void initPaths() {
@@ -96,15 +95,15 @@ public class SearchModelGenerator {
 		Mesh.mesh(options);
 	}
 
-	private void start() throws Exception {
+	public void run() throws Exception {
 		initPaths();
-		String baseDirProp = System.getProperty("baseDir");
-		if (baseDirProp == null) {
-			baseDirProp = "src" + File.separator + "main" + File.separator + "docs" + File.separator + "examples";
-		}
-		outputDir = new File(baseDirProp);
-		System.out.println("Writing files to  {" + outputDir.getAbsolutePath() + "}");
-		outputDir.mkdirs();
+		// String baseDirProp = System.getProperty("baseDir");
+		// if (baseDirProp == null) {
+		// baseDirProp = "src" + File.separator + "main" + File.separator + "docs" + File.separator + "examples";
+		// }
+		// outputDir = new File(baseDirProp);
+		System.out.println("Writing files to  {" + outputFolder.getAbsolutePath() + "}");
+		// outputDir.mkdirs();
 
 		meshDagger = MeshInternal.create();
 		provider = (DummySearchProvider) meshDagger.searchProvider();
@@ -171,7 +170,7 @@ public class SearchModelGenerator {
 		User user = mockUser("joe1", "Joe", "Doe", creator);
 		Group groupA = mockGroup("editors", user);
 		Group groupB = mockGroup("superEditors", user);
-		Mockito.<List<? extends Group>> when(user.getGroups()).thenReturn(Arrays.asList(groupA, groupB));
+		Mockito.<List<? extends Group>>when(user.getGroups()).thenReturn(Arrays.asList(groupA, groupB));
 		UserIndexHandler userIndexHandler = meshDagger.userIndexHandler();
 		userIndexHandler.store(user, mockUpdateDocumentEntry()).await();
 		writeStoreEvent("user.search");
@@ -234,14 +233,10 @@ public class SearchModelGenerator {
 	}
 
 	private void write(JsonObject jsonObject, String filename) throws Exception {
-		File file = new File(outputDir, filename + ".json");
+		File file = new File(outputFolder, filename + ".json");
 		System.out.println("Writing to {" + file.getAbsolutePath() + "}");
 		JsonNode node = getMapper().readTree(jsonObject.toString());
 		getMapper().writerWithDefaultPrettyPrinter().writeValue(file, node);
-	}
-
-	public File getOutputDir() {
-		return outputDir;
 	}
 
 	protected ObjectMapper getMapper() {

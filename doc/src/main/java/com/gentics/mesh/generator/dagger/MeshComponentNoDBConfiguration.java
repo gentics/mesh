@@ -1,4 +1,4 @@
-package com.gentics.mesh.generator;
+package com.gentics.mesh.generator.dagger;
 
 import javax.inject.Singleton;
 

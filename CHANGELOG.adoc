@@ -2,17 +2,27 @@
 
 = Gentics Mesh Changelog
 
-== 0.9.7 (PENDING)
+== 0.9.7 (28.04.2017)
+
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.19.
+
+icon:plus[] GraphQL: The nested `content` and `contents` fields have been removed. The properties of those fields have been merged with the node field.
+
+icon:plus[] GraphQL: The field names for paged resultset meta data have been updated to better match up with the REST API fields.
+
+icon:plus[] GraphQL: A language can now be specified when loading a node reference fields using the `lang` argument.
+
+icon:plus[] GraphQL: It is now possible to resolve links within loaded fields using the `linkType` field argument.
 
 icon:plus[] Auth: Support for anonymous access has been added to mesh. Requests which do not provide a `mesh.token` will automatically try to use the `anonymous` user. This user is identified by `username` and the thus no anonymous access support is provided if the user can't be located.
 
 icon:plus[] GraphQL: It is now possible to retrieve the path for a content using the `path` field. The `Node.languagePaths` has been removed in favour of this new field.
 
-icon:plus[] GraphQL: Contents can now directly be queried via the `contents` field.
-
-icon:plus[] Auth: It is now possible to issue API keys via the `GET /api/v1/users/:userUuid/apiKey` endpoint. API keys do not expire and work in conjunction with the regular JWT authentication mechanism. These keys should only be used when SSL is enabled. The `DELETE /api/v1/users/:userUuid/apiKey` endpoint can be used to revoke the issued API. Only one API key is supported for one user. Generating a new API key will invalidate the previously issued key.
+icon:plus[] Auth: It is now possible to issue API tokens via the `GET /api/v1/users/:userUuid/token` endpoint. API tokens do not expire and work in conjunction with the regular JWT authentication mechanism. These tokens should only be used when SSL is enabled. The `DELETE /api/v1/users/:userUuid/token` endpoint can be used to revoke the issued API token. Only one API token is supported for one user. Generating a new API token will invalidate the previously issued key.
 
 icon:check[] GraphQL: An error was fixed which occurred when loading a node using a bogus uuid.
+
+icon:check[] Auth: An error which caused the keystore loading process to fail was fixed. 
 
 == 0.9.6 (14.04.2017)
 

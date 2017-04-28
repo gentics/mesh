@@ -25,25 +25,18 @@ import io.vertx.core.json.JsonObject;
  * Generator tool which extracts the schema field description from all models. The extracted information will be converted in tabular form to be included in the
  * documentation.
  */
-public class ModelDescriptionTableGenerator {
+public class ModelDescriptionTableGenerator extends AbstractGenerator {
 
 	public static final String TEMPLATE_NAME = "model-props-table.hbs";
 
 	private final String templateSource;
 
-	private File outputFolder;
-
-	public static void main(String[] args) throws IOException {
-		new ModelDescriptionTableGenerator(new File("src/main/docs/examples", "models")).run();
-	}
-
 	public ModelDescriptionTableGenerator(File outputFolder) throws IOException {
-		this.outputFolder = outputFolder;
+		super(new File(outputFolder, "models"));
 		this.templateSource = getTemplate();
-		outputFolder.mkdirs();
 	}
 
-	private void run() throws IOException {
+	public void run() throws IOException {
 		for (Class<?> clazz : allFoundClassesAnnotatedWithEntityToBeScanned()) {
 			String name = clazz.getSimpleName();
 			String jsonSchema = JsonUtil.getJsonSchema(clazz);
@@ -127,10 +120,8 @@ public class ModelDescriptionTableGenerator {
 	 * @throws IOException
 	 */
 	public void writeFile(String filename, String content) throws IOException {
-		if (outputFolder != null) {
-			File outputFile = new File(outputFolder, filename);
-			FileUtils.writeStringToFile(outputFile, content);
-		}
+		File outputFile = new File(outputFolder, filename);
+		FileUtils.writeStringToFile(outputFile, content);
 	}
 
 	/**

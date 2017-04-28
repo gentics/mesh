@@ -11,7 +11,7 @@ Gentics Mesh will also provide you a lot of powerful tools build around and for 
 
  * Document level permission system
  * Search API
- * GraphQL API
+ * link:graphql.html[GraphQL API]
  * Webroot API for easy integration with modern routing frameworks
  * Image Manipulation API
  * Tagging system
@@ -20,6 +20,8 @@ Gentics Mesh will also provide you a lot of powerful tools build around and for 
  * Versioning of your documents
 
 == link:changelog.html[Changelog]
+
+== link:graphql.html[GraphQL]
 
 == REST API
 
@@ -173,12 +175,12 @@ curl -X GET \
 
 ==== API token
 
-An API token can be used to authenticate a user. The API token will never expire. This is different from regular tokens which will be issued when calling `/api/v1/auth/login`. 
+An API token can be used to authenticate an user. The API token will never expire. This is different from regular tokens which will be issued when calling `/api/v1/auth/login`. 
 Leaking an API token is potentially dangerous and thus the API token should only be used in combination with a secure connection.
 
-Typical usecases are backend implementations which constantly communicate with Gentics Mesh via a secure or local connection.
+Typical usecases are backend implementations which constantly communicate with Gentics Mesh via a secure / local connection.
 
-The token can be issued per user via `POST /api/v1/users/:userUuid/token`.
+The token can be issued on a user basis via `POST /api/v1/users/:userUuid/token`.
 
 NOTE: Creating a new API token will automatically invalidate the previously issued token.
 
@@ -191,17 +193,18 @@ curl -X GET \
   -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzY1NDEzLCJleHAiOjE0OTE3NjkwMTN9.UY8OgjiK5qyZobAWt6X1Vd1Z-zg68BeJgGZKbW4Ucj0=' \
 ----
 
-It is possible to manually revoke the issued token via `DELETE /api/v1/users/:userUuid/token`
+It is possible to manually revoke the issued token via `DELETE /api/v1/users/:userUuid/token`. Once the token is invalidated it can no longer be used for authentication.
 
 ==== Anonymous Access 
 
-Sometimes it may be desirable to serve public content via Gentics Mesh. All Gentics Mesh instances ship with a included `anonymous` user/role/group. Requests to mesh which are not authenticated will automatically use the user with the username `anonymous` to authenticate and check the needed permissions.
+Sometimes it may be desirable to serve public content via Gentics Mesh. All Gentics Mesh instances ship with a included `anonymous` user/role/group set. 
+Requests to Gentics Mesh which are not authenticated will automatically use the user with the username `anonymous` to authenticate and check the needed permissions.
 
 You can assign `read` permissions to the `anonymous` role for all elements you want to be public.
 
-NOTE: Assigning other permissions would of course allow for other operations to be granted. 
+NOTE: Assigning other permissions or adding existing roles would of course allow for other operations to be granted. 
 
-It is of course possible to disable this feature by deleting the `anonymous` and disabling the `enableAnonymousAccess` flag in the `security` section of the `mesh.yml` file.
+It is possible to disable this feature by deleting the `anonymous` user and disabling the `enableAnonymousAccess` flag in the `security` section of the `mesh.yml` file.
 
 NOTE: Recreating the `anonymous` user would automatically re-enable the feature if the configuration setting `enableAnonymousAccess` is set to `true`.
 
@@ -822,7 +825,7 @@ Gentics Mesh supports the following change operations:
 
 [source,json]
 ----
-include::examples/addfield.json[]
+include::examples/models/addfield.json[]
 ----
 
 
@@ -836,7 +839,7 @@ include::examples/addfield.json[]
 
 [source,json]
 ----
-include::examples/removefield.json[]
+include::examples/models/removefield.json[]
 ----
 
 
@@ -852,7 +855,7 @@ include::examples/removefield.json[]
 
 [source,json]
 ----
-include::examples/changefieldtype.json[]
+include::examples/models/changefieldtype.json[]
 ----
 
 ==== Operation: updatefield
@@ -866,7 +869,7 @@ include::examples/changefieldtype.json[]
 
 [source,json]
 ----
-include::examples/updatefield.json[]
+include::examples/models/updatefield.json[]
 ----
 
 ==== Operation: updateschema
@@ -883,7 +886,7 @@ include::examples/updatefield.json[]
 
 [source,json]
 ----
-include::examples/updateschema.json[]
+include::examples/models/updateschema.json[]
 ----
 
 ==== Operation: updatemicroschema
@@ -896,7 +899,7 @@ include::examples/updateschema.json[]
 
 [source,json]
 ----
-include::examples/updatemicroschema.json[]
+include::examples/models/updatemicroschema.json[]
 ----
 
 Each change may also provide a migration script. The migration script can be used to modify nodes that were affected by the migration.
@@ -1216,7 +1219,7 @@ Endpoint: ```/api/v1/search/users```
 
 [source,json]
 ----
-include::examples/user.search.json[]
+include::examples/search/user.search.json[]
 ----
 
 ==== Groups
@@ -1225,7 +1228,7 @@ Endpoint: ```/api/v1/search/groups```
 
 [source,json]
 ----
-include::examples/group.search.json[]
+include::examples/search/group.search.json[]
 ----
 
 
@@ -1235,7 +1238,7 @@ Endpoint: ```/api/v1/search/roles```
 
 [source,json]
 ----
-include::examples/role.search.json[]
+include::examples/search/role.search.json[]
 ----
 
 ==== Nodes
@@ -1244,7 +1247,7 @@ Endpoint: ```/api/v1/search/nodes```
 
 [source,json]
 ----
-include::examples/node.search.json[]
+include::examples/search/node.search.json[]
 ----
 
 
@@ -1309,7 +1312,7 @@ Endpoint: ```/api/v1/search/projects```
 
 [source,json]
 ----
-include::examples/project.search.json[]
+include::examples/search/project.search.json[]
 ----
 
 ==== Tags
@@ -1318,7 +1321,7 @@ Endpoint: ```/api/v1/search/tags```
 
 [source,json]
 ----
-include::examples/tag.search.json[]
+include::examples/search/tag.search.json[]
 ----
 
 ==== Tag Families
@@ -1327,7 +1330,7 @@ Endpoint: ```/api/v1/search/tagFamilies```
 
 [source,json]
 ----
-include::examples/tagFamily.search.json[]
+include::examples/search/tagFamily.search.json[]
 ----
 
 ==== Schemas
@@ -1336,7 +1339,7 @@ Endpoint: ```/api/v1/search/schemas```
 
 [source,json]
 ----
-include::examples/schema.search.json[]
+include::examples/search/schema.search.json[]
 ----
 
 ==== Microschemas
@@ -1345,7 +1348,7 @@ Endpoint: ```/api/v1/search/microschemas```
 
 [source,json]
 ----
-include::examples/microschema.search.json[]
+include::examples/search/microschema.search.json[]
 ----
 
 === Clustering

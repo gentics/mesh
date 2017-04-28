@@ -54,11 +54,11 @@ public class UserEndpoint extends AbstractEndpoint {
 		addReadHandler();
 		addDeleteHandler();
 		addResetTokenHandler();
-		addAPIKeyHandler();
+		addAPITokenHandler();
 		addReadPermissionHandler();
 	}
 
-	private void addAPIKeyHandler() {
+	private void addAPITokenHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:userUuid/token");
 		endpoint.setRAMLPath("/{userUuid}/token");

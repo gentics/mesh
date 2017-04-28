@@ -62,37 +62,7 @@
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath />
-								<argument>com.gentics.mesh.generator.RAMLGeneratorRunner</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>Generate SearchModel JSON files</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>process-classes</phase>
-						<configuration>
-							<executable>java</executable>
-							<arguments>
-								<argument>-classpath</argument>
-								<classpath />
-								<argument>com.gentics.mesh.generator.SearchModelGenerator</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>Generate JSON Example files</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>process-classes</phase>
-						<configuration>
-							<executable>java</executable>
-							<arguments>
-								<argument>-classpath</argument>
-								<classpath />
-								<argument>com.gentics.mesh.generator.MeshExampleGenerator</argument>
+								<argument>com.gentics.mesh.generator.ExampleGeneratorRunner</argument>
 							</arguments>
 						</configuration>
 					</execution>
