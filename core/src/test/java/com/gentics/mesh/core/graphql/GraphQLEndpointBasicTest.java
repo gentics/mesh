@@ -59,12 +59,12 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 	@Test
 	public void testVariables() throws Throwable {
 		JsonObject query = new JsonObject()
-				.put("query", "query test($var: String) { content(path: $var) { node { uuid } } }")
+				.put("query", "query test($var: String) { node(path: $var) { node { uuid } } }")
 				.put("variables", new JsonObject()
 						.put("var", "/News")
 				);
 		JsonObject response = call(() -> client().graphql(PROJECT_NAME, query.toString()));
-		String uuid = response.getJsonObject("data").getJsonObject("content").getJsonObject("node").getString("uuid");
+		String uuid = response.getJsonObject("data").getJsonObject("node").getJsonObject("node").getString("uuid");
 
 		assertThat(uuid).isNotEmpty();
 	}

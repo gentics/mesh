@@ -141,9 +141,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 		// Iterate over all containers and invoke a migration for each one
 		for (NodeGraphFieldContainer container : fieldContainers) {
 
-			SearchQueueBatch batch = null;
-			try (Tx tx = db.tx()) {
-				batch = searchQueue.create();
+			SearchQueueBatch batch = db.tx(() -> {
+				SearchQueueBatch sqb = searchQueue.create();
 
 				try {
 					Node node = container.getParentNode();
@@ -168,7 +167,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 							node.setPublished(migrated, releaseUuid);
 							migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
 
-							batch.store(migrated, releaseUuid, PUBLISHED, false);
+							sqb.store(migrated, releaseUuid, PUBLISHED, false);
 
 							ac.getVersioningParameters().setVersion("draft");
 						}
@@ -188,21 +187,22 @@ public class NodeMigrationHandler extends AbstractHandler {
 					}
 					migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
 
-					batch.store(node, releaseUuid, DRAFT, false);
+					sqb.store(node, releaseUuid, DRAFT, false);
 					if (publish) {
-						batch.store(node, releaseUuid, PUBLISHED, false);
+						sqb.store(node, releaseUuid, PUBLISHED, false);
 					}
-					tx.success();
+					return sqb;
 				} catch (Exception e1) {
 					log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
-					tx.failure();
 					errorsDetected.add(e1);
-					continue;
+					return null;
 				}
-			}
+			});
 
 			// Process the search queue batch in order to update the search index
-			batches.add(batch.processAsync());
+			if (batch != null) {
+				batches.add(batch.processAsync());
+			}
 
 			if (statusMBean != null) {
 				statusMBean.incNodesDone();
@@ -265,9 +265,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 		List<Exception> errorsDetected = new ArrayList<>();
 
 		for (NodeGraphFieldContainer container : fieldContainers) {
-			SearchQueueBatch batch = null;
-			try (Tx tx = db.tx()) {
-				batch = searchQueue.create();
+			SearchQueueBatch batch = db.tx(() -> {
+				SearchQueueBatch sqb = searchQueue.create();
 				try {
 					Node node = container.getParentNode();
 					String languageTag = container.getLanguage().getLanguageTag();
@@ -292,7 +291,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 							// migrate
 							migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
-							batch.store(migrated, releaseUuid, PUBLISHED, false);
+							sqb.store(migrated, releaseUuid, PUBLISHED, false);
 							ac.getVersioningParameters().setVersion("draft");
 						}
 					}
@@ -307,25 +306,17 @@ public class NodeMigrationHandler extends AbstractHandler {
 					// migrate
 					migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
 
-					batch.store(node, releaseUuid, DRAFT, false);
+					sqb.store(node, releaseUuid, DRAFT, false);
 					if (publish) {
-						batch.store(node, releaseUuid, PUBLISHED, false);
+						sqb.store(node, releaseUuid, PUBLISHED, false);
 					}
-					tx.success();
+					return sqb;
 				} catch (Exception e1) {
 					log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
-					tx.failure();
 					errorsDetected.add(e1);
-					continue;
+					return null;
 				}
-
-				// Process the search queue batch in order to update the search index
-				batches.add(batch.processAsync());
-
-				if (statusMBean != null) {
-					statusMBean.incNodesDone();
-				}
-			}
+			});
 
 			// Process the search queue batch in order to update the search index
 			batches.add(batch.processAsync());

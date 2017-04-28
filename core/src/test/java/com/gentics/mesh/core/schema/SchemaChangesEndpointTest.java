@@ -67,8 +67,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			String name = "new_name";
 			SchemaContainer container = schemaContainer("content");
 			SchemaContainerVersion currentVersion = container.getLatestVersion();
-			SchemaUpdateRequest request = JsonUtil.readValue(container.getLatestVersion().getJson(),
-					SchemaUpdateRequest.class);
+			SchemaUpdateRequest request = JsonUtil.readValue(container.getLatestVersion().getJson(), SchemaUpdateRequest.class);
 			request.setName(name);
 
 			MeshInternal.get().serverSchemaStorage().clear();
@@ -152,8 +151,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			String name = "folder";
 			String originalSchemaName = "content";
 			SchemaContainer schema = schemaContainer(originalSchemaName);
-			SchemaUpdateRequest request = JsonUtil.readValue(schema.getLatestVersion().getJson(),
-					SchemaUpdateRequest.class);
+			SchemaUpdateRequest request = JsonUtil.readValue(schema.getLatestVersion().getJson(), SchemaUpdateRequest.class);
 
 			MeshInternal.get().serverSchemaStorage().clear();
 
@@ -179,8 +177,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 			// Trigger migration
-			GenericMessageResponse status = call(
-					() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
+			GenericMessageResponse status = call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
 			expectResponseMessage(status, "migration_invoked", "content");
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
@@ -199,12 +196,9 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			node.reload();
 			node.getGraphFieldContainer("en").reload();
 			container.reload();
-			assertTrue(
-					"The version of the original schema and the schema that is now linked to the node should be different.",
-					currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion()
-							.getVersion());
-			assertNull("There should no longer be a content field of type html",
-					node.getGraphFieldContainer("en").getHtml("content"));
+			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
+					currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion());
+			assertNull("There should no longer be a content field of type html", node.getGraphFieldContainer("en").getHtml("content"));
 		}
 	}
 
@@ -216,8 +210,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// 1. Create update request by removing the content field from schema and adding a new content with different type
 			SchemaContainer container = schemaContainer("content");
-			SchemaUpdateRequest schema = JsonUtil.readValue(container.getLatestVersion().getJson(),
-					SchemaUpdateRequest.class);
+			SchemaUpdateRequest schema = JsonUtil.readValue(container.getLatestVersion().getJson(), SchemaUpdateRequest.class);
 			schema.removeField("content");
 			schema.addField(FieldUtil.createNumberFieldSchema("content"));
 
@@ -227,8 +220,8 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			// 4. Update the schema server side -> 2.0
-			GenericMessageResponse status = call(() -> client().updateSchema(container.getUuid(), schema,
-					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
+			GenericMessageResponse status = call(
+					() -> client().updateSchema(container.getUuid(), schema, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
 			expectResponseMessage(status, "migration_invoked", schema.getName());
 			// 5. assign the new schema version to the release (which will start the migration)
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
@@ -240,8 +233,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			schema.setVersion(schema.getVersion() + 1);
 
 			// 6. Read node and check additional field
-			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParametersImpl().draft()));
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParametersImpl().draft()));
 			assertNotNull("The response should contain the content field.", response.getFields().hasField("content"));
 			assertEquals("The type of the content field was not changed to a number field.", NumberFieldImpl.class,
 					response.getFields().getNumberField("content").getClass());
@@ -264,8 +256,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		try (NoTx noTx = db().noTx()) {
 			SchemaContainer container = schemaContainer("content");
 			SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-			call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges), BAD_REQUEST,
-					"schema_migration_no_changes_specified");
+			call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges), BAD_REQUEST, "schema_migration_no_changes_specified");
 		}
 	}
 
@@ -295,8 +286,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			container.reload();
 			currentVersion.reload();
-			assertNull("The segment field reference should have been set to null",
-					currentVersion.getNextVersion().getSchema().getSegmentField());
+			assertNull("The segment field reference should have been set to null", currentVersion.getNextVersion().getSchema().getSegmentField());
 		}
 	}
 
@@ -304,8 +294,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	public void testRemoveSegmentField() throws Exception {
 		try (NoTx noTx = db().noTx()) {
 			Node node = content();
-			assertNotNull("The node should have a filename string graph field",
-					node.getGraphFieldContainer("en").getString("filename"));
+			assertNotNull("The node should have a filename string graph field", node.getGraphFieldContainer("en").getString("filename"));
 
 			// 1. Create changes
 			SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
@@ -315,8 +304,8 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// 2. Invoke migration
 			SchemaContainer container = schemaContainer("content");
 			assertNull("The schema should not yet have any changes", container.getLatestVersion().getNextChange());
-			call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges), BAD_REQUEST,
-					"schema_error_segmentfield_invalid", "filename");
+			call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges), BAD_REQUEST, "schema_error_segmentfield_invalid",
+					"filename");
 
 			// 3. Assert migrated node
 			node.reload();
@@ -332,8 +321,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// 1. Verify test data
 			Node node = content();
 			SchemaContainer container = schemaContainer("content");
-			assertNotNull("The node should have a html graph field",
-					node.getGraphFieldContainer("en").getHtml("content"));
+			assertNotNull("The node should have a html graph field", node.getGraphFieldContainer("en").getHtml("content"));
 
 			// 2. Create changes
 			SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
@@ -381,8 +369,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			// 3. Invoke migration
-			GenericMessageResponse status = call(
-					() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
+			GenericMessageResponse status = call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
 			expectResponseMessage(status, "migration_invoked", "content");
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
@@ -394,20 +381,16 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			container.getLatestVersion().reload();
 			currentVersion.reload();
 			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
-			assertNotEquals("The container should now have a new version", currentVersion.getUuid(),
-					container.getLatestVersion().getUuid());
+			assertNotEquals("The container should now have a new version", currentVersion.getUuid(), container.getLatestVersion().getUuid());
 
 			// Assert that migration worked
 			Node node = content();
 			node.reload();
 			assertNotNull("The schema of the node should contain the new field schema",
 					node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField"));
-			assertTrue(
-					"The version of the original schema and the schema that is now linked to the node should be different.",
-					currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion()
-							.getVersion());
-			assertEquals("label1234", node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema()
-					.getField("newField").getLabel());
+			assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
+					currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion());
+			assertEquals("label1234", node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField").getLabel());
 
 		}
 	}
@@ -483,8 +466,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 				container.getLatestVersion().reload();
 				currentVersion.reload();
 				assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
-				assertNotEquals("The container should now have a new version", currentVersion.getUuid(),
-						container.getLatestVersion().getUuid());
+				assertNotEquals("The container should now have a new version", currentVersion.getUuid(), container.getLatestVersion().getUuid());
 
 				// Assert that migration worked
 				Node node = content();
@@ -493,12 +475,9 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 				node.getGraphFieldContainer("en").getSchemaContainerVersion().reload();
 
 				assertNotNull("The schema of the node should contain the new field schema",
-						node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema()
-								.getField("newField_" + i));
-				assertTrue(
-						"The version of the original schema and the schema that is now linked to the node should be different.",
-						currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion()
-								.getVersion());
+						node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema().getField("newField_" + i));
+				assertTrue("The version of the original schema and the schema that is now linked to the node should be different.",
+						currentVersion.getVersion() != node.getGraphFieldContainer("en").getSchemaContainerVersion().getVersion());
 			}
 
 		}
@@ -509,8 +488,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			container.reload();
 			assertEquals("We invoked 10 migration. Thus we expect 11 versions.", 11, container.findAll().size());
 			assertNull("The last version should not have any changes", container.getLatestVersion().getNextChange());
-			assertNull("The last version should not have any futher versions",
-					container.getLatestVersion().getNextVersion());
+			assertNull("The last version should not have any futher versions", container.getLatestVersion().getNextVersion());
 
 			SchemaContainerVersion version = container.getLatestVersion();
 			int nVersions = 0;
@@ -520,16 +498,15 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 					break;
 				}
 				version.reload();
-				assertNotNull("The schema version {" + version.getUuid() + "-" + version.getVersion()
-						+ "} should have a next change", version.getNextChange());
+				assertNotNull("The schema version {" + version.getUuid() + "-" + version.getVersion() + "} should have a next change",
+						version.getNextChange());
 				assertEquals("The version is not referencing the correct parent container.", container.getUuid(),
 						version.getSchemaContainer().getUuid());
 				nVersions++;
 			}
 
 			assertEquals("The latest version should have exactly 10 previous versions.", nVersions, 10);
-			assertTrue("The user should still have update permissions on the schema",
-					user().hasPermission(container, UPDATE_PERM));
+			assertTrue("The user should still have update permissions on the schema", user().hasPermission(container, UPDATE_PERM));
 		}
 
 	}
@@ -541,8 +518,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	public void testNoChangesUpdate() {
 		try (NoTx noTx = db().noTx()) {
 			SchemaContainer container = schemaContainer("content");
-			SchemaUpdateRequest schema = JsonUtil.readValue(JsonUtil.toJson(container.getLatestVersion().getSchema()),
-					SchemaUpdateRequest.class);
+			SchemaUpdateRequest schema = JsonUtil.readValue(JsonUtil.toJson(container.getLatestVersion().getSchema()), SchemaUpdateRequest.class);
 
 			// Update the schema server side
 			GenericMessageResponse status = call(() -> client().updateSchema(container.getUuid(), schema));
@@ -556,8 +532,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// 1. Setup schema
 			Node content = content();
 			SchemaContainer container = schemaContainer("content");
-			SchemaUpdateRequest schema = JsonUtil.readValue(container.getLatestVersion().getJson(),
-					SchemaUpdateRequest.class);
+			SchemaUpdateRequest schema = JsonUtil.readValue(container.getLatestVersion().getJson(), SchemaUpdateRequest.class);
 			assertEquals("The segment field name should be set", "filename", schema.getSegmentField());
 			schema.getFields().add(FieldUtil.createStringFieldSchema("extraname").setLabel("someLabel"));
 			MeshInternal.get().serverSchemaStorage().clear();
@@ -566,8 +541,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			// 3. Update the schema server side -> 2.0
-			call(() -> client().updateSchema(container.getUuid(), schema,
-					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
+			call(() -> client().updateSchema(container.getUuid(), schema, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
 
 			// 4. assign the new schema version to the release
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
@@ -582,8 +556,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			schema.setVersion(schema.getVersion() + 1);
 
 			// Read node and check additional field
-			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParametersImpl().draft()));
+			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParametersImpl().draft()));
 			assertNotNull(response);
 
 			// Update the node and set the new field
@@ -597,8 +570,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertEquals("sometext", response.getFields().getStringField("extraname").getString());
 
 			// Read node and check additional field
-			response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParametersImpl().draft()));
+			response = call(() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParametersImpl().draft()));
 			assertNotNull(response);
 			assertNotNull(response.getFields().hasField("extraname"));
 		}
@@ -606,35 +578,40 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testRemoveField2() throws Exception {
+		String containerUuid = db().noTx(() -> schemaContainer("content").getUuid());
+		String releaseUuid = db().noTx(() -> project().getLatestRelease().getUuid());
+		SchemaUpdateRequest schema;
+		String nodeUuid;
 		try (NoTx noTx = db().noTx()) {
 			Node content = content();
-
+			nodeUuid = content.getUuid();
+			// 1. Prepare the update request in which we remove the content field
 			SchemaContainer container = schemaContainer("content");
-			SchemaUpdateRequest schema = JsonUtil.readValue(container.getLatestVersion().getJson(),
-					SchemaUpdateRequest.class);
+			schema = JsonUtil.readValue(container.getLatestVersion().getJson(), SchemaUpdateRequest.class);
 			schema.removeField("content");
-
 			MeshInternal.get().serverSchemaStorage().clear();
-
-			// Setup eventbus bridged latch - This will effectively block the unit test until the background schema migration process has finished.
-			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-
-			// Update the schema server side
-			call(() -> client().updateSchema(container.getUuid(), schema));
-
-			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
-			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
-					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
-
-			schema.setVersion(schema.getVersion() + 1);
-
-			failingLatch(latch);
-
-			// Read node and check additional field
-			NodeResponse response = call(
-					() -> client().findNodeByUuid(PROJECT_NAME, content.getUuid(), new VersioningParametersImpl().draft()));
-			assertNull(response.getFields().getStringField("content"));
 		}
+
+		// Setup eventbus bridged latch - This will effectively block the unit test until the background schema migration process has finished.
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
+
+		// 2. Update the schema server side
+		call(() -> client().updateSchema(containerUuid, schema));
+		failingLatch(latch);
+
+		latch = TestUtils.latchForMigrationCompleted(client());
+		// 3. Load the new schema and assign it to the release
+		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(containerUuid));
+		assertNull("The content field should have been removed", updatedSchema.getField("content"));
+		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid,
+				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
+		schema.setVersion(schema.getVersion() + 1);
+		failingLatch(latch);
+
+		// 4. Read node and check additional field
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().draft()));
+		assertNull(response.getFields().getStringField("content"));
+
 	}
 
 	@Test
@@ -647,8 +624,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			content.createGraphFieldContainer(english(), newRelease, user());
 
 			SchemaContainer container = schemaContainer("content");
-			SchemaUpdateRequest schema = JsonUtil.readValue(JsonUtil.toJson(container.getLatestVersion().getSchema()),
-					SchemaUpdateRequest.class);
+			SchemaUpdateRequest schema = JsonUtil.readValue(JsonUtil.toJson(container.getLatestVersion().getSchema()), SchemaUpdateRequest.class);
 			schema.getFields().add(FieldUtil.createStringFieldSchema("extraname"));
 			MeshInternal.get().serverSchemaStorage().clear();
 
@@ -656,8 +632,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
 			// 3. Update the schema server side
-			call(() -> client().updateSchema(container.getUuid(), schema,
-					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
+			call(() -> client().updateSchema(container.getUuid(), schema, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
 
 			// 4. assign the new schema version to the initial release
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
@@ -668,8 +643,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// node must be migrated for initial release
 			content.reload();
 			container.reload();
-			assertThat(content.getGraphFieldContainer("en", initialRelease.getUuid(), ContainerType.DRAFT))
-					.isOf(container.getLatestVersion());
+			assertThat(content.getGraphFieldContainer("en", initialRelease.getUuid(), ContainerType.DRAFT)).isOf(container.getLatestVersion());
 
 			// node must not be migrated for new release
 			assertThat(content.getGraphFieldContainer("en", newRelease.getUuid(), ContainerType.DRAFT))
