@@ -319,7 +319,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 			});
 
 			// Process the search queue batch in order to update the search index
-			batches.add(batch.processAsync());
+			if (batch != null) {
+				batches.add(batch.processAsync());
+			}
 
 			if (statusMBean != null) {
 				statusMBean.incNodesDone();
