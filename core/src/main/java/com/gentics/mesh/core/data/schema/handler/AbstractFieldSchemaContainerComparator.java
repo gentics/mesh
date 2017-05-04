@@ -13,6 +13,7 @@ import java.util.Objects;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -68,7 +69,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 			FieldSchema fieldInB = containerB.getFields().get(i);
 			FieldSchema fieldInA = schemaAFields.get(fieldInB.getName());
 
-			// Check whether the field was added in schemaB 
+			// Check whether the field was added in schemaB
 			if (fieldInA == null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Field " + fieldInB.getName() + " was added.");
@@ -76,6 +77,9 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				SchemaChangeModel change = SchemaChangeModel.createAddFieldChange(fieldInB.getName(), fieldInB.getType(), fieldInB.getLabel());
 				if (fieldInB instanceof ListFieldSchema) {
 					change.setProperty(SchemaChangeModel.LIST_TYPE_KEY, ((ListFieldSchema) fieldInB).getListType());
+				}
+				if (fieldInB instanceof MicronodeFieldSchema) {
+					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((MicronodeFieldSchema) fieldInB).getAllowedMicroSchemas());
 				}
 
 				if (i - 1 >= 0) {
@@ -132,7 +136,7 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 			fieldNames.add(fieldSchema.getName());
 		}
 
-		// The order has changed if the field size is different. 
+		// The order has changed if the field size is different.
 		if (containerB.getFields().size() != containerA.getFields().size()) {
 			hasChanges = true;
 		} else {

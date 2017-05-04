@@ -48,7 +48,6 @@ import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
 import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
@@ -132,9 +131,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 		SchemaModel newSchema = toVersion.getSchema();
 		List<Completable> batches = new ArrayList<>();
-		SearchQueueBatch indexCreatingBatch = searchQueue.create();
-		indexCreatingBatch.createNodeIndex(project.getUuid(), releaseUuid, toVersion.getUuid(), DRAFT, toVersion.getSchema());
-		indexCreatingBatch.createNodeIndex(project.getUuid(), releaseUuid, toVersion.getUuid(), PUBLISHED, toVersion.getSchema());
+		// SearchQueueBatch indexCreatingBatch = searchQueue.create();
+		// indexCreatingBatch.createNodeIndex(project.getUuid(), releaseUuid, toVersion.getUuid(), DRAFT, toVersion.getSchema());
+		// indexCreatingBatch.createNodeIndex(project.getUuid(), releaseUuid, toVersion.getUuid(), PUBLISHED, toVersion.getSchema());
 
 		List<Exception> errorsDetected = new ArrayList<>();
 
@@ -166,7 +165,6 @@ public class NodeMigrationHandler extends AbstractHandler {
 							migrated.setVersion(oldPublished.getVersion().nextPublished());
 							node.setPublished(migrated, releaseUuid);
 							migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
-
 							sqb.store(migrated, releaseUuid, PUBLISHED, false);
 
 							ac.getVersioningParameters().setVersion("draft");
@@ -214,7 +212,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			result = Completable.error(new CompositeException(errorsDetected));
 		}
 
-		return indexCreatingBatch.processAsync().andThen(Completable.merge(batches)).andThen(result);
+		return Completable.merge(batches).andThen(result);
 	}
 
 	/**

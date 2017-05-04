@@ -148,6 +148,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
 								containerVersion.getUuid(), PUBLISHED);
 						String documentType = NodeGraphFieldContainer.composeIndexType();
+						if (log.isDebugEnabled()) {
+							log.debug("Adding index to map of known idices {" + draftIndexName + "");
+							log.debug("Adding index to map of known idices {" + publishIndexName + "");
+						}
 						indexInfo.put(draftIndexName, documentType);
 						indexInfo.put(publishIndexName, documentType);
 					}

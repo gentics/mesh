@@ -17,8 +17,9 @@ public class NodeFieldSchemaImpl extends AbstractFieldSchema implements NodeFiel
 	}
 
 	@Override
-	public void setAllowedSchemas(String... allowedSchemas) {
+	public NodeFieldSchema setAllowedSchemas(String... allowedSchemas) {
 		this.allowedSchemas = allowedSchemas;
+		return this;
 	}
 
 	@Override

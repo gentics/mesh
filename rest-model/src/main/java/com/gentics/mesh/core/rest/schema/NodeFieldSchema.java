@@ -10,10 +10,11 @@ public interface NodeFieldSchema extends FieldSchema {
 	String[] getAllowedSchemas();
 
 	/**
-	 * Set the allowed schema whitelist for the node field.
+	 * Set the allowed schema white list for the node field.
 	 * 
 	 * @param allowedSchemas
+	 * @return Fluent API 
 	 */
-	void setAllowedSchemas(String... allowedSchemas);
+	NodeFieldSchema setAllowedSchemas(String... allowedSchemas);
 
 }

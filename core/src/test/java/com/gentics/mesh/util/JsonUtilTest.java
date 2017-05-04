@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -18,6 +19,10 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -41,6 +46,15 @@ public class JsonUtilTest {
 	public void testSchema() throws JsonProcessingException {
 		String json = JsonUtil.getJsonSchema(NodeResponse.class);
 		assertNotNull(json);
+	}
+
+	@Test
+	public void testMicroschemaAllowField() {
+		SchemaUpdateRequest schemaUpdate = new SchemaUpdateRequest();
+		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
+		String json = JsonUtil.toJson(schemaUpdate);
+		SchemaModel model = JsonUtil.readValue(json, SchemaResponse.class);
+		assertThat(model.getField("micro", MicronodeFieldSchemaImpl.class).getAllowedMicroSchemas()).containsExactly("TestMicroschema");
 	}
 
 	@Test

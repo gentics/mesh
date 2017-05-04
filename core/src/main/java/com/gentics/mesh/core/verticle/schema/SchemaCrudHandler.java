@@ -29,6 +29,7 @@ import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -43,9 +44,14 @@ import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import rx.Completable;
 import rx.Single;
 
 public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
+
+	private static final Logger log = LoggerFactory.getLogger(SchemaCrudHandler.class);
 
 	private SchemaComparator comparator;
 
@@ -89,8 +95,12 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			}
 
 			List<DeliveryOptions> events = new ArrayList<>();
-			db.tx(() -> {
+			Completable searchBatchCompletable = db.tx(() -> {
+				events.clear();
+				List<Completable> completables = new ArrayList<>();
 				SearchQueueBatch batch = searchQueue.create();
+				completables.add(batch.processAsync());
+
 				// 3. Apply the found changes to the schema
 				SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
@@ -115,22 +125,42 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						// Assign the new version to the release
 						release.assignSchemaVersion(createdVersion);
 
-						// Invoke the node release migration
+						if (log.isDebugEnabled()) {
+							log.debug("Preparing node migration for release {" + releaseEntry.getKey().getUuid() + "}");
+						}
+						String projectUuid = release.getRoot().getProject().getUuid();
+						String fromVersion = previouslyReferencedVersion.getUuid();
+						String toVersion = createdVersion.getUuid();
+						String releaseUuid = release.getUuid();
+						SchemaModel newSchema = createdVersion.getSchema();
+						String schemaUuid = createdVersion.getSchemaContainer().getUuid();
+						if (log.isDebugEnabled()) {
+							log.debug("Migrating nodes from schema version {" + fromVersion + "} to {" + toVersion + "} for schema with uuid {"
+									+ schemaUuid + "}");
+						}
+
+						// The node migration needs to write into a new index. Lets prepare the creation of that index
+						SearchQueueBatch indexCreatingBatch = searchQueue.create();
+						indexCreatingBatch.createNodeIndex(projectUuid, releaseUuid, toVersion, DRAFT, newSchema);
+						indexCreatingBatch.createNodeIndex(projectUuid, releaseUuid, toVersion, PUBLISHED, newSchema);
+						completables.add(indexCreatingBatch.processAsync());
+
+						// Lets also prepare the invocation of the migration. The migration is delegated to a worker verticle.
 						DeliveryOptions options = new DeliveryOptions();
-						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, release.getRoot().getProject().getUuid());
-						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
-						options.addHeader(NodeMigrationVerticle.UUID_HEADER, createdVersion.getSchemaContainer().getUuid());
-						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, previouslyReferencedVersion.getUuid());
-						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, createdVersion.getUuid());
+						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
+						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, releaseUuid);
+						options.addHeader(NodeMigrationVerticle.UUID_HEADER, schemaUuid);
+						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, fromVersion);
+						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, toVersion);
 						events.add(options);
-
 					}
-
 				}
+				return Completable.merge(completables);
+			});
 
-				return batch;
-			}).processSync();
+			searchBatchCompletable.await();
 
+			// Invoke the node release migration
 			for (DeliveryOptions option : events) {
 				Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, option);
 			}
