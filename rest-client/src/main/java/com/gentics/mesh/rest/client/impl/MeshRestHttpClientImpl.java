@@ -791,22 +791,22 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeBackup() {
-		return prepareRequest(GET, "/admin/backup", GenericMessageResponse.class);
+		return prepareRequest(POST, "/admin/backup", GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeExport() {
-		return prepareRequest(GET, "/admin/export", GenericMessageResponse.class);
+		return prepareRequest(POST, "/admin/export", GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeImport() {
-		return prepareRequest(GET, "/admin/import", GenericMessageResponse.class);
+		return prepareRequest(POST, "/admin/import", GenericMessageResponse.class);
 	}
 
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeRestore() {
-		return prepareRequest(GET, "/admin/restore", GenericMessageResponse.class);
+		return prepareRequest(POST, "/admin/restore", GenericMessageResponse.class);
 	}
 
 	@Override
