@@ -16,6 +16,7 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -24,7 +25,6 @@ import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.graphdb.NoTx;
@@ -90,9 +90,9 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		microschemaRequest.addField(FieldUtil.createStringFieldSchema("text"));
 		microschemaRequest.addField(FieldUtil.createNodeFieldSchema("nodeRef").setAllowedSchemas("content"));
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
-
+		String microschemaUuid = microschemaResponse.getUuid();
 		// Assign the microschema to the project
-		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaResponse.getUuid()));
+		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaUuid));
 
 		// 2. Add micronode field to content schema
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
@@ -102,8 +102,6 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		// 3. Search directly for existing content
 		NodeListResponse response = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
-		// This is currently failing because the index handler uses the new index and not the old one to find the node. We need to check whether this behavioqr
-		// is desired.
 		assertThat(response.getData()).as("Search result").isEmpty();
 
 		// 4. Wait until the migration is complete and search again
@@ -112,7 +110,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
 		assertThat(response2.getData()).as("Search result").isNotEmpty();
 
-		// Finally lets create a new node that has a micronode
+		// Lets create a new node that has a micronode
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("en");
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(folderUuid));
@@ -126,6 +124,35 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		nodeCreateRequest.getFields().put("micro", micronodeField);
 		NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 		assertEquals("someText", nodeResponse.getFields().getMicronodeField("micro").getFields().getStringField("text").getString());
+
+		// 5. Update the microschema
+		MicroschemaUpdateRequest microschemaUpdate = new MicroschemaUpdateRequest();
+		microschemaUpdate.setName("TestMicroschema");
+		microschemaUpdate.addField(FieldUtil.createStringFieldSchema("textNew"));
+		microschemaUpdate.addField(FieldUtil.createNodeFieldSchema("nodeRefNew").setAllowedSchemas("content"));
+		latch = TestUtils.latchForMigrationCompleted(client());
+		call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
+		failingLatch(latch);
+
+		// Update the node and populate the new fields
+		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+		updateRequest.setLanguage("en");
+		// The migration bumped the version to 0.2
+		updateRequest.setVersion(new VersionReference().setNumber("0.2"));
+		micronodeField = new MicronodeResponse();
+		micronodeField.setMicroschema(new MicroschemaReference().setName("TestMicroschema"));
+		micronodeField.getFields().put("textNew", FieldUtil.createStringField("someNewText"));
+		micronodeField.getFields().put("nodeRefNew", FieldUtil.createNodeField(contentUuid));
+		updateRequest.getFields().put("micro", micronodeField);
+		call(() -> client().updateNode(PROJECT_NAME, nodeResponse.getUuid(), updateRequest));
+
+		// Verify that the micronode has been migrated
+		NodeResponse nodeResponse2 = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeResponse.getUuid()));
+		assertEquals("someNewText", nodeResponse2.getFields().getMicronodeField("micro").getFields().getStringField("textNew").getString());
+
+		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
+		assertThat(response.getData()).as("Search result").isNotEmpty();
+
 	}
 
 	@Test

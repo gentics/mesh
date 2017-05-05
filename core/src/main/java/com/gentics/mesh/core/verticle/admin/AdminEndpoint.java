@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.admin;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
+import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -67,7 +68,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	private void addExportHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/export");
-		endpoint.method(GET);
+		endpoint.method(POST);
 		endpoint.description("Invoke a orientdb graph database export.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Export process was invoked.");
@@ -79,7 +80,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	private void addImportHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/import");
-		endpoint.method(GET);
+		endpoint.method(POST);
 		endpoint.description(
 				"Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.");
 		endpoint.produces(APPLICATION_JSON);
@@ -96,7 +97,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 				"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effecivly destroy all previously stored data.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Database restore command was invoked.");
-		endpoint.method(GET);
+		endpoint.method(POST);
 		endpoint.handler(rc -> {
 			handler.handleRestore(new InternalRoutingActionContextImpl(rc));
 		});
@@ -105,7 +106,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	private void addBackupHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/backup");
-		endpoint.method(GET);
+		endpoint.method(POST);
 		endpoint.description(
 				"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.");
 		endpoint.produces(APPLICATION_JSON);

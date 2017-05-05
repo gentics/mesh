@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.webroot;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
 import javax.inject.Inject;
@@ -43,6 +44,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 		endpoint.setRAMLPath("/{path}");
 		endpoint.method(GET);
 		endpoint.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
+		endpoint.exampleResponse(OK, "JSON for a node or the binary data of the node for the given path.");
 		endpoint.description("Load the node or the node's binary data which is located using the provided path.");
 		endpoint.addQueryParameters(ImageManipulationParametersImpl.class);
 		endpoint.handler(rc -> {

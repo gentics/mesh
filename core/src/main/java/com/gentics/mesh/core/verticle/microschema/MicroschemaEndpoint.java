@@ -157,7 +157,8 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaUpdateRequest());
-		endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
+		// endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
+		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Migration message.");
 		endpoint.description("Update the microschema with the given uuid.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);

@@ -94,7 +94,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.setRAMLPath("/{userUuid}/permissions/{path}");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.addUriParameter("path", "Path to the element from which the permissions should be loaded.", "projects/:projectUuid/schemas");
-		endpoint.description("Read the user permissions on the element/s that are located by the specified path.");
+		endpoint.description("Read the user permissions on the element that can be located by the specified path.");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getUserPermissionResponse(), "Response which contains the loaded permissions.");
