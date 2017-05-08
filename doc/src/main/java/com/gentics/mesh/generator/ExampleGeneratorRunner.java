@@ -25,7 +25,6 @@ public class ExampleGeneratorRunner {
 
 		SearchModelGenerator searchModelGen = new SearchModelGenerator(OUTPUT_ROOT_FOLDER);
 		searchModelGen.run();
-
 	}
 
 	private static void cleanConf() {

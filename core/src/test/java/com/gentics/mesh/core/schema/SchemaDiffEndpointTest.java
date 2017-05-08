@@ -33,34 +33,35 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 	private Schema getSchema() {
-		Schema request = new SchemaModelImpl();
-		request.setName("content");
-		request.setDisplayField("title");
-		request.setSegmentField("filename");
+		Schema schema = new SchemaModelImpl();
+		schema.setName("content");
+		schema.setDescription("Content schema for blogposts");
+		schema.setDisplayField("title");
+		schema.setSegmentField("filename");
 
 		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 		nameFieldSchema.setName("name");
 		nameFieldSchema.setLabel("Name");
 		nameFieldSchema.setRequired(true);
-		request.addField(nameFieldSchema);
+		schema.addField(nameFieldSchema);
 
 		StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
 		filenameFieldSchema.setName("filename");
 		filenameFieldSchema.setLabel("Filename");
-		request.addField(filenameFieldSchema);
+		schema.addField(filenameFieldSchema);
 
 		StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 		titleFieldSchema.setName("title");
 		titleFieldSchema.setLabel("Title");
-		request.addField(titleFieldSchema);
+		schema.addField(titleFieldSchema);
 
 		HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
 		contentFieldSchema.setName("content");
 		contentFieldSchema.setLabel("Content");
-		request.addField(contentFieldSchema);
+		schema.addField(contentFieldSchema);
 
-		request.setContainer(false);
-		return request;
+		schema.setContainer(false);
+		return schema;
 	}
 
 	@Test
