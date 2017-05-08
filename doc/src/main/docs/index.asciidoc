@@ -388,7 +388,7 @@ The main ```mesh.yml``` configuration file contains various settings to configur
 
 [source,json]
 ----
-include::examples/mesh-config.yml[]
+include::examples/models/mesh-config.yml[]
 ----
 
 [options="header"]
