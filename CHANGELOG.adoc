@@ -2,7 +2,17 @@
 
 = Gentics Mesh Changelog
 
-== 0.9.8 (PENDING)
+== 0.9.8 (08.05.2017)
+
+icon:plus[] UI: Microschemas can now be assigned to projects.
+
+icon:plus[] UI: Descriptions can now be assigned to schemas & microschemas.
+
+icon:plus[] Core: Various bugs for node migrations have been fixed.
+
+icon:plus[] Core: The allow property for micronode schema fields will now correctly be handled.
+
+icon:plus[] Core: Microschemas will now be assigned to projects during a schema update. This only applies for microschemas which are referenced by the schema (e.g.: via a micronode field).
 
 icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.19.
 
