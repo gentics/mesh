@@ -452,6 +452,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			if (contentSchemaContainer == null) {
 				SchemaModel schema = new SchemaModelImpl();
 				schema.setName("content");
+				schema.setDescription("Content schema for blogposts");
 				schema.setDisplayField("title");
 				schema.setSegmentField("filename");
 
@@ -486,6 +487,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			if (folderSchemaContainer == null) {
 				SchemaModel schema = new SchemaModelImpl();
 				schema.setName("folder");
+				schema.setDescription("Folder schema to create containers for other nodes.");
 				schema.setDisplayField("name");
 				schema.setSegmentField("name");
 
@@ -504,6 +506,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			if (binarySchemaContainer == null) {
 
 				SchemaModel schema = new SchemaModelImpl();
+				schema.setDescription("Binary content schema used to store images and other binary data.");
 				schema.setName("binary_content");
 				schema.setDisplayField("name");
 				schema.setSegmentField("binary");
