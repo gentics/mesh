@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +43,16 @@ public class ModelDescriptionTableGenerator extends AbstractGenerator {
 			String name = clazz.getSimpleName();
 			String jsonSchema = JsonUtil.getJsonSchema(clazz);
 			JsonObject schema = new JsonObject(jsonSchema);
-			ArrayList<Map<String, String>> list = new ArrayList<>();
-			flattenSchema(list, null, schema);
+			List<Map<String, String>> list = new ArrayList<>();
+			flattenSchema(clazz, list, null, schema);
+			// Order list by field key
+			Collections.sort(list, new Comparator<Map<String, String>>() {
+				@Override
+				public int compare(Map<String, String> a1, Map<String, String> a2) {
+					return a1.get("key").compareTo(a2.get("key"));
+				}
+			});
+
 			Map<String, Object> context = new HashMap<>();
 			context.put("entries", list);
 			context.put("name", name);
@@ -79,19 +89,28 @@ public class ModelDescriptionTableGenerator extends AbstractGenerator {
 	 * @param obj
 	 *            Current object being flattened
 	 */
-	private void flattenSchema(List<Map<String, String>> list, String key, JsonObject obj) {
-
+	private void flattenSchema(Class<?> clazz, List<Map<String, String>> list, String key, JsonObject obj) {
 		// Check whether the current object already describes a property
 		if (obj.containsKey("type") && obj.containsKey("description")) {
+			if (key == null) {
+				key = "properties";
+			}
 			String type = obj.getString("type");
 			String description = obj.getString("description");
+			Boolean required = obj.getBoolean("required");
 			Map<String, String> attr = new HashMap<>();
 			attr.put("type", type);
 			attr.put("description", description);
 			attr.put("key", key);
+			String requiredStr = "false";
+			if (required != null) {
+				requiredStr = String.valueOf(required);
+			}
+			attr.put("required", requiredStr);
 			list.add(attr);
 		} else {
 			// Otherwise just continue to process all remaining objects
+			System.out.println(obj.toString());
 			for (Map.Entry<String, Object> entry : obj) {
 				try {
 					String newKey = entry.getKey();
@@ -102,7 +121,7 @@ public class ModelDescriptionTableGenerator extends AbstractGenerator {
 					} else {
 						newKey = key;
 					}
-					flattenSchema(list, newKey, (JsonObject) entry.getValue());
+					flattenSchema(clazz, list, newKey, (JsonObject) entry.getValue());
 				} catch (ClassCastException e) {
 					// Ignored
 				}

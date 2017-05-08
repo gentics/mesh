@@ -20,7 +20,6 @@ public class ExampleGeneratorRunner {
 		ModelExampleGenerator restModelGen = new ModelExampleGenerator(OUTPUT_ROOT_FOLDER);
 		restModelGen.run();
 
-		
 		RAMLGenerator generator = new RAMLGenerator(OUTPUT_ROOT_FOLDER);
 		generator.run();
 
