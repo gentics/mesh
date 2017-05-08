@@ -9,6 +9,7 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
@@ -33,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
+import java.util.stream.Collectors;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -45,6 +47,8 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -54,6 +58,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -270,6 +275,39 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.setName(name);
 
 		call(() -> client().createSchema(request), CONFLICT, "schema_conflicting_name", name);
+	}
+
+	/**
+	 * Test automagically assignment of referenced microschemas to projects.
+	 */
+	@Test
+	public void testUpdateWithReferencedMicroschema() {
+
+		SchemaUpdateRequest schemaUpdate = db()
+				.noTx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(), SchemaUpdateRequest.class));
+		String schemaUuid = db().noTx(() -> schemaContainer("content").getUuid());
+
+		// 1. Create the microschema
+		MicroschemaCreateRequest microschemaRequest = new MicroschemaCreateRequest();
+		microschemaRequest.setName("TestMicroschema");
+		microschemaRequest.addField(FieldUtil.createStringFieldSchema("text"));
+		microschemaRequest.addField(FieldUtil.createNodeFieldSchema("nodeRef").setAllowedSchemas("content"));
+		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
+		String microschemaUuid = microschemaResponse.getUuid();
+
+		List<MicroschemaResponse> filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream()
+				.filter(microschema -> microschema.getUuid().equals(microschemaUuid)).collect(Collectors.toList());
+
+		assertThat(filteredList).isEmpty();
+
+		// 2. Add micronode field to content schema
+		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
+		call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+
+		filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream()
+				.filter(microschema -> microschema.getUuid().equals(microschemaUuid)).collect(Collectors.toList());
+		assertThat(filteredList).hasSize(1);
+
 	}
 
 	@Test

@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -23,11 +24,15 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -96,6 +101,35 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			List<DeliveryOptions> events = new ArrayList<>();
 			Completable searchBatchCompletable = db.tx(() -> {
+
+				// Check whether there are any microschemas which are referenced by the schema
+				for (FieldSchema field : requestModel.getFields()) {
+					if (field instanceof MicronodeFieldSchema) {
+						MicronodeFieldSchema microschemaField = (MicronodeFieldSchema) field;
+
+						// Check each allowed microschema individually
+						for (String microschemaName : microschemaField.getAllowedMicroSchemas()) {
+
+							// schema_error_microschema_reference_no_perm
+							MicroschemaContainer microschema = boot.get().microschemaContainerRoot().findByName(microschemaName);
+							if (microschema == null) {
+								throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
+							}
+							if (!ac.getUser().hasPermission(microschema, READ_PERM)) {
+								throw error(BAD_REQUEST, "schema_error_microschema_reference_no_perm", microschemaName, field.getName());
+							}
+
+							// Locate the projects to which the schema was linked - We need to ensure that the microschema is also linked to those projects
+							for (SchemaContainerRoot roots : schemaContainer.getRoots()) {
+								Project project = roots.getProject();
+								if (project != null) {
+									project.getMicroschemaContainerRoot().addMicroschema(microschema);
+								}
+							}
+						}
+					}
+				}
+
 				events.clear();
 				List<Completable> completables = new ArrayList<>();
 				SearchQueueBatch batch = searchQueue.create();
@@ -216,7 +250,27 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
 				Tuple<SearchQueueBatch, Single<SchemaResponse>> tuple = db.tx(() -> {
 
+					// Assign the schema to the project
 					project.getSchemaContainerRoot().addSchemaContainer(schema);
+
+//					// Check whether there are any microschemas which are referenced by the schema
+//					for (FieldSchema field : schema.getLatestVersion().getSchema().getFields()) {
+//						if (field instanceof MicronodeFieldSchema) {
+//							MicronodeFieldSchema microschemaField = (MicronodeFieldSchema) field;
+//							for (String microschemaName : microschemaField.getAllowedMicroSchemas()) {
+//								// schema_error_microschema_reference_no_perm
+//								MicroschemaContainer microschema = ac.getProject().getMicroschemaContainerRoot().findByName(microschemaName);
+//								if (microschema == null) {
+//									throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
+//								}
+//								if (ac.getUser().hasPermission(microschema, READ_PERM)) {
+//									throw error(BAD_REQUEST, "schema_error_microschema_reference_no_perm", microschemaName, field.getName());
+//								}
+//								project.getMicroschemaContainerRoot().addMicroschema(microschema);
+//							}
+//						}
+//					}
+
 					SearchQueueBatch batch = searchQueue.create();
 
 					String releaseUuid = project.getLatestRelease().getUuid();

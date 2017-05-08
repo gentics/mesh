@@ -22,10 +22,6 @@ public class SchemaCreateRequest implements Schema {
 	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
 	private boolean container = false;
 
-	// @JsonProperty(required = true)
-	// @JsonPropertyDescription("Version of the schema")
-	// private int version;
-
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Description of the schema")
 	private String description;
@@ -37,17 +33,6 @@ public class SchemaCreateRequest implements Schema {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of schema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
-
-	// @Override
-	// public int getVersion() {
-	// return version;
-	// }
-	//
-	// @Override
-	// public SchemaCreateRequest setVersion(int version) {
-	// this.version = version;
-	// return this;
-	// }
 
 	@Override
 	public String getDescription() {

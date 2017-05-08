@@ -12,8 +12,10 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -155,5 +157,15 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				return foundVersion;
 			}
 		}
+	}
+
+	/**
+	 * Get the project
+	 * 
+	 * @return project
+	 */
+	@Override
+	public Project getProject() {
+		return in(HAS_SCHEMA_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 }

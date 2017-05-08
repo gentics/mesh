@@ -20,15 +20,6 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 		database.addVertexType(ProjectSchemaContainerRootImpl.class, MeshVertexImpl.class);
 	}
 
-	/**
-	 * Get the project
-	 * 
-	 * @return project
-	 */
-	protected Project getProject() {
-		return in(HAS_SCHEMA_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
-	}
-
 	@Override
 	public void addSchemaContainer(SchemaContainer schema) {
 		super.addSchemaContainer(schema);

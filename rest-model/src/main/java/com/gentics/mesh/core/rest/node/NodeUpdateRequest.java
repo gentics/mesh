@@ -3,12 +3,11 @@ package com.gentics.mesh.core.rest.node;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.core.rest.common.RestModel;
 
 /**
  * POJO for a node update request.
  */
-public class NodeUpdateRequest implements RestModel, FieldContainer {
+public class NodeUpdateRequest implements FieldContainer {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("ISO 639-1 language tag of the node content.")

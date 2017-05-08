@@ -10,8 +10,8 @@ import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateSet;
@@ -35,7 +35,6 @@ import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
@@ -54,7 +53,6 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -230,9 +228,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 			request.setName("new-name");
 
-			MeshResponse<GenericMessageResponse> future = client().updateMicroschema(microschema.getUuid(), request).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", microschema.getUuid());
+			call(() -> client().updateMicroschema(microschema.getUuid(), request), FORBIDDEN, "error_missing_perm", microschema.getUuid());
 		}
 	}
 

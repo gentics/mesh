@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 
@@ -59,5 +60,12 @@ public interface SchemaContainer
 	 * @return
 	 */
 	List<? extends Node> getNodes();
+
+	/**
+	 * Return a list of all schema container roots to which the schema container was added.
+	 * 
+	 * @return
+	 */
+	List<? extends SchemaContainerRoot> getRoots();
 
 }

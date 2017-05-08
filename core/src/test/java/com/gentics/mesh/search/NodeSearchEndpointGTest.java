@@ -91,8 +91,9 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		microschemaRequest.addField(FieldUtil.createNodeFieldSchema("nodeRef").setAllowedSchemas("content"));
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
 		String microschemaUuid = microschemaResponse.getUuid();
-		// Assign the microschema to the project
-		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaUuid));
+		// Assigning the microschema to the project is not needed since this is done during schema update
+		
+//		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaUuid));
 
 		// 2. Add micronode field to content schema
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());

@@ -47,7 +47,7 @@ public class SchemaModelImpl implements SchemaModel {
 	@JsonPropertyDescription("Description of the schema")
 	private String description;
 
-	@JsonProperty(required = false)
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the schema")
 	private String name;
 

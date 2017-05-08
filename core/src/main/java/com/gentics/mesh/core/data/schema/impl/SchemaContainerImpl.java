@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_ITEM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -14,6 +15,8 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -46,6 +49,11 @@ public class SchemaContainerImpl extends AbstractGraphFieldSchemaContainer<Schem
 	@Override
 	public SchemaReference transformToReference() {
 		return new SchemaReference().setName(getName()).setUuid(getUuid());
+	}
+
+	@Override
+	public List<? extends SchemaContainerRoot> getRoots() {
+		return in(HAS_SCHEMA_CONTAINER_ITEM).toListExplicit(SchemaContainerRootImpl.class);
 	}
 
 	@Override

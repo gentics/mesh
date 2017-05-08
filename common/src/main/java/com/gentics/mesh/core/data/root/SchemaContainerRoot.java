@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.root;
 
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -56,4 +57,11 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 * @return Resolved container version
 	 */
 	SchemaContainerVersion fromReference(SchemaReference reference);
+
+	/**
+	 * Returns the project to which the schema container root belongs.
+	 * 
+	 * @return Project or null if this is the global root container
+	 */
+	Project getProject();
 }
