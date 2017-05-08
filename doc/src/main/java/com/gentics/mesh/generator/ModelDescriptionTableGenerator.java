@@ -110,7 +110,6 @@ public class ModelDescriptionTableGenerator extends AbstractGenerator {
 			list.add(attr);
 		} else {
 			// Otherwise just continue to process all remaining objects
-			System.out.println(obj.toString());
 			for (Map.Entry<String, Object> entry : obj) {
 				try {
 					String newKey = entry.getKey();
