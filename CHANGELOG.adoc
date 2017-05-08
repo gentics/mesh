@@ -8,6 +8,8 @@ icon:plus[] UI: Microschemas can now be assigned to projects.
 
 icon:plus[] UI: Descriptions can now be assigned to schemas & microschemas.
 
+icon:plus[] Core: The redundant `isContainer` field was removed from the node response.
+
 icon:plus[] Core: Various bugs for node migrations have been fixed.
 
 icon:plus[] Core: The allow property for micronode schema fields will now correctly be handled.

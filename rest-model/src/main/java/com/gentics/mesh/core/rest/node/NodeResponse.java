@@ -65,7 +65,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether the node is a container and can contain nested elements.")
-	private boolean isContainer;
+	private boolean container;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Display field value of the node. May not be retured if the node schema has no display field value.")
@@ -162,7 +162,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * @return Container flag
 	 */
 	public boolean isContainer() {
-		return isContainer;
+		return container;
 	}
 
 	/**
@@ -172,7 +172,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 *            Container flag
 	 */
 	public void setContainer(boolean isContainer) {
-		this.isContainer = isContainer;
+		this.container = isContainer;
 	}
 
 	/**
