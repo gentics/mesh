@@ -541,7 +541,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		fillCommonRestFields(ac, restNode);
 		setBreadcrumbToRest(ac, restNode);
 		setPathsToRest(ac, restNode, release);
+		setProjectReference(ac, restNode);
 		return restNode;
+	}
+
+	/**
+	 * Set the project reference to the node response model.
+	 * 
+	 * @param ac
+	 * @param restNode
+	 */
+	private void setProjectReference(InternalActionContext ac, NodeResponse restNode) {
+		restNode.setProject(getProject().transformToReference());
 	}
 
 	/**

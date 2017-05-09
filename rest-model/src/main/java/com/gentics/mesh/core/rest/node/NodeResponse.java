@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.rest.node;
 
 import java.util.ArrayDeque;
-
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashMap;
@@ -15,7 +14,7 @@ import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
@@ -50,7 +49,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the project of the node.")
-	private ProjectResponse project;
+	private ProjectReference project;
 
 	/**
 	 * Key: Schema name, Value: Node information
@@ -199,7 +198,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @return Project of the node
 	 */
-	public ProjectResponse getProject() {
+	public ProjectReference getProject() {
 		return project;
 	}
 
@@ -209,7 +208,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * @param project
 	 *            Project of the node
 	 */
-	public void setProject(ProjectResponse project) {
+	public void setProject(ProjectReference project) {
 		this.project = project;
 	}
 

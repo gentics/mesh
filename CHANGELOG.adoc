@@ -4,9 +4,12 @@
 
 == 0.9.8 (08.05.2017)
 
+
 icon:plus[] UI: Microschemas can now be assigned to projects.
 
 icon:plus[] UI: Descriptions can now be assigned to schemas & microschemas.
+
+icon:plus[] Core: A bug was fixed which prevented the node response `project` property to be populated.
 
 icon:plus[] Core: The redundant `isContainer` field was removed from the node response.
 
