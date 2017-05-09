@@ -19,7 +19,6 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
@@ -99,7 +98,6 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Returns a navigation object for the provided node.");
 		endpoint.displayName("Navigation");
-		endpoint.exampleRequest(new GenericMessageResponse("test"));
 		endpoint.exampleResponse(OK, responseExample, "Loaded navigation.");
 		endpoint.addQueryParameters(NavigationParametersImpl.class);
 		endpoint.handler(rc -> {

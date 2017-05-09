@@ -28,6 +28,13 @@ import com.gentics.mesh.core.data.node.field.DateGraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
@@ -197,28 +204,55 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 
 			switch (schema.getListType()) {
 			case "boolean":
-				return container.getBooleanList(schema.getName()).getList().stream().map(item -> item.getBoolean()).collect(Collectors.toList());
+				BooleanGraphFieldList booleanList = container.getBooleanList(schema.getName());
+				if (booleanList == null) {
+					return null;
+				}
+				return booleanList.getList().stream().map(item -> item.getBoolean()).collect(Collectors.toList());
 			case "html":
-				return container.getHTMLList(schema.getName()).getList().stream().map(item -> {
+				HtmlGraphFieldList htmlList = container.getHTMLList(schema.getName());
+				if (htmlList == null) {
+					return null;
+				}
+				return htmlList.getList().stream().map(item -> {
 					String content = item.getHTML();
 					LinkType linkType = getLinkType(env);
 					return linkReplacer.replace(null, null, content, linkType, gc.getProject().getName(), Arrays.asList());
 				}).collect(Collectors.toList());
 			case "string":
-				return container.getStringList(schema.getName()).getList().stream().map(item -> {
+				StringGraphFieldList stringList = container.getStringList(schema.getName());
+				if (stringList == null) {
+					return null;
+				}
+				return stringList.getList().stream().map(item -> {
 					String content = item.getString();
 					LinkType linkType = getLinkType(env);
 					return linkReplacer.replace(null, null, content, linkType, gc.getProject().getName(), Arrays.asList());
 				}).collect(Collectors.toList());
 			case "number":
-				return container.getNumberList(schema.getName()).getList().stream().map(item -> item.getNumber()).collect(Collectors.toList());
+				NumberGraphFieldList numberList = container.getNumberList(schema.getName());
+				if (numberList == null) {
+					return null;
+				}
+				return numberList.getList().stream().map(item -> item.getNumber()).collect(Collectors.toList());
 			case "date":
-				return container.getDateList(schema.getName()).getList().stream().map(item -> DateUtils.toISO8601(item.getDate(), 0))
-						.collect(Collectors.toList());
+				DateGraphFieldList dateList = container.getDateList(schema.getName());
+				if (dateList == null) {
+					return null;
+				}
+				return dateList.getList().stream().map(item -> DateUtils.toISO8601(item.getDate(), 0)).collect(Collectors.toList());
 			case "node":
-				return container.getNodeList(schema.getName()).getList().stream().map(item -> item.getNode()).collect(Collectors.toList());
+				NodeGraphFieldList nodeList = container.getNodeList(schema.getName());
+				if (nodeList == null) {
+					return null;
+				}
+				return nodeList.getList().stream().map(item -> item.getNode()).collect(Collectors.toList());
 			case "micronode":
-				return null;
+				MicronodeGraphFieldList micronodeList = container.getMicronodeList(schema.getName());
+				if (micronodeList == null) {
+					return null;
+				}
+				return micronodeList.getList().stream().map(item -> item.getMicronode()).collect(Collectors.toList());
 			default:
 				return null;
 			}
@@ -268,9 +302,9 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		return newFieldDefinition().name(schema.getName()).argument(createLanguageTagArg()).description(schema.getLabel())
 				.type(new GraphQLTypeReference("Node")).dataFetcher(env -> {
 					GraphQLContext gc = env.getContext();
-					NodeGraphFieldContainer nodeContainer = env.getSource();
+					GraphFieldContainer source = env.getSource();
 					// TODO decide whether we want to reference the default content by default
-					NodeGraphField nodeField = nodeContainer.getNode(schema.getName());
+					NodeGraphField nodeField = source.getNode(schema.getName());
 					if (nodeField != null) {
 						Node node = nodeField.getNode();
 						if (node != null) {

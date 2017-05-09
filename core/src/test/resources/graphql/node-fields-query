@@ -68,10 +68,24 @@
 
 				# [$.data.node.fields.stringLink=Link: {{mesh.link("43ee8f9ff71e4016ae8f9ff71e10161c", "en")}}]
 				stringLink
+
 				micronode {
 					... on vcard {
 						firstName
 						lastName
+					}
+				}
+
+				micronodeList {
+					... on vcard {
+						firstName
+						lastName
+					}
+					... on TestMicroschema {
+						text
+						nodeRef {
+							path
+						}
 					}
 				}
 			}

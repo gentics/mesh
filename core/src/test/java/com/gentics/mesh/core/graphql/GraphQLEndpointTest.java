@@ -16,15 +16,20 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.DateGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.HtmlGraphFieldList;
+import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
@@ -93,6 +98,17 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		// String contentUuid = db().noTx(() -> content().getUuid());
 		// String creationDate = db().noTx(() -> content().getCreationDate());
 		// String uuid = db().noTx(() -> folder("2015").getUuid());
+
+		// 1. Create the microschema
+		MicroschemaCreateRequest microschemaRequest = new MicroschemaCreateRequest();
+		microschemaRequest.setName("TestMicroschema");
+		microschemaRequest.addField(FieldUtil.createStringFieldSchema("text"));
+		microschemaRequest.addField(FieldUtil.createNodeFieldSchema("nodeRef").setAllowedSchemas("content"));
+		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
+		String microschemaUuid = microschemaResponse.getUuid();
+
+		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaUuid));
+
 		try (NoTx noTx = db().noTx()) {
 			Node node = folder("2015");
 			Node node2 = content();
@@ -169,6 +185,11 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			numberListSchema.setName("numberList");
 			schema.addField(numberListSchema);
 
+			ListFieldSchema micronodeListSchema = new ListFieldSchemaImpl();
+			micronodeListSchema.setListType("micronode");
+			micronodeListSchema.setName("micronodeList");
+			schema.addField(micronodeListSchema);
+
 			MicronodeFieldSchema micronodeFieldSchema = new MicronodeFieldSchemaImpl();
 			micronodeFieldSchema.setAllowedMicroSchemas("vcard");
 			micronodeFieldSchema.setName("micronode");
@@ -177,6 +198,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
 
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
+
 			// node
 			container.createNode("nodeRef", node2);
 
@@ -242,6 +264,20 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			NodeGraphFieldList nodeList = container.createNodeList("nodeList");
 			nodeList.createNode("0", node2);
 			nodeList.createNode("1", node3);
+
+			// micronodeList
+			MicronodeGraphFieldList micronodeList = container.createMicronodeFieldList("micronodeList");
+			Micronode firstMicronode = micronodeList.createMicronode();
+			firstMicronode.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+			firstMicronode.createString("firstName").setString("Joe");
+			firstMicronode.createString("lastName").setString("Doe");
+			firstMicronode.createString("address").setString("Somewhere");
+			firstMicronode.createString("postcode").setString("1010");
+
+			Micronode secondMicronode = micronodeList.createMicronode();
+			secondMicronode.setSchemaContainerVersion(boot().microschemaContainerRoot().findByUuid(microschemaUuid).getLatestVersion());
+			secondMicronode.createString("text").setString("Joe");
+			secondMicronode.createNode("nodeRef", content());
 
 			// micronode
 			MicronodeGraphField micronodeField = container.createMicronode("micronode", microschemaContainer("vcard").getLatestVersion());

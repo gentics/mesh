@@ -41,7 +41,7 @@ public class NavigationParametersImpl extends AbstractParameters implements Navi
 
 		// maxDepth
 		QueryParameter maxDepthParameter = new QueryParameter();
-		maxDepthParameter.setDescription("Specifies the maxium depth for the request navigation tree structure.");
+		maxDepthParameter.setDescription("Specifies the maximum depth for the request navigation tree structure.");
 		maxDepthParameter.setExample("5");
 		maxDepthParameter.setDefaultValue("10");
 		maxDepthParameter.setRequired(false);

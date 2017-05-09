@@ -44,14 +44,16 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				.toArray(new GraphQLObjectType[types.values()
 						.size()]);
 
-		GraphQLUnionType fieldType = newUnionType().name("MicronodeFields")
+		GraphQLUnionType fieldType = newUnionType().name("Micronode")
 				.possibleTypes(typeArray)
 				.description("Fields of the micronode.")
 				.typeResolver(object -> {
 					if (object instanceof Micronode) {
 						Micronode fieldContainer = (Micronode) object;
 						MicroschemaContainerVersion micronodeFieldSchema = fieldContainer.getSchemaContainerVersion();
-						return types.get(micronodeFieldSchema.getName());
+						String schemaName = micronodeFieldSchema.getName();
+						GraphQLObjectType foundType = types.get(schemaName);
+						return foundType;
 					}
 					return null;
 				})
@@ -75,7 +77,6 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 			Microschema microschema = version.getSchema();
 			Builder root = newObject();
 			root.name(microschema.getName());
-			System.out.println(microschema.getName());
 			root.description(microschema.getDescription());
 
 			for (FieldSchema fieldSchema : microschema.getFields()) {
