@@ -4,7 +4,6 @@
 
 == 0.9.8 (08.05.2017)
 
-
 icon:plus[] UI: Microschemas can now be assigned to projects.
 
 icon:plus[] UI: Descriptions can now be assigned to schemas & microschemas.
