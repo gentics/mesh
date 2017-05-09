@@ -1258,7 +1258,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// Load the german folder
 		String uuid = response.getUuid();
 		response = call(
-				() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL).setLanguages("de", "en"),
+				() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL).setLanguages("de"),
 						new VersioningParametersImpl().setVersion("draft")));
 
 		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2", response.getPath());

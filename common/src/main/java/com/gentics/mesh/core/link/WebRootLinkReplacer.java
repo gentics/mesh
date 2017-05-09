@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -168,18 +169,23 @@ public class WebRootLinkReplacer {
 	 *            target node
 	 * @param type
 	 *            link type
-	 * @param languageTag
+	 * @param languageTags
 	 *            target language
 	 * @return observable of the rendered link
 	 */
-	public String resolve(String releaseUuid, ContainerType edgeType, Node node, LinkType type, String... languageTag) {
-		if (languageTag == null || languageTag.length == 0) {
-			String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
-			languageTag = new String[] { defaultLanguage };
+	public String resolve(String releaseUuid, ContainerType edgeType, Node node, LinkType type, String... languageTags) {
+		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
+		if (languageTags == null || languageTags.length == 0) {
+			languageTags = new String[] { defaultLanguage };
 
 			if (log.isDebugEnabled()) {
 				log.debug("Fallback to default language " + defaultLanguage);
 			}
+		} else {
+			// In other cases add the default language to the list
+			List<String> languageTagList = new ArrayList<String>(Arrays.asList(languageTags));
+			languageTagList.add(defaultLanguage);
+			languageTags = languageTagList.toArray(new String[languageTagList.size()]);
 		}
 		// if no release given, take the latest release of the project
 		if (releaseUuid == null) {
@@ -190,9 +196,9 @@ public class WebRootLinkReplacer {
 			edgeType = ContainerType.DRAFT;
 		}
 		if (log.isDebugEnabled()) {
-			log.debug("Resolving link to " + node.getUuid() + " in language " + languageTag + " with type " + type);
+			log.debug("Resolving link to " + node.getUuid() + " in language " + languageTags + " with type " + type);
 		}
-		String path = node.getPath(releaseUuid, edgeType, languageTag);
+		String path = node.getPath(releaseUuid, edgeType, languageTags);
 		if (path == null) {
 			path = "/error/404";
 		}

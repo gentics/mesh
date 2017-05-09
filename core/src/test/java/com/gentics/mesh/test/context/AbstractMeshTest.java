@@ -21,10 +21,17 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.test.TestDataProvider;
 
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
 
 public abstract class AbstractMeshTest implements TestHelperMethods {
 
+	static {
+		// Use slf4j instead of jul
+		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+	}
+	
 	@Rule
 	@ClassRule
 	public static MeshTestContext testContext = new MeshTestContext();

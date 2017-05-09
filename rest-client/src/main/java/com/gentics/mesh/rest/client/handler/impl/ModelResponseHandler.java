@@ -52,7 +52,6 @@ public class ModelResponseHandler<T> extends AbstractResponseHandler<T> implemen
 		} else if (contentType != null && contentType.startsWith(HttpConstants.APPLICATION_JSON)) {
 			response.bodyHandler(bh -> {
 				String json = bh.toString();
-				//				System.out.println(json);
 				if (log.isDebugEnabled()) {
 					log.debug(json);
 				}
