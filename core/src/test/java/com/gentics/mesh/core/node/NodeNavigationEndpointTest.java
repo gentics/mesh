@@ -14,11 +14,18 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -40,8 +47,8 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NavigationResponse response = call(
-					() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParametersImpl().setMaxDepth(0), new VersioningParametersImpl().draft()));
+			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParametersImpl().setMaxDepth(0),
+					new VersioningParametersImpl().draft()));
 			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
 			assertThat(response).hasDepth(0).isValid(1);
 		}
@@ -113,8 +120,8 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NavigationResponse response = call(
-					() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParametersImpl().setMaxDepth(1), new VersioningParametersImpl().draft()));
+			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParametersImpl().setMaxDepth(1),
+					new VersioningParametersImpl().draft()));
 
 			assertThat(response).hasDepth(1).isValid(4);
 			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
@@ -132,8 +139,8 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NavigationResponse response = call(
-					() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParametersImpl().setMaxDepth(2), new VersioningParametersImpl().draft()));
+			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParametersImpl().setMaxDepth(2),
+					new VersioningParametersImpl().draft()));
 			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
 			assertThat(response).hasDepth(2).isValid(6);
 		}
@@ -200,17 +207,70 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadChildrenHighDepth() {
-		try (NoTx noTx = db().noTx()) {
-			Node node = project().getBaseNode();
-			String uuid = node.getUuid();
-			assertNotNull(node);
-			assertNotNull(node.getUuid());
+		String uuid = db().noTx(() -> project().getBaseNode().getUuid());
 
-			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParametersImpl().setMaxDepth(42),
-					new VersioningParametersImpl().draft()));
-			assertEquals(uuid, response.getUuid());
-			assertNotNull("root was null", response);
+		NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParametersImpl().setMaxDepth(42)));
+		assertEquals(uuid, response.getUuid());
+		assertNotNull("root was null", response);
+	}
+
+	@Test
+	public void testNavigationLanguageFallback() {
+		String baseNodeUuid = db().noTx(() -> project().getBaseNode().getUuid());
+
+		// level 0
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("folder"));
+		request.setLanguage("en");
+		request.getFields().put("name", FieldUtil.createStringField("english folder-0"));
+		request.setParentNodeUuid(baseNodeUuid);
+		NodeResponse englishFolder0 = call(() -> client().createNode(PROJECT_NAME, request));
+
+		// level 1
+		request.setParentNodeUuid(englishFolder0.getUuid());
+		request.getFields().put("name", FieldUtil.createStringField("english folder-1"));
+		NodeResponse englishFolder1 = call(() -> client().createNode(PROJECT_NAME, request));
+
+		// level 2
+		request.setLanguage("de");
+		request.setParentNodeUuid(englishFolder1.getUuid());
+		request.getFields().put("name", FieldUtil.createStringField("german folder-2"));
+		NodeResponse germanFolderResponse = call(() -> client().createNode(PROJECT_NAME, request));
+
+		NavigationResponse navResponse = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid,
+				new NavigationParametersImpl().setMaxDepth(42), new NodeParametersImpl().setLanguages("de").setResolveLinks(LinkType.FULL)));
+
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2",
+				findFolder(navResponse, germanFolderResponse.getUuid()).getPath());
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1", findFolder(navResponse, englishFolder1.getUuid()).getPath());
+		assertEquals("/api/v1/dummy/webroot/english%20folder-0", findFolder(navResponse, englishFolder0.getUuid()).getPath());
+
+	}
+
+	private NodeResponse findFolder(NavigationResponse nav, String uuid) {
+		return findFolder(nav.getChildren(), uuid);
+	}
+
+	/**
+	 * Recurse through the whole navigation list and try to locate the node with the given uuid.
+	 * 
+	 * @param navList
+	 * @param uuid
+	 * @return
+	 */
+	private NodeResponse findFolder(List<NavigationElement> navList, String uuid) {
+		for (NavigationElement element : navList) {
+			if (element.getUuid().equals(uuid)) {
+				return element.getNode();
+			}
+			if (element.getChildren() != null) {
+				NodeResponse result = findFolder(element.getChildren(), uuid);
+				if(result!=null) {
+					return result;
+				}
+			}
 		}
+		return null;
 	}
 
 	@Test
@@ -221,8 +281,8 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 			String baseNodeUuid = baseNode.getUuid();
 
 			// latest release
-			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
-					new VersioningParametersImpl().draft()));
+			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid,
+					new NavigationParametersImpl().setMaxDepth(1), new VersioningParametersImpl().draft()));
 			assertThat(response).hasDepth(1).isValid(4);
 
 			Release initialRelease = project.getInitialRelease();

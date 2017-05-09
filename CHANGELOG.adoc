@@ -6,7 +6,7 @@
 
 icon:plus[] GraphQL: Added micronode list handling. Previously it was not possible to handle micronode list fields.
 
-icon:plus[] Core: The language fallback handling for node breadcrumbs has been fixed. Previously the default language was not automatically added to the handled languages.
+icon:check[] Core: The language fallback handling for node breadcrumbs has been fixed. Previously the default language was not automatically added to the handled languages.
 
 == 0.9.8 (08.05.2017)
 
