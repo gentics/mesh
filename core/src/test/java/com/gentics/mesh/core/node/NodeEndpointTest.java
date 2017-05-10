@@ -136,7 +136,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
-		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(folderUuid);
 
@@ -1776,8 +1776,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
-			update.getFields().put("name", FieldUtil.createStringField("2015"));
-			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update), CONFLICT, "node_conflicting_segmentfield_update", "name", "2015");
+			update.getFields().put("folderName", FieldUtil.createStringField("2015"));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update), CONFLICT, "node_conflicting_segmentfield_update", "folderName", "2015");
 			// TODO also assert message properties
 		}
 	}

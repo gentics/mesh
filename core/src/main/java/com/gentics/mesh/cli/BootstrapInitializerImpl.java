@@ -454,7 +454,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.setName("content");
 				schema.setDescription("Content schema for blogposts");
 				schema.setDisplayField("title");
-				schema.setSegmentField("filename");
+				schema.setSegmentField("fileName");
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");
@@ -463,7 +463,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.addField(nameFieldSchema);
 
 				StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
-				filenameFieldSchema.setName("filename");
+				filenameFieldSchema.setName("fileName");
 				filenameFieldSchema.setLabel("Filename");
 				schema.addField(filenameFieldSchema);
 
@@ -489,7 +489,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.setName("folder");
 				schema.setDescription("Folder schema to create containers for other nodes.");
 				schema.setDisplayField("name");
-				schema.setSegmentField("name");
+				schema.setSegmentField("folderName");
+
+				StringFieldSchema folderNameFieldSchema = new StringFieldSchemaImpl();
+				folderNameFieldSchema.setName("folderName");
+				folderNameFieldSchema.setLabel("Folder Name");
+				schema.addField(folderNameFieldSchema);
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");

@@ -352,7 +352,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		Endpoint endpoint = createEndpoint();
 		endpoint.description("Update the node with the given uuid. It is mandatory to specify the version within the update request. "
 				+ "Mesh will automatically check for version conflicts and return a 409 error if a conflict has been detected. "
-				+ "Additional conflict checks for webrootpath conflicts will also be performed.");
+				+ "Additional conflict checks for WebRoot path conflicts will also be performed.");
 		endpoint.path("/:nodeUuid");
 		endpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		endpoint.method(POST);

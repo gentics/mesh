@@ -304,6 +304,7 @@ public class DemoDataProvider {
 			ProjectResponse project = getProject(nodeJson.getString("project"));
 			String schemaName = nodeJson.getString("schema");
 			String parentNodeName = nodeJson.getString("parent");
+			String segmentFieldValue = nodeJson.getString("segmentFieldValue");
 			String name = nodeJson.getString("name");
 			SchemaResponse schema = getSchemaModel(schemaName);
 			NodeResponse parentNode = (nodeJson.getString("project") + ".basenode").equals(parentNodeName) ? null : getNode(parentNodeName);
@@ -318,6 +319,17 @@ public class DemoDataProvider {
 			}
 			nodeCreateRequest.setSchema(new SchemaReference().setUuid(schema.getUuid()));
 			nodeCreateRequest.getFields().put("name", FieldUtil.createStringField(name));
+
+			// Add the segment field value
+			switch (schemaName) {
+			case "category":
+			case "folder":
+				nodeCreateRequest.getFields().put("folderName", FieldUtil.createStringField(segmentFieldValue));
+				break;
+			case "vehicle":
+				nodeCreateRequest.getFields().put("fileName", FieldUtil.createStringField(segmentFieldValue));
+				break;
+			}
 
 			JsonObject fieldsObject = nodeJson.getJsonObject("fields");
 			if (fieldsObject != null) {
