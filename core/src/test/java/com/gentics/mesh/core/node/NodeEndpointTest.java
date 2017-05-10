@@ -93,7 +93,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			schemaReference.setUuid(schemaContainer("content").getUuid());
 			// No language code set
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setSchema(schemaReference);
 			request.setParentNodeUuid(folder("news").getUuid());
@@ -116,7 +116,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		schemaReference.setVersion(1);
 		request.setLanguage("BOGUS");
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
-		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setSchema(schemaReference);
 		request.setParentNodeUuid(folderUuid);
@@ -180,7 +180,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				request.setLanguage("en");
 				request.getFields().put("title", FieldUtil.createStringField("some title " + i));
 				request.getFields().put("name", FieldUtil.createStringField("some name " + i));
-				request.getFields().put("filename", FieldUtil.createStringField("new-page_" + i + ".html"));
+				request.getFields().put("fileName", FieldUtil.createStringField("new-page_" + i + ".html"));
 				request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 				request.setParentNodeUuid(uuid);
 
@@ -203,7 +203,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
-		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(parentNodeUuid);
 
@@ -227,7 +227,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("name", FieldUtil.createStringField("some name"));
-		request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+		request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(parentNodeUuid);
 
@@ -253,7 +253,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setLanguage("en");
 			request.getFields().put("title", FieldUtil.createStringField("some title"));
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
@@ -284,7 +284,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setLanguage("en");
 			request.getFields().put("title", FieldUtil.createStringField("some title"));
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
@@ -315,7 +315,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setLanguage("en");
 			request.getFields().put("title", FieldUtil.createStringField("some title"));
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
@@ -346,7 +346,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setLanguage("en");
 			request.getFields().put("title", FieldUtil.createStringField("some title"));
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
@@ -376,7 +376,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setLanguage("de");
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
 			request.getFields().put("title", FieldUtil.createStringField("Title"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(folder("news").getUuid());
 
@@ -413,7 +413,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			schemaReference.setName("node");
 			request.setSchema(schemaReference);
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 
@@ -434,7 +434,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			SchemaReference schemaReference = new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid());
 			request.setSchema(schemaReference);
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
@@ -461,7 +461,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			SchemaReference schemaReference = new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid());
 			request.setSchema(schemaReference);
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setSchema(new SchemaReference().setName("content").setUuid(schemaContainer("content").getUuid()));
 			request.setLanguage("en");
@@ -784,7 +784,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			createRequest.setLanguage("en");
 			createRequest.getFields().put("title", FieldUtil.createStringField("some title"));
 			createRequest.getFields().put("name", FieldUtil.createStringField("some name"));
-			createRequest.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			createRequest.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 			createRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			createRequest.setParentNodeUuid(uuid);
 
@@ -872,7 +872,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 					request.getFields().put("name", FieldUtil.createStringField("some name"));
 					request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 					request.setParentNodeUuid(uuid);
-					request.getFields().put("filename", FieldUtil.createStringField("new-page" + e.incrementAndGet() + ".html"));
+					request.getFields().put("fileName", FieldUtil.createStringField("new-page" + e.incrementAndGet() + ".html"));
 					set.add(client().createNode(PROJECT_NAME, request).invoke());
 				}).start();
 			}
@@ -1241,18 +1241,21 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setSchema(new SchemaReference().setName("folder"));
 		request.setLanguage("en");
 		request.getFields().put("name", FieldUtil.createStringField("english folder-0"));
+		request.getFields().put("folderName", FieldUtil.createStringField("english folder-0"));
 		request.setParentNodeUuid(baseNodeUuid);
 		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
 
 		// level 1
 		request.setParentNodeUuid(response.getUuid());
 		request.getFields().put("name", FieldUtil.createStringField("english folder-1"));
+		request.getFields().put("folderName", FieldUtil.createStringField("english folder-1"));
 		response = call(() -> client().createNode(PROJECT_NAME, request));
 
 		// level 2
 		request.setLanguage("de");
 		request.setParentNodeUuid(response.getUuid());
 		request.getFields().put("name", FieldUtil.createStringField("german folder-2"));
+		request.getFields().put("folderName", FieldUtil.createStringField("german folder-2"));
 		response = call(() -> client().createNode(PROJECT_NAME, request));
 
 		// Load the german folder
@@ -1368,7 +1371,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			englishContainer.createString("name").setString("name");
 			englishContainer.createString("title").setString("title");
 			englishContainer.createString("displayName").setString("displayName");
-			englishContainer.createString("filename").setString("filename.nl.html");
+			englishContainer.createString("fileName").setString("filename.nl.html");
 			englishContainer.createHTML("content").setHtml("nl content");
 			role().grantPermissions(node, READ_PERM);
 
@@ -1584,7 +1587,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.getFields().put("title", FieldUtil.createStringField("some title"));
 			request.getFields().put("extrafield", FieldUtil.createStringField("some extra field value"));
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
@@ -1606,7 +1609,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setLanguage("en");
 			// non required title field is missing
 			// required name field is missing
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 
@@ -1627,7 +1630,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			request.setLanguage("en");
 			// title field is missing
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page.html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page.html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 

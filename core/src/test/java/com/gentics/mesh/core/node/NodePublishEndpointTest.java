@@ -72,7 +72,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		requestA.getFields()
 				.put("name", FieldUtil.createStringField("nodeA"));
 		requestA.getFields()
-				.put("filename", FieldUtil.createStringField("nodeA"));
+				.put("fileName", FieldUtil.createStringField("nodeA"));
 		NodeResponse nodeA = call(() -> client().createNode(PROJECT_NAME, requestA));
 
 		// 3. Publish the created node - It should fail since the parentfolder is not published

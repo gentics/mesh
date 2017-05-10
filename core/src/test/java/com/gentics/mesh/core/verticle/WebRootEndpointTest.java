@@ -145,7 +145,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			englishContainer.createString("name").setString("german_name");
 			englishContainer.createString("title").setString("german title");
 			englishContainer.createString("displayName").setString("german displayName");
-			englishContainer.createString("filename").setString("test.de.html");
+			englishContainer.createString("fileName").setString("test.de.html");
 
 			// Add node reference to node 2015
 			parentNode.getLatestDraftFieldContainer(english()).createNode("nodeRef", node);
@@ -197,7 +197,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String uuid = db().noTx(() -> folder("2015").getUuid());
 		try (NoTx noTx = db().noTx()) {
 			Node folder = folder("2015");
-			folder.getGraphFieldContainer("en").getString("name").setString(newName);
+			folder.getGraphFieldContainer("en").getString("folderName").setString(newName);
 		}
 
 		String[] path = new String[] { "News", newName };
@@ -302,6 +302,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			createErrorFolder.setSchema(new SchemaReference().setName("folder"));
 			createErrorFolder.setParentNodeUuid(project().getBaseNode().getUuid());
 			createErrorFolder.getFields().put("name", FieldUtil.createStringField("error"));
+			createErrorFolder.getFields().put("folderName", FieldUtil.createStringField("error"));
 			createErrorFolder.setLanguage("en");
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, createErrorFolder));
 			String errorNodeUuid = response.getUuid();
@@ -309,7 +310,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create404Node = new NodeCreateRequest();
 			create404Node.setSchema(new SchemaReference().setName("content"));
 			create404Node.setParentNodeUuid(errorNodeUuid);
-			create404Node.getFields().put("filename", FieldUtil.createStringField("404"));
+			create404Node.getFields().put("fileName", FieldUtil.createStringField("404"));
 			create404Node.getFields().put("name", FieldUtil.createStringField("Error Content"));
 			create404Node.getFields().put("content", FieldUtil.createStringField("An error happened"));
 			create404Node.setLanguage("en");
@@ -362,8 +363,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 2. Change names
 		db().noTx(() -> {
-			updateName(folder("news"), "en", "News_draft");
-			updateName(folder("2015"), "en", "2015_draft");
+			updateFolderName(folder("news"), "en", "News_draft");
+			updateFolderName(folder("2015"), "en", "2015_draft");
 			return null;
 		});
 
@@ -411,8 +412,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 2. update nodes in new release
 		db().noTx(() -> {
-			updateName(folder("news"), "en", "News_new");
-			updateName(folder("2015"), "en", "2015_new");
+			updateFolderName(folder("news"), "en", "News_new");
+			updateFolderName(folder("2015"), "en", "2015_new");
 			return null;
 		});
 
@@ -457,12 +458,12 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	 * @param newName
 	 *            new name
 	 */
-	protected void updateName(Node node, String language, String newName) {
+	protected void updateFolderName(Node node, String language, String newName) {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(language);
 		update.setVersion(
 				new VersionReference(node.getGraphFieldContainer(language).getUuid(), node.getGraphFieldContainer(language).getVersion().toString()));
-		update.getFields().put("name", FieldUtil.createStringField(newName));
+		update.getFields().put("folderName", FieldUtil.createStringField(newName));
 		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update));
 	}
 

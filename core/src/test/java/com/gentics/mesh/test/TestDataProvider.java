@@ -532,7 +532,7 @@ public class TestDataProvider {
 			englishContainer.createString("name").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
-			englishContainer.createString("filename").setString(name + ".en.html");
+			englishContainer.createString("fileName").setString(name + ".en.html");
 			englishContainer.createHTML("content").setHtml(englishContent);
 			englishContainer.updateDisplayFieldValue();
 			node.publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
@@ -544,7 +544,7 @@ public class TestDataProvider {
 			germanContainer.createString("name").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
 			germanContainer.createString("displayName").setString(name + " german");
-			germanContainer.createString("filename").setString(name + ".de.html");
+			germanContainer.createString("fileName").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);
 			germanContainer.updateDisplayFieldValue();
 			node.publish(getGerman(), getProject().getLatestRelease(), getUserInfo().getUser());
