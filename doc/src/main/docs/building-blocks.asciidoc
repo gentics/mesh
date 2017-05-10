@@ -11,7 +11,7 @@ Users can log into Gentics Mesh in order to interact with other elements.
 
 Endpoint: ```/api/v1/users/:uuid```
 
-include::examples/models/UserResponse.adoc[]
+include::examples/tables/UserResponse.adoc[]
 
 *Response Sample*
 
@@ -27,7 +27,7 @@ Groups can't be nested.
 
 Endpoint: ```/api/v1/groups/:uuid```
 
-include::examples/models/GroupResponse.adoc[]
+include::examples/tables/GroupResponse.adoc[]
 
 *Response Sample*
 
@@ -44,7 +44,7 @@ Roles can't be nested.
 
 Endpoint: ```/api/v1/roles/:uuid```
 
-include::examples/models/RoleResponse.adoc[]
+include::examples/tables/RoleResponse.adoc[]
 
 *Response Sample*
 
@@ -60,7 +60,7 @@ Schemas can be assigned to projects in order to allow creation of nodes which us
 
 Endpoint: ```/api/v1/projects/:uuid```
 
-include::examples/models/ProjectResponse.adoc[]
+include::examples/tables/ProjectResponse.adoc[]
 
 *Response Sample*
 
@@ -76,7 +76,7 @@ Tag families can't be nested.
 
 Endpoint: ```/api/v1/:projectName/tagfamilies/:uuid```
 
-include::examples/models/TagFamilyResponse.adoc[]
+include::examples/tables/TagFamilyResponse.adoc[]
 
 *Response Sample*
 
@@ -91,7 +91,7 @@ Tags can be added to nodes. Tags can not be hierarchically structured.
 
 Endpoint: ```/api/v1/:projectName/tagFamilies/:uuid/tags```
 
-include::examples/models/TagResponse.adoc[]
+include::examples/tables/TagResponse.adoc[]
 
 *Response Sample*
 
@@ -110,7 +110,7 @@ You can query individual language variants by appending the ```?lang``` request 
 
 Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=de,en&version=draft&release=winter2016```
 
-include::examples/models/NodeResponse.adoc[]
+include::examples/tables/NodeResponse.adoc[]
 
 *Response Sample*
 
@@ -121,27 +121,12 @@ include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/200/example
 
 === Query Parameters
 
-[options="header",cols="2*"]
-|======
+include::examples/tables/VersioningParametersImpl.adoc[]
 
-| Name
-| Description
+include::examples/tables/NodeParametersImpl.adoc[]
 
-| lang
-| The lang query parameter can be used to retrieve a node in a particular language.
+include::examples/tables/RolePermissionParametersImpl.adoc[]
 
-| role
-| The role query parameter may be used in order to add permission information related to the specified role to the response.
-This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role.
-Endpoint: ```/api/v1/:projectName/nodes?role=:roleUuid```
-
-| release
-| The specific ```release``` to be used for loading the node.
-
-| version
-| The version of the node's language variant. E.g.: 0.1, 1.0, draft, published 
-
-|======
 
 === Creation
 

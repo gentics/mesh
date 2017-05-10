@@ -3,6 +3,7 @@ package com.gentics.mesh.core.rest.group;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.role.RoleReference;
@@ -12,9 +13,11 @@ import com.gentics.mesh.core.rest.role.RoleReference;
  */
 public class GroupResponse extends AbstractGenericRestResponse {
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the group")
 	private String name;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of role references")
 	private List<RoleReference> roles = new ArrayList<>();
 

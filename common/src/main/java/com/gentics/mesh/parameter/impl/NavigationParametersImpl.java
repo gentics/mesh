@@ -27,6 +27,11 @@ public class NavigationParametersImpl extends AbstractParameters implements Navi
 	}
 
 	@Override
+	public String getName() {
+		return "Navigation parameters";
+	}
+
+	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 

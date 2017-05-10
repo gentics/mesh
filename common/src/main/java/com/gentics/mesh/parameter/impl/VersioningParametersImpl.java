@@ -69,6 +69,11 @@ public class VersioningParametersImpl extends AbstractParameters implements Vers
 	}
 
 	@Override
+	public String getName() {
+		return "Versioning parameters";
+	}
+
+	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 

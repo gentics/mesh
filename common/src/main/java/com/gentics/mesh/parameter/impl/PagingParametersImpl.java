@@ -135,6 +135,11 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 	}
 
 	@Override
+	public String getName() {
+		return "Paging parameters";
+	}
+
+	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 		// page

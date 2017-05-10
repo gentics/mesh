@@ -1,13 +1,16 @@
 package com.gentics.mesh.core.rest.node;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
 
 public class NodeChildrenInfo implements RestModel {
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the schema of the node child")
 	private String schemaUuid;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Count of children which utilize the schema.")
 	private long count;
 

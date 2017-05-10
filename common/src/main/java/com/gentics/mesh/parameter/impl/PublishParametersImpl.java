@@ -28,6 +28,11 @@ public class PublishParametersImpl extends AbstractParameters implements Publish
 	}
 
 	@Override
+	public String getName() {
+		return "Publishing parameters";
+	}
+
+	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 
