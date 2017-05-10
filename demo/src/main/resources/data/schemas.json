@@ -1,9 +1,9 @@
 {
   "data": [
-    { "name": "vehicle",       "projects": ["demo"] },
-    { "name": "vehicleImage",  "projects": ["demo"] },
-    { "name": "category",      "projects": ["demo"] },
-    { "name": "folder",        "projects": ["demo"] },
-    { "name": "content",       "projects": ["demo"] }
+    { "uuid": "2aa83a2b3cba40a1a83a2b3cba90a1de", "name": "vehicle",       "projects": ["demo"] },
+    { "uuid": "b12272150db4490ea272150db4190e72", "name": "vehicleImage",  "projects": ["demo"] },
+    { "uuid": "2ca2362b041247c4a2362b041227c4da", "name": "category",      "projects": ["demo"] },
+    { "uuid": "e287e8a7497940ac87e8a7497940ac82", "name": "folder",        "projects": ["demo"] },
+    { "uuid": "477ecd1759ae4a1bbecd1759aeea1b5f", "name": "content",       "projects": ["demo"] }
   ]
 }

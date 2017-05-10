@@ -1,6 +1,6 @@
 {
   "data": [
-    { "username": "webclient", "password": "webclient", "groups": [ "Client Group" ] },
-    { "username": "editor", "password": "editor", "email": "editor@demo.getmesh.io", "groups": [ "Client Group", "Editor Group" ] }
+    { "uuid": "4267d8bf30824e36a7d8bf3082de36a3", "username": "webclient", "password": "webclient", "groups": [ "Client Group" ] },
+    { "uuid": "589319933be24ec79319933be24ec7fe", "username": "editor", "password": "editor", "email": "editor@demo.getmesh.io", "groups": [ "Client Group", "Editor Group" ] }
   ]
 }
