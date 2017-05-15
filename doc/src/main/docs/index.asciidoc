@@ -209,7 +209,7 @@ Anonymous access can be configured in the `mesh.yml` configuration file:
 [source,yaml]
 ----
 security:
-   enableAnonymousAcces: true
+   enableAnonymousAccess: true
 ----
 
 NOTE: Recreating a previously deleted `anonymous` user would automatically re-enable the feature if the configuration setting `enableAnonymousAccess` is set to `true`.
@@ -318,7 +318,7 @@ Accept: application/json
 | http://orientdb.com/[OrientDB]                               | Graph Database       | 2.2.x
 | https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.2.x
 | https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 2.3.x
-| http://vertx.io/[Vert.x]                                     | Core Framework       | 3.3.x
+| http://vertx.io/[Vert.x]                                     | Core Framework       | 3.4.x
 | https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.5.x
 | https://google.github.io/dagger/                             | Dependency Injection | 2.6.x
 |======
@@ -1186,6 +1186,9 @@ Endpoint: ```/api/v1/:projectName/webroot/:path?width=220```
 
 It is mandatory to specify all four crop parameters when cropping an image.
 
+
+include::examples/tables/ImageManipulationParametersImpl.adoc[]
+
 [options="header"]
 |=====
 | Parameter    | Description
@@ -1196,7 +1199,6 @@ It is mandatory to specify all four crop parameters when cropping an image.
 | ```cropw```  | Crop area width.
 | ```croph```  | Crop area height.
 |=====
-
 
 
 === Language Fallback

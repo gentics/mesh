@@ -35,6 +35,9 @@ import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * @see UserRoot
+ */
 public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	/**

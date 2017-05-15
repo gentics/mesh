@@ -1,5 +1,6 @@
 package com.gentics.mesh.parameter;
 
+import com.gentics.mesh.core.rest.common.GenerateDocumentation;
 import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.MultiMap;
@@ -7,6 +8,7 @@ import io.vertx.core.MultiMap;
 /**
  * Abstract class for parameter provider implementations.
  */
+@GenerateDocumentation
 public abstract class AbstractParameters implements ParameterProvider {
 
 	protected MultiMap parameters;
@@ -23,6 +25,13 @@ public abstract class AbstractParameters implements ParameterProvider {
 	public AbstractParameters() {
 		this(MultiMap.caseInsensitiveMultiMap());
 	}
+
+	/**
+	 * Returns the human readable name of the parameters.
+	 * 
+	 * @return
+	 */
+	public abstract String getName();
 
 	@Override
 	public String getParameter(String name) {
@@ -43,4 +52,5 @@ public abstract class AbstractParameters implements ParameterProvider {
 	public String toString() {
 		return getQueryParameters();
 	}
+
 }

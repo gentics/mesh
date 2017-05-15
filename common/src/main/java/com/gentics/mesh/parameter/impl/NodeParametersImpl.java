@@ -25,18 +25,20 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		super();
 	}
 
-
 	@Override
 	public void validate() {
 		// Check whether all given language tags exists
 		for (String languageTag : getLanguages()) {
-			Iterator<?> it = Database.getThreadLocalGraph()
-					.getVertices("LanguageImpl.languageTag", languageTag)
-					.iterator();
+			Iterator<?> it = Database.getThreadLocalGraph().getVertices("LanguageImpl.languageTag", languageTag).iterator();
 			if (!it.hasNext()) {
 				throw error(BAD_REQUEST, "error_language_not_found", languageTag);
 			}
 		}
+	}
+
+	@Override
+	public String getName() {
+		return "Node parameters";
 	}
 
 	@Override
@@ -55,7 +57,7 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		// resolveLinks
 		QueryParameter resolveLinksParameter = new QueryParameter();
 		resolveLinksParameter.setDescription(
-				"The resolve links parameter can be set to either short, medium or full. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. No resolving occures if no link has been specified.");
+				"The resolve links parameter can be set to either short, medium or full. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. No resolving occurs if no link has been specified.");
 		resolveLinksParameter.setExample("medium");
 		resolveLinksParameter.setRequired(false);
 		resolveLinksParameter.setType(ParamType.STRING);

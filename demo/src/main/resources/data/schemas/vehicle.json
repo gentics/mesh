@@ -2,8 +2,13 @@
   "name" : "vehicle",
   "container" : false,
   "displayField": "name",
-  "segmentField": "name",
+  "segmentField": "fileName",
   "fields" : [ {
+    "name" : "fileName",
+    "label" : "File Name",
+    "required" : true,
+    "type" : "string"
+  }, {
     "name" : "name",
     "label" : "Name",
     "required" : true,

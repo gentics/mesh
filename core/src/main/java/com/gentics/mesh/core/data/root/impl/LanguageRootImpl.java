@@ -21,6 +21,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * @see LanguageRoot
+ */
 public class LanguageRootImpl extends AbstractRootVertex<Language> implements LanguageRoot {
 
 	public static void init(Database database) {

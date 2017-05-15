@@ -32,6 +32,11 @@ public class ModelExampleGenerator extends AbstractGenerator {
 	public void run() throws JsonProcessingException, IOException {
 		writeMeshConfig();
 		writeChangeExamples();
+		writeCustomExamples();
+	}
+
+	private void writeCustomExamples() {
+		// TODO Auto-generated method stub
 	}
 
 	/**

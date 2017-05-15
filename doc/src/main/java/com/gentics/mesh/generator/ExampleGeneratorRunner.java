@@ -14,7 +14,7 @@ public class ExampleGeneratorRunner {
 		}
 		cleanConf();
 
-		ModelDescriptionTableGenerator tableGen = new ModelDescriptionTableGenerator(OUTPUT_ROOT_FOLDER);
+		TableGenerator tableGen = new TableGenerator(OUTPUT_ROOT_FOLDER);
 		tableGen.run();
 
 		ModelExampleGenerator restModelGen = new ModelExampleGenerator(OUTPUT_ROOT_FOLDER);

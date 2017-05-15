@@ -1,0 +1,8 @@
+== {{name}}
+
+[options="header"]
+|======
+| Name      | Description | Mandatory | Type | Example | Default
+{{#each entries}}| {{this.name}}	| {{this.description}}	| {{this.required}}	| {{this.type}}	| {{this.example}} | {{this.default}}
+{{/each}}|======
+

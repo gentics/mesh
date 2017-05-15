@@ -1,6 +1,6 @@
 {
   "data": [
-    { "name": "Colors", "project": "demo" },
-    { "name": "Fuels" , "project": "demo" }
+    { "uuid": "1898428398164d9a9842839816ed9a3d", "name": "Colors", "project": "demo" },
+    { "uuid": "f36400b436d244c3a400b436d244c3f4", "name": "Fuels" , "project": "demo" }
   ]
 }

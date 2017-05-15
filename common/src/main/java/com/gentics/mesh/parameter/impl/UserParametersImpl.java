@@ -28,6 +28,11 @@ public class UserParametersImpl extends AbstractParameters implements UserParame
 	}
 
 	@Override
+	public String getName() {
+		return "User parameters";
+	}
+
+	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {
 		Map<String, QueryParameter> parameters = new HashMap<>();
 		// token

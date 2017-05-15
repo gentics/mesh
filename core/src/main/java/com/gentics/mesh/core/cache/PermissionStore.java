@@ -11,7 +11,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
  */
 public final class PermissionStore {
 
-	public static final Cache<String, Boolean> PERM_CACHE = Caffeine.newBuilder().maximumSize(10_000).expireAfterWrite(5, TimeUnit.MINUTES).build();
+	public static final Cache<String, Boolean> PERM_CACHE = Caffeine.newBuilder().maximumSize(100_000).expireAfterWrite(5, TimeUnit.MINUTES).build();
 
 	/**
 	 * Check whether the granting user permission was stored in the cache.

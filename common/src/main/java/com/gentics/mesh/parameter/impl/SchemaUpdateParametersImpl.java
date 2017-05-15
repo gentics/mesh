@@ -24,6 +24,11 @@ public class SchemaUpdateParametersImpl extends AbstractParameters implements Sc
 	public void validate() {
 
 	}
+	
+	@Override
+	public String getName() {
+		return "Schema update query parameters";
+	}
 
 	@Override
 	public Map<? extends String, ? extends QueryParameter> getRAMLParameters() {

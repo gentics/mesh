@@ -29,6 +29,11 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 	}
 
 	@Override
+	public String getName() {
+		return "Image manipulation parameters";
+	}
+
+	@Override
 	public Integer getWidth() {
 		return toInteger(getParameter(WIDTH_QUERY_PARAM_KEY), null);
 	}

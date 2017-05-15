@@ -19,7 +19,7 @@ import rx.Completable;
 
 /**
  * Dummy search queue batch which can be used to avoid creation of unwanted batch entries. This is useful if a drop index is more efficient then removing each
- * entry individually. (eg. project deletion)
+ * entry individually. (e.g.: project deletion)
  */
 public class DummySearchQueueBatch implements SearchQueueBatch {
 

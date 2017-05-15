@@ -1,19 +1,19 @@
 {
   "data": [
-     {"name": "Red"   , "tagFamily": "Colors"},
-     {"name": "Blue"  , "tagFamily": "Colors"},
-     {"name": "Green" , "tagFamily": "Colors"},
-     {"name": "Yellow", "tagFamily": "Colors"},
-     {"name": "Orange", "tagFamily": "Colors"},
-     {"name": "White" , "tagFamily": "Colors"},
-     {"name": "Black" , "tagFamily": "Colors"},
-     {"name": "Silver", "tagFamily": "Colors"},
+     { "uuid": "2e1c9ac190fe49d69c9ac190fee9d6fe", "name": "Red"   , "tagFamily": "Colors"},
+     { "uuid": "6e6f1d9f055447d2af1d9f055417d289", "name": "Blue"  , "tagFamily": "Colors"},
+     { "uuid": "8931caed445d4d1cb1caed445d0d1c8c", "name": "Green" , "tagFamily": "Colors"},
+     { "uuid": "c436fb74bcf849e3b6fb74bcf809e359", "name": "Yellow", "tagFamily": "Colors"},
+     { "uuid": "2d4614af455a42e58614af455a22e5fa", "name": "Orange", "tagFamily": "Colors"},
+     { "uuid": "94fec98d6f114e81bec98d6f118e81cc", "name": "White" , "tagFamily": "Colors"},
+     { "uuid": "43bcdbdc6bd84a7bbcdbdc6bd80a7b13", "name": "Black" , "tagFamily": "Colors"},
+     { "uuid": "4f1878dcf9ee41d79878dcf9ee11d792", "name": "Silver", "tagFamily": "Colors"},
 
-     {"name": "Gasoline",    "tagFamily": "Fuels"},
-     {"name": "Kerosene",    "tagFamily": "Fuels"},
-     {"name": "Hydrogen",    "tagFamily": "Fuels"},
-     {"name": "Diesel"  ,    "tagFamily": "Fuels"},
-     {"name": "Electricity", "tagFamily": "Fuels"},
-     {"name": "Solar",       "tagFamily": "Fuels"}
+     { "uuid": "1c51487f8e8043c291487f8e8053c2c1", "name": "Gasoline",    "tagFamily": "Fuels"},
+     { "uuid": "6654296291ea49ad94296291ead9ad3f", "name": "Kerosene",    "tagFamily": "Fuels"},
+     { "uuid": "e2c9525ba42e426989525ba42ea2692f", "name": "Hydrogen",    "tagFamily": "Fuels"},
+     { "uuid": "1fd29fffec0b466b929fffec0b766b0a", "name": "Diesel"  ,    "tagFamily": "Fuels"},
+     { "uuid": "fc5dd881ecd249229dd881ecd25922af", "name": "Electricity", "tagFamily": "Fuels"},
+     { "uuid": "8226809bfa8d4707a6809bfa8d670700", "name": "Solar",       "tagFamily": "Fuels"}
   ]
 }

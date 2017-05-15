@@ -223,18 +223,21 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 		request.setSchema(new SchemaReference().setName("folder"));
 		request.setLanguage("en");
 		request.getFields().put("name", FieldUtil.createStringField("english folder-0"));
+		request.getFields().put("folderName", FieldUtil.createStringField("english folder-0"));
 		request.setParentNodeUuid(baseNodeUuid);
 		NodeResponse englishFolder0 = call(() -> client().createNode(PROJECT_NAME, request));
 
 		// level 1
 		request.setParentNodeUuid(englishFolder0.getUuid());
 		request.getFields().put("name", FieldUtil.createStringField("english folder-1"));
+		request.getFields().put("folderName", FieldUtil.createStringField("english folder-1"));
 		NodeResponse englishFolder1 = call(() -> client().createNode(PROJECT_NAME, request));
 
 		// level 2
 		request.setLanguage("de");
 		request.setParentNodeUuid(englishFolder1.getUuid());
 		request.getFields().put("name", FieldUtil.createStringField("german folder-2"));
+		request.getFields().put("folderName", FieldUtil.createStringField("german folder-2"));
 		NodeResponse germanFolderResponse = call(() -> client().createNode(PROJECT_NAME, request));
 
 		NavigationResponse navResponse = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid,

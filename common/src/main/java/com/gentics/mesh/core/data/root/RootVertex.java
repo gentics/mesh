@@ -260,7 +260,12 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param item
 	 */
 	default public void addItem(T item) {
-		setUniqueLinkOutTo(item, getRootLabel());
+		FramedGraph graph = Database.getThreadLocalGraph();
+		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
+				database().createComposedIndexKey(item.getId(), getId()));
+		if (!edges.iterator().hasNext()) {
+			linkOut(item, getRootLabel());
+		}
 	}
 
 	/**

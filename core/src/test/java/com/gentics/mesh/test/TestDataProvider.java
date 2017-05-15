@@ -485,6 +485,7 @@ public class TestDataProvider {
 					project.getLatestRelease(), userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
 			germanContainer.createString("name").setString(germanName);
+			germanContainer.createString("folderName").setString(germanName);
 			germanContainer.updateDisplayFieldValue();
 			folderNode.publish(getGerman(), getProject().getLatestRelease(), getUserInfo().getUser());
 		}
@@ -493,6 +494,7 @@ public class TestDataProvider {
 					project.getLatestRelease(), userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
+			englishContainer.createString("folderName").setString(englishName);
 			englishContainer.updateDisplayFieldValue();
 			folderNode.publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
 		}
@@ -530,7 +532,7 @@ public class TestDataProvider {
 			englishContainer.createString("name").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
-			englishContainer.createString("filename").setString(name + ".en.html");
+			englishContainer.createString("fileName").setString(name + ".en.html");
 			englishContainer.createHTML("content").setHtml(englishContent);
 			englishContainer.updateDisplayFieldValue();
 			node.publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
@@ -542,7 +544,7 @@ public class TestDataProvider {
 			germanContainer.createString("name").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
 			germanContainer.createString("displayName").setString(name + " german");
-			germanContainer.createString("filename").setString(name + ".de.html");
+			germanContainer.createString("fileName").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);
 			germanContainer.updateDisplayFieldValue();
 			node.publish(getGerman(), getProject().getLatestRelease(), getUserInfo().getUser());

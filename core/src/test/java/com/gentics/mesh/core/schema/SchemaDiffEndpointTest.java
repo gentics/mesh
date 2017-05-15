@@ -37,7 +37,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		schema.setName("content");
 		schema.setDescription("Content schema for blogposts");
 		schema.setDisplayField("title");
-		schema.setSegmentField("filename");
+		schema.setSegmentField("fileName");
 
 		StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 		nameFieldSchema.setName("name");
@@ -46,7 +46,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 		schema.addField(nameFieldSchema);
 
 		StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
-		filenameFieldSchema.setName("filename");
+		filenameFieldSchema.setName("fileName");
 		filenameFieldSchema.setLabel("Filename");
 		schema.addField(filenameFieldSchema);
 
@@ -112,7 +112,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 			assertThat(changes.getChanges()).hasSize(2);
 			assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("binary");
 			assertThat(changes.getChanges().get(1)).is(UPDATESCHEMA).hasProperty("order",
-					new String[] { "name", "filename", "title", "content", "binary" });
+					new String[] { "name", "fileName", "title", "content", "binary" });
 		}
 	}
 
@@ -129,7 +129,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 			assertNotNull(changes);
 			assertThat(changes.getChanges()).hasSize(2);
 			assertThat(changes.getChanges().get(0)).is(REMOVEFIELD).forField("content");
-			assertThat(changes.getChanges().get(1)).is(UPDATESCHEMA).hasProperty("order", new String[] { "name", "filename", "title" });
+			assertThat(changes.getChanges().get(1)).is(UPDATESCHEMA).hasProperty("order", new String[] { "name", "fileName", "title" });
 			assertNotNull("A default migration script should have been added to the change.", changes.getChanges().get(0).getMigrationScript());
 		}
 	}

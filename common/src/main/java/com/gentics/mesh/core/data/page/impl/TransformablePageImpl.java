@@ -20,6 +20,16 @@ import rx.Single;
  */
 public class TransformablePageImpl<T extends TransformableElement<? extends RestModel>> extends PageImpl<T> implements TransformablePage<T> {
 
+	/**
+	 * Construct a new transformable page.
+	 * 
+	 * @param wrappedList
+	 * @param totalElements
+	 * @param pageNumber
+	 * @param totalPages
+	 * @param numberOfElements
+	 * @param perPage
+	 */
 	public TransformablePageImpl(List<? extends T> wrappedList, long totalElements, long pageNumber, long totalPages, int numberOfElements,
 			int perPage) {
 		super(wrappedList, totalElements, pageNumber, totalPages, perPage);

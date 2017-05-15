@@ -81,7 +81,7 @@ public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 			request.setLanguage("en");
 			request.getFields().put("title", FieldUtil.createStringField("some title"));
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page_" + step + ".html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page_" + step + ".html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 			call(() -> client().createNode(PROJECT_NAME, request));
