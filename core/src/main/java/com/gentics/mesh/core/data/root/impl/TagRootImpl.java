@@ -20,6 +20,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see TagRoot
+ */
 public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 
 	/**

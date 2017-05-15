@@ -4,6 +4,10 @@
 
 == 0.9.9 (PENDING)
 
+icon:plus[] Core: The read performance of node lists has been improved.
+
+icon:plus[] Core: The write performance of nodes has been improved.
+
 icon:plus[] Demo: The demo data have been updated. The a folderName and fileName field has been added to the demo schemas.
 
 icon:plus[] GraphQL: Added micronode list handling. Previously it was not possible to handle micronode list fields.

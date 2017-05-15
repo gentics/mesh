@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.graphdb.spi.Database;
 
 /**
- * Project specific implementation of microschema container root
+ * Project specific implementation of microschema container root.
  */
 public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRootImpl {
 

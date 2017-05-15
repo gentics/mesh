@@ -5,6 +5,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -401,5 +402,17 @@ public interface Database {
 	 * Tell the graph database that a mass insert will follow.
 	 */
 	void setMassInsertIntent();
+
+	/**
+	 * Perform an edge SB-Tree index lookup. This method will load the index for the given edge label and postfix and return a list of all inbound vertex ids
+	 * for the found edges. The key defines the outbound edge vertex id which is used to filter the edges.
+	 * 
+	 * @param edgeLabel
+	 * @param indexPostfix
+	 * @param key
+	 *            outbound vertex id of the edge to be checked
+	 * @return List of found inbound vertex ids for the found edges
+	 */
+	List<Object> edgeLookup(String edgeLabel, String indexPostfix, Object key);
 
 }

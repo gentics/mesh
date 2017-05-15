@@ -31,6 +31,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see TagFamilyRoot
+ */
 public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements TagFamilyRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(ProjectImpl.class);

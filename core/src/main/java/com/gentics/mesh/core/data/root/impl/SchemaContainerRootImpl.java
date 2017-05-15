@@ -32,6 +32,9 @@ import com.gentics.mesh.json.JsonUtil;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see SchemaContainerRoot
+ */
 public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer> implements SchemaContainerRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerRootImpl.class);

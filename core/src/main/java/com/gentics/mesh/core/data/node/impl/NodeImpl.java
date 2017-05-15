@@ -133,6 +133,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		database.addVertexType(NodeImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_PARENT_NODE);
 		database.addCustomEdgeIndex(HAS_PARENT_NODE, "release", "in", RELEASE_UUID_KEY);
+		database.addCustomEdgeIndex(HAS_FIELD_CONTAINER, "field", "out", GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY,
+				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY);
 	}
 
 	@Override

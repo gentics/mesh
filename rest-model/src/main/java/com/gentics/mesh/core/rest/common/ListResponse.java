@@ -13,6 +13,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
  */
 public class ListResponse<T> implements RestModel {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Array which contains the found elements.")
 	private List<T> data = new ArrayList<>();
 
 	@JsonPropertyDescription("Paging information of the list result.")

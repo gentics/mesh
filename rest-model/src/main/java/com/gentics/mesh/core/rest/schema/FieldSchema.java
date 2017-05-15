@@ -3,6 +3,8 @@ package com.gentics.mesh.core.rest.schema;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
 /**
@@ -16,6 +18,8 @@ public interface FieldSchema {
 	 * 
 	 * @return Field schema type
 	 */
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Type of the field.")
 	String getType();
 
 	/**
@@ -23,6 +27,8 @@ public interface FieldSchema {
 	 * 
 	 * @return Label
 	 */
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Label of the field.")
 	String getLabel();
 
 	/**
@@ -40,6 +46,8 @@ public interface FieldSchema {
 	 * 
 	 * @return Name
 	 */
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Name of the field.")
 	String getName();
 
 	/**
