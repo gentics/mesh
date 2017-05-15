@@ -54,7 +54,27 @@ A project represents the base element of your content structure, which includes 
 include::examples/models/ProjectResponse.adoc[]
 
 === Query Parameters
-//TODO
+
+[options="header",cols="3*"]
+|======
+
+| Name
+| Type
+| Description
+
+| page
+| number (default: 1)
+| Number of page to be loaded. This query parameter is used in queries returning a data set with multiple items.
+
+| perPage
+| number (default: 25)
+| Number of elements per page. This query parameter is used in queries returning a data set with multiple items.
+
+| role
+| string
+| The ```role``` query parameter takes a UUID and may be used in order to add permission information to the response which is related to the specified role. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role on this node. E.g., this may be useful when you are logged in as administrator but want to retrieve the editor role permissions on a given node.
+
+|======
 
 === Response Sample
 
@@ -157,15 +177,21 @@ include::examples/models/NodeResponse.adoc[]
 | string
 | The ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned. If omitted or the requested language is not available then the ```defaultLanguage``` as configured in ```mesh.yml``` will be returned.
 
+| page
+| number (default: 1)
+| Number of page to be loaded. This query parameter is used in queries returning a data set with multiple items.
+
+| perPage
+| number (default: 25)
+| Number of elements per page. This query parameter is used in queries returning a data set with multiple items.
+
 | release
 | string
 | Specifies the release UUID to be used for loading data. The latest project release will be used if this parameter is omitted.
 
 | resolveLinks
 | string
-| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. Links will automatically be resolved and replaced by the resolved WebRoot link. No resolving occurs if the query parameter is omitted.
-//TODO link WebRoot
-
+| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. Links will automatically be resolved and replaced by the resolved http://getmesh.io/TODO[WebRoot] link. No resolving occurs if the query parameter is omitted.
 
 | role
 | string
@@ -188,7 +214,7 @@ include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/200/example
 
 Typically, each project will require a set of different content types. Together they can be considered the content model of your project. Staying with the example of a product catalogue website: a product, product category, product image, and product manual each represent a separate content type. In Gentics Mesh, a *schema* is used to define such content types in terms of a couple of standard fields (e.g. ```uuid```, ```name```, ```description```, ```version```, etc.) and an arbitrary number of custom fields (e.g., ```string```, ```number```, ```HTML```, ```date```, ```binary```, ```list```, ```node```, ```micronode```, ```boolean```). You can think of a schema as a blueprint for new content items.  
 
-TIP: Using the ```container``` property, a schema can be configured to allow for hierarchically structuring nodes. Nodes based on a such a schema may contain child nodes. This is the basis for building https://getmesh.io/TODO[content trees] in Gentics Mesh and leveraging the power of https://getmesh.io/TODO[automatic navigation menus, breadcrumbs and link resolving].
+TIP: Using the ```container``` property, a schema can be configured to allow for hierarchically structuring nodes. Nodes based on a such a schema may contain child nodes. This is the basis for building http://getmesh.io/TODO[content trees] in Gentics Mesh and leveraging the power of http://getmesh.io/TODO[automatic navigation menus, breadcrumbs and link resolving].
 
 === API end points
 
@@ -213,10 +239,10 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 | Delete the schema with the given uuid.
 | ```DELETE /api/v1/schema/:schemaUuid```
 
-| Apply the provided changes on the latest version of the schema and migrate all nodes which are based on the schema.
+| Apply the provided changes on the latest version of the schema and http://getmesh.io/TODO[migrate] all nodes which are based on the schema.
 | ```POST /api/v1/schema/:schemaUuid/changes```
-//TODO more verbose?
-| Compare the given schema with the stored schema and create a changeset. 
+
+| Compare the given schema with the stored schema and create a changeset for http://getmesh.io/TODO[migration]. 
 | ```POST /api/v1/schema/:schemaUuid/diff```
 
 |======
@@ -237,15 +263,21 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 | string
 | The ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned. If omitted or the requested language is not available then the ```defaultLanguage``` as configured in ```mesh.yml``` will be returned.
 
+| page
+| number (default: 1)
+| Number of page to be loaded. This query parameter is used in queries returning a data set with multiple items.
+
+| perPage
+| number (default: 25)
+| Number of elements per page. This query parameter is used in queries returning a data set with multiple items.
+
 | release
 | string
 | Specifies the release UUID to be used for loading data. The latest project release will be used if this parameter is omitted.
 
 | resolveLinks
 | string
-| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. Links will automatically be resolved and replaced by the resolved WebRoot link. No resolving occurs if the query parameter is omitted.
-//TODO link WebRoot
-
+| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. Links will automatically be resolved and replaced by the resolved http://getmesh.io/TODO[WebRoot] link. No resolving occurs if the query parameter is omitted.
 
 | role
 | string
@@ -279,7 +311,6 @@ The following optional properties may be applied to any type of field:
 In addition to the above, certain types expose additional properties with which to configure the field. Such additional
 properties are defined in the <<Schema Field Types>> section.
 
-[[Schema Field Types]]
 ==== Schema Field Types
 //TODO add examples
 
@@ -384,10 +415,10 @@ NOTE: Nodes can contain micronodes. Micronodes, however, can not contain further
 | Delete the microschema with the given uuid.
 | ```DELETE /api/v1/microschemas/:microschemaUuid```
 
-| Apply the provided changes on the latest version of the microschema and migrate all micronodes which are based on the schema.
+| Apply the provided changes on the latest version of the microschema and http://getmesh.io/TODO[migrate] all micronodes which are based on the schema.
 | ```POST /api/v1/microschemas/:microschemaUuid/changes```
 
-| Compare the provided schema with the schema which is currently stored and generate a set of changes that have been detected.
+| Compare the provided schema with the schema which is currently stored and generate a set of changes that have been detected for http://getmesh.io/TODO[migration].
 | ```POST /api/v1/microschemas/:microschemaUuid/diff```
 
 |======
@@ -395,7 +426,7 @@ NOTE: Nodes can contain micronodes. Micronodes, however, can not contain further
 === Properties
 Microschemas share the same properties as schemas except for the properties ```displayField```, ```container```, and ```segmentField```, which are not available in a microschema.
 
-=== Schema field types
+=== Schema Field Types
 In comparison to nodes, micronodes can be built with schema field types ```String```, ```Number```, ```Date```, ```Boolean```, ```HTML```, ```Node```, and ```Lists```. 
 
 Fields of type ```list``` in micronodes can be of type: ```String```, ```Number```, ```Date```, ```Boolean```, ```HTML```, and ```Node```.
@@ -442,7 +473,7 @@ include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/
 
 Tags that semantically belong together are grouped in a *tag family*, allowing to handle disambiguation. 
 
-Example Tags and Tag Families:
+Example tags and tag families:
 [options="header",cols="2*"]
 
 |======
@@ -456,7 +487,7 @@ Example Tags and Tag Families:
 | Apple, Microsoft, Google, Amazon
 |======
 
-A Tag Family is defined as part of a project. Tag Families can’t be nested.
+A tag family is defined as part of a project. Tag families can’t be nested.
 
 === API end points
 
@@ -574,11 +605,11 @@ include::examples/models/UserResponse.adoc[]
 
 | page
 | number (default: 1)
-| Number of page to be loaded.
+| Number of page to be loaded. This query parameter is used in queries returning a data set with multiple items.
 
 | perPage
 | number (default: 25)
-| Number of elements per page.
+| Number of elements per page. This query parameter is used in queries returning a data set with multiple items.
 
 | release
 | string
@@ -586,9 +617,7 @@ include::examples/models/UserResponse.adoc[]
 
 | resolveLinks
 | string
-| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. Links will automatically be resolved and replaced by the resolved WebRoot link. No resolving occurs if the query parameter is omitted.
-//TODO link WebRoot
-
+| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. Links will automatically be resolved and replaced by the resolved http://getmesh.io/TODO[WebRoot] link. No resolving occurs if the query parameter is omitted.
 
 | role
 | string
@@ -668,11 +697,11 @@ include::examples/models/GroupResponse.adoc[]
 
 | page
 | number (default: 1)
-| Number of page to be loaded.
+| Number of page to be loaded. This query parameter is used in queries returning a data set with multiple items.
 
 | perPage
 | number (default: 25)
-| Number of elements per page.
+| Number of elements per page. This query parameter is used in queries returning a data set with multiple items.
 
 | role
 | string
@@ -738,11 +767,11 @@ include::examples/models/RoleResponse.adoc[]
 
 | page
 | number (default: 1)
-| Number of page to be loaded.
+| Number of page to be loaded. This query parameter is used in queries returning a data set with multiple items.
 
 | perPage
 | number (default: 25)
-| Number of elements per page.
+| Number of elements per page. This query parameter is used in queries returning a data set with multiple items.
 
 | role
 | string
