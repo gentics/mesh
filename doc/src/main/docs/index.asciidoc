@@ -456,6 +456,765 @@ Gentics Mesh does not manage any cache structure but it is possible to tweak the
 
 == Features
 
+=== Content Tree
+
+Gentics Mesh provides the means to organize your contents in terms of a *content tree*, or rather a node tree. Nodes can be hierarchically structured if a container schema is provided.
+For example, a book node can act as a container for chapter nodes. Alternatively, consider the example in our demo app, where vehicles are structured within categories:
+
+image:GenticsMesh-ContentTree-Example.png[]
+
+
+While it’s possible to organize your contents in a simple, flat structure with tagging and referencing, content trees come with a bonus: they inherently allow for automatically generated hierarchical <<navigation, navigation menus, breadcrumbs and pretty URLs>>. This furthermore means routes are not hard-coded in your app but can be defined dynamically by content editors within the Gentics Mesh user interface. 
+
+TIP: To get you started, Gentics Mesh is shipped with a generic _folder_ schema allowing you to follow the well-known file system paradigm for hierarchically organizing your content in a tree.
+
+
+[[navigation]]
+=== Automatic Navigation Menus, Breadcrumbs and pretty URLs
+If you choose to organize your content in terms of a content tree, Gentics Mesh allows you to automatically build navigation menus, breadcrumbs and pretty URLs. 
+There are two properties when defining a http://getmesh.io/docs/beta/building-blocks.html#_schemas[schema] for your nodes that are of importance in this respect.
+
+. ```container```: if true, nodes can contain child nodes and build a node tree
+. ```segmentField```: allows to specify which schema field should be considered the path segment for the current node, i.e. it’s the basis for building URLs
+
+Let’s consider the following example on the basis of our demo app to demonstrate how these properties work together to generate pretty URLs, breadcrumbs, and navigation menus:
+Within the demo project vehicles are organized in three different categories. The nodes _Automobiles_, _Aircrafts_ and _Yachts_ of type ```category``` serve as containers for nodes of type ```vehicle```, e.g., the node _Trabant_ in category _Automobiles_.
+The schema ```category``` has the ```container``` property set to ```true```, thus allowing nodes of type category to have child nodes. The schema’s ```segmentField``` is specified to be the ```name``` field.
+The schema ‘vehicle’ has the ```container``` property set to ```false```. The schema’s ```segmentField``` is again specified to be the ```name``` field.
+
+image:GenticsMesh-ContentTree-Example.png[]
+
+
+==== Pretty URLs
+
+Instead of relying on UUIDs to link your content, you can use pretty URLs like http://yourapp.com/Automobiles/Trabant. For each node, Gentics Mesh will provide you with a human readable path. Likewise, you can query your content using WebRoot API instead of using UUIDs.
+The ```segmentField``` is used to build the path of a specific node. According to the nodes’ schemas in our example, the path ```/Automobiles/Trabant``` for the node _Trabant_ is built using the ```name``` field of the ```vehicle``` node, i.e. _Trabant_, and the ```name``` field of the ```category``` node, i.e. _Automobiles_.
+
+image:GenticsMesh-PrettyURL-Example.png[]
+
+The ```path``` property as well as the ```languagesPath``` property (for available language variants) of a node can be queried using the ```/api/v1/{project}/nodes/{nodeUuid}``` endpoint together with the query parameter ```resolveLinks```. For more details see the documentation on http://getmesh.io/docs/beta/building-blocks.html#_node[node].
+
+===== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Get the node with the given UUID.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid```
+
+|======
+
+===== Response Sample
+
+http://getmesh.io/api/v1/demo/nodes/fd58237c79d64bf198237c79d6bbf107?resolveLinks=short
+
+[source,json]
+----
+{
+  "uuid" : "fd58237c79d64bf198237c79d6bbf107",
+  "creator" : {
+    "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+  },
+  "created" : "2017-05-09T09:54:43Z",
+  "editor" : {
+    "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+  },
+  "edited" : "2017-05-09T09:54:47Z",
+  "language" : "en",
+  "availableLanguages" : [ "en" ],
+  "languagePaths" : {
+    "en" : "/Automobiles/Trabant"
+  },
+  "parentNode" : {
+    "projectName" : "demo",
+    "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+    "displayName" : "Automobiles",
+    "path" : "/Automobiles",
+    "schema" : {
+      "name" : "category",
+      "uuid" : "2ca2362b041247c4a2362b041227c4da"
+    }
+  },
+  "tags" : [ {
+    "name" : "White",
+    "uuid" : "94fec98d6f114e81bec98d6f118e81cc",
+    "tagFamily" : "Colors"
+  }, {
+    "name" : "Gasoline",
+    "uuid" : "1c51487f8e8043c291487f8e8053c2c1",
+    "tagFamily" : "Fuels"
+  } ],
+  "project" : {
+    "name" : "demo",
+    "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+  },
+  "childrenInfo" : { },
+  "schema" : {
+    "name" : "vehicle",
+    "uuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
+    "version" : 1
+  },
+  "container" : false,
+  "displayField" : "name",
+  "fields" : {
+    "name" : "Trabant",
+    "weight" : 600,
+    "SKU" : 4,
+    "price" : 3000,
+    "stocklevel" : 40215,
+    "description" : "The Trabant is a car that was produced by former East German auto maker VEB Sachsenring Automobilwerke Zwickau in Zwickau, Saxony",
+    "vehicleImage" : {
+      "uuid" : "b1a975d9391a4daaa975d9391abdaa4f",
+      "path" : "/Vehicle%20Images/trabant.jpg",
+      "languagePaths" : {
+        "en" : "/Vehicle%20Images/trabant.jpg"
+      }
+    }
+  },
+  "path" : "/Automobiles/Trabant",
+  "breadcrumb" : [ {
+    "projectName" : "demo",
+    "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+    "displayName" : "Automobiles",
+    "path" : "/Automobiles",
+    "schema" : {
+      "name" : "category",
+      "uuid" : "2ca2362b041247c4a2362b041227c4da"
+    }
+  } ],
+  "version" : {
+    "uuid" : "2455a77d25014d9695a77d25014d967f",
+    "number" : "1.0"
+  },
+  "permissions" : {
+    "create" : false,
+    "read" : true,
+    "update" : false,
+    "delete" : false,
+    "publish" : false,
+    "readPublished" : false
+  }
+}
+----
+
+==== Navigation
+When organizing your content in terms of a node tree, Gentics Mesh offers two ways of generating a nested navigation response.
+
+The API end point ```/api/v1/{project}/nodes/{nodeUuid}/navigation``` returns a navigation object for the provided node, while the ```/api/v1/{project}/navroot/{path}``` API end point returns a navigation object for a node which is located using a given path.
+Each endpoint will return a navigation response which contains the nested navigation tree structure. The ```maxDepth``` parameter may be used to limit the navigation depth.
+
+//TODO image
+
+===== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Returns a navigation object for the provided node.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid/navigation```
+
+| Return a navigation for the node which is located using the given path.
+| ```GET /api/v1/:projectName/navroot/:path```
+
+|======
+
+===== Properties
+[options="header",cols="3*"]
+|======
+
+| Name
+| Type
+| Description
+
+| node
+| object
+| Detailed node information of the given UUID.
+
+| children
+| array
+| List of further child elements of the node.
+
+| uuid
+| string
+| UUID of the node within this navigation element.
+|======
+
+===== Query Parameters
+[options="header",cols="3*"]
+|======
+
+| Name
+| Type
+| Description
+
+| includeAll
+| boolean (default: false)
+| If set to true all nodes will be included in the response. By default only container nodes are included in a navigation response.
+
+| maxDepth
+| number (default: 10)
+| Specifies the maximum depth for the request navigation tree structure.
+
+| lang
+| string
+| The ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned. If omitted or the requested language is not available then the ```defaultLanguage``` as configured in ```mesh.yml``` will be returned.
+
+| release
+| string
+| Specifies the release UUID to be used for loading data. The latest project release will be used if this parameter is omitted.
+
+| resolveLinks
+| string
+| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. Links will automatically be resolved and replaced by the resolved http://getmesh.io/TODO[WebRoot] link. No resolving occurs if the query parameter is omitted.
+
+| role
+| string
+| The ```role``` query parameter takes a UUID and may be used in order to add permission information to the response which is related to the specified role. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role on this node. E.g., this may be useful when you are logged in as administrator but want to retrieve the editor role permissions on a given node.
+
+| version
+| string
+| Specifies the version of the node’s language variant, e.g.: ```0.1```, ```1.0```, ```draft```, ```published```.
+
+|======
+
+===== Response Sample
+
+Retrieving a navigation object using the projects root node ```/``` including the top level navigation menu items:
+http://getmesh.io/api/v1/demo/navroot/?resolveLinks=short&maxDepth=1
+
+The same can be achieved with:
+http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?resolveLinks=short&maxDepth=1
+
+[source,json]
+----
+{
+  "uuid" : "67533414891d4eae933414891d8eaead",
+  "node" : {
+    "uuid" : "67533414891d4eae933414891d8eaead",
+    "creator" : {
+      "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+    },
+    "created" : "2017-05-09T09:54:03Z",
+    "editor" : {
+      "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+    },
+    "edited" : "2017-05-09T09:54:47Z",
+    "language" : "en",
+    "availableLanguages" : [ "en" ],
+    "languagePaths" : {
+      "en" : "/"
+    },
+    "tags" : [ ],
+    "project" : {
+      "name" : "demo",
+      "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+    },
+    "childrenInfo" : {
+      "folder" : {
+        "schemaUuid" : "e287e8a7497940ac87e8a7497940ac82",
+        "count" : 1
+      },
+      "category" : {
+        "schemaUuid" : "2ca2362b041247c4a2362b041227c4da",
+        "count" : 3
+      }
+    },
+    "schema" : {
+      "name" : "folder",
+      "uuid" : "e287e8a7497940ac87e8a7497940ac82",
+      "version" : 1
+    },
+    "container" : true,
+    "displayField" : "name",
+    "fields" : { },
+    "path" : "/",
+    "breadcrumb" : [ ],
+    "version" : {
+      "uuid" : "a8716473479f45c4b16473479fe5c4b6",
+      "number" : "1.0"
+    },
+    "permissions" : {
+      "create" : false,
+      "read" : true,
+      "update" : false,
+      "delete" : false,
+      "publish" : false,
+      "readPublished" : false
+    }
+  },
+  "children" : [ {
+    "uuid" : "15d5ef7a9abf416d95ef7a9abf316d68",
+    "node" : {
+      "uuid" : "15d5ef7a9abf416d95ef7a9abf316d68",
+      "creator" : {
+        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+      },
+      "created" : "2017-05-09T09:54:33Z",
+      "editor" : {
+        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+      },
+      "edited" : "2017-05-09T09:54:47Z",
+      "language" : "en",
+      "availableLanguages" : [ "en" ],
+      "languagePaths" : {
+        "en" : "/Vehicle%20Images"
+      },
+      "parentNode" : {
+        "projectName" : "demo",
+        "uuid" : "67533414891d4eae933414891d8eaead",
+        "path" : "/",
+        "schema" : {
+          "name" : "folder",
+          "uuid" : "e287e8a7497940ac87e8a7497940ac82"
+        }
+      },
+      "tags" : [ ],
+      "project" : {
+        "name" : "demo",
+        "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+      },
+      "childrenInfo" : {
+        "vehicleImage" : {
+          "schemaUuid" : "b12272150db4490ea272150db4190e72",
+          "count" : 10
+        }
+      },
+      "schema" : {
+        "name" : "folder",
+        "uuid" : "e287e8a7497940ac87e8a7497940ac82",
+        "version" : 1
+      },
+      "container" : true,
+      "displayField" : "name",
+      "fields" : {
+        "name" : "Vehicle Images"
+      },
+      "path" : "/Vehicle%20Images",
+      "breadcrumb" : [ ],
+      "version" : {
+        "uuid" : "5de952f01ee846d8a952f01ee8f6d891",
+        "number" : "1.0"
+      },
+      "permissions" : {
+        "create" : false,
+        "read" : true,
+        "update" : false,
+        "delete" : false,
+        "publish" : false,
+        "readPublished" : false
+      }
+    }
+  }, {
+    "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+    "node" : {
+      "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+      "creator" : {
+        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+      },
+      "created" : "2017-05-09T09:54:40Z",
+      "editor" : {
+        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+      },
+      "edited" : "2017-05-09T09:54:47Z",
+      "language" : "en",
+      "availableLanguages" : [ "en" ],
+      "languagePaths" : {
+        "en" : "/Automobiles"
+      },
+      "parentNode" : {
+        "projectName" : "demo",
+        "uuid" : "67533414891d4eae933414891d8eaead",
+        "path" : "/",
+        "schema" : {
+          "name" : "folder",
+          "uuid" : "e287e8a7497940ac87e8a7497940ac82"
+        }
+      },
+      "tags" : [ ],
+      "project" : {
+        "name" : "demo",
+        "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+      },
+      "childrenInfo" : {
+        "vehicle" : {
+          "schemaUuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
+          "count" : 5
+        }
+      },
+      "schema" : {
+        "name" : "category",
+        "uuid" : "2ca2362b041247c4a2362b041227c4da",
+        "version" : 1
+      },
+      "container" : true,
+      "displayField" : "name",
+      "fields" : {
+        "name" : "Automobiles"
+      },
+      "path" : "/Automobiles",
+      "breadcrumb" : [ ],
+      "version" : {
+        "uuid" : "8def8fc6116645d6af8fc6116665d6ac",
+        "number" : "1.0"
+      },
+      "permissions" : {
+        "create" : false,
+        "read" : true,
+        "update" : false,
+        "delete" : false,
+        "publish" : false,
+        "readPublished" : false
+      }
+    }
+  }, {
+    "uuid" : "21203632520b4d19a03632520b2d19c1",
+    "node" : {
+      "uuid" : "21203632520b4d19a03632520b2d19c1",
+      "creator" : {
+        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+      },
+      "created" : "2017-05-09T09:54:44Z",
+      "editor" : {
+        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+      },
+      "edited" : "2017-05-09T09:54:47Z",
+      "language" : "en",
+      "availableLanguages" : [ "en" ],
+      "languagePaths" : {
+        "en" : "/Aircraft"
+      },
+      "parentNode" : {
+        "projectName" : "demo",
+        "uuid" : "67533414891d4eae933414891d8eaead",
+        "path" : "/",
+        "schema" : {
+          "name" : "folder",
+          "uuid" : "e287e8a7497940ac87e8a7497940ac82"
+        }
+      },
+      "tags" : [ ],
+      "project" : {
+        "name" : "demo",
+        "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+      },
+      "childrenInfo" : {
+        "vehicle" : {
+          "schemaUuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
+          "count" : 3
+        }
+      },
+      "schema" : {
+        "name" : "category",
+        "uuid" : "2ca2362b041247c4a2362b041227c4da",
+        "version" : 1
+      },
+      "container" : true,
+      "displayField" : "name",
+      "fields" : {
+        "name" : "Aircraft"
+      },
+      "path" : "/Aircraft",
+      "breadcrumb" : [ ],
+      "version" : {
+        "uuid" : "5e84945a87ff4bb584945a87ff0bb5b2",
+        "number" : "1.0"
+      },
+      "permissions" : {
+        "create" : false,
+        "read" : true,
+        "update" : false,
+        "delete" : false,
+        "publish" : false,
+        "readPublished" : false
+      }
+    }
+  }, {
+    "uuid" : "eb2ebdcc0e894a9eaebdcc0e896a9e1d",
+    "node" : {
+      "uuid" : "eb2ebdcc0e894a9eaebdcc0e896a9e1d",
+      "creator" : {
+        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+      },
+      "created" : "2017-05-09T09:54:45Z",
+      "editor" : {
+        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+      },
+      "edited" : "2017-05-09T09:54:47Z",
+      "language" : "en",
+      "availableLanguages" : [ "en" ],
+      "languagePaths" : {
+        "en" : "/Yachts"
+      },
+      "parentNode" : {
+        "projectName" : "demo",
+        "uuid" : "67533414891d4eae933414891d8eaead",
+        "path" : "/",
+        "schema" : {
+          "name" : "folder",
+          "uuid" : "e287e8a7497940ac87e8a7497940ac82"
+        }
+      },
+      "tags" : [ ],
+      "project" : {
+        "name" : "demo",
+        "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+      },
+      "childrenInfo" : {
+        "vehicle" : {
+          "schemaUuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
+          "count" : 2
+        }
+      },
+      "schema" : {
+        "name" : "category",
+        "uuid" : "2ca2362b041247c4a2362b041227c4da",
+        "version" : 1
+      },
+      "container" : true,
+      "displayField" : "name",
+      "fields" : {
+        "name" : "Yachts"
+      },
+      "path" : "/Yachts",
+      "breadcrumb" : [ ],
+      "version" : {
+        "uuid" : "aa093788e8514685893788e851f68587",
+        "number" : "1.0"
+      },
+      "permissions" : {
+        "create" : false,
+        "read" : true,
+        "update" : false,
+        "delete" : false,
+        "publish" : false,
+        "readPublished" : false
+      }
+    }
+  } ]
+}
+----
+
+==== Breadcrumb
+
+Each node in Gentics Mesh provides information on where it is located within the node tree in terms of its ```breadcrumb``` property using the ```/api/v1/{project}/nodes/{nodeUuid}``` end point together with the query parameter ```resolveLinks```. 
+The ```breadcrumb``` property provides an array of node references representing the path from the current node up to the project root. For more details see the documentation on http://getmesh.io/docs/beta/building-blocks.html#_node[node].
+
+NOTE: The current node will not be included in the list, since all the information is already provided in other properties (i.e., ```displayField```, ```path```) of node object itself. 
+
+In our demo app example, the ```breadcrumb``` property for node _Trabant_ will therefore include the node _Automobiles_. 
+
+===== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Get the node with the given UUID.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid```
+
+|======
+
+image:GenticsMesh-Breadcrumb-Example.png[]
+
+===== Sample Response
+http://getmesh.io/api/v1/demo/nodes/fd58237c79d64bf198237c79d6bbf107?resolveLinks=short
+
+[source,json]
+----
+{
+  "uuid" : "fd58237c79d64bf198237c79d6bbf107",
+  "creator" : {
+    "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+  },
+  "created" : "2017-05-09T09:54:43Z",
+  "editor" : {
+    "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+  },
+  "edited" : "2017-05-09T09:54:47Z",
+  "language" : "en",
+  "availableLanguages" : [ "en" ],
+  "languagePaths" : {
+    "en" : "/Automobiles/Trabant"
+  },
+  "parentNode" : {
+    "projectName" : "demo",
+    "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+    "displayName" : "Automobiles",
+    "path" : "/Automobiles",
+    "schema" : {
+      "name" : "category",
+      "uuid" : "2ca2362b041247c4a2362b041227c4da"
+    }
+  },
+  "tags" : [ {
+    "name" : "White",
+    "uuid" : "94fec98d6f114e81bec98d6f118e81cc",
+    "tagFamily" : "Colors"
+  }, {
+    "name" : "Gasoline",
+    "uuid" : "1c51487f8e8043c291487f8e8053c2c1",
+    "tagFamily" : "Fuels"
+  } ],
+  "project" : {
+    "name" : "demo",
+    "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+  },
+  "childrenInfo" : { },
+  "schema" : {
+    "name" : "vehicle",
+    "uuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
+    "version" : 1
+  },
+  "container" : false,
+  "displayField" : "name",
+  "fields" : {
+    "name" : "Trabant",
+    "weight" : 600,
+    "SKU" : 4,
+    "price" : 3000,
+    "stocklevel" : 40215,
+    "description" : "The Trabant is a car that was produced by former East German auto maker VEB Sachsenring Automobilwerke Zwickau in Zwickau, Saxony",
+    "vehicleImage" : {
+      "uuid" : "b1a975d9391a4daaa975d9391abdaa4f",
+      "path" : "/Vehicle%20Images/trabant.jpg",
+      "languagePaths" : {
+        "en" : "/Vehicle%20Images/trabant.jpg"
+      }
+    }
+  },
+  "path" : "/Automobiles/Trabant",
+  "breadcrumb" : [ {
+    "projectName" : "demo",
+    "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+    "displayName" : "Automobiles",
+    "path" : "/Automobiles",
+    "schema" : {
+      "name" : "category",
+      "uuid" : "2ca2362b041247c4a2362b041227c4da"
+    }
+  } ],
+  "version" : {
+    "uuid" : "2455a77d25014d9695a77d25014d967f",
+    "number" : "1.0"
+  },
+  "permissions" : {
+    "create" : false,
+    "read" : true,
+    "update" : false,
+    "delete" : false,
+    "publish" : false,
+    "readPublished" : false
+  }
+}
+----
+
+[[webroot]]
+=== WebRoot API - Query by Path
+
+The WebRoot API is an alternative way for fetching content from Gentics Mesh. Other than accessing nodes with their UUID, one can use the way more intuitive WebRoot paths. 
+
+Using the WebRoot API it is possible to easily integrate Gentics Mesh with many known routing frameworks.
+
+[options="header"]
+|======
+| Framework                           | Language       | Example
+| http://silex.sensiolabs.org/[Silex] | PHP            | http://getmesh.io/Blog/Building+an+API-first+Web+App+with+Gentics+Mesh+and+the+PHP+Microframework+Silex[Blogpost]
+| http://expressjs.com/[ExpressJS]    | JS             | http://getmesh.io/Blog/Getting+started+with+Express+and+the+API-first+CMS+Gentics+Mesh[Blogpost]
+| http://vertx.io/[Vert.x]            | Java,JS,Ceylon | http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[Blogpost] 
+| http://lotusrb.org/[Lotus]          | Ruby           | -
+|======
+
+Again, this functionality builds on top of content trees in Gentics Mesh. To be more specifically, the ```segmentField``` is used to build the path of a specific node. 
+The WebRoot API end point uses this information to resolve a given path to a node UUID.
+
+===== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Load the node or the node's binary data, which is located using the provided path.
+| ```GET /api/v1/:projectName/webroot/:path```
+
+|======
+
+==== Query content by path
+
+A webroot path consists of multiple path segments, each corresponding to a node within the content tree. The ```segmentField``` property from the schema is used to determine the node's relevant field value. 
+
+NOTE: Each segment of the URL must be URL-encoded. A node's language variants must provide differents path segment in order to guarantee unique paths.
+
+*Fetch node with UUID:*
+http://getmesh.io/api/v1/demo/nodes/fd58237c79d64bf198237c79d6bbf107?resolveLinks=short
+
+Loading the node with the given uuid using API end point ```GET /api/v1/:projectName/nodes/:nodeUuid```.
+
+*Fetch node with WebRoot path:*
+http://getmesh.io/api/v1/demo/webroot/Automobiles/Trabant?resolveLinks=short
+
+
+image:GenticsMesh-WebRootAPI-Example.png[]
+//TODO image
+
+==== Query binary content by path
+The WebRoot API, furthermore, directly supports binary content using the ```fileName``` meta-data field of the ```binary``` field . 
+
+*Fetch an image with UUID:*
+http://getmesh.io/api/v1/demo/nodes/b1a975d9391a4daaa975d9391abdaa4f/binary/image
+
+Downloading the binary field with the given name using API end point ```GET /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```.
+
+*Fetch an image with WebRoot path:*
+http://getmesh.io/api/v1/demo/webroot/Vehicle%20Images/trabant.jpg
+
+TIP: When using a routing framework, in order to find out if a requested resource is binary data or JSON data you need to check the HTTP Content-Disposition response header. If it is set, it’s binary data. 
+
+==== Image manipulation by path
+In case, the binary data is an image, the WebRoot API allows to directly perform <<imagemanipulation, image manipulation>> such as cropping and resizing. 
+
+*Crop and Resize an image with UUID:*
+
+http://getmesh.io/api/v1/demo/nodes/b1a975d9391a4daaa975d9391abdaa4f/binary/image?cropx=10&cropy=100&cropw=800&croph=400&width=300
+
+*Crop and Resize an image with WebRoot path:*
+
+http://getmesh.io/api/v1/demo/webroot/Vehicle%20Images/trabant.jpg?cropx=10&cropy=100&cropw=800&croph=400&width=300
+
+Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
+
+//==== Properties
+//TODO
+
+//==== Query Parameters
+//TODO
+
+=== Link Handling
+
+Gentics Mesh will try to resolve any found mesh-link within any text field of a node if the resolveLinks query parameter has been set to either `short`, `medium` or `full`.
+
+Example: ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg``` when using the `?resolveLinks=full`
+
+Valid Links:
+
+* ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}```
+* ```{{mesh.link('2f2de9297c8143e8ade9297c8193e8fc', 'en')}}```
+* ```{{mesh.link(\"2f2de9297c8143e8ade9297c8193e8fc\", \"en\")}}```
+* ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc")}}``` (Link to default language)
+
+==== Resolver
+
+The ```/api/v1/utilities/linkResolver``` endpoint can be used to resolve mesh links within the posted text data. This is useful when resolving links for a preview page.
+
 === Password Recovery
 
 A user who lost his password can recover it using a recovery token. This token can be issued by a user or admin which has permissions to create new users. The ```/api/v1/users/:userUuid/reset_token``` endpoint will return a token code which can for example be passed along to an email service which sends a recovery email to the user which includes this token. The token is valid for 30 minutes.
@@ -756,60 +1515,6 @@ Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect
 | ```/api/v1/:projectName/releases/:uuid```  | Read Published | _Not used_
 | ```/api/v1/:projectName/releases/:uuid```  | Publish        | _Not used_
 |======
-
-
-=== WebRoot
-
-The ```/api/v1/:projectName/webroot/:path``` endpoint can be used to access nodes via a regular web path instead of using uuids.
-
-Example: ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg?width=1000```
-
-This makes it possible to integrate Gentics Mesh with many known routing frameworks.
-
-[options="header"]
-|======
-| Framework                           | Language       | Example
-| http://silex.sensiolabs.org/[Silex] | PHP            | http://getmesh.io/Blog/Building+an+API-first+Web+App+with+Gentics+Mesh+and+the+PHP+Microframework+Silex[Blogpost]
-| http://expressjs.com/[ExpressJS]    | JS             | http://getmesh.io/Blog/Getting+started+with+Express+and+the+API-first+CMS+Gentics+Mesh[Blogpost]
-| http://vertx.io/[Vert.x]            | Java,JS,Ceylon | http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[Blogpost] 
-| http://lotusrb.org/[Lotus]          | Ruby           | -
-|======
-
-A webroot path consists of multiple path segments. Each segment of the url must be URL encoded. A list of segments can be provided by a single node. The `segmentField` information from the schema is used to determine the segment field value which the node provides. Each language of the node must provide different path segment.
-
-The `Ford GT Image` node for example provides the path segment `ford-gt.jpg` since the used schema `vehicleImage` points to the binary field `image`. The binary field contains the filename `ford-gt.jpg`.
-
-The `segmentField` parameter within the schema is therefore used to map in between fields and the path segment.
-
-* `ford-gt.jpg` -> ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg```
-
-The binary data will be returned if the path targets a node in which the binary `fileName` property provides the segment.
-It is possible to differentiate between a binary response and a normal JSON response by checking whether the `Content-Disposition` header parameter is set. The header value will only be set when binary data is returned.
-
-The router implementation can use this in order to be able to to decide whether to handle the JSON data or whether the binary data should just be passed through to the requester.
-
-=== Navigations
-
-There are two ways of generating a nested navigation response. You can either use ```/api/v1/:projectName/nodes/:uuid/navigation``` or ```/api/v1/:projectName/navroot/:path``` endpoints.
-
-Each endpoint will return a navigation response which contains the nested navigation tree structure. The ```maxDepth``` parameter may be used to limit the navigation depth (default: 10).
-
-=== Link Handling
-
-Gentics Mesh will try to resolve any found mesh-link within any text field of a node if the resolveLinks query parameter has been set to either `short`, `medium` or `full`.
-
-Example: ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg``` when using the `?resolveLinks=full`
-
-Valid Links:
-
-* ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}```
-* ```{{mesh.link('2f2de9297c8143e8ade9297c8193e8fc', 'en')}}```
-* ```{{mesh.link(\"2f2de9297c8143e8ade9297c8193e8fc\", \"en\")}}```
-* ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc")}}``` (Link to default language)
-
-==== Resolver
-
-The ```/api/v1/utilities/linkResolver``` endpoint can be used to resolve mesh links within the posted text data. This is useful when resolving links for a preview page.
 
 === Schema / Microschema Migration
 
@@ -1174,6 +1879,7 @@ The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possibl
 | mesh.migration  | Receive node and micronode migration specific events
 |======
 
+[[imagemanipulation]]
 === Image Manipulation
 
 Images can be resized by appending the image manipulation query parameters on the binary node endpoint:
