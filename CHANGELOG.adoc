@@ -6,15 +6,9 @@
 
 icon:plus[] Core: Added `/api/v1/:projectName/releases/:releaseUuid/migrateMicroschemas` endpoint which can be used to resume previously unfinished micronode migrations.
 
-icon:check[] Core: Fixed NPE that was thrown when loading releases on older systems.
-
-icon:check[] Core: An upgrade error has been fixed which was caused by an invalid microschema JSON format error.
-
 icon:plus[] Performance: The startup performance has been increased when dealing with huge datasets.
 
 icon:plus[] Auth: The anonymous authentication mechanism can now also be disabled by setting the `Anonymous-Authentication: disable` header. This is useful for client applications which don't need or want anonymous authentication. The Gentics Mesh REST client has been enhanced accordingly.
-
-icon:check[] UI: You will no longer be automatically logged in as anonymous user once your session expires.
 
 icon:plus[] Core: The read performance of node lists has been improved.
 
@@ -23,6 +17,12 @@ icon:plus[] Core: The write performance of nodes has been improved.
 icon:plus[] Demo: The demo data have been updated. The a folderName and fileName field has been added to the demo schemas.
 
 icon:plus[] GraphQL: Added micronode list handling. Previously it was not possible to handle micronode list fields.
+
+icon:check[] Core: Fixed NPE that was thrown when loading releases on older systems.
+
+icon:check[] Core: An upgrade error has been fixed which was caused by an invalid microschema JSON format error.
+
+icon:check[] UI: You will no longer be automatically logged in as anonymous user once your session expires.
 
 icon:check[] Core: The language fallback handling for node breadcrumbs has been fixed. Previously the default language was not automatically added to the handled languages.
 
