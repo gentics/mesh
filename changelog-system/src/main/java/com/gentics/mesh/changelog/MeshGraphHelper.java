@@ -17,7 +17,7 @@ public final class MeshGraphHelper {
 	 * @return
 	 */
 	public static Vertex getMeshRootVertex(TransactionalGraph graph) {
-		Iterator<Vertex> it = graph.getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, MESH_ROOT_TYPE).iterator();
+		Iterator<Vertex> it = graph.getVertices("@class", MESH_ROOT_TYPE).iterator();
 		if (it.hasNext()) {
 			return it.next();
 		} else {

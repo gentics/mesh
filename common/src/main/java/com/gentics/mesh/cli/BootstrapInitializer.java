@@ -188,4 +188,11 @@ public interface BootstrapInitializer {
 	 */
 	void handleMeshVersion();
 
+	/**
+	 * Check whether there are any vertices in the graph.
+	 * 
+	 * @return
+	 */
+	boolean isEmptyInstallation();
+
 }

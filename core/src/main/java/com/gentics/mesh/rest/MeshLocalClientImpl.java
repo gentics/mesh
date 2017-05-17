@@ -276,7 +276,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
-	
+
 	@Override
 	public MeshRequest<TagListResponse> updateTagsForNode(String projectName, String nodeUuid, TagListUpdateRequest request,
 			ParameterProvider... parameters) {

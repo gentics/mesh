@@ -1,8 +1,7 @@
 package com.gentics.mesh.cli;
 
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 
@@ -26,6 +25,24 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 			assertNotNull(language);
 			assertEquals("German", language.getName());
 			assertEquals("Deutsch", language.getNativeName());
+		}
+	}
+
+	@Test
+	public void testIndexLookup() {
+		try (NoTx noTx = db().noTx()) {
+			boot().meshRoot();
+			BootstrapInitializerImpl.clearReferences();
+			assertNotNull(boot().meshRoot());
+		}
+	}
+
+	@Test
+	public void testIsEmpty() {
+		try (NoTx noTx = db().noTx()) {
+			assertFalse(boot().isEmptyInstallation());
+			db().clear();
+			assertTrue(boot().isEmptyInstallation());
 		}
 	}
 }

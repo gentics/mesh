@@ -11,6 +11,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.Tx;
@@ -287,7 +288,7 @@ public interface Database {
 	}
 
 	/**
-	 * Add a named vertex index for the given type of vertex and fields
+	 * Add a named vertex index for the given type of vertex and fields.
 	 * 
 	 * @param indexName
 	 *            index name
@@ -358,6 +359,14 @@ public interface Database {
 	 * @return
 	 */
 	Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues);
+
+	/**
+	 * Locate all vertices for the given type.
+	 * 
+	 * @param classOfVertex
+	 * @return
+	 */
+	<T extends MeshVertex> Iterator<? extends T> getVerticesForType(Class<T> classOfVertex);
 
 	/**
 	 * Update the vertex type for the given element using the class type.

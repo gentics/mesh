@@ -79,11 +79,9 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 		if (shouldUpdate(requestModel.getName(), getName())) {
 			// Check for conflicting project name
-			Release conflictingRelease = db.checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this,
-					getRoot().getUniqueNameKey(requestModel.getName()));
+			Release conflictingRelease = db.checkIndexUniqueness(UNIQUENAME_INDEX_NAME, this, getRoot().getUniqueNameKey(requestModel.getName()));
 			if (conflictingRelease != null) {
-				throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name",
-						requestModel.getName());
+				throw conflict(conflictingRelease.getUuid(), conflictingRelease.getName(), "release_conflicting_name", requestModel.getName());
 			}
 			setName(requestModel.getName());
 			setEditor(ac.getUser());

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -287,14 +288,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 	}
 
-	/**
-	 * Check whether there are any vertices in the graph.
-	 * 
-	 * @return
-	 */
-	private boolean isEmptyInstallation() {
+	@Override
+	public boolean isEmptyInstallation() {
 		try (NoTx noTx = db.noTx()) {
-			return noTx.getGraph().v().count() == 0;
+			return !noTx.getGraph().v().hasNext();
 		}
 	}
 
@@ -333,16 +330,15 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		if (meshRoot == null) {
 			synchronized (BootstrapInitializer.class) {
 				// Check reference graph and finally create the node when it can't be found.
-				MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
-				if (foundMeshRoot == null) {
-
+				Iterator<? extends MeshRootImpl> it = db.getVerticesForType(MeshRootImpl.class);
+				if (it.hasNext()) {
+					isInitialSetup = false;
+					meshRoot = it.next();
+				} else {
 					meshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
 					if (log.isDebugEnabled()) {
 						log.debug("Created mesh root {" + meshRoot.getUuid() + "}");
 					}
-				} else {
-					isInitialSetup = false;
-					meshRoot = foundMeshRoot;
 				}
 			}
 		}
