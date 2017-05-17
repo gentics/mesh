@@ -894,13 +894,9 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(fieldKey, "field key must not be null");
 
 		BinaryFieldTransformRequest transformRequest = new BinaryFieldTransformRequest().setWidth(imageManipulationParameter.getWidth())
-				.setHeight(imageManipulationParameter.getHeight())
-				.setCropx(imageManipulationParameter.getStartx())
-				.setCropy(imageManipulationParameter.getStarty())
-				.setCroph(imageManipulationParameter.getCroph())
-				.setCropw(imageManipulationParameter.getCropw())
-				.setLanguage(languageTag)
-				.setVersion(new VersionReference().setNumber(version));
+				.setHeight(imageManipulationParameter.getHeight()).setCropx(imageManipulationParameter.getStartx())
+				.setCropy(imageManipulationParameter.getStarty()).setCroph(imageManipulationParameter.getCroph())
+				.setCropw(imageManipulationParameter.getCropw()).setLanguage(languageTag).setVersion(new VersionReference().setNumber(version));
 
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binaryTransform/" + fieldKey, NodeResponse.class,
 				transformRequest);
