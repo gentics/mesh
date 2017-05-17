@@ -82,12 +82,12 @@ public class NodeMigrationHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Script engine factory
+	 * Script engine factory.
 	 */
 	private NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 
 	/**
-	 * Migrate all nodes of a release referencing the given schema container to the latest version of the schema
+	 * Migrate all nodes of a release referencing the given schema container to the latest version of the schema.
 	 *
 	 * @param project
 	 *            Specific project to handle

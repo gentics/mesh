@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -278,13 +279,58 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 		}
 	}
 
+	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String releaseUuid) {
+		utils.operateNoTx(ac, () -> {
+			Project project = ac.getProject();
+			for (MicroschemaContainer microschemaContainer : boot.microschemaContainerRoot().findAll()) {
+				MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
+				MicroschemaContainerVersion currentVersion = latestVersion;
+				while (true) {
+					currentVersion = currentVersion.getPreviousVersion();
+					if (currentVersion == null) {
+						break;
+					}
+					// System.out.println("Before migration " + schemaContainer.getName() + " - " + currentVersion.getUuid() + "="
+					// + currentVersion.getFieldContainers(releaseUuid).size());
+					// if (!getLatestVersion().getUuid().equals(version.getUuid())) {
+					// for (GraphFieldContainer container : version.getFieldContainers()) {
+					// NodeImpl node = container.in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null);
+					// System.out.println(
+					// "Node: " + node.getUuid() + "ne: " + node.getLastEditedTimestamp() + "nc: " + node.getCreationTimestamp());
+					// }
+					// }
+					CountDownLatch latch = new CountDownLatch(1);
+					DeliveryOptions options = new DeliveryOptions();
+					options.addHeader(NodeMigrationVerticle.UUID_HEADER, microschemaContainer.getUuid());
+					options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, currentVersion.getUuid());
+					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, latestVersion.getUuid());
+					options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, releaseUuid);
+					options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project.getUuid());
+
+					MicroschemaContainerVersion version = currentVersion;
+					Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
+						try (NoTx noTrx = db.noTx()) {
+							System.out.println("After migration " + microschemaContainer.getName() + " - " + version.getUuid() + "="
+									+ version.getFieldContainers(releaseUuid).size());
+						}
+						latch.countDown();
+					});
+					latch.await();
+				}
+
+			}
+			return message(ac, "schema_migration_invoked");
+		}, model -> ac.send(model, OK));
+
+	}
+
 	/**
 	 * Helper handler which will handle requests for processing remaining not yet migrated nodes.
 	 *
 	 * @param ac
 	 * @param releaseUuid
 	 */
-	public void handleMigrateRemaining(InternalActionContext ac, String releaseUuid) {
+	public void handleMigrateRemainingNodes(InternalActionContext ac, String releaseUuid) {
 
 		utils.operateNoTx(ac, () -> {
 			Project project = ac.getProject();
