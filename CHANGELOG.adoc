@@ -4,6 +4,8 @@
 
 == 0.9.9 (PENDING)
 
+icon:check[] Core: Fixed NPE that was thrown when loading releases on older systems.
+
 icon:check[] Core: An upgrade error has been fixed which was caused by an invalid microschema JSON format error.
 
 icon:plus[] Performance: The startup performance has been increased when dealing with huge datasets.

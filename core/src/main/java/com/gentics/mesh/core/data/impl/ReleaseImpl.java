@@ -136,7 +136,8 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public boolean isMigrated() {
-		return getProperty(MIGRATED_PROPERTY_KEY);
+		Boolean flag = getProperty(MIGRATED_PROPERTY_KEY);
+		return flag == null ? false : flag;
 	}
 
 	@Override
