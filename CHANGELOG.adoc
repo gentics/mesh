@@ -4,6 +4,8 @@
 
 == 0.9.9 (PENDING)
 
+icon:check[] Core: An upgrade error has been fixed which was caused by an invalid microschema JSON format error.
+
 icon:plus[] Performance: The startup performance has been increased when dealing with huge datasets.
 
 icon:plus[] Auth: The anonymous authentication mechanism can now also be disabled by setting the `Anonymous-Authentication: disable` header. This is useful for client applications which don't need or want anonymous authentication. The Gentics Mesh REST client has been enhanced accordingly.
