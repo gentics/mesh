@@ -79,6 +79,7 @@ import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.AbstractMeshRestHttpClient;
 import com.gentics.mesh.rest.client.MeshRequest;
+import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestRequestUtil;
 import com.gentics.mesh.rest.client.handler.ResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.GraphQLResponseHandler;
@@ -95,7 +96,7 @@ import io.vertx.core.http.WebSocket;
 import io.vertx.core.json.JsonObject;
 
 /**
- * HTTP based rest client implementation.
+ * HTTP based REST client implementation.
  */
 public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
@@ -109,7 +110,19 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		options.setTryUseCompression(true);
 		options.setDefaultPort(port);
 		this.client = vertx.createHttpClient(options);
-		setAuthentication(new JWTAuthentication());
+		setAuthenticationProvider(new JWTAuthentication());
+	}
+
+	@Override
+	public MeshRestClient enableAnonymousAccess() {
+		disableAnonymousAccess = false;
+		return this;
+	}
+
+	@Override
+	public MeshRestClient disableAnonymousAccess() {
+		disableAnonymousAccess = true;
+		return this;
 	}
 
 	@Override
@@ -656,11 +669,9 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		String requestUri = BASEURI + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
 		ResponseHandler<WebRootResponse> handler = new WebRootResponseHandler(HttpMethod.GET, requestUri);
 		HttpClientRequest request = client.request(GET, requestUri, handler);
-		authentication.addAuthenticationInformation(request)
-				.subscribe(() -> {
-					request.headers()
-							.add("Accept", "*/*");
-				});
+		authentication.addAuthenticationInformation(request).subscribe(() -> {
+			request.headers().add("Accept", "*/*");
+		});
 
 		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
 
@@ -867,11 +878,9 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 		MeshBinaryResponseHandler handler = new MeshBinaryResponseHandler(GET, uri);
 		HttpClientRequest request = client.request(GET, uri, handler);
-		authentication.addAuthenticationInformation(request)
-				.subscribe(() -> {
-					request.headers()
-							.add("Accept", "application/json");
-				});
+		authentication.addAuthenticationInformation(request).subscribe(() -> {
+			request.headers().add("Accept", "application/json");
+		});
 		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
 	}
 
@@ -1003,7 +1012,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<String> getRAML() {
-		return MeshRestRequestUtil.prepareRequest(GET, "/raml", String.class, null, null, client, authentication, "text/vnd.yaml");
+		return MeshRestRequestUtil.prepareRequest(GET, "/raml", String.class, null, null, client, authentication, disableAnonymousAccess, "text/vnd.yaml");
 	}
 
 	@Override
@@ -1059,8 +1068,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<JsonObject> graphqlQuery(String projectName, String query, ParameterProvider... parameters) {
-		String json = new JsonObject().put("query", query)
-				.toString();
+		String json = new JsonObject().put("query", query).toString();
 		if (log.isDebugEnabled()) {
 			log.debug(json);
 		}
@@ -1076,16 +1084,14 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		String uri = BASEURI + path;
 		Buffer buffer = Buffer.buffer();
 		buffer.appendString(query);
-		//		return MeshRestRequestUtil.prepareRequest(POST, path, JsonObject.class, buffer,
-		//				"application/json", client, authentication);
+		// return MeshRestRequestUtil.prepareRequest(POST, path, JsonObject.class, buffer,
+		// "application/json", client, authentication);
 
 		GraphQLResponseHandler handler = new GraphQLResponseHandler(uri);
 		HttpClientRequest request = client.request(POST, uri, handler);
-		authentication.addAuthenticationInformation(request)
-				.subscribe(() -> {
-					request.headers()
-							.add("Accept", "application/json");
-				});
+		authentication.addAuthenticationInformation(request).subscribe(() -> {
+			request.headers().add("Accept", "application/json");
+		});
 		return new MeshHttpRequestImpl<>(request, handler, buffer, "application/json", authentication, "application/json");
 	}
 }

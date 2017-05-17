@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client;
 
+import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
 import com.gentics.mesh.rest.client.method.AdminClientMethods;
 import com.gentics.mesh.rest.client.method.ApiInfoClientMethods;
@@ -88,5 +89,26 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 */
 	MeshRestClient setAPIKey(String apiKey);
 
+	/**
+	 * Disable the anonymous access handling. Requests will only work if you are logged in.
+	 * 
+	 * @return Fluent API
+	 */
+	MeshRestClient disableAnonymousAccess();
+
+	/**
+	 * Enable the anonymous access handling. Requests will work if anonymous access is enabled on the Gentics Mesh serve.
+	 * 
+	 * @return Fluent API
+	 */
+	MeshRestClient enableAnonymousAccess();
+
+	/**
+	 * Set the authentication provider.
+	 *
+	 * @param authentication
+	 * @return Fluent API
+	 */
+	MeshRestClient setAuthenticationProvider(JWTAuthentication authentication);
 
 }

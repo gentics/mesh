@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.user;
 
+import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
@@ -58,6 +59,15 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			latchFor(meResponse);
 			expectException(meResponse, UNAUTHORIZED, "error_not_authorized");
 		}
+	}
+
+	@Test
+	public void testDisableAnonymousAccess() {
+		client().logout();
+		UserResponse response = client().me().toSingle().toBlocking().value();
+		assertEquals("anonymous", response.getUsername());
+		client().disableAnonymousAccess();
+		call(() -> client().me(), UNAUTHORIZED, "error_not_authorized");
 	}
 
 	@Test
