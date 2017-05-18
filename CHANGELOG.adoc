@@ -4,6 +4,8 @@
 
 == 0.9.9 (PENDING)
 
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.20.
+
 icon:plus[] API: The following endpoints were moved:
 
  * `/api/v1/admin/backup`  ⟶  `/api/v1/admin/graphdb/backup`
