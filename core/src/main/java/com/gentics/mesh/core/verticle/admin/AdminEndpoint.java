@@ -67,7 +67,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 
 	private void addExportHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/export");
+		endpoint.path("/graphdb/export");
 		endpoint.method(POST);
 		endpoint.description("Invoke a orientdb graph database export.");
 		endpoint.produces(APPLICATION_JSON);
@@ -79,7 +79,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 
 	private void addImportHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/import");
+		endpoint.path("/graphdb/import");
 		endpoint.method(POST);
 		endpoint.description(
 				"Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.");
@@ -92,7 +92,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 
 	private void addRestoreHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/restore");
+		endpoint.path("/graphdb/restore");
 		endpoint.description(
 				"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effecivly destroy all previously stored data.");
 		endpoint.produces(APPLICATION_JSON);
@@ -105,7 +105,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 
 	private void addBackupHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/backup");
+		endpoint.path("/graphdb/backup");
 		endpoint.method(POST);
 		endpoint.description(
 				"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.");

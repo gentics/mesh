@@ -4,6 +4,13 @@
 
 == 0.9.9 (PENDING)
 
+icon:plus[] API: The following endpoints were moved:
+
+ * `/api/v1/admin/backup`  ⟶  `/api/v1/admin/graphdb/backup`
+ * `/api/v1/admin/export`  ⟶  `/api/v1/admin/graphdb/export`
+ * `/api/v1/admin/import`  ⟶  `/api/v1/admin/graphdb/import`
+ * `/api/v1/admin/restore` ⟶  `/api/v1/admin/graphdb/restore`
+
 icon:plus[] Core: Added `/api/v1/:projectName/releases/:releaseUuid/migrateMicroschemas` endpoint which can be used to resume previously unfinished micronode migrations.
 
 icon:plus[] Performance: The startup performance has been increased when dealing with huge datasets.

@@ -296,7 +296,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			OIndex<?> index = edgeType.getClassIndex("e." + edgeLabel.toLowerCase() + "_" + indexPostfix);
 			if (index != null) {
 				// Iterate over the sb-tree index entries
-				OIndexCursor cursor = index.iterateEntriesMajor(new OCompositeKey(key), true, true);
+				OIndexCursor cursor = index.iterateEntriesMajor(new OCompositeKey(key), false, false);
 				while (cursor.hasNext()) {
 					Entry<Object, OIdentifiable> entry = cursor.nextEntry();
 					if (entry != null) {
