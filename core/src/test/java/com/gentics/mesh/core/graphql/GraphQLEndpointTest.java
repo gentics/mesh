@@ -28,6 +28,7 @@ import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
@@ -49,7 +50,8 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.graphdb.Tx;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -109,7 +111,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaUuid));
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			Node node2 = content();
 			node2.setUuid(staticUuid);
@@ -287,14 +289,17 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			micronodeField.getMicronode().createString("postcode").setString("1010");
 
 			// folder("news").getChildren().forEach(e -> role().revokePermissions(e, GraphPermission.READ_PERM));
+			tx.success();
 		}
+		
 		// JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{ tagFamilies(name: \"colors\") { name, creator {firstname, lastname}, tags(page: 1,
 		// perPage:1) {name}}, schemas(name:\"content\") {name}, nodes(uuid:\"" + contentUuid + "\"){uuid, languagePaths(linkType: FULL) {languageTag, link},
 		// availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
 
-		JsonObject response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
-		System.out.println(response.encodePrettily());
-		assertThat(response).compliesToAssertions(queryName);
+		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
+		JsonObject json = new JsonObject(JsonUtil.toJson(response));
+		System.out.println(json.encodePrettily());
+		assertThat(json).compliesToAssertions(queryName);
 
 		// MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "', 'created': '" + creationDate + "'}}}", response);
 

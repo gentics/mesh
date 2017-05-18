@@ -1,4 +1,4 @@
-package com.gentics.mesh.json;
+package com.gentics.mesh.json.deserializer;
 
 import java.io.IOException;
 

@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql;
 
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
@@ -39,6 +40,8 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 		secureAll();
 		Endpoint queryEndpoint = createEndpoint();
 		queryEndpoint.method(POST);
+		queryEndpoint.exampleRequest(graphqlExamples.createQueryRequest());
+		queryEndpoint.exampleResponse(OK, graphqlExamples.createResponse(), "Basic GraphQL response.");
 		queryEndpoint.description("Endpoint which accepts GraphQL queries.");
 		queryEndpoint.path("/");
 		queryEndpoint.handler(rc -> {

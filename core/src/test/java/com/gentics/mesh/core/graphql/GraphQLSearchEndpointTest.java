@@ -12,7 +12,9 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -46,9 +48,10 @@ public class GraphQLSearchEndpointTest extends AbstractMeshTest {
 		try (NoTx noTx = db().noTx()) {
 			recreateIndices();
 		}
-		JsonObject response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
-		System.out.println(response.encodePrettily());
-		assertThat(response).compliesToAssertions(queryName);
+		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
+		JsonObject json = new JsonObject(JsonUtil.toJson(response));
+		System.out.println(json.encodePrettily());
+		assertThat(json).compliesToAssertions(queryName);
 	}
 
 }

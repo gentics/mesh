@@ -55,6 +55,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -153,12 +154,14 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// Iterate over all found elements and frame them
 		List<Node> elementsOfPage = new ArrayList<>();
 
+		// NOT WORKING CURRENTLY:
 		// Locate all in-bound vertex id's for item edges for this root vertex.
 		// We use this method rather regular traversal in order to speedup the edge iteration.
-		// Alternative: Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", getId());
 		// Otherwise each edge would need to be loaded.
-		List<Object> inIds = db.edgeLookup(getRootLabel(), "inout", getId());
-		for (Object id : inIds) {
+		// List<Object> inIds = db.edgeLookup(getRootLabel(), "inout", getId());
+		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", getId());
+		for (Edge edge : edges) {
+			Object id = edge.getVertex(Direction.IN).getId();
 			// Check the permission
 			if (!requestUser.hasPermissionForId(id, perm)) {
 				continue;

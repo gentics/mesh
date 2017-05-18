@@ -1,4 +1,4 @@
-package com.gentics.mesh.json;
+package com.gentics.mesh.json.deserializer;
 
 import java.io.IOException;
 
@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.core.rest.error.AbstractRestException;
 import com.gentics.mesh.core.rest.error.Errors;
+import com.gentics.mesh.json.MeshJsonException;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

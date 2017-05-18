@@ -13,6 +13,8 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -70,8 +72,8 @@ import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
-import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -82,7 +84,6 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestRequestUtil;
 import com.gentics.mesh.rest.client.handler.ResponseHandler;
-import com.gentics.mesh.rest.client.handler.impl.GraphQLResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.MeshBinaryResponseHandler;
 import com.gentics.mesh.rest.client.handler.impl.WebRootResponseHandler;
 
@@ -93,7 +94,6 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.WebSocket;
-import io.vertx.core.json.JsonObject;
 
 /**
  * HTTP based REST client implementation.
@@ -1008,7 +1008,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<String> getRAML() {
-		return MeshRestRequestUtil.prepareRequest(GET, "/raml", String.class, null, null, client, authentication, disableAnonymousAccess, "text/vnd.yaml");
+		return MeshRestRequestUtil.prepareRequest(GET, "/raml", String.class, null, null, client, authentication, disableAnonymousAccess,
+				"text/vnd.yaml");
 	}
 
 	@Override
@@ -1063,31 +1064,12 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> graphqlQuery(String projectName, String query, ParameterProvider... parameters) {
-		String json = new JsonObject().put("query", query).toString();
-		if (log.isDebugEnabled()) {
-			log.debug(json);
-		}
-		return graphql(projectName, json, parameters);
-	}
-
-	@Override
-	public MeshRequest<JsonObject> graphql(String projectName, String query, ParameterProvider... parameters) {
+	public MeshRequest<GraphQLResponse> graphql(String projectName, GraphQLRequest request, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
-		Objects.requireNonNull(query, "query must not be null");
+		Objects.requireNonNull(request, "request must not be null");
+		Objects.requireNonNull(request.getQuery(), "query within the request must not be null");
 
 		String path = "/" + encodeFragment(projectName) + "/graphql" + getQuery(parameters);
-		String uri = BASEURI + path;
-		Buffer buffer = Buffer.buffer();
-		buffer.appendString(query);
-		// return MeshRestRequestUtil.prepareRequest(POST, path, JsonObject.class, buffer,
-		// "application/json", client, authentication);
-
-		GraphQLResponseHandler handler = new GraphQLResponseHandler(uri);
-		HttpClientRequest request = client.request(POST, uri, handler);
-		authentication.addAuthenticationInformation(request).subscribe(() -> {
-			request.headers().add("Accept", "application/json");
-		});
-		return new MeshHttpRequestImpl<>(request, handler, buffer, "application/json", authentication, "application/json");
+		return prepareRequest(POST, path, GraphQLResponse.class, request);
 	}
 }
