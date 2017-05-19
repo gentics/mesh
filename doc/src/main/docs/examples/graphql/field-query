@@ -1,7 +1,7 @@
 ++++
 <div class="graphql-example">
 {
-  node(path: "/Yachts/Pelorus") {
+  node(path: "/Yachts/Pelorus.html") {
     fields {
       ... on vehicle {
         name
