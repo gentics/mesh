@@ -203,7 +203,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of
 		// the ES index in those cases in order to ensure consistency.
 		if (hasOldLock) {
-			REINDEX_ACTION.invoke();
+			reindexAll();
 		}
 
 		// Mark all changelog entries as applied for new installations
@@ -226,6 +226,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Finally fire the startup event and log that bootstrap has completed
 		log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
+	}
+
+	@Override
+	public void reindexAll() {
+		REINDEX_ACTION.invoke();
 	}
 
 	@Override

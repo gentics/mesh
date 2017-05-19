@@ -9,6 +9,7 @@ import java.io.IOException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.crypto.KeyStoreHelper;
+import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -46,7 +47,7 @@ public class DemoRunner {
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setStartServer(false);
-		 options.getSearchOptions().setHttpEnabled(true);
+		options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setDirectory(null);
 		setupKeystore(options);
 
@@ -56,8 +57,9 @@ public class DemoRunner {
 			config.put("port", options.getHttpServerOptions().getPort());
 
 			// Add demo content provider
+			MeshComponent meshInternal = MeshInternal.get();
 			DemoVerticle demoVerticle = new DemoVerticle(
-					new DemoDataProvider(MeshInternal.get().database(), MeshInternal.get().meshLocalClientImpl()),
+					new DemoDataProvider(meshInternal.database(), meshInternal.meshLocalClientImpl(), meshInternal.boot()),
 					MeshInternal.get().routerStorage());
 			DeploymentUtil.deployAndWait(vertx, config, demoVerticle, false);
 
