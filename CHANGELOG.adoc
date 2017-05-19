@@ -2,7 +2,7 @@
 
 = Gentics Mesh Changelog
 
-== 0.9.9 (PENDING)
+== 0.9.9 (19.05.2017)
 
 icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.20.
 
