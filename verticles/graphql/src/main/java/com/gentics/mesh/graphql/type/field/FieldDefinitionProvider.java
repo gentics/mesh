@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -246,7 +247,12 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				if (nodeList == null) {
 					return null;
 				}
-				return nodeList.getList().stream().map(item -> item.getNode()).collect(Collectors.toList());
+				return nodeList.getList().stream().map(item -> {
+					Node node = item.getNode();
+					List<String> languageTags = Arrays.asList(container.getLanguage().getLanguageTag());
+					NodeGraphFieldContainer itemContainer = node.findNextMatchingFieldContainer(gc, languageTags);
+					return new NodeContent(itemContainer).setNode(node);
+				}).collect(Collectors.toList());
 			case "micronode":
 				MicronodeGraphFieldList micronodeList = container.getMicronodeList(schema.getName());
 				if (micronodeList == null) {
@@ -312,7 +318,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 							// Check permissions for the linked node
 							gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 							NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
-							return new NodeContent(node, container);
+							return new NodeContent(container).setNode(node);
 						}
 					}
 					return null;

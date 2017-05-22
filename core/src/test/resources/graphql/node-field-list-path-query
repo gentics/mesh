@@ -1,0 +1,17 @@
+{
+	node(path:"/Neuigkeiten/2015") {
+	uuid
+	fields {
+		... on folder {
+			nodeList { 
+				uuid 
+				path
+				edited
+				editor { uuid }
+				isPublished
+				language
+			}
+		}
+	}
+	}
+}

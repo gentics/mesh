@@ -132,7 +132,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			List<String> languageTags = getLanguageArgument(env);
 			NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
-			return new NodeContent(node, container);
+			return new NodeContent(container).setNode(node);
 		}
 		String path = env.getArgument("path");
 		if (path != null) {
@@ -182,7 +182,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			Node node = project.getBaseNode();
 			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, getLanguageArgument(env));
-			return new NodeContent(node, container);
+			return new NodeContent(container).setNode(node);
 		}
 		return null;
 	}
@@ -231,7 +231,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 						List<String> languageTags = getLanguageArgument(env);
 						List<NodeContent> contents = nodes.getWrappedList().stream().map(node -> {
 							NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
-							return new NodeContent(node, container);
+							return new NodeContent(container).setNode(node);
 						}).collect(Collectors.toList());
 						return new PageImpl<>(contents, nodes.getTotalElements(), nodes.getNumber(), nodes.getPageCount(), nodes.getPerPage());
 					}

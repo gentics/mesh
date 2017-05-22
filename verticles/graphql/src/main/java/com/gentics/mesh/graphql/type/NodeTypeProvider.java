@@ -109,7 +109,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// Otherwise the container is a draft and we need to use the regular read permission
 			gc.requiresPerm(node, READ_PERM);
 		}
-		return new NodeContent(node, container);
+		return new NodeContent(container).setNode(node);
 	}
 
 	public Object breadcrumbFetcher(DataFetchingEnvironment env) {
