@@ -1,6 +1,8 @@
 
 = Building Blocks
 
+This part of our documentation will be about the core concepts of Gentics Mesh. It will describe the building blocks you'll need to setup your project. We will start with an overview and then move on to discuss each concept in detail including examples and references to relevant parts of the API. At the end you should be able to understand the core concepts and be ready to design your content model as well as manage users and their permissions on elements of your project using either the API or the Gentics Mesh user interface.
+
 == The Gentics Mesh building blocks in a nutshell
 
 image:overview.png[]
@@ -13,9 +15,12 @@ image:overview.png[]
 * Gentics Mesh supports building *content trees*. Nodes can be hierarchically structured if a container-schema is provided. While it’s possible to organize your contents in a simple, flat structure with tagging and referencing, content trees are the basis for leveraging the power of * automatic navigation menus, breadcrumbs, pretty URLs and link resolving*. For your convenience, Gentics Mesh is shipped with a generic _folder_ schema that you may choose for hierarchically organizing your content in a tree and ultimately following the well-known file system paradigm.
 * With *micronodes* it is possible to build complex object data structures as they are basically representing subnodes of nodes. They allow for creating custom content components, e.g. media elements of your blogpost such as YouTube videos, image galleries, Google maps, image with caption, vcards, quotes, or text paragraphs to be mixed and matched.
 * Supporting *multi-language and localisation*, nodes are can hold several language variants of your content.
+* Each user (a physical person or client app) has a *user* object counter part in Gentics Mesh, which can be extended by referencing a custom user node. By defining your custom user schema Gentics Mesh supports extensible user profiles for your apps.
+* *Groups* are used to organize users, e.g., of same access levels.
+* *Roles* are used to manage permissions between a role and other elements in Gentics Mesh (i.e., nodes, schemas, users, roles, etc.). Roles can be assigned to groups, thus efficiently granting the role's permissions to a set of users.
+//* *Permissions*
 //* References /List
 //* Versioning
-//* Permissions
 //* Content Releases
 
 == Project
@@ -113,10 +118,10 @@ NOTE: It is important to understand that a node is just a container for language
 | Delete the node with the given UUID and all attached nodes.
 | ```DELETE /api/v1/:projectName/nodes/:nodeUuid```
 
-| Update the binaryfield with the given name.
+| Update the binary field with the given name.
 | ```POST /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```
 
-| Download the binaryfield with the given name.
+| Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.
 | ```GET /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```
 
 | Image Manipulation: Transform the image with the given field name and overwrite the stored image with the transformation result.
@@ -190,7 +195,7 @@ include::examples/models/NodeResponse.adoc[]
 
 | resolveLinks
 | string
-| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. Links will automatically be resolved and replaced by the resolved http://getmesh.io/docs/beta/#_webroot[WebRoot] link. No resolving occurs if the query parameter is omitted.
+| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. With the parameter set the ```path``` property as well as the ```languagesPath``` property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved http://getmesh.io/docs/beta/#_link_resolving[WebRoot] link. No resolving occurs if the query parameter is omitted.
 
 | role
 | string
@@ -213,7 +218,7 @@ include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/200/example
 
 Typically, each project will require a set of different content types. Together they can be considered the content model of your project. Staying with the example of a product catalogue website: a product, product category, product image, and product manual each represent a separate content type. In Gentics Mesh, a *schema* is used to define such content types in terms of a couple of standard fields (e.g. ```uuid```, ```name```, ```description```, ```version```, etc.) and an arbitrary number of custom fields (e.g., ```string```, ```number```, ```HTML```, ```date```, ```binary```, ```list```, ```node```, ```micronode```, ```boolean```). You can think of a schema as a blueprint for new content items.  
 
-TIP: Using the ```container``` property, a schema can be configured to allow for hierarchically structuring nodes. Nodes based on a such a schema may contain child nodes. This is the basis for building http://getmesh.io/docs/beta/#_contenttrees[content trees] in Gentics Mesh and leveraging the power of http://getmesh.io/docs/beta/#_navigation[automatic navigation menus, breadcrumbs and link resolving].
+TIP: Using the ```container``` property, a schema can be configured to allow for hierarchically structuring nodes. Nodes based on a such a schema may contain child nodes. This is the basis for building http://getmesh.io/docs/beta/#_contenttrees[content trees] in Gentics Mesh and leveraging the power of automatic http://getmesh.io/docs/beta/#_navigation[navigation menus], http://getmesh.io/docs/beta/#_breadcrumbs[breadcrumbs] and http://getmesh.io/docs/beta/#_prettyurls[pretty URLs].
 
 === API end points
 
@@ -273,10 +278,6 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 | release
 | string
 | Specifies the release UUID to be used for loading data. The latest project release will be used if this parameter is omitted.
-
-| resolveLinks
-| string
-| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. Links will automatically be resolved and replaced by the resolved http://getmesh.io/docs/beta/#_webroot[WebRoot] link. No resolving occurs if the query parameter is omitted.
 
 | role
 | string
@@ -616,7 +617,7 @@ include::examples/models/UserResponse.adoc[]
 
 | resolveLinks
 | string
-| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. Links will automatically be resolved and replaced by the resolved http://getmesh.io/docs/beta/#_webroot[WebRoot] link. No resolving occurs if the query parameter is omitted.
+| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. With the parameter set the ```path``` property as well as the ```languagesPath``` property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved hhttp://getmesh.io/docs/beta/#_link_resolving[WebRoot] link. No resolving occurs if the query parameter is omitted.
 
 | role
 | string
