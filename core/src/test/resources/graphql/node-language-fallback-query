@@ -36,22 +36,22 @@
 		# [$.data.node.uuid=<is-uuid>]
 		uuid
 		fields {
-			# [$.data.node.fields.name=Neuigkeiten]
-			... on folder { name }
+			# [$.data.node.fields.slug=Neuigkeiten]
+			... on folder { slug }
 		}
 
 		# This should yield the english content of the node (english is the default language)
 		enNode: node {
 			fields {
-				# [$.data.node.enNode.fields.name=News]
-				... on folder { name }
+				# [$.data.node.enNode.fields.slug=News]
+				... on folder { slug }
 			}
 		}
 
 		deNode: node(lang: "de") {
 			fields {
-				# [$.data.node.deNode.fields.name=Neuigkeiten]
-				... on folder { name }
+				# [$.data.node.deNode.fields.slug=Neuigkeiten]
+				... on folder { slug }
 			}
 		}
 	}

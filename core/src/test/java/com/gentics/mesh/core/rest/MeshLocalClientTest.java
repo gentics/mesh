@@ -26,6 +26,6 @@ public class MeshLocalClientTest extends AbstractMeshTest {
 		meshDagger().meshLocalClientImpl().setUser(user);
 		NodeResponse response = call(
 				() -> meshDagger().meshLocalClientImpl().findNodeByUuid(PROJECT_NAME, newsNodeUuid, new NodeParametersImpl().setLanguages("de")));
-		assertEquals("Neuigkeiten", response.getFields().getStringField("name").getString());
+		assertEquals("Neuigkeiten", response.getFields().getStringField("slug").getString());
 	}
 }

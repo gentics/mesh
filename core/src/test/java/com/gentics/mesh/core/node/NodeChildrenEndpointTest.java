@@ -233,7 +233,8 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		nodeCreateRequest.setLanguage("de");
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(uuid));
 		nodeCreateRequest.setSchema(new SchemaReference().setName("content"));
-		nodeCreateRequest.getFields().put("name",  new StringFieldImpl().setString("Only German Content"));
+		nodeCreateRequest.getFields().put("teaser",  new StringFieldImpl().setString("Only German Teaser"));
+		nodeCreateRequest.getFields().put("slug",  new StringFieldImpl().setString("Only German Slug"));
 
 		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 		NodeListResponse listResponse = call(() -> client().findNodeChildren(PROJECT_NAME, uuid, new NodeParametersImpl().setLanguages("en")));

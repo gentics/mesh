@@ -117,7 +117,8 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(folderUuid));
 		nodeCreateRequest.setSchema(new SchemaReference().setName("content"));
 		nodeCreateRequest.getFields().put("title", FieldUtil.createStringField("someTitle"));
-		nodeCreateRequest.getFields().put("name", FieldUtil.createStringField("someName"));
+		nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("someTeaser"));
+		nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("someSlug"));
 		MicronodeResponse micronodeField = new MicronodeResponse();
 		micronodeField.setMicroschema(new MicroschemaReference().setName("TestMicroschema"));
 		micronodeField.getFields().put("text", FieldUtil.createStringField("someText"));
