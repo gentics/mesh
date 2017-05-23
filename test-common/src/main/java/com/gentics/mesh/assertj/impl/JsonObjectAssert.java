@@ -114,7 +114,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		String value = parts[1];
 
 		String msg = "Failure on line {" + lineNr + "}";
-		if ("<not-null>".equals(value)) {
+		if ("<not-null>".equals(value) || "<is-not-null>".equals(value)) {
 			pathIsNotNull(path, msg);
 		} else if ("<is-null>".equals(value)) {
 			pathIsNull(path, msg);

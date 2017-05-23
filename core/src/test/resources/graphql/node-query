@@ -35,3 +35,4 @@
 		breadcrumb { uuid }
 	}
 }
+# [$.data.errors=<is-null>]
