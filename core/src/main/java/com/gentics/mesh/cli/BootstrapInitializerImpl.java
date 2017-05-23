@@ -455,23 +455,24 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.setName("content");
 				schema.setDescription("Content schema for blogposts");
 				schema.setDisplayField("title");
-				schema.setSegmentField("fileName");
+				schema.setSegmentField("slug");
 
-				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
-				nameFieldSchema.setName("name");
-				nameFieldSchema.setLabel("Name");
-				nameFieldSchema.setRequired(true);
-				schema.addField(nameFieldSchema);
-
-				StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
-				filenameFieldSchema.setName("fileName");
-				filenameFieldSchema.setLabel("Filename");
-				schema.addField(filenameFieldSchema);
+				StringFieldSchema slugFieldSchema = new StringFieldSchemaImpl();
+				slugFieldSchema.setName("slug");
+				slugFieldSchema.setLabel("Slug");
+				slugFieldSchema.setRequired(true);
+				schema.addField(slugFieldSchema);
 
 				StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 				titleFieldSchema.setName("title");
 				titleFieldSchema.setLabel("Title");
 				schema.addField(titleFieldSchema);
+
+				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
+				nameFieldSchema.setName("teaser");
+				nameFieldSchema.setLabel("Teaser");
+				nameFieldSchema.setRequired(true);
+				schema.addField(nameFieldSchema);
 
 				HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
 				contentFieldSchema.setName("content");
@@ -490,11 +491,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.setName("folder");
 				schema.setDescription("Folder schema to create containers for other nodes.");
 				schema.setDisplayField("name");
-				schema.setSegmentField("folderName");
+				schema.setSegmentField("slug");
 
 				StringFieldSchema folderNameFieldSchema = new StringFieldSchemaImpl();
-				folderNameFieldSchema.setName("folderName");
-				folderNameFieldSchema.setLabel("Folder Name");
+				folderNameFieldSchema.setName("slug");
+				folderNameFieldSchema.setLabel("Slug");
 				schema.addField(folderNameFieldSchema);
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();

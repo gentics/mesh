@@ -294,24 +294,24 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	public void testRemoveSegmentField() throws Exception {
 		try (NoTx noTx = db().noTx()) {
 			Node node = content();
-			assertNotNull("The node should have a filename string graph field", node.getGraphFieldContainer("en").getString("fileName"));
+			assertNotNull("The node should have a filename string graph field", node.getGraphFieldContainer("en").getString("slug"));
 
 			// 1. Create changes
 			SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-			SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange("fileName");
+			SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange("slug");
 			listOfChanges.getChanges().add(change);
 
 			// 2. Invoke migration
 			SchemaContainer container = schemaContainer("content");
 			assertNull("The schema should not yet have any changes", container.getLatestVersion().getNextChange());
 			call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges), BAD_REQUEST, "schema_error_segmentfield_invalid",
-					"fileName");
+					"slug");
 
 			// 3. Assert migrated node
 			node.reload();
 			NodeGraphFieldContainer fieldContainer = node.getGraphFieldContainer("en");
 			fieldContainer.reload();
-			assertNull("The node should still have a filename string graph field", fieldContainer.getHtml("fileName"));
+			assertNull("The node should still have a filename string graph field", fieldContainer.getHtml("slug"));
 		}
 	}
 
@@ -459,7 +459,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
 
 			// 4. Latch for completion
-			latch.await(120, TimeUnit.SECONDS);
+			latch.await(10, TimeUnit.SECONDS);
 
 			try (NoTx noTx = db().noTx()) {
 				container.reload();
@@ -533,7 +533,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			Node content = content();
 			SchemaContainer container = schemaContainer("content");
 			SchemaUpdateRequest schema = JsonUtil.readValue(container.getLatestVersion().getJson(), SchemaUpdateRequest.class);
-			assertEquals("The segment field name should be set", "fileName", schema.getSegmentField());
+			assertEquals("The segment field slug should be set", "slug", schema.getSegmentField());
 			schema.getFields().add(FieldUtil.createStringFieldSchema("extraname").setLabel("someLabel"));
 			MeshInternal.get().serverSchemaStorage().clear();
 
@@ -550,7 +550,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			failingLatch(latch);
 
 			Schema reloadedSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
-			assertEquals("The segment field name should be set", "fileName", reloadedSchema.getSegmentField());
+			assertEquals("The segment field slug should be set", "slug", reloadedSchema.getSegmentField());
 			assertEquals("someLabel", reloadedSchema.getField("extraname").getLabel());
 
 			schema.setVersion(schema.getVersion() + 1);

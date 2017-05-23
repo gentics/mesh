@@ -2,12 +2,15 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,6 +25,7 @@ import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.LinkType;
@@ -31,7 +35,6 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeNavigationEndpointTest extends AbstractMeshTest {
@@ -167,8 +170,15 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 			assertEquals("The root uuid did not match the expected one.", uuid, response.getUuid());
 
 			String[] expectedNodes = { "2015", "2014", "News Overview_english_name" };
-			List<String> nodeNames = response.getChildren().stream().map(e -> e.getNode().getFields().getStringField("name").getString())
-					.collect(Collectors.toList());
+			List<String> nodeNames = response.getChildren().stream().map(e -> {
+				StringField titleField = e.getNode().getFields().getStringField("teaser");
+				StringField slugField = e.getNode().getFields().getStringField("slug");
+				if (titleField != null) {
+					return titleField.getString();
+				} else {
+					return slugField.getString();
+				}
+			}).collect(Collectors.toList());
 			assertThat(response).hasDepth(2).isValid(8);
 			assertThat(nodeNames).containsExactly(expectedNodes);
 		}
@@ -223,21 +233,21 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 		request.setSchema(new SchemaReference().setName("folder"));
 		request.setLanguage("en");
 		request.getFields().put("name", FieldUtil.createStringField("english folder-0"));
-		request.getFields().put("folderName", FieldUtil.createStringField("english folder-0"));
+		request.getFields().put("slug", FieldUtil.createStringField("english folder-0"));
 		request.setParentNodeUuid(baseNodeUuid);
 		NodeResponse englishFolder0 = call(() -> client().createNode(PROJECT_NAME, request));
 
 		// level 1
 		request.setParentNodeUuid(englishFolder0.getUuid());
 		request.getFields().put("name", FieldUtil.createStringField("english folder-1"));
-		request.getFields().put("folderName", FieldUtil.createStringField("english folder-1"));
+		request.getFields().put("slug", FieldUtil.createStringField("english folder-1"));
 		NodeResponse englishFolder1 = call(() -> client().createNode(PROJECT_NAME, request));
 
 		// level 2
 		request.setLanguage("de");
 		request.setParentNodeUuid(englishFolder1.getUuid());
 		request.getFields().put("name", FieldUtil.createStringField("german folder-2"));
-		request.getFields().put("folderName", FieldUtil.createStringField("german folder-2"));
+		request.getFields().put("slug", FieldUtil.createStringField("german folder-2"));
 		NodeResponse germanFolderResponse = call(() -> client().createNode(PROJECT_NAME, request));
 
 		NavigationResponse navResponse = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid,
@@ -268,7 +278,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 			}
 			if (element.getChildren() != null) {
 				NodeResponse result = findFolder(element.getChildren(), uuid);
-				if(result!=null) {
+				if (result != null) {
 					return result;
 				}
 			}
