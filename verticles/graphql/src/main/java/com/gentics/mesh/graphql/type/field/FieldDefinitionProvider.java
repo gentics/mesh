@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -181,7 +180,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	}
 
 	/**
-	 * Create the graphql field definition for the given list field schema.
+	 * Create the GraphQL field definition for the given list field schema.
 	 * 
 	 * @param schema
 	 * @return
@@ -250,6 +249,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return nodeList.getList().stream().map(item -> {
 					Node node = item.getNode();
 					List<String> languageTags = Arrays.asList(container.getLanguage().getLanguageTag());
+					//TODO we need to add more assertions and check what happens if the itemContainer is null
 					NodeGraphFieldContainer itemContainer = node.findNextMatchingFieldContainer(gc, languageTags);
 					return new NodeContent(itemContainer).setNode(node);
 				}).collect(Collectors.toList());
