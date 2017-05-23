@@ -361,10 +361,8 @@ public class DemoDataProvider {
 			switch (schemaName) {
 			case "category":
 			case "folder":
-				nodeCreateRequest.getFields().put("folderName", FieldUtil.createStringField(segmentFieldValue));
-				break;
 			case "vehicle":
-				nodeCreateRequest.getFields().put("fileName", FieldUtil.createStringField(segmentFieldValue));
+				nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField(segmentFieldValue));
 				break;
 			}
 

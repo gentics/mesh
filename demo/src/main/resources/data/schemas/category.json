@@ -2,15 +2,15 @@
   "name" : "category",
   "container" : true,
   "displayField": "name",
-  "segmentField": "folderName",
+  "segmentField": "slug",
   "fields" : [ {
     "name" : "name",
     "label" : "Name",
     "required" : true,
     "type" : "string"
   }, {
-    "name" : "folderName",
-    "label" : "Folder Name",
+    "name" : "slug",
+    "label" : "Slug",
     "required" : true,
     "type" : "string"
   }, {
