@@ -99,7 +99,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("de")));
 		assertEquals(1, response.getData().size());
 
-		String name = response.getData().get(0).getFields().getStringField("name").getString();
+		String name = response.getData().get(0).getFields().getStringField("teaser").getString();
 		assertEquals("Honda NR german", name);
 	}
 
