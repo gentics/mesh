@@ -82,7 +82,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		if (parentNode == null) {
 			return null;
 		}
-		return gc.requiresPerm(parentNode, READ_PERM, READ_PUBLISHED_PERM);
+		return new NodeContent(null).setNode(gc.requiresPerm(parentNode, READ_PERM, READ_PUBLISHED_PERM));
 	}
 
 	public Object nodeLanguageFetcher(DataFetchingEnvironment env) {
