@@ -71,7 +71,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	}
 
 	/**
-	 * Assert that the JSON object complies to the assertions which are stored in the comments of the query with the given name.
+	 * Assert that the JSON object complies to the assertions which are stored in the comments of the GraphQL query with the given name.
 	 * 
 	 * @param name
 	 * @return
@@ -120,11 +120,35 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 			pathIsNull(path, msg);
 		} else if ("<is-uuid>".equals(value)) {
 			pathIsUuid(path, msg);
+		} else if ("<is-undefined>".equals(value)) {
+			pathIsUndefined(path);
 		} else {
 			has(path, value, msg);
 		}
 	}
 
+	/**
+	 * Assert that the path is not present in the JSON object.
+	 * 
+	 * @param path
+	 * @return Fluent API
+	 */
+	public JsonObjectAssert pathIsUndefined(String path) {
+		try {
+			JsonPath.read(actual.toString(), path);
+			fail("The value at path {" + path + "} was present but it should be undefined.");
+		} catch (PathNotFoundException e) {
+			// OK
+		}
+		return this;
+	}
+
+	/**
+	 * Assert that the string value which is present at the given path matches the pattern of a uuid.
+	 * 
+	 * @param path
+	 * @return Fluent API
+	 */
 	public JsonObjectAssert pathIsUuid(String path) {
 		return pathIsUuid(path, null);
 	}
