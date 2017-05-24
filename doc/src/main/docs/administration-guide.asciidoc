@@ -18,7 +18,7 @@
 
 Good news: there is no dedicated installation procedure for Gentics Mesh! 
 
-All you need is to http://getmesh.io/Download[download the Gentics Mesh JAR] file and start it by executing 
+All you need is to http://getmesh.io/Download[download the Gentics Mesh JAR] file and start by executing 
 
 [source,bash]
 ----
@@ -36,7 +36,7 @@ On first startup, Gentics Mesh will create initial data, set a password for the 
 
 == Docker
 
-Alternatively you can start Gentics Mesh using docker via:
+Alternatively you can start Gentics Mesh using Docker via:
 
 The https://hub.docker.com/r/gentics/mesh-demo/[mesh-demo] image contains Gentics Mesh together with demo content and our demo application.
 
@@ -61,7 +61,7 @@ docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh
 
 ==== Server Requirements
 
- Gentics Mesh comes with OrientDB, an embedded graph database and Elasticsearch. There are no external dependencies besides Oracle Java Runtime 1.8.0_40 or newer.
+Gentics Mesh comes with OrientDB, an embedded graph database and Elasticsearch. There are no external dependencies besides Oracle Java Runtime 1.8.0_40 or newer.
 
 ===== System Configuration
 
@@ -82,7 +82,7 @@ Edit _/etc/pam.d/su_ and uncomment or add the following line:
 session    required   pam_limits.so
 ----
 
-Please note that this change may require a logout and login after it is being applied.
+NOTE: This change may require a logout and login after it is being applied.
 
 ==== Client Requirements
 
@@ -98,6 +98,7 @@ The settings for the Gentics Mesh user interface can be found in ```mesh-ui-conf
 include::examples/models/mesh-config.yml[]
 ----
 
+=== General Settings 
 [options="header"]
 |======
 | Configuration            | Type   | Description
