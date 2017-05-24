@@ -8,14 +8,17 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -25,6 +28,8 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -82,7 +87,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		if (parentNode == null) {
 			return null;
 		}
-		return new NodeContent(null).setNode(gc.requiresPerm(parentNode, READ_PERM, READ_PUBLISHED_PERM));
+		gc.requiresPerm(parentNode, READ_PERM, READ_PUBLISHED_PERM);
+		return handleLanguageFallback(gc, parentNode, content);
 	}
 
 	public Object nodeLanguageFetcher(DataFetchingEnvironment env) {
@@ -109,7 +115,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			// Otherwise the container is a draft and we need to use the regular read permission
 			gc.requiresPerm(node, READ_PERM);
 		}
-		return new NodeContent(container).setNode(node);
+		return new NodeContent(node, container);
 	}
 
 	public Object breadcrumbFetcher(DataFetchingEnvironment env) {
@@ -118,7 +124,35 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		if (content == null) {
 			return null;
 		}
-		return content.getNode().getBreadcrumbNodes(gc);
+
+		return content.getNode().getBreadcrumbNodes(gc).stream().map(node -> {
+			return handleLanguageFallback(gc, node, content);
+		}).collect(Collectors.toList());
+	}
+
+	/**
+	 * Handle the language fallback within graphql queries when dealing with nodes. This method loads the container which best matches the current query
+	 * situation. A list of languages is constructed in order to apply the fallback and load the matching container from the given node.
+	 * <ul>
+	 * <li>Check whether the given content has a container. Use the container language to load the container from the node</li>
+	 * <li>If the content does not provide a container the default mesh language is used to load the container.
+	 * </ul>
+	 * 
+	 * @param gc
+	 * @param node
+	 *            Node from which the container will be loaded
+	 * @param content
+	 *            Content which may contain a container from which the language information will be used to load the container
+	 * @return Located container or null if no container could be found
+	 */
+	private NodeContent handleLanguageFallback(GraphQLContext gc, Node node, NodeContent content) {
+		List<String> languageTags = new ArrayList<>();
+		if (content.getContainer() != null) {
+			languageTags.add(content.getContainer().getLanguage().getLanguageTag());
+		} else {
+			languageTags.add(Mesh.mesh().getOptions().getDefaultLanguage());
+		}
+		return new NodeContent(node, node.findNextMatchingFieldContainer(gc, languageTags));
 	}
 
 	public GraphQLObjectType createNodeType(Project project) {
@@ -190,7 +224,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						}
 						// Otherwise return the last segment.
 						PathSegment lastSegment = path.getSegments().get(path.getSegments().size() - 1);
-						return new NodeContent(lastSegment.getContainer());
+						NodeGraphFieldContainer container = lastSegment.getContainer();
+						Node nodeOfContainer = null;
+						return new NodeContent(nodeOfContainer, container);
 					}
 					return null;
 				}));
@@ -202,10 +238,17 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			if (content == null) {
 				return null;
 			}
-			Node node = content.getNode(); // The obj type is validated by graphtype
-			List<String> languageTags = env.getArgument("languages");
-			return node.getChildren(gc.getUser(), languageTags, gc.getRelease().getUuid(), null, getPagingInfo(env));
+			Node node = content.getNode();
+			List<String> languageTags = getLanguageArgument(env);
+			TransformablePage<? extends Node> page = node.getChildren(gc.getUser(), languageTags, gc.getRelease().getUuid(), null,
+					getPagingInfo(env));
 
+			// Transform the found nodes into contents
+			List<NodeContent> contents = page.getWrappedList().stream().map(item -> {
+				NodeGraphFieldContainer container = item.findNextMatchingFieldContainer(gc, languageTags);
+				return new NodeContent(item, container);
+			}).collect(Collectors.toList());
+			return new PageImpl<NodeContent>(contents, page);
 		}, "Node").argument(createLanguageTagArg()));
 
 		// .parent

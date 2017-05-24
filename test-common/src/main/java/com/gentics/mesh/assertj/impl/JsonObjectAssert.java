@@ -121,7 +121,7 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		} else if ("<is-uuid>".equals(value)) {
 			pathIsUuid(path, msg);
 		} else if ("<is-undefined>".equals(value)) {
-			pathIsUndefined(path);
+			pathIsUndefined(path, msg);
 		} else {
 			has(path, value, msg);
 		}
@@ -131,12 +131,13 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	 * Assert that the path is not present in the JSON object.
 	 * 
 	 * @param path
+	 * @param msg
 	 * @return Fluent API
 	 */
-	public JsonObjectAssert pathIsUndefined(String path) {
+	public JsonObjectAssert pathIsUndefined(String path, String msg) {
 		try {
 			JsonPath.read(actual.toString(), path);
-			fail("The value at path {" + path + "} was present but it should be undefined.");
+			fail(msg + " The value at path {" + path + "} was present but it should be undefined.");
 		} catch (PathNotFoundException e) {
 			// OK
 		}

@@ -87,8 +87,8 @@ public abstract class AbstractTypeProvider {
 		if (argumentList != null) {
 			languageTags.addAll(argumentList);
 		}
-		// Check whether the default language is already part of the languages.
-		if (!languageTags.contains(defaultLanguage)) {
+		// Only use the default language if no other language has been specified.
+		if (languageTags.isEmpty()) {
 			languageTags.add(defaultLanguage);
 		}
 		return languageTags;

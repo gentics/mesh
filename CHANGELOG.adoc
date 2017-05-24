@@ -4,6 +4,16 @@
 
 == 0.9.10 (PENDING)
 
+icon:plus[] Schemas: The default content and folder schemas have been updated. The `fileName` and `folderName` fields have been renamed to `slug`. The `name` field was removed from the content schema and a `teaser` field has been added.
+These changes are optional and thus not automatically applied to existing installations.
+
+icon:plus[] Demo: The `folderName` and `fileName` fields have been renamed to `slug`. This change only affects new demo installations.
+
+icon:check[] UI: Schema & Microschema description is no longer a required field.
+
+icon:check[] GraphQL: The language fallback handling was overhauled. The default language will no longer be automatically be append to the list of fallback languages. This means that loading nodes will only return nodes in those languages which have been specified by the `lang` argument.
+
+icon:check[] GraphQL: The `path` handling for nodes within node lists has been fixed. Previously it was not possible to retrieve the `path` and various other fields for those nodes.
 
 == 0.9.9 (19.05.2017)
 

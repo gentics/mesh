@@ -32,7 +32,6 @@
 			editor {username}
 			edited
 		}
-		breadcrumb { uuid }
 	}
 }
-# [$.data.errors=<is-undefined>]
+# [$.errors=<is-undefined>]

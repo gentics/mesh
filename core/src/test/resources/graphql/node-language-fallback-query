@@ -10,13 +10,14 @@
 		}
 		
 	}
+	# Try to load the node in russian - Some fields should be null since the container for "ru" does not exist
 	nodeByUuidRu: node(uuid: "43ee8f9ff71e4016ae8f9ff71e10161c", lang: "ru") {
 		# [$.data.nodeByUuidRu.uuid=43ee8f9ff71e4016ae8f9ff71e10161c]
 		uuid
-		# [$.data.nodeByUuidRu.language=en]
+		# [$.data.nodeByUuidRu.language=<is-null>]
 		language
+		# [$.data.nodeByUuidRu.fields=<is-null>]
 		fields {
-			# [$.data.nodeByUuidRu.fields.title=News Overview english title]
 			... on content { title }
 		}
 	}
@@ -56,3 +57,4 @@
 		}
 	}
 }
+# [$.errors=<is-undefined>]

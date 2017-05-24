@@ -47,7 +47,7 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		Node node = project.getBaseNode();
 		gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 		NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, getLanguageArgument(env));
-		return new NodeContent(container).setNode(node);
+		return new NodeContent(node, container);
 	}
 
 	public GraphQLObjectType createProjectType(Project project) {

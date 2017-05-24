@@ -18,7 +18,7 @@ import org.apache.commons.io.IOUtils;
 import org.raml.model.parameter.QueryParameter;
 import org.reflections.Reflections;
 
-import com.gentics.mesh.core.rest.common.GenerateDocumentation;
+import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.github.jknack.handlebars.Handlebars;

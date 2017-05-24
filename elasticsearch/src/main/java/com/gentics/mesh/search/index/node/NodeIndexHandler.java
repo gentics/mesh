@@ -504,7 +504,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 									// Locate the matching container and add it to the list of found containers
 									NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag, ac.getRelease(), type);
 									if (container != null) {
-										elementList.add(new NodeContent(container).setNode(node));
+										elementList.add(new NodeContent(node, container));
 									}
 									break;
 								}

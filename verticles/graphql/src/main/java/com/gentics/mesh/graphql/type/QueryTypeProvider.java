@@ -132,14 +132,15 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			List<String> languageTags = getLanguageArgument(env);
 			NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
-			return new NodeContent(container).setNode(node);
+			return new NodeContent(node, container);
 		}
 		String path = env.getArgument("path");
 		if (path != null) {
 			GraphQLContext gc = env.getContext();
 			Path pathResult = webrootService.findByProjectPath(gc, path);
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
-			return new NodeContent(container);
+			Node nodeOfContainer = container.getParentNode();
+			return new NodeContent(nodeOfContainer, container);
 		}
 		return null;
 	}
@@ -180,9 +181,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		Project project = gc.getProject();
 		if (project != null) {
 			Node node = project.getBaseNode();
-			node = gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
+			gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 			NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, getLanguageArgument(env));
-			return new NodeContent(container).setNode(node);
+			return new NodeContent(node, container);
 		}
 		return null;
 	}
@@ -228,12 +229,14 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 					} else {
 						NodeRoot nodeRoot = gc.getProject().getNodeRoot();
 						TransformablePage<? extends Node> nodes = nodeRoot.findAll(gc, pagingInfo);
+
+						// Now lets try to load the containers for those found nodes - apply the language fallback
 						List<String> languageTags = getLanguageArgument(env);
 						List<NodeContent> contents = nodes.getWrappedList().stream().map(node -> {
 							NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
-							return new NodeContent(container).setNode(node);
+							return new NodeContent(node, container);
 						}).collect(Collectors.toList());
-						return new PageImpl<>(contents, nodes.getTotalElements(), nodes.getNumber(), nodes.getPageCount(), nodes.getPerPage());
+						return new PageImpl<NodeContent>(contents, nodes);
 					}
 				}));
 

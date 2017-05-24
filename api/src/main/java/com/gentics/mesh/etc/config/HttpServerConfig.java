@@ -1,6 +1,9 @@
 package com.gentics.mesh.etc.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.doc.GenerateDocumentation;
 
 /**
  * Mesh Http Server configuration POJO.
@@ -13,10 +16,16 @@ public class HttpServerConfig {
 
 	public static final int DEFAULT_HTTP_PORT = 8080;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server port.")
 	private int port = DEFAULT_HTTP_PORT;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configured CORS allowed origin pattern. You can specifiy a regex to include multiple hosts if you want to do so.")
 	private String corsAllowedOriginPattern = DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether CORS handling should be enabled.")
 	private Boolean enableCors = false;
 
 	public HttpServerConfig() {

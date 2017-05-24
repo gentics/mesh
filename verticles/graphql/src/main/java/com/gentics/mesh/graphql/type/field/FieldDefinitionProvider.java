@@ -251,7 +251,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					List<String> languageTags = Arrays.asList(container.getLanguage().getLanguageTag());
 					//TODO we need to add more assertions and check what happens if the itemContainer is null
 					NodeGraphFieldContainer itemContainer = node.findNextMatchingFieldContainer(gc, languageTags);
-					return new NodeContent(itemContainer).setNode(node);
+					return new NodeContent(node, itemContainer);
 				}).collect(Collectors.toList());
 			case "micronode":
 				MicronodeGraphFieldList micronodeList = container.getMicronodeList(schema.getName());
@@ -318,7 +318,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 							// Check permissions for the linked node
 							gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);
 							NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
-							return new NodeContent(container).setNode(node);
+							return new NodeContent(node, container);
 						}
 					}
 					return null;

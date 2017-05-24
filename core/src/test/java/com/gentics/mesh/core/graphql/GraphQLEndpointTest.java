@@ -73,8 +73,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testQueries.add("paging-query");
 		testQueries.add("tagFamily-query");
 		testQueries.add("node-query");
-		testQueries.add("node-query");
 		testQueries.add("nodes-query");
+		testQueries.add("node-breadcrumb-query");
 		testQueries.add("node-language-fallback-query");
 		testQueries.add("node-webroot-query");
 		testQueries.add("node-relations-query");
