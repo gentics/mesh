@@ -1,14 +1,15 @@
+
 = Features
 
 This section will be about the features of Gentics Mesh. Each will be described in detail including examples and references to relevant parts of the API or related tutorials.
 
 [[contenttree]]
-== Content Tree
+== Content Trees
 
 Gentics Mesh provides the means to organize your contents in terms of a *content tree*, or rather a node tree. Nodes can be hierarchically structured if a container schema is provided.
 For example, a book node can act as a container for chapter nodes. Alternatively, consider the example in our demo app, where vehicles are structured within categories. 
 
-While it is perfectly legitimate to organize your contents in a simple, flat structure with tagging and referencing, content trees come with big a bonus: they inherently allow for automatically generated hierarchical <<navigation, navigation menus>>, <<breadcrumbs,breadcrumbs>> and <<prettyurls,pretty URLs>>. This furthermore means routes are not hard-coded in your app but can be defined dynamically by content editors using the Gentics Mesh user interface. 
+While it is perfectly legitimate to organize your contents in a simple, flat structure with tagging and referencing, content trees come with big a bonus: they inherently allow for <<navigation,automatically generated hierarchical navigation menus>>, <<breadcrumbs,breadcrumbs>> and <<prettyurls,pretty URLs>>. This furthermore means routes are not hard-coded in your app but can be defined dynamically by content editors using the Gentics Mesh user interface. 
 
 TIP: To get you started, Gentics Mesh is shipped with a generic _folder_ schema allowing you to follow the well-known file system paradigm for hierarchically organizing your content in a tree.
 
@@ -25,21 +26,21 @@ Let’s consider the following example on the basis of our demo app to demonstra
 image:GenticsMesh-ContentTree-Example.png[] 
 //TODO update
 
-Within the demo project vehicles are organized in three different categories. The nodes _Automobiles_, _Aircrafts_ and _Yachts_ of type ```category``` serve as containers for nodes of type ```vehicle```, e.g., the node _Trabant_ in category _Automobiles_.
+Within the demo project vehicles are organized in three different categories. The nodes _Automobiles_, _Aircrafts_ and _Yachts_ of type _category_ serve as containers for nodes of type _vehicle_, e.g., the node _Trabant_ in category _Automobiles_.
 
-The schema ```category``` has the ```container``` property set to ```true```, thus allowing nodes of type `category` to have child nodes. The schema’s ```segmentField``` is specified to be the ```name``` field. Thus, the resulting value for the `path` property of node _Automobiles_ is `/Automobiles`.
+The schema _category_ has the ```container``` property set to ```true```, thus allowing nodes of type _category_ to have child nodes. The schema’s ```segmentField``` is specified to be the ```name``` field. Thus, the resulting value for the ```path``` property of node _Automobiles_ is ```/Automobiles```.
 
-The schema ‘vehicle’ has the ```container``` property set to ```false```. The schema’s ```segmentField``` is again specified to be the ```name``` field. Thus, the resulting value for the `path` property of node _Trabant_ is `/Automobiles/Trabant`.
+The schema _vehicle_ has the ```container``` property set to ```false```. The schema’s ```segmentField``` is again specified to be the ```name``` field. Thus, the resulting value for the ```path``` property of node _Trabant_ is ```/Automobiles/Trabant```.
 
 
 
 [[prettyurls]]
-=== Pretty URLs
+== Pretty URLs
 
-Instead of relying on UUIDs to link your content, you can use pretty URLs like http://yourapp.com/Automobiles/Trabant. For each node, Gentics Mesh will provide you with a human readable `path`. 
+Instead of relying on UUIDs to link your content, you can use pretty URLs like http://yourapp.com/Automobiles/Trabant. For each node, Gentics Mesh will provide you with a human readable path. 
 Likewise, you can query your content using WebRoot paths instead of using UUIDs (see <<webroot,WebRoot API>>).
 
-The ```segmentField``` is used to build the path of a specific node. According to the nodes’ schemas in our <<example,example>>, the path ```/Automobiles/Trabant``` for the node _Trabant_ is built using the ```name``` field of the ```vehicle``` node, i.e. _Trabant_, and the ```name``` field of the ```category``` node, i.e. _Automobiles_.
+The ```segmentField``` is used to build the path of a specific node. According to the nodes’ schemas in our <<example,example>>, the path ```/Automobiles/Trabant``` for the node _Trabant_ is built using the _name_ field of the _vehicle_ node, i.e. _Trabant_, and the _name_ field of the _category_ node, i.e. _Automobiles_.
 
 image:GenticsMesh-PrettyURL-Example.png[]
 
@@ -162,6 +163,7 @@ Each endpoint will return a navigation response which contains the nested naviga
 By default, only container nodes are included in a navigation response. The `includeAll` query parameter will include all nodes, if set to `true`.
 The `maxDepth` parameter may be used to limit the navigation depth. In order to include the `path` property in the navigation response, the `resolveLinks` query parameter can be used.
 
+[.img-responsive]
 image:GenticsMesh-Navigation-Example.png[]
 //TODO
 
@@ -560,7 +562,7 @@ http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?
 == Breadcrumbs
 
 Each node in Gentics Mesh provides information on where it is located within the node tree in terms of its ```breadcrumb``` property.
-The ```breadcrumb``` property provides an array of node references representing the path from the current node up to the project root. For more details see the documentation on http://getmesh.io/docs/beta/building-blocks.html#_node[node].
+The property provides an array of node references representing the path from the current node up to the project root. For more details see the documentation on http://getmesh.io/docs/beta/building-blocks.html#_node[node].
 
 NOTE: The current node will not be included in the list, since all the information is already provided in other properties (i.e., ```displayField```, ```path```) of node object itself. 
 
@@ -568,7 +570,7 @@ In our demo app example, the ```breadcrumb``` property for node _Trabant_ will t
 
 image:GenticsMesh-Breadcrumb-Example.png[]
 
-The `breadcrumb` property will be returned in all API responses containing nodes. Using the `resolveLink` query parameter will also the paths of the nodes listed in the array.
+The ```breadcrumb``` property will be returned in all API responses containing nodes. Using the ```resolveLink``` query parameter will also the paths of the nodes listed in the array.
 
 === API end points
 
@@ -688,8 +690,8 @@ The WebRoot API is an alternative way for fetching content from Gentics Mesh. Ot
 
 image:GenticsMesh-WebRootAPI-Example.png[]
 
-This functionality builds on top of using the nodes' `segmentField` property to build the path of a specific node. 
-WebRoot paths of arbitrary depth can be created, in combination with organizing content hierarchically in terms of a <<contenttree,content tree>> by specifying nodes to be `containers` for their child nodes. 
+This functionality builds on top of using the nodes' ```segmentField``` property to build the path of a specific node. 
+WebRoot paths of arbitrary depth can be created, in combination with organizing content hierarchically in terms of a <<contenttree,content tree>> by specifying nodes to be ```containers``` for their child nodes. 
 The WebRoot API end point uses this information to resolve a given path to a node UUID.
 
 Using the WebRoot API it is possible to easily integrate Gentics Mesh with many known routing frameworks.
@@ -724,36 +726,36 @@ A WebRoot path may consist of multiple path segments, each corresponding to a no
 
 NOTE: Each segment of the URL must be URL-encoded. A node's language variants must provide different path segment in order to guarantee unique paths.
 
-*Fetch node with UUID:*
+==== Fetch node with UUID
 http://getmesh.io/api/v1/demo/nodes/fd58237c79d64bf198237c79d6bbf107?resolveLinks=short
 
 Loading the node with the given UUID using API end point ```GET /api/v1/:projectName/nodes/:nodeUuid```.
 
-*Fetch node with WebRoot path:*
+==== Fetch node with WebRoot path
 http://getmesh.io/api/v1/demo/webroot/Automobiles/Trabant?resolveLinks=short
 
 
-==== Query binary content by path
+=== Query binary content by path
 The WebRoot API, furthermore, directly supports delivering binary content using the ```fileName``` meta-data field of the ```binary``` field . 
 
-*Fetch an image with UUID:*
+==== Fetch an image with UUID
 http://getmesh.io/api/v1/demo/nodes/b1a975d9391a4daaa975d9391abdaa4f/binary/image
 
 Downloading a node's binary field with the given name using API end point ```GET /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```.
 
-*Fetch an image with WebRoot path:*
+==== Fetch an image with WebRoot path
 http://getmesh.io/api/v1/demo/webroot/Vehicle%20Images/trabant.jpg
 
 TIP: When using a routing framework, in order to find out if a requested resource is binary data or JSON data you need to check the HTTP Content-Disposition response header. If it is set, it’s binary data. 
 
-==== Image manipulation by path
+=== Image manipulation by path
 In case, the binary data is an image, the WebRoot API allows to directly perform <<imagemanipulation, image manipulation>> such as cropping and resizing. 
 
-*Crop and Resize an image with UUID:*
+==== Crop and Resize an image with UUID
 
 http://getmesh.io/api/v1/demo/nodes/b1a975d9391a4daaa975d9391abdaa4f/binary/image?cropx=10&cropy=100&cropw=800&croph=400&width=300
 
-*Crop and Resize an image with WebRoot path:*
+==== Crop and Resize an image with WebRoot path
 
 http://getmesh.io/api/v1/demo/webroot/Vehicle%20Images/trabant.jpg?cropx=10&cropy=100&cropw=800&croph=400&width=300
 
@@ -804,10 +806,12 @@ Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gent
 == Link Resolving
 Link resolving represents the counterpart of the WebRoot API - a node UUID can be resolved into a WebRoot path. 
 
-image:GenticsMesh-LinkResolving-Example.png[]
-//TODO image: For example, ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg``` when using the `?resolveLinks=full`.
+image:GenticsMesh-LinkResolver-Utility-Example.png[]
 
 Typically, editors create content including internal links to other nodes. When fetching content for your apps, however, Gentics Mesh will resolve these internal links for you and return a WebRoot path. 
+
+For example, ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg``` when using the `?resolveLinks=full`.
+
 The `resolveLinks` query parameter defines if and how links are resolved:
 
 * `off` -  links will not be resolved. This is the default.
@@ -845,10 +849,18 @@ The 'resolveLinks' query parameter can be applied to all API end points returnin
 === Link Resolver Utility
 
 In addition to the above, Gentics Mesh offers the ```/api/v1/utilities/linkResolver``` end point that can be used to resolve Gentics Mesh links within the posted text data. This is useful when resolving links for a preview page.
- It’s necessary to send the content in which links should get resolved to the API end point in plain text or JSON. The query parameter `resolveLinks` is used to specify how links shall be resolved.
 
-image:GenticsMesh-LinkResolver-Utility-Example.png[]
-//TODO image
+It’s necessary to send the content in which links should get resolved to the API end point in plain text or JSON. The query parameter `resolveLinks` is used to specify how links shall be resolved.
+
+Valid links:
+
+ * {{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}
+
+* {{mesh.link('2f2de9297c8143e8ade9297c8193e8fc', 'en')}}
+
+* {{mesh.link(\"2f2de9297c8143e8ade9297c8193e8fc\", \"en\")}}
+
+* {{mesh.link("2f2de9297c8143e8ade9297c8193e8fc")}} (link to default language)
 
 //TODO Query Parameters
 
@@ -1543,6 +1555,36 @@ include::examples/tables/ImageManipulationParametersImpl.adoc[]
 | ```croph```  | Crop area height.
 |=====
 
+== File Upload
+
+Binary data can be attached to node binary fields which have been created using a schema that lists one or more binary fields. The ```/api/v1/nodes/:uuid/binary/:fieldName``` endpoint can be used to POST binary data and thus update the stored binary field. This endpoint is accepting only ```multipart/form-data``` .
+It is required to specify the `version` and `language` within the update request. This is similar to regular node update requests in which these information must be added to the JSON.
+
+
+```
+----------Geg2Oob
+Content-Disposition: form-data; name="version"
+
+1.0
+
+----------Geg2Oob
+Content-Disposition: form-data; name="language"
+
+en
+
+----------Geg2Oob
+Content-Disposition: form-data; name="shohY6d"; filename="somefile.bin"
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: binary
+
+fileData
+
+----------Geg2Oob--
+```
+
+=== Paging
+
+The paging query parameters are `perPage` and `page` . It is important to note that ```page``` is 1-based and ```perPage``` can be set to ```0``` in order to just retrieve a count of elements.
 
 == Language Fallback
 
@@ -1552,6 +1594,11 @@ Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=en,de```
 
 If the requested node is available in any of the languages, the response will contain the fields in that language (first language found).
 Otherwise, the node will still be returned, but without fields.
+
+=== Preview handling
+
+The mesh ui will provide a preview button when editing nodes. A post request to a configureable url is being dispatchen when the button will be triggered.
+The post request will contain the node JSON data of the current editing state. This way a preview page can be easily rendered by custom frontend implementations.
 
 == Search
 

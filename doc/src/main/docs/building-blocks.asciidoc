@@ -377,7 +377,7 @@ A micronode/node listType must have an ```allow property```, which acts as a whi
 
 | ```binary```
 | The binary field type is used to store binary data, e.g., image, video, audio and documents.
-Depending on the actual data, Gentics Mesh will store related meta data on a read-only basis e.g., ```fileName```, ```fileSize```, ```mimeType```, ```sha512sum``` and for images specifically ```width```, ```height```, and ```dominant colour```.
+Depending on the actual data, Gentics Mesh will store related meta data e.g., ```fileName```, ```fileSize```, ```mimeType```, ```sha512sum``` and for images specifically ```width```, ```height```, and ```dominant Color```. Gentics Mesh will set values for all meta data properties automatically when uploading an image. The meta data properties mimeType, dominantColor and fileName can be changed on subsequent update requests. 
 | The ```required``` property indicates if the field is mandatory or not.
 
 |======
