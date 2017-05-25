@@ -4,10 +4,12 @@ import java.io.File;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.doc.GenerateDocumentation;
 
 /**
  * Search engine options POJO.
  */
+@GenerateDocumentation
 public class ElasticSearchOptions {
 
 	public static final String DEFAULT_DIRECTORY = "data" + File.separator + "searchindex";

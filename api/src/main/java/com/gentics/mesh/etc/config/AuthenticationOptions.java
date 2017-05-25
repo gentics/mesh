@@ -2,10 +2,12 @@ package com.gentics.mesh.etc.config;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.doc.GenerateDocumentation;
 
 /**
  * Authentication options POJO.
  */
+@GenerateDocumentation
 public class AuthenticationOptions {
 
 	public static final String DEFAULT_ALGORITHM = "HS256";

@@ -8,6 +8,7 @@ import com.gentics.mesh.doc.GenerateDocumentation;
 /**
  * Mesh Http Server configuration POJO.
  */
+@GenerateDocumentation
 public class HttpServerConfig {
 
 	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "";

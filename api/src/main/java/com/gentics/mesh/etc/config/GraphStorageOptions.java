@@ -6,10 +6,12 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.doc.GenerateDocumentation;
 
 /**
  * Underlying graph database storage configuration.
  */
+@GenerateDocumentation
 public class GraphStorageOptions {
 
 	public static final String DEFAULT_DIRECTORY = "data" + File.separator + "graphdb";

@@ -4,10 +4,12 @@ import java.io.File;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.doc.GenerateDocumentation;
 
 /**
  * Image manipulation options are used for image resize and image crop actions.
  */
+@GenerateDocumentation
 public class ImageManipulatorOptions {
 
 	private String imageCacheDirectory = "data" + File.separator + "binaryImageCache";
