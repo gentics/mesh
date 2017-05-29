@@ -2,7 +2,7 @@
 
 = Gentics Mesh Changelog
 
-== 0.9.10 (PENDING)
+== 0.9.10 (29.05.2017)
 
 icon:plus[] Schemas: The default content and folder schemas have been updated. The `fileName` and `folderName` fields have been renamed to `slug`. The `name` field was removed from the content schema and a `teaser` field has been added.
 These changes are optional and thus not automatically applied to existing installations.
