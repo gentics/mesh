@@ -195,7 +195,7 @@ include::examples/models/NodeResponse.adoc[]
 
 | resolveLinks
 | string
-| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. With the parameter set the ```path``` property as well as the ```languagesPath``` property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved http://getmesh.io/docs/beta/#_link_resolving[WebRoot] link. No resolving occurs if the query parameter is omitted.
+| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. With the parameter set the ```path``` property as well as the ```languagesPath``` property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved link:features.html#_link_resolving[WebRoot path]. No resolving occurs if the query parameter is omitted.
 
 | role
 | string
@@ -218,7 +218,7 @@ include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/200/example
 
 Typically, each project will require a set of different content types. Together they can be considered the content model of your project. Staying with the example of a product catalogue website: a product, product category, product image, and product manual each represent a separate content type. In Gentics Mesh, a *schema* is used to define such content types in terms of a couple of standard fields (e.g. ```uuid```, ```name```, ```description```, ```version```, etc.) and an arbitrary number of custom fields (e.g., ```string```, ```number```, ```HTML```, ```date```, ```binary```, ```list```, ```node```, ```micronode```, ```boolean```). You can think of a schema as a blueprint for new content items.  
 
-TIP: Using the ```container``` property, a schema can be configured to allow for hierarchically structuring nodes. Nodes based on a such a schema may contain child nodes. This is the basis for building http://getmesh.io/docs/beta/#_contenttrees[content trees] in Gentics Mesh and leveraging the power of automatic http://getmesh.io/docs/beta/#_navigation[navigation menus], http://getmesh.io/docs/beta/#_breadcrumbs[breadcrumbs] and http://getmesh.io/docs/beta/#_prettyurls[pretty URLs].
+TIP: Using the ```container``` property, a schema can be configured to allow for hierarchically structuring nodes. Nodes based on a such a schema may contain child nodes. This is the basis for building link:features.html#_contenttrees[content trees] in Gentics Mesh and leveraging the power of automatic link:features.html#_navigation[navigation menus], link:features.html#_breadcrumbs[breadcrumbs] and link:features.html#_prettyurls[pretty URLs].
 
 === API end points
 
@@ -243,10 +243,10 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 | Delete the schema with the given uuid.
 | ```DELETE /api/v1/schema/:schemaUuid```
 
-| Apply the provided changes on the latest version of the schema and http://getmesh.io/docs/beta/#_schema_microschema_migration[migrate] all nodes which are based on the schema.
+| Apply the provided changes on the latest version of the schema and link:features.html#_schema_microschema_migration[migrate] all nodes which are based on the schema.
 | ```POST /api/v1/schema/:schemaUuid/changes```
 
-| Compare the given schema with the stored schema and create a changeset for http://getmesh.io/docs/beta/#_schema_microschema_migration[migration]. 
+| Compare the given schema with the stored schema and create a changeset for link:features.html#_schema_microschema_migration[migration]. 
 | ```POST /api/v1/schema/:schemaUuid/diff```
 
 |======
@@ -415,10 +415,10 @@ NOTE: Nodes can contain micronodes. Micronodes, however, can not contain further
 | Delete the microschema with the given uuid.
 | ```DELETE /api/v1/microschemas/:microschemaUuid```
 
-| Apply the provided changes on the latest version of the microschema and http://getmesh.io/docs/beta/#_schema_microschema_migration[migrate] all micronodes which are based on the schema.
+| Apply the provided changes on the latest version of the microschema and link:features.html#_schema_microschema_migration[migrate] all micronodes which are based on the schema.
 | ```POST /api/v1/microschemas/:microschemaUuid/changes```
 
-| Compare the provided schema with the schema which is currently stored and generate a set of changes that have been detected for http://getmesh.io/docs/beta/#_schema_microschema_migration[migration].
+| Compare the provided schema with the schema which is currently stored and generate a set of changes that have been detected for link:features.html#_schema_microschema_migration[migrate].
 | ```POST /api/v1/microschemas/:microschemaUuid/diff```
 
 |======
@@ -547,7 +547,7 @@ include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/
 Gentics Mesh *users* can be physical persons or client apps interacting with elements in Gentics Mesh. Both have a user object counterpart in Gentics Mesh. 
 This user object has a standard set of properties, e.g.```firstname```, ```lastname```, ```username```, and ```emailAddress``` , which can be extended by referencing a custom user object. The property ```nodeReference``` is used for storing additional user-related data, thus allowing for extensible user profiles. 
 
-In order to be able to store and retrieve content, a user needs to authenticate using one of the available http://getmesh.io/docs/beta/#_authentication[authentication] mechanisms. 
+In order to be able to store and retrieve content, a user needs to authenticate using one of the available link:references.html#_authentication[authentication] mechanisms. 
 
 === API end points
 
@@ -617,7 +617,7 @@ include::examples/models/UserResponse.adoc[]
 
 | resolveLinks
 | string
-| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. With the parameter set the ```path``` property as well as the ```languagesPath``` property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved hhttp://getmesh.io/docs/beta/#_link_resolving[WebRoot] link. No resolving occurs if the query parameter is omitted.
+| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. With the parameter set the ```path``` property as well as the ```languagesPath``` property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved link:features.html#_link_resolving[WebRoot path]. No resolving occurs if the query parameter is omitted.
 
 | role
 | string
@@ -718,7 +718,7 @@ include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
 
 == Role
 
-*Roles* are used to manage http://getmesh.io/docs/beta/#_permissions[permissions] between the role and other elements in Gentics Mesh (i.e., nodes, schemas, users, roles, etc.). Roles can be assigned to groups. Thus, a user of a group with roles inherits the permissions that are bound to these roles. Roles can’t be nested.
+*Roles* are used to manage link:features.html#_permissions[permissions] between the role and other elements in Gentics Mesh (i.e., nodes, schemas, users, roles, etc.). Roles can be assigned to groups. Thus, a user of a group with roles inherits the permissions that are bound to these roles. Roles can’t be nested.
 
 //TODO picture with example User/Group/Roles that we ship
 
