@@ -623,6 +623,13 @@ include::examples/models/UserResponse.adoc[]
 | string
 | The ```role``` query parameter takes a UUID and may be used in order to add permission information to the response which is related to the specified role. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role on this node. E.g., this may be useful when you are logged in as administrator but want to retrieve the editor role permissions on a given node.
 
+| token
+| string
+| Token code which can be used to update the user even if the connection is not authenticated. E.g., this can be used to implement a password recovery feature.
+
+| string
+| The ```role``` query parameter takes a UUID and may be used in order to add permission information to the response which is related to the specified role. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role on this node. E.g., this may be useful when you are logged in as administrator but want to retrieve the editor role permissions on a given node.
+
 | version
 | string
 | Specifies the version of the ```nodeReference``` object’s language variant, e.g.: ```0.1```, ```1.0```, ```draft```, ```published```.
