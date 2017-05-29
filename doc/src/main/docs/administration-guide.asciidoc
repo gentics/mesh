@@ -82,7 +82,7 @@ Edit _/etc/pam.d/su_ and uncomment or add the following line:
 session    required   pam_limits.so
 ----
 
-NOTE: This change may require a logout and login after it is being applied.
+NOTE: This change may require a logout and login.
 
 ==== Client Requirements
 

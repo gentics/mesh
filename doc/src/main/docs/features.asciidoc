@@ -13,8 +13,6 @@ While it is perfectly legitimate to organize your contents in a simple, flat str
 
 TIP: To get you started, Gentics Mesh is shipped with a generic _folder_ schema allowing you to follow the well-known file system paradigm for hierarchically organizing your content in a tree.
 
-//== Automatic Navigation Menus, Breadcrumbs and pretty URLs
-//If you choose to organize your content in terms of a content tree, Gentics Mesh allows you to automatically build navigation menus, breadcrumbs and pretty URLs. 
 There are two properties when defining a http://getmesh.io/docs/beta/building-blocks.html#_schemas[schema] for your nodes that are of importance in this respect.
 
 . ```container```: if true, nodes can contain child nodes and build a node tree.
@@ -24,13 +22,13 @@ There are two properties when defining a http://getmesh.io/docs/beta/building-bl
 Let’s consider the following example on the basis of our demo app to demonstrate how these properties work together to support navigation menus, breadcrumbs and pretty URLs:
 
 image:GenticsMesh-ContentTree-Example.png[] 
-//TODO update
+//TODO update (slug, font size)
 
 Within the demo project vehicles are organized in three different categories. The nodes _Automobiles_, _Aircrafts_ and _Yachts_ of type _category_ serve as containers for nodes of type _vehicle_, e.g., the node _Trabant_ in category _Automobiles_.
 
-The schema _category_ has the ```container``` property set to ```true```, thus allowing nodes of type _category_ to have child nodes. The schema’s ```segmentField``` is specified to be the ```name``` field. Thus, the resulting value for the ```path``` property of node _Automobiles_ is ```/Automobiles```.
+The schema _category_ has the ```container``` property set to ```true```, thus allowing nodes of type _category_ to have child nodes. The schema’s ```segmentField``` is specified to be the ```slug``` field. Thus, the resulting value for the ```path``` property of node _Automobiles_ is ```/Automobiles```.
 
-The schema _vehicle_ has the ```container``` property set to ```false```. The schema’s ```segmentField``` is again specified to be the ```name``` field. Thus, the resulting value for the ```path``` property of node _Trabant_ is ```/Automobiles/Trabant```.
+The schema _vehicle_ has the ```container``` property set to ```false```. The schema’s ```segmentField``` is again specified to be the ```slug``` field. Thus, the resulting value for the ```path``` property of node _Trabant_ is ```/Automobiles/Trabant```.
 
 
 
@@ -40,9 +38,10 @@ The schema _vehicle_ has the ```container``` property set to ```false```. The sc
 Instead of relying on UUIDs to link your content, you can use pretty URLs like http://yourapp.com/Automobiles/Trabant. For each node, Gentics Mesh will provide you with a human readable path. 
 Likewise, you can query your content using WebRoot paths instead of using UUIDs (see <<webroot,WebRoot API>>).
 
-The ```segmentField``` is used to build the path of a specific node. According to the nodes’ schemas in our <<example,example>>, the path ```/Automobiles/Trabant``` for the node _Trabant_ is built using the _name_ field of the _vehicle_ node, i.e. _Trabant_, and the _name_ field of the _category_ node, i.e. _Automobiles_.
+The ```segmentField``` is used to build the path of a specific node. According to the nodes’ schemas in our <<example,example>>, the path ```/Automobiles/Trabant``` for the node _Trabant_ is built using the _slug_ field of the _vehicle_ node, i.e. _Trabant_, and the _slug_ field of the _category_ node, i.e. _Automobiles_.
 
 image:GenticsMesh-PrettyURL-Example.png[]
+//TODO update (slug, font-size)
 
 The ```path``` property as well as the ```languagesPath``` property (for available language variants) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` end point together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
 For more details see the documentation on http://getmesh.io/docs/beta/building-blocks.html#_node[node] and <<webroot,WebRoot API>>, respectively.
@@ -230,7 +229,7 @@ image:GenticsMesh-Navigation-Example.png[]
 
 | resolveLinks
 | string
-| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. Links will automatically be resolved and replaced by the resolved http://getmesh.io/docs/beta/#_link_resolving[WebRoot] link. No resolving occurs if the query parameter is omitted.
+| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. Links will automatically be resolved and replaced by the resolved  link:features.html#_link_resolving[WebRoot path]. No resolving occurs if the query parameter is omitted.
 
 | role
 | string
@@ -684,7 +683,7 @@ http://getmesh.io/api/v1/demo/nodes/fd58237c79d64bf198237c79d6bbf107?resolveLink
 ----
 
 [[webroot]]
-== WebRoot API - Query by Path
+== Fetch Content with WebRoot Paths
 
 The WebRoot API is an alternative way for fetching content from Gentics Mesh. Other than accessing nodes with their UUID, one can use the way more intuitive WebRoot paths. 
 
@@ -751,11 +750,11 @@ TIP: When using a routing framework, in order to find out if a requested resourc
 === Image manipulation by path
 In case, the binary data is an image, the WebRoot API allows to directly perform <<imagemanipulation, image manipulation>> such as cropping and resizing. 
 
-==== Crop and Resize an image with UUID
+==== Crop and resize an image with UUID
 
 http://getmesh.io/api/v1/demo/nodes/b1a975d9391a4daaa975d9391abdaa4f/binary/image?cropx=10&cropy=100&cropw=800&croph=400&width=300
 
-==== Crop and Resize an image with WebRoot path
+==== Crop and resize an image with WebRoot path
 
 http://getmesh.io/api/v1/demo/webroot/Vehicle%20Images/trabant.jpg?cropx=10&cropy=100&cropw=800&croph=400&width=300
 
@@ -791,7 +790,7 @@ Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gent
 
 | resolveLinks
 | string
-| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. With the parameter set the ```path``` property as well as the ```languagesPath``` property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved http://getmesh.io/docs/beta/#_link_resolving[WebRoot] link. No resolving occurs if the query parameter is omitted.
+| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. With the parameter set the ```path``` property as well as the ```languagesPath``` property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved  link:features.html#_link_resolving[WebRoot path]. No resolving occurs if the query parameter is omitted.
 
 | role
 | string
@@ -810,14 +809,14 @@ image:GenticsMesh-LinkResolver-Utility-Example.png[]
 
 Typically, editors create content including internal links to other nodes. When fetching content for your apps, however, Gentics Mesh will resolve these internal links for you and return a WebRoot path. 
 
-For example, ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg``` when using the `?resolveLinks=full`.
+For example, ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg``` when using the ```?resolveLinks=full``` query parameter.
 
-The `resolveLinks` query parameter defines if and how links are resolved:
+The ```resolveLinks``` query parameter defines if and how links are resolved:
 
 * `off` -  links will not be resolved. This is the default.
-* `full` - the resolved links will contain the webroot prefix and project name.
-* `medium` - the resolved links will contain the project name.
-* `short` - will contain neither webroot prefix nor project name.
+* `full` - the resolved links will contain the WebRoot prefix and project name (```/api/v1/:projectName/webRoot/:path```).
+* `medium` - the resolved links will contain the project name (```/:projectName/:path```).
+* `short` - will contain neither WebRoot prefix nor project name, just the path (```:path```).
 
 The 'resolveLinks' query parameter can be applied to all API end points returning nodes:
 
@@ -850,7 +849,7 @@ The 'resolveLinks' query parameter can be applied to all API end points returnin
 
 In addition to the above, Gentics Mesh offers the ```/api/v1/utilities/linkResolver``` end point that can be used to resolve Gentics Mesh links within the posted text data. This is useful when resolving links for a preview page.
 
-It’s necessary to send the content in which links should get resolved to the API end point in plain text or JSON. The query parameter `resolveLinks` is used to specify how links shall be resolved.
+It’s necessary to send the content in which links should get resolved to the API end point in plain text or JSON. The query parameter ```resolveLinks``` is used to specify how links shall be resolved.
 
 Valid links:
 
@@ -864,11 +863,114 @@ Valid links:
 
 //TODO Query Parameters
 
-== Password Recovery
+[[imagemanipulation]]
+== Image Manipulation
 
-A user who lost his password can recover it using a recovery token. This token can be issued by a user or admin which has permissions to create new users. The ```/api/v1/users/:userUuid/reset_token``` endpoint will return a token code which can for example be passed along to an email service which sends a recovery email to the user which includes this token. The token is valid for 30 minutes.
+Images can be resized and/or cropped by appending the <<imagemanipulationparams,image manipulation query parameters>> on the relevant API end points.
 
-The user can use this token to update his user record via ```/api/v1/users/:userUuid?token=TOKENCODE```. This works even if the user is not authenticated. The token will be invalidated once it has been used. 
+
+=== Fetch and Resize an Image with UUID
+
+End point: ```/api/v1/:projectName/nodes/:uuid/binary/:fieldname?width=220```
+
+http://getmesh.io/api/v1/demo/nodes/b1a975d9391a4daaa975d9391abdaa4f/binary/image?width=300
+
+=== Fetch and Crop an Image with WebRoot Path
+It is also possible to use the image manipulation in combination with the WebRoot end point.
+
+End point: ```/api/v1/:projectName/webroot/:path?cropx=10&cropy=100&cropw=800&croph=400```
+
+http://getmesh.io/api/v1/demo/webroot/Vehicle%20Images/trabant.jpg?cropx=10&cropy=100&cropw=800&croph=400
+
+NOTE: It is mandatory to specify all four crop parameters when cropping an image.
+
+=== Transform and Update an Image
+Gentics Mesh also allows you to transform (i.e, crop and/or resize) and overwrite an image in a single step. The image manipulation parameters then are part of the request body.
+
+End point: ```POST /api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname```
+
+http://getmesh.io/api/v1/demo/nodes/b1a975d9391a4daaa975d9391abdaa4f/binaryTransform/image
+
+*Request Body:*
+[source,bash]
+----
+{
+  "version" : {
+    "number" : "1.0"
+  },
+  "language" : "en",
+  "width" : 300
+}
+----
+
+[imagemanipulationparams]
+=== Image Manipulation Query Parameters
+include::examples/tables/ImageManipulationParametersImpl.adoc[]
+
+Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
+
+== File Upload
+
+Binary data can be attached to node binary fields. The ```/api/v1/nodes/:uuid/binary/:fieldName``` end point can be used to POST binary data and thus update the stored binary field. 
+
+NOTE: This endpoint is accepting ```multipart/form-data```, only.
+
+It is required to specify the `version` and `language` within the update request. This is similar to regular node update requests in which these information must be added to the JSON object.
+
+=== Example
+
+```
+----------Geg2Oob
+Content-Disposition: form-data; name="version"
+
+1.0
+
+----------Geg2Oob
+Content-Disposition: form-data; name="language"
+
+en
+
+----------Geg2Oob
+Content-Disposition: form-data; name="shohY6d"; filename="somefile.bin"
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: binary
+
+fileData
+
+----------Geg2Oob--
+```
+
+=== Configuration
+
+Gentics Mesh stores all binary files on the filesystem. The default directory ```data/binaryfiles``` can be changed in the upload section of the main configuration file ```mesh.yml```. 
+
+The upload limit can be configured in bytes using the ```uploadOptions.byteLimit``` setting.
+
+For more information on available settings have a look at the link:administration-guide.html#_settings[administration guide].
+
+[[multilanguage]]
+== Multi-Language & Language Fallback
+
+Gentics Mesh comes with multi-language support out of the box. In particular, a node serves as a container for one or more language variants. These language variants will store the actual content fields. 
+
+You can query individual language variants by appending the ```?lang``` query parameter. The ```language``` json property within an update or create request will be used to identify which language variant should be created or updated.
+
+Requests for nodes should contain the requested languages (as comma separated list)as query parameter:
+
+End point: ```/api/v1/:projectName/nodes/:uuid?lang=en,de```
+
+If the requested node is available in any of the languages, the response will contain the fields in that language (first language found).
+
+=== Fallback Mechanism
+
+Gentics Mesh allows to configure a ```defaultLanguage``` in the main configuration file ```mesh.yml```. This default language is used as a fallback in case:
+
+. the ```lang``` query parameter has been omitted, or
+. the requested content is not available in the specified language.
+
+This fallback mechanism works when fetching nodes but also when requesting navigation objects or breadcrumb information. 
+
+NOTE: In order to work properly, the fallback mechanism requires all nodes to have a language variant for the specified ```defaultLanguage```. 
 
 == Permissions
 
@@ -1165,7 +1267,355 @@ Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect
 | ```/api/v1/:projectName/releases/:uuid```  | Publish        | _Not used_
 |======
 
-== Schema / Microschema Migration
+
+== Versioning
+
+In order to grasp the concept of versioning in Gentics Mesh it is important to remember that nodes are containers for language variants (see <<multilanguage, Multi-Language & Language Fallback>>). The language variant of a node contains the fields and thus stores all the content.
+ 
+NOTE: Versioning within Gentics Mesh only applies to *language variants* and their referenced fields. Other elements such as users, groups, roles and even nodes are not versioned.
+ 
+Various content management tasks will have different effects for versioning in Gentics Mesh. Following, we go through all of these actions which involve versioning.
+
+=== Node Creation
+
+Once a node has been created the initial version 0.1 will be assigned to its language variant.
+
+=== Node Updates
+
+Updating a node's language variant may create a minor version 0.2 of that language variant if changes have been detected within the posted request fields. 
+
+*No Locks:*
+
+It is not required to handle locks in Gentics Mesh. Instead it is required to specify the version in the update request which identifies the version on which the update request was based upon.
+
+*Conflict detection:*
+
+Gentics Mesh will check whether new versions have been created in the meanwhile. Long running edit operations or multiple concurrent editors may create additional versions.
+
+The detected changes will be compared automatically in order to determine whether the current update request causes a conflict with a newer edit request.
+Gentics Mesh will return a response which contains information about the conflict in those cases. Other update operations which do not cause a conflict will be stored and the changed fields will be updated.
+
+The latest version which was created using an update request is called the ```draft``` version. Only a single draft version per language variant exists.
+
+=== Publishing Nodes
+
+Node language variants can be published and taken offline. This is particularly useful if you want to first work on a draft, then review it and publish it at a later point in time.
+
+Publishing requires a ```POST``` request on the ```/api/v1/:projectName/nodes/:uuid/published``` end point, which will publish all language variants of the node. 
+It is also possible to just publish specific language variants with dedicated ```POST``` requests on ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/published```. 
+
+Gentics Mesh will automatically create a new major version when publishing a node language variant (e.g.: 1.0, 2.0). The ```draft``` reference will also be updated to point to the major version, e.g. 1.0.
+
+Furthermore, it is possible to retrieve information about the published status via a ```GET``` request on ```/api/v1/:/nodes/:uuid/published```.
+
+NOTE: Publishing node language variants requires the user to be assigned to a group with a role which provides the ```publish``` permission.
+
+[source,json]
+----
+include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/published/200/example.json[]
+----
+
+NOTE: It is not possible to publish a specific version. Publish always affects the latest draft version of the language variant.
+
+=== Taking Nodes Offline
+
+Similarly to publishing, the language variants of a node can be taken offline via a ```DELETE``` request on ```/api/v1/:projectName/nodes/:uuid/published```. 
+E.g., taking a specific node language variant with version 1.0 offline using ```DELETE /api/v1/:projectName/nodes/:uuid/languages/:languageTag/published``` will just change the node's publish state. Version 1.0 will still be available.
+
+
+===  Reading Nodes
+
+It is possible to fetch older versions by specifying the ```?version``` query parameter. Similarly, the published version of a node language variant can also be loaded using the parameter ```?version=published``` or the draft version via ```?version=draft```.
+
+NOTE: By default, nodes will be loaded using ```?version=published```. A nodes list thus may not contain your previously created node because it was not yet published.
+
+NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readpublished``` permission.
+
+=== Permissions
+
+Permissions are not version specific. Permissions apply to nodes and not to language variants.
+//TODO move to explanation on what is versioned
+
+== Content Releases
+
+So far we learned that node language variants can be versioned and published. Additionally Mesh versioning provides a powerful concept we call `Releases`. A release is very similar to branches in a versioning control system.
+
+Releases can be used to restructure your nodes and change the contents within a specific release without affecting a different release which provides a different structure/content.
+
+Structural references for nodes always contain release information. This applies to parent/child relationship or taggings, publish states of nodes. This way releases are completely isolated from each other.
+
+NOTE: It is currently not possible to migrate from one release to another. Nodes of releases can't be automatically merged to other releases.
+
+Typical usecases are:
+
+* Updating an existing application installation which uses Gentics Mesh to a new version. The new application version requires new schema versions. 
+  By creating a release and migrating the nodes to the new release (new schema versions), it is possible to serve content for both application versions.
+  Each application versions chooses the correct release for getting nodes.
+
+* Schema versions must be assigned to the release.
+  Each project can have multiple releases.
+  An initial release will automatically be created when creating a project.
+
+All operations to nodes can be scoped to a specific release by adding the ```?release=name``` query parameter. If omitted the latest release will be used to execute the operation.
+
+TIP: Implementations which use mesh should always reference a specific release. Otherwise the document structure could change without the implementation being aware of these changes.
+
+=== Creating a Release
+
+A release requires an unique name. Existing nodes within the project will automatically be migrated into the release.
+Please note the started *node migration* will be processed asynchronously and thus not all nodes may be directly accessible within the scope of the release.
+
+This migration is different from a schema version migration. The release node migration just takes care of making all nodes from the previous release available in the newly created release.
+Unlike the schema migration the node migration will not create new language variant versions.
+
+You can use the eventbus bridge or the dedicated ```/api/v1/admin/status/migrations``` endpoint to query the migration status.
+The ```migrated``` JSON property within the release response also indicates whether the node migration has been completed.
+
+Note: Migrated nodes will still have the same _uuid_ as before.
+
+=== Updating a Release
+
+A release can be _renamed_ and new schema/microschema versions can be _assigned_ to it.
+
+Renaming is useful if you want to change your development release to be the current production release.
+
+Assigning schema versions to the release via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/schemas``` will automatically trigger a schema migration of the affected nodes language variants within the release.
+
+[source,json]
+----
+include::examples/api/request/api/v1/\{project\}/releases/\{releaseUuid\}/schemas/request-body.json[]
+----
+
+It is also possible to assign microschemas via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/microschemas``` to the release.
+
+[source,json]
+----
+include::examples/api/request/api/v1/\{project\}/releases/\{releaseUuid\}/microschemas/request-body.json[]
+----
+
+All nodes which reference the release via the updated schema version will automatically be migrated to use the newer schema version.
+Please note the started *schema migration* will be processed asynchronously and thus not all node language variants may be directly accessible within the scope of the release.
+
+The migration will create new versions for the affected node language variants.
+
+NOTE: It is note worthy that updating a schema and thus creating new schema version will not automatically affect the release. Each schema update created a new schema version. This new version must first be assigned to the release.
+
+=== Deleting a Release
+
+At the moment it is not possible to delete a release.
+
+=== Moving Nodes
+
+Releases enable Gentics Mesh to setup multiple content project tree structures. 
+Moving nodes can be scoped to a specific release using the ```?release``` request parameter. 
+The project's initial release will be used to execute the move operation if no release has been selected.
+
+=== Tagging Nodes
+
+The tag operation is also scoped to a specific release. This way new tags can be assigned to your nodes for a specific release without affecting the taggings of nodes within an older release. 
+
+NOTE: Tags and tag families are not versioned. Deleting a tag will remove the tag from all nodes that previously referenced this tag.
+
+NOTE: Taggings to nodes are not versioned.
+
+=== Deleting Nodes
+
+Deleting nodes is also release specific. Deleting a node via ```DELETE``` to ```/api/v1/:projectName/node/:uuid?release=winter2016``` will delete the node and all its sub nodes from the _winter2016_ release.
+The node will be completely removed from the system if no more language variants are referenced within any release.
+
+It is also possible to just delete a specific language variant via ```DELETE``` to ```/api/v1/:projectName/node/:uuid/languages/en?release=winter2016``` from release _winter2016_.
+
+
+=== Updating Nodes
+
+Releases are completely isolated from each other as explained earlier. This also applies to a node's language variant versions.
+
+Example:
+
+* Create release _summer2016_
+* Create node with language variant _de_ at version _1.0_ in release _summer2016_
+* Create release _winter2016_
+* Update previously created node in release _summer2016_ and thus create version _1.1_
+
+Release _summer2016_ will reference node language variant 1.1 and _winter2016_ will still reference version 1.0 since the _winder2016_ release was created at the specific point of time in which the language variant in release _summer2016_ was still at version _1.0_.
+
+NOTE: It is currently not possible to migrate _1.1_ from _summer2016_ to _winter2016_.
+
+Additionally creating new nodes in _summer2016_ will not be available in release _winter2016_.
+
+=== Permissions
+
+Permissions are not release specific.
+
+== Search
+
+Search requests are handled by the ```/api/v1/search``` or ```/api/v1/:projectName/search``` endpoints.
+
+Elasticsearch is used in order to provide the search functionality. This way elasticsearch queries can be posted to the search endpoints.
+
+The JSON format of stored documents within the elasticsearch differ from the JSON format that is returned via regular Gentics Mesh endpoints. Thus it is important to know the elasticsearch document format when building an elasticsearch query. Below is a list of various example documents.
+
+NOTE: It is not possible to search for specific individual versions. Instead only published and draft versions per release are stored in the search index.
+
+
+=== Users
+
+Endpoint: ```/api/v1/search/users```
+
+[source,json]
+----
+include::examples/search/user.search.json[]
+----
+
+=== Groups
+
+Endpoint: ```/api/v1/search/groups```
+
+[source,json]
+----
+include::examples/search/group.search.json[]
+----
+
+
+=== Roles
+
+Endpoint: ```/api/v1/search/roles```
+
+[source,json]
+----
+include::examples/search/role.search.json[]
+----
+
+=== Nodes
+
+Endpoint: ```/api/v1/search/nodes```
+
+[source,json]
+----
+include::examples/search/node.search.json[]
+----
+
+
+*Search nodes by schema name*
+
+Listed below is an example search query which can be posted to ```/api/v1/search/nodes``` in order to find all nodes across all projects which were created using the content schema.
+The found nodes will be sorted ascending by creator.
+
+[source,json]
+----
+{
+  "sort" : {
+     "created" : { "order" : "asc" }
+  },
+  "query":{
+    "bool" : {
+      "must" : {
+        "term" : { "schema.name" : "content" }
+       }
+    }
+  }
+}
+----
+
+
+
+*Search nodes by micronode field values*
+
+Find all nodes which have a micronode list field (vcardlist) that contain at least one micronode which contains the two string fields (firstName, lastName) with the values ("Joe", "Doe"):
+
+[source,json]
+----
+{
+  "query": {
+    "nested": {
+      "path": "fields.vcardlist",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "fields.vcardlist.fields.firstName": "Joe"
+              }
+            },
+            {
+              "match": {
+                "fields.vcardlist.fields.lastName": "Doe"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+----
+
+
+=== Projects
+
+Endpoint: ```/api/v1/search/projects```
+
+[source,json]
+----
+include::examples/search/project.search.json[]
+----
+
+=== Tags
+
+Endpoint: ```/api/v1/search/tags```
+
+[source,json]
+----
+include::examples/search/tag.search.json[]
+----
+
+=== Tag Families
+
+Endpoint: ```/api/v1/search/tagFamilies```
+
+[source,json]
+----
+include::examples/search/tagFamily.search.json[]
+----
+
+=== Schemas
+
+Endpoint: ```/api/v1/search/schemas```
+
+[source,json]
+----
+include::examples/search/schema.search.json[]
+----
+
+=== Microschemas
+
+Endpoint: ```/api/v1/search/microschemas```
+
+[source,json]
+----
+include::examples/search/microschema.search.json[]
+----
+
+
+=== Paging
+
+The paging query parameters are `perPage` and `page` . It is important to note that ```page``` is 1-based and ```perPage``` can be set to ```0``` in order to just retrieve a count of elements.
+
+== Preview handling
+
+The mesh ui will provide a preview button when editing nodes. A post request to a configureable url is being dispatchen when the button will be triggered.
+The post request will contain the node JSON data of the current editing state. This way a preview page can be easily rendered by custom frontend implementations.
+
+== Password Recovery
+
+A user who lost his password is able to recover it using a reset token. This token, typically, is issued by a user or service having permissions to create new users. 
+The ```/api/v1/users/:userUuid/reset_token``` end point will return a token code which then can be passed along to an email service sending a recovery email to the user including named token. 
+
+NOTE: A token is valid for 30 minutes and will be invalidated once it has been used. 
+
+The user can use this token to update his user record by issuing a POST request to the ```/api/v1/users/:userUuid?token=TOKENCODE``` end point. E.g., this can be done by presenting the user a form for updating his password. This works even if the user is not authenticated. 
+
+== Schema & Microschema Migration
 
 Gentics Mesh provides a changelog like system in order to apply and keep track of schema changes. A schema change may be a single change that adds a new field to the schema or a change which updates the schema properties.
 
@@ -1340,182 +1790,7 @@ Finally the changes can be applied by sending the request to ```/api/v1/schemas/
 include::examples/api/request/api/v1/schemas/\{schemaUuid\}/changes/request-body.json[]
 ----
 
-
-== Versioning
-
-In order to grasp the concept of versioning in Gentics Mesh it is important to remember that Nodes are containers for language variants. The language variant of a node contains the fields and thus stores all the content.
- 
-Versioning within Gentics Mesh only applies to *language variants* and their referenced fields. Other elements such as Users, groups, roles and even Nodes are not versioned.
- 
-Various interactions have different effects for versioning in Mesh. Below is a list of actions which involve versioning.
-
-=== Node Creation
-
-Once a node has been created the initial start version 0.1 will be assigned to its language variant.
-
-=== Node Updates
-
-Updating a node's language variant may create version 0.2 of that language variant if changes have been detected within the posted request fields. 
-
-* No Locks and Conflict detection
-
-It is not required to handle locks in Gentics Mesh. Instead it is required to specify the version in the update request which identifies the version on which the update request was based upon.
-Mesh will check whether new versions have been created in the meanwhile. Long running edit operations or multiple concurrent editors may create additional versions.
-The detected changes will automatically compared in order to determine whether the current update request causes a conflict with a newer edit request.
-Mesh will return a response which contains information about the conflict in those cases. Other update operations which do not cause a conflict will be stored and the changed fields will be updated.
-
-The latest version which was created using a update request is called the draft version. Only a single draft version per language exists.
-
-=== Publishing Nodes
-
-Node language variant can be published and taken offline. This is especially useful if you want to first work on a draft and review it and later publish it.
-Publishing a just requires a ```PUT``` request on ```/api/v1/:projectName/nodes/:uuid/published``` which will publish all language variants of the node. 
-It is also possible to just publish specific language variants via ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/published```. 
-Mesh will automatically create a new major version when publishing a node language variant (e.g.: 1.0, 2.0). The draft reference will also be updated to point to version 1.0.
-It is also possible to retrieve detailed information about the published status via a ```GET``` request on ```/api/v1/:/nodes/:uuid/published```.
-
-NOTE: Publishing node language variations requires the user to be assigned to a role which provides the ```publish``` permission.
-
-[source,json]
-----
-include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/published/200/example.json[]
-----
-
-It is not possible to publish a specific version. Publish always affects the latest draft version of the language variant.
-
-=== Taking Nodes Offline
-
-Similarly the language variants of a node can be taken offline via a ```DELETE``` request on ```/api/v1/:projectName/nodes/:uuid/published```. 
-Taking a node language variant with version 1.0 offline will just change the node's publish state. Version 1.0 will still be available.
-
-===  Reading Nodes
-
-It is possible to load older versions by specifying the ```?version``` parameter. Similarly the published version of can also be loaded using the parameter ```?version=published``` or the draft version via ```?version=draft```.
-
-NOTE: By default nodes will be loaded using ```?version=published```. A nodes list thus may not contain your previously created node because it was not yet published.
-
-NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readpublished``` permission.
-
-=== Permissions
-
-Permissions are not version specific. Permissions apply to nodes and not to language variants.
-
-=== Limitations
-
-At the moment it is not possible to delete older versions.
-
-== Releases
-
-So far we learned that node language variants can be versioned and published. Additionally Mesh versioning provides a powerful concept we call `Releases`. A release is very similar to branches in a versioning control system.
-
-Releases can be used to restructure your nodes and change the contents within a specific release without affecting a different release which provides a different structure/content.
-
-Structural references for nodes always contain release information. This applies to parent/child relationship or taggings, publish states of nodes. This way releases are completely isolated from each other.
-
-NOTE: It is currently not possible to migrate from one release to another. Nodes of releases can't be automatically merged to other releases.
-
-Typical usecases are:
-
-* Updating an existing application installation which uses Gentics Mesh to a new version. The new application version requires new schema versions. 
-  By creating a release and migrating the nodes to the new release (new schema versions), it is possible to serve content for both application versions.
-  Each application versions chooses the correct release for getting nodes.
-
-* Schema versions must be assigned to the release.
-  Each project can have multiple releases.
-  An initial release will automatically be created when creating a project.
-
-All operations to nodes can be scoped to a specific release by adding the ```?release=name``` query parameter. If omitted the latest release will be used to execute the operation.
-
-TIP: Implementations which use mesh should always reference a specific release. Otherwise the document structure could change without the implementation being aware of these changes.
-
-=== Creating a Release
-
-A release requires an unique name. Existing nodes within the project will automatically be migrated into the release.
-Please note the started *node migration* will be processed asynchronously and thus not all nodes may be directly accessible within the scope of the release.
-
-This migration is different from a schema version migration. The release node migration just takes care of making all nodes from the previous release available in the newly created release.
-Unlike the schema migration the node migration will not create new language variant versions.
-
-You can use the eventbus bridge or the dedicated ```/api/v1/admin/status/migrations``` endpoint to query the migration status.
-The ```migrated``` JSON property within the release response also indicates whether the node migration has been completed.
-
-Note: Migrated nodes will still have the same _uuid_ as before.
-
-=== Updating a Release
-
-A release can be _renamed_ and new schema/microschema versions can be _assigned_ to it.
-
-Renaming is useful if you want to change your development release to be the current production release.
-
-Assigning schema versions to the release via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/schemas``` will automatically trigger a schema migration of the affected nodes language variants within the release.
-
-[source,json]
-----
-include::examples/api/request/api/v1/\{project\}/releases/\{releaseUuid\}/schemas/request-body.json[]
-----
-
-It is also possible to assign microschemas via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/microschemas``` to the release.
-
-[source,json]
-----
-include::examples/api/request/api/v1/\{project\}/releases/\{releaseUuid\}/microschemas/request-body.json[]
-----
-
-All nodes which reference the release via the updated schema version will automatically be migrated to use the newer schema version.
-Please note the started *schema migration* will be processed asynchronously and thus not all node language variants may be directly accessible within the scope of the release.
-
-The migration will create new versions for the affected node language variants.
-
-NOTE: It is note worthy that updating a schema and thus creating new schema version will not automatically affect the release. Each schema update created a new schema version. This new version must first be assigned to the release.
-
-=== Deleting a Release
-
-At the moment it is not possible to delete a release.
-
-=== Moving Nodes
-
-Releases enable Gentics Mesh to setup multiple content project tree structures. 
-Moving nodes can be scoped to a specific release using the ```?release``` request parameter. 
-The project's initial release will be used to execute the move operation if no release has been selected.
-
-=== Tagging Nodes
-
-The tag operation is also scoped to a specific release. This way new tags can be assigned to your nodes for a specific release without affecting the taggings of nodes within an older release. 
-
-NOTE: Tags and tag families are not versioned. Deleting a tag will remove the tag from all nodes that previously referenced this tag.
-
-NOTE: Taggings to nodes are not versioned.
-
-=== Deleting Nodes
-
-Deleting nodes is also release specific. Deleting a node via ```DELETE``` to ```/api/v1/:projectName/node/:uuid?release=winter2016``` will delete the node and all its sub nodes from the _winter2016_ release.
-The node will be completely removed from the system if no more language variants are referenced within any release.
-
-It is also possible to just delete a specific language variant via ```DELETE``` to ```/api/v1/:projectName/node/:uuid/languages/en?release=winter2016``` from release _winter2016_.
-
-
-=== Updating Nodes
-
-Releases are completely isolated from each other as explained earlier. This also applies to a node's language variant versions.
-
-Example:
-
-* Create release _summer2016_
-* Create node with language variant _de_ at version _1.0_ in release _summer2016_
-* Create release _winter2016_
-* Update previously created node in release _summer2016_ and thus create version _1.1_
-
-Release _summer2016_ will reference node language variant 1.1 and _winter2016_ will still reference version 1.0 since the _winder2016_ release was created at the specific point of time in which the language variant in release _summer2016_ was still at version _1.0_.
-
-NOTE: It is currently not possible to migrate _1.1_ from _summer2016_ to _winter2016_.
-
-Additionally creating new nodes in _summer2016_ will not be available in release _winter2016_.
-
-=== Permissions
-
-Permissions are not release specific.
-
-== Eventbus Bridge / Websocket
+== Eventbus Bridge & Websocket
 
 The ```/api/v1/eventbus``` endpoint allows clients to access the eventbus. This may be useful if you want to react on specific events.
 Currently only schema migration specific events are handled via this endpoint but more will follow.
@@ -1528,229 +1803,9 @@ The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possibl
 | mesh.migration  | Receive node and micronode migration specific events
 |======
 
-[[imagemanipulation]]
-== Image Manipulation
-
-Images can be resized by appending the image manipulation query parameters on the binary node endpoint:
-
-Endpoint: ```/api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname?width=220```
-
-It is also possible to use the image manipulation in combination with the webroot endpoint:
-
-Endpoint: ```/api/v1/:projectName/webroot/:path?width=220```
-
-It is mandatory to specify all four crop parameters when cropping an image.
-
-
-include::examples/tables/ImageManipulationParametersImpl.adoc[]
-
-[options="header"]
-|=====
-| Parameter    | Description
-| ```width```  | Target image width.
-| ```height``` | Target image height.
-| ```cropx```  | Crop area start x coordinate.
-| ```cropy```  | Crop area start y coordinate.
-| ```cropw```  | Crop area width.
-| ```croph```  | Crop area height.
-|=====
-
-== File Upload
-
-Binary data can be attached to node binary fields which have been created using a schema that lists one or more binary fields. The ```/api/v1/nodes/:uuid/binary/:fieldName``` endpoint can be used to POST binary data and thus update the stored binary field. This endpoint is accepting only ```multipart/form-data``` .
-It is required to specify the `version` and `language` within the update request. This is similar to regular node update requests in which these information must be added to the JSON.
-
-
-```
-----------Geg2Oob
-Content-Disposition: form-data; name="version"
-
-1.0
-
-----------Geg2Oob
-Content-Disposition: form-data; name="language"
-
-en
-
-----------Geg2Oob
-Content-Disposition: form-data; name="shohY6d"; filename="somefile.bin"
-Content-Type: application/octet-stream
-Content-Transfer-Encoding: binary
-
-fileData
-
-----------Geg2Oob--
-```
-
-=== Paging
-
-The paging query parameters are `perPage` and `page` . It is important to note that ```page``` is 1-based and ```perPage``` can be set to ```0``` in order to just retrieve a count of elements.
-
-== Language Fallback
-
-Nodes are translated into different languages. Requests for nodes should contain the requested languages (as comma separated list) as query parameter:
-
-Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=en,de```
-
-If the requested node is available in any of the languages, the response will contain the fields in that language (first language found).
-Otherwise, the node will still be returned, but without fields.
-
-=== Preview handling
-
-The mesh ui will provide a preview button when editing nodes. A post request to a configureable url is being dispatchen when the button will be triggered.
-The post request will contain the node JSON data of the current editing state. This way a preview page can be easily rendered by custom frontend implementations.
-
-== Search
-
-Search requests are handled by the ```/api/v1/search``` or ```/api/v1/:projectName/search``` endpoints.
-
-Elasticsearch is used in order to provide the search functionality. This way elasticsearch queries can be posted to the search endpoints.
-
-The JSON format of stored documents within the elasticsearch differ from the JSON format that is returned via regular Gentics Mesh endpoints. Thus it is important to know the elasticsearch document format when building an elasticsearch query. Below is a list of various example documents.
-
-NOTE: It is not possible to search for specific individual versions. Instead only published and draft versions per release are stored in the search index.
-
-
-=== Users
-
-Endpoint: ```/api/v1/search/users```
-
-[source,json]
-----
-include::examples/search/user.search.json[]
-----
-
-=== Groups
-
-Endpoint: ```/api/v1/search/groups```
-
-[source,json]
-----
-include::examples/search/group.search.json[]
-----
-
-
-=== Roles
-
-Endpoint: ```/api/v1/search/roles```
-
-[source,json]
-----
-include::examples/search/role.search.json[]
-----
-
-=== Nodes
-
-Endpoint: ```/api/v1/search/nodes```
-
-[source,json]
-----
-include::examples/search/node.search.json[]
-----
-
-
-*Search nodes by schema name*
-
-Listed below is an example search query which can be posted to ```/api/v1/search/nodes``` in order to find all nodes across all projects which were created using the content schema.
-The found nodes will be sorted ascending by creator.
-
-[source,json]
-----
-{
-  "sort" : {
-     "created" : { "order" : "asc" }
-  },
-  "query":{
-    "bool" : {
-      "must" : {
-        "term" : { "schema.name" : "content" }
-       }
-    }
-  }
-}
-----
-
-
-
-*Search nodes by micronode field values*
-
-Find all nodes which have a micronode list field (vcardlist) that contain at least one micronode which contains the two string fields (firstName, lastName) with the values ("Joe", "Doe"):
-
-[source,json]
-----
-{
-  "query": {
-    "nested": {
-      "path": "fields.vcardlist",
-      "query": {
-        "bool": {
-          "must": [
-            {
-              "match": {
-                "fields.vcardlist.fields.firstName": "Joe"
-              }
-            },
-            {
-              "match": {
-                "fields.vcardlist.fields.lastName": "Doe"
-              }
-            }
-          ]
-        }
-      }
-    }
-  }
-}
-----
-
-
-=== Projects
-
-Endpoint: ```/api/v1/search/projects```
-
-[source,json]
-----
-include::examples/search/project.search.json[]
-----
-
-=== Tags
-
-Endpoint: ```/api/v1/search/tags```
-
-[source,json]
-----
-include::examples/search/tag.search.json[]
-----
-
-=== Tag Families
-
-Endpoint: ```/api/v1/search/tagFamilies```
-
-[source,json]
-----
-include::examples/search/tagFamily.search.json[]
-----
-
-=== Schemas
-
-Endpoint: ```/api/v1/search/schemas```
-
-[source,json]
-----
-include::examples/search/schema.search.json[]
-----
-
-=== Microschemas
-
-Endpoint: ```/api/v1/search/microschemas```
-
-[source,json]
-----
-include::examples/search/microschema.search.json[]
-----
-
 == Clustering
 
 Clustering support is still in development.
 
-It will be possible to use master/master replication for OrientDB. Clustering for the elasticsearch nodes and the vertx event message bus.
+It will be possible to use master/master replication for OrientDB. Clustering for the Elasticsearch nodes and the Vert.x event message bus.
+
