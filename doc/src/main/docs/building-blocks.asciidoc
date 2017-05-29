@@ -55,7 +55,12 @@ A project represents the base element of your content structure, which includes 
 |======
 
 === Properties
+==== Read Properties
 include::examples/models/ProjectResponse.adoc[]
+==== Create Properties
+include::examples/models/ProjectCreateRequest.adoc[]
+==== Update Properties
+include::examples/models/ProjectUpdateResquest.adoc[]
 
 === Query Parameters
 
@@ -252,7 +257,7 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 |======
 
 === Properties
-//TODO
+include::examples/models/SchemaResponse.adoc[]
 
 === Query Parameters
 
