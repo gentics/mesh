@@ -13,7 +13,7 @@ While it is perfectly legitimate to organize your contents in a simple, flat str
 
 TIP: To get you started, Gentics Mesh is shipped with a generic _folder_ schema allowing you to follow the well-known file system paradigm for hierarchically organizing your content in a tree.
 
-There are two properties when defining a http://getmesh.io/docs/beta/building-blocks.html#_schemas[schema] for your nodes that are of importance in this respect.
+There are two properties when defining a link:building-blocks.html#_schemas[schema] for your nodes that are of importance in this respect.
 
 . ```container```: if true, nodes can contain child nodes and build a node tree.
 . ```segmentField```: allows to specify which schema field should be considered the path segment for the current node, i.e., it’s the basis for building URLs.
@@ -44,7 +44,7 @@ image:GenticsMesh-PrettyURL-Example.png[]
 //TODO update (slug, font-size)
 
 The ```path``` property as well as the ```languagesPath``` property (for available language variants) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` end point together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
-For more details see the documentation on http://getmesh.io/docs/beta/building-blocks.html#_node[node] and <<webroot,WebRoot API>>, respectively.
+For more details see the documentation on link:building-blocks.html#_node[node] and <<webroot,WebRoot API>>, respectively.
 
 ==== API end points
 
@@ -561,7 +561,7 @@ http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?
 == Breadcrumbs
 
 Each node in Gentics Mesh provides information on where it is located within the node tree in terms of its ```breadcrumb``` property.
-The property provides an array of node references representing the path from the current node up to the project root. For more details see the documentation on http://getmesh.io/docs/beta/building-blocks.html#_node[node].
+The property provides an array of node references representing the path from the current node up to the project root. For more details see the documentation on link:building-blocks.html#_node[node].
 
 NOTE: The current node will not be included in the list, since all the information is already provided in other properties (i.e., ```displayField```, ```path```) of node object itself. 
 
@@ -590,7 +590,7 @@ The ```breadcrumb``` property will be returned in all API responses containing n
 
 |======
 
-==== Sample Response
+=== Response Sample
 http://getmesh.io/api/v1/demo/nodes/fd58237c79d64bf198237c79d6bbf107?resolveLinks=short
 
 [source,json]
@@ -803,7 +803,7 @@ Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gent
 |======
 
 == Link Resolving
-Link resolving represents the counterpart of the WebRoot API - a node UUID can be resolved into a WebRoot path. 
+Link resolving represents the counterpart of the <<webroot, WebRoot API>> - a node UUID can be resolved into a WebRoot path. 
 
 image:GenticsMesh-LinkResolver-Utility-Example.png[]
 
@@ -811,14 +811,14 @@ Typically, editors create content including internal links to other nodes. When 
 
 For example, ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg``` when using the ```?resolveLinks=full``` query parameter.
 
-The ```resolveLinks``` query parameter defines if and how links are resolved:
+The ```?resolveLinks``` query parameter defines if and how links are resolved:
 
 * `off` -  links will not be resolved. This is the default.
 * `full` - the resolved links will contain the WebRoot prefix and project name (```/api/v1/:projectName/webRoot/:path```).
 * `medium` - the resolved links will contain the project name (```/:projectName/:path```).
 * `short` - will contain neither WebRoot prefix nor project name, just the path (```:path```).
 
-The 'resolveLinks' query parameter can be applied to all API end points returning nodes:
+The ```?resolveLinks``` query parameter can be applied to all API end points returning nodes.
 
 === API end points
 
@@ -849,7 +849,7 @@ The 'resolveLinks' query parameter can be applied to all API end points returnin
 
 In addition to the above, Gentics Mesh offers the ```/api/v1/utilities/linkResolver``` end point that can be used to resolve Gentics Mesh links within the posted text data. This is useful when resolving links for a preview page.
 
-It’s necessary to send the content in which links should get resolved to the API end point in plain text or JSON. The query parameter ```resolveLinks``` is used to specify how links shall be resolved.
+It’s necessary to send the content in which links should get resolved to the API end point in plain text or JSON. The query parameter ```?resolveLinks``` is used to specify how links shall be resolved.
 
 Valid links:
 
@@ -861,7 +861,6 @@ Valid links:
 
 * {{mesh.link("2f2de9297c8143e8ade9297c8193e8fc")}} (link to default language)
 
-//TODO Query Parameters
 
 [[imagemanipulation]]
 == Image Manipulation
@@ -917,8 +916,6 @@ NOTE: This endpoint is accepting ```multipart/form-data```, only.
 
 It is required to specify the `version` and `language` within the update request. This is similar to regular node update requests in which these information must be added to the JSON object.
 
-=== Example
-
 ```
 ----------Geg2Oob
 Content-Disposition: form-data; name="version"
@@ -949,7 +946,7 @@ The upload limit can be configured in bytes using the ```uploadOptions.byteLimit
 For more information on available settings have a look at the link:administration-guide.html#_settings[administration guide].
 
 [[multilanguage]]
-== Multi-Language & Language Fallback
+== Multi-Language
 
 Gentics Mesh comes with multi-language support out of the box. In particular, a node serves as a container for one or more language variants. These language variants will store the actual content fields. 
 
@@ -961,7 +958,7 @@ End point: ```/api/v1/:projectName/nodes/:uuid?lang=en,de```
 
 If the requested node is available in any of the languages, the response will contain the fields in that language (first language found).
 
-=== Fallback Mechanism
+=== Language Fallback
 
 Gentics Mesh allows to configure a ```defaultLanguage``` in the main configuration file ```mesh.yml```. This default language is used as a fallback in case:
 
@@ -1270,11 +1267,13 @@ Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect
 
 == Versioning
 
-In order to grasp the concept of versioning in Gentics Mesh it is important to remember that nodes are containers for language variants (see <<multilanguage, Multi-Language & Language Fallback>>). The language variant of a node contains the fields and thus stores all the content.
+In order to understand the concept of versioning in Gentics Mesh it is important to remember that nodes are containers for language variants (see <<multilanguage, Multi-Language>>). The language variant of a node contains the fields and thus stores all the content.
  
-NOTE: Versioning within Gentics Mesh only applies to *language variants* and their referenced fields. Other elements such as users, groups, roles and even nodes are not versioned.
+NOTE: Versioning within Gentics Mesh only applies to *language variants* and their referenced fields. Other elements such as users, groups, roles, permissions and even nodes are not versioned.
  
-Various content management tasks will have different effects for versioning in Gentics Mesh. Following, we go through all of these actions which involve versioning.
+Various content management tasks will have different effects for versioning in Gentics Mesh. Some of them create versions, others don't. Following, we go through all of these actions which involve versioning.
+
+NOTE: At the moment it is not possible to delete older versions.
 
 === Node Creation
 
@@ -1322,6 +1321,7 @@ NOTE: It is not possible to publish a specific version. Publish always affects t
 Similarly to publishing, the language variants of a node can be taken offline via a ```DELETE``` request on ```/api/v1/:projectName/nodes/:uuid/published```. 
 E.g., taking a specific node language variant with version 1.0 offline using ```DELETE /api/v1/:projectName/nodes/:uuid/languages/:languageTag/published``` will just change the node's publish state. Version 1.0 will still be available.
 
+NOTE: Taking node language variants offline requires the user have ```publish``` permissions on the node.
 
 ===  Reading Nodes
 
@@ -1330,11 +1330,6 @@ It is possible to fetch older versions by specifying the ```?version``` query pa
 NOTE: By default, nodes will be loaded using ```?version=published```. A nodes list thus may not contain your previously created node because it was not yet published.
 
 NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readpublished``` permission.
-
-=== Permissions
-
-Permissions are not version specific. Permissions apply to nodes and not to language variants.
-//TODO move to explanation on what is versioned
 
 == Content Releases
 
@@ -1601,9 +1596,9 @@ include::examples/search/microschema.search.json[]
 
 The paging query parameters are `perPage` and `page` . It is important to note that ```page``` is 1-based and ```perPage``` can be set to ```0``` in order to just retrieve a count of elements.
 
-== Preview handling
+== Preview Handling
 
-The mesh ui will provide a preview button when editing nodes. A post request to a configureable url is being dispatchen when the button will be triggered.
+The Gentics Mesh User Interface provides a preview button when editing nodes. A post request to a configureable url is being dispatched when the button is triggered.
 The post request will contain the node JSON data of the current editing state. This way a preview page can be easily rendered by custom frontend implementations.
 
 == Password Recovery
