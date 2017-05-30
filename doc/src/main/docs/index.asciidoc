@@ -69,6 +69,6 @@ Accept: application/json
 == link:building-blocks.html[Building Blocks]
 == link:features.html[Features]
 == link:references.html[References]
-== link:aministration-guide.html[Administration Guide]
+== link:administration-guide.html[Administration Guide]
 == link:user-interface.html[Gentics Mesh User Interface]
 == link:plattforms.html[Plattforms]

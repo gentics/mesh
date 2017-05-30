@@ -1,7 +1,7 @@
 
 = Building Blocks
 
-This part of our documentation will be about the core concepts of Gentics Mesh. It will describe the building blocks you'll need to setup your project. We will start with an overview and then move on to discuss each concept in detail including examples and references to relevant parts of the API. At the end you should be able to understand the core concepts and be ready to design your content model as well as manage users and their permissions on elements of your project using either the API or the Gentics Mesh user interface.
+This part of the documentation will be about the core concepts of Gentics Mesh. It will describe the building blocks you'll need to setup your project. We will start with an overview and then move on to discuss each concept in detail including examples and references to relevant parts of the API. At the end you should be able to understand the core concepts and be ready to design your content model as well as manage users and their permissions on elements of your project using either the API or the Gentics Mesh user interface.
 
 == The Gentics Mesh building blocks in a nutshell
 
@@ -12,9 +12,9 @@ image:overview.png[]
 * The actual content items of your project are called *nodes* and always follow a schema.
 * *Everything is a node*, there is no separate concept for media assets.To get you started, we ship with schemas for _image_, _video_, _document_, and _audio_ that you may customize to your needs and liking!
 * Nodes can be tagged. A *tag family* groups *tags* that semantically belong together and is defined for a specific project.
-* Gentics Mesh supports building *content trees*. Nodes can be hierarchically structured if a container-schema is provided. While it’s possible to organize your contents in a simple, flat structure with tagging and referencing, content trees are the basis for leveraging the power of * automatic navigation menus, breadcrumbs, pretty URLs and link resolving*. For your convenience, Gentics Mesh is shipped with a generic _folder_ schema that you may choose for hierarchically organizing your content in a tree and ultimately following the well-known file system paradigm.
+* Gentics Mesh supports building *content trees*. Nodes can be hierarchically structured if a container-schema is provided. While it’s possible to organize your contents in a simple, flat structure with tagging and referencing, content trees are the basis for leveraging the power of *automatic navigation menus, breadcrumbs, pretty URLs and link resolving*. For your convenience, Gentics Mesh is shipped with a generic _folder_ schema that you may choose for hierarchically organizing your content in a tree and ultimately following the well-known file system paradigm.
 * With *micronodes* it is possible to build complex object data structures as they are basically representing subnodes of nodes. They allow for creating custom content components, e.g. media elements of your blogpost such as YouTube videos, image galleries, Google maps, image with caption, vcards, quotes, or text paragraphs to be mixed and matched.
-* Supporting *multi-language and localisation*, nodes are can hold several language variants of your content.
+* Supporting *multi-language and localisation*, nodes can hold several language variants of your content.
 * Each user (a physical person or client app) has a *user* object counter part in Gentics Mesh, which can be extended by referencing a custom user node. By defining your custom user schema Gentics Mesh supports extensible user profiles for your apps.
 * *Groups* are used to organize users, e.g., of same access levels.
 * *Roles* are used to manage permissions between a role and other elements in Gentics Mesh (i.e., nodes, schemas, users, roles, etc.). Roles can be assigned to groups, thus efficiently granting the role's permissions to a set of users.
@@ -55,10 +55,15 @@ A project represents the base element of your content structure, which includes 
 |======
 
 === Properties
+
 ==== Read Properties
+
 include::examples/models/ProjectResponse.adoc[]
+
 ==== Create Properties
+
 include::examples/models/ProjectCreateRequest.adoc[]
+
 ==== Update Properties
 include::examples/models/ProjectUpdateResquest.adoc[]
 
@@ -388,7 +393,7 @@ Depending on the actual data, Gentics Mesh will store related meta data e.g., ``
 |======
 
 [[micronode]]
-== Micronode and Microschema
+== Micronode & Microschema
 A *micronode* is similar to a node. It also follows a schema - a *microschema*. It is bound to a node and thus is not directly accessible from within the project node tree structure. 
 
 With micronodes it is possible to build complex object data structures as they are basically representing subnodes of nodes.
