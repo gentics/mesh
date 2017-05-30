@@ -23,23 +23,23 @@
 </g>
 <text transform="matrix(1 0 0 1 447.9854 122.4854)" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="48">WebRoot API</text>
 <rect x="27.355" y="-144.272" display="none" fill="#0096DC" width="1079.245" height="700.833"/>
-<g>
-	<path fill="#80CBEE" d="M565.448,248.266H273.22c-2.03,0-3.674,1.692-3.674,3.779v46.463c0,2.087,1.644,3.778,3.674,3.778h292.228
-		c2.027,0,3.672-1.691,3.672-3.778v-46.463C569.12,249.958,567.476,248.266,565.448,248.266"/>
-	<path fill="#80CBEE" d="M1055.771,248.615H745.561c-2.381,0-4.311,1.533-4.311,3.425v47.167c0,1.895,1.93,3.429,4.311,3.429
-		h310.211c2.383,0,4.311-1.534,4.311-3.429V252.04C1060.082,250.148,1058.154,248.615,1055.771,248.615"/>
-	<text transform="matrix(1 0 0 1 141.6733 287.7983)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="38.7643">/api/v1/</tspan><tspan x="122.805" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="38.7643" letter-spacing="-4">   </tspan><tspan x="141.179" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="38.7643" letter-spacing="-2">PROJECT_NAME</tspan><tspan x="409.968" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="38.7643">  /</tspan><tspan x="442.297" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="38.7643">w</tspan><tspan x="473.812" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="38.7643">ebroot/ PATH_TO_NODE</tspan></text>
-	<text transform="matrix(1 0 0 1 769.9492 371.6572)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">pr</tspan><tspan x="22.966" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">o</tspan><tspan x="36.812" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">vided </tspan><tspan x="105.737" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">b</tspan><tspan x="119.609" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">y the nodes’</tspan><tspan x="12.439" y="31.001" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">segmentField values</tspan></text>
-	<g opacity="0.5">
-		
-			<line fill="none" stroke="#FFFFFF" stroke-width="3" stroke-miterlimit="10" x1="900.666" y1="341.024" x2="900.666" y2="315.842"/>
-	</g>
-	<text transform="matrix(1 0 0 1 309.3101 371.6572)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">root element of </tspan><tspan x="185.201" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">the</tspan><tspan x="12.323" y="31.001" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">content st</tspan><tspan x="128.6" y="31.001" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">r</tspan><tspan x="136.583" y="31.001" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">uc</tspan><tspan x="163.863" y="31.001" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">t</tspan><tspan x="171.845" y="31.001" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">ure</tspan></text>
-	<g opacity="0.5">
-		
-			<line fill="none" stroke="#FFFFFF" stroke-width="3" stroke-miterlimit="10" x1="419.333" y1="341.024" x2="419.333" y2="315.842"/>
-	</g>
+<path opacity="0.6" fill="#80CBEE" d="M648.036,248.266H402.631c-1.705,0-3.085,1.692-3.085,3.779v46.463
+	c0,2.087,1.38,3.778,3.085,3.778h245.405c1.703,0,3.084-1.691,3.084-3.778v-46.463C651.12,249.958,649.739,248.266,648.036,248.266"
+	/>
+<path opacity="0.6" fill="#80CBEE" d="M946.557,248.615H836.775c-0.843,0-1.525,1.533-1.525,3.425v47.167
+	c0,1.895,0.683,3.429,1.525,3.429h109.781c0.843,0,1.525-1.534,1.525-3.429V252.04C948.082,250.148,947.399,248.615,946.557,248.615
+	"/>
+<text transform="matrix(1 0 0 1 266.4741 288.7983)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="38.7643">/api/v1/</tspan><tspan x="122.805" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="38.7643" letter-spacing="-4">     </tspan><tspan x="153.429" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="38.7643" letter-spacing="-1">:projectName</tspan><tspan x="362.792" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="38.7643">   /</tspan><tspan x="405.899" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="38.7643">w</tspan><tspan x="437.414" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="38.7643">ebroot/  :path</tspan></text>
+<text transform="matrix(1 0 0 1 762.9492 371.6572)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">pr</tspan><tspan x="22.966" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">o</tspan><tspan x="36.812" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">vided </tspan><tspan x="105.737" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">b</tspan><tspan x="119.609" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">y the nodes’</tspan><tspan x="12.439" y="31.001" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">segmentField values</tspan></text>
+<g opacity="0.5">
+	
+		<line fill="none" stroke="#FFFFFF" stroke-width="3" stroke-miterlimit="10" x1="893.666" y1="341.024" x2="893.666" y2="315.842"/>
+</g>
+<text transform="matrix(1 0 0 1 413.3101 371.6572)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">root element of </tspan><tspan x="185.201" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">the</tspan><tspan x="12.323" y="31.001" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">content st</tspan><tspan x="128.6" y="31.001" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">r</tspan><tspan x="136.583" y="31.001" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">uc</tspan><tspan x="163.863" y="31.001" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">t</tspan><tspan x="171.845" y="31.001" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="25.8338">ure</tspan></text>
+<g opacity="0.5">
+	
+		<line fill="none" stroke="#FFFFFF" stroke-width="3" stroke-miterlimit="10" x1="523.333" y1="341.024" x2="523.333" y2="315.842"/>
 </g>
 <text transform="matrix(1 0 0 1 447.1909 175.2583)" opacity="0.5" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="50.4488">query by path</text>
-<text transform="matrix(1 0 0 1 335.3569 491.2988)" fill="#FFFFFF" font-family="'Courier'" font-size="18">Example: /api/v1/demo/webroot/Automobiles/Trabant</text>
+<text transform="matrix(1 0 0 1 305.9517 491.2988)" fill="#FFFFFF" font-family="'Courier'" font-size="20">Example: /api/v1/demo/webroot/automobiles/ford-gt</text>
 </svg>

@@ -21,9 +21,8 @@
 		c0.442-0.115,0.766-0.381,0.958-0.792c0.089-0.185,0.1-0.261,0.1-0.596c0-0.343-0.011-0.408-0.107-0.604
 		c-0.139-0.281-0.392-0.535-0.669-0.669C1174.826,22.353,1174.307,22.325,1174.003,22.44"/>
 </g>
-<text transform="matrix(1 0 0 1 344.8735 -103.3335)"><tspan x="0" y="0" font-family="'UniversLTStd-Bold'" font-size="12">&lt;div&gt;Icons made by &lt;a href=&quot;http://www.flaticon.com/authors/dave-gandy&quot; title=&quot;Dave Gandy&quot;&gt;Dave Gandy&lt;/a&gt; from </tspan><tspan x="-276.652" y="14.4" font-family="'UniversLTStd-Bold'" font-size="12">&lt;a href=&quot;http://www.flaticon.com&quot; title=&quot;Flaticon&quot;&gt;www.flaticon.com&lt;/a&gt; is licensed by &lt;a href=&quot;http://creativecommons.org/licenses/by/3.0/&quot; title=&quot;Creative Commons BY 3.0&quot; target=&quot;_blank&quot;&gt;CC 3.0 BY&lt;/a&gt;&lt;/div&gt;</tspan></text>
 <g>
-	<g>
+	<g opacity="0.6">
 		<path fill="#80CBEE" d="M265.005,337.638c1.429-0.825,3.767-0.825,5.196,0l51.247,29.588c1.429,0.825,2.598,2.85,2.598,4.5v59.176
 			c0,1.65-1.169,3.675-2.598,4.5l-51.247,29.588c-1.429,0.825-3.767,0.825-5.196,0l-51.246-29.588
 			c-1.429-0.825-2.598-2.85-2.598-4.5v-59.176c0-1.65,1.169-3.675,2.598-4.5L265.005,337.638z"/>
@@ -31,22 +30,22 @@
 	<text transform="matrix(1 0 0 1 236.439 385.1133)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="21.5744">NODE</tspan><tspan x="4.934" y="22.654" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">name:</tspan><tspan x="7.029" y="45.307" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">demo</tspan></text>
 </g>
 <g>
-	<g>
+	<g opacity="0.6">
 		<path fill="#80CBEE" d="M587.986,337.636c1.429-0.825,3.767-0.825,5.196,0l51.248,29.588c1.429,0.825,2.598,2.85,2.598,4.5v59.174
 			c0,1.65-1.169,3.675-2.598,4.5l-51.248,29.592c-1.429,0.825-3.767,0.825-5.196,0l-51.246-29.592
 			c-1.429-0.825-2.598-2.85-2.598-4.5v-59.174c0-1.65,1.169-3.675,2.598-4.5L587.986,337.636z"/>
 	</g>
-	<text transform="matrix(1 0 0 1 559.4204 385.1133)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="21.5744">NODE</tspan><tspan x="4.934" y="22.653" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">name:</tspan><tspan x="-21.815" y="45.307" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">Automobiles</tspan></text>
+	<text transform="matrix(1 0 0 1 559.4204 385.1133)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="21.5744">NODE</tspan><tspan x="11.229" y="22.653" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">slug:</tspan><tspan x="-20.239" y="45.307" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">automobiles</tspan></text>
 </g>
 <g>
-	<g>
+	<g opacity="0.6">
 		<path fill="#80CBEE" d="M919.312,337.638c1.429-0.825,3.767-0.825,5.195,0l51.248,29.588c1.429,0.825,2.598,2.85,2.598,4.5v59.174
 			c0,1.65-1.169,3.675-2.598,4.5l-51.248,29.59c-1.429,0.825-3.767,0.825-5.195,0l-51.248-29.59c-1.429-0.825-2.598-2.85-2.598-4.5
 			v-59.174c0-1.65,1.169-3.675,2.598-4.5L919.312,337.638z"/>
 	</g>
-	<text transform="matrix(1 0 0 1 890.7441 385.1133)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="21.5744">NODE</tspan><tspan x="4.934" y="22.653" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">name:</tspan><tspan x="-0.305" y="45.307" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">Trabant</tspan></text>
+	<text transform="matrix(1 0 0 1 890.7441 385.1133)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="21.5744">NODE</tspan><tspan x="11.229" y="22.653" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">slug:</tspan><tspan x="3.367" y="45.307" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">ford-gt</tspan></text>
 </g>
-<text transform="matrix(1 0 0 1 205.1328 253.5444)" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="48">Home   &gt;    Automobiles    &gt;  Trabant</text>
+<text transform="matrix(1 0 0 1 205.1328 253.5444)" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="48">Home   &gt;    Automobiles    &gt;  Ford GT</text>
 <line fill="none" stroke="#FFFFFF" stroke-width="3" stroke-miterlimit="10" x1="921.909" y1="313.548" x2="921.909" y2="279.479"/>
 <line fill="none" stroke="#FFFFFF" stroke-width="3" stroke-miterlimit="10" x1="590.584" y1="318.55" x2="590.584" y2="284.479"/>
 <g>
@@ -68,6 +67,6 @@
 	</g>
 </g>
 <text transform="matrix(1 0 0 1 456.0723 122.4854)" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="48">Breadcrumb</text>
-<text transform="matrix(1 0 0 1 262.4746 534.1758)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="18">/  </tspan><tspan x="32.405" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="18" letter-spacing="2">	</tspan><tspan x="45.373" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="18"> </tspan><tspan x="56.175" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="18" letter-spacing="23">	</tspan><tspan x="90.747" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="18" letter-spacing="34">			</tspan><tspan x="226.867" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="18">   /Automobiles  </tspan><tspan x="410.497" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="18" letter-spacing="32">	</tspan><tspan x="453.734" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="18" letter-spacing="34">		</tspan><tspan x="544.481" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="18"> /Automobiles/Trabant</tspan></text>
-<text transform="matrix(1 0 0 1 33.6655 534.1758)" fill="#FFFFFF" font-family="'Courier'" font-size="18">breadcrumb path:</text>
+<text transform="matrix(1 0 0 1 259.4746 534.1758)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="20">/  </tspan><tspan x="36.006" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="20" letter-spacing="-2">	</tspan><tspan x="45.374" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="20"> </tspan><tspan x="57.375" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="20" letter-spacing="21">	</tspan><tspan x="90.747" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="20" letter-spacing="33">			</tspan><tspan x="226.867" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="20">   /automobiles  </tspan><tspan x="430.9" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="20" letter-spacing="10">	</tspan><tspan x="453.734" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="20" letter-spacing="33">		</tspan><tspan x="544.481" y="0" fill="#FFFFFF" font-family="'Courier'" font-size="20"> /automobiles/ford-gt</tspan></text>
+<text transform="matrix(1 0 0 1 33.6655 534.1758)" fill="#FFFFFF" font-family="'Courier'" font-size="20">breadcrumb path:</text>
 </svg>

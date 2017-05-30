@@ -21,32 +21,25 @@
 		c0.442-0.115,0.766-0.381,0.958-0.792c0.089-0.185,0.1-0.261,0.1-0.596c0-0.343-0.011-0.408-0.107-0.604
 		c-0.139-0.281-0.392-0.535-0.669-0.669C1174.826,22.353,1174.307,22.325,1174.003,22.44"/>
 </g>
-<text transform="matrix(1 0 0 1 344.8735 -103.3335)"><tspan x="0" y="0" font-family="'UniversLTStd-Bold'" font-size="12">&lt;div&gt;Icons made by &lt;a href=&quot;http://www.flaticon.com/authors/dave-gandy&quot; title=&quot;Dave Gandy&quot;&gt;Dave Gandy&lt;/a&gt; from </tspan><tspan x="-276.652" y="14.4" font-family="'UniversLTStd-Bold'" font-size="12">&lt;a href=&quot;http://www.flaticon.com&quot; title=&quot;Flaticon&quot;&gt;www.flaticon.com&lt;/a&gt; is licensed by &lt;a href=&quot;http://creativecommons.org/licenses/by/3.0/&quot; title=&quot;Creative Commons BY 3.0&quot; target=&quot;_blank&quot;&gt;CC 3.0 BY&lt;/a&gt;&lt;/div&gt;</tspan></text>
-<g>
-	<g>
-		<path fill="#80CBEE" d="M265.005,272.638c1.429-0.825,3.767-0.825,5.196,0l51.247,29.588c1.429,0.825,2.598,2.85,2.598,4.5v59.176
-			c0,1.65-1.169,3.675-2.598,4.5l-51.247,29.588c-1.429,0.825-3.767,0.825-5.196,0l-51.246-29.588
-			c-1.429-0.825-2.598-2.85-2.598-4.5v-59.176c0-1.65,1.169-3.675,2.598-4.5L265.005,272.638z"/>
-	</g>
-	<text transform="matrix(1 0 0 1 236.439 320.1133)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="21.5744">NODE</tspan><tspan x="4.934" y="22.654" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">name:</tspan><tspan x="7.029" y="45.307" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">demo</tspan></text>
+<g opacity="0.6">
+	<path fill="#82CCEF" d="M265.005,272.638c1.429-0.825,3.767-0.825,5.196,0l51.247,29.588c1.429,0.825,2.598,2.85,2.598,4.5v59.176
+		c0,1.65-1.169,3.675-2.598,4.5l-51.247,29.588c-1.429,0.825-3.767,0.825-5.196,0l-51.246-29.588c-1.429-0.825-2.598-2.85-2.598-4.5
+		v-59.176c0-1.65,1.169-3.675,2.598-4.5L265.005,272.638z"/>
 </g>
-<g>
-	<g>
-		<path fill="#80CBEE" d="M587.986,272.636c1.429-0.825,3.767-0.825,5.196,0l51.248,29.588c1.429,0.825,2.598,2.85,2.598,4.5v59.174
-			c0,1.65-1.169,3.675-2.598,4.5l-51.248,29.592c-1.429,0.825-3.767,0.825-5.196,0l-51.246-29.592
-			c-1.429-0.825-2.598-2.85-2.598-4.5v-59.174c0-1.65,1.169-3.675,2.598-4.5L587.986,272.636z"/>
-	</g>
-	<text transform="matrix(1 0 0 1 559.4204 320.1133)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="21.5744">NODE</tspan><tspan x="4.934" y="22.653" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">name:</tspan><tspan x="-21.815" y="45.307" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">Automobiles</tspan></text>
+<text transform="matrix(1 0 0 1 236.439 320.1133)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="21.5744">NODE</tspan><tspan x="4.934" y="22.654" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">name:</tspan><tspan x="7.029" y="45.307" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">demo</tspan></text>
+<g opacity="0.6">
+	<path fill="#82CCEF" d="M587.986,272.636c1.429-0.825,3.767-0.825,5.196,0l51.248,29.588c1.429,0.825,2.598,2.85,2.598,4.5v59.174
+		c0,1.65-1.169,3.675-2.598,4.5l-51.248,29.592c-1.429,0.825-3.767,0.825-5.196,0l-51.246-29.592c-1.429-0.825-2.598-2.85-2.598-4.5
+		v-59.174c0-1.65,1.169-3.675,2.598-4.5L587.986,272.636z"/>
 </g>
-<g>
-	<g>
-		<path fill="#80CBEE" d="M919.312,272.638c1.429-0.825,3.767-0.825,5.195,0l51.248,29.588c1.429,0.825,2.598,2.85,2.598,4.5v59.174
-			c0,1.65-1.169,3.675-2.598,4.5l-51.248,29.59c-1.429,0.825-3.767,0.825-5.195,0l-51.248-29.59c-1.429-0.825-2.598-2.85-2.598-4.5
-			v-59.174c0-1.65,1.169-3.675,2.598-4.5L919.312,272.638z"/>
-	</g>
-	<text transform="matrix(1 0 0 1 890.7441 320.1133)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="21.5744">NODE</tspan><tspan x="4.934" y="22.653" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">name:</tspan><tspan x="-0.305" y="45.307" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">Trabant</tspan></text>
+<text transform="matrix(1 0 0 1 559.4204 320.1133)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="21.5744">NODE</tspan><tspan x="8.605" y="22.653" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">slug: </tspan><tspan x="-20.239" y="45.307" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">automobiles</tspan></text>
+<g opacity="0.6">
+	<path fill="#82CCEF" d="M919.312,272.638c1.429-0.825,3.767-0.825,5.195,0l51.248,29.588c1.429,0.825,2.598,2.85,2.598,4.5v59.174
+		c0,1.65-1.169,3.675-2.598,4.5l-51.248,29.59c-1.429,0.825-3.767,0.825-5.195,0l-51.248-29.59c-1.429-0.825-2.598-2.85-2.598-4.5
+		v-59.174c0-1.65,1.169-3.675,2.598-4.5L919.312,272.638z"/>
 </g>
-<text transform="matrix(1 0 0 1 117.2139 184.1055)" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="48">https://yourapp.com/Automobiles/Trabant</text>
+<text transform="matrix(1 0 0 1 890.7441 320.1133)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="21.5744">NODE</tspan><tspan x="11.229" y="22.653" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">slug:</tspan><tspan x="3.367" y="45.307" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18.8776">ford-gt</tspan></text>
+<text transform="matrix(1 0 0 1 117.2139 184.1055)" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="48">https://yourapp.com/automobiles/ford-gt</text>
 <g>
 	
 		<line opacity="0.7" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-miterlimit="10" x1="921.909" y1="246.069" x2="921.909" y2="212"/>
@@ -72,14 +65,10 @@
 	</g>
 </g>
 <text transform="matrix(1 0 0 1 440.0723 96.4854)" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="48">Pretty URLs</text>
-<g>
-	<polygon fill="#80CBEE" points="1033.5,585 1033.5,485.205 1003.582,453.172 811.5,453.172 811.5,585 	"/>
-	<text transform="matrix(1 0 0 1 826.5 481.7324)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="16">SCHEMA</tspan><tspan x="0" y="19.2" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="16">vehicle</tspan><tspan x="0" y="36" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="14">{   ....</tspan><tspan x="0" y="52.8" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="14">    &quot;segmentField&quot; : &quot;name&quot;,</tspan><tspan x="0" y="69.6" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="14">    ...</tspan><tspan x="0" y="86.4" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="14">}</tspan></text>
-</g>
-<g>
-	<polygon fill="#80CBEE" points="700.5,585 700.5,485.205 670.582,453.172 478.5,453.172 478.5,585 	"/>
-	<text transform="matrix(1 0 0 1 493.5 481.7324)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="16">SCHEMA</tspan><tspan x="0" y="19.2" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="16">category</tspan><tspan x="0" y="36" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="14">{   ....</tspan><tspan x="0" y="52.8" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="14">    &quot;segmentField&quot; : &quot;name&quot;,</tspan><tspan x="0" y="69.6" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="14">    ...</tspan><tspan x="0" y="86.4" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="14">}</tspan></text>
-</g>
+<polygon opacity="0.6" fill="#82CCEF" points="1033.5,585 1033.5,485.205 1003.582,453.172 811.5,453.172 811.5,585 "/>
+<text transform="matrix(1 0 0 1 826.5 481.7324)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="21">SCHEMA</tspan><tspan x="0" y="21.6" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18">vehicle</tspan><tspan x="0" y="39.6" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="15">{   ....</tspan><tspan x="0" y="57.6" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="15">    &quot;segmentField&quot; : &quot;slug&quot;,</tspan><tspan x="0" y="75.6" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="15">    ...</tspan><tspan x="0" y="93.6" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="15">}</tspan></text>
+<polygon opacity="0.6" fill="#82CCEF" points="700.5,585 700.5,485.205 670.582,453.172 478.5,453.172 478.5,585 "/>
+<text transform="matrix(1 0 0 1 493.5 481.7324)"><tspan x="0" y="0" fill="#FFFFFF" font-family="'UniversLTStd-Bold'" font-size="21">SCHEMA</tspan><tspan x="0" y="21.6" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="18">category</tspan><tspan x="0" y="39.6" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="15">{   ....</tspan><tspan x="0" y="57.6" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="15">    &quot;segmentField&quot; : &quot;slug&quot;,</tspan><tspan x="0" y="75.6" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="15">    ...</tspan><tspan x="0" y="93.6" fill="#FFFFFF" font-family="'UniversLTStd-Light'" font-size="15">}</tspan></text>
 <g>
 	<g>
 		<g>
