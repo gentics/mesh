@@ -24,21 +24,21 @@ Let’s consider the following example on the basis of our demo app to demonstra
 image:GenticsMesh-ContentTree-Example.png[] 
 //TODO update (slug, font size)
 
-Within the demo project vehicles are organized in three different categories. The nodes _Automobiles_, _Aircrafts_ and _Yachts_ of type _category_ serve as containers for nodes of type _vehicle_, e.g., the node _Trabant_ in category _Automobiles_.
+Within the demo project vehicles are organized in three different categories. The nodes _Automobiles_, _Aircrafts_ and _Yachts_ of type _category_ serve as containers for nodes of type _vehicle_, e.g., the node _Ford GT_ in category _Automobiles_.
 
-The schema _category_ has the ```container``` property set to ```true```, thus allowing nodes of type _category_ to have child nodes. The schema’s ```segmentField``` is specified to be the ```slug``` field. Thus, the resulting value for the ```path``` property of node _Automobiles_ is ```/Automobiles```.
+The schema _category_ has the ```container``` property set to ```true```, thus allowing nodes of type _category_ to have child nodes. The schema’s ```segmentField``` is specified to be the ```slug``` field. Thus, the resulting value for the ```path``` property of node _Automobiles_ is ```/automobiles```.
 
-The schema _vehicle_ has the ```container``` property set to ```false```. The schema’s ```segmentField``` is again specified to be the ```slug``` field. Thus, the resulting value for the ```path``` property of node _Trabant_ is ```/Automobiles/Trabant```.
+The schema _vehicle_ has the ```container``` property set to ```false```. The schema’s ```segmentField``` is again specified to be the ```slug``` field. Thus, the resulting value for the ```path``` property of node _Ford GT_ is ```/automobiles/ford-gt```.
 
 
 
 [[prettyurls]]
 == Pretty URLs
 
-Instead of relying on UUIDs to link your content, you can use pretty URLs like http://yourapp.com/Automobiles/Trabant. For each node, Gentics Mesh will provide you with a human readable path. 
+Instead of relying on UUIDs to link your content, you can use pretty URLs like http://yourapp.com/automobiles/ford-gt. For each node, Gentics Mesh will provide you with a human readable path. 
 Likewise, you can query your content using WebRoot paths instead of using UUIDs (see <<webroot,WebRoot API>>).
 
-The ```segmentField``` is used to build the path of a specific node. According to the nodes’ schemas in our <<example,example>>, the path ```/Automobiles/Trabant``` for the node _Trabant_ is built using the _slug_ field of the _vehicle_ node, i.e. _Trabant_, and the _slug_ field of the _category_ node, i.e. _Automobiles_.
+The ```segmentField``` is used to build the path of a specific node. According to the nodes’ schemas in our <<example,example>>, the path ```/automobiles/ford-gt``` for the node _Ford GT_ is built using the _slug_ field of the _vehicle_ node, i.e. _Ford GT_, and the _slug_ field of the _category_ node, i.e. _Automobiles_.
 
 image:GenticsMesh-PrettyURL-Example.png[]
 //TODO update (slug, font-size)
@@ -61,43 +61,47 @@ For more details see the documentation on link:building-blocks.html#_node[node] 
 
 ==== Response Sample
 
-http://getmesh.io/api/v1/demo/nodes/fd58237c79d64bf198237c79d6bbf107?resolveLinks=short
+http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
 [source,json]
 ----
 {
-  "uuid" : "fd58237c79d64bf198237c79d6bbf107",
+  "uuid" : "fc3c85be82584ae2bc85be82588ae2b0",
   "creator" : {
-    "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+    "uuid" : "a93e95f316114659be95f31611265997"
   },
-  "created" : "2017-05-09T09:54:43Z",
+  "created" : "2017-05-29T09:56:16Z",
   "editor" : {
-    "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+    "uuid" : "a93e95f316114659be95f31611265997"
   },
-  "edited" : "2017-05-09T09:54:47Z",
+  "edited" : "2017-05-29T09:56:22Z",
   "language" : "en",
   "availableLanguages" : [ "en" ],
   "languagePaths" : {
-    "en" : "/Automobiles/Trabant"
+    "en" : "/automobiles/ford-gt"
   },
   "parentNode" : {
     "projectName" : "demo",
     "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
     "displayName" : "Automobiles",
-    "path" : "/Automobiles",
+    "path" : "/automobiles",
     "schema" : {
       "name" : "category",
       "uuid" : "2ca2362b041247c4a2362b041227c4da"
     }
   },
   "tags" : [ {
-    "name" : "White",
-    "uuid" : "94fec98d6f114e81bec98d6f118e81cc",
-    "tagFamily" : "Colors"
-  }, {
     "name" : "Gasoline",
     "uuid" : "1c51487f8e8043c291487f8e8053c2c1",
     "tagFamily" : "Fuels"
+  }, {
+    "name" : "Blue",
+    "uuid" : "6e6f1d9f055447d2af1d9f055417d289",
+    "tagFamily" : "Colors"
+  }, {
+    "name" : "White",
+    "uuid" : "94fec98d6f114e81bec98d6f118e81cc",
+    "tagFamily" : "Colors"
   } ],
   "project" : {
     "name" : "demo",
@@ -112,33 +116,34 @@ http://getmesh.io/api/v1/demo/nodes/fd58237c79d64bf198237c79d6bbf107?resolveLink
   "container" : false,
   "displayField" : "name",
   "fields" : {
-    "name" : "Trabant",
-    "weight" : 600,
-    "SKU" : 4,
-    "price" : 3000,
-    "stocklevel" : 40215,
-    "description" : "The Trabant is a car that was produced by former East German auto maker VEB Sachsenring Automobilwerke Zwickau in Zwickau, Saxony",
+    "slug" : "ford-gt",
+    "name" : "Ford GT",
+    "weight" : 1520,
+    "SKU" : 1,
+    "price" : 139995,
+    "stocklevel" : 20,
+    "description" : "The Ford GT is an American mid-engine two-seater sports car that was produced by Ford for the 2005 through 2006 model years.",
     "vehicleImage" : {
-      "uuid" : "b1a975d9391a4daaa975d9391abdaa4f",
-      "path" : "/Vehicle%20Images/trabant.jpg",
+      "uuid" : "df8beb3922c94ea28beb3922c94ea2f6",
+      "path" : "/images/ford-gt.jpg",
       "languagePaths" : {
-        "en" : "/Vehicle%20Images/trabant.jpg"
+        "en" : "/images/ford-gt.jpg"
       }
     }
   },
-  "path" : "/Automobiles/Trabant",
+  "path" : "/automobiles/ford-gt",
   "breadcrumb" : [ {
     "projectName" : "demo",
     "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
     "displayName" : "Automobiles",
-    "path" : "/Automobiles",
+    "path" : "/automobiles",
     "schema" : {
       "name" : "category",
       "uuid" : "2ca2362b041247c4a2362b041227c4da"
     }
   } ],
   "version" : {
-    "uuid" : "2455a77d25014d9695a77d25014d967f",
+    "uuid" : "677bf76c8c624e2fbbf76c8c62be2fa0",
     "number" : "1.0"
   },
   "permissions" : {
@@ -247,22 +252,22 @@ Retrieving a navigation object using the projects root node ```/``` including th
 http://getmesh.io/api/v1/demo/navroot/?resolveLinks=short&maxDepth=1
 
 The same can be achieved with:
-http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?resolveLinks=short&maxDepth=1
+http://getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navigation?resolveLinks=short&maxDepth=1
 
 [source,json]
 ----
 {
-  "uuid" : "67533414891d4eae933414891d8eaead",
+  "uuid" : "72dbee3975054fce9bee397505cfcec5",
   "node" : {
-    "uuid" : "67533414891d4eae933414891d8eaead",
+    "uuid" : "72dbee3975054fce9bee397505cfcec5",
     "creator" : {
-      "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+      "uuid" : "a93e95f316114659be95f31611265997"
     },
-    "created" : "2017-05-09T09:54:03Z",
+    "created" : "2017-05-29T09:55:43Z",
     "editor" : {
-      "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+      "uuid" : "a93e95f316114659be95f31611265997"
     },
-    "edited" : "2017-05-09T09:54:47Z",
+    "edited" : "2017-05-29T09:56:22Z",
     "language" : "en",
     "availableLanguages" : [ "en" ],
     "languagePaths" : {
@@ -275,7 +280,7 @@ http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?
     },
     "childrenInfo" : {
       "folder" : {
-        "schemaUuid" : "e287e8a7497940ac87e8a7497940ac82",
+        "schemaUuid" : "5cc780af998c4d228780af998ccd2240",
         "count" : 1
       },
       "category" : {
@@ -285,7 +290,7 @@ http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?
     },
     "schema" : {
       "name" : "folder",
-      "uuid" : "e287e8a7497940ac87e8a7497940ac82",
+      "uuid" : "5cc780af998c4d228780af998ccd2240",
       "version" : 1
     },
     "container" : true,
@@ -294,7 +299,7 @@ http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?
     "path" : "/",
     "breadcrumb" : [ ],
     "version" : {
-      "uuid" : "a8716473479f45c4b16473479fe5c4b6",
+      "uuid" : "df10370c82be422290370c82be62229f",
       "number" : "1.0"
     },
     "permissions" : {
@@ -311,25 +316,25 @@ http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?
     "node" : {
       "uuid" : "15d5ef7a9abf416d95ef7a9abf316d68",
       "creator" : {
-        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+        "uuid" : "a93e95f316114659be95f31611265997"
       },
-      "created" : "2017-05-09T09:54:33Z",
+      "created" : "2017-05-29T09:56:10Z",
       "editor" : {
-        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+        "uuid" : "a93e95f316114659be95f31611265997"
       },
-      "edited" : "2017-05-09T09:54:47Z",
+      "edited" : "2017-05-29T09:56:22Z",
       "language" : "en",
       "availableLanguages" : [ "en" ],
       "languagePaths" : {
-        "en" : "/Vehicle%20Images"
+        "en" : "/images"
       },
       "parentNode" : {
         "projectName" : "demo",
-        "uuid" : "67533414891d4eae933414891d8eaead",
+        "uuid" : "72dbee3975054fce9bee397505cfcec5",
         "path" : "/",
         "schema" : {
           "name" : "folder",
-          "uuid" : "e287e8a7497940ac87e8a7497940ac82"
+          "uuid" : "5cc780af998c4d228780af998ccd2240"
         }
       },
       "tags" : [ ],
@@ -345,18 +350,19 @@ http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?
       },
       "schema" : {
         "name" : "folder",
-        "uuid" : "e287e8a7497940ac87e8a7497940ac82",
+        "uuid" : "5cc780af998c4d228780af998ccd2240",
         "version" : 1
       },
       "container" : true,
       "displayField" : "name",
       "fields" : {
+        "slug" : "images",
         "name" : "Vehicle Images"
       },
-      "path" : "/Vehicle%20Images",
+      "path" : "/images",
       "breadcrumb" : [ ],
       "version" : {
-        "uuid" : "5de952f01ee846d8a952f01ee8f6d891",
+        "uuid" : "b1f2c06e45db4e0db2c06e45dbfe0d25",
         "number" : "1.0"
       },
       "permissions" : {
@@ -373,25 +379,25 @@ http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?
     "node" : {
       "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
       "creator" : {
-        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+        "uuid" : "a93e95f316114659be95f31611265997"
       },
-      "created" : "2017-05-09T09:54:40Z",
+      "created" : "2017-05-29T09:56:16Z",
       "editor" : {
-        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+        "uuid" : "a93e95f316114659be95f31611265997"
       },
-      "edited" : "2017-05-09T09:54:47Z",
+      "edited" : "2017-05-29T09:56:22Z",
       "language" : "en",
       "availableLanguages" : [ "en" ],
       "languagePaths" : {
-        "en" : "/Automobiles"
+        "en" : "/automobiles"
       },
       "parentNode" : {
         "projectName" : "demo",
-        "uuid" : "67533414891d4eae933414891d8eaead",
+        "uuid" : "72dbee3975054fce9bee397505cfcec5",
         "path" : "/",
         "schema" : {
           "name" : "folder",
-          "uuid" : "e287e8a7497940ac87e8a7497940ac82"
+          "uuid" : "5cc780af998c4d228780af998ccd2240"
         }
       },
       "tags" : [ ],
@@ -413,12 +419,13 @@ http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?
       "container" : true,
       "displayField" : "name",
       "fields" : {
-        "name" : "Automobiles"
+        "name" : "Automobiles",
+        "slug" : "automobiles"
       },
-      "path" : "/Automobiles",
+      "path" : "/automobiles",
       "breadcrumb" : [ ],
       "version" : {
-        "uuid" : "8def8fc6116645d6af8fc6116665d6ac",
+        "uuid" : "2cadceaea20343e8adceaea20313e842",
         "number" : "1.0"
       },
       "permissions" : {
@@ -435,25 +442,25 @@ http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?
     "node" : {
       "uuid" : "21203632520b4d19a03632520b2d19c1",
       "creator" : {
-        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+        "uuid" : "a93e95f316114659be95f31611265997"
       },
-      "created" : "2017-05-09T09:54:44Z",
+      "created" : "2017-05-29T09:56:19Z",
       "editor" : {
-        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+        "uuid" : "a93e95f316114659be95f31611265997"
       },
-      "edited" : "2017-05-09T09:54:47Z",
+      "edited" : "2017-05-29T09:56:22Z",
       "language" : "en",
       "availableLanguages" : [ "en" ],
       "languagePaths" : {
-        "en" : "/Aircraft"
+        "en" : "/aircrafts"
       },
       "parentNode" : {
         "projectName" : "demo",
-        "uuid" : "67533414891d4eae933414891d8eaead",
+        "uuid" : "72dbee3975054fce9bee397505cfcec5",
         "path" : "/",
         "schema" : {
           "name" : "folder",
-          "uuid" : "e287e8a7497940ac87e8a7497940ac82"
+          "uuid" : "5cc780af998c4d228780af998ccd2240"
         }
       },
       "tags" : [ ],
@@ -475,12 +482,13 @@ http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?
       "container" : true,
       "displayField" : "name",
       "fields" : {
-        "name" : "Aircraft"
+        "name" : "Aircraft",
+        "slug" : "aircrafts"
       },
-      "path" : "/Aircraft",
+      "path" : "/aircrafts",
       "breadcrumb" : [ ],
       "version" : {
-        "uuid" : "5e84945a87ff4bb584945a87ff0bb5b2",
+        "uuid" : "cb34cedeeb9c4d3db4cedeeb9c0d3d01",
         "number" : "1.0"
       },
       "permissions" : {
@@ -497,25 +505,25 @@ http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?
     "node" : {
       "uuid" : "eb2ebdcc0e894a9eaebdcc0e896a9e1d",
       "creator" : {
-        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+        "uuid" : "a93e95f316114659be95f31611265997"
       },
-      "created" : "2017-05-09T09:54:45Z",
+      "created" : "2017-05-29T09:56:21Z",
       "editor" : {
-        "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+        "uuid" : "a93e95f316114659be95f31611265997"
       },
-      "edited" : "2017-05-09T09:54:47Z",
+      "edited" : "2017-05-29T09:56:22Z",
       "language" : "en",
       "availableLanguages" : [ "en" ],
       "languagePaths" : {
-        "en" : "/Yachts"
+        "en" : "/yachts"
       },
       "parentNode" : {
         "projectName" : "demo",
-        "uuid" : "67533414891d4eae933414891d8eaead",
+        "uuid" : "72dbee3975054fce9bee397505cfcec5",
         "path" : "/",
         "schema" : {
           "name" : "folder",
-          "uuid" : "e287e8a7497940ac87e8a7497940ac82"
+          "uuid" : "5cc780af998c4d228780af998ccd2240"
         }
       },
       "tags" : [ ],
@@ -537,12 +545,13 @@ http://getmesh.io/api/v1/demo/nodes/67533414891d4eae933414891d8eaead/navigation?
       "container" : true,
       "displayField" : "name",
       "fields" : {
-        "name" : "Yachts"
+        "name" : "Yachts",
+        "slug" : "yachts"
       },
-      "path" : "/Yachts",
+      "path" : "/yachts",
       "breadcrumb" : [ ],
       "version" : {
-        "uuid" : "aa093788e8514685893788e851f68587",
+        "uuid" : "4bc10d889134438e810d889134038ed9",
         "number" : "1.0"
       },
       "permissions" : {
@@ -565,7 +574,7 @@ The property provides an array of node references representing the path from the
 
 NOTE: The current node will not be included in the list, since all the information is already provided in other properties (i.e., ```displayField```, ```path```) of node object itself. 
 
-In our demo app example, the ```breadcrumb``` property for node _Trabant_ will therefore include the node _Automobiles_. 
+In our demo app example, the ```breadcrumb``` property for node _Ford GT_ will therefore include the node _Automobiles_. 
 
 image:GenticsMesh-Breadcrumb-Example.png[]
 
@@ -591,43 +600,47 @@ The ```breadcrumb``` property will be returned in all API responses containing n
 |======
 
 === Response Sample
-http://getmesh.io/api/v1/demo/nodes/fd58237c79d64bf198237c79d6bbf107?resolveLinks=short
+http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
 [source,json]
 ----
 {
-  "uuid" : "fd58237c79d64bf198237c79d6bbf107",
+  "uuid" : "fc3c85be82584ae2bc85be82588ae2b0",
   "creator" : {
-    "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+    "uuid" : "a93e95f316114659be95f31611265997"
   },
-  "created" : "2017-05-09T09:54:43Z",
+  "created" : "2017-05-29T09:56:16Z",
   "editor" : {
-    "uuid" : "41fb5c7e721246a4bb5c7e721216a449"
+    "uuid" : "a93e95f316114659be95f31611265997"
   },
-  "edited" : "2017-05-09T09:54:47Z",
+  "edited" : "2017-05-29T09:56:22Z",
   "language" : "en",
   "availableLanguages" : [ "en" ],
   "languagePaths" : {
-    "en" : "/Automobiles/Trabant"
+    "en" : "/automobiles/ford-gt"
   },
   "parentNode" : {
     "projectName" : "demo",
     "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
     "displayName" : "Automobiles",
-    "path" : "/Automobiles",
+    "path" : "/automobiles",
     "schema" : {
       "name" : "category",
       "uuid" : "2ca2362b041247c4a2362b041227c4da"
     }
   },
   "tags" : [ {
-    "name" : "White",
-    "uuid" : "94fec98d6f114e81bec98d6f118e81cc",
-    "tagFamily" : "Colors"
-  }, {
     "name" : "Gasoline",
     "uuid" : "1c51487f8e8043c291487f8e8053c2c1",
     "tagFamily" : "Fuels"
+  }, {
+    "name" : "Blue",
+    "uuid" : "6e6f1d9f055447d2af1d9f055417d289",
+    "tagFamily" : "Colors"
+  }, {
+    "name" : "White",
+    "uuid" : "94fec98d6f114e81bec98d6f118e81cc",
+    "tagFamily" : "Colors"
   } ],
   "project" : {
     "name" : "demo",
@@ -642,33 +655,34 @@ http://getmesh.io/api/v1/demo/nodes/fd58237c79d64bf198237c79d6bbf107?resolveLink
   "container" : false,
   "displayField" : "name",
   "fields" : {
-    "name" : "Trabant",
-    "weight" : 600,
-    "SKU" : 4,
-    "price" : 3000,
-    "stocklevel" : 40215,
-    "description" : "The Trabant is a car that was produced by former East German auto maker VEB Sachsenring Automobilwerke Zwickau in Zwickau, Saxony",
+    "slug" : "ford-gt",
+    "name" : "Ford GT",
+    "weight" : 1520,
+    "SKU" : 1,
+    "price" : 139995,
+    "stocklevel" : 20,
+    "description" : "The Ford GT is an American mid-engine two-seater sports car that was produced by Ford for the 2005 through 2006 model years.",
     "vehicleImage" : {
-      "uuid" : "b1a975d9391a4daaa975d9391abdaa4f",
-      "path" : "/Vehicle%20Images/trabant.jpg",
+      "uuid" : "df8beb3922c94ea28beb3922c94ea2f6",
+      "path" : "/images/ford-gt.jpg",
       "languagePaths" : {
-        "en" : "/Vehicle%20Images/trabant.jpg"
+        "en" : "/images/ford-gt.jpg"
       }
     }
   },
-  "path" : "/Automobiles/Trabant",
+  "path" : "/automobiles/ford-gt",
   "breadcrumb" : [ {
     "projectName" : "demo",
     "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
     "displayName" : "Automobiles",
-    "path" : "/Automobiles",
+    "path" : "/automobiles",
     "schema" : {
       "name" : "category",
       "uuid" : "2ca2362b041247c4a2362b041227c4da"
     }
   } ],
   "version" : {
-    "uuid" : "2455a77d25014d9695a77d25014d967f",
+    "uuid" : "677bf76c8c624e2fbbf76c8c62be2fa0",
     "number" : "1.0"
   },
   "permissions" : {
@@ -726,24 +740,24 @@ A WebRoot path may consist of multiple path segments, each corresponding to a no
 NOTE: Each segment of the URL must be URL-encoded. A node's language variants must provide different path segment in order to guarantee unique paths.
 
 ==== Fetch node with UUID
-http://getmesh.io/api/v1/demo/nodes/fd58237c79d64bf198237c79d6bbf107?resolveLinks=short
+http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
 Loading the node with the given UUID using API end point ```GET /api/v1/:projectName/nodes/:nodeUuid```.
 
 ==== Fetch node with WebRoot path
-http://getmesh.io/api/v1/demo/webroot/Automobiles/Trabant?resolveLinks=short
+http://getmesh.io/api/v1/demo/webroot/automobiles/ford-gt?resolveLinks=short
 
 
 === Query binary content by path
 The WebRoot API, furthermore, directly supports delivering binary content using the ```fileName``` meta-data field of the ```binary``` field . 
 
 ==== Fetch an image with UUID
-http://getmesh.io/api/v1/demo/nodes/b1a975d9391a4daaa975d9391abdaa4f/binary/image
+http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
 
 Downloading a node's binary field with the given name using API end point ```GET /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```.
 
 ==== Fetch an image with WebRoot path
-http://getmesh.io/api/v1/demo/webroot/Vehicle%20Images/trabant.jpg
+http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg
 
 TIP: When using a routing framework, in order to find out if a requested resource is binary data or JSON data you need to check the HTTP Content-Disposition response header. If it is set, it’s binary data. 
 
@@ -752,11 +766,11 @@ In case, the binary data is an image, the WebRoot API allows to directly perform
 
 ==== Crop and resize an image with UUID
 
-http://getmesh.io/api/v1/demo/nodes/b1a975d9391a4daaa975d9391abdaa4f/binary/image?cropx=10&cropy=100&cropw=800&croph=400&width=300
+http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?cropx=10&cropy=100&cropw=800&croph=400&width=300
 
 ==== Crop and resize an image with WebRoot path
 
-http://getmesh.io/api/v1/demo/webroot/Vehicle%20Images/trabant.jpg?cropx=10&cropy=100&cropw=800&croph=400&width=300
+http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?cropx=10&cropy=100&cropw=800&croph=400&width=300
 
 Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
 
@@ -809,7 +823,7 @@ image:GenticsMesh-LinkResolver-Utility-Example.png[]
 
 Typically, editors create content including internal links to other nodes. When fetching content for your apps, however, Gentics Mesh will resolve these internal links for you and return a WebRoot path. 
 
-For example, ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg``` when using the ```?resolveLinks=full``` query parameter.
+For example, ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/images/ford-gt.jpg``` when using the ```?resolveLinks=full``` query parameter.
 
 The ```?resolveLinks``` query parameter defines if and how links are resolved:
 
@@ -872,14 +886,14 @@ Images can be resized and/or cropped by appending the <<imagemanipulationparams,
 
 End point: ```/api/v1/:projectName/nodes/:uuid/binary/:fieldname?width=220```
 
-http://getmesh.io/api/v1/demo/nodes/b1a975d9391a4daaa975d9391abdaa4f/binary/image?width=300
+http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=300
 
 === Fetch and Crop an Image with WebRoot Path
 It is also possible to use the image manipulation in combination with the WebRoot end point.
 
 End point: ```/api/v1/:projectName/webroot/:path?cropx=10&cropy=100&cropw=800&croph=400```
 
-http://getmesh.io/api/v1/demo/webroot/Vehicle%20Images/trabant.jpg?cropx=10&cropy=100&cropw=800&croph=400
+http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?cropx=10&cropy=100&cropw=800&croph=400
 
 NOTE: It is mandatory to specify all four crop parameters when cropping an image.
 
@@ -888,7 +902,7 @@ Gentics Mesh also allows you to transform (i.e, crop and/or resize) and overwrit
 
 End point: ```POST /api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname```
 
-http://getmesh.io/api/v1/demo/nodes/b1a975d9391a4daaa975d9391abdaa4f/binaryTransform/image
+http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
 
 *Request Body:*
 [source,bash]
