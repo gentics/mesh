@@ -46,8 +46,8 @@ public class AdminEndpoint extends AbstractEndpoint {
 		secureAll();
 		addBackupHandler();
 		addRestoreHandler();
-		addImportHandler();
-		addExportHandler();
+		//addImportHandler();
+		//addExportHandler();
 		// addVerticleHandler();
 		// addServiceHandler();
 
