@@ -9,10 +9,10 @@ import java.util.HashSet;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.search.index.node.NodeContainerTransformator;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -26,7 +26,7 @@ public class NodeContainerTransformatorTest extends AbstractMeshTest {
 	@Test
 	public void testNodeTagFamilyTransformator() {
 		NodeContainerTransformator transformator = new NodeContainerTransformator();
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Release release = project().getLatestRelease();
 			NodeGraphFieldContainer node = content("concorde").getGraphFieldContainer(english(), release, ContainerType.PUBLISHED);
 			JsonObject document = transformator.toDocument(node, release.getUuid());

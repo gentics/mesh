@@ -15,6 +15,7 @@ import java.util.concurrent.TimeoutException;
 import org.apache.commons.lang.StringUtils;
 import org.junit.Before;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
@@ -47,7 +48,6 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.util.UUIDUtil;
@@ -91,7 +91,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	protected void removeField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher)
 			throws InterruptedException, ExecutionException, TimeoutException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
 				removeMicroschemaField(creator, dataProvider, fetcher);
 			} else {
@@ -239,7 +239,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	protected void renameField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, DataAsserter asserter)
 			throws InterruptedException, ExecutionException, TimeoutException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
 				renameMicroschemaField(creator, dataProvider, fetcher, asserter);
 			} else {
@@ -409,7 +409,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	protected void changeType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher, FieldSchemaCreator newField,
 			DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
 				changeMicroschemaType(oldField, dataProvider, oldFieldFetcher, newField, asserter);
 			} else {
@@ -595,7 +595,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	protected void customMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, String migrationScript,
 			DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
 				customMicroschemaMigrationScript(creator, dataProvider, fetcher, migrationScript, asserter);
 			} else {
@@ -745,7 +745,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws Throwable
 	 */
 	protected void invalidMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws Throwable {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			try {
 				if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
 					invalidMicroschemaMigrationScript(creator, dataProvider, script);

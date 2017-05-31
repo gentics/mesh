@@ -141,7 +141,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Single<SchemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return MeshInternal.get().database().operateNoTx(() -> {
+		return MeshInternal.get().database().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

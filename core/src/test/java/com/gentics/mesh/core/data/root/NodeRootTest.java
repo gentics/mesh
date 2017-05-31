@@ -5,8 +5,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -17,7 +17,7 @@ public class NodeRootTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddNode() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			FramedGraph graph = Database.getThreadLocalGraph();
 			NodeImpl node = graph.addFramedVertex(NodeImpl.class);
 			int start = boot().nodeRoot().findAll().size();

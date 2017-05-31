@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -50,7 +51,6 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -65,7 +65,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	@Override
 	public void testReadByUUID() throws UnknownHostException, InterruptedException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			assertNotNull(tagFamily);
 
@@ -83,7 +83,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			String uuid = tagFamily.getUuid();
 
@@ -99,7 +99,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Role role = role();
 			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
 			String uuid = tagFamily.getUuid();
@@ -114,7 +114,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 	@Test
 	public void testReadMultiple2() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			String uuid = tagFamily.getUuid();
 			MeshResponse<TagListResponse> future = client().findTags(PROJECT_NAME, uuid).invoke();
@@ -126,7 +126,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	@Override
 	public void testReadMultiple() throws UnknownHostException, InterruptedException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily noPermTagFamily = project().getTagFamilyRoot().create("noPermTagFamily", user());
 			String noPermTagUUID = noPermTagFamily.getUuid();
@@ -241,8 +241,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	public void testCreateWithNoPerm() {
 		TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 		request.setName("newTagFamily");
-		String tagFamilyRootUuid = db().noTx(() -> project().getTagFamilyRoot().getUuid());
-		try (NoTx noTx = db().noTx()) {
+		String tagFamilyRootUuid = db().tx(() -> project().getTagFamilyRoot().getUuid());
+		try (Tx tx = db().tx()) {
 			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
 		}
 		call(() -> client().createTagFamily(PROJECT_NAME, request), FORBIDDEN, "error_missing_perm", tagFamilyRootUuid);
@@ -269,7 +269,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 	@Test
 	public void testCreateWithoutPerm() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			role().revokePermissions(project().getTagFamilyRoot(), CREATE_PERM);
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName("SuperDoll");
@@ -292,15 +292,15 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily basicTagFamily = tagFamily("basic");
 			String uuid = basicTagFamily.getUuid();
 			assertNotNull(project().getTagFamilyRoot().findByUuid(uuid));
 		}
 
-		String uuid = db().noTx(() -> tagFamily("basic").getUuid());
+		String uuid = db().tx(() -> tagFamily("basic").getUuid());
 		call(() -> client().deleteTagFamily(PROJECT_NAME, uuid));
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			assertElement(project().getTagFamilyRoot(), uuid, false);
 		}
 	}
@@ -308,7 +308,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily basicTagFamily = tagFamily("basic");
 			Role role = role();
 			role.revokePermissions(basicTagFamily, DELETE_PERM);
@@ -325,7 +325,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 	@Test
 	public void testUpdateWithConflictingName() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String newName = "colors";
 			TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 			request.setName(newName);
@@ -340,7 +340,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	@Override
 	public void testUpdate() throws UnknownHostException, InterruptedException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			String uuid = tagFamily.getUuid();
 			String name = tagFamily.getName();
@@ -371,7 +371,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 
 	@Test
 	public void testUpdateNodeIndex() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			Release release = project.getReleaseRoot().getLatestRelease();
 			TagFamily tagfamily = tagFamily("basic");
@@ -424,7 +424,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			String uuid = tagFamily.getUuid();
 			String name = tagFamily.getName();
@@ -450,7 +450,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		TagFamilyUpdateRequest request = new TagFamilyUpdateRequest();
 		request.setName("New Name");
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
@@ -465,7 +465,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Ignore("Not yet supported")
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String uuid = tagFamily("colors").getUuid();
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<?>> set = new HashSet<>();
@@ -481,7 +481,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Ignore("Not yet supported")
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String uuid = project().getUuid();
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<Void>> set = new HashSet<>();
@@ -511,7 +511,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			int nJobs = 200;
 			Set<MeshResponse<?>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {

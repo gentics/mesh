@@ -21,6 +21,7 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -40,7 +41,6 @@ import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -68,7 +68,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Tag tag = tag("red");
 			TagReference reference = tag.transformToReference();
 			assertNotNull(reference);
@@ -79,7 +79,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testTagFamilyTagCreation() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			final String TAG_FAMILY_NAME = "mycustomtagFamily";
 			TagFamily tagFamily = project().getTagFamilyRoot().create(TAG_FAMILY_NAME, user());
 			assertNotNull(tagFamily);
@@ -95,7 +95,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testReadFieldContainer() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Tag tag = tags().get("red");
 			assertEquals("red", tag.getName());
 		}
@@ -103,7 +103,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testSimpleTag() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily root = tagFamily("basic");
 			Tag tag = root.create("test", project(), user());
 			assertEquals("test", tag.getName());
@@ -114,7 +114,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testProjectTag() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily root = tagFamily("basic");
 			Tag tag = root.create("test", project(), user());
 			assertEquals(project(), tag.getProject());
@@ -123,7 +123,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testNodeTagging() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
@@ -166,7 +166,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testNodeTaggingInRelease() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
@@ -212,7 +212,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testMigrateTagsForRelease() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// 1. Create the tag
 			TagFamily root = tagFamily("basic");
 			Project project = project();
@@ -249,7 +249,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testNodeUntaggingInRelease() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Release initialRelease = null;
 			Release newRelease = null;
 			Node node = null;
@@ -293,7 +293,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			InternalActionContext ac = mockActionContext();
 			Page<? extends Tag> tagPage = meshRoot().getTagRoot().findAll(ac, new PagingParametersImpl(1, 10));
 			assertEquals(12, tagPage.getTotalElements());
@@ -308,7 +308,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily basicTagFamily = tagFamily("basic");
 			int beforeCount = basicTagFamily.findAll().size();
@@ -344,7 +344,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagRoot root = meshRoot().getTagRoot();
 			assertEquals(tags().size(), root.findAll().size());
 			Tag tag = tag("red");
@@ -365,7 +365,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindByName() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Tag tag = tag("car");
 			Tag foundTag = tag.getTagFamily().findByName("Car");
 			assertNotNull(foundTag);
@@ -377,7 +377,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Tag tag = tag("car");
 			assertNotNull("The tag with the uuid could not be found", meshRoot().getTagRoot().findByUuid(tag.getUuid()));
 			assertNull("A tag with the a bogus uuid should not be found but it was.", meshRoot().getTagRoot().findByUuid("bogus"));
@@ -387,7 +387,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			Tag tag = tagFamily.create(GERMAN_NAME, project(), user());
 			assertNotNull(tag);
@@ -408,7 +408,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Tag tag = tag("red");
 			assertNotNull("The UUID of the tag must not be null.", tag.getUuid());
 			List<String> languageTags = new ArrayList<>();
@@ -435,7 +435,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			Tag tag = tagFamily.create("someTag", project(), user());
 			String uuid = tag.getUuid();
@@ -448,7 +448,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily tagFamily = tagFamily("basic");
 			Tag tag = tagFamily.create("someTag", project(), user());
 			assertTrue(user().hasPermission(tagFamily, GraphPermission.READ_PERM));
@@ -461,7 +461,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testRead() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Tag tag = tag("car");
 			assertEquals("Car", tag.getName());
 			assertNotNull(tag.getCreationTimestamp());
@@ -475,7 +475,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Tag tag = tag("red");
 			Map<String, ElementEntry> expectedEntries = new HashMap<>();
 			String uuid = tag.getUuid();
@@ -493,7 +493,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Tag tag = tag("red");
 			tag.setName("Blue");
 			assertEquals("Blue", tag.getName());
@@ -503,7 +503,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			testPermission(GraphPermission.READ_PERM, tag("red"));
 		}
 	}
@@ -511,7 +511,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			testPermission(GraphPermission.DELETE_PERM, tag("red"));
 		}
 	}
@@ -519,7 +519,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			testPermission(GraphPermission.UPDATE_PERM, tag("red"));
 		}
 	}
@@ -527,7 +527,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			testPermission(GraphPermission.CREATE_PERM, tag("red"));
 		}
 	}

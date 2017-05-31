@@ -20,6 +20,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -27,7 +28,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -41,7 +41,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeTags() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -57,7 +57,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddTagToNode() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			Tag tag = tag("red");
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
@@ -90,7 +90,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddTagToNoPermNode() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			Tag tag = tag("red");
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
@@ -105,7 +105,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddNoPermTagToNode() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			Tag tag = tag("red");
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
@@ -121,7 +121,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveTagFromNode() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
@@ -138,7 +138,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveBogusTagFromNode() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -148,7 +148,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveTagFromNoPermNode() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
@@ -168,7 +168,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		// 1. Create release v1
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
 			request.setName(releaseOne);
 			ReleaseResponse releaseResponse = call(() -> client().createRelease(PROJECT_NAME, request));
@@ -177,14 +177,14 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		failingLatch(latch);
 
 		// 2. Tag a node in release v1 with tag "red"
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = content();
 			Tag tag = tag("red");
 			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setRelease(releaseOne)));
 		}
 
 		// Assert that the node is tagged with red in release one
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
@@ -209,7 +209,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		// 3. Create release v2
 		latch = TestUtils.latchForMigrationCompleted(client());
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			ReleaseCreateRequest request = new ReleaseCreateRequest();
 			request.setName(releaseTwo);
 			ReleaseResponse releaseResponse = call(() -> client().createRelease(PROJECT_NAME, request));
@@ -218,14 +218,14 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 		failingLatch(latch);
 		// 4. Tag a node in release v2 with tag "blue"
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = content();
 			Tag tag = tag("blue");
 			call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setRelease(releaseTwo)));
 		}
 
 		// Assert that the node is tagged with both tags in releaseTwo
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
@@ -259,14 +259,14 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		// 5. Remove the tag "red" in release v1
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = content();
 			Tag tag = tag("red");
 			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid(), new VersioningParametersImpl().setRelease(releaseOne)));
 		}
 
 		// Assert that the node is still tagged with both tags in releaseTwo
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
@@ -300,7 +300,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 		}
 
 		// Assert that the node is tagged with no tag in release one
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = content();
 			// via /nodes/:nodeUuid/tags
 			TagListResponse tagsForNode = call(
@@ -325,7 +325,7 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveNoPermTagFromNode() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));

@@ -14,7 +14,7 @@ public class GraphRelationships {
 	 */
 	public static void init(Database db) {
 
-		db.noTx(() -> {
+		db.tx(() -> {
 			db.addEdgeType(HAS_INITIAL_RELEASE);
 			db.addEdgeType(HAS_LATEST_RELEASE);
 			db.addEdgeType(HAS_NEXT_RELEASE);

@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.UpdateMicroschemaChange;
@@ -15,7 +16,6 @@ import com.gentics.mesh.core.data.schema.impl.UpdateMicroschemaChangeImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -25,7 +25,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			UpdateMicroschemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.setDescription("test");
 			assertEquals("test", change.getDescription());
@@ -35,7 +35,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testApply() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			MicroschemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			MicroschemaModelImpl schema = new MicroschemaModelImpl();
 
@@ -58,7 +58,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			SchemaChangeModel model = SchemaChangeModel.createUpdateMicroschemaChange();
 			model.setProperty(SchemaChangeModel.NAME_KEY, "someName");
 
@@ -71,7 +71,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			UpdateMicroschemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			assertNull("Update microschema changes have a auto migation script.", change.getAutoMigrationScript());
 
@@ -84,7 +84,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			UpdateMicroschemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.setCustomMigrationScript("testScript");
 			change.setName("vcard");

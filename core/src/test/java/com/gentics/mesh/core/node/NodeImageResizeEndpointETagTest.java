@@ -8,9 +8,9 @@ import static com.gentics.mesh.util.MeshAssert.latchFor;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
@@ -24,7 +24,7 @@ public class NodeImageResizeEndpointETagTest extends AbstractETagTest {
 	@Test
 	public void testImageResize() throws Exception {
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 
 			// 1. Upload image

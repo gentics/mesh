@@ -9,10 +9,10 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -26,7 +26,7 @@ public class MicroschemaEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			MeshResponse<MicroschemaListResponse> response = client().findMicroschemas().invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
@@ -39,7 +39,7 @@ public class MicroschemaEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadOne() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			MicroschemaContainer schema = microschemaContainers().get("vcard");
 
 			MeshResponse<MicroschemaResponse> response = client().findMicroschemaByUuid(schema.getUuid()).invoke();

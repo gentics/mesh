@@ -14,6 +14,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -25,7 +26,6 @@ import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.verticle.node.BinaryFieldResponseHandler;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
@@ -63,7 +63,7 @@ public class WebRootHandler {
 		final String decodedPath = "/" + path;
 		MeshAuthUser requestUser = ac.getUser();
 		// List<String> languageTags = ac.getSelectedLanguageTags();
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 
 			// Load all nodes for the given path
 			Path nodePath = webrootService.findByProjectPath(ac, decodedPath);
@@ -96,7 +96,7 @@ public class WebRootHandler {
 				if (ac.matches(etag, false)) {
 					return Single.error(new NotModifiedException());
 				} else {
-					try (NoTx tx = db.noTx()) {
+					try (Tx tx = db.tx()) {
 						// TODO move binary handler outside of event loop scope to avoid bogus object creation
 						BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
 						handler.handle(binaryField);

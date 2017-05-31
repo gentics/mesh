@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -33,7 +33,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodesForTag() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 					new VersioningParametersImpl().draft()));
 			NodeResponse concorde = new NodeResponse();
@@ -44,7 +44,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadPublishedNodesForTag() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
@@ -66,7 +66,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodesForTagInRelease() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse concorde = new NodeResponse();
 			concorde.setUuid(content("concorde").getUuid());
 
@@ -95,7 +95,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		Tag tag1;
 		Tag tag2;
 		Tag tag3;
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily root = tagFamily("basic");
 			tag1 = root.create("test1", project(), user());
 			tag2 = root.create("test2", project(), user());
@@ -112,10 +112,10 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 			role().grantPermissions(tag3, READ_PERM);
 		}
 
-		String tagFamilyUuid = db().noTx(() -> tagFamily("basic").getUuid());
+		String tagFamilyUuid = db().tx(() -> tagFamily("basic").getUuid());
 		TagResponse tagResponse = call(() -> client().createTag(PROJECT_NAME, tagFamilyUuid, new TagCreateRequest().setName("test4")));
 
-		String nodeUuid = db().noTx(() -> content().getUuid());
+		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListResponse list = call(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid));
 
 		List<String> names = list.getData().stream().map(entry -> entry.getName()).collect(Collectors.toList());

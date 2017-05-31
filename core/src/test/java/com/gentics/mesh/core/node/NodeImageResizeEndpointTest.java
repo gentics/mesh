@@ -21,6 +21,7 @@ import javax.imageio.ImageIO;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
@@ -28,7 +29,6 @@ import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -42,8 +42,8 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testImageResize() throws Exception {
-		String uuid = db().noTx(() -> folder("news").getUuid());
-		try (NoTx noTrx = db().noTx()) {
+		String uuid = db().tx(() -> folder("news").getUuid());
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 
 			// 1. Upload image
@@ -56,7 +56,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image", params));
 
 		// 3. Validate resize
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			node.reload();
 			validateResizeImage(download, node.getLatestDraftFieldContainer(english())
@@ -67,7 +67,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testImageResizeOverLimit() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			ImageManipulatorOptions options = Mesh.mesh()
 					.getOptions()
@@ -85,7 +85,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testImageExactLimit() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			ImageManipulatorOptions options = Mesh.mesh()
 					.getOptions()
@@ -107,8 +107,8 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTransformImage() throws Exception {
-		String uuid = db().noTx(() -> folder("news").getUuid());
-		VersionReference version = db().noTx(() -> {
+		String uuid = db().tx(() -> folder("news").getUuid());
+		VersionReference version = db().tx(() -> {
 			Node node = folder("news");
 			// 1. Upload image
 			return uploadImage(node, "en", "image").getVersion();
@@ -138,7 +138,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTransformImageNoParameters() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			// 1. Upload image
 			NodeResponse response = uploadImage(node, "en", "image");
@@ -152,8 +152,8 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTransformNonBinary() throws Exception {
-		String uuid = db().noTx(() -> folder("news").getUuid());
-		String version = db().noTx(() -> {
+		String uuid = db().tx(() -> folder("news").getUuid());
+		String version = db().tx(() -> {
 			Node node = folder("news");
 			return node.getGraphFieldContainer("en")
 					.getVersion()
@@ -169,7 +169,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTransformNonImage() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 
 			prepareSchema(node, "*/*", "image");
@@ -187,7 +187,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTransformEmptyField() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 
 			prepareSchema(node, "image/.*", "image");

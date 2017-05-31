@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.user;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
@@ -11,25 +12,24 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import rx.Single;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class AuthenticationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRestClient() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			User user = user();
 			String username = user.getUsername();
 			String uuid = user.getUuid();
@@ -72,7 +72,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testLoginAndDisableUser() {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			User user = user();
 			String username = user.getUsername();
 
@@ -94,7 +94,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAutomaticTokenRefresh() throws InterruptedException {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			User user = user();
 			String username = user.getUsername();
 

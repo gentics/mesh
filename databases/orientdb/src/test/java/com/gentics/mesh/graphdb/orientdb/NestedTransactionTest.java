@@ -37,7 +37,7 @@ public class NestedTransactionTest {
 			db.tx(() -> {
 				Vertex v = Database.getThreadLocalGraph().addVertex(null);
 				System.out.println("Outer");
-				db.noTx(() -> {
+				db.tx(() -> {
 					long count = Database.getThreadLocalGraph().v().count();
 					System.out.println("Inner " + count);
 					return null;
@@ -49,7 +49,7 @@ public class NestedTransactionTest {
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 		}
-		long count = db.noTx(() -> Database.getThreadLocalGraph().v().count());
+		long count = db.tx(() -> Database.getThreadLocalGraph().v().count());
 		assertEquals("A runtime exception occured in the tx transaction. Nothing should have been comitted", 0, count);
 	}
 

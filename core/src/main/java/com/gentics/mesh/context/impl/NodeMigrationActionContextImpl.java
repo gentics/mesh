@@ -765,7 +765,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
 				return MeshInternal.get()
 						.database()
-						.operateNoTx(() -> {
+						.operateTx(() -> {
 							return Single.just(transformToRestSync(ac, level, languageTags));
 						});
 			}

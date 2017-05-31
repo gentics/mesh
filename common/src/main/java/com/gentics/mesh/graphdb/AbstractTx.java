@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphdb;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedTransactionalGraph;
 

@@ -9,8 +9,8 @@ import static com.gentics.mesh.test.TestSize.PROJECT;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 

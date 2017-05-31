@@ -137,7 +137,7 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 				if(log.isDebugEnabled()) {
 					log.debug("Using anonymous user.");
 				}
-				MeshAuthUser anonymousUser = database.noTx(() -> boot.userRoot().findMeshAuthUserByUsername(ANONYMOUS_USERNAME));
+				MeshAuthUser anonymousUser = database.tx(() -> boot.userRoot().findMeshAuthUserByUsername(ANONYMOUS_USERNAME));
 				if (anonymousUser == null) {
 					if (log.isDebugEnabled()) {
 						log.debug("No anonymous user and authorization header was found. Can't authenticate request.");

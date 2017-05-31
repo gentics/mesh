@@ -20,13 +20,17 @@ import java.util.Map.Entry;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import com.gentics.ferma.Tx;
+import com.gentics.ferma.TxHandler;
+import com.gentics.ferma.TxHandler0;
+import com.gentics.ferma.TxHandler1;
+import com.gentics.ferma.TxHandler2;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.graphdb.ferma.AbstractDelegatingFramedOrientGraph;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
@@ -57,8 +61,8 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
@@ -91,7 +95,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing graph");
 		}
-		// OrientGraphNoTx tx1 = factory.getNoTx();
+		// OrientGraphTx tx1 = factory.getTx();
 		// tx1.declareIntent(new OIntentNoCache());
 		// try {
 		// tx1.command(new OCommandSQL("delete vertex V")).execute();
@@ -100,7 +104,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		// tx1.declareIntent(null);
 		// tx1.shutdown();
 		// }
-		OrientGraphNoTx tx = factory.getNoTx();
+		OrientGraph tx = factory.getTx();
 		tx.declareIntent(new OIntentNoCache());
 		try {
 			for (Vertex vertex : tx.getVertices()) {
@@ -204,7 +208,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private void configureGraphDB() {
 		log.info("Configuring orientdb...");
-		OrientGraphNoTx tx = factory.getNoTx();
+		OrientGraph tx = factory.getTx();
 		try {
 			tx.setUseLightweightEdges(false);
 			tx.setUseVertexFieldsForEdgeLabels(false);
@@ -215,7 +219,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void addCustomEdgeIndex(String label, String indexPostfix, String... fields) {
-		OrientGraphNoTx tx = factory.getNoTx();
+		OrientGraph tx = factory.getTx();
 		try {
 			OrientEdgeType e = tx.getEdgeType(label);
 			if (e == null) {
@@ -244,7 +248,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void addEdgeIndex(String label, boolean includeInOut, boolean includeIn, boolean includeOut, String... extraFields) {
-		OrientGraphNoTx tx = factory.getNoTx();
+		OrientGraph tx = factory.getTx();
 		try {
 			OrientEdgeType e = tx.getEdgeType(label);
 			if (e == null) {
@@ -359,7 +363,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding edge type for label {" + label + "}");
 		}
-		OrientGraphNoTx tx = factory.getNoTx();
+		OrientGraph tx = factory.getTx();
 		try {
 			OrientEdgeType e = tx.getEdgeType(label);
 			if (e == null) {
@@ -395,7 +399,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex type for class {" + clazzOfVertex.getName() + "}");
 		}
-		OrientGraphNoTx tx = factory.getNoTx();
+		OrientGraph tx = factory.getTx();
 		try {
 			OrientVertexType vertexType = tx.getVertexType(clazzOfVertex.getSimpleName());
 			if (vertexType == null) {
@@ -425,7 +429,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex index  for class {" + clazzOfVertices.getName() + "}");
 		}
-		OrientGraphNoTx tx = factory.getNoTx();
+		OrientGraph tx = factory.getTx();
 		try {
 			String name = clazzOfVertices.getSimpleName();
 			OrientVertexType v = tx.getVertexType(name);
@@ -509,7 +513,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		for (int retry = 0; retry < maxRetry; retry++) {
 
 			try (Tx tx = tx()) {
-				handlerResult = txHandler.call();
+				handlerResult = txHandler.handle(tx);
 				handlerFinished = true;
 				tx.success();
 			} catch (OSchemaException e) {
@@ -545,11 +549,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 			}
 		}
 		throw new RuntimeException("Retry limit {" + maxRetry + "} for trx exceeded");
-	}
-
-	@Override
-	public NoTx noTx() {
-		return new OrientDBNoTx(factory, resolver);
 	}
 
 	@Override

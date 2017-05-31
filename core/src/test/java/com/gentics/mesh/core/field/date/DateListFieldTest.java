@@ -12,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -26,7 +27,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -47,7 +47,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			prepareNode(node, "dateList", "date");
 
@@ -64,8 +64,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = db().tx()) {
+			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphFieldList list = container.createDateList("dummyList");
 			assertNotNull(list);
 			DateGraphField dateField = list.createDate(1L);
@@ -81,13 +81,13 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = db().tx()) {
+			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphFieldList testField = container.createDateList("testField");
 			testField.createDate(47L);
 			testField.createDate(11L);
 
-			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph()
+			NodeGraphFieldContainerImpl otherContainer = tx.getGraph()
 					.addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
@@ -99,8 +99,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = db().tx()) {
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphFieldList fieldA = container.createDateList("fieldA");
 			DateGraphFieldList fieldB = container.createDateList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -117,8 +117,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = db().tx()) {
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			DateGraphFieldList fieldA = container.createDateList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
@@ -128,8 +128,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = db().tx()) {
+			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			Long dummyValue = 4200L;
 
 			// rest null - graph null
@@ -158,7 +158,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			invokeUpdateFromRestTestcase(DATE_LIST, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -166,7 +166,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(DATE_LIST, FETCH);
 		}
 	}
@@ -174,7 +174,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(DATE_LIST, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, DATE_LIST, null);
@@ -185,7 +185,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(DATE_LIST, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, DATE_LIST, null);
@@ -196,7 +196,7 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(DATE_LIST, FILL, (container) -> {
 				DateFieldListImpl field = new DateFieldListImpl();

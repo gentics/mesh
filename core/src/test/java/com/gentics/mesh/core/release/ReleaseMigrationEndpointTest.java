@@ -22,6 +22,7 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -29,7 +30,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -52,7 +52,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartReleaseMigration() throws Throwable {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			assertThat(project.getInitialRelease().isMigrated()).as("Initial release migration status").isEqualTo(true);
 
@@ -118,7 +118,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartForInitial() throws Throwable {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 
@@ -131,7 +131,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartAgain() throws Throwable {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
@@ -147,7 +147,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartOrder() throws Throwable {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 			Release newestRelease = project.getReleaseRoot().create("newestrelease", user());
@@ -168,7 +168,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testBigData() throws Throwable {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			int numThreads = 1;
 			int numFolders = 1000;
 			Project project = project();

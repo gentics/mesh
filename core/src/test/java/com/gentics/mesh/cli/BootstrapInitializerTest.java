@@ -9,8 +9,8 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.Language;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -19,7 +19,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 
 	@Test
 	public void testInitLanguages() throws JsonParseException, JsonMappingException, IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			boot().initLanguages(meshRoot().getLanguageRoot());
 			Language language = boot().languageRoot().findByLanguageTag("de");
 			assertNotNull(language);
@@ -30,7 +30,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 
 	@Test
 	public void testIndexLookup() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			boot().meshRoot();
 			BootstrapInitializerImpl.clearReferences();
 			assertNotNull(boot().meshRoot());
@@ -39,7 +39,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 
 	@Test
 	public void testIsEmpty() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			assertFalse(boot().isEmptyInstallation());
 			db().clear();
 			assertTrue(boot().isEmptyInstallation());

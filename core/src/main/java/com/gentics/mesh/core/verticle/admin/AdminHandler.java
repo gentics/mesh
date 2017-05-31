@@ -44,7 +44,7 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleBackup(InternalActionContext ac) {
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			if (!ac.getUser()
 					.hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
@@ -64,7 +64,7 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleRestore(InternalActionContext ac) {
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			if (!ac.getUser()
 					.hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
@@ -97,7 +97,7 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleExport(InternalActionContext ac) {
-		db.operateNoTx(() -> {
+		db.operateTx((tx) -> {
 			if (!ac.getUser()
 					.hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
@@ -117,7 +117,7 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleImport(InternalActionContext ac) {
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			if (!ac.getUser()
 					.hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");

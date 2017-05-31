@@ -13,9 +13,9 @@ import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -26,7 +26,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testDeleteLanguage() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = content();
 			String uuid = node.getUuid();
 			int nLanguagesBefore = node.getAvailableLanguageNames()
@@ -65,7 +65,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testDeleteBogusLanguage() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = content();
 			call(() -> client().deleteNode(PROJECT_NAME, node.getUuid(), "blub"), NOT_FOUND, "error_language_not_found", "blub");
 		}
@@ -73,7 +73,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testDeleteLanguageNoPerm() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = content();
 			role().revokePermissions(node, DELETE_PERM);
 			call(() -> client().deleteNode(PROJECT_NAME, node.getUuid(), "en"), FORBIDDEN, "error_missing_perm", node.getUuid());

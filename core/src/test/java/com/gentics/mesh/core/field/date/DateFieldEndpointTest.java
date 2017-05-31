@@ -13,6 +13,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.DateGraphField;
@@ -24,7 +25,6 @@ import com.gentics.mesh.core.rest.node.field.impl.DateFieldImpl;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
@@ -33,7 +33,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			DateFieldSchema dateFieldSchema = new DateFieldSchemaImpl();
 			dateFieldSchema.setName(FIELD_NAME);
@@ -46,7 +46,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			DateFieldImpl field = response.getFields().getDateField(FIELD_NAME);
 			assertNull(field);
@@ -56,7 +56,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			for (int i = 0; i < 20; i++) {
 				Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis() + (i * 10000)));
@@ -78,7 +78,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
 			String oldVersion = firstResponse.getVersion().getNumber();
@@ -91,7 +91,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
 			String oldVersion = firstResponse.getVersion().getNumber();
@@ -118,7 +118,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
 			String oldVersion = firstResponse.getVersion().getNumber();
@@ -147,7 +147,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 			NodeResponse response = createNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
 			DateField field = response.getFields().getDateField(FIELD_NAME);
@@ -158,7 +158,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 
 			Node node = folder("2015");

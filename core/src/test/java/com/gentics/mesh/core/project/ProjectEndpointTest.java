@@ -41,6 +41,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -59,8 +60,6 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -141,7 +140,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertEquals("folder", response.getSchema().getName());
 
 		assertThat(restProject).matches(request);
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 			Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid());
 			assertNotNull(project);
@@ -162,18 +161,18 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName(name);
 		request.setSchema(new SchemaReference().setName("folder"));
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			role().revokePermissions(meshRoot().getProjectRoot(), CREATE_PERM);
 		}
 
-		String projectRootUuid = db().noTx(() -> meshRoot().getProjectRoot().getUuid());
+		String projectRootUuid = db().tx(() -> meshRoot().getProjectRoot().getUuid());
 		call(() -> client().createProject(request), FORBIDDEN, "error_missing_perm", projectRootUuid);
 	}
 
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
@@ -185,7 +184,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName(name);
 		request.setSchema(new SchemaReference().setName("folder"));
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// Create a new project
 			ProjectResponse restProject = call(() -> client().createProject(request));
 			assertThat(restProject).matches(request);
@@ -205,10 +204,10 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			role().grantPermissions(project(), READ_PERM);
 		}
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			final int nProjects = 142;
 			String noPermProjectName;
 			for (int i = 0; i < nProjects; i++) {
@@ -315,7 +314,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
@@ -338,7 +337,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 
@@ -351,7 +350,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
@@ -365,7 +364,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testUpdateWithBogusNames() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", user(), schemaContainer("folder").getLatestVersion());
 
 			String uuid = project().getUuid();
@@ -386,7 +385,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	public void testUpdateWithEndpointName() {
 		List<String> names = Arrays.asList("users", "groups", "projects");
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			for (String name : names) {
 				Project project = project();
 				String uuid = project.getUuid();
@@ -400,7 +399,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			role().grantPermissions(project, UPDATE_PERM);
@@ -441,7 +440,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws JsonProcessingException, Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			String name = project.getName();
@@ -461,11 +460,11 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			role().grantPermissions(project(), DELETE_PERM);
 		}
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 
@@ -503,7 +502,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			role().revokePermissions(project, DELETE_PERM);
@@ -518,7 +517,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	@Ignore("not yet enabled")
 	public void testUpdateMultithreaded() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			int nJobs = 5;
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("New Name");
@@ -536,7 +535,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String uuid = project().getUuid();
 			// CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<?>> set = new HashSet<>();
@@ -590,7 +589,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			int nJobs = 200;
 			Set<MeshResponse<ProjectResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {

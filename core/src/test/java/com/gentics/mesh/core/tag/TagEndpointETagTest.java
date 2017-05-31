@@ -8,11 +8,11 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -27,7 +27,7 @@ public class TagEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String tagFamilyUuid = tagFamily("colors").getUuid();
 			MeshResponse<TagListResponse> response = client().findTags(PROJECT_NAME, tagFamilyUuid).invoke();
 			latchFor(response);
@@ -41,7 +41,7 @@ public class TagEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadOne() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			TagFamily tagfamily = tagFamily("colors");
 			Tag tag = tag("red");
 

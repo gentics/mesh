@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.NumberGraphFieldListImpl;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.field.AbstractListFieldEndpointTest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -36,7 +36,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NumberFieldListImpl listField = new NumberFieldListImpl();
 			listField.add(42L);
 			listField.add(41L);
@@ -53,7 +53,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NumberFieldListImpl listField = new NumberFieldListImpl();
 			listField.add(42);
 			listField.add(41);
@@ -66,7 +66,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NumberFieldListImpl listField = new NumberFieldListImpl();
 			listField.add(42);
 			listField.add(41);
@@ -78,7 +78,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			assertThat(response.getFields().getNumberFieldList(FIELD_NAME)).as("List field in reponse should be null")
 					.isNull();
@@ -88,7 +88,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NumberFieldListImpl listField = new NumberFieldListImpl();
 			listField.add(41L);
 			listField.add(42L);
@@ -104,7 +104,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// 1. Update an existing node
 			NumberFieldListImpl listField = new NumberFieldListImpl();
 			listField.add(41L);
@@ -123,7 +123,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 
 			List<List<Number>> valueCombinations = Arrays.asList(Arrays.asList(1.1, 2, 3), Arrays.asList(3, 2, 1.1),
@@ -157,7 +157,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NumberFieldListImpl list = new NumberFieldListImpl();
 			list.add(42);
 			list.add(41.1f);
@@ -188,7 +188,7 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NumberFieldListImpl list = new NumberFieldListImpl();
 			list.add(42);
 			list.add(41.1f);

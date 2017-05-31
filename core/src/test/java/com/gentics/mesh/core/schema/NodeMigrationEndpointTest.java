@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -42,7 +43,6 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -66,7 +66,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testEmptyMigration() throws Throwable {
-		try (NoTx tx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
@@ -94,7 +94,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartSchemaMigration() throws Throwable {
-		try (NoTx tx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 
 			String fieldName = "changedfield";
 
@@ -140,7 +140,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMigrateAgain() throws Throwable {
-		try (NoTx tx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 
 			String fieldName = "changedfield";
 
@@ -176,7 +176,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMigratePublished() throws Throwable {
-		try (NoTx tx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 
 			String fieldName = "changedfield";
 
@@ -212,7 +212,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		SchemaContainerVersion versionB = null;
 		SchemaContainer container = null;
 
-		try (NoTx tx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			container = createDummySchemaWithChanges(fieldName);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
@@ -225,13 +225,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			englishContainer.createString("name").setString("someName");
 			englishContainer.createString(fieldName).setString("content");
 		}
-		try (NoTx tx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			node.reload();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
 			node.publish(ac, createBatch(), "en");
 		}
 
-		try (NoTx tx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			node.reload();
 			NodeGraphFieldContainer updatedEnglishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
 			updatedEnglishContainer.getString(fieldName).setString("new content");
@@ -330,7 +330,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartMicroschemaMigration() throws Throwable {
 
-		try (NoTx tx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 
 			String fieldName = "changedfield";
 			String micronodeFieldName = "micronodefield";
@@ -438,7 +438,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String fieldName = "changedfield";
 		String micronodeFieldName = "micronodefield";
 
-		try (NoTx tx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 
 			// create version 1 of the microschema
 			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
@@ -562,7 +562,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String fieldName = "changedfield";
 		String micronodeFieldName = "micronodefield";
 
-		try (NoTx tx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// create version 1 of the microschema
 			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			MicroschemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);

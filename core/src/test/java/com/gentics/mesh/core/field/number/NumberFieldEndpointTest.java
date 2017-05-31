@@ -13,6 +13,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
@@ -27,7 +28,6 @@ import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -39,7 +39,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 			numberFieldSchema.setName(FIELD_NAME);
@@ -53,7 +53,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			NumberFieldImpl field = response.getFields().getNumberField(FIELD_NAME);
 			assertNull("The field should be null since we did not specify a field when executing the creation call", field);
@@ -62,7 +62,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testCreateNodeWithWrongFieldType() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String fieldKey = FIELD_NAME;
 			StringField field = new StringFieldImpl().setString("text");
 
@@ -81,7 +81,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			for (int i = 0; i < 20; i++) {
 				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
@@ -103,7 +103,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
 			String oldNumber = firstResponse.getVersion().getNumber();
 
@@ -115,7 +115,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -145,7 +145,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// Number fields can't be set to empty - The rest model will generate a null field for the update request json. Thus the field will be deleted.
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl());
 			assertThat(firstResponse.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNull();
@@ -155,7 +155,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse response = createNode(FIELD_NAME, new NumberFieldImpl().setNumber(1.21));
 			NumberFieldImpl numberField = response.getFields().getNumberField(FIELD_NAME);
 			assertEquals(1.21, numberField.getNumber());
@@ -165,7 +165,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());

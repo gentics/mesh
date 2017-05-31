@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -50,7 +51,6 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -98,9 +98,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testNodeQuery() throws JSONException, IOException, ParseException {
 		String staticUuid = "43ee8f9ff71e4016ae8f9ff71e10161c";
-		// String contentUuid = db().noTx(() -> content().getUuid());
-		// String creationDate = db().noTx(() -> content().getCreationDate());
-		// String uuid = db().noTx(() -> folder("2015").getUuid());
+		// String contentUuid = db().tx(() -> content().getUuid());
+		// String creationDate = db().tx(() -> content().getCreationDate());
+		// String uuid = db().tx(() -> folder("2015").getUuid());
 
 		// 1. Create the microschema
 		MicroschemaCreateRequest microschemaRequest = new MicroschemaCreateRequest();

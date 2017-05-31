@@ -12,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -27,7 +28,6 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -48,8 +48,8 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 
 	@Test
 	public void testSimpleNumber() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = db().tx()) {
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphFieldImpl field = new NumberGraphFieldImpl("test", container);
 			assertEquals(2, container.getPropertyKeys().size());
 			assertNull(container.getProperty("test-number"));
@@ -67,12 +67,12 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = db().tx()) {
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphField testField = container.createNumber("testField");
 			testField.setNumber(4711);
 
-			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNumber("testField")).as("cloned field").isNotNull().isEqualToIgnoringGivenFields(testField,
@@ -83,8 +83,8 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = db().tx()) {
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphField numberField = container.createNumber("numberField");
 			assertEquals("numberField", numberField.getFieldKey());
 			numberField.setNumber(42);
@@ -100,7 +100,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 
 			// Update the schema
@@ -130,8 +130,8 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = db().tx()) {
+			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			Long number = System.currentTimeMillis();
 			NumberGraphField fieldA = container.createNumber(NUMBER_FIELD);
 			NumberGraphField fieldB = container.createNumber(NUMBER_FIELD + "_2");
@@ -144,8 +144,8 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = db().tx()) {
+			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NumberGraphField fieldA = container.createNumber(NUMBER_FIELD);
 			NumberGraphField fieldB = container.createNumber(NUMBER_FIELD + "_2");
 			assertTrue("Both fields should be equal to eachother", fieldA.equals(fieldB));
@@ -155,8 +155,8 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = db().tx()) {
+			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			Long number = System.currentTimeMillis();
 
 			// rest null - graph null
@@ -182,7 +182,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			invokeUpdateFromRestTestcase(NUMBER_FIELD, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -190,7 +190,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(NUMBER_FIELD, FETCH);
 		}
 	}
@@ -198,7 +198,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(NUMBER_FIELD, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, NUMBER_FIELD, null);
@@ -209,7 +209,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(NUMBER_FIELD, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, NUMBER_FIELD, null);
@@ -220,7 +220,7 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(NUMBER_FIELD, FILL, (container) -> {
 				NumberField field = new NumberFieldImpl();

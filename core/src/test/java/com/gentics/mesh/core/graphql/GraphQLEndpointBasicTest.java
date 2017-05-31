@@ -10,9 +10,9 @@ import static org.junit.Assert.*;
 import org.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -43,7 +43,7 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 
 	@Test
 	public void testDataFetchingError() throws Throwable {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			role().revokePermissions(project(), READ_PERM);
 		}
 		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, "{project{name}}"));

@@ -8,17 +8,16 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.ferma.orientdb.DelegatingFramedOrientGraph;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.orientdb.graph.Group;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
@@ -52,15 +51,15 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 	}
 
 	private void setupTypesAndIndices() {
-		try (NoTx tx = db.noTx()) {
-			OrientGraphNoTx g = ((OrientGraphNoTx) ((DelegatingFramedOrientGraph<?>) tx.getGraph()).getBaseGraph());
+		try (Tx tx = db.tx()) {
+			OrientGraph g = ((DelegatingFramedOrientGraph) tx.getGraph()).getBaseGraph();
 			// g.setUseClassForEdgeLabel(true);
 			g.setUseLightweightEdges(false);
 			g.setUseVertexFieldsForEdgeLabels(false);
 		}
 
-		try (NoTx tx = db.noTx()) {
-			OrientGraphNoTx g = ((OrientGraphNoTx) ((DelegatingFramedOrientGraph<?>) tx.getGraph()).getBaseGraph());
+		try (Tx tx = db.tx()) {
+			OrientGraph g = ((DelegatingFramedOrientGraph) tx.getGraph()).getBaseGraph();
 			System.out.println(g.getClass().getName());
 
 			OrientEdgeType e = g.createEdgeType("HAS_MEMBER");

@@ -29,7 +29,7 @@ public class GroupEndpointPerformanceTest extends AbstractMeshTest {
 	public void testPerformance() {
 		addGroups();
 
-		String uuid = db().noTx(() -> group().getUuid());
+		String uuid = db().tx(() -> group().getUuid());
 
 		loggingStopWatch(logger, "group.read-page-100", 200, (step) -> {
 			call(() -> client().findGroups(new PagingParametersImpl().setPerPage(100)));

@@ -14,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -24,7 +25,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -36,7 +36,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testReindexNodeIndex() throws Exception {
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			recreateIndices();
 		}
 
@@ -46,7 +46,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent)));
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
-		String uuid = db().noTx(() -> content("concorde").getUuid());
+		String uuid = db().tx(() -> content("concorde").getUuid());
 
 		// publish the Concorde
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
@@ -57,7 +57,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
 		// // Add the user to the admin group - this way the user is in fact an admin.
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			user().addGroup(data().getGroups().get("admin"));
 		}
 
@@ -74,7 +74,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchPublishedNodes() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			recreateIndices();
 		}
 
@@ -84,7 +84,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent)));
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
-		String uuid = db().noTx(() -> content("concorde").getUuid());
+		String uuid = db().tx(() -> content("concorde").getUuid());
 
 		// publish the Concorde
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
@@ -108,7 +108,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Published search result").isEmpty();
 
 		// publish content "urschnell"
-		call(() -> client().publishNode(PROJECT_NAME, db().noTx(() -> content("concorde").getUuid())));
+		call(() -> client().publishNode(PROJECT_NAME, db().tx(() -> content("concorde").getUuid())));
 
 		// "supersonic" no longer found, but "urschnell" found in published nodes
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent)));
@@ -119,7 +119,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchAfterSchemaUpdate() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			recreateIndices();
 		}
 

@@ -24,6 +24,7 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
@@ -39,11 +40,11 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.error.MeshConfigurationException;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.Transformator;
+import com.tinkerpop.gremlin.Tokens.T;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -153,7 +154,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Completable store(UpdateDocumentEntry entry) {
 		return Completable.defer(() -> {
-			try (NoTx noTx = db.noTx()) {
+			try (Tx tx = db.tx()) {
 				String uuid = entry.getElementUuid();
 				String type = composeIndexTypeFromEntry(entry);
 				T element = getRootVertex().findByUuid(uuid);
@@ -360,7 +361,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 			@Override
 			public void onResponse(SearchResponse response) {
-				Page<? extends T> page = db.noTx(() -> {
+				Page<? extends T> page = db.tx(() -> {
 					List<T> elementList = new ArrayList<T>();
 					for (SearchHit hit : response.getHits()) {
 

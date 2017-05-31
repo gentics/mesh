@@ -18,6 +18,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -42,7 +43,6 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
@@ -79,7 +79,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 	@Override
 	public void handleCreate(InternalActionContext ac) {
-		utils.operateNoTx(ac, () -> {
+		utils.operateTx(ac, (tx) -> {
 			Database db = MeshInternal.get().database();
 
 			ResultInfo info = db.tx(() -> {
@@ -118,7 +118,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleGetSchemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			Release release = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
 			return getSchemaVersions(release);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -133,7 +133,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleAssignSchemaVersion(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			RootVertex<Release> root = getRootVertex(ac);
 			Release release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			SchemaReferenceList schemaReferenceList = ac.fromJson(SchemaReferenceList.class);
@@ -194,7 +194,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleGetMicroschemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			Release release = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
 			return getMicroschemaVersions(release);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -209,7 +209,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleAssignMicroschemaVersion(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			RootVertex<Release> root = getRootVertex(ac);
 			Release release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			MicroschemaReferenceList microschemaReferenceList = ac.fromJson(MicroschemaReferenceList.class);
@@ -280,7 +280,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	}
 
 	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String releaseUuid) {
-		utils.operateNoTx(ac, () -> {
+		utils.operateTx(ac, () -> {
 			Project project = ac.getProject();
 			for (MicroschemaContainer microschemaContainer : boot.microschemaContainerRoot().findAll()) {
 				MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
@@ -309,7 +309,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 					MicroschemaContainerVersion version = currentVersion;
 					Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
-						try (NoTx noTrx = db.noTx()) {
+						try (Tx tx = db.tx()) {
 							System.out.println("After migration " + microschemaContainer.getName() + " - " + version.getUuid() + "="
 									+ version.getFieldContainers(releaseUuid).size());
 						}
@@ -332,7 +332,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 */
 	public void handleMigrateRemainingNodes(InternalActionContext ac, String releaseUuid) {
 
-		utils.operateNoTx(ac, () -> {
+		utils.operateTx(ac, () -> {
 			Project project = ac.getProject();
 			for (SchemaContainer schemaContainer : boot.schemaContainerRoot().findAll()) {
 				SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
@@ -361,7 +361,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 					SchemaContainerVersion version = currentVersion;
 					Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
-						try (NoTx noTrx = db.noTx()) {
+						try (Tx tx = db.tx()) {
 							System.out.println("After migration " + schemaContainer.getName() + " - " + version.getUuid() + "="
 									+ version.getFieldContainers(releaseUuid).size());
 						}

@@ -128,6 +128,26 @@ public interface TestHelperMethods {
 		return group;
 	}
 
+	default String groupUuid() {
+		return data().getUserInfo().getGroupUuid();
+	}
+
+	default String userUuid() {
+		return data().getUserInfo().getUserUuid();
+	}
+
+	default String roleUuid() {
+		return data().getUserInfo().getRoleUuid();
+	}
+
+	default String projectUuid() {
+		return data().projectUuid();
+	}
+	
+	default String contentUuid() {
+		return data().getContentUuid();
+	}
+
 	default MeshRestClient client() {
 		return getTestContext().getClient();
 	}

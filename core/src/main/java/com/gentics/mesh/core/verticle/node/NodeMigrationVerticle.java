@@ -119,7 +119,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 
 			try {
 				ObjectName statusMBeanName = new ObjectName(JMX_MBEAN_NAME + ",name=" + schemaUuid);
-				db.noTx(() -> {
+				db.tx(() -> {
 					try {
 						// Load the identified elements
 						Project project = boot.get().projectRoot().findByUuid(projectUuid);
@@ -193,7 +193,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 
 			try {
 				ObjectName statusMBeanName = new ObjectName(JMX_MBEAN_NAME + ",name=" + microschemaUuid);
-				db.noTx(() -> {
+				db.tx(() -> {
 					try {
 						Project project = boot.get().projectRoot().findByUuid(projectUuid);
 						if (project == null) {
@@ -251,7 +251,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 				log.debug("Release migration for release {" + releaseUuid + "} was requested");
 			}
 
-			Throwable error = db.noTx(() -> {
+			Throwable error = db.tx(() -> {
 				try {
 					Project project = boot.get().projectRoot().findByUuid(projectUuid);
 					if (project == null) {

@@ -12,15 +12,15 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 
 import io.vertx.core.Vertx;
 
-public class OrientDBTrxTest extends AbstractOrientDBTest {
+public class OrientDBTxTest extends AbstractOrientDBTest {
 
 	private Database db = new OrientDBDatabase();
 	private Person p;
@@ -52,7 +52,7 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 
 	@Test
 	@Ignore
-	public void testAsyncTrxRetryHandling2() throws Exception {
+	public void testAsyncTxRetryHandling2() throws Exception {
 		// Test creation of user in current thread
 		int nFriendsBefore;
 		try (Tx tx = db.tx()) {
@@ -104,7 +104,7 @@ public class OrientDBTrxTest extends AbstractOrientDBTest {
 
 	@Test
 	@Ignore
-	public void testTrxConflictHandling() throws InterruptedException, BrokenBarrierException, TimeoutException {
+	public void testTxConflictHandling() throws InterruptedException, BrokenBarrierException, TimeoutException {
 		// Test creation of user in current thread
 		int nFriendsBefore;
 		try (Tx tx = db.tx()) {

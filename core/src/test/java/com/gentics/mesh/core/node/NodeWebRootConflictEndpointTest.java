@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
@@ -19,7 +20,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -80,10 +80,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testCreateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
-		Node parent = db().noTx(() -> folder("2015"));
-		SchemaContainer contentSchema = db().noTx(() -> schemaContainer("content"));
+		Node parent = db().tx(() -> folder("2015"));
+		SchemaContainer contentSchema = db().tx(() -> schemaContainer("content"));
 
-		db().noTx(() -> {
+		db().tx(() -> {
 			// create the initial content
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
@@ -117,10 +117,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	public void testUpdateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
 		String nonConflictingName = "otherfilename.html";
-		Node parent = db().noTx(() -> folder("2015"));
-		SchemaContainer contentSchema = db().noTx(() -> schemaContainer("content"));
+		Node parent = db().tx(() -> folder("2015"));
+		SchemaContainer contentSchema = db().tx(() -> schemaContainer("content"));
 
-		db().noTx(() -> {
+		db().tx(() -> {
 			// create the initial content
 			final NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
@@ -157,10 +157,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTranslateDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
-		Node parent = db().noTx(() -> folder("2015"));
-		SchemaContainer contentSchema = db().noTx(() -> schemaContainer("content"));
+		Node parent = db().tx(() -> folder("2015"));
+		SchemaContainer contentSchema = db().tx(() -> schemaContainer("content"));
 
-		db().noTx(() -> {
+		db().tx(() -> {
 			// create the initial content
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
@@ -193,10 +193,10 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	public void testMoveDuplicateWebrootPath() {
 		String conflictingName = "filename.html";
 
-		Node parent = db().noTx(() -> folder("2015"));
-		Node otherParent = db().noTx(() -> folder("news"));
-		SchemaContainer contentSchema = db().noTx(() -> schemaContainer("content"));
-		db().noTx(() -> {
+		Node parent = db().tx(() -> folder("2015"));
+		Node otherParent = db().tx(() -> folder("news"));
+		SchemaContainer contentSchema = db().tx(() -> schemaContainer("content"));
+		db().tx(() -> {
 			// create the initial content
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
@@ -232,18 +232,18 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 
 		String conflictingName = "filename.html";
 		String newReleaseName = "newrelease";
-		SchemaContainer contentSchema = db().noTx(() -> {
+		SchemaContainer contentSchema = db().tx(() -> {
 			return schemaContainer("content");
 		});
 		// 1. Create new release and migrate nodes
-		db().noTx(() -> {
+		db().tx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
 			meshDagger().nodeMigrationHandler().migrateNodes(newRelease);
 			return null;
 		});
 
 		// 2. Create content in new release
-		db().noTx(() -> {
+		db().tx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -258,7 +258,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		});
 
 		// 3. Create "conflicting" content in initial release
-		db().noTx(() -> {
+		db().tx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -278,12 +278,12 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		String conflictingName = "filename.html";
 		String newName = "changed.html";
 
-		SchemaContainer contentSchema = db().noTx(() -> {
+		SchemaContainer contentSchema = db().tx(() -> {
 			return schemaContainer("content");
 		});
 
 		// 1. Create initial content
-		String nodeUuid = db().noTx(() -> {
+		String nodeUuid = db().tx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -296,7 +296,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		});
 
 		// 2. Modify initial content
-		db().noTx(() -> {
+		db().tx(() -> {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
@@ -306,7 +306,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		});
 
 		// 3. Create "conflicting" content
-		db().noTx(() -> {
+		db().tx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -323,12 +323,12 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	public void testDuplicateWithDrafts() {
 		String initialName = "filename.html";
 		String conflictingName = "changed.html";
-		SchemaContainer contentSchema = db().noTx(() -> {
+		SchemaContainer contentSchema = db().tx(() -> {
 			return schemaContainer("content");
 		});
 
 		// 1. Create and publish initial content
-		String nodeUuid = db().noTx(() -> {
+		String nodeUuid = db().tx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -342,7 +342,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		});
 
 		// 2. Modify initial content
-		db().noTx(() -> {
+		db().tx(() -> {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
@@ -352,7 +352,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		});
 
 		// 3. Create content. The filename should not cause a conflict since the other node was just updated.
-		String otherNodeUuid = db().noTx(() -> {
+		String otherNodeUuid = db().tx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -365,7 +365,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		});
 
 		// 4. Modify the second node in order to cause a conflict
-		db().noTx(() -> {
+		db().tx(() -> {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
@@ -382,12 +382,12 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		String conflictingName = "filename.html";
 		String newName = "changed.html";
 
-		SchemaContainer contentSchema = db().noTx(() -> {
+		SchemaContainer contentSchema = db().tx(() -> {
 			return schemaContainer("content");
 		});
 
 		// 1. Create and publish initial content
-		String nodeUuid = db().noTx(() -> {
+		String nodeUuid = db().tx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -404,7 +404,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		});
 
 		// 2. Modify initial content
-		db().noTx(() -> {
+		db().tx(() -> {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
@@ -414,7 +414,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		});
 
 		// 3. Create conflicting content
-		String otherNodeUuid = db().noTx(() -> {
+		String otherNodeUuid = db().tx(() -> {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
@@ -427,7 +427,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		});
 
 		// 4. Publish conflicting content
-		db().noTx(() -> {
+		db().tx(() -> {
 			call(() -> client().publishNode(PROJECT_NAME, otherNodeUuid), CONFLICT, "node_conflicting_segmentfield_publish", "slug",
 					conflictingName);
 

@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
@@ -22,7 +23,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -57,7 +57,7 @@ public class DemoDumpGeneratorTest {
 	@Test
 	public void testSetup() throws Exception {
 		generator.invokeDump(boot, dataProvider);
-		NoTx tx = db.noTx();
+		Tx tx = db.tx();
 		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").getNodeRoot().findAll().size() > 0);
 		User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
 		assertNotNull("The webclient user should have been created but could not be found.", user);

@@ -10,6 +10,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -39,7 +39,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	 */
 	@Before
 	public void updateSchema() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 
 			// add non restricted string field
@@ -62,7 +62,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse response = createNode(null, (Field) null);
 			StringFieldImpl stringField = response.getFields().getStringField(FIELD_NAME);
 			assertNull(stringField);
@@ -72,7 +72,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			for (int i = 0; i < 20; i++) {
 				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
@@ -95,7 +95,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
 			String oldNumber = firstResponse.getVersion().getNumber();
 
@@ -107,7 +107,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -133,7 +133,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -167,7 +167,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse response = createNode(FIELD_NAME, new StringFieldImpl().setString("someString"));
 			StringFieldImpl field = response.getFields().getStringField(FIELD_NAME);
 			assertEquals("someString", field.getString());
@@ -177,7 +177,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			StringGraphField stringField = container.createString(FIELD_NAME);
@@ -191,7 +191,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testValueRestrictionValidValue() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse response = updateNode("restrictedstringField", new StringFieldImpl().setString("two"));
 			StringFieldImpl field = response.getFields().getStringField("restrictedstringField");
 			assertEquals("two", field.getString());
@@ -200,7 +200,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testValueRestrictionInvalidValue() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			updateNodeFailure("restrictedstringField", new StringFieldImpl().setString("invalid"), HttpResponseStatus.BAD_REQUEST,
 					"node_error_invalid_string_field_value", "restrictedstringField", "invalid");
 		}

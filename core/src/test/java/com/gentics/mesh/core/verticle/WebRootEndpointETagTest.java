@@ -13,12 +13,12 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -35,7 +35,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testResizeImage() throws IOException {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String path = "/News/2015/blume.jpg";
 			Node node = content("news_2015");
 
@@ -66,7 +66,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = content("news_2015");
 
 			// 1. Transform the node into a binary content
@@ -101,7 +101,7 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 
 	@Test
 	public void testReadOne() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String path = "/News/2015/News_2015.en.html";
 			Node node = content("news_2015");
 

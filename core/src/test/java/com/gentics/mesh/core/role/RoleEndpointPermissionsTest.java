@@ -13,6 +13,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -20,7 +21,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -30,7 +30,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 	@Test
 	public void testRevokeAllPermissionFromProject() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
@@ -46,7 +46,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddPermissionToProjectTagFamily() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
@@ -66,7 +66,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddPermissionToMicroschema() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
@@ -95,7 +95,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddPermissionsOnGroup() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String pathToElement = "groups";
 
 			RolePermissionRequest request = new RolePermissionRequest();
@@ -114,7 +114,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadPermissionsOnProjectTagFamily() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
@@ -128,7 +128,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddPermissionToNode() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			role().revokePermissions(node, GraphPermission.UPDATE_PERM);
 			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, node));
@@ -150,7 +150,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddPermissionToNonExistingProject() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.getPermissions().add(READ);
 			String path = "projects/bogus1234/nodes";

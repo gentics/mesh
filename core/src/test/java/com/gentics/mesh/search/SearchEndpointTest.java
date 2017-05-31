@@ -16,6 +16,7 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -23,7 +24,6 @@ import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -41,7 +41,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReindex() {
 		// Add the user to the admin group - this way the user is in fact an admin.
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			user().addGroup(groups().get("admin"));
 			searchProvider().refreshIndex();
 		}
@@ -53,16 +53,16 @@ public class SearchEndpointTest extends AbstractMeshTest {
 	@Test
 	@Ignore
 	public void testClearIndex() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			recreateIndices();
 		}
 
 		// Make sure the document was added to the index.
 		Map<String, Object> map = searchProvider()
-				.getDocument(User.composeIndexName(), User.composeIndexType(), User.composeDocumentId(db().noTx(() -> user().getUuid()))).toBlocking()
+				.getDocument(User.composeIndexName(), User.composeIndexType(), User.composeDocumentId(db().tx(() -> user().getUuid()))).toBlocking()
 				.single();
 		assertNotNull("The user document should be stored within the index since we invoked a full index but it could not be found.", map);
-		assertEquals(db().noTx(() -> user().getUuid()), map.get("uuid"));
+		assertEquals(db().tx(() -> user().getUuid()), map.get("uuid"));
 
 		for (IndexHandler<?> handler : meshDagger().indexHandlerRegistry().getHandlers()) {
 			handler.clearIndex().await();
@@ -70,7 +70,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 
 		// Make sure the document is no longer stored within the search index.
 		map = searchProvider()
-				.getDocument(User.composeIndexName(), User.composeIndexType(), User.composeDocumentId(db().noTx(() -> user().getUuid()))).toBlocking()
+				.getDocument(User.composeIndexName(), User.composeIndexType(), User.composeDocumentId(db().tx(() -> user().getUuid()))).toBlocking()
 				.single();
 		assertNull("The user document should no longer be part of the search index.", map);
 
@@ -78,7 +78,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAsyncSearchQueueUpdates() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 
 			Node node = folder("2015");
 			String uuid = node.getUuid();

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -10,6 +11,7 @@ import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -20,21 +22,18 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeIntoNonFolderNode() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = content("concorde");
@@ -48,7 +47,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodesSame() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
@@ -60,7 +59,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeIntoChildNode() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = folder("2015");
@@ -76,7 +75,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeWithoutPerm() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("deals");
 			Node targetNode = folder("2015");
@@ -92,7 +91,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeWithPerm() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("deals");
 			Node targetNode = folder("2015");
@@ -101,7 +100,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()));
 
 			sourceNode.reload();
-			try (Tx tx = db().tx()) {
+			try (Tx tx2 = db().tx()) {
 				assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
 						sourceNode.getParentNode(releaseUuid).getUuid());
 				assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
@@ -115,7 +114,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testMoveNodeWithNoSegmentFieldDefined() {
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 
 			//1. Create new schema which does not have a segmentfield defined
 			SchemaCreateRequest createRequest = new SchemaCreateRequest();
@@ -157,7 +156,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveInRelease() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			Node movedNode = folder("deals");
 			Node targetNode = folder("2015");

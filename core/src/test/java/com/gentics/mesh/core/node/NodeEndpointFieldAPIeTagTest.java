@@ -9,9 +9,9 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.AbstractETagTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -29,7 +29,7 @@ public class NodeEndpointFieldAPIeTagTest extends AbstractETagTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 

@@ -182,7 +182,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public Single<RoleResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db.operateNoTx(() -> {
+		return db.operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

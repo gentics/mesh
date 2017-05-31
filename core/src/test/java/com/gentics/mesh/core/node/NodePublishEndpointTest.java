@@ -16,6 +16,7 @@ import java.util.Map.Entry;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -29,7 +30,6 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -50,7 +50,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		// 1. Take the parent folder offline
 		String parentFolderUuid;
 		String subFolderUuid;
-		try (NoTx notrx = db().noTx()) {
+		try (Tx notrx = db().tx()) {
 			InternalActionContext ac = mockActionContext("recursive=true");
 			Node subFolder = folder("2015");
 			Node parentFolder = folder("news");
@@ -88,7 +88,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatusForEmptyLanguage() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("products");
 			call(() -> client().getNodeLanguagePublishStatus(PROJECT_NAME, node.getUuid(), "fr"), NOT_FOUND, "error_language_not_found", "fr");
 		}
@@ -96,12 +96,12 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNode() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
-			String projectUuid = db().noTx(() -> project().getUuid());
-			String releaseUuid = db().noTx(() -> project().getLatestRelease().getUuid());
-			String schemaContainerVersionUuid = db().noTx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
+			String projectUuid = db().tx(() -> project().getUuid());
+			String releaseUuid = db().tx(() -> project().getLatestRelease().getUuid());
+			String schemaContainerVersionUuid = db().tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
 			PublishStatusResponse statusResponse = call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 			assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "1.0");
@@ -117,7 +117,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatus() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 
@@ -143,7 +143,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatusForRelease() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -171,7 +171,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatusNoPermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
@@ -188,7 +188,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatusForLanguage() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("products");
 
 			// 1. Take everything offline
@@ -207,7 +207,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNodeWithNoSegmentPathValue() {
-		String uuid = db().noTx(() -> folder("news").getUuid());
+		String uuid = db().tx(() -> folder("news").getUuid());
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setLanguage("en");
 		request.setParentNodeUuid(uuid);
@@ -221,7 +221,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNodeForRelease() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			project.getReleaseRoot().create("newrelease", user());
@@ -242,7 +242,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNodeNoPermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, PUBLISH_PERM);
@@ -259,7 +259,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRepublishUnchanged() {
-		String nodeUuid = db().noTx(() -> folder("2015").getUuid());
+		String nodeUuid = db().tx(() -> folder("2015").getUuid());
 		PublishStatusResponse statusResponse = call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 		assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "1.0");
 
@@ -273,19 +273,19 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testMoveConsistency() {
 		// 1. Take the target folder offline
-		String newsFolderUuid = db().noTx(() -> folder("news").getUuid());
+		String newsFolderUuid = db().tx(() -> folder("news").getUuid());
 		call(() -> client().takeNodeOffline(PROJECT_NAME, newsFolderUuid, new PublishParametersImpl().setRecursive(true)));
 
 		// 2. Move the published node into the offline target node
-		String publishedNode = db().noTx(() -> content("concorde").getUuid());
+		String publishedNode = db().tx(() -> content("concorde").getUuid());
 		call(() -> client().moveNode(PROJECT_NAME, publishedNode, newsFolderUuid), BAD_REQUEST, "node_error_parent_containers_not_published",
 				newsFolderUuid);
 	}
 
 	@Test
 	public void testPublishLanguage() {
-		String nodeUuid = db().noTx(() -> folder("2015").getUuid());
-		String releaseUuid = db().noTx(() -> release().getUuid());
+		String nodeUuid = db().tx(() -> folder("2015").getUuid());
+		String releaseUuid = db().tx(() -> release().getUuid());
 
 		// Only publish the test node. Take all children offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
@@ -326,7 +326,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishEmptyLanguage() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found", "de");
@@ -335,7 +335,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishLanguageForRelease() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -371,7 +371,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishLanguageNoPermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, PUBLISH_PERM);
@@ -382,21 +382,21 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishInOfflineContainer() {
-		String nodeUuid = db().noTx(() -> folder("2015").getUuid());
+		String nodeUuid = db().tx(() -> folder("2015").getUuid());
 
 		// 1. Take a node subtree offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 
 		// 2. Try to publish a node from within that subtree structure
-		String contentUuid = db().noTx(() -> content("news_2015").getUuid());
+		String contentUuid = db().tx(() -> content("news_2015").getUuid());
 		call(() -> client().publishNode(PROJECT_NAME, contentUuid), BAD_REQUEST, "node_error_parent_containers_not_published", nodeUuid);
 
 	}
 
 	@Test
 	public void testPublishRecursively() {
-		String nodeUuid = db().noTx(() -> project().getBaseNode().getUuid());
-		String contentUuid = db().noTx(() -> content("news_2015").getUuid());
+		String nodeUuid = db().tx(() -> project().getBaseNode().getUuid());
+		String contentUuid = db().tx(() -> content("news_2015").getUuid());
 
 		// 1. Check initial status
 		assertPublishStatus("Node should be published.", nodeUuid, true);
@@ -415,8 +415,8 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNoRecursion() {
-		String nodeUuid = db().noTx(() -> project().getBaseNode().getUuid());
-		String contentUuid = db().noTx(() -> content("news_2015").getUuid());
+		String nodeUuid = db().tx(() -> project().getBaseNode().getUuid());
+		String contentUuid = db().tx(() -> content("news_2015").getUuid());
 
 		// 1. Check initial status
 		assertPublishStatus("Node should be published.", nodeUuid, true);

@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -83,7 +84,7 @@ public class TrxTest extends AbstractMeshTest {
 
 	@Test
 	public void testMultiThreadedModifications() throws InterruptedException {
-		User user = db().noTx(() -> user());
+		User user = db().tx(() -> user());
 
 		Runnable task2 = () -> {
 			try (Tx tx = db().tx()) {
@@ -124,7 +125,7 @@ public class TrxTest extends AbstractMeshTest {
 	@Test(expected = RuntimeException.class)
 	public void testAsyncNoTrxWithError() throws Throwable {
 		CompletableFuture<Throwable> cf = new CompletableFuture<>();
-		db().operateNoTx(() -> {
+		db().operateTx(() -> {
 			throw new RuntimeException("error");
 		}).toBlocking().value();
 		assertEquals("error", cf.get().getMessage());
@@ -133,7 +134,7 @@ public class TrxTest extends AbstractMeshTest {
 
 	@Test
 	public void testAsyncNoTrxNestedAsync() throws InterruptedException, ExecutionException {
-		String result = db().operateNoTx(() -> {
+		String result = db().operateTx(() -> {
 			TestUtils.run(() -> {
 				TestUtils.sleep(1000);
 			});
@@ -144,7 +145,7 @@ public class TrxTest extends AbstractMeshTest {
 
 	@Test
 	public void testAsyncNoTrxSuccess() throws Throwable {
-		String result = db().operateNoTx(() -> {
+		String result = db().operateTx(() -> {
 			return Single.just("OK");
 		}).toBlocking().value();
 		assertEquals("OK", result);

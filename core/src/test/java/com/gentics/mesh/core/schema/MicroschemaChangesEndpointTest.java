@@ -12,6 +12,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -28,7 +29,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -39,7 +39,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveField() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// 1. Setup eventbus bridge latch
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
@@ -105,7 +105,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddField() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// 1. Setup changes
 			MicroschemaContainer container = microschemaContainer("vcard");
 			MicroschemaContainerVersion currentVersion = container.getLatestVersion();
@@ -134,7 +134,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateName() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String name = "new_name";
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			MicroschemaContainerVersion currentVersion = vcardContainer.getLatestVersion();
@@ -163,7 +163,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateWithConflictingName() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String name = "captionedImage";
 			String originalSchemaName = "vcard";
 			MicroschemaContainer microschema = microschemaContainers().get(originalSchemaName);

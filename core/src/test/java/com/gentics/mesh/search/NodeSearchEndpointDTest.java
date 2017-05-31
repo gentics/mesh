@@ -17,6 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -37,7 +38,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -55,7 +55,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfMicronodesResolveLinks() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			addMicronodeListField();
 			recreateIndices();
 		}
@@ -74,7 +74,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 					assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 					for (NodeResponse nodeResponse : response.getData()) {
 						assertNotNull("Returned node must not be null", nodeResponse);
-						assertEquals("Check result uuid", db().noTx(() -> content("concorde").getUuid()), nodeResponse.getUuid());
+						assertEquals("Check result uuid", db().tx(() -> content("concorde").getUuid()), nodeResponse.getUuid());
 					}
 				} else {
 					assertEquals("Check returned search results", 0, response.getData().size());
@@ -87,7 +87,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testTrigramSearchQuery() throws Exception {
 		// 1. Index all existing contents
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			recreateIndices();
 		}
 
@@ -107,12 +107,12 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testSchemaMigrationNodeSearchTest() throws Exception {
 
 		// 1. Index all existing contents
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			recreateIndices();
 		}
 
 		// 2. Assert that the the en, de variant of the node could be found in the search index
-		String uuid = db().noTx(() -> content("concorde").getUuid());
+		String uuid = db().tx(() -> content("concorde").getUuid());
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		NodeListResponse response = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid), new PagingParametersImpl().setPage(1).setPerPage(10),
@@ -122,7 +122,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		// 3. Prepare an updated schema
 		String schemaUuid;
 		SchemaUpdateRequest schema;
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node concorde = content("concorde");
 			SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 			schema = JsonUtil.readValue(schemaVersion.getJson(), SchemaUpdateRequest.class);
@@ -139,7 +139,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 5. Assign the new schema version to the release
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
-		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, db().noTx(() -> project().getLatestRelease().getUuid()),
+		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, db().tx(() -> project().getLatestRelease().getUuid()),
 				new SchemaReference().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
 
 		// Wait for migration to complete
@@ -156,7 +156,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchManyNodesWithMicronodes() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			int numAdditionalNodes = 99;
 			addMicronodeField();
@@ -195,11 +195,11 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	 */
 	@Test
 	public void testTagCount() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			recreateIndices();
 		}
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = content("concorde");
 			int previousTagCount = node.getTags(project().getLatestRelease()).size();
 			// Create tags:
@@ -223,11 +223,11 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testGlobalNodeSearch() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			recreateIndices();
 		}
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse oldNode = call(
 					() -> client().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParametersImpl().draft()));
 
@@ -261,7 +261,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testTakeDraftOffline() throws Exception {
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			recreateIndices();
 		}
 
@@ -289,7 +289,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
 		// 5. Invoke the take offline action on the project base node
-		String baseUuid = db().noTx(() -> project().getBaseNode().getUuid());
+		String baseUuid = db().tx(() -> project().getBaseNode().getUuid());
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseUuid, new PublishParametersImpl().setRecursive(true)));
 
 		// 6. The node should still be found because it is still a draft
@@ -304,7 +304,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testGlobalPublishedNodeSearch() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			recreateIndices();
 		}
 
@@ -335,7 +335,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Global search result after publishing").usingElementComparatorOnFields("uuid").containsOnly(newNode);
 
 		// 6. Invoke the take offline action on the project base node
-		String baseUuid = db().noTx(() -> project().getBaseNode().getUuid());
+		String baseUuid = db().tx(() -> project().getBaseNode().getUuid());
 		call(() -> client().takeNodeOffline(PROJECT_NAME, baseUuid, new PublishParametersImpl().setRecursive(true)));
 
 		// 7. search globally for published version and assert that the node could be found

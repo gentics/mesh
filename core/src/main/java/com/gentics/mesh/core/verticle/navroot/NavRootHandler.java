@@ -39,7 +39,7 @@ public class NavRootHandler {
 		final String decodedPath = "/" + path;
 		MeshAuthUser requestUser = ac.getUser();
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			Path nodePath = webrootService.findByProjectPath(ac, decodedPath);
 			PathSegment lastSegment = nodePath.getLast();
 

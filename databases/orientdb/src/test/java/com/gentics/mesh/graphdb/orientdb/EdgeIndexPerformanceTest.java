@@ -18,8 +18,8 @@ import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 
@@ -42,7 +42,7 @@ public class EdgeIndexPerformanceTest {
 	}
 
 	private static void setupTypesAndIndices(OrientGraphFactory factory2) {
-		OrientGraphNoTx g = factory.getNoTx();
+		OrientGraph g = factory.getTx();
 		try {
 			// g.setUseClassForEdgeLabel(true);
 			g.setUseLightweightEdges(false);
@@ -52,7 +52,7 @@ public class EdgeIndexPerformanceTest {
 		}
 
 		try {
-			g = factory.getNoTx();
+			g = factory.getTx();
 
 			OrientEdgeType e = g.createEdgeType("HAS_ITEM");
 			e.createProperty("in", OType.LINK);
@@ -75,7 +75,7 @@ public class EdgeIndexPerformanceTest {
 	@Test
 	public void testVertexMigration() {
 		// Create vertex without type
-		OrientGraphNoTx g = factory.getNoTx();
+		OrientGraph g = factory.getTx();
 		OrientVertex v;
 		try {
 			v = g.addVertex(null);
@@ -93,7 +93,7 @@ public class EdgeIndexPerformanceTest {
 		}
 
 		// Search for vertex
-		g = factory.getNoTx();
+		g = factory.getTx();
 		System.out.println("Size: " + g.getVertexType("item").getClassIndex("item").getSize());
 		try {
 			Iterable<Vertex> vertices = g.getVertices("item", new String[] { "name" }, new Object[] { "extraName" });
@@ -105,7 +105,7 @@ public class EdgeIndexPerformanceTest {
 	}
 
 	private static List<OrientVertex> createData(OrientVertex root, OrientGraphFactory factory, int count) {
-		OrientGraphNoTx g = factory.getNoTx();
+		OrientGraph g = factory.getTx();
 		try {
 			System.out.println("Creating {" + count + "} items.");
 			List<OrientVertex> items = new ArrayList<>();
@@ -122,7 +122,7 @@ public class EdgeIndexPerformanceTest {
 	}
 
 	private static OrientVertex createRoot(OrientGraphFactory factory) {
-		OrientGraphNoTx g = factory.getNoTx();
+		OrientGraph g = factory.getTx();
 		try {
 			OrientVertex root = g.addVertex("class:root");
 			root.setProperty("name", "root vertex");
@@ -134,7 +134,7 @@ public class EdgeIndexPerformanceTest {
 
 	@Test
 	public void testVertexIndex() {
-		OrientGraphNoTx g = factory.getNoTx();
+		OrientGraph g = factory.getTx();
 		System.out.println("Size: " + g.getVertexType("item").getClassIndex("item").getSize());
 
 		try {
@@ -142,7 +142,7 @@ public class EdgeIndexPerformanceTest {
 			for (int i = 0; i < nChecks; i++) {
 				int randomDocumentId = (int) (Math.random() * nDocuments);
 				Iterable<Vertex> vertices = g.getVertices("item", new String[] { "name" }, new Object[] { "item_" + randomDocumentId });
-				//Iterable<Vertex> vertices = g.getVertices("item.name", "item_" + randomDocumentId);
+				// Iterable<Vertex> vertices = g.getVertices("item.name", "item_" + randomDocumentId);
 				assertTrue(vertices.iterator().hasNext());
 			}
 			long dur = System.currentTimeMillis() - start;
@@ -156,7 +156,7 @@ public class EdgeIndexPerformanceTest {
 
 	@Test
 	public void testEdgeIndexViaGraphGetEdges() throws Exception {
-		OrientGraphNoTx g = factory.getNoTx();
+		OrientGraph g = factory.getTx();
 		try {
 			for (OIndex<?> index : g.getRawGraph().getMetadata().getIndexManager().getIndexes()) {
 
@@ -171,7 +171,7 @@ public class EdgeIndexPerformanceTest {
 		double total = 0;
 		int nRuns = 20;
 		for (int e = 0; e < nRuns; e++) {
-			g = factory.getNoTx();
+			g = factory.getTx();
 			try {
 				long start = System.currentTimeMillis();
 				for (int i = 0; i < nChecks; i++) {
@@ -193,7 +193,7 @@ public class EdgeIndexPerformanceTest {
 
 	@Test
 	public void testEdgeIndexViaRootGetEdgesWithoutTarget() throws Exception {
-		OrientGraphNoTx g = factory.getNoTx();
+		OrientGraph g = factory.getTx();
 		try {
 			long start = System.currentTimeMillis();
 			for (int i = 0; i < nChecks; i++) {
@@ -218,7 +218,7 @@ public class EdgeIndexPerformanceTest {
 
 	@Test
 	public void testEdgeIndexViaRootGetEdges() throws Exception {
-		OrientGraphNoTx g = factory.getNoTx();
+		OrientGraph g = factory.getTx();
 		try {
 			long start = System.currentTimeMillis();
 			for (int i = 0; i < nChecks; i++) {
@@ -236,7 +236,7 @@ public class EdgeIndexPerformanceTest {
 
 	@Test
 	public void testEdgeIndexViaQuery() throws Exception {
-		OrientGraphNoTx g = factory.getNoTx();
+		OrientGraph g = factory.getTx();
 		try {
 			System.out.println("Checking edge");
 			long start = System.currentTimeMillis();

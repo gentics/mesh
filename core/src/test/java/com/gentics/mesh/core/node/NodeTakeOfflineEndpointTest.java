@@ -14,13 +14,13 @@ import java.util.Arrays;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -32,7 +32,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTakeNodeOffline() {
 
-		String nodeUuid = db().noTx(() -> {
+		String nodeUuid = db().tx(() -> {
 			Node node = folder("products");
 			String uuid = node.getUuid();
 
@@ -43,7 +43,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		});
 
 		// assert that the containers have both webrootpath properties set
-		try (NoTx noTx1 = db().noTx()) {
+		try (Tx tx1 = db().tx()) {
 			for (String language : Arrays.asList("en", "de")) {
 				for (String property : Arrays.asList(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY,
 						NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY)) {
@@ -57,7 +57,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en").isNotPublished("de");
 
 		// assert that the containers have only the draft webrootpath properties set
-		try (NoTx noTx2 = db().noTx()) {
+		try (Tx tx2 = db().tx()) {
 			for (String language : Arrays.asList("en", "de")) {
 				String property = NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY;
 				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
@@ -74,7 +74,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeNodeLanguageOffline() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -103,7 +103,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeNodeOfflineNoPermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -119,7 +119,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeNodeLanguageOfflineNoPermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -135,7 +135,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeOfflineNodeOffline() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -151,7 +151,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeOfflineNodeLanguageOffline() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -172,7 +172,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeOfflineEmptyLanguage() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -182,7 +182,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeOfflineWithOnlineChild() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node news = folder("news");
 			Node news2015 = folder("2015");
 
@@ -195,8 +195,8 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeOfflineLastLanguageWithOnlineChild() {
-		String newsUuid = db().noTx(() -> folder("news").getUuid());
-		String news2015Uuid = db().noTx(() -> folder("2015").getUuid());
+		String newsUuid = db().tx(() -> folder("news").getUuid());
+		String news2015Uuid = db().tx(() -> folder("2015").getUuid());
 
 		call(() -> client().publishNode(PROJECT_NAME, newsUuid));
 		call(() -> client().publishNode(PROJECT_NAME, news2015Uuid));
@@ -210,7 +210,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeOfflineForRelease() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -248,7 +248,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	public void testTakeNodeOfflineConsistency() {
 
 		//1. Publish /news  & /news/2015
-		db().noTx(() -> {
+		db().tx(() -> {
 			System.out.println(project().getBaseNode().getUuid());
 			System.out.println(folder("news").getUuid());
 			System.out.println(folder("2015").getUuid());
@@ -256,7 +256,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		});
 
 		// 2. Take folder /news offline - This should fail since folder /news/2015 is still published
-		db().noTx(() -> {
+		db().tx(() -> {
 			// 1. Take folder offline
 			Node node = folder("news");
 			call(() -> client().takeNodeOffline(PROJECT_NAME, node.getUuid()), BAD_REQUEST, "node_error_children_containers_still_published");
@@ -264,7 +264,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		});
 
 		//3. Take sub nodes offline
-		db().noTx(() -> {
+		db().tx(() -> {
 			call(() -> client().takeNodeOffline(PROJECT_NAME, content("news overview").getUuid(), new PublishParametersImpl().setRecursive(false)));
 			call(() -> client().takeNodeOffline(PROJECT_NAME, folder("2015").getUuid(), new PublishParametersImpl().setRecursive(true)));
 			call(() -> client().takeNodeOffline(PROJECT_NAME, folder("2014").getUuid(), new PublishParametersImpl().setRecursive(true)));
@@ -272,7 +272,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		});
 
 		// 4. Take folder /news offline - It should work since all child nodes have been taken offline
-		db().noTx(() -> {
+		db().tx(() -> {
 			// 1. Take folder offline
 			Node node = folder("news");
 			call(() -> client().takeNodeOffline(PROJECT_NAME, node.getUuid()));

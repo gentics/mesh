@@ -7,8 +7,8 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -22,7 +22,7 @@ public class MocksTest extends AbstractMeshTest {
 	@Test
 	public void testMockParameters() throws Exception {
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			String query = "lang=de,en";
 			RoutingContext rc = mockRoutingContext(query);
 			assertEquals("The query did not match up.", query, rc.request().query());

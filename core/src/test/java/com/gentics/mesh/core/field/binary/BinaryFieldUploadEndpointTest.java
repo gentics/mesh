@@ -21,6 +21,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -30,7 +31,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -51,7 +51,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 			role().revokePermissions(node, UPDATE_PERM);
@@ -68,7 +68,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			String whitelistRegex = "image/.*";
 			prepareSchema(node, whitelistRegex, "binary");
@@ -83,7 +83,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
@@ -122,7 +122,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 
 			// Add a schema called nonBinary
@@ -140,7 +140,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 
 			call(() -> uploadRandomData(node, "en", "nonBinary", binaryLen, contentType, fileName), BAD_REQUEST, "error_schema_definition_not_found",
@@ -160,7 +160,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String fieldKey = "image";
 		String fileName = "somefile.png";
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", fieldKey);
 
@@ -205,7 +205,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
@@ -216,7 +216,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPathSegmentation() throws IOException {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			node.setUuid(UUIDUtil.randomUUID());
 
@@ -244,7 +244,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
@@ -282,7 +282,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String fileName = "somefile.dat";
 
 		// 1. Prepare the folder schema
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node folder2014 = folder("2014");
 			prepareSchema(folder2014, "", "binary");
 
@@ -293,16 +293,16 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 
 		// 2. Update node a
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// upload file to folder 2014
 			Node folder2014 = folder("2014");
 			call(() -> uploadRandomData(folder2014, "en", "binary", binaryLen, contentType, fileName));
 		}
 
-		call(() -> client().findNodeByUuid(PROJECT_NAME, db().noTx(() -> folder("2014").getUuid()),
+		call(() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> folder("2014").getUuid()),
 				new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// try to upload same file to folder 2015
 			Node folder2015 = folder("2015");
 			call(() -> uploadRandomData(folder2015, "en", "binary", binaryLen, contentType, fileName), CONFLICT,
@@ -317,7 +317,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String fieldName = "image";
 		String fileName = "somefile.png";
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", fieldName);
 

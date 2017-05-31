@@ -9,9 +9,9 @@ import static org.junit.Assert.assertEquals;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -25,7 +25,7 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 
 	@Test
 	public void testSearchProject() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			recreateIndices();
 		}
 
@@ -55,7 +55,7 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 
 		final String newName = "newproject";
 		ProjectResponse project = createProject(newName);
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			MeshAssert.assertElement(boot().projectRoot(), project.getUuid(), true);
 		}
 		MeshResponse<ProjectListResponse> future = client()

@@ -13,6 +13,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -66,7 +66,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNoDiff() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Microschema request = getMicroschema();
 			MeshResponse<SchemaChangesListModel> future = client().diffMicroschema(microschema.getUuid(), request).invoke();
@@ -80,7 +80,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Microschema request = getMicroschema();
 			StringFieldSchema stringField = FieldUtil.createStringFieldSchema("someField");
@@ -101,7 +101,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUnsupportedField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Microschema request = getMicroschema();
 			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binaryField");
@@ -115,7 +115,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Microschema request = getMicroschema();
 			request.removeField("postcode");

@@ -21,7 +21,7 @@ public class RoleSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		String roleName = "rolename42a";
-		createRole(roleName, db().noTx(() -> group().getUuid()));
+		createRole(roleName, db().tx(() -> group().getUuid()));
 
 		RoleListResponse list = call(() -> client().searchRoles(getSimpleTermQuery("name.raw", roleName)));
 		assertEquals(1, list.getData().size());
@@ -31,7 +31,7 @@ public class RoleSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		String roleName = "rolename42a";
-		RoleResponse role = createRole(roleName, db().noTx(() -> group().getUuid()));
+		RoleResponse role = createRole(roleName, db().tx(() -> group().getUuid()));
 
 		RoleListResponse list = call(() -> client().searchRoles(getSimpleTermQuery("name.raw", roleName)));
 		assertEquals(1, list.getData().size());
@@ -47,7 +47,7 @@ public class RoleSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		String roleName = "rolename42a";
-		RoleResponse role = createRole(roleName, db().noTx(() -> group().getUuid()));
+		RoleResponse role = createRole(roleName, db().tx(() -> group().getUuid()));
 
 		RoleListResponse list = call(() -> client().searchRoles(getSimpleTermQuery("name.raw", roleName)));
 		assertEquals(1, list.getData().size());

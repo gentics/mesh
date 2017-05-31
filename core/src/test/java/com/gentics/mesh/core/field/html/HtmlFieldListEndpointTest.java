@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.HtmlGraphFieldListImpl;
@@ -22,7 +23,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.list.impl.DateFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -37,7 +37,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -52,7 +52,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -64,7 +64,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -76,7 +76,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			assertThat(response.getFields().getHtmlFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
 		}
@@ -85,7 +85,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -102,7 +102,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			// 1. Update an existing node
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
@@ -120,7 +120,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testHtmlList() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -135,7 +135,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("2015");
 
 			List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
@@ -176,7 +176,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			HtmlFieldListImpl list = new HtmlFieldListImpl();
 			list.add("A");
 			list.add("B");
@@ -204,7 +204,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			HtmlFieldListImpl list = new HtmlFieldListImpl();
 			list.add("A");
 			list.add("B");

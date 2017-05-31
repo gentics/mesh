@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -31,7 +32,6 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -44,7 +44,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadChildrenOfBaseNode() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			MeshResponse<NodeListResponse> future = client().findNodeChildren(PROJECT_NAME, project().getBaseNode().getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
@@ -53,7 +53,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeHierarchy() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node baseNode = project().getBaseNode();
 			String parentNodeUuid = baseNode.getUuid();
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().draft()));
@@ -87,7 +87,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -106,7 +106,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildrenPermissions() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -128,7 +128,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren2() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = content("concorde");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -142,7 +142,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeChildren() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -159,7 +159,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeChildrenWithoutChildPermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -177,7 +177,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeChildrenWithNoPermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -193,7 +193,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadReleaseChildren() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			Node node = folder("news");
 			Node firstChild = node.getChildren().get(0);
 			int childrenSize = node.getChildren().size();
@@ -227,7 +227,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testFilterByLanguage() {
-		String uuid = db().noTx(() -> folder("2015").getUuid());
+		String uuid = db().tx(() -> folder("2015").getUuid());
 		
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("de");
