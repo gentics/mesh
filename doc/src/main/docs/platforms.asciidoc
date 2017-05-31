@@ -1,4 +1,4 @@
-= Plattforms
+= Platforms
 
 ==  JAVA REST client
 

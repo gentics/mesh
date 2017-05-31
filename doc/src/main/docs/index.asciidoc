@@ -71,4 +71,4 @@ Accept: application/json
 == link:references.html[References]
 == link:administration-guide.html[Administration Guide]
 == link:user-interface.html[Gentics Mesh User Interface]
-== link:plattforms.html[Plattforms]
+== link:platforms.html[Platforms]
