@@ -223,7 +223,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		MeshRequest<UserResponse> userRequest = client().findUserByUuid(uuid);
 		MeshResponse<UserResponse> userResponse = userRequest.invoke();
 		latchFor(userResponse);
-		assertThat(userResponse.getResponse().cookies()).as("Requests using the api key should not yield a new cookie").isEmpty();
+		assertThat(userResponse.getRawResponse().cookies()).as("Requests using the api key should not yield a new cookie").isEmpty();
 
 		// Now invalidate the api key by generating a new one
 		String oldKey = response.getToken();
@@ -381,11 +381,12 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		int intialUserCount = users().size();
+		final int intialUserCount = users().size();
+		final int nUsers = 20;
+
+		int foundUsers;
 		try (Tx tx = db().tx()) {
 			UserRoot root = meshRoot().getUserRoot();
-
-			int nUsers = 20;
 			for (int i = 0; i < nUsers; i++) {
 				String username = "testuser_" + i;
 				User user = root.create(username, user());
@@ -395,76 +396,76 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				user.setEmailAddress("should_be_listed");
 				role().grantPermissions(user, READ_PERM);
 			}
-
 			User invisibleUser = root.create("should_not_be_listed", user());
 			invisibleUser.setLastname("should_not_be_listed");
 			invisibleUser.setFirstname("should_not_be_listed");
 			invisibleUser.setEmailAddress("should_not_be_listed");
 			invisibleUser.addGroup(group());
-
-			assertEquals("We did not find the expected count of users attached to the user root vertex.", intialUserCount + nUsers + 1,
-					root.findAll().size());
-
-			// Test default paging parameters
-			MeshResponse<UserListResponse> future = client().findUsers().invoke();
-			latchFor(future);
-			assertSuccess(future);
-			ListResponse<UserResponse> restResponse = future.result();
-			assertEquals(25, restResponse.getMetainfo().getPerPage());
-			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-			// Admin User + Guest User + Dummy User = 3
-			assertEquals(intialUserCount + nUsers, restResponse.getMetainfo().getTotalCount());
-			assertEquals(intialUserCount + nUsers, restResponse.getData().size());
-
-			int perPage = 2;
-			int totalUsers = intialUserCount + nUsers;
-			int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
-			future = client().findUsers(new PagingParametersImpl(3, perPage)).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			restResponse = future.result();
-
-			assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
-			assertEquals("We did not find the expected page in the list response.", 3, restResponse.getMetainfo().getCurrentPage());
-			assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + perPage + "}",
-					totalPages, restResponse.getMetainfo().getPageCount());
-			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-			assertEquals("The total amount of items does not match the expected one", totalUsers, restResponse.getMetainfo().getTotalCount());
-
-			perPage = 11;
-
-			List<UserResponse> allUsers = new ArrayList<>();
-			for (int page = 1; page < totalPages; page++) {
-				MeshResponse<UserListResponse> pageFuture = client().findUsers(new PagingParametersImpl(page, perPage)).invoke();
-				latchFor(pageFuture);
-				assertSuccess(pageFuture);
-				restResponse = pageFuture.result();
-				allUsers.addAll(restResponse.getData());
-			}
-			assertEquals("Somehow not all users were loaded when loading all pages.", totalUsers, allUsers.size());
-
-			// Verify that the invisible is not part of the response
-			final String extra3Username = "should_not_be_listed";
-			List<UserResponse> filteredUserList = allUsers.parallelStream().filter(restUser -> restUser.getUsername().equals(extra3Username))
-					.collect(Collectors.toList());
-			assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
-
-			future = client().findUsers(new PagingParametersImpl(1, -1)).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
-
-			future = client().findUsers(new PagingParametersImpl(4242, 25)).invoke();
-			latchFor(future);
-			assertSuccess(future);
-
-			assertEquals("The result list should not contain any item since the page parameter is out of bounds", 0,
-					future.result().getData().size());
-			assertEquals("The requested page should be set in the response but it was not", 4242, future.result().getMetainfo().getCurrentPage());
-			assertEquals("The page count value was not correct.", 1, future.result().getMetainfo().getPageCount());
-			assertEquals("We did not find the correct total count value in the response", nUsers + intialUserCount,
-					future.result().getMetainfo().getTotalCount());
-			assertEquals(25, future.result().getMetainfo().getPerPage());
+			foundUsers = root.findAll().size();
+			tx.success();
 		}
+
+		assertEquals("We did not find the expected count of users attached to the user root vertex.", intialUserCount + nUsers + 1, foundUsers);
+
+		// Test default paging parameters
+		MeshResponse<UserListResponse> future = client().findUsers().invoke();
+		latchFor(future);
+		assertSuccess(future);
+		ListResponse<UserResponse> restResponse = future.result();
+		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+		// Admin User + Guest User + Dummy User = 3
+		assertEquals(intialUserCount + nUsers, restResponse.getMetainfo().getTotalCount());
+		assertEquals(intialUserCount + nUsers, restResponse.getData().size());
+
+		int perPage = 2;
+		int totalUsers = intialUserCount + nUsers;
+		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
+		future = client().findUsers(new PagingParametersImpl(3, perPage)).invoke();
+		latchFor(future);
+		assertSuccess(future);
+		restResponse = future.result();
+
+		assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
+		assertEquals("We did not find the expected page in the list response.", 3, restResponse.getMetainfo().getCurrentPage());
+		assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + perPage + "}",
+				totalPages, restResponse.getMetainfo().getPageCount());
+		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		assertEquals("The total amount of items does not match the expected one", totalUsers, restResponse.getMetainfo().getTotalCount());
+
+		perPage = 11;
+
+		List<UserResponse> allUsers = new ArrayList<>();
+		for (int page = 1; page < totalPages; page++) {
+			MeshResponse<UserListResponse> pageFuture = client().findUsers(new PagingParametersImpl(page, perPage)).invoke();
+			latchFor(pageFuture);
+			assertSuccess(pageFuture);
+			restResponse = pageFuture.result();
+			allUsers.addAll(restResponse.getData());
+		}
+		assertEquals("Somehow not all users were loaded when loading all pages.", totalUsers, allUsers.size());
+
+		// Verify that the invisible is not part of the response
+		final String extra3Username = "should_not_be_listed";
+		List<UserResponse> filteredUserList = allUsers.parallelStream().filter(restUser -> restUser.getUsername().equals(extra3Username))
+				.collect(Collectors.toList());
+		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
+
+		future = client().findUsers(new PagingParametersImpl(1, -1)).invoke();
+		latchFor(future);
+		expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
+
+		future = client().findUsers(new PagingParametersImpl(4242, 25)).invoke();
+		latchFor(future);
+		assertSuccess(future);
+
+		assertEquals("The result list should not contain any item since the page parameter is out of bounds", 0, future.result().getData().size());
+		assertEquals("The requested page should be set in the response but it was not", 4242, future.result().getMetainfo().getCurrentPage());
+		assertEquals("The page count value was not correct.", 1, future.result().getMetainfo().getPageCount());
+		assertEquals("We did not find the correct total count value in the response", nUsers + intialUserCount,
+				future.result().getMetainfo().getTotalCount());
+		assertEquals(25, future.result().getMetainfo().getPerPage());
+
 	}
 
 	@Test
@@ -1280,8 +1281,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			meshRoot().getUserRoot().reload();
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
-			assertEquals(CREATED.code(), response.getResponse().statusCode());
-			String location = response.getResponse().getHeader(HttpHeaders.LOCATION);
+			assertEquals(CREATED.code(), response.getRawResponse().statusCode());
+			String location = response.getRawResponse().getHeader(HttpHeaders.LOCATION);
 			assertEquals("Location header value did not match", "http://localhost:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
 	}
@@ -1303,8 +1304,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			meshRoot().getUserRoot().reload();
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
-			assertEquals(CREATED.code(), response.getResponse().statusCode());
-			String location = response.getResponse().getHeader(HttpHeaders.LOCATION);
+			assertEquals(CREATED.code(), response.getRawResponse().statusCode());
+			String location = response.getRawResponse().getHeader(HttpHeaders.LOCATION);
 			assertEquals("Location header value did not match", "http://jotschi.de:" + port() + "/api/v1/users/" + user.getUuid(), location);
 		}
 	}

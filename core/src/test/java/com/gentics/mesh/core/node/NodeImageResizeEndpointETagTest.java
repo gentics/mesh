@@ -3,6 +3,7 @@ package com.gentics.mesh.core.node;
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 
@@ -14,12 +15,12 @@ import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
-public class NodeImageResizeEndpointETagTest extends AbstractETagTest {
+public class NodeImageResizeEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testImageResize() throws Exception {
@@ -35,13 +36,13 @@ public class NodeImageResizeEndpointETagTest extends AbstractETagTest {
 			MeshResponse<NodeDownloadResponse> response = client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params).invoke();
 			latchFor(response);
 			assertSuccess(response);
-			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
+			String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));
 
-			expect304(client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), etag, false);
+			callETag(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), etag, false, 304);
 
 			params.setHeight(103);
-			String newETag = expectNo304(client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), etag, false);
-			expect304(client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), newETag, false);
+			String newETag = callETag(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), etag, false, 200);
+			callETag(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), newETag, false, 304);
 
 		}
 	}

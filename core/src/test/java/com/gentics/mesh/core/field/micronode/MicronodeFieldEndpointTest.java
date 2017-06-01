@@ -58,6 +58,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
 			schema.addField(microschemaFieldSchema);
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			tx.success();
 		}
 	}
 

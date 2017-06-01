@@ -47,6 +47,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 			// numberFieldSchema.setMax(1000);
 			schema.addField(numberFieldSchema);
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			tx.success();
 		}
 	}
 

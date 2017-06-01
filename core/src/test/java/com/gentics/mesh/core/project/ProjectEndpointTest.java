@@ -11,6 +11,7 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
@@ -163,6 +164,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		try (Tx tx = db().tx()) {
 			role().revokePermissions(meshRoot().getProjectRoot(), CREATE_PERM);
+			tx.success();
 		}
 
 		String projectRootUuid = db().tx(() -> meshRoot().getProjectRoot().getUuid());
@@ -177,6 +179,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 			role().revokePermissions(meshRoot(), CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PERM);
+			tx.success();
 		}
 
 		final String name = "test12345";
@@ -204,75 +207,75 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
+		final int nProjects = 142;
+		final String noPermProjectName = "no_perm_project";
 		try (Tx tx = db().tx()) {
 			role().grantPermissions(project(), READ_PERM);
+			tx.success();
 		}
 		try (Tx tx = db().tx()) {
-			final int nProjects = 142;
-			String noPermProjectName;
 			for (int i = 0; i < nProjects; i++) {
 				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, user(), schemaContainer("folder").getLatestVersion());
 				extraProject.setBaseNode(project().getBaseNode());
 				role().grantPermissions(extraProject, READ_PERM);
 			}
-			Project noPermProject = meshRoot().getProjectRoot().create("no_perm_project", user(), schemaContainer("folder").getLatestVersion());
-			noPermProjectName = noPermProject.getName();
+			meshRoot().getProjectRoot().create(noPermProjectName, user(), schemaContainer("folder").getLatestVersion());
 
 			// Don't grant permissions to no perm project
-
-			// Test default paging parameters
-			MeshResponse<ProjectListResponse> future = client().findProjects(new PagingParametersImpl()).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			ProjectListResponse restResponse = future.result();
-			assertEquals(25, restResponse.getMetainfo().getPerPage());
-			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-			assertEquals(25, restResponse.getData().size());
-
-			int perPage = 11;
-			future = client().findProjects(new PagingParametersImpl(3, perPage)).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			restResponse = future.result();
-			assertEquals(perPage, restResponse.getData().size());
-
-			// Extra projects + dummy project
-			int totalProjects = nProjects + 1;
-			int totalPages = (int) Math.ceil(totalProjects / (double) perPage);
-			assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
-			assertEquals(3, restResponse.getMetainfo().getCurrentPage());
-			assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
-			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-			assertEquals(totalProjects, restResponse.getMetainfo().getTotalCount());
-
-			List<ProjectResponse> allProjects = new ArrayList<>();
-			for (int page = 1; page <= totalPages; page++) {
-				final int currentPage = page;
-				restResponse = call(() -> client().findProjects(new PagingParametersImpl(currentPage, perPage)));
-				allProjects.addAll(restResponse.getData());
-			}
-			assertEquals("Somehow not all projects were loaded when loading all pages.", totalProjects, allProjects.size());
-
-			// Verify that the no perm project is not part of the response
-			List<ProjectResponse> filteredProjectList = allProjects.parallelStream()
-					.filter(restProject -> restProject.getName().equals(noPermProjectName)).collect(Collectors.toList());
-			assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
-
-			call(() -> client().findProjects(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
-
-			call(() -> client().findProjects(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
-
-			ProjectListResponse listResponse = call(() -> client().findProjects(new PagingParametersImpl(4242, 25)));
-
-			String response = JsonUtil.toJson(listResponse);
-			assertNotNull(response);
-
-			assertEquals(4242, listResponse.getMetainfo().getCurrentPage());
-			assertEquals(25, listResponse.getMetainfo().getPerPage());
-			assertEquals(143, listResponse.getMetainfo().getTotalCount());
-			assertEquals(6, listResponse.getMetainfo().getPageCount());
-			assertEquals(0, listResponse.getData().size());
+			tx.success();
 		}
+		// Test default paging parameters
+		MeshResponse<ProjectListResponse> future = client().findProjects(new PagingParametersImpl()).invoke();
+		latchFor(future);
+		assertSuccess(future);
+		ProjectListResponse restResponse = future.result();
+		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(25, restResponse.getData().size());
+
+		int perPage = 11;
+		future = client().findProjects(new PagingParametersImpl(3, perPage)).invoke();
+		latchFor(future);
+		assertSuccess(future);
+		restResponse = future.result();
+		assertEquals(perPage, restResponse.getData().size());
+
+		// Extra projects + dummy project
+		int totalProjects = nProjects + 1;
+		int totalPages = (int) Math.ceil(totalProjects / (double) perPage);
+		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		assertEquals(3, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(totalPages, restResponse.getMetainfo().getPageCount());
+		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		assertEquals(totalProjects, restResponse.getMetainfo().getTotalCount());
+
+		List<ProjectResponse> allProjects = new ArrayList<>();
+		for (int page = 1; page <= totalPages; page++) {
+			final int currentPage = page;
+			restResponse = call(() -> client().findProjects(new PagingParametersImpl(currentPage, perPage)));
+			allProjects.addAll(restResponse.getData());
+		}
+		assertEquals("Somehow not all projects were loaded when loading all pages.", totalProjects, allProjects.size());
+
+		// Verify that the no perm project is not part of the response
+		List<ProjectResponse> filteredProjectList = allProjects.parallelStream()
+				.filter(restProject -> restProject.getName().equals(noPermProjectName)).collect(Collectors.toList());
+		assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
+
+		call(() -> client().findProjects(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+
+		call(() -> client().findProjects(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
+
+		ProjectListResponse listResponse = call(() -> client().findProjects(new PagingParametersImpl(4242, 25)));
+
+		String response = JsonUtil.toJson(listResponse);
+		assertNotNull(response);
+
+		assertEquals(4242, listResponse.getMetainfo().getCurrentPage());
+		assertEquals(25, listResponse.getMetainfo().getPerPage());
+		assertEquals(143, listResponse.getMetainfo().getTotalCount());
+		assertEquals(6, listResponse.getMetainfo().getPageCount());
+		assertEquals(0, listResponse.getData().size());
 	}
 
 	@Test
@@ -351,48 +354,46 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		try (Tx tx = db().tx()) {
-			Project project = project();
-			String uuid = project.getUuid();
-			assertNotNull("The UUID of the project must not be null.", project.getUuid());
-			role().revokePermissions(project, READ_PERM);
-
-			call(() -> client().findProjectByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid);
+			role().revokePermissions(project(), READ_PERM);
+			tx.success();
 		}
+		call(() -> client().findProjectByUuid(projectUuid()), FORBIDDEN, "error_missing_perm", projectUuid());
 	}
 
 	// Update Tests
 
 	@Test
 	public void testUpdateWithBogusNames() {
+		String uuid = projectUuid();
+
 		try (Tx tx = db().tx()) {
 			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", user(), schemaContainer("folder").getLatestVersion());
+			tx.success();
+		}
+		ProjectUpdateRequest request = new ProjectUpdateRequest();
+		request.setName("Test234");
+		call(() -> client().updateProject(uuid, request), CONFLICT, "project_conflicting_name");
 
-			String uuid = project().getUuid();
-			ProjectUpdateRequest request = new ProjectUpdateRequest();
-			request.setName("Test234");
-			call(() -> client().updateProject(uuid, request), CONFLICT, "project_conflicting_name");
+		// Test slashes
+		request.setName("Bla/blub");
+		call(() -> client().updateProject(uuid, request));
+		call(() -> client().findNodes(request.getName()));
 
-			// Test slashes
-			request.setName("Bla/blub");
-			call(() -> client().updateProject(uuid, request));
-			call(() -> client().findNodes(request.getName()));
+		try (Tx tx = db().tx()) {
 			project().reload();
 			assertEquals(request.getName(), project().getName());
-
 		}
+
 	}
 
 	@Test
 	public void testUpdateWithEndpointName() {
 		List<String> names = Arrays.asList("users", "groups", "projects");
-		try (Tx tx = db().tx()) {
-			for (String name : names) {
-				Project project = project();
-				String uuid = project.getUuid();
-				ProjectUpdateRequest request = new ProjectUpdateRequest();
-				request.setName(name);
-				call(() -> client().updateProject(uuid, request), BAD_REQUEST, "project_error_name_already_reserved", name);
-			}
+		for (String name : names) {
+			String uuid = projectUuid();
+			ProjectUpdateRequest request = new ProjectUpdateRequest();
+			request.setName(name);
+			call(() -> client().updateProject(uuid, request), BAD_REQUEST, "project_error_name_already_reserved", name);
 		}
 	}
 
@@ -411,7 +412,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
 			project.reload();
 			assertThat(restProject).matches(project);
-			// All nodes  + project + tags and tag families need to be reindex since the project name is part of the search document.
+			// All nodes + project + tags and tag families need to be reindex since the project name is part of the search document.
 			int expectedCount = 1;
 			for (Node node : project().getNodeRoot().findAll()) {
 				expectedCount += node.getGraphFieldContainerCount();
@@ -440,36 +441,39 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws JsonProcessingException, Exception {
+		String uuid = projectUuid();
 		try (Tx tx = db().tx()) {
 			Project project = project();
-			String uuid = project.getUuid();
-			String name = project.getName();
 			role().grantPermissions(project, READ_PERM);
 			role().revokePermissions(project, UPDATE_PERM);
+			tx.success();
+		}
 
-			ProjectUpdateRequest request = new ProjectUpdateRequest();
-			request.setName("New Name");
+		ProjectUpdateRequest request = new ProjectUpdateRequest();
+		request.setName("New Name");
 
-			call(() -> client().updateProject(uuid, request), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().updateProject(uuid, request), FORBIDDEN, "error_missing_perm", uuid);
 
+		try (Tx tx = db().tx()) {
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
-			assertEquals("The name should not have been changed", name, reloadedProject.getName());
+			assertEquals("The name should not have been changed", PROJECT_NAME, reloadedProject.getName());
 		}
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
+		String uuid = projectUuid();
 		try (Tx tx = db().tx()) {
 			role().grantPermissions(project(), DELETE_PERM);
+			tx.success();
 		}
 
+		Set<String> indices = new HashSet<>();
 		try (Tx tx = db().tx()) {
 			Project project = project();
-			String uuid = project.getUuid();
 
-			//1. Determine a list all project indices which must be dropped
-			Set<String> indices = new HashSet<>();
+			// 1. Determine a list all project indices which must be dropped
 			for (Release release : project.getReleaseRoot().findAll()) {
 				for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
 					String schemaContainerVersionUuid = version.getUuid();
@@ -477,40 +481,44 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, release.getUuid(), schemaContainerVersionUuid, DRAFT));
 				}
 			}
-
-			String name = project.getName();
-			assertNotNull(uuid);
-			assertNotNull(name);
-
-			//2. Delete the project
-			call(() -> client().deleteProject(uuid));
-
-			//3. Assert that the indices have been dropped and the project has been deleted from the project index
-			assertThat(dummySearchProvider()).hasDelete(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
-			assertThat(dummySearchProvider()).hasDrop(TagFamily.composeIndexName(uuid));
-			assertThat(dummySearchProvider()).hasDrop(Tag.composeIndexName(uuid));
-			for (String index : indices) {
-				assertThat(dummySearchProvider()).hasDrop(index);
-			}
-			assertThat(dummySearchProvider()).hasEvents(0, 1, 2 + indices.size(), 0);
-
-			assertElement(meshRoot().getProjectRoot(), uuid, false);
-			// TODO check for removed routers?
 		}
+
+		// 2. Delete the project
+		call(() -> client().deleteProject(uuid));
+
+		// 3. Assert that the indices have been dropped and the project has been deleted from the project index
+		assertThat(dummySearchProvider()).hasDelete(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
+		assertThat(dummySearchProvider()).hasDrop(TagFamily.composeIndexName(uuid));
+		assertThat(dummySearchProvider()).hasDrop(Tag.composeIndexName(uuid));
+		for (String index : indices) {
+			assertThat(dummySearchProvider()).hasDrop(index);
+		}
+		assertThat(dummySearchProvider()).hasEvents(0, 1, 2 + indices.size(), 0);
+
+		try (Tx tx = db().tx()) {
+			assertElement(meshRoot().getProjectRoot(), uuid, false);
+		}
+		// TODO check for removed routers?
+
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
+		String uuid = projectUuid();
 		try (Tx tx = db().tx()) {
-			Project project = project();
-			String uuid = project.getUuid();
-			role().revokePermissions(project, DELETE_PERM);
-			call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid);
-			assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
-			project = meshRoot().getProjectRoot().findByUuid(uuid);
+			role().revokePermissions(project(), DELETE_PERM);
+			tx.success();
+		}
+
+		call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid);
+		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
+
+		try (Tx tx = db().tx()) {
+			Project project = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNotNull("The project should not have been deleted", project);
 		}
+
 	}
 
 	@Test

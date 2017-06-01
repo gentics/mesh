@@ -38,6 +38,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 			htmlFieldSchema.setLabel("Some label");
 			schema.addField(htmlFieldSchema);
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			tx.success();
 		}
 	}
 

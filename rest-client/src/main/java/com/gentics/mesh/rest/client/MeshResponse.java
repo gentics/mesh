@@ -5,7 +5,7 @@ import io.vertx.rxjava.core.Future;
 
 public class MeshResponse<T> extends Future<T> {
 
-	private HttpClientResponse response;
+	private HttpClientResponse rawResponse;
 
 	private String bodyJson;
 
@@ -22,8 +22,8 @@ public class MeshResponse<T> extends Future<T> {
 	 * 
 	 * @return
 	 */
-	public HttpClientResponse getResponse() {
-		return response;
+	public HttpClientResponse getRawResponse() {
+		return rawResponse;
 	}
 
 	/**
@@ -31,8 +31,8 @@ public class MeshResponse<T> extends Future<T> {
 	 * 
 	 * @param response
 	 */
-	public void setResponse(HttpClientResponse response) {
-		this.response = response;
+	public void setRawResponse(HttpClientResponse response) {
+		this.rawResponse = response;
 	}
 
 	/**

@@ -2,6 +2,8 @@ package com.gentics.mesh.core.release;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
@@ -16,24 +18,21 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
-public class ReleaseEndpointETagTest extends AbstractETagTest {
+public class ReleaseEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
 		try (Tx tx = db().tx()) {
-			MeshResponse<ReleaseListResponse> response = client().findReleases(PROJECT_NAME).invoke();
-			latchFor(response);
-			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
+			String etag = callETag(() -> client().findReleases(PROJECT_NAME));
 			assertNotNull(etag);
 
-			expect304(client().findReleases(PROJECT_NAME), etag, true);
-			expectNo304(client().findReleases(PROJECT_NAME, new PagingParametersImpl().setPage(2)), etag, true);
+			callETag(() -> client().findReleases(PROJECT_NAME), etag, true, 304);
+			callETag(() -> client().findReleases(PROJECT_NAME, new PagingParametersImpl().setPage(2)), etag, true, 200);
 		}
 	}
 
@@ -41,18 +40,16 @@ public class ReleaseEndpointETagTest extends AbstractETagTest {
 	public void testReadOne() {
 		try (Tx tx = db().tx()) {
 			Release release = project().getLatestRelease();
-			MeshResponse<ReleaseResponse> response = client().findReleaseByUuid(PROJECT_NAME, release.getUuid()).invoke();
-			latchFor(response);
+			String actualEtag = callETag(() -> client().findReleaseByUuid(PROJECT_NAME, release.getUuid()));
 			String etag = release.getETag(mockActionContext());
-			assertThat(response.getResponse().getHeader(ETAG)).contains(etag);
+			assertThat(actualEtag).contains(etag);
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<ReleaseResponse> request = client().findReleaseByUuid(PROJECT_NAME, release.getUuid());
-			assertThat(expect304(request, etag, true)).contains(etag);
+			assertThat(callETag(() -> client().findReleaseByUuid(PROJECT_NAME, release.getUuid()), etag, true, 304)).contains(etag);
 
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(client().findReleaseByUuid(PROJECT_NAME, release.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag, true);
-			expect304(client().findReleaseByUuid(PROJECT_NAME, release.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true);
+			callETag(() -> client().findReleaseByUuid(PROJECT_NAME, release.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag, true, 304);
+			callETag(() -> client().findReleaseByUuid(PROJECT_NAME, release.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true, 304);
 		}
 
 	}

@@ -40,6 +40,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 			dateFieldSchema.setLabel("Some label");
 			schema.addField(dateFieldSchema);
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			tx.success();
 		}
 	}
 

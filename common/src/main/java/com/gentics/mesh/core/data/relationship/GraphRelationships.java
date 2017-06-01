@@ -14,59 +14,56 @@ public class GraphRelationships {
 	 */
 	public static void init(Database db) {
 
-		db.tx(() -> {
-			db.addEdgeType(HAS_INITIAL_RELEASE);
-			db.addEdgeType(HAS_LATEST_RELEASE);
-			db.addEdgeType(HAS_NEXT_RELEASE);
-			db.addEdgeType(HAS_NODE);
-			db.addEdgeType(HAS_NODE_REFERENCE);
-			db.addEdgeType(ASSIGNED_TO_PROJECT);
-			db.addEdgeType(HAS_GROUP_ROOT);
-			db.addEdgeType(HAS_USER);
-			db.addEdgeType(HAS_ROLE);
+		db.addEdgeType(HAS_INITIAL_RELEASE);
+		db.addEdgeType(HAS_LATEST_RELEASE);
+		db.addEdgeType(HAS_NEXT_RELEASE);
+		db.addEdgeType(HAS_NODE);
+		db.addEdgeType(HAS_NODE_REFERENCE);
+		db.addEdgeType(ASSIGNED_TO_PROJECT);
+		db.addEdgeType(HAS_GROUP_ROOT);
+		db.addEdgeType(HAS_USER);
+		db.addEdgeType(HAS_ROLE);
 
-			db.addEdgeType(HAS_TAG_ROOT);
-			db.addEdgeType(HAS_TAG_FAMILY);
+		db.addEdgeType(HAS_TAG_ROOT);
+		db.addEdgeType(HAS_TAG_FAMILY);
 
-			db.addEdgeType(HAS_CREATOR);
-			db.addEdgeType(HAS_EDITOR);
-			db.addEdgeType(HAS_LANGUAGE);
-			db.addEdgeType(HAS_PARENT_NODE);
-			db.addEdgeType(HAS_ROOT_NODE);
+		db.addEdgeType(HAS_CREATOR);
+		db.addEdgeType(HAS_EDITOR);
+		db.addEdgeType(HAS_LANGUAGE);
+		db.addEdgeType(HAS_PARENT_NODE);
+		db.addEdgeType(HAS_ROOT_NODE);
 
-			db.addEdgeType(HAS_SCHEMA_TYPE);
+		db.addEdgeType(HAS_SCHEMA_TYPE);
 
-			db.addEdgeType(HAS_SCHEMA_CONTAINER);
-			db.addEdgeType(HAS_MICROSCHEMA_CONTAINER);
-			db.addEdgeType(HAS_MICROSCHEMA_ROOT);
+		db.addEdgeType(HAS_SCHEMA_CONTAINER);
+		db.addEdgeType(HAS_MICROSCHEMA_CONTAINER);
+		db.addEdgeType(HAS_MICROSCHEMA_ROOT);
 
-			db.addEdgeType(HAS_NODE_ROOT);
-			db.addEdgeType(HAS_TAGFAMILY_ROOT);
-			db.addEdgeType(HAS_ROLE_ROOT);
-			db.addEdgeType(HAS_USER_ROOT);
-			db.addEdgeType(HAS_LANGUAGE_ROOT);
-			db.addEdgeType(HAS_PROJECT_ROOT);
-			db.addEdgeType(HAS_RELEASE_ROOT);
+		db.addEdgeType(HAS_NODE_ROOT);
+		db.addEdgeType(HAS_TAGFAMILY_ROOT);
+		db.addEdgeType(HAS_ROLE_ROOT);
+		db.addEdgeType(HAS_USER_ROOT);
+		db.addEdgeType(HAS_LANGUAGE_ROOT);
+		db.addEdgeType(HAS_PROJECT_ROOT);
+		db.addEdgeType(HAS_RELEASE_ROOT);
 
-			// db.addEdgeType(HAS_FIELD);
-			db.addEdgeType(HAS_ITEM);
-			db.addEdgeType(HAS_LIST);
+		// db.addEdgeType(HAS_FIELD);
+		db.addEdgeType(HAS_ITEM);
+		db.addEdgeType(HAS_LIST);
 
-			// Versioning
-			db.addEdgeType(HAS_CHANGE);
-			db.addEdgeType(HAS_VERSION);
-			db.addEdgeType(HAS_LATEST_VERSION);
-			db.addEdgeType(HAS_PARENT_CONTAINER);
-			db.addEdgeType(HAS_SCHEMA_CONTAINER_VERSION);
+		// Versioning
+		db.addEdgeType(HAS_CHANGE);
+		db.addEdgeType(HAS_VERSION);
+		db.addEdgeType(HAS_LATEST_VERSION);
+		db.addEdgeType(HAS_PARENT_CONTAINER);
+		db.addEdgeType(HAS_SCHEMA_CONTAINER_VERSION);
 
-			// Releases
-			db.addEdgeType(HAS_SCHEMA_VERSION);
-			db.addEdgeType(HAS_MICROSCHEMA_VERSION);
+		// Releases
+		db.addEdgeType(HAS_SCHEMA_VERSION);
+		db.addEdgeType(HAS_MICROSCHEMA_VERSION);
 
-			// Changelog
-			db.addEdgeType(HAS_CHANGELOG_ROOT);
-			return null;
-		});
+		// Changelog
+		db.addEdgeType(HAS_CHANGELOG_ROOT);
 
 	}
 

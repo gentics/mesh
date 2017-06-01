@@ -4,6 +4,7 @@ import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
@@ -26,12 +27,12 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.ETag;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
-public class WebRootEndpointETagTest extends AbstractETagTest {
+public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testResizeImage() throws IOException {
@@ -54,12 +55,13 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 					.invoke();
 			latchFor(response);
 			assertSuccess(response);
-			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
-			expect304(client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag, false);
+			String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));
+			callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag, false, 304);
 
 			params.setHeight(103);
-			String newETag = expectNo304(client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag, false);
-			expect304(client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), newETag, false);
+			String newETag = callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag,
+					false, 200);
+			callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), newETag, false, 304);
 
 		}
 	}
@@ -84,16 +86,16 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";
 			MeshResponse<WebRootResponse> response = client()
-					.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.FULL)).invoke();
+					.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setResolveLinks(LinkType.FULL))
+					.invoke();
 
 			latchFor(response);
-			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
+			String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));
 			assertNotNull(etag);
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<WebRootResponse> request = client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
-					new NodeParametersImpl().setResolveLinks(LinkType.FULL));
-			assertEquals(etag, expect304(request, etag, false));
+			assertEquals(etag, callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+					new NodeParametersImpl().setResolveLinks(LinkType.FULL)), etag, false, 304));
 
 		}
 
@@ -115,12 +117,11 @@ public class WebRootEndpointETagTest extends AbstractETagTest {
 					.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")).invoke();
 			latchFor(response);
 			String etag = node.getETag(mockActionContext());
-			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
+			assertEquals(etag, ETag.extract(response.getRawResponse().getHeader(ETAG)));
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<WebRootResponse> request = client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
-					new NodeParametersImpl().setLanguages("en", "de"));
-			assertEquals(etag, expect304(request, etag, true));
+			assertEquals(etag, callETag(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+					new NodeParametersImpl().setLanguages("en", "de")), etag, true, 304));
 
 		}
 

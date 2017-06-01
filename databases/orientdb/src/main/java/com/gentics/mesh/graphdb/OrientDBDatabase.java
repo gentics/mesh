@@ -22,9 +22,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 import com.gentics.ferma.Tx;
 import com.gentics.ferma.TxHandler;
-import com.gentics.ferma.TxHandler0;
-import com.gentics.ferma.TxHandler1;
-import com.gentics.ferma.TxHandler2;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.graphdb.ferma.AbstractDelegatingFramedOrientGraph;
@@ -63,6 +60,7 @@ import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
+import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
@@ -219,9 +217,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void addCustomEdgeIndex(String label, String indexPostfix, String... fields) {
-		OrientGraph tx = factory.getTx();
+		OrientGraphNoTx noTx = factory.getNoTx();
 		try {
-			OrientEdgeType e = tx.getEdgeType(label);
+			OrientEdgeType e = noTx.getEdgeType(label);
 			if (e == null) {
 				throw new RuntimeException("Could not find edge type {" + label + "}. Create edge type before creating indices.");
 			}
@@ -242,17 +240,17 @@ public class OrientDBDatabase extends AbstractDatabase {
 			}
 
 		} finally {
-			tx.shutdown();
+			noTx.shutdown();
 		}
 	}
 
 	@Override
 	public void addEdgeIndex(String label, boolean includeInOut, boolean includeIn, boolean includeOut, String... extraFields) {
-		OrientGraph tx = factory.getTx();
+		OrientGraphNoTx noTx = factory.getNoTx();
 		try {
-			OrientEdgeType e = tx.getEdgeType(label);
+			OrientEdgeType e = noTx.getEdgeType(label);
 			if (e == null) {
-				e = tx.createEdgeType(label);
+				e = noTx.createEdgeType(label);
 			}
 			if ((includeIn || includeInOut) && e.getProperty("in") == null) {
 				e.createProperty("in", OType.LINK);
@@ -284,7 +282,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			}
 
 		} finally {
-			tx.shutdown();
+			noTx.shutdown();
 		}
 	}
 
@@ -363,19 +361,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding edge type for label {" + label + "}");
 		}
-		OrientGraph tx = factory.getTx();
+		OrientGraphNoTx noTx = factory.getNoTx();
 		try {
-			OrientEdgeType e = tx.getEdgeType(label);
+			OrientEdgeType e = noTx.getEdgeType(label);
 			if (e == null) {
 				String superClazz = "E";
 				if (superClazzOfEdge != null) {
 					superClazz = superClazzOfEdge.getSimpleName();
 				}
-				e = tx.createEdgeType(label, superClazz);
+				e = noTx.createEdgeType(label, superClazz);
 			} else {
 				// Update the existing edge type and set the super class
 				if (superClazzOfEdge != null) {
-					OrientEdgeType superType = tx.getEdgeType(superClazzOfEdge.getSimpleName());
+					OrientEdgeType superType = noTx.getEdgeType(superClazzOfEdge.getSimpleName());
 					if (superType == null) {
 						throw new RuntimeException("The supertype for edges with label {" + label + "} can't be set since the supertype {"
 								+ superClazzOfEdge.getSimpleName() + "} was not yet added to orientdb.");
@@ -390,7 +388,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 			}
 		} finally {
-			tx.shutdown();
+			noTx.shutdown();
 		}
 	}
 
@@ -399,19 +397,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex type for class {" + clazzOfVertex.getName() + "}");
 		}
-		OrientGraph tx = factory.getTx();
+		OrientGraphNoTx noTx = factory.getNoTx();
 		try {
-			OrientVertexType vertexType = tx.getVertexType(clazzOfVertex.getSimpleName());
+			OrientVertexType vertexType = noTx.getVertexType(clazzOfVertex.getSimpleName());
 			if (vertexType == null) {
 				String superClazz = "V";
 				if (superClazzOfVertex != null) {
 					superClazz = superClazzOfVertex.getSimpleName();
 				}
-				vertexType = tx.createVertexType(clazzOfVertex.getSimpleName(), superClazz);
+				vertexType = noTx.createVertexType(clazzOfVertex.getSimpleName(), superClazz);
 			} else {
 				// Update the existing vertex type and set the super class
 				if (superClazzOfVertex != null) {
-					OrientVertexType superType = tx.getVertexType(superClazzOfVertex.getSimpleName());
+					OrientVertexType superType = noTx.getVertexType(superClazzOfVertex.getSimpleName());
 					if (superType == null) {
 						throw new RuntimeException("The supertype for vertices of type {" + clazzOfVertex + "} can't be set since the supertype {"
 								+ superClazzOfVertex.getSimpleName() + "} was not yet added to orientdb.");
@@ -420,7 +418,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 			}
 		} finally {
-			tx.shutdown();
+			noTx.shutdown();
 		}
 	}
 
@@ -429,10 +427,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex index  for class {" + clazzOfVertices.getName() + "}");
 		}
-		OrientGraph tx = factory.getTx();
+		OrientGraphNoTx noTx = factory.getNoTx();
 		try {
 			String name = clazzOfVertices.getSimpleName();
-			OrientVertexType v = tx.getVertexType(name);
+			OrientVertexType v = noTx.getVertexType(name);
 			if (v == null) {
 				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't create index {" + indexName + "}");
 			}
@@ -446,7 +444,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 						null, new ODocument().fields("ignoreNullValues", true), fields);
 			}
 		} finally {
-			tx.shutdown();
+			noTx.shutdown();
 		}
 
 	}
