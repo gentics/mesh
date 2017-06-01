@@ -76,8 +76,8 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		Node node = folder("2015");
 		try (Tx tx = db().tx()) {
-			Node node = folder("2015");
 
 			// Add html field schema to the schema
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -91,7 +91,10 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			HtmlGraphField field = container.createHTML(HTML_FIELD);
 			field.setHtml("Some<b>htmlABCDE");
+			tx.success();
+		}
 
+		try (Tx tx = db().tx()) {
 			String json = getJson(node);
 			assertTrue("The json should contain the string but it did not.{" + json + "}", json.indexOf("ABCDE") > 1);
 			assertNotNull(json);
@@ -102,6 +105,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 			assertNotNull(deserializedNodeField);
 			assertEquals("Some<b>htmlABCDE", deserializedNodeField.getHTML());
 		}
+
 	}
 
 	@Test
@@ -140,7 +144,7 @@ public class HtmlFieldTest extends AbstractFieldTest<HtmlFieldSchema> {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			HtmlGraphField fieldA = container.createHTML("htmlField1");
 
-			// graph empty - rest empty 
+			// graph empty - rest empty
 			assertTrue("The html field should be equal to the html rest field since both fields have no value.", fieldA.equals(new HtmlFieldImpl()));
 
 			// graph set - rest set - same value - different type

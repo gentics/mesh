@@ -102,7 +102,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		// tx1.declareIntent(null);
 		// tx1.shutdown();
 		// }
-		OrientGraph tx = factory.getTx();
+		OrientGraphNoTx tx = factory.getNoTx();
 		tx.declareIntent(new OIntentNoCache());
 		try {
 			for (Vertex vertex : tx.getVertices()) {

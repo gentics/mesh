@@ -38,6 +38,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = db().tx()) {
 			anonymousRole().grantPermissions(content(), READ_PERM);
+			tx.success();
 		}
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 
@@ -50,6 +51,7 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 		// Verify that anonymous access does not work if the anonymous user is deleted
 		try (Tx tx = db().tx()) {
 			users().get(MeshAuthHandler.ANONYMOUS_USERNAME).remove();
+			tx.success();
 		}
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), UNAUTHORIZED, "error_not_authorized");
 	}

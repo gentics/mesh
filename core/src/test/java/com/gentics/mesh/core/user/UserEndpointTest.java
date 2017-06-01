@@ -247,27 +247,26 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testIssueAPIKeyWithoutPerm() {
-		String uuid = db().tx(() -> {
-			User user = user();
-			role().revokePermissions(user, UPDATE_PERM);
-			return user.getUuid();
+		db().tx((tx) -> {
+			role().revokePermissions(user(), UPDATE_PERM);
+			tx.success();
 		});
 
-		call(() -> client().findUserByUuid(uuid));
-		call(() -> client().issueAPIToken(uuid), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().findUserByUuid(userUuid()));
+		call(() -> client().issueAPIToken(userUuid()), FORBIDDEN, "error_missing_perm", userUuid());
 	}
 
 	@Test
 	public void testRevokeAPIKeyWithoutPerm() {
-		String uuid = db().tx(() -> user().getUuid());
 
+		String uuid = userUuid();
 		call(() -> client().findUserByUuid(uuid));
-
 		call(() -> client().issueAPIToken(uuid));
-		db().tx(() -> {
+
+		db().tx((tx) -> {
 			User user = user();
 			role().revokePermissions(user, UPDATE_PERM);
-			return null;
+			tx.success();
 		});
 
 		call(() -> client().invalidateAPIToken(uuid), FORBIDDEN, "error_missing_perm", uuid);
@@ -298,6 +297,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Revoke single permission and check again
 			role().revokePermissions(tagFamily, GraphPermission.UPDATE_PERM);
 			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
+			tx.success();
 		}
 		UserPermissionResponse permissionResponse = call(() -> client().readUserPermissions(userUuid, pathToElement));
 		assertNotNull(permissionResponse);
@@ -306,14 +306,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		try (Tx tx = db().tx()) {
-			User user = user();
-			String uuid = user.getUuid();
-
-			UserResponse userResponse = call(() -> client().findUserByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
-			assertNotNull(userResponse.getRolePerms());
-			assertThat(userResponse.getRolePerms()).hasPerm(READ, READ_PUBLISHED, PUBLISH, CREATE, UPDATE, DELETE);
-		}
+		UserResponse userResponse = call(() -> client().findUserByUuid(userUuid(), new RolePermissionParametersImpl().setRoleUuid(roleUuid())));
+		assertNotNull(userResponse.getRolePerms());
+		assertThat(userResponse.getRolePerms()).hasPerm(READ, READ_PUBLISHED, PUBLISH, CREATE, UPDATE, DELETE);
 	}
 
 	@Test
@@ -326,9 +321,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				Group extraGroup = meshRoot().getGroupRoot().create("group_" + i, user());
 				extraGroup.addUser(user());
 			}
-
-			tx.success();
 			assertEquals(11, user().getGroups().size());
+			tx.success();
 		}
 
 		UserResponse response = call(() -> client().findUserByUuid(userUuid()));
@@ -570,7 +564,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setUsername("New Name");
-
 		call(() -> client().updateUser("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
@@ -614,26 +607,30 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateUserWithNodeReference() {
+		String nodeUuid;
 		try (Tx tx = db().tx()) {
 			Node node = folder("news");
+			nodeUuid = node.getUuid();
 			assertTrue(user().hasPermission(node, READ_PERM));
-
-			NodeReference reference = new NodeReference();
-			reference.setProjectName(PROJECT_NAME);
-			reference.setUuid(node.getUuid());
-
-			UserCreateRequest newUser = new UserCreateRequest();
-			newUser.setUsername("new_user");
-			newUser.setGroupUuid(group().getUuid());
-			newUser.setPassword("test1234");
-			newUser.setNodeReference(reference);
-
-			UserResponse response = call(() -> client().createUser(newUser));
-			assertTrue(response.isReference());
-			assertNotNull(response.getNodeReference());
-			assertNotNull(response.getReferencedNodeReference().getProjectName());
-			assertNotNull(response.getNodeReference().getUuid());
+			tx.success();
 		}
+
+		NodeReference reference = new NodeReference();
+		reference.setProjectName(PROJECT_NAME);
+		reference.setUuid(nodeUuid);
+
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setUsername("new_user");
+		newUser.setGroupUuid(groupUuid());
+		newUser.setPassword("test1234");
+		newUser.setNodeReference(reference);
+
+		UserResponse response = call(() -> client().createUser(newUser));
+		assertTrue(response.isReference());
+		assertNotNull(response.getNodeReference());
+		assertNotNull(response.getReferencedNodeReference().getProjectName());
+		assertNotNull(response.getNodeReference().getUuid());
+
 	}
 
 	@Test
@@ -688,11 +685,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser = request;
 		}
 
-		MeshResponse<UserResponse> future = client().createUser(newUser).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		UserResponse userResponse = future.result();
-
+		UserResponse userResponse = call(() -> client().createUser(newUser));
 		UserResponse userResponse2 = call(() -> client().findUserByUuid(userResponse.getUuid(),
 				new NodeParametersImpl().setExpandedFieldNames("nodeReference").setLanguages("en")));
 		assertNotNull(userResponse2);
@@ -1234,36 +1227,37 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testDeleteByUUID2() throws Exception {
+		String uuid;
 		try (Tx tx = db().tx()) {
 			String name = "extraUser";
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create(name, user());
 			extraUser.addGroup(group());
-			String uuid = extraUser.getUuid();
+			uuid = extraUser.getUuid();
 			role().grantPermissions(extraUser, DELETE_PERM);
-
 			assertTrue(role().hasPermission(DELETE_PERM, extraUser));
-
 			User user = userRoot.findByUuid(uuid);
 			assertEquals(1, user.getGroups().size());
 			assertTrue("The user should be enabled", user.isEnabled());
-
-			MeshResponse<Void> future = client().deleteUser(uuid).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			userRoot.reload();
-			assertNull("The user was not deleted.", userRoot.findByUuid(uuid));
-
-			// // Check whether the user was correctly disabled
-			// try (NoTrx tx = db().tx()) {
-			// User user2 = userRoot.findByUuidBlocking(uuid);
-			// user2.reload();
-			// assertNotNull(user2);
-			// assertFalse("The user should have been disabled",
-			// user2.isEnabled());
-			// assertEquals(0, user2.getGroups().size());
-			// }
+			tx.success();
 		}
+
+		call(() -> client().deleteUser(uuid));
+
+		try (Tx tx = db().tx()) {
+			UserRoot userRoot = meshRoot().getUserRoot();
+			assertNull("The user was not deleted.", userRoot.findByUuid(uuid));
+		}
+		// // Check whether the user was correctly disabled
+		// try (NoTrx tx = db().tx()) {
+		// User user2 = userRoot.findByUuidBlocking(uuid);
+		// user2.reload();
+		// assertNotNull(user2);
+		// assertFalse("The user should have been disabled",
+		// user2.isEnabled());
+		// assertEquals(0, user2.getGroups().size());
+		// }
+
 	}
 
 	@Test

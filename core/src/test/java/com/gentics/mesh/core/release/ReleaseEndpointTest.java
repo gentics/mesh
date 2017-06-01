@@ -261,7 +261,6 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testReadByUuidWithRolePerms() {
 		String roleUuid = db().tx(() -> role().getUuid());
-
 		ReleaseResponse response = call(
 				() -> client().findReleaseByUuid(PROJECT_NAME, releaseUuid(), new RolePermissionParametersImpl().setRoleUuid(roleUuid)));
 		assertThat(response.getRolePerms()).hasPerm(READ, CREATE, UPDATE, DELETE);
@@ -280,21 +279,27 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
+		Release initialRelease;
+		Release firstRelease;
+		Release thirdRelease;
+		Release secondRelease;
+
 		try (Tx tx = db().tx()) {
 			Project project = project();
-			Release initialRelease = project.getInitialRelease();
-			Release firstRelease = project.getReleaseRoot().create("One", user());
-			Release secondRelease = project.getReleaseRoot().create("Two", user());
-			Release thirdRelease = project.getReleaseRoot().create("Three", user());
+			initialRelease = project.getInitialRelease();
+			firstRelease = project.getReleaseRoot().create("One", user());
+			secondRelease = project.getReleaseRoot().create("Two", user());
+			thirdRelease = project.getReleaseRoot().create("Three", user());
+			tx.success();
+		}
 
+		try (Tx tx = db().tx()) {
 			ListResponse<ReleaseResponse> responseList = call(() -> client().findReleases(PROJECT_NAME));
-
 			InternalActionContext ac = mockActionContext();
 
 			assertThat(responseList).isNotNull();
 			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initialRelease.transformToRestSync(ac, 0),
 					firstRelease.transformToRestSync(ac, 0), secondRelease.transformToRestSync(ac, 0), thirdRelease.transformToRestSync(ac, 0));
-			tx.success();
 		}
 	}
 
@@ -380,7 +385,6 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-
 		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
 		// request.setActive(false);
 		call(() -> client().updateRelease(PROJECT_NAME, "bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");

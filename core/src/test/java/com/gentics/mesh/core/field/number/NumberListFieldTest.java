@@ -45,18 +45,22 @@ public class NumberListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		Node node = folder("2015");
 		try (Tx tx = db().tx()) {
-			Node node = folder("2015");
 			prepareNode(node, "numberList", "number");
 
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			NumberGraphFieldList numberList = container.createNumberList("numberList");
 			numberList.createNumber(1);
 			numberList.createNumber(1.11);
+			tx.success();
+		}
 
+		try (Tx tx = db().tx()) {
 			NodeResponse response = transform(node);
 			assertList(2, "numberList", "number", response);
 		}
+
 	}
 
 	@Test

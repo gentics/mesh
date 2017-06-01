@@ -66,24 +66,29 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodesForTagInRelease() {
+		Release newRelease;
+		NodeResponse concorde = new NodeResponse();
+		concorde.setUuid(db().tx(() -> content("concorde").getUuid()));
+
+		// Create new release
 		try (Tx tx = db().tx()) {
-			NodeResponse concorde = new NodeResponse();
-			concorde.setUuid(content("concorde").getUuid());
+			newRelease = project().getReleaseRoot().create("newrelease", user());
+			tx.success();
+		}
 
-			// create new release
-			Release initialRelease = project().getInitialRelease();
-			Release newRelease = project().getReleaseRoot().create("newrelease", user());
-
-			// get for latest release (must be empty)
+		try (Tx tx = db().tx()) {
+			Release initialRelease = release();
+			initialRelease.reload();
+			// Get for latest release (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 					new VersioningParametersImpl().draft())).getData()).as("Nodes tagged in latest release").isNotNull().isEmpty();
 
-			// get for new release (must be empty)
+			// Get for new release (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 					new VersioningParametersImpl().draft().setRelease(newRelease.getUuid()))).getData()).as("Nodes tagged in new release").isNotNull()
 							.isEmpty();
 
-			// get for initial release
+			// Get for initial release
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 					new VersioningParametersImpl().draft().setRelease(initialRelease.getUuid()))).getData()).as("Nodes tagged in initial release")
 							.isNotNull().usingElementComparatorOnFields("uuid").containsOnly(concorde);
@@ -110,6 +115,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 			role().grantPermissions(tag1, READ_PERM);
 			role().grantPermissions(tag2, READ_PERM);
 			role().grantPermissions(tag3, READ_PERM);
+			tx.success();
 		}
 
 		String tagFamilyUuid = db().tx(() -> tagFamily("basic").getUuid());
@@ -126,7 +132,6 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		list = call(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid));
 		names = list.getData().stream().map(entry -> entry.getName()).collect(Collectors.toList());
 		assertThat(names).containsExactly("test1", "test3", "test2", "test4");
-		
 
 	}
 }

@@ -74,8 +74,8 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 			nodeCreateRequest.setLanguage("en");
 			nodeCreateRequest.getFields().put(fieldKey, field);
 
-			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en")),
-					BAD_REQUEST, "field_number_error_invalid_type", fieldKey, "text");
+			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en")), BAD_REQUEST,
+					"field_number_error_invalid_type", fieldKey, "text");
 		}
 	}
 
@@ -166,15 +166,16 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
+		Node node = folder("2015");
 		try (Tx tx = db().tx()) {
-			Node node = folder("2015");
-
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			NumberGraphField numberField = container.createNumber(FIELD_NAME);
 			numberField.setNumber(100.9f);
+			tx.success();
+		}
 
+		try (Tx tx = db().tx()) {
 			NodeResponse response = readNode(node);
-
 			NumberFieldImpl deserializedNumberField = response.getFields().getNumberField(FIELD_NAME);
 			assertNotNull(deserializedNumberField);
 			assertEquals(100.9, deserializedNumberField.getNumber());

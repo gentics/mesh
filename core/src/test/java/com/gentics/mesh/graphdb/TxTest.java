@@ -36,7 +36,7 @@ import com.gentics.mesh.test.performance.TestUtils;
 import rx.Single;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
-public class TrxTest extends AbstractMeshTest {
+public class TxTest extends AbstractMeshTest {
 
 	@Test
 	public void testReload() {

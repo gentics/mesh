@@ -289,21 +289,22 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (Tx tx = db().tx()) {
-			Tag tag = tag("vehicle");
-			TagFamily parentTagFamily = tagFamily("basic");
+		Tag tag = tag("vehicle");
+		TagFamily parentTagFamily = tagFamily("basic");
 
+		try (Tx tx = db().tx()) {
+			role().revokePermissions(tag, UPDATE_PERM);
+			tx.success();
+		}
+
+		try (Tx tx = db().tx()) {
 			String tagName = tag.getName();
 			String tagUuid = tag.getUuid();
-			role().revokePermissions(tag, UPDATE_PERM);
 
 			// Create an tag update request
 			TagUpdateRequest request = new TagUpdateRequest();
 			request.setName("new Name");
-
-			MeshResponse<TagResponse> tagUpdateFut = client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, request).invoke();
-			latchFor(tagUpdateFut);
-			expectException(tagUpdateFut, FORBIDDEN, "error_missing_perm", tagUuid);
+			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, request), FORBIDDEN, "error_missing_perm", tagUuid);
 
 			// read the tag again and verify that it was not changed
 			MeshResponse<TagResponse> tagReloadFut = client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid).invoke();
@@ -312,6 +313,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			TagResponse loadedTag = tagReloadFut.result();
 			assertEquals(tagName, loadedTag.getName());
 		}
+
 	}
 
 	@Test

@@ -72,24 +72,23 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testLoginAndDisableUser() {
+		String username = db().tx(() -> user().getUsername());
+
+		MeshRestClient client = MeshRestClient.create("localhost", port(), Mesh.vertx());
+		client.setLogin(username, data().getUserInfo().getPassword());
+		Single<GenericMessageResponse> future = client.login();
+
+		GenericMessageResponse loginResponse = future.toBlocking().value();
+		assertNotNull(loginResponse);
+		assertEquals("OK", loginResponse.getMessage());
+
 		try (Tx tx = db().tx()) {
 			User user = user();
-			String username = user.getUsername();
-
-			MeshRestClient client = MeshRestClient.create("localhost", port(), Mesh.vertx());
-			client.setLogin(username, data().getUserInfo().getPassword());
-			Single<GenericMessageResponse> future = client.login();
-
-			GenericMessageResponse loginResponse = future.toBlocking().value();
-			assertNotNull(loginResponse);
-			assertEquals("OK", loginResponse.getMessage());
-
 			user.disable();
-
-			MeshResponse<UserResponse> meResponse = client.me().invoke();
-			latchFor(meResponse);
-			expectException(meResponse, UNAUTHORIZED, "error_not_authorized");
+			tx.success();
 		}
+
+		call(() -> client.me(), UNAUTHORIZED, "error_not_authorized");
 	}
 
 	@Test

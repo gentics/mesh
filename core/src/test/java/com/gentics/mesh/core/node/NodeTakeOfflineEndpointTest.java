@@ -84,7 +84,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			// 2. publish the test node
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
-			// 3. Take only en offline 
+			// 3. Take only en offline
 			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"));
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en");
 
@@ -142,7 +142,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
 					.isNotPublished("de");
-			// The request should work fine if we call it again 
+			// The request should work fine if we call it again
 			call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en")
 					.isNotPublished("de");
@@ -157,7 +157,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 			assertThat(call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en"))).as("Initial publish status").isPublished();
 
-			// All nodes are initially published so lets take german offline  
+			// All nodes are initially published so lets take german offline
 			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"));
 
 			// Another take offline call should fail since there is no german page online anymore.
@@ -210,12 +210,17 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeOfflineForRelease() {
+		Node news = folder("news");
+		Release newRelease;
+		Release initialRelease = db().tx(() -> release());
+
 		try (Tx tx = db().tx()) {
 			Project project = project();
-			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
-			Node news = folder("news");
+			newRelease = project.getReleaseRoot().create("newrelease", user());
+			tx.success();
+		}
 
+		try (Tx tx = db().tx()) {
 			// save the folder in new release
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
@@ -229,16 +234,19 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			// take offline in initial release
 			call(() -> client().takeNodeOffline(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setRelease(initialRelease.getName()),
 					new PublishParametersImpl().setRecursive(true)));
+		}
 
+		try (Tx tx = db().tx()) {
 			// check publish status
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
 					new VersioningParametersImpl().setRelease(initialRelease.getName())))).as("Initial release publish status").isNotPublished("en")
 							.isNotPublished("de");
-			assertThat(call(
-					() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(), new VersioningParametersImpl().setRelease(newRelease.getName()))))
-							.as("New release publish status").isPublished("en").doesNotContain("de");
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
+					new VersioningParametersImpl().setRelease(newRelease.getName())))).as("New release publish status").isPublished("en")
+							.doesNotContain("de");
 
 		}
+
 	}
 
 	/**
@@ -247,7 +255,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTakeNodeOfflineConsistency() {
 
-		//1. Publish /news  & /news/2015
+		// 1. Publish /news & /news/2015
 		db().tx(() -> {
 			System.out.println(project().getBaseNode().getUuid());
 			System.out.println(folder("news").getUuid());
@@ -263,7 +271,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			return null;
 		});
 
-		//3. Take sub nodes offline
+		// 3. Take sub nodes offline
 		db().tx(() -> {
 			call(() -> client().takeNodeOffline(PROJECT_NAME, content("news overview").getUuid(), new PublishParametersImpl().setRecursive(false)));
 			call(() -> client().takeNodeOffline(PROJECT_NAME, folder("2015").getUuid(), new PublishParametersImpl().setRecursive(true)));

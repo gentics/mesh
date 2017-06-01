@@ -186,13 +186,13 @@ public interface TestHelperMethods {
 
 	default TagFamily tagFamily(String key) {
 		TagFamily family = data().getTagFamily(key);
-		family.reload();
+//		family.reload();
 		return family;
 	}
 
 	default Tag tag(String key) {
 		Tag tag = data().getTag(key);
-		tag.reload();
+//		tag.reload();
 		return tag;
 	}
 
@@ -216,13 +216,13 @@ public interface TestHelperMethods {
 
 	default Language english() {
 		Language language = data().getEnglish();
-		language.reload();
+//		language.reload();
 		return language;
 	}
 
 	default Language german() {
 		Language language = data().getGerman();
-		language.reload();
+//		language.reload();
 		return language;
 	}
 
