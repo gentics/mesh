@@ -54,18 +54,21 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {
+		Node node = content("news_2015");
 		try (Tx tx = db().tx()) {
-			Node node = content("news_2015");
-
 			// 1. Transform the node into a binary content
 			SchemaContainer container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
 			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
-			String contentType = "application/octet-stream";
-			int binaryLen = 8000;
-			String fileName = "somefile.dat";
+			tx.success();
+		}
 
+		String contentType = "application/octet-stream";
+		int binaryLen = 8000;
+		String fileName = "somefile.dat";
+
+		try (Tx tx = db().tx()) {
 			// 2. Update the binary data
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
@@ -77,7 +80,6 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			assertTrue(response.isDownload());
 			assertNotNull(downloadResponse);
 		}
-
 	}
 
 	@Test
@@ -114,8 +116,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadContentByPath() throws Exception {
 		String path = "/News/2015/News_2015.en.html";
 
-		WebRootResponse restNode = call(
-				() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
+		WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+				new NodeParametersImpl().setLanguages("en", "de")));
 
 		try (Tx tx = db().tx()) {
 			Node node = content("news_2015");
@@ -174,8 +176,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		List<MeshResponse<WebRootResponse>> futures = new ArrayList<>();
 		for (int i = 0; i < nJobs; i++) {
-			futures.add(
-					client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")).invoke());
+			futures.add(client()
+					.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")).invoke());
 		}
 
 		for (MeshResponse<WebRootResponse> fut : futures) {
@@ -192,7 +194,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPathWithPlus() throws Exception {
-		//Test RFC3986 subdelims and an additional space and questionmark
+		// Test RFC3986 subdelims and an additional space and questionmark
 		String newName = "20!$&'()*+,;=%3F? 15";
 		String uuid = db().tx(() -> folder("2015").getUuid());
 		try (Tx tx = db().tx()) {
@@ -315,7 +317,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			create404Node.setLanguage("en");
 			call(() -> client().createNode(PROJECT_NAME, create404Node));
 
-			MeshResponse<WebRootResponse> webrootFuture = client().webroot(PROJECT_NAME, notFoundPath, new VersioningParametersImpl().draft()).invoke();
+			MeshResponse<WebRootResponse> webrootFuture = client().webroot(PROJECT_NAME, notFoundPath, new VersioningParametersImpl().draft())
+					.invoke();
 			latchFor(webrootFuture);
 			expectFailureMessage(webrootFuture, NOT_FOUND, null);
 		}

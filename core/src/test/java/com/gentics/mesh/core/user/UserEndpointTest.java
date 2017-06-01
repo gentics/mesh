@@ -892,25 +892,29 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
+		String oldHash;
 		try (Tx tx = db().tx()) {
 			User user = user();
-			String oldHash = user.getPasswordHash();
+			oldHash = user.getPasswordHash();
 			role().revokePermissions(user, UPDATE_PERM);
-			UserUpdateRequest updatedUser = new UserUpdateRequest();
-			updatedUser.setEmailAddress("n.user@spam.gentics.com");
-			updatedUser.setFirstname("Joe");
-			updatedUser.setLastname("Doe");
-			updatedUser.setUsername("new_user");
 			// updatedUser.addGroup(group().getName());
-
-			MeshResponse<UserResponse> future = client().updateUser(user.getUuid(), updatedUser).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", user.getUuid());
-			User reloadedUser = boot().userRoot().findByUuid(user.getUuid());
-			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
-			assertEquals("The firstname should not be updated.", user.getFirstname(), reloadedUser.getFirstname());
-			assertEquals("The firstname should not be updated.", user.getLastname(), reloadedUser.getLastname());
+			tx.success();
 		}
+
+		UserUpdateRequest updatedUser = new UserUpdateRequest();
+		updatedUser.setEmailAddress("n.user@spam.gentics.com");
+		updatedUser.setFirstname("Joe");
+		updatedUser.setLastname("Doe");
+		updatedUser.setUsername("new_user");
+		call(() -> client().updateUser(userUuid(), updatedUser), FORBIDDEN, "error_missing_perm", userUuid());
+
+		try (Tx tx = db().tx()) {
+			User reloadedUser = boot().userRoot().findByUuid(userUuid());
+			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
+			assertEquals("The firstname should not be updated.", user().getFirstname(), reloadedUser.getFirstname());
+			assertEquals("The firstname should not be updated.", user().getLastname(), reloadedUser.getLastname());
+		}
+
 	}
 
 	@Test
@@ -932,10 +936,9 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdateUserWithSameUsername() throws Exception {
 		try (Tx tx = db().tx()) {
-			User user = user();
 			UserUpdateRequest request = new UserUpdateRequest();
-			request.setUsername(user.getUsername());
-			call(() -> client().updateUser(user.getUuid(), request));
+			request.setUsername(user().getUsername());
+			call(() -> client().updateUser(userUuid(), request));
 		}
 	}
 
@@ -950,14 +953,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Add update permission to group in order to create the user in
 			// that group
 			role().grantPermissions(group(), CREATE_PERM);
-			UserCreateRequest newUser = new UserCreateRequest();
-			newUser.setUsername("existing_username");
-			newUser.setGroupUuid(group().getUuid());
-			newUser.setPassword("test1234");
-
-			call(() -> client().createUser(newUser), CONFLICT, "user_conflicting_username");
+			tx.success();
 		}
 
+		UserCreateRequest newUser = new UserCreateRequest();
+		newUser.setUsername("existing_username");
+		newUser.setGroupUuid(groupUuid());
+		newUser.setPassword("test1234");
+		call(() -> client().createUser(newUser), CONFLICT, "user_conflicting_username");
 	}
 
 	@Test
@@ -1003,7 +1006,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		newUser.setUsername("new_user");
 		newUser.setPassword("test123456");
 		newUser.setGroupUuid("bogus");
-
 		call(() -> client().createUser(newUser), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
@@ -1198,16 +1200,21 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
+		String uuid;
 		try (Tx tx = db().tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("extraUser", user());
 			user.addGroup(group());
-			String uuid = user.getUuid();
+			uuid = user.getUuid();
 			assertNotNull(uuid);
 			role().grantPermissions(user, UPDATE_PERM);
 			role().grantPermissions(user, CREATE_PERM);
 			role().grantPermissions(user, READ_PERM);
+			tx.success();
+		}
 
+		try (Tx tx = db().tx()) {
+			UserRoot userRoot = meshRoot().getUserRoot();
 			call(() -> client().deleteUser(uuid), FORBIDDEN, "error_missing_perm", uuid);
 			userRoot = meshRoot().getUserRoot();
 			assertNotNull("The user should not have been deleted", userRoot.findByUuid(uuid));

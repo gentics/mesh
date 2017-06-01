@@ -102,15 +102,18 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		String oldVersion;
+		Node target = folder("news");
 		try (Tx tx = db().tx()) {
-			Node target = folder("news");
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
-			String oldVersion = firstResponse.getVersion().getNumber();
+			oldVersion = firstResponse.getVersion().getNumber();
+		}
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
-			assertThat(secondResponse.getFields().getNodeField(FIELD_NAME)).as("Deleted Field").isNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+		NodeResponse secondResponse = db().tx(() -> updateNode(FIELD_NAME, null));
+		assertThat(secondResponse.getFields().getNodeField(FIELD_NAME)).as("Deleted Field").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
 
+		try (Tx tx = db().tx()) {
 			// Assert that the old version was not modified
 			Node node = folder("2015");
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
@@ -203,12 +206,16 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		try (Tx tx = db().tx()) {
-			Node newsNode = folder("news");
-			Node node = folder("2015");
+		Node newsNode = folder("news");
+		Node node = folder("2015");
 
+		try (Tx tx = db().tx()) {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(FIELD_NAME, newsNode);
+			tx.success();
+		}
+
+		try (Tx tx = db().tx()) {
 			NodeResponse response = readNode(node);
 			NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
 			assertNotNull(deserializedNodeField);
@@ -218,13 +225,16 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadNodeWithResolveLinks() {
-		try (Tx tx = db().tx()) {
-			Node newsNode = folder("news");
-			Node node = folder("2015");
+		Node newsNode = folder("news");
+		Node node = folder("2015");
 
+		try (Tx tx = db().tx()) {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(FIELD_NAME, newsNode);
+			tx.success();
+		}
 
+		try (Tx tx = db().tx()) {
 			// Read the node
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en");
@@ -240,6 +250,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertNotNull(deserializedNodeField.getLanguagePaths());
 			assertThat(deserializedNodeField.getLanguagePaths()).containsKeys("en", "de");
 		}
+
 	}
 
 	@Test

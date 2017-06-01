@@ -12,6 +12,7 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -135,9 +136,10 @@ public interface TestHelperMethods {
 	default String userUuid() {
 		return data().getUserInfo().getUserUuid();
 	}
-	
+
 	/**
 	 * Return the uuid of the initial project release.
+	 * 
 	 * @return
 	 */
 	default String releaseUuid() {
@@ -151,7 +153,7 @@ public interface TestHelperMethods {
 	default String projectUuid() {
 		return data().projectUuid();
 	}
-	
+
 	default String contentUuid() {
 		return data().getContentUuid();
 	}
@@ -174,7 +176,7 @@ public interface TestHelperMethods {
 
 	default public Node folder(String key) {
 		Node node = data().getFolder(key);
-		node.reload();
+		// node.reload();
 		return node;
 	}
 
@@ -515,7 +517,10 @@ public interface TestHelperMethods {
 	default public NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {
 		String contentType = "image/jpeg";
 		String fileName = "blume.jpg";
-		prepareSchema(node, "image/.*", fieldName);
+		try (Tx tx = db().tx()) {
+			prepareSchema(node, "image/.*", fieldName);
+			tx.success();
+		}
 
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
