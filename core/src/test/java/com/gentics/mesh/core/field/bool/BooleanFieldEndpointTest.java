@@ -40,6 +40,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 			booleanFieldSchema.setLabel("Some label");
 			schema.addField(booleanFieldSchema);
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			tx.success();
 		}
 	}
 
@@ -50,6 +51,10 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 			Node node = folder("2015");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createBoolean(FIELD_NAME).setBoolean(true);
+			tx.success();
+		}
+		try (Tx tx = db().tx()) {
+			Node node = folder("2015");
 			NodeResponse response = readNode(node);
 			BooleanFieldImpl deserializedBooleanField = response.getFields().getBooleanField(FIELD_NAME);
 			assertNotNull(deserializedBooleanField);

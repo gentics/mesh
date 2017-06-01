@@ -135,6 +135,14 @@ public interface TestHelperMethods {
 	default String userUuid() {
 		return data().getUserInfo().getUserUuid();
 	}
+	
+	/**
+	 * Return the uuid of the initial project release.
+	 * @return
+	 */
+	default String releaseUuid() {
+		return data().releaseUuid();
+	}
 
 	default String roleUuid() {
 		return data().getUserInfo().getRoleUuid();

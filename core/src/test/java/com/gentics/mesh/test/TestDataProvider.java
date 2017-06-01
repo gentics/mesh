@@ -57,6 +57,7 @@ public class TestDataProvider {
 	private static final Logger log = LoggerFactory.getLogger(TestDataProvider.class);
 
 	public static final String PROJECT_NAME = "dummy";
+	public static final String RELEASE_NAME = "dummy";
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
@@ -78,6 +79,7 @@ public class TestDataProvider {
 
 	private Project project;
 	private String projectUuid;
+	private String releaseUuid;
 
 	private UserInfo userInfo;
 
@@ -335,6 +337,7 @@ public class TestDataProvider {
 		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("content"));
 		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("binary_content"));
 		projectUuid = project.getUuid();
+		releaseUuid = project.getInitialRelease().getUuid();
 
 		if (getSize() == FULL) {
 			// Guest Group / Role
@@ -663,6 +666,10 @@ public class TestDataProvider {
 
 	public String getContentUuid() {
 		return contentUuid;
+	}
+
+	public String releaseUuid() {
+		return releaseUuid;
 	}
 
 }
