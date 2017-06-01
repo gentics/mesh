@@ -34,12 +34,14 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			tx.success();
+		}
 
+		try (Tx tx = db().tx()) {
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(true);
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request));
 			expectResponseMessage(message, "role_updated_permission", role().getName());
-
 			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
 		}
 	}
@@ -50,7 +52,10 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			tx.success();
+		}
 
+		try (Tx tx = db().tx()) {
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(false);
 			request.getPermissions().add(READ);
@@ -74,8 +79,12 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 			// Revoke all permissions to vcard microschema
 			role().revokePermissions(vcard, GraphPermission.values());
+			tx.success();
+		}
 
+		try (Tx tx = db().tx()) {
 			// Validate revocation
+			MicroschemaContainer vcard = microschemaContainer("vcard");
 			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, vcard));
 
 			RolePermissionRequest request = new RolePermissionRequest();
@@ -133,19 +142,23 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			role().revokePermissions(node, GraphPermission.UPDATE_PERM);
 			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, node));
 			assertTrue(user().hasPermission(role(), GraphPermission.UPDATE_PERM));
+			tx.success();
+		}
 
+		try (Tx tx = db().tx()) {
+			Node node = folder("2015");
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(false);
 			request.getPermissions().add(READ);
 			request.getPermissions().add(UPDATE);
 			request.getPermissions().add(CREATE);
-
 			GenericMessageResponse message = call(
 					() -> client().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid() + "/nodes/" + node.getUuid(), request));
 			expectResponseMessage(message, "role_updated_permission", role().getName());
 
 			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, node));
 		}
+
 	}
 
 	@Test

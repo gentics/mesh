@@ -97,6 +97,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		String schemaRootUuid = db().tx(() -> meshRoot().getSchemaContainerRoot().getUuid());
 		try (Tx tx = db().tx()) {
 			role().revokePermissions(meshRoot().getSchemaContainerRoot(), CREATE_PERM);
+			tx.success();
 		}
 		call(() -> client().createSchema(schema), FORBIDDEN, "error_missing_perm", schemaRootUuid);
 	}

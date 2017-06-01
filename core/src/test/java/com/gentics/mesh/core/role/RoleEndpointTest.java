@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateFutures;
@@ -88,14 +87,15 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
-		RoleCreateRequest request = new RoleCreateRequest();
-		request.setName("new_role");
 
 		try (Tx tx = db().tx()) {
 			role().revokePermissions(meshRoot().getRoleRoot(), CREATE_PERM);
+			tx.success();
 		}
 
 		String roleRootUuid = db().tx(() -> meshRoot().getRoleRoot().getUuid());
+		RoleCreateRequest request = new RoleCreateRequest();
+		request.setName("new_role");
 		call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", roleRootUuid);
 
 	}
@@ -131,6 +131,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		try (Tx tx = db().tx()) {
 			// Add needed permission to group
 			role().revokePermissions(meshRoot().getRoleRoot(), CREATE_PERM);
+			tx.success();
 		}
 
 		try (Tx tx = db().tx()) {
@@ -157,11 +158,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testReadOwnRoleByUUID() throws Exception {
 		try (Tx tx = db().tx()) {
-			Role role = role();
-			String uuid = role.getUuid();
-			assertNotNull("The UUID of the role must not be null.", role.getUuid());
-
-			RoleResponse restRole = call(() -> client().findRoleByUuid(uuid));
+			RoleResponse restRole = call(() -> client().findRoleByUuid(roleUuid()));
 			assertThat(restRole).matches(role());
 		}
 	}
@@ -169,69 +166,69 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
+		Role extraRole;
 		try (Tx tx = db().tx()) {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
-			Role extraRole = roleRoot.create("extra role", user());
+			extraRole = roleRoot.create("extra role", user());
 			group().addRole(extraRole);
 			assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
 			role().grantPermissions(extraRole, READ_PERM);
+			tx.success();
+		}
 
+		try (Tx tx = db().tx()) {
 			RoleResponse restRole = call(() -> client().findRoleByUuid(extraRole.getUuid()));
 			assertThat(restRole).matches(extraRole);
 		}
-
 	}
 
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		try (Tx tx = db().tx()) {
-			Role role = role();
-			String uuid = role.getUuid();
-
-			RoleResponse restRole = call(() -> client().findRoleByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
-			assertNotNull(restRole.getRolePerms());
-			assertThat(restRole.getRolePerms()).hasPerm(Permission.values());
-		}
+		RoleResponse restRole = call(() -> client().findRoleByUuid(roleUuid(), new RolePermissionParametersImpl().setRoleUuid(roleUuid())));
+		assertNotNull(restRole.getRolePerms());
+		assertThat(restRole.getRolePerms()).hasPerm(Permission.values());
 	}
 
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
+		String extraRoleUuid;
 		try (Tx tx = db().tx()) {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
+			extraRoleUuid = extraRole.getUuid();
 			group().addRole(extraRole);
 			// Revoke read permission from the role
 			role().revokePermissions(extraRole, READ_PERM);
-
-			assertNotNull("The UUID of the role must not be null.", extraRole.getUuid());
-			call(() -> client().findRoleByUuid(extraRole.getUuid()), FORBIDDEN, "error_missing_perm", extraRole.getUuid());
+			tx.success();
 		}
+
+		call(() -> client().findRoleByUuid(extraRoleUuid), FORBIDDEN, "error_missing_perm", extraRoleUuid);
 
 	}
 
 	@Test
 	public void testReadOwnRoleByUUIDWithMissingPermission() throws Exception {
 		try (Tx tx = db().tx()) {
-			Role role = role();
-			String uuid = role.getUuid();
-			assertNotNull("The UUID of the role must not be null.", role.getUuid());
-			role.revokePermissions(role, READ_PERM);
-			call(() -> client().findRoleByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid);
+			role().revokePermissions(role(), READ_PERM);
+			tx.success();
 		}
+
+		call(() -> client().findRoleByUuid(roleUuid()), FORBIDDEN, "error_missing_perm", roleUuid());
 	}
 
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		int initialRolesCount = roles().size();
+		final int nRoles = 21;
+		final String noPermRoleName = "no_perm_role";
+		final int initialRolesCount = roles().size();
+
 		try (Tx tx = db().tx()) {
-			final int nRoles = 21;
-			String noPermRoleName;
 
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
-			Role noPermRole = roleRoot.create("no_perm_role", user());
+			Role noPermRole = roleRoot.create(noPermRoleName, user());
 
 			role().grantPermissions(group(), READ_PERM);
 
@@ -243,57 +240,57 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			}
 			// Role with no permission
 			group().addRole(noPermRole);
-
-			noPermRoleName = noPermRole.getName();
-
-			// Test default paging parameters
-			RoleListResponse restResponse = call(() -> client().findRoles());
-			assertEquals(25, restResponse.getMetainfo().getPerPage());
-			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-			assertEquals(nRoles + initialRolesCount, restResponse.getData().size());
-
-			int perPage = 11;
-			final int currentPage = 1;
-			restResponse = call(() -> client().findRoles(new PagingParametersImpl(currentPage, perPage)));
-			assertEquals("The amount of items for page {" + currentPage + "} does not match the expected amount.", 11, restResponse.getData().size());
-
-			// created roles + test data role
-			// TODO fix this assertion. Actually we would need to add 1 since the own role must also be included in the list
-			int totalRoles = nRoles + data().getRoles().size();
-			int totalPages = (int) Math.ceil(totalRoles / (double) perPage);
-			assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
-			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
-			assertEquals("The total pages could does not match. We expect {" + totalRoles + "} total roles and {" + perPage
-					+ "} roles per page. Thus we expect {" + totalPages + "} pages", totalPages, restResponse.getMetainfo().getPageCount());
-			assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-			for (RoleResponse role : restResponse.getData()) {
-				System.out.println(role.getName());
-			}
-			assertEquals(totalRoles, restResponse.getMetainfo().getTotalCount());
-
-			List<RoleResponse> allRoles = new ArrayList<>();
-			for (int page = 1; page <= totalPages; page++) {
-				final int cPage = page;
-				restResponse = call(() -> client().findRoles(new PagingParametersImpl(cPage, perPage)));
-				allRoles.addAll(restResponse.getData());
-			}
-			assertEquals("Somehow not all roles were loaded when loading all pages.", totalRoles, allRoles.size());
-
-			// Verify that extra role is not part of the response
-			List<RoleResponse> filteredUserList = allRoles.parallelStream().filter(restRole -> restRole.getName().equals(noPermRoleName))
-					.collect(Collectors.toList());
-			assertTrue("Extra role should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
-
-			call(() -> client().findRoles(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
-			call(() -> client().findRoles(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
-			RoleListResponse response = call(() -> client().findRoles(new PagingParametersImpl(4242, 25)));
-
-			assertEquals(0, response.getData().size());
-			assertEquals(4242, response.getMetainfo().getCurrentPage());
-			assertEquals(1, response.getMetainfo().getPageCount());
-			assertEquals(nRoles + initialRolesCount, response.getMetainfo().getTotalCount());
-			assertEquals(25, response.getMetainfo().getPerPage());
+			tx.success();
 		}
+
+		// Test default paging parameters
+		RoleListResponse restResponse = call(() -> client().findRoles());
+		assertEquals(25, restResponse.getMetainfo().getPerPage());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+		assertEquals(nRoles + initialRolesCount, restResponse.getData().size());
+
+		int perPage = 11;
+		final int currentPage = 1;
+		restResponse = call(() -> client().findRoles(new PagingParametersImpl(currentPage, perPage)));
+		assertEquals("The amount of items for page {" + currentPage + "} does not match the expected amount.", 11, restResponse.getData().size());
+
+		// created roles + test data role
+		// TODO fix this assertion. Actually we would need to add 1 since the own role must also be included in the list
+		int totalRoles = nRoles + data().getRoles().size();
+		int totalPages = (int) Math.ceil(totalRoles / (double) perPage);
+		assertEquals("The response did not contain the correct amount of items", perPage, restResponse.getData().size());
+		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
+		assertEquals("The total pages could does not match. We expect {" + totalRoles + "} total roles and {" + perPage
+				+ "} roles per page. Thus we expect {" + totalPages + "} pages", totalPages, restResponse.getMetainfo().getPageCount());
+		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		for (RoleResponse role : restResponse.getData()) {
+			System.out.println(role.getName());
+		}
+		assertEquals(totalRoles, restResponse.getMetainfo().getTotalCount());
+
+		List<RoleResponse> allRoles = new ArrayList<>();
+		for (int page = 1; page <= totalPages; page++) {
+			final int cPage = page;
+			restResponse = call(() -> client().findRoles(new PagingParametersImpl(cPage, perPage)));
+			allRoles.addAll(restResponse.getData());
+		}
+		assertEquals("Somehow not all roles were loaded when loading all pages.", totalRoles, allRoles.size());
+
+		// Verify that extra role is not part of the response
+		List<RoleResponse> filteredUserList = allRoles.parallelStream().filter(restRole -> restRole.getName().equals(noPermRoleName))
+				.collect(Collectors.toList());
+		assertTrue("Extra role should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
+
+		call(() -> client().findRoles(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+		call(() -> client().findRoles(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
+		RoleListResponse response = call(() -> client().findRoles(new PagingParametersImpl(4242, 25)));
+
+		assertEquals(0, response.getData().size());
+		assertEquals(4242, response.getMetainfo().getCurrentPage());
+		assertEquals(1, response.getMetainfo().getPageCount());
+		assertEquals(nRoles + initialRolesCount, response.getMetainfo().getTotalCount());
+		assertEquals(25, response.getMetainfo().getPerPage());
+
 	}
 
 	@Test
@@ -309,24 +306,27 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testUpdate() throws JsonGenerationException, JsonMappingException, IOException, Exception {
+		String extraRoleUuid;
 		try (Tx tx = db().tx()) {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
 			group().addRole(extraRole);
-			String roleUuid = extraRole.getUuid();
+			extraRoleUuid = extraRole.getUuid();
 			role().grantPermissions(extraRole, UPDATE_PERM);
-			RoleUpdateRequest request = new RoleUpdateRequest();
-			request.setName("renamed role");
+			tx.success();
+		}
 
-			MeshResponse<RoleResponse> future = client().updateRole(roleUuid, request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			RoleResponse restRole = future.result();
-			assertEquals(request.getName(), restRole.getName());
-			assertEquals(roleUuid, restRole.getUuid());
+		RoleUpdateRequest request = new RoleUpdateRequest();
+		request.setName("renamed role");
 
+		RoleResponse restRole = call(() -> client().updateRole(extraRoleUuid, request));
+		assertEquals(request.getName(), restRole.getName());
+		assertEquals(extraRoleUuid, restRole.getUuid());
+
+		try (Tx tx = db().tx()) {
 			// Check that the extra role was updated as expected
-			Role reloadedRole = roleRoot.findByUuid(roleUuid);
+			RoleRoot roleRoot = meshRoot().getRoleRoot();
+			Role reloadedRole = roleRoot.findByUuid(extraRoleUuid);
 			reloadedRole.reload();
 			assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
 		}
@@ -337,14 +337,12 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		try (Tx tx = db().tx()) {
 			role().revokePermissions(role(), UPDATE_PERM);
-			String uuid = role().getUuid();
-			RoleUpdateRequest request = new RoleUpdateRequest();
-			request.setName("New Name");
-
-			MeshResponse<RoleResponse> future = client().updateRole(uuid, request).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
+			tx.success();
 		}
+
+		RoleUpdateRequest request = new RoleUpdateRequest();
+		request.setName("New Name");
+		call(() -> client().updateRole(roleUuid(), request), FORBIDDEN, "error_missing_perm", roleUuid());
 
 	}
 
@@ -352,13 +350,12 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdateConflictCheck() {
 		try (Tx tx = db().tx()) {
 			MeshInternal.get().boot().meshRoot().getRoleRoot().create("test123", user());
-			RoleUpdateRequest request = new RoleUpdateRequest();
-			request.setName("test123");
-
-			MeshResponse<RoleResponse> future = client().updateRole(role().getUuid(), request).invoke();
-			latchFor(future);
-			expectException(future, CONFLICT, "role_conflicting_name");
+			tx.success();
 		}
+
+		RoleUpdateRequest request = new RoleUpdateRequest();
+		request.setName("test123");
+		call(() -> client().updateRole(roleUuid(), request), CONFLICT, "role_conflicting_name");
 	}
 
 	@Test
@@ -367,36 +364,31 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		RoleUpdateRequest request = new RoleUpdateRequest();
 		request.setName("renamed role");
 
-		MeshResponse<RoleResponse> future = client().updateRole("bogus", request).invoke();
-		latchFor(future);
-		expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		call(() -> client().updateRole("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 
 	}
 
 	@Test
 	public void testUpdateOwnRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		try (Tx tx = db().tx()) {
-			Role role = role();
-			String uuid = role.getUuid();
+			role().revokePermissions(role(), UPDATE_PERM);
+			tx.success();
+		}
+		RoleUpdateRequest restRole = new RoleUpdateRequest();
+		restRole.setName("renamed role");
+		call(() -> client().updateRole(roleUuid(), restRole), FORBIDDEN, "error_missing_perm", roleUuid());
 
-			role().revokePermissions(role, UPDATE_PERM);
-
-			RoleUpdateRequest restRole = new RoleUpdateRequest();
-			restRole.setName("renamed role");
-
-			MeshResponse<RoleResponse> future = client().updateRole(uuid, restRole).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", uuid);
-
-			// Add the missing permission and try again
+		// Add the missing permission and try again
+		try (Tx tx = db().tx()) {
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+			tx.success();
+		}
 
-			future = client().updateRole(uuid, restRole).invoke();
-			latchFor(future);
-			assertSuccess(future);
+		call(() -> client().updateRole(roleUuid(), restRole));
 
-			// Check that the role was updated
-			Role reloadedRole = boot().roleRoot().findByUuid(uuid);
+		// Check that the role was updated
+		try (Tx tx = db().tx()) {
+			Role reloadedRole = boot().roleRoot().findByUuid(roleUuid());
 			reloadedRole.reload();
 			assertEquals(restRole.getName(), reloadedRole.getName());
 		}
@@ -406,21 +398,27 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
+		String extraRoleUuid;
 		try (Tx tx = db().tx()) {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
 			group().addRole(extraRole);
-			String roleUuid = extraRole.getUuid();
+			extraRoleUuid = extraRole.getUuid();
 			role().grantPermissions(extraRole, DELETE_PERM);
-
-			dummySearchProvider().clear();
-			call(() -> client().deleteRole(roleUuid));
-			assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), group().getUuid());
-			assertThat(dummySearchProvider()).hasDelete(Role.composeIndexName(), Role.composeIndexType(), roleUuid);
-			assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0);
-			meshRoot().getRoleRoot().reload();
-			assertElement(meshRoot().getRoleRoot(), roleUuid, false);
+			tx.success();
 		}
+
+		dummySearchProvider().clear();
+		call(() -> client().deleteRole(extraRoleUuid));
+		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), groupUuid());
+		assertThat(dummySearchProvider()).hasDelete(Role.composeIndexName(), Role.composeIndexType(), extraRoleUuid);
+		assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0);
+
+		try (Tx tx = db().tx()) {
+			meshRoot().getRoleRoot().reload();
+			assertElement(meshRoot().getRoleRoot(), extraRoleUuid, false);
+		}
+
 	}
 
 	@Test
@@ -428,6 +426,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		try (Tx tx = db().tx()) {
 			role().revokePermissions(role(), DELETE_PERM);
+			tx.success();
 		}
 
 		try (Tx tx = db().tx()) {

@@ -57,6 +57,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			nodeFieldSchema.setAllowedSchemas("folder");
 			schema.addField(nodeFieldSchema);
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			tx.success();
 		}
 	}
 
@@ -228,7 +229,8 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en");
 			parameters.setResolveLinks(LinkType.FULL);
-			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParametersImpl().draft()));
+			NodeResponse response = call(
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParametersImpl().draft()));
 
 			// Check whether the field contains the languagePath
 			NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
