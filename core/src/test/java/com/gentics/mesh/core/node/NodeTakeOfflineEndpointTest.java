@@ -212,7 +212,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 	public void testTakeOfflineForRelease() {
 		Node news = folder("news");
 		Release newRelease;
-		Release initialRelease = db().tx(() -> release());
+		Release initialRelease = db().tx(() -> latestRelease());
 
 		try (Tx tx = tx()) {
 			Project project = project();

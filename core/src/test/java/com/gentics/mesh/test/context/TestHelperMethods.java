@@ -166,7 +166,7 @@ public interface TestHelperMethods {
 	 * 
 	 * @return
 	 */
-	default String releaseUuid() {
+	default String initialReleaseUuid() {
 		return data().releaseUuid();
 	}
 
@@ -222,7 +222,7 @@ public interface TestHelperMethods {
 
 	default SchemaContainer schemaContainer(String key) {
 		SchemaContainer container = data().getSchemaContainer(key);
-		container.reload();
+		// container.reload();
 		return container;
 	}
 
@@ -287,17 +287,26 @@ public interface TestHelperMethods {
 	 */
 	default Node content() {
 		Node content = data().getContent("news overview");
-//		content.reload();
+		// content.reload();
 		return content;
 	}
 
 	/**
-	 * Return the lastest release of the dummy project
+	 * Return the latest release of the dummy project.
 	 * 
 	 * @return
 	 */
-	default Release release() {
+	default Release latestRelease() {
 		return project().getLatestRelease();
+	}
+
+	/**
+	 * Returns the initial release of the dummy project.
+	 * 
+	 * @return
+	 */
+	default Release initialRelease() {
+		return project().getInitialRelease();
 	}
 
 	default UserResponse readUser(String uuid) {

@@ -6,9 +6,9 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -45,9 +45,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadChildrenOfBaseNode() {
 		try (Tx tx = tx()) {
-			MeshResponse<NodeListResponse> future = client().findNodeChildren(PROJECT_NAME, project().getBaseNode().getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
+			call(() -> client().findNodeChildren(PROJECT_NAME, project().getBaseNode().getUuid()));
 		}
 	}
 
@@ -125,7 +123,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 					subContentCount);
 		}
 	}
-	
+
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren2() throws Exception {
 		try (Tx tx = tx()) {
@@ -149,8 +147,8 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 			int expectedItemsInPage = node.getChildren().size() > 25 ? 25 : node.getChildren().size();
 
-			NodeListResponse nodeList = call(
-					() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(), new VersioningParametersImpl().draft()));
+			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
+					new VersioningParametersImpl().draft()));
 
 			assertEquals(node.getChildren().size(), nodeList.getMetainfo().getTotalCount());
 			assertEquals(expectedItemsInPage, nodeList.getData().size());
@@ -177,18 +175,19 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeChildrenWithNoPermission() throws Exception {
+		Node node = folder("news");
 		try (Tx tx = tx()) {
-			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
-
 			role().revokePermissions(node, READ_PERM);
-
-			MeshResponse<NodeListResponse> future = client()
-					.findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(), new NodeParametersImpl()).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
+			tx.success();
 		}
+
+		try (Tx tx = tx()) {
+			call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(), new NodeParametersImpl()), FORBIDDEN,
+					"error_missing_perm", node.getUuid());
+		}
+
 	}
 
 	@Test
@@ -228,17 +227,17 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testFilterByLanguage() {
 		String uuid = db().tx(() -> folder("2015").getUuid());
-		
+
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("de");
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(uuid));
 		nodeCreateRequest.setSchema(new SchemaReference().setName("content"));
-		nodeCreateRequest.getFields().put("teaser",  new StringFieldImpl().setString("Only German Teaser"));
-		nodeCreateRequest.getFields().put("slug",  new StringFieldImpl().setString("Only German Slug"));
+		nodeCreateRequest.getFields().put("teaser", new StringFieldImpl().setString("Only German Teaser"));
+		nodeCreateRequest.getFields().put("slug", new StringFieldImpl().setString("Only German Slug"));
 
 		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 		NodeListResponse listResponse = call(() -> client().findNodeChildren(PROJECT_NAME, uuid, new NodeParametersImpl().setLanguages("en")));
-		List<String> langList = listResponse.getData().stream().map(node ->   node.getLanguage()).collect(Collectors.toList());
+		List<String> langList = listResponse.getData().stream().map(node -> node.getLanguage()).collect(Collectors.toList());
 		assertThat(langList).doesNotContain(null, "de");
 	}
 

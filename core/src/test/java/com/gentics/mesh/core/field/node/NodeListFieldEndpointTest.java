@@ -230,7 +230,6 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	public void testReadNodeWithExistingField() {
 		try (Tx tx = tx()) {
 			Node node = folder("2015");
-
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", folder("news"));

@@ -92,12 +92,13 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		NodeResponse secondResponse;
 		try (Tx tx = tx()) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+			secondResponse = updateNode(FIELD_NAME, null);
 			assertThat(secondResponse.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
 			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
 
@@ -109,11 +110,11 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertThat(latest.getPreviousVersion().getDate(FIELD_NAME)).isNotNull();
 			Long oldValue = latest.getPreviousVersion().getDate(FIELD_NAME).getDate();
 			assertThat(oldValue).isEqualTo(nowEpoch);
-
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
 		}
+
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+				secondResponse.getVersion().getNumber());
 	}
 
 	@Test
@@ -168,6 +169,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 			container.createDate(FIELD_NAME).setDate(nowEpoch);
 			tx.success();
 		}
+
 		try (Tx tx = tx()) {
 			NodeResponse response = readNode(node);
 			DateField deserializedDateField = response.getFields().getDateField(FIELD_NAME);

@@ -77,7 +77,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			Release initialRelease = release();
+			Release initialRelease = latestRelease();
 			initialRelease.reload();
 			// Get for latest release (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
@@ -108,9 +108,9 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 			Node node = content();
 
-			node.addTag(tag1, release());
-			node.addTag(tag3, release());
-			node.addTag(tag2, release());
+			node.addTag(tag1, latestRelease());
+			node.addTag(tag3, latestRelease());
+			node.addTag(tag2, latestRelease());
 
 			role().grantPermissions(tag1, READ_PERM);
 			role().grantPermissions(tag2, READ_PERM);

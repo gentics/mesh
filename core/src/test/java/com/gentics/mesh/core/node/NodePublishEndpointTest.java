@@ -285,7 +285,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testPublishLanguage() {
 		String nodeUuid = db().tx(() -> folder("2015").getUuid());
-		String releaseUuid = db().tx(() -> release().getUuid());
+		String releaseUuid = db().tx(() -> latestRelease().getUuid());
 
 		// Only publish the test node. Take all children offline
 		call(() -> client().takeNodeOffline(PROJECT_NAME, nodeUuid, new PublishParametersImpl().setRecursive(true)));

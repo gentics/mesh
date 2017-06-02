@@ -45,15 +45,17 @@ public class StringListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
 			prepareNode(node, "stringList", "string");
-
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			StringGraphFieldList stringList = container.createStringList("stringList");
 			stringList.createString("dummyString1");
 			stringList.createString("dummyString2");
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeResponse response = transform(node);
 			assertList(2, "stringList", "string", response);
 		}

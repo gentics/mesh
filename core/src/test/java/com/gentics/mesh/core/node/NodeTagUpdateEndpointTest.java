@@ -63,7 +63,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		assertEquals("The colors tag family should not have any additional tags.", previousCount, afterCount);
 
 		try (Tx tx = tx()) {
-			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), release(), "en", "de").hasEvents(4, 0, 0, 0);
+			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de").hasEvents(4, 0, 0, 0);
 		}
 
 	}
@@ -81,7 +81,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		assertEquals("The colors tag family should now have one additional color tag.", previousCount + 1, afterCount);
 
 		try (Tx tx = tx()) {
-			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), release(), "en", "de");
+			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de");
 			assertThat(dummySearchProvider()).stored(tagFamily("colors"));
 			assertThat(dummySearchProvider()).stored(tagFamily("colors").findByName("purple"));
 			assertThat(dummySearchProvider()).hasEvents(6, 0, 0, 0);
@@ -102,7 +102,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		assertEquals(4, response.getMetainfo().getTotalCount());
 		try (Tx tx = tx()) {
 			// 4 Node containers need to be updated and two tag families and 4 new tags
-			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), release(), "en", "de").hasEvents(4 + 2 + 4, 0, 0, 0);
+			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de").hasEvents(4 + 2 + 4, 0, 0, 0);
 		}
 
 		dummySearchProvider().clear();
@@ -113,7 +113,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		assertEquals(2, response.getMetainfo().getTotalCount());
 		try (Tx tx = tx()) {
 			// No tag family is modified - no Tag is created
-			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), release(), "en", "de").hasEvents(4, 0, 0, 0);
+			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de").hasEvents(4, 0, 0, 0);
 		}
 
 	}

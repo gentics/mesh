@@ -57,7 +57,7 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 			call(() -> client().deleteNode(PROJECT_NAME, node.getUuid(), "de"));
 			assertThat(dummySearchProvider()).recordedDeleteEvents(2 + 2);
 			call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().published()), NOT_FOUND,
-					"node_error_published_not_found_for_uuid_release_language", contentUuid(), "en", release().getUuid());
+					"node_error_published_not_found_for_uuid_release_language", contentUuid(), "en", latestRelease().getUuid());
 		}
 
 	}
