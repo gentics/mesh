@@ -5,8 +5,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -22,7 +20,6 @@ import org.junit.Test;
 
 import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -35,7 +32,6 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -104,13 +100,16 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildrenPermissions() throws Exception {
+		Node node = folder("news");
 		try (Tx tx = tx()) {
-			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
 			role().revokePermissions(folder("2015"), READ_PERM);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertThat(node).matches(restNode);
 			assertTrue(restNode.isContainer());
@@ -157,13 +156,16 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeChildrenWithoutChildPermission() throws Exception {
+		Node node = folder("news");
+		Node nodeWithNoPerm = folder("2015");
 		try (Tx tx = tx()) {
-			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
-			Node nodeWithNoPerm = folder("2015");
 			role().revokePermissions(nodeWithNoPerm, READ_PERM);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(),
 					new PagingParametersImpl().setPerPage(20000), new VersioningParametersImpl().draft()));
 
@@ -192,18 +194,24 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadReleaseChildren() {
+		Node node = folder("news");
+		int childrenSize;
+		int expectedItemsInPage;
+		Release newRelease;
+		Node firstChild;
+
 		try (Tx tx = tx()) {
-			Node node = folder("news");
-			Node firstChild = node.getChildren().get(0);
-			int childrenSize = node.getChildren().size();
-			int expectedItemsInPage = childrenSize > 25 ? 25 : childrenSize;
+			firstChild = node.getChildren().get(0);
+			childrenSize = node.getChildren().size();
+			expectedItemsInPage = childrenSize > 25 ? 25 : childrenSize;
 
-			Project project = project();
-			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+			newRelease = project().getReleaseRoot().create("newrelease", user());
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
-					new VersioningParametersImpl().setRelease(initialRelease.getName()).draft()));
+					new VersioningParametersImpl().setRelease(initialRelease().getName()).draft()));
 			assertEquals("Total children in initial release", childrenSize, nodeList.getMetainfo().getTotalCount());
 			assertEquals("Returned children in initial release", expectedItemsInPage, nodeList.getData().size());
 

@@ -47,15 +47,18 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
 			prepareNode(node, "dateList", "date");
 
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			DateGraphFieldList dateList = container.createDateList("dateList");
 			dateList.createDate(1L);
 			dateList.createDate(2L);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeResponse response = transform(node);
 			assertList(2, "dateList", "date", response);
 		}
@@ -87,12 +90,10 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			testField.createDate(47L);
 			testField.createDate(11L);
 
-			NodeGraphFieldContainerImpl otherContainer = tx.getGraph()
-					.addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
-			assertThat(otherContainer.getDateList("testField")).as("cloned field")
-					.isEqualToComparingFieldByField(testField);
+			assertThat(otherContainer.getDateList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
 		}
 	}
 
@@ -207,10 +208,8 @@ public class DateListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 				DateGraphFieldList field = container.getDateList(DATE_LIST);
 				assertNotNull("The graph field {" + DATE_LIST + "} could not be found.", field);
 				assertEquals("The list of the field was not updated.", 2, field.getList().size());
-				assertEquals("The list item of the field was not updated.", 42000L,
-						field.getList().get(0).getDate().longValue());
-				assertEquals("The list item of the field was not updated.", 43000L,
-						field.getList().get(1).getDate().longValue());
+				assertEquals("The list item of the field was not updated.", 42000L, field.getList().get(0).getDate().longValue());
+				assertEquals("The list item of the field was not updated.", 43000L, field.getList().get(1).getDate().longValue());
 			});
 		}
 	}

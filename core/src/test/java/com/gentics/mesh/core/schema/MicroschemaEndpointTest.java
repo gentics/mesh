@@ -148,6 +148,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		String microschemaRootUuid = db().tx(() -> meshRoot().getMicroschemaContainerRoot().getUuid());
 		try (Tx tx = tx()) {
 			role().revokePermissions(meshRoot().getMicroschemaContainerRoot(), CREATE_PERM);
+			tx.success();
 		}
 		call(() -> client().createMicroschema(request), FORBIDDEN, "error_missing_perm", microschemaRootUuid);
 
@@ -190,17 +191,17 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
+		String uuid;
 		try (Tx tx = tx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
-			assertNotNull(vcardContainer);
-
+			uuid = vcardContainer.getUuid();
 			role().grantPermissions(vcardContainer, DELETE_PERM);
 			role().grantPermissions(vcardContainer, UPDATE_PERM);
 			role().grantPermissions(vcardContainer, CREATE_PERM);
 			role().revokePermissions(vcardContainer, READ_PERM);
-
-			call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()), FORBIDDEN, "error_missing_perm", vcardContainer.getUuid());
+			tx.success();
 		}
+		call(() -> client().findMicroschemaByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
@@ -220,16 +221,17 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
+		String uuid;
 		try (Tx tx = tx()) {
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
-			assertNotNull(microschema);
+			uuid = microschema.getUuid();
 			role().revokePermissions(microschema, UPDATE_PERM);
-
-			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
-			request.setName("new-name");
-
-			call(() -> client().updateMicroschema(microschema.getUuid(), request), FORBIDDEN, "error_missing_perm", microschema.getUuid());
+			tx.success();
 		}
+
+		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
+		request.setName("new-name");
+		call(() -> client().updateMicroschema(uuid, request), FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
@@ -237,7 +239,6 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		try (Tx tx = tx()) {
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
-			assertNotNull(microschema);
 			String oldName = microschema.getName();
 			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 			request.setName("new-name");
@@ -253,7 +254,6 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		String uuid = db().tx(() -> microschemaContainers().get("vcard").getUuid());
-
 		call(() -> client().deleteMicroschema(uuid));
 
 		// schema_delete_still_in_use
@@ -302,11 +302,15 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
+		MicroschemaContainer microschema;
 		try (Tx tx = tx()) {
-			MicroschemaContainer microschema = microschemaContainers().get("vcard");
+			microschema = microschemaContainers().get("vcard");
 			assertNotNull(microschema);
-
 			role().revokePermissions(microschema, DELETE_PERM);
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			call(() -> client().deleteMicroschema(microschema.getUuid()), FORBIDDEN, "error_missing_perm", microschema.getUuid());
 
 			assertElement(boot().microschemaContainerRoot(), microschema.getUuid(), true);

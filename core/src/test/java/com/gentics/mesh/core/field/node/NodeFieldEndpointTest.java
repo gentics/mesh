@@ -107,9 +107,10 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 			oldVersion = firstResponse.getVersion().getNumber();
+			tx.success();
 		}
 
-		NodeResponse secondResponse = db().tx(() -> updateNode(FIELD_NAME, null));
+		NodeResponse secondResponse = tx(() -> updateNode(FIELD_NAME, null));
 		assertThat(secondResponse.getFields().getNodeField(FIELD_NAME)).as("Deleted Field").isNull();
 		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
 
@@ -132,9 +133,9 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
+		String uuid = tx(() -> folder("news").getUuid());
 		try (Tx tx = tx()) {
-			Node target = folder("news");
-			updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+			updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(uuid));
 			updateNodeFailure(FIELD_NAME, new NodeFieldImpl(), BAD_REQUEST, "node_error_field_property_missing", "uuid", FIELD_NAME);
 		}
 	}

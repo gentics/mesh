@@ -328,7 +328,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
-				assertThat(newNode.getGraphFieldContainer("en", initialReleaseUuid(), type)).as(type + " Field container for initial release").isNull();
+				assertThat(newNode.getGraphFieldContainer("en", initialReleaseUuid(), type)).as(type + " Field container for initial release")
+						.isNull();
 				assertThat(newNode.getGraphFieldContainer("en", newRelease.getUuid(), type)).as(type + " Field Container for new release").isNotNull()
 						.hasVersion("0.1");
 			}
@@ -631,7 +632,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			assertThat(restResponse.getData()).as("Node List for latest release").isEmpty();
 
 			restResponse = call(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl(1, 1000),
-					new VersioningParametersImpl().setRelease(latestRelease().getName()).draft()));
+					new VersioningParametersImpl().setRelease(initialRelease().getName()).draft()));
 			assertThat(restResponse.getData()).as("Node List for initial release").hasSize(getNodeCount());
 
 			// update a single node in the new release
@@ -1141,23 +1142,23 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodeForRelease() {
-		String uuid;
+		Node node = folder("2015");
 		Release newRelease;
+
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
-			uuid = node.getUuid();
 			newRelease = project().getReleaseRoot().create("newrelease", user());
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
+			String uuid = node.getUuid();
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setLanguage("en");
 			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 in new release"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setRelease(newRelease.getName())));
 
-			assertThat(
-					call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(latestRelease().getName()).draft())))
+			assertThat(call(
+					() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(initialRelease().getName()).draft())))
 							.as("Initial Release Version").hasVersion("1.0").hasStringField("name", "2015");
 			assertThat(
 					call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(newRelease.getName()).draft())))
@@ -1192,8 +1193,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// create version 1.1 in initial release (1.0 is the current published en node)
 			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v1.1 initial release"));
 			updateRequest.setVersion(new VersionReference(null, "1.0"));
-			response = call(
-					() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setRelease(initialRelease().getName())));
+			response = call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest,
+					new VersioningParametersImpl().setRelease(initialRelease().getName())));
 			assertEquals("1.1", response.getVersion().getNumber());
 
 			// create version 0.2 in new release

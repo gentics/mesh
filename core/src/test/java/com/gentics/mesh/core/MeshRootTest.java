@@ -146,6 +146,7 @@ public class MeshRootTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			meshRoot().setMeshVersion(graphVersion);
+			tx.success();
 		}
 	}
 

@@ -171,6 +171,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
+			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
 			assertThat(latest.getNodeList(FIELD_NAME)).isNull();
@@ -228,11 +229,15 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
+		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", folder("news"));
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			NodeResponse response = readNode(node);
 			NodeFieldList deserializedListField = response.getFields().getNodeFieldList(FIELD_NAME);
 			assertNotNull(deserializedListField);
@@ -242,16 +247,20 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedListWithNoPermOnItem() {
+		Node node = folder("2015");
+		Node referencedNode = folder("news");
+
 		try (Tx tx = tx()) {
-			Node referencedNode = folder("news");
 			role().revokePermissions(referencedNode, GraphPermission.READ_PERM);
-			Node node = folder("2015");
 
 			// Create node list
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", referencedNode);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			// 1. Read node with collapsed fields and check that the collapsed node list item can be read
 			NodeResponse responseCollapsed = readNode(node);
 			NodeFieldList deserializedNodeListField = responseCollapsed.getFields().getNodeFieldList(FIELD_NAME);
@@ -272,14 +281,18 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeListWithExistingField() throws IOException {
-		try (Tx tx = tx()) {
-			Node newsNode = folder("news");
-			Node node = folder("2015");
+		Node newsNode = folder("news");
+		Node node = folder("2015");
 
-			// Create node list
+		// Create node list
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", newsNode);
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 
 			// 1. Read node with collapsed fields and check that the collapsed node list item can be read
 			NodeResponse responseCollapsed = readNode(node);
