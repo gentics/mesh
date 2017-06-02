@@ -77,8 +77,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			Release initialRelease = latestRelease();
-			initialRelease.reload();
+			Release initialRelease = initialRelease();
 			// Get for latest release (must be empty)
 			assertThat(call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 					new VersioningParametersImpl().draft())).getData()).as("Nodes tagged in latest release").isNotNull().isEmpty();
@@ -97,14 +96,11 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTagOrder() {
-		Tag tag1;
-		Tag tag2;
-		Tag tag3;
 		try (Tx tx = tx()) {
 			TagFamily root = tagFamily("basic");
-			tag1 = root.create("test1", project(), user());
-			tag2 = root.create("test2", project(), user());
-			tag3 = root.create("test3", project(), user());
+			Tag tag1 = root.create("test1", project(), user());
+			Tag tag2 = root.create("test2", project(), user());
+			Tag tag3 = root.create("test3", project(), user());
 
 			Node node = content();
 
@@ -121,7 +117,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		String tagFamilyUuid = db().tx(() -> tagFamily("basic").getUuid());
 		TagResponse tagResponse = call(() -> client().createTag(PROJECT_NAME, tagFamilyUuid, new TagCreateRequest().setName("test4")));
 
-		String nodeUuid = db().tx(() -> content().getUuid());
+		String nodeUuid = contentUuid();
 		TagListResponse list = call(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid));
 
 		List<String> names = list.getData().stream().map(entry -> entry.getName()).collect(Collectors.toList());

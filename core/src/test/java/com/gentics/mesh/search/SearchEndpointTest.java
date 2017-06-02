@@ -33,9 +33,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNoPermReIndex() {
-		MeshResponse<GenericMessageResponse> future = client().invokeReindex().invoke();
-		latchFor(future);
-		expectException(future, FORBIDDEN, "error_admin_permission_required");
+		call(() -> client().invokeReindex(), FORBIDDEN, "error_admin_permission_required");
 	}
 
 	@Test
@@ -43,8 +41,9 @@ public class SearchEndpointTest extends AbstractMeshTest {
 		// Add the user to the admin group - this way the user is in fact an admin.
 		try (Tx tx = tx()) {
 			user().addGroup(groups().get("admin"));
-			searchProvider().refreshIndex();
+			tx.success();
 		}
+		searchProvider().refreshIndex();
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());
 		expectResponseMessage(message, "search_admin_reindex_invoked");
@@ -69,9 +68,8 @@ public class SearchEndpointTest extends AbstractMeshTest {
 		}
 
 		// Make sure the document is no longer stored within the search index.
-		map = searchProvider()
-				.getDocument(User.composeIndexName(), User.composeIndexType(), User.composeDocumentId(db().tx(() -> user().getUuid()))).toBlocking()
-				.single();
+		map = searchProvider().getDocument(User.composeIndexName(), User.composeIndexType(), User.composeDocumentId(db().tx(() -> user().getUuid())))
+				.toBlocking().single();
 		assertNull("The user document should no longer be part of the search index.", map);
 
 	}

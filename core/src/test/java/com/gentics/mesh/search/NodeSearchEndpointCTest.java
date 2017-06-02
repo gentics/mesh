@@ -37,6 +37,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		try (Tx tx = tx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
 			recreateIndices();
+			tx.success();
 		}
 
 		// from 100 to 9000
@@ -52,6 +53,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 			addNumberSpeedFieldToOneNode(numberValue);
 			content().getLatestDraftFieldContainer(english()).createNumber("speed").setNumber(92.1535f);
 			recreateIndices();
+			tx.success();
 		}
 
 		// from 9 to 1
@@ -78,6 +80,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary").setFileName("somefile.dat").setFileSize(200)
 					.setMimeType("application/test").setSHA512Sum("someHash");
 			recreateIndices();
+			tx.success();
 		}
 
 		// filesize
@@ -112,6 +115,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		try (Tx tx = tx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
 			recreateIndices();
+			tx.success();
 		}
 
 		// out of bounds
@@ -125,6 +129,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		try (Tx tx = tx()) {
 			addMicronodeField();
 			recreateIndices();
+			tx.success();
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),
@@ -161,8 +166,9 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		// Add the user to the admin group - this way the user is in fact an admin.
 		try (Tx tx = tx()) {
 			user().addGroup(groups().get("admin"));
-			searchProvider().refreshIndex();
+			tx.success();
 		}
+		searchProvider().refreshIndex();
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());
 		expectResponseMessage(message, "search_admin_reindex_invoked");

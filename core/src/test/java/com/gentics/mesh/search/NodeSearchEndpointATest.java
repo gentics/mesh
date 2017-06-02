@@ -59,6 +59,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		// // Add the user to the admin group - this way the user is in fact an admin.
 		try (Tx tx = tx()) {
 			user().addGroup(data().getGroups().get("admin"));
+			tx.success();
 		}
 
 		// Now clear all data

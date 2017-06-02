@@ -100,15 +100,15 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
+		Node node = folder("2015");
 
+		try (Tx tx = tx()) {
 			// Update the schema
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			NumberFieldSchema numberFieldSchema = new NumberFieldSchemaImpl();
 			numberFieldSchema.setName("numberField");
-			//		numberFieldSchema.setMin(10);
-			//		numberFieldSchema.setMax(1000);
+			// numberFieldSchema.setMin(10);
+			// numberFieldSchema.setMax(1000);
 			numberFieldSchema.setRequired(true);
 			schema.addField(numberFieldSchema);
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
@@ -116,7 +116,10 @@ public class NumberFieldTest extends AbstractFieldTest<NumberFieldSchema> {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			NumberGraphField numberField = container.createNumber("numberField");
 			numberField.setNumber(100.9f);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			String json = getJson(node);
 			assertTrue("Could not find number within json. Json {" + json + "}", json.indexOf("100.9") > 1);
 			assertNotNull(json);
