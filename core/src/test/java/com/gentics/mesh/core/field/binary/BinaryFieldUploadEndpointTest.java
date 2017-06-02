@@ -86,11 +86,14 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 	public void testUploadMultipleToBinaryNode() throws IOException {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
+		Node node = folder("news");
 
 		try (Tx tx = tx()) {
-			Node node = folder("news");
 			prepareSchema(node, "", "binary");
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 			for (int i = 0; i < 20; i++) {
 				BinaryGraphField oldValue = container.getBinary("binary");
@@ -118,6 +121,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 				container = newContainer;
 			}
 		}
+
 	}
 
 	@Test
@@ -226,12 +230,14 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPathSegmentation() throws IOException {
+		Node node = folder("news");
 		try (Tx tx = tx()) {
-			Node node = folder("news");
 			node.setUuid(UUIDUtil.randomUUID());
-
 			// Add some test data
 			prepareSchema(node, "", "binary");
+			tx.success();
+		}
+		try (Tx tx = tx()) {
 			String contentType = "application/octet-stream";
 			String fileName = "somefile.dat";
 			int binaryLen = 10000;
