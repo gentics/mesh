@@ -42,57 +42,58 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetUsersByGroup() throws Exception {
+		String extraUserUuid;
 		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", user());
 			group().addUser(extraUser);
-			String extraUserUuid = extraUser.getUuid();
+			extraUserUuid = extraUser.getUuid();
 			role().grantPermissions(extraUser, READ_PERM);
-			String groupUuid = group().getUuid();
-
-			MeshResponse<UserListResponse> future = client().findUsersOfGroup(groupUuid, new PagingParametersImpl()).invoke();
-			latchFor(future);
-			assertSuccess(future);
-
-			ListResponse<UserResponse> userList = future.result();
-			assertEquals(2, userList.getMetainfo().getTotalCount());
-			assertEquals(2, userList.getData().size());
-			Iterator<UserResponse> userIt = userList.getData().iterator();
-			UserResponse userB = userIt.next();
-			UserResponse userA = userIt.next();
-			Map<String, UserResponse> map = new HashMap<>();
-			map.put(userA.getUuid(), userA);
-			map.put(userB.getUuid(), userB);
-			assertEquals(2, map.size());
-			assertNotNull(map.get(user().getUuid()));
-			assertNotNull(map.get(extraUserUuid));
+			tx.success();
 		}
+
+		ListResponse<UserResponse> userList = call(() -> client().findUsersOfGroup(groupUuid(), new PagingParametersImpl()));
+		assertEquals(2, userList.getMetainfo().getTotalCount());
+		assertEquals(2, userList.getData().size());
+		Iterator<UserResponse> userIt = userList.getData().iterator();
+		UserResponse userB = userIt.next();
+		UserResponse userA = userIt.next();
+		Map<String, UserResponse> map = new HashMap<>();
+		map.put(userA.getUuid(), userA);
+		map.put(userB.getUuid(), userB);
+		assertEquals(2, map.size());
+		assertNotNull(map.get(userUuid()));
+		assertNotNull(map.get(extraUserUuid));
+
 	}
 
 	@Test
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
+		String userUuid;
 		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", user());
-			String userUuid = extraUser.getUuid();
+			userUuid = extraUser.getUuid();
 			role().grantPermissions(extraUser, READ_PERM);
-
-			MeshResponse<GroupResponse> future = client().addUserToGroup("bogus", userUuid).invoke();
-			latchFor(future);
-			expectException(future, NOT_FOUND, "object_not_found_for_uuid", "bogus");
+			tx.success();
 		}
+
+		call(() -> client().addUserToGroup("bogus", userUuid), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+
 	}
 
 	@Test
 	public void testAddUserToGroupWithPerm() throws Exception {
+		User extraUser;
 		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
-
-			User extraUser = userRoot.create("extraUser", user());
+			extraUser = userRoot.create("extraUser", user());
 			role().grantPermissions(extraUser, READ_PERM);
-
 			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			GroupResponse restGroup = call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()));
 			assertThat(restGroup).matches(group());
 			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), user().getUuid());
@@ -109,32 +110,35 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUserToGroupWithoutPermOnGroup() throws Exception {
+		User extraUser;
 		try (Tx tx = tx()) {
 			Group group = group();
-			String groupUuid = group.getUuid();
 			UserRoot userRoot = meshRoot().getUserRoot();
-			User extraUser = userRoot.create("extraUser", user());
-			String extraUserUuid = extraUser.getUuid();
+			extraUser = userRoot.create("extraUser", user());
 			role().grantPermissions(extraUser, READ_PERM);
 			role().revokePermissions(group, UPDATE_PERM);
+			tx.success();
+		}
 
-			MeshResponse<GroupResponse> future = client().addUserToGroup(groupUuid, extraUserUuid).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", groupUuid);
+		try (Tx tx = tx()) {
+			call(() -> client().addUserToGroup(groupUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", groupUuid());
 			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
 		}
+
 	}
 
 	@Test
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
+		User extraUser;
 		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
-			User extraUser = userRoot.create("extraUser", user());
+			extraUser = userRoot.create("extraUser", user());
 			role().grantPermissions(extraUser, DELETE_PERM);
+			tx.success();
+		}
 
-			MeshResponse<GroupResponse> future = client().addUserToGroup(group().getUuid(), extraUser.getUuid()).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", extraUser.getUuid());
+		try (Tx tx = tx()) {
+			call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()), FORBIDDEN, "error_missing_perm", extraUser.getUuid());
 			assertFalse("User should not be member of the group.", group().hasUser(extraUser));
 		}
 	}
@@ -142,19 +146,21 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveUserFromGroupWithoutPerm() throws Exception {
 		try (Tx tx = tx()) {
-			User user = user();
-			Group group = group();
-			assertTrue("User should be a member of the group.", group.hasUser(user));
-			role().revokePermissions(group, UPDATE_PERM);
-			call(() -> client().removeUserFromGroup(group().getUuid(), user().getUuid()), FORBIDDEN, "error_missing_perm", group().getUuid());
+			assertTrue("User should be a member of the group.", group().hasUser(user()));
+			role().revokePermissions(group(), UPDATE_PERM);
+			tx.success();
+		}
+
+		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()), FORBIDDEN, "error_missing_perm", groupUuid());
+		try (Tx tx = tx()) {
 			assertTrue("User should still be a member of the group.", group().hasUser(user()));
 		}
 	}
 
 	@Test
 	public void testRemoveUserFromGroupWithPerm() throws Exception {
+		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()));
 		try (Tx tx = tx()) {
-			call(() -> client().removeUserFromGroup(group().getUuid(), user().getUuid()));
 			assertFalse("User should not be member of the group.", group().hasUser(user()));
 		}
 	}
@@ -167,16 +173,16 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveUserFromLastGroupWithPerm() throws Exception {
+		call(() -> client().removeUserFromGroup(groupUuid(), userUuid()));
 		try (Tx tx = tx()) {
-			call(() -> client().removeUserFromGroup(group().getUuid(), user().getUuid()));
 			assertFalse("User should no longer be member of the group.", group().hasUser(user()));
 		}
 	}
 
 	@Test
 	public void testRemoveUserFromGroupWithBogusUserUuid() throws Exception {
+		call(() -> client().removeUserFromGroup(groupUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		try (Tx tx = tx()) {
-			call(() -> client().removeUserFromGroup(group().getUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 			assertTrue("User should still be member of the group.", group().hasUser(user()));
 		}
 	}

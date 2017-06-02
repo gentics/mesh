@@ -159,13 +159,16 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
+		Node node = folder("2015");
+		Long nowEpoch;
 		try (Tx tx = tx()) {
-			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
+			nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 
-			Node node = folder("2015");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createDate(FIELD_NAME).setDate(nowEpoch);
-
+			tx.success();
+		}
+		try (Tx tx = tx()) {
 			NodeResponse response = readNode(node);
 			DateField deserializedDateField = response.getFields().getDateField(FIELD_NAME);
 			assertNotNull(deserializedDateField);

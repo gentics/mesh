@@ -123,10 +123,11 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 		try (Tx tx = tx()) {
 			role().grantPermissions(meshRoot().getGroupRoot(), CREATE_PERM);
-			MeshResponse<GroupResponse> future = client().createGroup(request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			GroupResponse restGroup = future.result();
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
+			GroupResponse restGroup = call(() -> client().createGroup(request));
 			assertThat(restGroup).matches(request);
 
 			assertElement(boot().groupRoot(), restGroup.getUuid(), true);
@@ -143,10 +144,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupCreateRequest request = new GroupCreateRequest();
 			request.setName(name);
 
-			MeshResponse<GroupResponse> future = client().createGroup(request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			GroupResponse restGroup = future.result();
+			GroupResponse restGroup = call(() -> client().createGroup(request));
 			assertThat(restGroup).matches(request);
 
 			Group foundGroup = boot().groupRoot().findByUuid(restGroup.getUuid());
@@ -163,6 +161,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	public void testCreateGroupWithMissingName() throws Exception {
 		try (Tx tx = tx()) {
 			role().grantPermissions(group(), CREATE_PERM);
+			tx.success();
 		}
 		GroupCreateRequest request = new GroupCreateRequest();
 		call(() -> client().createGroup(request), BAD_REQUEST, "error_name_must_be_set");
@@ -201,9 +200,9 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 				Group group = root.create("group_" + i, user());
 				role().grantPermissions(group, READ_PERM);
 			}
-
 			tx.success();
 		}
+
 		int totalGroups = 0;
 		totalGroups = nGroups + data().getGroups().size();
 		// Test default paging parameters
@@ -261,11 +260,8 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
+		GroupResponse response = call(() -> client().findGroupByUuid(groupUuid()));
 		try (Tx tx = tx()) {
-			Group group = group();
-			assertNotNull("The UUID of the group must not be null.", group.getUuid());
-
-			GroupResponse response = call(() -> client().findGroupByUuid(group.getUuid()));
 			assertThat(response).matches(group());
 		}
 	}
@@ -273,9 +269,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		String uuid = db().tx(() -> group().getUuid());
-		String roleUuid = roleUuid();
-		GroupResponse response = call(() -> client().findGroupByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(roleUuid)));
+		GroupResponse response = call(() -> client().findGroupByUuid(groupUuid(), new RolePermissionParametersImpl().setRoleUuid(roleUuid())));
 		assertNotNull(response.getRolePerms());
 		assertThat(response.getRolePerms()).hasPerm(READ, READ_PUBLISHED, PUBLISH, UPDATE, DELETE, CREATE);
 	}
@@ -388,8 +382,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 			GroupCreateRequest createReq = new GroupCreateRequest();
 			for (int i = 0; i < groupCount; i++) {
 				createReq.setName("testGroup" + i);
-				MeshResponse<GroupResponse> future = client().createGroup(createReq).invoke();
-				latchFor(future);
+				call(() -> client().createGroup(createReq));
 			}
 
 			ParameterProvider[] params = new ParameterProvider[] { new PagingParametersImpl().setPerPage(10000),
@@ -397,10 +390,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 
 			int readCount = 100;
 			for (int i = 0; i < readCount; i++) {
-				MeshResponse<GroupListResponse> fut = client().findGroups(params).invoke();
-				latchFor(fut);
-				GroupListResponse res = fut.result();
-
+				GroupListResponse res = call(() -> client().findGroups(params));
 				for (GroupResponse grp : res.getData()) {
 					String msg = String.format("Role perms was null after try %d at %s (%s)", i + 1, grp.getName(), grp.getUuid());
 					assertNotNull(msg, grp.getRolePerms());
@@ -421,34 +411,29 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String groupUuid = db().tx(() -> group().getUuid());
-		String userUuid = db().tx(() -> user().getUuid());
 
-		call(() -> client().deleteGroup(groupUuid));
-		assertThat(dummySearchProvider()).hasDelete(Group.composeIndexName(), Group.composeIndexType(), groupUuid);
-		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), userUuid);
+		call(() -> client().deleteGroup(groupUuid()));
+		assertThat(dummySearchProvider()).hasDelete(Group.composeIndexName(), Group.composeIndexType(), groupUuid());
+		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), userUuid());
 		assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0);
 
 		try (Tx tx = tx()) {
-			assertElement(boot().groupRoot(), groupUuid, false);
+			assertElement(boot().groupRoot(), groupUuid(), false);
 		}
 	}
 
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
+		// Don't allow delete
 		try (Tx tx = tx()) {
-			Group group = group();
-			// Don't allow delete
-			role().revokePermissions(group, DELETE_PERM);
+			role().revokePermissions(group(), DELETE_PERM);
 			tx.success();
 		}
 
 		try (Tx tx = tx()) {
-			Group group = group();
-			String uuid = group.getUuid();
-			call(() -> client().deleteGroup(uuid), FORBIDDEN, "error_missing_perm", group.getUuid());
-			assertElement(boot().groupRoot(), group.getUuid(), true);
+			call(() -> client().deleteGroup(groupUuid()), FORBIDDEN, "error_missing_perm", groupUuid());
+			assertElement(boot().groupRoot(), groupUuid(), true);
 		}
 	}
 

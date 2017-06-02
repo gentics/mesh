@@ -196,7 +196,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 				}
 
 				tagFamily.delete(batch);
-				tx.success();
+				tx2.success();
 			}
 			assertThat(batch).containsEntries(affectedElements);
 		}

@@ -203,7 +203,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			call(() -> client().removeRoleFromGroup(group().getUuid(), extraRole.getUuid()));
+			call(() -> client().removeRoleFromGroup(groupUuid(), extraRole.getUuid()));
 		}
 
 		try (Tx tx = tx()) {

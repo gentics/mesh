@@ -56,6 +56,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 			schema.addField(restrictedStringFieldSchema);
 
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			tx.success();
 		}
 	}
 
@@ -177,11 +178,15 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
+		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			StringGraphField stringField = container.createString(FIELD_NAME);
 			stringField.setString("someString");
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			NodeResponse response = readNode(node);
 			StringFieldImpl deserializedStringField = response.getFields().getStringField(FIELD_NAME);
 			assertNotNull(deserializedStringField);

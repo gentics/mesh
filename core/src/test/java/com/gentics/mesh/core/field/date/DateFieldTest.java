@@ -102,8 +102,9 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		Node node = folder("2015");
+		long date;
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
 
 			// Add html field schema to the schema
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -113,9 +114,12 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			DateGraphField field = container.createDate(DATE_FIELD);
-			long date = fromISO8601(toISO8601(System.currentTimeMillis()));
+			date = fromISO8601(toISO8601(System.currentTimeMillis()));
 			field.setDate(date);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			String json = getJson(node);
 			assertNotNull(json);
 			NodeResponse response = JsonUtil.readValue(json, NodeResponse.class);
@@ -125,6 +129,7 @@ public class DateFieldTest extends AbstractFieldTest<DateFieldSchema> {
 			assertNotNull(deserializedNodeField);
 			assertEquals(Long.valueOf(date), fromISO8601(deserializedNodeField.getDate()));
 		}
+
 	}
 
 	@Test

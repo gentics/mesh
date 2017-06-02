@@ -147,11 +147,14 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
+		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createHTML(FIELD_NAME).setHtml("some<b>html");
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeResponse response = readNode(node);
 			HtmlFieldImpl deserializedHtmlField = response.getFields().getHtmlField(FIELD_NAME);
 			assertNotNull(deserializedHtmlField);
