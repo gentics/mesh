@@ -48,7 +48,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			ListFieldSchema listFieldSchema = new ListFieldSchemaImpl();
 			listFieldSchema.setName(FIELD_NAME);
@@ -74,7 +74,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
 			listField.add(createItem("Max", "Böse"));
 			listField.add(null);
@@ -85,7 +85,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FieldList<MicronodeField> listField = new MicronodeFieldListImpl();
 			listField.add(createItem("Max", "Böse"));
 			listField.add(null);
@@ -96,7 +96,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
@@ -169,7 +169,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 			field.add(createItem("Max", "Böse"));
 			field.add(createItem("Moritz", "Böse"));
@@ -184,7 +184,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 			field.add(createItem("Max", "Böse"));
 			field.add(createItem("Moritz", "Böse"));
@@ -215,7 +215,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 			field.add(createItem("Max", "Böse"));
 			field.add(createItem("Moritz", "Böse"));
@@ -241,7 +241,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	 */
 	@Test
 	public void testReorder() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 			field.add(createItem("One", "One"));
 			field.add(createItem("Two", "Two"));
@@ -272,7 +272,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	 */
 	@Test
 	public void testAddMicronode() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 			field.add(createItem("One", "One"));
 			field.add(createItem("Two", "Two"));
@@ -296,7 +296,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	 */
 	@Test
 	public void testRemoveMicronode() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 			field.add(createItem("One", "One"));
 			field.add(createItem("Two", "Two"));
@@ -326,7 +326,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Ignore
 	public void testMultipleChanges() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 			field.add(createItem("One", "One"));
 			field.add(createItem("Two", "Two"));
@@ -355,7 +355,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FieldList<MicronodeField> field = new MicronodeFieldListImpl();
 			field.add(createItem("Max", "Böse"));
 			field.add(createItem("Moritz", "Böse"));
@@ -372,7 +372,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			FieldList<MicronodeField> field = response.getFields().getMicronodeFieldList(FIELD_NAME);
 			assertNull(field);
@@ -413,7 +413,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	 *            field
 	 */
 	protected void assertMicronodes(FieldList<MicronodeField> field) {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Set<? extends MicronodeImpl> unboundMicronodes = tx.getGraph().v().has(MicronodeImpl.class).toList(MicronodeImpl.class).stream()
 					.filter(micronode -> micronode.getContainer() == null).collect(Collectors.toSet());
 			assertThat(unboundMicronodes).as("Unbound micronodes").isEmpty();

@@ -70,7 +70,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(dummySearchProvider()).hasStore(Role.composeIndexName(), Role.composeIndexType(), restRole.getUuid());
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Role createdRole = meshRoot().getRoleRoot().findByUuid(restRole.getUuid());
 			assertTrue(user().hasPermission(createdRole, UPDATE_PERM));
 			assertTrue(user().hasPermission(createdRole, READ_PERM));
@@ -88,7 +88,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(meshRoot().getRoleRoot(), CREATE_PERM);
 			tx.success();
 		}
@@ -128,13 +128,13 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		RoleCreateRequest request = new RoleCreateRequest();
 		request.setName("new_role");
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Add needed permission to group
 			role().revokePermissions(meshRoot().getRoleRoot(), CREATE_PERM);
 			tx.success();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			call(() -> client().createRole(request), FORBIDDEN, "error_missing_perm", meshRoot().getRoleRoot().getUuid());
 		}
 	}
@@ -157,7 +157,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadOwnRoleByUUID() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoleResponse restRole = call(() -> client().findRoleByUuid(roleUuid()));
 			assertThat(restRole).matches(role());
 		}
@@ -167,7 +167,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testReadByUUID() throws Exception {
 		Role extraRole;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			extraRole = roleRoot.create("extra role", user());
 			group().addRole(extraRole);
@@ -176,7 +176,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			tx.success();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoleResponse restRole = call(() -> client().findRoleByUuid(extraRole.getUuid()));
 			assertThat(restRole).matches(extraRole);
 		}
@@ -194,7 +194,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String extraRoleUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
 			extraRoleUuid = extraRole.getUuid();
@@ -210,7 +210,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadOwnRoleByUUIDWithMissingPermission() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(role(), READ_PERM);
 			tx.success();
 		}
@@ -225,7 +225,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		final String noPermRoleName = "no_perm_role";
 		final int initialRolesCount = roles().size();
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role noPermRole = roleRoot.create(noPermRoleName, user());
@@ -307,7 +307,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testUpdate() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		String extraRoleUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
 			group().addRole(extraRole);
@@ -323,7 +323,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals(request.getName(), restRole.getName());
 		assertEquals(extraRoleUuid, restRole.getUuid());
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Check that the extra role was updated as expected
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role reloadedRole = roleRoot.findByUuid(extraRoleUuid);
@@ -335,7 +335,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(role(), UPDATE_PERM);
 			tx.success();
 		}
@@ -348,7 +348,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testUpdateConflictCheck() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MeshInternal.get().boot().meshRoot().getRoleRoot().create("test123", user());
 			tx.success();
 		}
@@ -370,7 +370,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testUpdateOwnRole() throws JsonGenerationException, JsonMappingException, IOException, Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(role(), UPDATE_PERM);
 			tx.success();
 		}
@@ -379,7 +379,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().updateRole(roleUuid(), restRole), FORBIDDEN, "error_missing_perm", roleUuid());
 
 		// Add the missing permission and try again
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			tx.success();
 		}
@@ -387,7 +387,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().updateRole(roleUuid(), restRole));
 
 		// Check that the role was updated
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Role reloadedRole = boot().roleRoot().findByUuid(roleUuid());
 			reloadedRole.reload();
 			assertEquals(restRole.getName(), reloadedRole.getName());
@@ -399,7 +399,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		String extraRoleUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role extraRole = roleRoot.create("extra role", user());
 			group().addRole(extraRole);
@@ -414,7 +414,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(dummySearchProvider()).hasDelete(Role.composeIndexName(), Role.composeIndexType(), extraRoleUuid);
 		assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			meshRoot().getRoleRoot().reload();
 			assertElement(meshRoot().getRoleRoot(), extraRoleUuid, false);
 		}
@@ -424,12 +424,12 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(role(), DELETE_PERM);
 			tx.success();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String uuid = role().getUuid();
 			call(() -> client().deleteRole(uuid), FORBIDDEN, "error_missing_perm", uuid);
 			assertElement(meshRoot().getRoleRoot(), uuid, true);
@@ -507,7 +507,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	@Ignore("disabled due to instability")
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Single<GenericMessageResponse> observable = client().login();
 			observable.toBlocking().value();
 

@@ -49,7 +49,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
 
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
@@ -68,7 +68,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
 
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
@@ -89,7 +89,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = folder("news");
 			Node node = folder("2015");
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -119,7 +119,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField fieldA = container.createNode("fieldA", folder("2015"));
 			NodeGraphField fieldB = container.createNode("fieldB", folder("2014"));
@@ -135,7 +135,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField fieldA = container.createNode("field1", content());
 			assertFalse(fieldA.equals((Field) null));
@@ -146,7 +146,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField fieldA = container.createNode("field1", content());
 
@@ -166,7 +166,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			invokeUpdateFromRestTestcase(NODE_FIELD, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -174,7 +174,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(NODE_FIELD, FETCH);
 		}
 	}
@@ -182,7 +182,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(NODE_FIELD, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, NODE_FIELD, null);
@@ -193,7 +193,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(NODE_FIELD, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, NODE_FIELD, null);
@@ -204,7 +204,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(NODE_FIELD, FILL, (container) -> {
 				NodeFieldImpl field = new NodeFieldImpl();

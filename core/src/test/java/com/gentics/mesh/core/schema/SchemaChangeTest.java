@@ -31,7 +31,7 @@ public class SchemaChangeTest extends AbstractMeshTest{
 
 	@Test
 	public void testDomainModel() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 
 			SchemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
@@ -65,7 +65,7 @@ public class SchemaChangeTest extends AbstractMeshTest{
 
 	@Test
 	public void testMicroschemaChanges() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
 
 			MicroschemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
@@ -78,7 +78,7 @@ public class SchemaChangeTest extends AbstractMeshTest{
 
 	@Test
 	public void testChangeChain() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
 			SchemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			SchemaContainerVersion versionB = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);

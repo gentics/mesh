@@ -49,7 +49,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = folder("news");
 			Node node = folder("2015");
 			prepareNode(node, NODE_LIST, "node");
@@ -66,7 +66,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Create node field
 			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
@@ -103,7 +103,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
 
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
@@ -122,7 +122,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldList fieldA = container.createNodeList("fieldA");
 			NodeGraphFieldList fieldB = container.createNodeList("fieldB");
@@ -140,7 +140,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldList fieldA = container.createNodeList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
@@ -151,7 +151,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			String dummyKey = "test123";
 
@@ -181,7 +181,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			invokeUpdateFromRestTestcase(NODE_LIST, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -189,7 +189,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(NODE_LIST, FETCH);
 		}
 	}
@@ -197,7 +197,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(NODE_LIST, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, NODE_LIST, null);
@@ -208,7 +208,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(NODE_LIST, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, NODE_LIST, null);
@@ -219,7 +219,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(NODE_LIST, FILL, (container) -> {
 				NodeFieldListImpl field = new NodeFieldListImpl();

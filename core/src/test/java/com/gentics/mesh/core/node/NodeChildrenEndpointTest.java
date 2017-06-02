@@ -44,7 +44,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadChildrenOfBaseNode() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MeshResponse<NodeListResponse> future = client().findNodeChildren(PROJECT_NAME, project().getBaseNode().getUuid()).invoke();
 			latchFor(future);
 			assertSuccess(future);
@@ -53,7 +53,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeHierarchy() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node baseNode = project().getBaseNode();
 			String parentNodeUuid = baseNode.getUuid();
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().draft()));
@@ -87,7 +87,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -106,7 +106,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildrenPermissions() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -128,7 +128,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren2() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = content("concorde");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -142,7 +142,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeChildren() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -159,7 +159,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeChildrenWithoutChildPermission() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -177,7 +177,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeChildrenWithNoPermission() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
@@ -193,7 +193,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadReleaseChildren() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			Node firstChild = node.getChildren().get(0);
 			int childrenSize = node.getChildren().size();

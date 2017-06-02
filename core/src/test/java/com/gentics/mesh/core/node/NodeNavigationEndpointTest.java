@@ -44,7 +44,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadChildrenDepthZero() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -62,7 +62,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadNodeWithNoChildren() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -80,7 +80,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadNavigationWithNoParameters() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = project().getBaseNode();
 			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertThat(response).hasDepth(3).isValid(7);
@@ -92,7 +92,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadNavigationWithNegativeDepth() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationParametersImpl().setMaxDepth(-10),
 					new VersioningParametersImpl().draft()), BAD_REQUEST, "navigation_error_invalid_max_depth");
@@ -104,7 +104,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadNoContainerNode() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = content();
 			assertFalse("The node must not be a container.", node.getSchemaContainer().getLatestVersion().getSchema().isContainer());
 			call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationParametersImpl().setMaxDepth(1),
@@ -117,7 +117,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadChildrenDepthOne() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -136,7 +136,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadChildrenDepthTwo() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -156,7 +156,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadChildrenDepthTwoIncludeAll() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -191,7 +191,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadChildrenDepthTwoIncludeAllDisabled() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -288,7 +288,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNavigationForRelease() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Node baseNode = project.getBaseNode();
 			String baseNodeUuid = baseNode.getUuid();

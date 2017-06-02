@@ -46,7 +46,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			ProjectReference reference = project().transformToReference();
 			assertNotNull(reference);
 			assertEquals(project().getUuid(), reference.getUuid());
@@ -57,7 +57,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testCreate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			Project project = projectRoot.create("test", user(), schemaContainer("folder").getLatestVersion());
 			Project project2 = projectRoot.findByName(project.getName());
@@ -71,7 +71,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testDelete() throws Exception {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String uuid = project().getUuid();
 
 			Map<String, ElementEntry> batchEnttries = new HashMap<>();
@@ -113,7 +113,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			int nProjectsBefore = projectRoot.findAll().size();
 			assertNotNull(projectRoot.create("test1234556", user(), schemaContainer("folder").getLatestVersion()));
@@ -125,7 +125,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Page<? extends Project> page = meshRoot().getProjectRoot().findAll(mockActionContext(),
 					new PagingParametersImpl(1, 25));
 			assertNotNull(page);
@@ -135,7 +135,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testFindAll() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			List<? extends Project> projects = meshRoot().getProjectRoot().findAll();
 			assertNotNull(projects);
 			assertEquals(1, projects.size());
@@ -145,7 +145,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertNull(meshRoot().getProjectRoot().findByName("bogus"));
 			assertNotNull(meshRoot().getProjectRoot().findByName("dummy"));
 		}
@@ -154,7 +154,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = meshRoot().getProjectRoot().findByUuid(project().getUuid());
 			assertNotNull(project);
 			project = meshRoot().getProjectRoot().findByUuid("bogus");
@@ -165,7 +165,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -179,7 +179,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = meshRoot().getProjectRoot().create("newProject", user(),
 					schemaContainer("folder").getLatestVersion());
 			assertNotNull(project);
@@ -197,7 +197,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MeshRoot root = meshRoot();
 			InternalActionContext ac = mockActionContext();
 			// 1. Give the user create on the project root
@@ -218,7 +218,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testRead() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			assertNotNull(project.getName());
 			assertEquals("dummy", project.getName());
@@ -232,7 +232,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testUpdate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			project.setName("new Name");
 			assertEquals("new Name", project.getName());
@@ -245,7 +245,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project newProject;
 			newProject = meshRoot().getProjectRoot().create("newProject", user(),
 					schemaContainer("folder").getLatestVersion());
@@ -256,7 +256,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project newProject;
 			newProject = meshRoot().getProjectRoot().create("newProject", user(),
 					schemaContainer("folder").getLatestVersion());
@@ -267,7 +267,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project newProject = meshRoot().getProjectRoot().create("newProject", user(),
 					schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.UPDATE_PERM, newProject);
@@ -277,7 +277,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project newProject = meshRoot().getProjectRoot().create("newProject", user(),
 					schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.CREATE_PERM, newProject);

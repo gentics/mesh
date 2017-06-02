@@ -36,7 +36,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testResizeImage() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String path = "/News/2015/blume.jpg";
 			Node node = content("news_2015");
 
@@ -68,7 +68,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = content("news_2015");
 
 			// 1. Transform the node into a binary content
@@ -103,7 +103,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String path = "/News/2015/News_2015.en.html";
 			Node node = content("news_2015");
 

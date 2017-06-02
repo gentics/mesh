@@ -42,7 +42,7 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 
 	@Test
 	public void testDataFetchingError() throws Throwable {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(project(), READ_PERM);
 		}
 		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, "{project{name}}"));

@@ -17,7 +17,7 @@ public class NodeIndexHandlerTest extends AbstractMeshTest {
 
 	@Test
 	public void testReindexAll() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertThat(meshRoot().getNodeRoot().findAll()).as("Node list").isNotEmpty();
 			searchProvider().reset();
 			assertEquals("Initially no store event should have been recorded.", 0,

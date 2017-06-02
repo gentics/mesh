@@ -195,7 +195,7 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			invalidMigrationScript(CREATEBOOLEANLIST, FILL, KILLERSCRIPT);
 		}
 	}

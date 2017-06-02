@@ -66,7 +66,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNoDiff() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Microschema request = getMicroschema();
 			MeshResponse<SchemaChangesListModel> future = client().diffMicroschema(microschema.getUuid(), request).invoke();
@@ -80,7 +80,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Microschema request = getMicroschema();
 			StringFieldSchema stringField = FieldUtil.createStringFieldSchema("someField");
@@ -101,7 +101,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUnsupportedField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Microschema request = getMicroschema();
 			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binaryField");
@@ -115,7 +115,7 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Microschema request = getMicroschema();
 			request.removeField("postcode");

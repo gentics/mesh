@@ -37,7 +37,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			StringFieldListImpl listField = new StringFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -51,7 +51,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			StringFieldListImpl listField = new StringFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -63,7 +63,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			StringFieldListImpl listField = new StringFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -75,7 +75,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			assertThat(response.getFields().getStringFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
 		}
@@ -84,7 +84,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			StringFieldListImpl listField = new StringFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -100,7 +100,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 1. Update an existing node
 			StringFieldListImpl listField = new StringFieldListImpl();
 			listField.add("A");
@@ -117,7 +117,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testCreateNodeWithNullFieldValue() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			StringFieldListImpl nodeField = response.getFields().getStringFieldList(FIELD_NAME);
 			assertNull("No string field should have been created.", nodeField);
@@ -126,7 +126,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testCreateEmptyStringList() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			StringFieldListImpl listField = new StringFieldListImpl();
 			NodeResponse response = createNode(FIELD_NAME, listField);
 			StringFieldListImpl listFromResponse = response.getFields().getStringFieldList(FIELD_NAME);
@@ -136,7 +136,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testCreateNullStringList() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			StringFieldListImpl listField = new StringFieldListImpl();
 			listField.setItems(null);
 			NodeResponse response = createNode(FIELD_NAME, listField);
@@ -147,7 +147,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testStringList() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			StringFieldListImpl listField = new StringFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -163,7 +163,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 
 			List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
@@ -198,7 +198,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			StringFieldListImpl list = new StringFieldListImpl();
 			list.add("A");
 			list.add("B");
@@ -228,7 +228,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			StringFieldListImpl list = new StringFieldListImpl();
 			list.add("A");
 			list.add("B");

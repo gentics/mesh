@@ -30,7 +30,7 @@ public class NodeEndpointFieldAPIeTagTest extends AbstractMeshTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 

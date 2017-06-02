@@ -112,7 +112,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaUuid));
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			Node node2 = content();
 			node2.setUuid(staticUuid);

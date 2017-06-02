@@ -19,7 +19,7 @@ public class AuthUserTest extends AbstractMeshTest {
 
 	@Test
 	public void testAuthorization() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
 			MeshAuthUser requestUser = ac.getUser();
 			Node targetNode = folder("2015");

@@ -29,7 +29,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			change.setFieldName("name");
 			assertEquals("name", change.getFieldName());
@@ -39,7 +39,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testApply() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
@@ -67,7 +67,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testChangeFieldTypeToList() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
@@ -101,7 +101,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaChangeModel model = SchemaChangeModel.createChangeFieldTypeChange("testField", "list");
 			model.setMigrationScript("test");
 			model.setProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
@@ -118,7 +118,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			assertNotNull("Field Type changes have a auto migation script.", change.getAutoMigrationScript());
 
@@ -131,7 +131,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			change.setFieldName("test");
 			change.setCustomMigrationScript("script");

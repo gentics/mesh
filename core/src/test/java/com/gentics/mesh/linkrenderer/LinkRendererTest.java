@@ -37,7 +37,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testLinkReplacerTypeOff() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
@@ -50,7 +50,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testLinkReplacerTypeShort() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
@@ -63,7 +63,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testLinkReplacerTypeMedium() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
@@ -76,7 +76,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testLinkReplacerTypeFull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
@@ -90,7 +90,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testLinkAtStart() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}} postfix";
@@ -104,7 +104,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testLinkAtEnd() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "prefix {{mesh.link('" + uuid + "')}}";
@@ -118,7 +118,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testLinkInMiddle() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "prefix {{mesh.link('" + uuid + "')}} postfix";
@@ -132,7 +132,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testAdjacentLinks() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}{{mesh.link('" + uuid + "')}}";
@@ -147,7 +147,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testNonAdjacentLinks() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}} in between {{mesh.link('" + uuid + "')}}";
@@ -162,7 +162,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testInvalidLinks() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}";
@@ -175,7 +175,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testSingleQuote() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "'\"{{mesh.link('" + uuid + "')}}\"'";
@@ -189,7 +189,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testDoubleQuote() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "'\"{{mesh.link(\"" + uuid + "\")}}\"'";
@@ -203,7 +203,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testGerman() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link(\"" + uuid + "\", \"de\")}}";
@@ -217,7 +217,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testEnglish() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link(\"" + uuid + "\", \"en\")}}";
@@ -231,7 +231,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeReplace() throws IOException, InterruptedException, ExecutionException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Language german = german();
 			Language english = english();
 			Node parentNode = folder("2015");
@@ -256,7 +256,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testBinaryFieldLinkResolving() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = content("news overview");
 			String uuid = node.getUuid();
 
@@ -278,7 +278,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testResolving() throws InterruptedException, ExecutionException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "some bla START<a href=\"{{mesh.link('" + uuid
@@ -292,7 +292,7 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 	@Test
 	public void testRendering() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String uuid = UUIDUtil.randomUUID();
 			final String content = "some bla START<a href=\"{{mesh.link(\"" + uuid
 					+ "\")}}\">Test</a>   dasasdg <a href=\"{{mesh.link(\"" + uuid + "\")}}\">Test</a>DEN";

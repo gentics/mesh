@@ -25,7 +25,7 @@ public class MeshRootTest extends AbstractMeshTest {
 
 	@Test
 	public void testResolvePath() throws InterruptedException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Valid paths
 			expectSuccess("projects", meshRoot().getProjectRoot());
 			expectSuccess("projects/" + project().getUuid(), project());
@@ -144,7 +144,7 @@ public class MeshRootTest extends AbstractMeshTest {
 		Mesh.buildInfo.set(new BuildInfo(buildVersion, null));
 		assertEquals(buildVersion, Mesh.getPlainVersion());
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			meshRoot().setMeshVersion(graphVersion);
 		}
 	}

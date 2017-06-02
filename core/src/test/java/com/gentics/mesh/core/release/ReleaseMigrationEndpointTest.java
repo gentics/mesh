@@ -52,7 +52,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartReleaseMigration() throws Throwable {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			assertThat(project.getInitialRelease().isMigrated()).as("Initial release migration status").isEqualTo(true);
 
@@ -118,7 +118,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartForInitial() throws Throwable {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 
@@ -131,7 +131,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartAgain() throws Throwable {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
@@ -147,7 +147,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartOrder() throws Throwable {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 			Release newestRelease = project.getReleaseRoot().create("newestrelease", user());
@@ -168,7 +168,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testBigData() throws Throwable {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			int numThreads = 1;
 			int numFolders = 1000;
 			Project project = project();

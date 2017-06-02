@@ -68,25 +68,25 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
 		RoutingContext rc = mockRoutingContext();
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().grantPermissions(element, perm);
 			tx.success();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertTrue("The role {" + role().getName() + "} does not grant permission on element {" + element.getUuid()
 					+ "} although we granted those permissions.", role().hasPermission(perm, element));
 			assertTrue("The user has no {" + perm.getRestPerm().getName() + "} permission on node {" + element.getUuid() + "/"
 					+ element.getClass().getSimpleName() + "}", getRequestUser().hasPermission(element, perm));
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(element, perm);
 			rc.data().clear();
 			tx.success();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			boolean hasPerm = role().hasPermission(perm, element);
 			assertFalse("The user's role {" + role().getName() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {"
 					+ element.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);

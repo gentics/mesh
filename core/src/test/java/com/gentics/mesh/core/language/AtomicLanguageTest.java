@@ -17,10 +17,10 @@ public class AtomicLanguageTest extends AbstractMeshTest {
 
 	@Test
 	public void testLanguageIndex() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MeshRoot meshRoot = boot().meshRoot();
 			LanguageRoot languageRoot = meshRoot.getLanguageRoot();
-			try (Tx tx2 = db().tx()) {
+			try (Tx tx2 = tx()) {
 				assertNotNull(languageRoot);
 				Language lang = languageRoot.create("Deutsch1", "de1");
 				db().setVertexType(lang.getElement(), LanguageImpl.class);

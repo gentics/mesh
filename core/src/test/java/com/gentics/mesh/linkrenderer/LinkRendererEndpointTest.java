@@ -29,7 +29,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testLinkReplacerTypeOff() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			testSimpleLink(newsNode, LinkType.OFF, "{{mesh.link('" + newsNode.getUuid() + "')}}");
 		}
@@ -40,7 +40,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testLinkReplacerTypeShort() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			testSimpleLink(newsNode, LinkType.SHORT, "/News/News%20Overview.en.html");
 		}
@@ -51,7 +51,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testLinkReplacerTypeMedium() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			testSimpleLink(newsNode, LinkType.MEDIUM, "/dummy/News/News%20Overview.en.html");
 		}
@@ -62,7 +62,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testLinkReplacerTypeFull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			testSimpleLink(newsNode, LinkType.FULL, "/api/v1/dummy/webroot/News/News%20Overview.en.html");
 		}
@@ -73,7 +73,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testLinkInJson() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 
 			JsonObject jsonObject = new JsonObject().put("quotes", "prefix {{mesh.link('" + newsNode.getUuid() + "')}} postfix")
@@ -97,7 +97,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testInvalidLink() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			testRenderContent("{{mesh.link('" + UUIDUtil.randomUUID() + "')}}", LinkType.FULL, "/api/v1/project/webroot/error/404");
 		}
 	}
@@ -113,7 +113,7 @@ public class LinkRendererEndpointTest extends AbstractMeshTest {
 	 *            expected result
 	 */
 	private void testSimpleLink(Node node, LinkType linkType, String expectedResult) {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			testRenderContent("{{mesh.link('" + node.getUuid() + "')}}", linkType, expectedResult);
 		}
 	}

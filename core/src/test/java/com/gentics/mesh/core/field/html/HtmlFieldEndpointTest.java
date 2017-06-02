@@ -31,7 +31,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
 			htmlFieldSchema.setName(FIELD_NAME);
@@ -45,7 +45,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(null, (Field) null);
 			HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
 			assertNull("The response should not contain the field because it should still be null", htmlField);
@@ -55,7 +55,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			for (int i = 0; i < 20; i++) {
 				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
@@ -78,7 +78,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -90,7 +90,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -117,7 +117,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -137,7 +137,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, new HtmlFieldImpl().setHTML("Some<b>html"));
 			HtmlFieldImpl htmlField = response.getFields().getHtmlField(FIELD_NAME);
 			assertEquals("Some<b>html", htmlField.getHTML());
@@ -147,7 +147,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createHTML(FIELD_NAME).setHtml("some<b>html");

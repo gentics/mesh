@@ -33,7 +33,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	public void testSimpleQuerySearch() {
 
 		String username = "testuser42a";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			createUser(username);
 		}
 
@@ -50,7 +50,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Test
 	public void testEmptyResult() {
 		String username = "testuser42a";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			createUser(username);
 		}
 
@@ -67,7 +67,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 
 		String username = "testuser42a";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			createUser(username);
 		}
 
@@ -80,7 +80,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	public void testTokenzierIssueQuery() throws Exception {
 
 		String impossibleName = "Jöhä@sRe2";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserUpdateRequest updateRequest = new UserUpdateRequest();
 			updateRequest.setLastname(impossibleName);
 			call(() -> client().updateUser(user().getUuid(), updateRequest));
@@ -95,7 +95,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Test
 	public void testTokenzierIssueQuery2() throws Exception {
 		String impossibleName = "Jöhä@sRe";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserUpdateRequest updateRequest = new UserUpdateRequest();
 			updateRequest.setLastname(impossibleName);
 			call(() -> client().updateUser(user().getUuid(), updateRequest));
@@ -110,7 +110,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Test
 	public void testTokenzierIssueLowercasedQuery() throws Exception {
 		String impossibleName = "Jöhä@sRe";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserUpdateRequest updateRequest = new UserUpdateRequest();
 			updateRequest.setLastname(impossibleName);
 			call(() -> client().updateUser(user().getUuid(), updateRequest));
@@ -143,7 +143,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 
 		String username = "extrauser42a";
 		String groupName = db().tx(() -> group().getName());
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			createUser(username);
 		}
 
@@ -244,7 +244,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 
 		String groupName = db().tx(() -> group().getName());
 		String username = "extrauser42a";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			createUser(username);
 		}
 
@@ -258,7 +258,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	@Override
 	public void testDocumentDeletion() throws InterruptedException, JSONException {
 		String userName = "testuser42a";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserResponse user = createUser(userName);
 			call(() -> client().deleteUser(user.getUuid()));
 		}
@@ -272,7 +272,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
 		String userName = "testuser42a";
 		String newUserName = "testgrouprenamed";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserResponse user = createUser(userName);
 			user = updateUser(user.getUuid(), newUserName);
 		}

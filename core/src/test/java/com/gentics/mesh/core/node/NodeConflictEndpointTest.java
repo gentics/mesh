@@ -64,7 +64,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testNoConflictUpdate() {
 
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 
 			Node node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");
@@ -91,7 +91,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testConflictDetection() {
 
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 
 			// Invoke an initial update on the node - Update Version 1.0 teaser -> 1.1
 			Node node = getTestNode();
@@ -131,7 +131,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDeduplicationDuringUpdate() {
 
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			updateSchema();
 			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());
@@ -154,7 +154,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 	private void initialRequest() {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer oldContainer = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.0");
@@ -189,7 +189,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	}
 
 	private NodeUpdateRequest modifingRequest() {
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
@@ -220,7 +220,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	 * @param request
 	 */
 	private void repeatRequest(NodeUpdateRequest request) {
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
@@ -230,7 +230,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			assertThat(restNode).hasVersion("1.3");
 		}
 
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer createdVersion = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.3");
@@ -259,7 +259,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	}
 
 	private void deletingRequest() {
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
@@ -269,7 +269,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			NodeResponse restNode4 = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request4, parameters));
 			assertThat(restNode4).hasVersion("1.4");
 		}
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer createdVersion = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.4");
@@ -303,7 +303,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testConflictInMicronode() {
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			updateSchema();
 			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
 			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());
@@ -315,7 +315,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		initialRequest();
 
 		// Modify 1.1 and update micronode
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
@@ -337,7 +337,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		}
 
 		// Another update request based on 1.1 which also updates the micronode - A conflict should be detected
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
@@ -367,7 +367,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testBogusVersionNumber() {
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 
 			Node node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "42.1");

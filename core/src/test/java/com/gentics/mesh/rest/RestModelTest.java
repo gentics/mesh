@@ -119,7 +119,7 @@ public class RestModelTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeList() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaModel folderSchema = schemaContainer("folder").getLatestVersion().getSchema();
 			SchemaModel contentSchema = schemaContainer("content").getLatestVersion().getSchema();
 

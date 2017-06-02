@@ -43,7 +43,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testImageResize() throws Exception {
 		String uuid = db().tx(() -> folder("news").getUuid());
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 
 			// 1. Upload image
@@ -55,7 +55,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image", params));
 
 		// 3. Validate resize
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			node.reload();
 			validateResizeImage(download, node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 100, 102);
@@ -65,7 +65,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testImageResizeOverLimit() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
 			// 1. Upload image
@@ -80,7 +80,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testImageExactLimit() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
 			// 1. Upload image
@@ -125,7 +125,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTransformImageNoParameters() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			// 1. Upload image
 			NodeResponse response = uploadImage(node, "en", "image");
@@ -156,7 +156,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 	public void testTransformNonImage() throws Exception {
 		VersionNumber version;
 		String nodeUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			nodeUuid = node.getUuid();
 			prepareSchema(node, "*/*", "image");
@@ -175,7 +175,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 	public void testTransformEmptyField() throws Exception {
 		String nodeUuid;
 		String version;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			nodeUuid = node.getUuid();
 			prepareSchema(node, "image/.*", "image");

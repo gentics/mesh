@@ -22,7 +22,7 @@ public class AtomicTagTest extends AbstractMeshTest {
 
 	@Test
 	public void testTagCreation() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MeshRoot meshRoot = boot().meshRoot();
 			User user = meshRoot.getUserRoot().create("test", null);
 			LanguageRoot languageRoot = meshRoot.getLanguageRoot();

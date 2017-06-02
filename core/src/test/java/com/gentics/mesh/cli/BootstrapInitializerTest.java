@@ -19,7 +19,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 
 	@Test
 	public void testInitLanguages() throws JsonParseException, JsonMappingException, IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			boot().initLanguages(meshRoot().getLanguageRoot());
 			Language language = boot().languageRoot().findByLanguageTag("de");
 			assertNotNull(language);
@@ -30,7 +30,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 
 	@Test
 	public void testIndexLookup() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			boot().meshRoot();
 			BootstrapInitializerImpl.clearReferences();
 			assertNotNull(boot().meshRoot());
@@ -39,7 +39,7 @@ public class BootstrapInitializerTest extends AbstractMeshTest {
 
 	@Test
 	public void testIsEmpty() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertFalse(boot().isEmptyInstallation());
 			db().clear();
 			assertTrue(boot().isEmptyInstallation());

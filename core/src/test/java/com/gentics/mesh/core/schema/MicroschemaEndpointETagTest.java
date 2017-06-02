@@ -27,7 +27,7 @@ public class MicroschemaEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String etag = callETag(() -> client().findMicroschemas());
 			callETag(() -> client().findMicroschemas(), etag, true, 304);
 			callETag(() -> client().findMicroschemas(new PagingParametersImpl().setPage(2)), etag, true, 200);
@@ -36,7 +36,7 @@ public class MicroschemaEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer schema = microschemaContainers().get("vcard");
 
 			String actualEtag = callETag(() -> client().findMicroschemaByUuid(schema.getUuid()));

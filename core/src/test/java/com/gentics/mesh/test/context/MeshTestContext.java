@@ -169,7 +169,7 @@ public class MeshTestContext extends TestWatcher {
 		failingLatch(latch2);
 
 		// Setup the rest client
-		try (Tx trx = db().tx()) {
+		try (Tx tx = db().tx()) {
 			client = MeshRestClient.create("localhost", getPort(), Mesh.vertx());
 			client.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 			client.login().toBlocking().value();

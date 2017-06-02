@@ -38,7 +38,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchDraftNodes() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -75,7 +75,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 	 */
 	@Test
 	public void testMicronodeMigrationSearch() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 		String contentUuid = db().tx(() -> content().getUuid());
@@ -159,7 +159,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchPublishedInRelease() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -183,7 +183,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchTagFamilies() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 

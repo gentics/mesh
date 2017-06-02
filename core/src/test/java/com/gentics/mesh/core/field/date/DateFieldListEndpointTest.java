@@ -37,7 +37,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			DateFieldListImpl listField = new DateFieldListImpl();
 			String dateA = toISO8601(4200L);
 			String dateB = toISO8601(4100L);
@@ -53,7 +53,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			DateFieldListImpl listField = new DateFieldListImpl();
 			listField.add(toISO8601(4200L));
 			listField.add(toISO8601(4100L));
@@ -65,7 +65,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			DateFieldListImpl listField = new DateFieldListImpl();
 			String dateA = toISO8601(4200L);
 			String dateB = toISO8601(4100L);
@@ -79,7 +79,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			assertThat(response.getFields().getDateFieldList(FIELD_NAME)).as("List field in response should be null").isNull();
 		}
@@ -88,7 +88,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			DateFieldListImpl listField = new DateFieldListImpl();
 			listField.add(toISO8601(4200L));
 			listField.add(toISO8601(4100L));
@@ -104,7 +104,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 1. Update an existing node
 			DateFieldListImpl listField = new DateFieldListImpl();
 			listField.add(toISO8601(4200L));
@@ -122,7 +122,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 
 			List<List<String>> valueCombinations = Arrays.asList(Arrays.asList(toISO8601(1000L), toISO8601(2000L), toISO8601(3000L)),
@@ -153,7 +153,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			DateFieldListImpl list = new DateFieldListImpl();
 			String dateA = toISO8601(42000L);
 			String dateB = toISO8601(41000L);
@@ -186,7 +186,7 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			DateFieldListImpl list = new DateFieldListImpl();
 			String dateA = toISO8601(4200L);
 			String dateB = toISO8601(4100L);

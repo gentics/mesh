@@ -21,7 +21,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Test
 	@Override
 	public void testNoDiffByValue() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapImpl();
@@ -33,7 +33,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 
 	@Override
 	public void testDiffByValue() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapImpl();
@@ -46,7 +46,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Test
 	@Override
 	public void testNoDiffByValuesNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			FieldMap dummyMap = new FieldMapImpl();
@@ -59,7 +59,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Test
 	@Override
 	public void testDiffByValueNonNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString(null);
 			FieldMap dummyMap = new FieldMapImpl();
@@ -72,7 +72,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Test
 	@Override
 	public void testDiffByValueNonNull2() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue2");
 			FieldMap dummyMap = new FieldMapImpl();
@@ -85,7 +85,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Test
 	@Override
 	public void testDiffBySchemaFieldRemoved() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");
 			FieldMap dummyMap = new FieldMapImpl();
@@ -99,7 +99,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Test
 	@Override
 	public void testDiffBySchemaFieldAdded() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Create a container which does not contain a dummy field value 
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			FieldMap dummyMap = new FieldMapImpl();
@@ -114,7 +114,7 @@ public class FieldContainerFieldMapDiffTest extends AbstractFieldContainerDiffTe
 	@Override
 	@Ignore("Not applicable")
 	public void testDiffBySchemaFieldTypeChanged() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Create container with string field value
 			NodeGraphFieldContainer containerA = createContainer(FieldUtil.createStringFieldSchema("dummy"));
 			containerA.createString("dummy").setString("someValue");

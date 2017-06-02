@@ -45,7 +45,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(null, (Field) null);
 			NodeFieldList nodeField = response.getFields().getNodeFieldList(FIELD_NAME);
 			assertNull(nodeField);
@@ -55,7 +55,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(null);
 			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
@@ -65,7 +65,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(null);
 			updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
@@ -74,7 +74,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testBogusNodeList() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(new NodeFieldListItemImpl("bogus"));
 
@@ -86,7 +86,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testValidNodeList() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(new NodeFieldListItemImpl(content().getUuid()));
 			listField.add(new NodeFieldListItemImpl(folder("news").getUuid()));
@@ -103,7 +103,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			Node targetNode = folder("news");
 			Node targetNode2 = folder("deals");
@@ -137,7 +137,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node targetNode = folder("news");
 			Node targetNode2 = folder("deals");
 
@@ -155,7 +155,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node targetNode = folder("news");
 			Node targetNode2 = folder("deals");
 
@@ -188,7 +188,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node targetNode = folder("news");
 			Node targetNode2 = folder("deals");
 
@@ -215,7 +215,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(folder("news").getUuid());
 			listField.add(item);
@@ -228,7 +228,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
@@ -243,7 +243,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedListWithNoPermOnItem() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node referencedNode = folder("news");
 			role().revokePermissions(referencedNode, GraphPermission.READ_PERM);
 			Node node = folder("2015");
@@ -273,7 +273,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeListWithExistingField() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsNode = folder("news");
 			Node node = folder("2015");
 

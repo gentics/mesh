@@ -46,7 +46,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			TagFamilyReference reference = tagFamily.transformToReference();
 			assertNotNull(reference);
@@ -57,7 +57,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 
 	@Test
 	public void testTagFamilyProject() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			assertNotNull(tagFamily.getProject());
 			assertEquals(project(), tagFamily.getProject());
@@ -67,7 +67,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 			root.findAll(mockActionContext(), new PagingParametersImpl(1, 10));
 		}
@@ -76,7 +76,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 			List<? extends TagFamily> families = root.findAll();
 			assertNotNull(families);
@@ -97,7 +97,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			int nProjectsBefore = root.findAll().size();
 			assertNotNull(root.create("test1234556", user()));
@@ -109,7 +109,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamilyRoot root = meshRoot().getTagFamilyRoot();
 			assertNotNull(root);
 			assertNotNull(root.findByName("colors"));
@@ -119,7 +119,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = tagFamily("colors");
 
@@ -131,7 +131,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testRead() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			assertNotNull(tagFamily.getName());
 			assertEquals("colors", tagFamily.getName());
@@ -143,7 +143,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily family = root.create("test", user());
 			TagFamily family2 = root.findByName(family.getName());
@@ -156,10 +156,10 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testDelete() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SearchQueueBatch batch = createBatch();
 			Map<String, ElementEntry> affectedElements = new HashMap<>();
-			try (Tx tx2 = db().tx()) {
+			try (Tx tx2 = tx()) {
 				TagFamily tagFamily = tagFamily("colors");
 				affectedElements.put("tagFamily", new ElementEntry(DELETE_ACTION, tagFamily.getUuid()));
 
@@ -205,7 +205,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testUpdate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			tagFamily.setName("new Name");
 			assertEquals("new Name", tagFamily.getName());
@@ -215,7 +215,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
 			testPermission(GraphPermission.READ_PERM, tagFamily);
 		}
@@ -224,7 +224,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
 			testPermission(GraphPermission.DELETE_PERM, tagFamily);
 		}
@@ -233,7 +233,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
 			testPermission(GraphPermission.UPDATE_PERM, tagFamily);
 		}
@@ -242,7 +242,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily tagFamily = project().getTagFamilyRoot().create("newProject", user());
 			testPermission(GraphPermission.CREATE_PERM, tagFamily);
 		}
@@ -251,7 +251,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily tagFamily = tagFamily("colors");
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -265,7 +265,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = root.create("test123", user());
 			assertNotNull(tagFamily);
@@ -284,7 +284,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
 			TagFamily tagFamily = root.create("test123", user());
 			assertFalse(user().hasPermission(tagFamily, GraphPermission.CREATE_PERM));

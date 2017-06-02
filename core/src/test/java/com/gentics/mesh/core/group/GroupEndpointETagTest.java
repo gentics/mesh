@@ -19,7 +19,7 @@ public class GroupEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String etag = callETag(() -> client().findGroups());
 			assertNotNull(etag);
 
@@ -30,7 +30,7 @@ public class GroupEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Group group = group();
 
 			String actualEtag = callETag(() -> client().findGroupByUuid(group.getUuid()));

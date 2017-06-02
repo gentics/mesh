@@ -17,7 +17,7 @@ public class NodeGraphFieldContainerTest extends AbstractMeshTest {
 
 	@Test(expected = ORecordDuplicatedException.class)
 	public void testConflictingWebRootPath() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer containerA = Database.getThreadLocalGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldContainer containerB = Database.getThreadLocalGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			containerA.getElement().setProperty(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY, "test");
@@ -28,7 +28,7 @@ public class NodeGraphFieldContainerTest extends AbstractMeshTest {
 
 	@Test(expected = ORecordDuplicatedException.class)
 	public void testConflictingPublishWebRootPath() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer containerA = Database.getThreadLocalGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldContainer containerB = Database.getThreadLocalGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			containerA.getElement().setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, "test");

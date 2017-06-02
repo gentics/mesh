@@ -32,7 +32,7 @@ public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateNodeAndOmitRequiredField() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 1. create required field
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();

@@ -34,7 +34,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			assertNull("Initially no container flag value should be set.", change.getContainerFlag());
 			change.setContainerFlag(true);
@@ -59,7 +59,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApply() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			SchemaModel schema = new SchemaModelImpl();
 			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
@@ -80,7 +80,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testFieldOrderChange() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 1. Create the schema container
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
@@ -107,7 +107,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testUpdateSchemaSegmentFieldToNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
@@ -129,7 +129,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testUpdateSchema() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
@@ -155,7 +155,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaChangeModel model = new SchemaChangeModel();
 			model.setMigrationScript("custom");
 			model.setProperty(SchemaChangeModel.REQUIRED_KEY, true);
@@ -182,7 +182,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			assertNull("Update field changes have no auto migation script.", change.getAutoMigrationScript());
 
@@ -195,7 +195,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			SchemaChangeModel model = change.transformToRest();
 			assertNotNull(model);

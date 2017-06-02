@@ -40,7 +40,7 @@ public class TxTest extends AbstractMeshTest {
 
 	@Test
 	public void testReload() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			user().reload();
 		}
 	}
@@ -50,21 +50,21 @@ public class TxTest extends AbstractMeshTest {
 		AtomicInteger i = new AtomicInteger(0);
 
 		UserRoot root;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			root = meshRoot().getUserRoot();
 		}
 		int e = i.incrementAndGet();
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertNotNull(root.create("testuser" + e, user()));
 			assertNotNull(boot().userRoot().findByUsername("testuser" + e));
 			tx.success();
 		}
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertNotNull(boot().userRoot().findByUsername("testuser" + e));
 		}
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
-			try (Tx tx = db().tx()) {
+			try (Tx tx = tx()) {
 				assertNotNull(root.create("testuser" + u, user()));
 				assertNotNull(boot().userRoot().findByUsername("testuser" + u));
 				tx.failure();
@@ -75,7 +75,7 @@ public class TxTest extends AbstractMeshTest {
 		Thread t = new Thread(task);
 		t.start();
 		t.join();
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertNull(boot().userRoot().findByUsername("testuser" + u));
 			System.out.println("RUN: " + i.get());
 		}
@@ -87,7 +87,7 @@ public class TxTest extends AbstractMeshTest {
 		User user = db().tx(() -> user());
 
 		Runnable task2 = () -> {
-			try (Tx tx = db().tx()) {
+			try (Tx tx = tx()) {
 				user.setUsername("test2");
 				assertNotNull(boot().userRoot().findByUsername("test2"));
 				tx.success();
@@ -95,7 +95,7 @@ public class TxTest extends AbstractMeshTest {
 			assertNotNull(boot().userRoot().findByUsername("test2"));
 
 			Runnable task = () -> {
-				try (Tx tx = db().tx()) {
+				try (Tx tx = tx()) {
 					user.setUsername("test3");
 					assertNotNull(boot().userRoot().findByUsername("test3"));
 					tx.failure();
@@ -115,7 +115,7 @@ public class TxTest extends AbstractMeshTest {
 		Thread t2 = new Thread(task2);
 		t2.start();
 		t2.join();
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertNull(boot().userRoot().findByUsername("test3"));
 			assertNotNull("The user with username test2 could not be found.", boot().userRoot().findByUsername("test2"));
 		}
@@ -178,7 +178,7 @@ public class TxTest extends AbstractMeshTest {
 
 					for (int retry = 0; retry < maxRetry; retry++) {
 						try {
-							try (Tx tx = db().tx()) {
+							try (Tx tx = tx()) {
 
 								if (retry == 0) {
 									try {
@@ -229,7 +229,7 @@ public class TxTest extends AbstractMeshTest {
 				currentThread.join();
 			}
 			// Thread.sleep(1000);
-			try (Tx tx = db().tx()) {
+			try (Tx tx = tx()) {
 				int expect = nThreads * (r + 1);
 				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
 				// node.reload();

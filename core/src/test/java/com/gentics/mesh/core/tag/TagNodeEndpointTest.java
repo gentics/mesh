@@ -33,7 +33,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodesForTag() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
 					new VersioningParametersImpl().draft()));
 			NodeResponse concorde = new NodeResponse();
@@ -44,7 +44,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadPublishedNodesForTag() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 			NodeListResponse nodeList = call(() -> client().findNodesForTag(PROJECT_NAME, tagFamily("colors").getUuid(), tag("red").getUuid(),
@@ -71,12 +71,12 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		concorde.setUuid(db().tx(() -> content("concorde").getUuid()));
 
 		// Create new release
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			newRelease = project().getReleaseRoot().create("newrelease", user());
 			tx.success();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Release initialRelease = release();
 			initialRelease.reload();
 			// Get for latest release (must be empty)
@@ -100,7 +100,7 @@ public class TagNodeEndpointTest extends AbstractMeshTest {
 		Tag tag1;
 		Tag tag2;
 		Tag tag3;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily root = tagFamily("basic");
 			tag1 = root.create("test1", project(), user());
 			tag2 = root.create("test2", project(), user());

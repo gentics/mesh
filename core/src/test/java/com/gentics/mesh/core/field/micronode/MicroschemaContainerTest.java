@@ -51,7 +51,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer vcard = microschemaContainer("vcard");
 			MicroschemaReference reference = vcard.transformToReference();
 			assertNotNull(reference);
@@ -70,7 +70,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			int expectedMicroschemaContainers = microschemaContainers().size();
@@ -94,7 +94,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String invalidName = "thereIsNoMicroschemaWithThisName";
 
 			for (String name : microschemaContainers().keySet()) {
@@ -112,7 +112,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Test
 	@Override
 	public void testFindByUUID() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String invalidUUID = UUIDUtil.randomUUID();
 
 			MicroschemaContainerRoot root = boot().microschemaContainerRoot();
@@ -134,7 +134,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 
 	@Test
 	public void testRoot() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer vcard = microschemaContainer("vcard");
 			assertNotNull(vcard.getRoot());
 		}
@@ -143,7 +143,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Test
 	@Override
 	public void testCreate() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaModel schema = new MicroschemaModelImpl();
 			schema.setName("test");
 			MicroschemaContainer container = MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().create(schema, user());
@@ -158,7 +158,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	 */
 	@Test
 	public void testVersionSync() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertNotNull(microschemaContainer("vcard"));
 			assertEquals("The microschema container and schema rest model version must always be in sync",
 					microschemaContainer("vcard").getLatestVersion().getVersion(),
@@ -170,7 +170,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Test
 	@Override
 	public void testDelete() throws MeshJsonException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaModel schema = new MicroschemaModelImpl();
 			schema.setName("test");
 			MicroschemaContainer container = MeshInternal.get().boot().meshRoot().getMicroschemaContainerRoot().create(schema, user());
@@ -191,7 +191,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Test
 	@Override
 	public void testReadPermission() throws MeshJsonException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaModel microschema = new MicroschemaModelImpl();
 			microschema.setName("someNewMicroschema");
 			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
@@ -202,7 +202,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Test
 	@Override
 	public void testDeletePermission() throws MeshJsonException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaModel microschema = new MicroschemaModelImpl();
 			microschema.setName("someNewMicroschema");
 			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
@@ -214,7 +214,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Test
 	@Override
 	public void testUpdatePermission() throws MeshJsonException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaModel microschema = new MicroschemaModelImpl();
 			microschema.setName("someNewMicroschema");
 			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
@@ -225,7 +225,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Test
 	@Override
 	public void testCreatePermission() throws MeshJsonException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaModel microschema = new MicroschemaModelImpl();
 			microschema.setName("someNewMicroschema");
 			MicroschemaContainer microschemaContainer = meshRoot().getMicroschemaContainerRoot().create(microschema, user());
@@ -236,7 +236,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Test
 	@Override
 	public void testTransformation() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MicroschemaContainer vcard = microschemaContainer("vcard");
@@ -256,7 +256,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	@Test
 	@Override
 	public void testCRUDPermissions() throws MeshJsonException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainerRoot root = meshRoot().getMicroschemaContainerRoot();
 
 			MicroschemaModel microschema = new MicroschemaModelImpl();
@@ -277,7 +277,7 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 	 */
 	@Test
 	public void testGetContainerUsingMicroschemaVersion() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainerVersion vcard = microschemaContainer("vcard").getLatestVersion();
 
 			Microschema microschema = vcard.getSchema();

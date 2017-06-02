@@ -25,7 +25,7 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 
 	@Test
 	public void testSearchProject() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -55,7 +55,7 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 
 		final String newName = "newproject";
 		ProjectResponse project = createProject(newName);
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MeshAssert.assertElement(boot().projectRoot(), project.getUuid(), true);
 		}
 		MeshResponse<ProjectListResponse> future = client()

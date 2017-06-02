@@ -46,7 +46,7 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 
 	@Test
 	public void testSearchSchema() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -75,7 +75,7 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 	public void testDocumentCreation() throws Exception {
 		final String newName = "newschema";
 		SchemaResponse schema = createSchema(newName);
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MeshAssert.assertElement(boot().schemaContainerRoot(), schema.getUuid(), true);
 		}
 		MeshResponse<SchemaListResponse> future = client()

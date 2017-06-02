@@ -37,7 +37,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -52,7 +52,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -64,7 +64,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -76,7 +76,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			assertThat(response.getFields().getHtmlFieldList(FIELD_NAME)).as("List field in reponse should be null").isNull();
 		}
@@ -85,7 +85,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -102,7 +102,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 1. Update an existing node
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
@@ -120,7 +120,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testHtmlList() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			HtmlFieldListImpl listField = new HtmlFieldListImpl();
 			listField.add("A");
 			listField.add("B");
@@ -135,7 +135,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 
 			List<List<String>> valueCombinations = Arrays.asList(Arrays.asList("A", "B", "C"), Arrays.asList("C", "B", "A"), Collections.emptyList(),
@@ -176,7 +176,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			HtmlFieldListImpl list = new HtmlFieldListImpl();
 			list.add("A");
 			list.add("B");
@@ -204,7 +204,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			HtmlFieldListImpl list = new HtmlFieldListImpl();
 			list.add("A");
 			list.add("B");

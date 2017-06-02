@@ -41,7 +41,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReindex() {
 		// Add the user to the admin group - this way the user is in fact an admin.
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			user().addGroup(groups().get("admin"));
 			searchProvider().refreshIndex();
 		}
@@ -53,7 +53,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 	@Test
 	@Ignore
 	public void testClearIndex() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -78,7 +78,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAsyncSearchQueueUpdates() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			Node node = folder("2015");
 			String uuid = node.getUuid();

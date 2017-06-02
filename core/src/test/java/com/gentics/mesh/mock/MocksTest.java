@@ -21,7 +21,7 @@ public class MocksTest extends AbstractMeshTest {
 
 	@Test
 	public void testMockParameters() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String query = "lang=de,en";
 			RoutingContext rc = mockRoutingContext(query);
 			assertEquals("The query did not match up.", query, rc.request().query());

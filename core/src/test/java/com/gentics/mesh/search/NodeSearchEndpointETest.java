@@ -26,7 +26,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentDeletion() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -48,7 +48,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testCustomQuery() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -61,7 +61,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchForChildNodes() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -80,7 +80,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentCreation() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 

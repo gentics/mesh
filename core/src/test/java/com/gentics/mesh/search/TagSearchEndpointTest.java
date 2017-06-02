@@ -22,7 +22,7 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		String tagName = "newtag";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			createTag(PROJECT_NAME, tagFamily("colors").getUuid(), tagName);
 		}
 
@@ -40,7 +40,7 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 		updateTag(PROJECT_NAME, parentTagFamilyUuid, uuid, newName);
 		updateTag(PROJECT_NAME, parentTagFamilyUuid, uuid, newName + "2");
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertEquals("The tag name was not updated as expected.", newName + "2", tag("red").getName());
 		}
 
@@ -51,7 +51,7 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 	@Test
 	@Override
 	public void testDocumentDeletion() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 

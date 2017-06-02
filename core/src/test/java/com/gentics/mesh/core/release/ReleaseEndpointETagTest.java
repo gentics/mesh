@@ -27,7 +27,7 @@ public class ReleaseEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String etag = callETag(() -> client().findReleases(PROJECT_NAME));
 			assertNotNull(etag);
 
@@ -38,7 +38,7 @@ public class ReleaseEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Release release = project().getLatestRelease();
 			String actualEtag = callETag(() -> client().findReleaseByUuid(PROJECT_NAME, release.getUuid()));
 			String etag = release.getETag(mockActionContext());

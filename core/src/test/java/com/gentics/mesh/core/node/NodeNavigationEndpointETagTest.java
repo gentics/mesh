@@ -20,7 +20,7 @@ public class NodeNavigationEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MeshResponse<NavigationResponse> response = client().loadNavigation(PROJECT_NAME, project().getBaseNode().getUuid()).invoke();
 			latchFor(response);
 			String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));

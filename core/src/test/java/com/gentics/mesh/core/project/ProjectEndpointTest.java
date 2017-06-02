@@ -141,7 +141,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertEquals("folder", response.getSchema().getName());
 
 		assertThat(restProject).matches(request);
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 			Project project = meshRoot().getProjectRoot().findByUuid(restProject.getUuid());
 			assertNotNull(project);
@@ -162,7 +162,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName(name);
 		request.setSchema(new SchemaReference().setName("folder"));
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(meshRoot().getProjectRoot(), CREATE_PERM);
 			tx.success();
 		}
@@ -174,7 +174,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
 			role().grantPermissions(project().getBaseNode(), CREATE_PERM);
@@ -187,7 +187,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName(name);
 		request.setSchema(new SchemaReference().setName("folder"));
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Create a new project
 			ProjectResponse restProject = call(() -> client().createProject(request));
 			assertThat(restProject).matches(request);
@@ -209,11 +209,11 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testReadMultiple() throws Exception {
 		final int nProjects = 142;
 		final String noPermProjectName = "no_perm_project";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().grantPermissions(project(), READ_PERM);
 			tx.success();
 		}
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			for (int i = 0; i < nProjects; i++) {
 				Project extraProject = meshRoot().getProjectRoot().create("extra_project_" + i, user(), schemaContainer("folder").getLatestVersion());
 				extraProject.setBaseNode(project().getBaseNode());
@@ -317,7 +317,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			assertNotNull("The UUID of the project must not be null.", project.getUuid());
@@ -340,7 +340,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 
@@ -353,7 +353,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(project(), READ_PERM);
 			tx.success();
 		}
@@ -366,7 +366,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testUpdateWithBogusNames() {
 		String uuid = projectUuid();
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			MeshInternal.get().boot().meshRoot().getProjectRoot().create("Test234", user(), schemaContainer("folder").getLatestVersion());
 			tx.success();
 		}
@@ -379,7 +379,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		call(() -> client().updateProject(uuid, request));
 		call(() -> client().findNodes(request.getName()));
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			project().reload();
 			assertEquals(request.getName(), project().getName());
 		}
@@ -400,7 +400,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			String uuid = project.getUuid();
 			role().grantPermissions(project, UPDATE_PERM);
@@ -442,7 +442,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws JsonProcessingException, Exception {
 		String uuid = projectUuid();
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			role().grantPermissions(project, READ_PERM);
 			role().revokePermissions(project, UPDATE_PERM);
@@ -454,7 +454,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		call(() -> client().updateProject(uuid, request), FORBIDDEN, "error_missing_perm", uuid);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertEquals("The name should not have been changed", PROJECT_NAME, reloadedProject.getName());
 		}
@@ -464,13 +464,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testDeleteByUUID() throws Exception {
 		String uuid = projectUuid();
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().grantPermissions(project(), DELETE_PERM);
 			tx.success();
 		}
 
 		Set<String> indices = new HashSet<>();
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 
 			// 1. Determine a list all project indices which must be dropped
@@ -495,7 +495,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 		assertThat(dummySearchProvider()).hasEvents(0, 1, 2 + indices.size(), 0);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
 		}
 		// TODO check for removed routers?
@@ -506,7 +506,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid = projectUuid();
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(project(), DELETE_PERM);
 			tx.success();
 		}
@@ -514,7 +514,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid);
 		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertNotNull("The project should not have been deleted", project);
 		}
@@ -525,7 +525,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	@Ignore("not yet enabled")
 	public void testUpdateMultithreaded() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			int nJobs = 5;
 			ProjectUpdateRequest request = new ProjectUpdateRequest();
 			request.setName("New Name");
@@ -543,7 +543,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String uuid = project().getUuid();
 			// CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<?>> set = new HashSet<>();
@@ -584,7 +584,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 		validateCreation(set, null);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			long n = StreamSupport
 					.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName()).spliterator(), true)
 					.count();
@@ -597,7 +597,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			int nJobs = 200;
 			Set<MeshResponse<ProjectResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {

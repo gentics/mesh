@@ -30,7 +30,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			change.setLabel("testLabel");
 			assertEquals("testLabel", change.getLabel());
@@ -40,7 +40,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testApply() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph()
 					.addFramedVertex(SchemaContainerVersionImpl.class);
 
@@ -62,7 +62,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaChangeModel model = new SchemaChangeModel(UPDATEFIELD, "someField");
 			UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			change.updateFromRest(model);
@@ -73,7 +73,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			assertNull("Update field changes have no auto migation script.", change.getAutoMigrationScript());
 
@@ -86,7 +86,7 @@ public class UpdateFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UpdateFieldChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			change.setFieldName("fieldName");
 

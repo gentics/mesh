@@ -28,7 +28,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 
 			change.setFieldName("someField");
@@ -39,7 +39,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testApply() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema with field
@@ -63,7 +63,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaChangeModel model = new SchemaChangeModel();
 			model.setMigrationScript("test");
 			model.setProperty(SchemaChangeModel.FIELD_NAME_KEY, "someField");
@@ -77,7 +77,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			assertNotNull("Remove Type changes have a auto migation script.", change.getAutoMigrationScript());
 
@@ -90,7 +90,7 @@ public class RemoveFieldChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RemoveFieldChange change = Database.getThreadLocalGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 			assertEquals(RemoveFieldChange.OPERATION, change.transformToRest().getOperation());
 			change.setCustomMigrationScript("test");

@@ -65,7 +65,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchMicronodeResolveLinks() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			addMicronodeField();
 			recreateIndices();
 		}
@@ -77,7 +77,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			for (NodeResponse nodeResponse : response.getData()) {
 				assertNotNull("Returned node must not be null", nodeResponse);
 				assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
@@ -87,7 +87,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfMicronodes() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			addMicronodeListField();
 			recreateIndices();
 		}
@@ -117,7 +117,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfNodes() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			addNodeListField();
 			recreateIndices();
 		}
@@ -127,7 +127,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchDraftInRelease() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 

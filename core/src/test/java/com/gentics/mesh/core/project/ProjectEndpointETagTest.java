@@ -23,7 +23,7 @@ public class ProjectEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String etag = callETag(() -> client().findProjects());
 			callETag(() -> client().findProjects(), etag, true, 304);
 			callETag(() -> client().findProjects(new PagingParametersImpl().setPage(2)), etag, true, 200);
@@ -32,7 +32,7 @@ public class ProjectEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String actualETag = callETag(() -> client().findProjectByUuid(projectUuid()));
 			String etag = project().getETag(mockActionContext());
 			assertEquals(etag, actualETag);

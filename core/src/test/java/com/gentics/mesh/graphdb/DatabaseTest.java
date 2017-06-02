@@ -45,7 +45,7 @@ public class DatabaseTest extends AbstractMeshTest {
 
 	@Test
 	public void testIndex() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			db().addVertexIndex(LanguageImpl.class, true, "languageTag");
 			db().addEdgeIndex(GraphRelationships.ASSIGNED_TO_ROLE, false, false, true);
 		}
@@ -77,23 +77,23 @@ public class DatabaseTest extends AbstractMeshTest {
 	@Ignore
 	public void testRestore() throws IOException {
 		String name = "username";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			user().setUsername(name);
 			tx.success();
 		}
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertEquals(name, user().getUsername());
 		}
 		db().backupGraph(outputDirectory.getAbsolutePath());
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			user().setUsername("changed");
 			tx.success();
 		}
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertEquals("changed", user().getUsername());
 		}
 		db().restoreGraph(outputDirectory.listFiles()[0].getAbsolutePath());
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertEquals("username", user().getUsername());
 		}
 

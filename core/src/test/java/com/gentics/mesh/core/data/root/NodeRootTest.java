@@ -17,7 +17,7 @@ public class NodeRootTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddNode() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			FramedGraph graph = Database.getThreadLocalGraph();
 			NodeImpl node = graph.addFramedVertex(NodeImpl.class);
 			int start = boot().nodeRoot().findAll().size();

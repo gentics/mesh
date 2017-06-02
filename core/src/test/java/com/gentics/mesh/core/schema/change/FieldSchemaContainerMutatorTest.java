@@ -53,7 +53,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 	@Test
 	public void testNullOperation() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			version.setSchema(schema);
@@ -65,7 +65,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateTypeAndAllowProperty() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
@@ -96,7 +96,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateLabel() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
@@ -127,7 +127,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 	@Test
 	public void testAUpdateFields() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema

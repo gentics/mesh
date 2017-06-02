@@ -19,7 +19,7 @@ public class NodeImageResizeEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testImageResize() throws Exception {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 
 			// 1. Upload image

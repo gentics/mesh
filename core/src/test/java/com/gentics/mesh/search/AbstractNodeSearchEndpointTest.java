@@ -44,7 +44,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 	 * @throws JSONException
 	 */
 	protected void searchWithLanguages(String... expectedLanguages) throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 

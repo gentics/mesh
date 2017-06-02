@@ -50,7 +50,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		// 1. Take the parent folder offline
 		String parentFolderUuid;
 		String subFolderUuid;
-		try (Tx notrx = db().tx()) {
+		try (Tx notrx = tx()) {
 			InternalActionContext ac = mockActionContext("recursive=true");
 			Node subFolder = folder("2015");
 			Node parentFolder = folder("news");
@@ -88,7 +88,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatusForEmptyLanguage() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("products");
 			call(() -> client().getNodeLanguagePublishStatus(PROJECT_NAME, node.getUuid(), "fr"), NOT_FOUND, "error_language_not_found", "fr");
 		}
@@ -96,7 +96,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNode() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			String projectUuid = db().tx(() -> project().getUuid());
@@ -117,7 +117,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatus() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 
@@ -143,7 +143,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatusForRelease() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -171,7 +171,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatusNoPermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
@@ -188,7 +188,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatusForLanguage() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("products");
 
 			// 1. Take everything offline
@@ -221,7 +221,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNodeForRelease() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			project.getReleaseRoot().create("newrelease", user());
@@ -242,7 +242,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNodeNoPermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, PUBLISH_PERM);
@@ -326,7 +326,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishEmptyLanguage() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found", "de");
@@ -335,7 +335,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishLanguageForRelease() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -371,7 +371,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishLanguageNoPermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, PUBLISH_PERM);

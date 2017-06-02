@@ -42,7 +42,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetUsersByGroup() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", user());
 			group().addUser(extraUser);
@@ -71,7 +71,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUserToGroupWithBogusGroupId() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", user());
 			String userUuid = extraUser.getUuid();
@@ -85,7 +85,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUserToGroupWithPerm() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 
 			User extraUser = userRoot.create("extraUser", user());
@@ -109,7 +109,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUserToGroupWithoutPermOnGroup() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Group group = group();
 			String groupUuid = group.getUuid();
 			UserRoot userRoot = meshRoot().getUserRoot();
@@ -127,7 +127,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddUserToGroupWithoutPermOnUser() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create("extraUser", user());
 			role().grantPermissions(extraUser, DELETE_PERM);
@@ -141,7 +141,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveUserFromGroupWithoutPerm() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User user = user();
 			Group group = group();
 			assertTrue("User should be a member of the group.", group.hasUser(user));
@@ -153,7 +153,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveUserFromGroupWithPerm() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			call(() -> client().removeUserFromGroup(group().getUuid(), user().getUuid()));
 			assertFalse("User should not be member of the group.", group().hasUser(user()));
 		}
@@ -167,7 +167,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveUserFromLastGroupWithPerm() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			call(() -> client().removeUserFromGroup(group().getUuid(), user().getUuid()));
 			assertFalse("User should no longer be member of the group.", group().hasUser(user()));
 		}
@@ -175,7 +175,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveUserFromGroupWithBogusUserUuid() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			call(() -> client().removeUserFromGroup(group().getUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 			assertTrue("User should still be member of the group.", group().hasUser(user()));
 		}

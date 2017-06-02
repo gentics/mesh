@@ -33,7 +33,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeIntoNonFolderNode() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = content("concorde");
@@ -47,7 +47,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodesSame() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
@@ -59,7 +59,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeIntoChildNode() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = folder("2015");
@@ -75,7 +75,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeWithoutPerm() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("deals");
 			Node targetNode = folder("2015");
@@ -91,7 +91,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeWithPerm() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("deals");
 			Node targetNode = folder("2015");
@@ -100,7 +100,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()));
 
 			sourceNode.reload();
-			try (Tx tx2 = db().tx()) {
+			try (Tx tx2 = tx()) {
 				assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
 						sourceNode.getParentNode(releaseUuid).getUuid());
 				assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
@@ -114,7 +114,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testMoveNodeWithNoSegmentFieldDefined() {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			//1. Create new schema which does not have a segmentfield defined
 			SchemaCreateRequest createRequest = new SchemaCreateRequest();
@@ -156,7 +156,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveInRelease() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Node movedNode = folder("deals");
 			Node targetNode = folder("2015");

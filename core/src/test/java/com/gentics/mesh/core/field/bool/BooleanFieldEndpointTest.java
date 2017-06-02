@@ -33,7 +33,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			BooleanFieldSchema booleanFieldSchema = new BooleanFieldSchemaImpl();
 			booleanFieldSchema.setName(FIELD_NAME);
@@ -47,13 +47,13 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createBoolean(FIELD_NAME).setBoolean(true);
 			tx.success();
 		}
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			NodeResponse response = readNode(node);
 			BooleanFieldImpl deserializedBooleanField = response.getFields().getBooleanField(FIELD_NAME);
@@ -65,7 +65,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			for (int i = 0; i < 20; i++) {
 				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
@@ -98,7 +98,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -110,7 +110,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
 			String oldVersion = firstResponse.getVersion().getNumber();
 
@@ -157,7 +157,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
 			assertNull(field);
@@ -167,7 +167,7 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
 			BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
 			assertTrue(field.getValue());

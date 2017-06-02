@@ -63,7 +63,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testUpdateName() throws GenericRestException, Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String name = "new_name";
 			SchemaContainer container = schemaContainer("content");
 			SchemaContainerVersion currentVersion = container.getLatestVersion();
@@ -91,7 +91,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testBlockingMigrationStatus() throws InterruptedException, IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer container = schemaContainer("content");
 			assertNull("The schema should not yet have any changes", container.getLatestVersion().getNextChange());
 
@@ -147,7 +147,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testUpdateWithConflictingName() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String name = "folder";
 			String originalSchemaName = "content";
 			SchemaContainer schema = schemaContainer(originalSchemaName);
@@ -166,7 +166,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testFieldTypeChange() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer container = schemaContainer("content");
 			SchemaContainerVersion currentVersion = container.getLatestVersion();
 			assertNull("The schema should not yet have any changes", currentVersion.getNextChange());
@@ -204,7 +204,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testRemoveAddFieldTypeWithSameKey() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node content = content();
 			content.getLatestDraftFieldContainer(english()).getHtml("content").setHtml("42.1");
 
@@ -253,7 +253,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testApplyWithEmptyChangesList() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer container = schemaContainer("content");
 			SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 			call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges), BAD_REQUEST, "schema_migration_no_changes_specified");
@@ -280,7 +280,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		// 2. Invoke migration
 		call(() -> client().applyChangesToSchema(uuid, listOfChanges));
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 3. Assert updated schema
 			SchemaContainer container = schemaContainer("content");
 
@@ -292,7 +292,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testRemoveSegmentField() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = content();
 			assertNotNull("The node should have a filename string graph field", node.getGraphFieldContainer("en").getString("slug"));
 
@@ -317,7 +317,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testRemoveField() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 1. Verify test data
 			Node node = content();
 			SchemaContainer container = schemaContainer("content");
@@ -356,7 +356,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testAddField() throws Exception {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 1. Setup changes
 			SchemaContainer container = schemaContainer("content");
 			SchemaContainerVersion currentVersion = container.getLatestVersion();
@@ -431,7 +431,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	public void testUpdateMultipleTimes() throws Exception {
 		SchemaContainerVersion currentVersion;
 		SchemaContainer container;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Assert start condition
 			container = schemaContainer("content");
 			currentVersion = container.getLatestVersion();
@@ -461,7 +461,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// 4. Latch for completion
 			latch.await(10, TimeUnit.SECONDS);
 
-			try (Tx tx = db().tx()) {
+			try (Tx tx = tx()) {
 				container.reload();
 				container.getLatestVersion().reload();
 				currentVersion.reload();
@@ -483,7 +483,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		// Validate schema changes and versions
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			container.reload();
 			assertEquals("We invoked 10 migration. Thus we expect 11 versions.", 11, container.findAll().size());
@@ -516,7 +516,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	 */
 	@Test
 	public void testNoChangesUpdate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer container = schemaContainer("content");
 			SchemaUpdateRequest schema = JsonUtil.readValue(JsonUtil.toJson(container.getLatestVersion().getSchema()), SchemaUpdateRequest.class);
 
@@ -528,7 +528,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testUpdateAddField() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 1. Setup schema
 			Node content = content();
 			SchemaContainer container = schemaContainer("content");
@@ -582,7 +582,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		String releaseUuid = db().tx(() -> project().getLatestRelease().getUuid());
 		SchemaUpdateRequest schema;
 		String nodeUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node content = content();
 			nodeUuid = content.getUuid();
 			// 1. Prepare the update request in which we remove the content field
@@ -616,7 +616,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testMigrationForRelease() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Release initialRelease = project().getLatestRelease();
 			Release newRelease = project().getReleaseRoot().create("newrelease", user());
 

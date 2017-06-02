@@ -32,7 +32,7 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testActions() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 		final int nodeCount = 1;

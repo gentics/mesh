@@ -45,7 +45,7 @@ public class GraphQLSearchEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeQuery() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));

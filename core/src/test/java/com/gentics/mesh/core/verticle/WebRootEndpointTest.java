@@ -55,7 +55,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadBinaryNode() throws IOException {
 		Node node = content("news_2015");
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 1. Transform the node into a binary content
 			SchemaContainer container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
@@ -68,7 +68,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 2. Update the binary data
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
@@ -84,7 +84,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadFolderByPath() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node folder = folder("2015");
 			String path = "/News/2015";
 
@@ -95,7 +95,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadFolderByPathAndResolveLinks() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node content = content("news_2015");
 
 			content.getLatestDraftFieldContainer(english()).getHtml("content")
@@ -119,7 +119,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
 				new NodeParametersImpl().setLanguages("en", "de")));
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = content("news_2015");
 			assertThat(restNode.getNodeResponse()).is(node).hasLanguage("en");
 		}
@@ -128,7 +128,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadContentWithNodeRefByPath() throws Exception {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node parentNode = folder("2015");
 			// Update content schema and add node field
 			SchemaContainer folderSchema = schemaContainer("folder");
@@ -197,7 +197,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// Test RFC3986 subdelims and an additional space and questionmark
 		String newName = "20!$&'()*+,;=%3F? 15";
 		String uuid = db().tx(() -> folder("2015").getUuid());
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node folder = folder("2015");
 			folder.getGraphFieldContainer("en").getString("slug").setString(newName);
 		}
@@ -228,7 +228,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadProjectBaseNode() {
 		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, "/", new VersioningParametersImpl().draft()));
 		assertFalse(response.isDownload());
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 		}
 	}
@@ -237,7 +237,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadDoubleSlashes() {
 		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, "//", new VersioningParametersImpl().draft()));
 		assertFalse(response.isDownload());
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 		}
 	}
@@ -264,7 +264,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadFolderByPathWithoutPerm() throws Exception {
 		String englishPath = "/News/2015";
 		String uuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node newsFolder = folder("2015");
 			uuid = newsFolder.getUuid();
 			role().revokePermissions(newsFolder, READ_PERM);
@@ -299,7 +299,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testRead404Node() {
 		String notFoundPath = "/error/404";
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeCreateRequest createErrorFolder = new NodeCreateRequest();
 			createErrorFolder.setSchema(new SchemaReference().setName("folder"));
 			createErrorFolder.setParentNodeUuid(project().getBaseNode().getUuid());
@@ -328,23 +328,23 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadPublished() {
 		String path = "/News/2015";
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 		}
 		// 1. Assert that published path cannot be found
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().published()), NOT_FOUND, "node_not_found_for_path", path);
 		}
 
 		// 2. Publish nodes
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SearchQueueBatch batch = createBatch();
 			folder("news").publish(mockActionContext(), batch);
 			folder("2015").publish(mockActionContext(), batch);
 		}
 
 		// 3. Assert that published path can be found
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new NodeParametersImpl()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("2.0").hasLanguage("en");
 		}

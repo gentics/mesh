@@ -36,7 +36,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Test
 	@Override
 	public void testRootNode() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			LanguageRoot languageRoot = meshRoot().getLanguageRoot();
 
 			int nLanguagesBefore = languageRoot.findAll().size();
@@ -52,7 +52,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 
 	@Test
 	public void testLanguageIndex() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			stopWatch("languageindex.read", 50000, (step) -> {
 				Iterable<Vertex> it = Database.getThreadLocalGraph().getVertices("LanguageImpl.languageTag", "en");
 				assertTrue(it.iterator().hasNext());
@@ -76,7 +76,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			List<? extends Language> languages = meshRoot().getLanguageRoot().findAll();
 			assertEquals(4, languages.size());
 		}
@@ -84,7 +84,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 
 	@Test
 	public void testFindByLanguageTag() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// for (int e = 0; e < 15; e++) {
 			int nChecks = 50000;
 			long start = System.currentTimeMillis();
@@ -104,7 +104,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Test
 	@Override
 	public void testFindByName() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Language language = meshRoot().getLanguageRoot().findByName("German");
 			assertNotNull(language);
 
@@ -120,7 +120,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Language language = meshRoot().getLanguageRoot().findByName("German");
 			Language foundLanguage = meshRoot().getLanguageRoot().findByUuid(language.getUuid());
 			assertNotNull(foundLanguage);
@@ -152,7 +152,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Test
 	@Override
 	public void testRead() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Language language = english();
 			assertNotNull(language.getName());
 			assertEquals("English", language.getName());
@@ -166,7 +166,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Test
 	@Override
 	public void testCreate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			LanguageRoot languageRoot = meshRoot().getLanguageRoot();
 			final String languageTag = "tlh";
 			final String languageName = "klingon";
@@ -195,7 +195,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			testPermission(GraphPermission.READ_PERM, english());
 		}
 	}
@@ -203,7 +203,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			testPermission(GraphPermission.DELETE_PERM, english());
 		}
 	}
@@ -211,7 +211,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			testPermission(GraphPermission.UPDATE_PERM, english());
 		}
 	}
@@ -219,7 +219,7 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			testPermission(GraphPermission.CREATE_PERM, english());
 		}
 	}

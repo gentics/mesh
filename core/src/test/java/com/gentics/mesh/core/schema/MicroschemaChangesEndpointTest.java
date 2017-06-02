@@ -39,7 +39,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveField() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 1. Setup eventbus bridge latch
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
@@ -105,7 +105,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddField() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 1. Setup changes
 			MicroschemaContainer container = microschemaContainer("vcard");
 			MicroschemaContainerVersion currentVersion = container.getLatestVersion();
@@ -134,7 +134,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateName() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String name = "new_name";
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			MicroschemaContainerVersion currentVersion = vcardContainer.getLatestVersion();
@@ -163,7 +163,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateWithConflictingName() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String name = "captionedImage";
 			String originalSchemaName = "vcard";
 			MicroschemaContainer microschema = microschemaContainers().get(originalSchemaName);

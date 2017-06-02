@@ -91,7 +91,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	protected void removeField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher)
 			throws InterruptedException, ExecutionException, TimeoutException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
 				removeMicroschemaField(creator, dataProvider, fetcher);
 			} else {
@@ -239,7 +239,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	protected void renameField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, DataAsserter asserter)
 			throws InterruptedException, ExecutionException, TimeoutException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
 				renameMicroschemaField(creator, dataProvider, fetcher, asserter);
 			} else {
@@ -409,7 +409,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	protected void changeType(FieldSchemaCreator oldField, DataProvider dataProvider, FieldFetcher oldFieldFetcher, FieldSchemaCreator newField,
 			DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
 				changeMicroschemaType(oldField, dataProvider, oldFieldFetcher, newField, asserter);
 			} else {
@@ -595,7 +595,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 */
 	protected void customMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher, String migrationScript,
 			DataAsserter asserter) throws InterruptedException, ExecutionException, TimeoutException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
 				customMicroschemaMigrationScript(creator, dataProvider, fetcher, migrationScript, asserter);
 			} else {
@@ -745,7 +745,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws Throwable
 	 */
 	protected void invalidMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws Throwable {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			try {
 				if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
 					invalidMicroschemaMigrationScript(creator, dataProvider, script);

@@ -28,7 +28,7 @@ public class TagEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String tagFamilyUuid = tagFamily("colors").getUuid();
 			String etag = callETag(() -> client().findTags(PROJECT_NAME, tagFamilyUuid));
 			assertNotNull(etag);
@@ -40,7 +40,7 @@ public class TagEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily tagfamily = tagFamily("colors");
 			Tag tag = tag("red");
 

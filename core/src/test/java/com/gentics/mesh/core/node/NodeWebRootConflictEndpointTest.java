@@ -36,7 +36,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 	public void testDuplicateDueMove() {
 
 		String conflictingName = "conflictName";
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node folderA = folder("2014");
 			// 1. Create nodeA
 			NodeCreateRequest requestA = new NodeCreateRequest();

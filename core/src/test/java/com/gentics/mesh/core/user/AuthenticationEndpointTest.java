@@ -29,7 +29,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRestClient() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User user = user();
 			String username = user.getUsername();
 			String uuid = user.getUuid();
@@ -82,7 +82,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 		assertNotNull(loginResponse);
 		assertEquals("OK", loginResponse.getMessage());
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User user = user();
 			user.disable();
 			tx.success();
@@ -93,7 +93,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAutomaticTokenRefresh() throws InterruptedException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User user = user();
 			String username = user.getUsername();
 

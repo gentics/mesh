@@ -65,7 +65,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 200;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String projectName = PROJECT_NAME;
 			String uuid = releaseUuid();
 
@@ -91,7 +91,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Ignore
 	public void testCreateMultithreaded() throws Exception {
 		String releaseName = "Release V";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			int nJobs = 100;
 
@@ -138,7 +138,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Set<MeshResponse<ReleaseResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(client().findReleaseByUuid(PROJECT_NAME, releaseUuid()).invoke());
@@ -165,7 +165,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
 		String releaseName = "Release V1";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			role().grantPermissions(project, READ_PERM);
 			role().revokePermissions(project, UPDATE_PERM);
@@ -228,7 +228,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		List<Pair<String, String>> releaseInfo = new ArrayList<>();
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			releaseInfo.add(Pair.of(initialRelease.getUuid(), initialRelease.getName()));
@@ -269,7 +269,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(project().getInitialRelease(), READ_PERM);
 			tx.success();
 		}
@@ -284,7 +284,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		Release thirdRelease;
 		Release secondRelease;
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			initialRelease = project.getInitialRelease();
 			firstRelease = project.getReleaseRoot().create("One", user());
@@ -293,7 +293,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			ListResponse<ReleaseResponse> responseList = call(() -> client().findReleases(PROJECT_NAME));
 			InternalActionContext ac = mockActionContext();
 
@@ -307,7 +307,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testReadMultipleWithRestrictedPermissions() throws Exception {
 		Release initialRelease;
 		Release secondRelease;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			initialRelease = project.getInitialRelease();
 			Release firstRelease = project.getReleaseRoot().create("One", user());
@@ -321,7 +321,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		ListResponse<ReleaseResponse> responseList = call(() -> client().findReleases(PROJECT_NAME));
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext();
 			assertThat(responseList).isNotNull();
 			assertThat(responseList.getData()).usingElementComparatorOnFields("uuid", "name").containsOnly(initialRelease.transformToRestSync(ac, 0),
@@ -334,7 +334,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testUpdate() throws Exception {
 		String newName = "New Release Name";
 		String anotherNewName = "Another New Release Name";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			// change name
 			ReleaseUpdateRequest request1 = new ReleaseUpdateRequest();
@@ -360,7 +360,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	public void testUpdateWithNameConflict() throws Exception {
 		String newName = "New Release Name";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			project().getReleaseRoot().create(newName, user());
 			tx.success();
 		}
@@ -373,7 +373,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(project().getInitialRelease(), UPDATE_PERM);
 			tx.success();
 		}
@@ -404,7 +404,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testReadSchemaVersions() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaReferenceList list = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, releaseUuid()));
 
 			SchemaReference content = schemaContainer("content").getLatestVersion().transformToReference();
@@ -418,7 +418,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testAssignSchemaVersionViaSchemaUpdate() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// create version 1 of a schema
 			SchemaResponse schema = createSchema("schemaname");
 
@@ -472,7 +472,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testAssignSchemaVersion() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// create version 1 of a schema
 			SchemaResponse schema = createSchema("schemaname");
 
@@ -522,7 +522,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	public void testAssignUnassignedSchemaVersion() throws Exception {
 		final String schemaName = "schemaname";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			createSchema(schemaName);
 			tx.success();
 		}
@@ -534,7 +534,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	public void testAssignOlderSchemaVersion() throws Exception {
 		String schemaUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// create version 1 of a schema
 			SchemaResponse schema = createSchema("schemaname");
 			schemaUuid = schema.getUuid();
@@ -553,7 +553,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testAssignSchemaVersionNoPermission() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			role().revokePermissions(project.getInitialRelease(), UPDATE_PERM);
 			tx.success();
@@ -566,7 +566,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	public void testAssignLatestSchemaVersion() throws Exception {
 		String schemaUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// create version 1 of a schema
 			SchemaResponse schema = createSchema("schemaname");
 			schemaUuid = schema.getUuid();
@@ -611,7 +611,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testAssignMicroschemaVersion() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// create version 1 of a microschema
 			MicroschemaResponse microschema = createMicroschema("microschemaname");
 
@@ -642,7 +642,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testAssignMicroschemaVersionViaMicroschemaUpdate() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// create version 1 of a microschema
 			MicroschemaResponse microschema = createMicroschema("microschemaname");
 
@@ -694,7 +694,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testAssignUnassignedMicroschemaVersion() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaModel schema = createSchema("microschemaname");
 
 			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, releaseUuid(),
@@ -705,7 +705,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testAssignOlderMicroschemaVersion() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// create version 1 of a microschema
 			MicroschemaResponse microschema = createMicroschema("microschemaname");
 
@@ -724,7 +724,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testAssignMicroschemaVersionNoPermission() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			role().revokePermissions(project.getInitialRelease(), UPDATE_PERM);
 			tx.success();
@@ -735,7 +735,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testAssignLatestMicroschemaVersion() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// create version 1 of a microschema
 			MicroschemaResponse microschema = createMicroschema("microschemaname");
 

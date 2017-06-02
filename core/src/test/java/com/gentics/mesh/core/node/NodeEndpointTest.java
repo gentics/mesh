@@ -85,7 +85,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateNodeWithNoLanguageCode() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			SchemaReference schemaReference = new SchemaReference();
 			schemaReference.setName("content");
@@ -165,7 +165,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testCreateMultiple() {
 		// TODO migrate test to performance tests
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -206,7 +206,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(parentNodeUuid);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
@@ -230,7 +230,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 		request.setParentNodeUuid(parentNodeUuid);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(folder("news"), CREATE_PERM);
 		}
 
@@ -240,7 +240,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateForReleaseByName() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Release initialRelease = project.getReleaseRoot().getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -271,7 +271,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateForReleaseByUuid() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Release initialRelease = project.getReleaseRoot().getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -302,7 +302,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateForLatestRelease() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Release initialRelease = project.getReleaseRoot().getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -334,7 +334,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateForBogusRelease() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			project.getReleaseRoot().create("newrelease", user());
 
@@ -363,7 +363,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testCreateReadDelete() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse restNode2;
 
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -406,7 +406,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateNodeWithMissingParentNodeUuid() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			SchemaReference schemaReference = new SchemaReference();
 			schemaReference.setName("node");
@@ -424,7 +424,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateNodeWithMissingSchemaPermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			String uuid = node.getUuid();
 			role().revokePermissions(schemaContainer("content"), READ_PERM);
@@ -448,12 +448,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testCreateNodeWithMissingPermission() throws Exception {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Revoke create perm
 			role().revokePermissions(folder("news"), CREATE_PERM);
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			String uuid = node.getUuid();
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -491,7 +491,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadMultipleAndAssertOrder() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node parentNode = folder("2015");
 			int nNodes = 20;
 			for (int i = 0; i < nNodes; i++) {
@@ -517,7 +517,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node parentNode = folder("2015");
 			// Don't grant permissions to the no perm node. We want to make sure that this one will not be listed.
 			Node noPermNode = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
@@ -612,7 +612,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodesForRelease() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -644,7 +644,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadPublishedNodes() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			List<Node> nodes = Arrays.asList(folder("products"), folder("deals"), folder("news"), folder("2015"));
 
 			// 1. Take all nodes offline
@@ -770,7 +770,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		Logger log = LoggerFactory.getLogger(NodeEndpointTest.class);
 
 		int nJobs = 200;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			CountDownLatch latch = new CountDownLatch(nJobs);
 
 			Node parentNode = folder("news");
@@ -850,7 +850,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testCreateMultithreaded() throws InterruptedException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -957,7 +957,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testReadByUuidMultithreaded() throws InterruptedException {
 		int nJobs = 50;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).invoke());
@@ -973,7 +973,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
 		int nJobs = 200;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
 				set.add(client().findNodeByUuid(PROJECT_NAME, folder("2015").getUuid(), new VersioningParametersImpl().draft()).invoke());
@@ -988,7 +988,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1003,7 +1003,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUUID() throws Exception {
 		String folderUuid = db().tx(() -> folder("2015").getUuid());
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, folderUuid, new VersioningParametersImpl().draft()));
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			assertThat(folder("2015")).matches(response);
 			assertNotNull(response.getParentNode());
@@ -1016,7 +1016,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadVersionByNumber() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1088,7 +1088,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadBogusVersion() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1099,7 +1099,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadInexistentVersion() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1130,7 +1130,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodeForRelease() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			Project project = project();
@@ -1153,7 +1153,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodeVersionForRelease() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			Project project = project();
@@ -1203,7 +1203,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	 */
 	@Test
 	public void testReadByUUIDWithLinkPathsAndNoSegmentFieldRef() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			// Update the schema
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
@@ -1221,7 +1221,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadByUUIDWithLinkPaths() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft(),
 					new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
@@ -1271,7 +1271,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadByUUIDBreadcrumb() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = content("news_2014");
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(),
 					new NodeParametersImpl().setResolveLinks(LinkType.FULL), new VersioningParametersImpl().draft()));
@@ -1296,7 +1296,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadBaseNode() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 
@@ -1315,13 +1315,13 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodeByUUIDLanguageFallback() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("products");
 			SearchQueueBatch batch = createBatch();
 			node.getLatestDraftFieldContainer(english()).delete(batch);
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("products");
 			String uuid = node.getUuid();
 
@@ -1342,7 +1342,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodeByUUIDSingleLanguage() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("products");
 			String uuid = node.getUuid();
 
@@ -1360,7 +1360,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodeByUUIDNoLanguage() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Create node with nl language
 			Node parentNode = folder("products");
 			Language languageNl = meshRoot().getLanguageRoot().findByLanguageTag("nl");
@@ -1390,7 +1390,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadNodeWithBogusLanguageCode() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			Node node = folder("2015");
 			String uuid = node.getUuid();
@@ -1412,7 +1412,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
@@ -1485,7 +1485,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				.hasStringField("title", "Concorde english title");
 
 		// 5. Assert graph changes
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			node.reload();
 			origContainer.reload();
 
@@ -1546,7 +1546,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			role().revokePermissions(node, UPDATE_PERM);
 			String uuid = node.getUuid();
@@ -1561,7 +1561,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeUpdateRequest request = new NodeUpdateRequest();
 			request.setLanguage("en");
 
@@ -1574,7 +1574,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateNodeWithExtraField() throws UnknownHostException, InterruptedException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -1597,7 +1597,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateNodeWithMissingRequiredField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -1618,7 +1618,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateNodeWithMissingField() throws UnknownHostException, InterruptedException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node parentNode = folder("news");
 			String uuid = parentNode.getUuid();
 			assertNotNull(parentNode);
@@ -1640,7 +1640,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testUpdateNodeWithExtraField2() throws GenericRestException, Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 
@@ -1666,7 +1666,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testDeleteBaseNode() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 
@@ -1680,7 +1680,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = content("concorde");
 			String uuid = node.getUuid();
 			call(() -> client().deleteNode(PROJECT_NAME, uuid));
@@ -1693,7 +1693,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testDeleteForRelease() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 1. get the node
 			Node node = content("concorde");
 			String uuid = node.getUuid();
@@ -1721,7 +1721,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testDeletePublishedForRelease() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 1. get the node
 			Node node = content("concorde");
 			String uuid = node.getUuid();
@@ -1757,7 +1757,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			role().revokePermissions(node, DELETE_PERM);
@@ -1772,7 +1772,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testConflictByUpdateAdditionalLanguage() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
 

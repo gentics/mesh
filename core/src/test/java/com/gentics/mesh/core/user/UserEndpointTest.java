@@ -87,7 +87,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadByUUID() throws Exception {
 		String uuid = db().tx(() -> user().getUuid());
 		UserResponse restUser = call(() -> client().findUserByUuid(uuid));
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertThat(restUser).matches(user());
 		}
 		// TODO assert groups
@@ -276,7 +276,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadPermissions() {
 		TagFamily tagFamily;
 		String pathToElement;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			data().addTagFamilies();
 			tagFamily = data().getTagFamily("colors");
 			role().grantPermissions(tagFamily, GraphPermission.values());
@@ -293,7 +293,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertNotNull(response);
 		assertThat(response).hasPerm(Permission.values());
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Revoke single permission and check again
 			role().revokePermissions(tagFamily, GraphPermission.UPDATE_PERM);
 			assertFalse(role().hasPermission(GraphPermission.UPDATE_PERM, tagFamily));
@@ -313,7 +313,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadUserWithMultipleGroups() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User user = user();
 			assertEquals(1, user.getGroups().size());
 
@@ -332,7 +332,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadByUuidMultithreaded() throws InterruptedException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			int nJobs = 10;
 			String uuid = user().getUuid();
 			// CyclicBarrier barrier = prepareBarrier(nJobs);
@@ -347,7 +347,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws InterruptedException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			int nJobs = 200;
 			Set<MeshResponse<UserResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
@@ -363,7 +363,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User user = user();
 			assertNotNull("The username of the user must not be null.", user.getUsername());
 			role().revokePermissions(user, READ_PERM);
@@ -379,7 +379,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		final int nUsers = 20;
 
 		int foundUsers;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserRoot root = meshRoot().getUserRoot();
 			for (int i = 0; i < nUsers; i++) {
 				String username = "testuser_" + i;
@@ -514,7 +514,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 		dummySearchProvider().clear();
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertThat(restUser).matches(updateRequest);
 			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot().findByUsername(oldName));
 			User reloadedUser = boot().userRoot().findByUsername("dummy_user_changed");
@@ -547,7 +547,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertSuccess(future);
 		UserResponse restUser = future.result();
 		assertThat(restUser).matches(updateRequest);
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertNull("The user node should have been updated and thus no user should be found.", boot().userRoot().findByUsername(oldUsername));
 			User reloadedUser = boot().userRoot().findByUsername(username);
 			assertNotNull(reloadedUser);
@@ -569,7 +569,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testUpdateUserAndSetNodeReference() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String nodeUuid = folder("news").getUuid();
 			User user = user();
 			String username = user.getUsername();
@@ -608,7 +608,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testCreateUserWithNodeReference() {
 		String nodeUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			nodeUuid = node.getUuid();
 			assertTrue(user().hasPermission(node, READ_PERM));
@@ -651,7 +651,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			return response;
 		});
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			UserListResponse userResponse = call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100),
 					new NodeParametersImpl().setExpandedFieldNames("nodeReference").setLanguages("en")));
@@ -669,7 +669,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testReadUserWithExpandedNodeReference() {
 		String folderUuid;
 		UserCreateRequest newUser;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			folderUuid = node.getUuid();
 
@@ -697,7 +697,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateUserWithBogusProjectNameInNodeReference() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 
 			NodeReference reference = new NodeReference();
@@ -716,7 +716,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateUserWithBogusUuidInNodeReference() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeReference reference = new NodeReference();
 			reference.setProjectName(PROJECT_NAME);
 			reference.setUuid("bogus_uuid");
@@ -733,7 +733,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateUserWithMissingProjectNameInNodeReference() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeReference reference = new NodeReference();
 			reference.setUuid("bogus_uuid");
 
@@ -750,7 +750,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testCreateUserWithMissingUuidNameInNodeReference() {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeReference reference = new NodeReference();
 			reference.setProjectName(PROJECT_NAME);
 			UserCreateRequest newUser = new UserCreateRequest();
@@ -768,7 +768,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	// String uuid;
 	// String oldHash;
 	//
-	// try (Tx tx = db().tx()) {
+	// try (Tx tx = tx()) {
 	// uuid = user().getUuid();
 	// oldHash = user().getPasswordHash();
 	// }
@@ -780,7 +780,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	// call(() -> getClient().updateUser(uuid, updateRequest), BAD_REQUEST,
 	// "user_error_missing_old_password");
 	//
-	// try (Tx tx = db().tx()) {
+	// try (Tx tx = tx()) {
 	// User reloadedUser = boot.userRoot().findByUuid(uuid);
 	// assertEquals("The hash should not be different since the password should
 	// not have been updated.", oldHash,
@@ -793,7 +793,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	// String uuid;
 	// String oldHash;
 	//
-	// try (Tx tx = db().tx()) {
+	// try (Tx tx = tx()) {
 	// uuid = user().getUuid();
 	// oldHash = user().getPasswordHash();
 	// }
@@ -805,7 +805,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	// call(() -> getClient().updateUser(uuid, updateRequest), BAD_REQUEST,
 	// "user_error_password_check_failed");
 	//
-	// try (Tx tx = db().tx()) {
+	// try (Tx tx = tx()) {
 	// User reloadedUser = boot.userRoot().findByUuid(uuid);
 	// assertEquals("The hash should not be different since the password should
 	// not have been updated.", oldHash,
@@ -819,7 +819,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String uuid;
 		String oldHash;
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			user().setPasswordHash(null);
 			uuid = user().getUuid();
 			oldHash = user().getPasswordHash();
@@ -831,7 +831,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 		assertThat(restUser).matches(updateRequest);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User reloadedUser = boot().userRoot().findByUuid(uuid);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
@@ -843,7 +843,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String username;
 		String uuid;
 		String oldHash;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User user = user();
 			username = user.getUsername();
 			uuid = user.getUuid();
@@ -856,7 +856,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 		assertThat(restUser).matches(updateRequest);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User reloadedUser = boot().userRoot().findByUsername(username);
 			assertNotEquals("The hash should be different and thus the password updated.", oldHash, reloadedUser.getPasswordHash());
 		}
@@ -865,7 +865,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testUpdatePasswordWithNoPermission() throws JsonGenerationException, JsonMappingException, IOException, Exception {
 		String oldHash;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User user = user();
 			oldHash = user.getPasswordHash();
 			role().revokePermissions(user, UPDATE_PERM);
@@ -876,7 +876,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setPassword("new_password");
 		call(() -> client().updateUser(userUuid(), request), FORBIDDEN, "error_missing_perm", userUuid());
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User reloadedUser = boot().userRoot().findByUuid(userUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 		}
@@ -886,7 +886,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		String oldHash;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User user = user();
 			oldHash = user.getPasswordHash();
 			role().revokePermissions(user, UPDATE_PERM);
@@ -901,7 +901,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		updatedUser.setUsername("new_user");
 		call(() -> client().updateUser(userUuid(), updatedUser), FORBIDDEN, "error_missing_perm", userUuid());
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User reloadedUser = boot().userRoot().findByUuid(userUuid());
 			assertTrue("The hash should not be updated.", oldHash.equals(reloadedUser.getPasswordHash()));
 			assertEquals("The firstname should not be updated.", user().getFirstname(), reloadedUser.getFirstname());
@@ -912,7 +912,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testUpdateUserWithConflictingUsername() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Create an user with a conflicting username
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("existing_username", user());
@@ -928,7 +928,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testUpdateUserWithSameUsername() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserUpdateRequest request = new UserUpdateRequest();
 			request.setUsername(user().getUsername());
 			call(() -> client().updateUser(userUuid(), request));
@@ -937,7 +937,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateUserWithConflictingUsername() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Create an user with a conflicting username
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("existing_username", user());
@@ -1004,7 +1004,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testCreateUpdate() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Create a user with minimal properties
 			UserCreateRequest request = new UserCreateRequest();
 			request.setEmailAddress("n.user@spam.gentics.com");
@@ -1050,7 +1050,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		UserResponse restUser = call(() -> client().createUser(request));
 
-		try (Tx tx2 = db().tx()) {
+		try (Tx tx2 = tx()) {
 			assertThat(restUser).matches(request);
 
 			User user = boot().userRoot().findByUuid(restUser.getUuid());
@@ -1068,7 +1068,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setUsername("new_user");
 		request.setPassword("test123456");
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(meshRoot().getUserRoot(), CREATE_PERM);
 			tx.success();
 		}
@@ -1140,7 +1140,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			dummySearchProvider().clear();
 			UserCreateRequest newUser = new UserCreateRequest();
 			newUser.setEmailAddress("n.user@spam.gentics.com");
@@ -1162,7 +1162,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			latchFor(future);
 			assertSuccess(future);
 
-			try (Tx tx2 = db().tx()) {
+			try (Tx tx2 = tx()) {
 				User loadedUser = boot().userRoot().findByUuid(uuid);
 				assertNull("The user should have been deleted.", loadedUser);
 			}
@@ -1194,7 +1194,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
 		String uuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User user = userRoot.create("extraUser", user());
 			user.addGroup(group());
@@ -1206,7 +1206,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			tx.success();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			call(() -> client().deleteUser(uuid), FORBIDDEN, "error_missing_perm", uuid);
 			userRoot = meshRoot().getUserRoot();
@@ -1228,7 +1228,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	@Test
 	public void testDeleteByUUID2() throws Exception {
 		String uuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String name = "extraUser";
 			UserRoot userRoot = meshRoot().getUserRoot();
 			User extraUser = userRoot.create(name, user());
@@ -1244,12 +1244,12 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		call(() -> client().deleteUser(uuid));
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			assertNull("The user was not deleted.", userRoot.findByUuid(uuid));
 		}
 		// // Check whether the user was correctly disabled
-		// try (NoTrx tx = db().tx()) {
+		// try (NoTrx tx = tx()) {
 		// User user2 = userRoot.findByUuidBlocking(uuid);
 		// user2.reload();
 		// assertNotNull(user2);
@@ -1278,7 +1278,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		MeshResponse<UserResponse> response = client().createUser(request).invoke();
 		latchFor(response);
 		assertSuccess(response);
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			meshRoot().getUserRoot().reload();
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
@@ -1301,7 +1301,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		MeshResponse<UserResponse> response = request.invoke();
 		latchFor(response);
 		assertSuccess(response);
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			meshRoot().getUserRoot().reload();
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);

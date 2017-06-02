@@ -55,7 +55,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfMicronodesResolveLinks() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			addMicronodeListField();
 			recreateIndices();
 		}
@@ -87,7 +87,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testTrigramSearchQuery() throws Exception {
 		// 1. Index all existing contents
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -107,7 +107,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	public void testSchemaMigrationNodeSearchTest() throws Exception {
 
 		// 1. Index all existing contents
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -122,7 +122,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		// 3. Prepare an updated schema
 		String schemaUuid;
 		SchemaUpdateRequest schema;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node concorde = content("concorde");
 			SchemaContainerVersion schemaVersion = concorde.getSchemaContainer().getLatestVersion();
 			schema = JsonUtil.readValue(schemaVersion.getJson(), SchemaUpdateRequest.class);
@@ -156,7 +156,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchManyNodesWithMicronodes() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			int numAdditionalNodes = 99;
 			addMicronodeField();
@@ -195,11 +195,11 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	 */
 	@Test
 	public void testTagCount() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = content("concorde");
 			int previousTagCount = node.getTags(project().getLatestRelease()).size();
 			// Create tags:
@@ -223,11 +223,11 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testGlobalNodeSearch() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			NodeResponse oldNode = call(
 					() -> client().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParametersImpl().draft()));
 
@@ -261,7 +261,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testTakeDraftOffline() throws Exception {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -304,7 +304,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testGlobalPublishedNodeSearch() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 

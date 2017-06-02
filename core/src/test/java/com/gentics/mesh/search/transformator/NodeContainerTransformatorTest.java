@@ -26,7 +26,7 @@ public class NodeContainerTransformatorTest extends AbstractMeshTest {
 	@Test
 	public void testNodeTagFamilyTransformator() {
 		NodeContainerTransformator transformator = new NodeContainerTransformator();
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Release release = project().getLatestRelease();
 			NodeGraphFieldContainer node = content("concorde").getGraphFieldContainer(english(), release, ContainerType.PUBLISHED);
 			JsonObject document = transformator.toDocument(node, release.getUuid());

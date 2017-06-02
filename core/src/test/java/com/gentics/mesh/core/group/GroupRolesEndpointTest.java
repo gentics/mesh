@@ -33,7 +33,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadRolesByGroup() throws Exception {
 		String roleUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", user());
 			group().addRole(extraRole);
@@ -52,7 +52,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			listedRoleUuids.add(role.getUuid());
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertTrue(listedRoleUuids.contains(role().getUuid()));
 			assertTrue(listedRoleUuids.contains(roleUuid));
 		}
@@ -61,7 +61,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddRoleToGroup() throws Exception {
 		String roleUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", user());
 			roleUuid = extraRole.getUuid();
@@ -76,7 +76,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		// The role is not updated since it is not changing
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertEquals(1, restGroup.getRoles().stream().filter(ref -> ref.getName().equals("extraRole")).count());
 			assertEquals(2, group().getRoles().size());
 		}
@@ -85,7 +85,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddBogusRoleToGroup() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertEquals(1, group().getRoles().size());
 		}
 		call(() -> client().addRoleToGroup(groupUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
@@ -94,7 +94,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddNoPermissionRoleToGroup() throws Exception {
 		String roleUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", user());
 			roleUuid = extraRole.getUuid();
@@ -104,7 +104,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().addRoleToGroup(groupUuid(), roleUuid), FORBIDDEN, "error_missing_perm", roleUuid);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertEquals(1, group().getRoles().size());
 		}
 	}
@@ -112,7 +112,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveRoleFromGroup() throws Exception {
 		String roleUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", user());
 			roleUuid = extraRole.getUuid();
@@ -131,7 +131,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		GroupResponse restGroup = call(() -> client().findGroupByUuid(groupUuid()));
 		assertFalse(restGroup.getRoles().contains("extraRole"));
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertEquals(1, group().getRoles().size());
 		}
 
@@ -140,7 +140,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddRoleToGroupWithPerm() throws Exception {
 		Role extraRole;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 
 			extraRole = root.create("extraRole", user());
@@ -148,12 +148,12 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			GroupResponse restGroup = call(() -> client().addRoleToGroup(group().getUuid(), extraRole.getUuid()));
 			assertThat(restGroup).matches(group());
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertTrue("Role should be assigned to group.", group().hasRole(extraRole));
 		}
 	}
@@ -161,7 +161,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testAddRoleToGroupWithoutPermOnGroup() throws Exception {
 		Role extraRole;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Group group = group();
 			RoleRoot root = meshRoot().getRoleRoot();
 			extraRole = root.create("extraRole", user());
@@ -169,18 +169,18 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			call(() -> client().addRoleToGroup(groupUuid(), extraRole.getUuid()), FORBIDDEN, "error_missing_perm", groupUuid());
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertFalse("Role should not be assigned to group.", group().hasRole(extraRole));
 		}
 	}
 
 	@Test
 	public void testAddRoleToGroupWithBogusRoleUUID() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			call(() -> client().addRoleToGroup(group().getUuid(), "bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 		}
 	}
@@ -188,7 +188,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testRemoveRoleFromGroupWithPerm() throws Exception {
 		Role extraRole;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Group group = group();
 			extraRole = root.create("extraRole", user());
@@ -202,11 +202,11 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			call(() -> client().removeRoleFromGroup(group().getUuid(), extraRole.getUuid()));
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			GroupResponse restGroup = call(() -> client().findGroupByUuid(groupUuid()));
 			assertThat(restGroup).matches(group());
 			assertFalse("Role should now no longer be assigned to group.", group().hasRole(extraRole));
@@ -217,7 +217,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 	public void testRemoveRoleFromGroupWithoutPerm() throws Exception {
 		String extraRoleUuid;
 		Role extraRole;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Group group = group();
 			RoleRoot root = meshRoot().getRoleRoot();
 			extraRole = root.create("extraRole", user());
@@ -229,7 +229,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().removeRoleFromGroup(groupUuid(), extraRoleUuid), FORBIDDEN, "error_missing_perm", groupUuid());
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertTrue("Role should be stil assigned to group.", group().hasRole(extraRole));
 		}
 	}

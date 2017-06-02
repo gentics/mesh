@@ -62,7 +62,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		int afterCount = db().tx(() -> tagFamily("colors").findAll().size());
 		assertEquals("The colors tag family should not have any additional tags.", previousCount, afterCount);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), release(), "en", "de").hasEvents(4, 0, 0, 0);
 		}
 
@@ -80,7 +80,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		int afterCount = db().tx(() -> tagFamily("colors").findAll().size());
 		assertEquals("The colors tag family should now have one additional color tag.", previousCount + 1, afterCount);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), release(), "en", "de");
 			assertThat(dummySearchProvider()).stored(tagFamily("colors"));
 			assertThat(dummySearchProvider()).stored(tagFamily("colors").findByName("purple"));
@@ -100,7 +100,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 		TagListResponse response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		assertEquals(4, response.getMetainfo().getTotalCount());
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// 4 Node containers need to be updated and two tag families and 4 new tags
 			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), release(), "en", "de").hasEvents(4 + 2 + 4, 0, 0, 0);
 		}
@@ -111,7 +111,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		request.getTags().add(new TagReference().setName("blub3").setTagFamily("colors"));
 		response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		assertEquals(2, response.getMetainfo().getTotalCount());
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// No tag family is modified - no Tag is created
 			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), release(), "en", "de").hasEvents(4, 0, 0, 0);
 		}
@@ -141,8 +141,9 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateWithNoNodePerm() {
 		// 1. Revoke the update permission
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(content(), UPDATE_PERM);
+			tx.success();
 		}
 		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
@@ -156,8 +157,9 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateWithNoTagFamilyCreatePerm() {
 		// 1. Revoke the tag create permission
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(tagFamily("colors"), CREATE_PERM);
+			tx.success();
 		}
 		String tagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
 		String nodeUuid = db().tx(() -> content().getUuid());

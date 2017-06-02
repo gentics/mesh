@@ -25,7 +25,7 @@ public class AdminEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testBackupRestore() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			group().addRole(roles().get("admin"));
 			tx.success();
 		}
@@ -38,7 +38,7 @@ public class AdminEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testExportImport() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			group().addRole(roles().get("admin"));
 			tx.success();
 		}

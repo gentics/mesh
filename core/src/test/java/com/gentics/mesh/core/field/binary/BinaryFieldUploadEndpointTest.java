@@ -51,7 +51,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 			role().revokePermissions(node, UPDATE_PERM);
@@ -68,7 +68,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			String whitelistRegex = "image/.*";
 			prepareSchema(node, whitelistRegex, "binary");
@@ -83,7 +83,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
@@ -122,7 +122,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 
 			// Add a schema called nonBinary
@@ -140,7 +140,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 10000;
 		String fileName = "somefile.dat";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 
 			call(() -> uploadRandomData(node, "en", "nonBinary", binaryLen, contentType, fileName), BAD_REQUEST, "error_schema_definition_not_found",
@@ -160,7 +160,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String fieldKey = "image";
 		String fileName = "somefile.png";
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", fieldKey);
 
@@ -205,7 +205,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		String fileName = "somefile.dat";
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
@@ -216,7 +216,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPathSegmentation() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			node.setUuid(UUIDUtil.randomUUID());
 
@@ -244,7 +244,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", "binary");
 
@@ -282,7 +282,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String fileName = "somefile.dat";
 
 		// 1. Prepare the folder schema
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node folder2014 = folder("2014");
 			prepareSchema(folder2014, "", "binary");
 
@@ -293,7 +293,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		}
 
 		// 2. Update node a
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// upload file to folder 2014
 			Node folder2014 = folder("2014");
 			call(() -> uploadRandomData(folder2014, "en", "binary", binaryLen, contentType, fileName));
@@ -302,7 +302,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		call(() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> folder("2014").getUuid()),
 				new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// try to upload same file to folder 2015
 			Node folder2015 = folder("2015");
 			call(() -> uploadRandomData(folder2015, "en", "binary", binaryLen, contentType, fileName), CONFLICT,
@@ -317,7 +317,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 		String fieldName = "image";
 		String fileName = "somefile.png";
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			prepareSchema(node, "", fieldName);
 

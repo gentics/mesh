@@ -65,7 +65,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testDiffDisplayField() throws GenericRestException, Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer container = schemaContainer("content");
 			Schema request = getSchema();
 			request.setDisplayField("slug");
@@ -80,7 +80,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNoDiff() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer container = schemaContainer("content");
 			Schema request = getSchema();
 			SchemaChangesListModel changes = call(() -> client().diffSchema(container.getUuid(), request));
@@ -91,7 +91,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddField() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			Schema request = getSchema();
 			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binary");
@@ -109,7 +109,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testDefaultMigration() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			Schema request = getSchema();
 			request.removeField("content");

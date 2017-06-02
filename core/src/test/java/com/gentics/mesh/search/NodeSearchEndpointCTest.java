@@ -34,7 +34,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchNumberRange() throws Exception {
 		int numberValue = 1200;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
 			recreateIndices();
 		}
@@ -48,7 +48,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchNumberRange2() throws Exception {
 		int numberValue = 1200;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
 			content().getLatestDraftFieldContainer(english()).createNumber("speed").setNumber(92.1535f);
 			recreateIndices();
@@ -63,7 +63,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchBinaryField() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node nodeA = content("concorde");
 			Node nodeB = content();
 			SchemaModel schema = nodeA.getSchemaContainer().getLatestVersion().getSchema();
@@ -109,7 +109,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testSearchNumberRange3() throws Exception {
 		int numberValue = 1200;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			addNumberSpeedFieldToOneNode(numberValue);
 			recreateIndices();
 		}
@@ -122,7 +122,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchMicronode() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			addMicronodeField();
 			recreateIndices();
 		}
@@ -133,7 +133,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			for (NodeResponse nodeResponse : response.getData()) {
 				assertNotNull("Returned node must not be null", nodeResponse);
 				assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
@@ -143,7 +143,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchStringFieldRaw() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -154,12 +154,12 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchStringFieldRawAfterReindex() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
 		// Add the user to the admin group - this way the user is in fact an admin.
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			user().addGroup(groups().get("admin"));
 			searchProvider().refreshIndex();
 		}
@@ -174,7 +174,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentUpdate() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -202,7 +202,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchContentResolveLinksAndLangFallback() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -219,7 +219,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchContentResolveLinks() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 

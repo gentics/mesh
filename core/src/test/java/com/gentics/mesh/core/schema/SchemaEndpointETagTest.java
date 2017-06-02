@@ -27,7 +27,7 @@ public class SchemaEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String etag = callETag(() -> client().findSchemas());
 			assertNotNull(etag);
 
@@ -38,7 +38,7 @@ public class SchemaEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 
 			MeshResponse<SchemaResponse> response = client().findSchemaByUuid(schema.getUuid()).invoke();

@@ -43,7 +43,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		});
 
 		// assert that the containers have both webrootpath properties set
-		try (Tx tx1 = db().tx()) {
+		try (Tx tx1 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
 				for (String property : Arrays.asList(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY,
 						NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY)) {
@@ -57,7 +57,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en").isNotPublished("de");
 
 		// assert that the containers have only the draft webrootpath properties set
-		try (Tx tx2 = db().tx()) {
+		try (Tx tx2 = tx()) {
 			for (String language : Arrays.asList("en", "de")) {
 				String property = NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY;
 				assertThat(folder("products").getGraphFieldContainer(language).getProperty(property, String.class))
@@ -74,7 +74,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeNodeLanguageOffline() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -103,7 +103,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeNodeOfflineNoPermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -119,7 +119,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeNodeLanguageOfflineNoPermission() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -135,7 +135,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeOfflineNodeOffline() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -151,7 +151,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeOfflineNodeLanguageOffline() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -172,7 +172,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeOfflineEmptyLanguage() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
@@ -182,7 +182,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTakeOfflineWithOnlineChild() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node news = folder("news");
 			Node news2015 = folder("2015");
 
@@ -214,13 +214,13 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		Release newRelease;
 		Release initialRelease = db().tx(() -> release());
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			newRelease = project.getReleaseRoot().create("newrelease", user());
 			tx.success();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// save the folder in new release
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
@@ -236,7 +236,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 					new PublishParametersImpl().setRecursive(true)));
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// check publish status
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, news.getUuid(),
 					new VersioningParametersImpl().setRelease(initialRelease.getName())))).as("Initial release publish status").isNotPublished("en")

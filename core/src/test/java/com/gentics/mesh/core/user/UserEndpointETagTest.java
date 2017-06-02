@@ -19,7 +19,7 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User user = user();
 			assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
@@ -33,7 +33,7 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadOne() {
 		String etag;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			User user = user();
 
 			etag = user().getETag(mockActionContext());

@@ -35,7 +35,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String etag = callETag(() -> client().findNodes(PROJECT_NAME));
 	
 			callETag(() -> client().findNodes(PROJECT_NAME), etag, true, 304);
@@ -46,7 +46,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeTags() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = content();
 			String nodeUuid = node.getUuid();
 
@@ -69,7 +69,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadChildren() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String uuid = project().getBaseNode().getUuid();
 			String etag = callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid));
 
@@ -98,7 +98,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = content();
 
 			// Inject the reference node field

@@ -66,7 +66,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testEmptyMigration() throws Throwable {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 
@@ -94,7 +94,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartSchemaMigration() throws Throwable {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			String fieldName = "changedfield";
 
@@ -140,7 +140,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMigrateAgain() throws Throwable {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			String fieldName = "changedfield";
 
@@ -176,7 +176,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMigratePublished() throws Throwable {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			String fieldName = "changedfield";
 
@@ -212,7 +212,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		SchemaContainerVersion versionB = null;
 		SchemaContainer container = null;
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			container = createDummySchemaWithChanges(fieldName);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
@@ -225,13 +225,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			englishContainer.createString("name").setString("someName");
 			englishContainer.createString(fieldName).setString("content");
 		}
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			node.reload();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
 			node.publish(ac, createBatch(), "en");
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			node.reload();
 			NodeGraphFieldContainer updatedEnglishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
 			updatedEnglishContainer.getString(fieldName).setString("new content");
@@ -330,7 +330,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartMicroschemaMigration() throws Throwable {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			String fieldName = "changedfield";
 			String micronodeFieldName = "micronodefield";
@@ -438,7 +438,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String fieldName = "changedfield";
 		String micronodeFieldName = "micronodefield";
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 
 			// create version 1 of the microschema
 			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
@@ -562,7 +562,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String fieldName = "changedfield";
 		String micronodeFieldName = "micronodefield";
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// create version 1 of the microschema
 			MicroschemaContainer container = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			MicroschemaContainerVersion versionA = Database.getThreadLocalGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);

@@ -13,6 +13,10 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 
 import com.gentics.ferma.Tx;
+import com.gentics.ferma.TxHandler;
+import com.gentics.ferma.TxHandler0;
+import com.gentics.ferma.TxHandler1;
+import com.gentics.ferma.TxHandler2;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -93,6 +97,26 @@ public interface TestHelperMethods {
 
 	default Database db() {
 		return MeshInternal.get().database();
+	}
+
+	default Tx tx() {
+		return db().tx();
+	}
+
+	default void tx(TxHandler0 handler) {
+		db().tx(handler);
+	}
+
+	default <T> T tx(TxHandler1<T> handler) {
+		return db().tx(handler);
+	}
+
+	default void tx(TxHandler2 handler) {
+		db().tx(handler);
+	}
+
+	default <T> T tx(TxHandler<T> handler) {
+		return db().tx(handler);
 	}
 
 	default BootstrapInitializer boot() {
@@ -186,13 +210,13 @@ public interface TestHelperMethods {
 
 	default TagFamily tagFamily(String key) {
 		TagFamily family = data().getTagFamily(key);
-//		family.reload();
+		// family.reload();
 		return family;
 	}
 
 	default Tag tag(String key) {
 		Tag tag = data().getTag(key);
-//		tag.reload();
+		// tag.reload();
 		return tag;
 	}
 
@@ -216,13 +240,13 @@ public interface TestHelperMethods {
 
 	default Language english() {
 		Language language = data().getEnglish();
-//		language.reload();
+		// language.reload();
 		return language;
 	}
 
 	default Language german() {
 		Language language = data().getGerman();
-//		language.reload();
+		// language.reload();
 		return language;
 	}
 
@@ -263,7 +287,7 @@ public interface TestHelperMethods {
 	 */
 	default Node content() {
 		Node content = data().getContent("news overview");
-		content.reload();
+//		content.reload();
 		return content;
 	}
 
@@ -517,7 +541,7 @@ public interface TestHelperMethods {
 	default public NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {
 		String contentType = "image/jpeg";
 		String fileName = "blume.jpg";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			prepareSchema(node, "image/.*", fieldName);
 			tx.success();
 		}

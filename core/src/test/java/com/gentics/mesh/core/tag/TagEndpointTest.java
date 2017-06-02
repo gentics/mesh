@@ -68,7 +68,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	public void testReadMultiple() throws Exception {
 
 		final int nBasicTags = 9;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily basicTagFamily = tagFamily("basic");
 			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
@@ -139,7 +139,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 	@Test
 	public void testReadMetaCountOnly() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			MeshResponse<TagListResponse> pageFuture = client().findTags(PROJECT_NAME, parentTagFamily.getUuid(), new PagingParametersImpl(1, 0))
@@ -152,7 +152,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 	@Test
 	public void testReadByUUID() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Tag tag = tag("red");
 			TagFamily parentTagFamily = tagFamily("colors");
 
@@ -166,7 +166,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 	@Test
 	public void testReadByUuidWithRolePerms() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Tag tag = tag("red");
 			String uuid = tag.getUuid();
 			TagFamily parentTagFamily = tagFamily("colors");
@@ -181,7 +181,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	public void testReadTagByUUIDWithoutPerm() throws Exception {
 		String uuid;
 		String parentTagFamilyUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily parentTagFamily = tagFamily("basic");
 			parentTagFamilyUuid = parentTagFamily.getUuid();
 			Tag tag = tag("vehicle");
@@ -197,7 +197,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Tag tag = tag("vehicle");
 			TagFamily parentTagFamily = tagFamily("basic");
 
@@ -253,7 +253,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 	@Test
 	public void testUpdateTagWithConflictingName() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Tag tag = tag("red");
 			TagFamily parentTagFamily = tagFamily("colors");
 
@@ -275,7 +275,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 	@Test
 	public void testUpdateTagWithNoName() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Tag tag = tag("red");
 			TagFamily parentTagFamily = tagFamily("colors");
 
@@ -292,12 +292,12 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		Tag tag = tag("vehicle");
 		TagFamily parentTagFamily = tagFamily("basic");
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(tag, UPDATE_PERM);
 			tx.success();
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String tagName = tag.getName();
 			String tagUuid = tag.getUuid();
 
@@ -322,7 +322,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String projectUuid = db().tx(() -> project().getUuid());
 		String releaseUuid = db().tx(() -> project().getLatestRelease().getUuid());
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Tag tag = tag("vehicle");
 			TagFamily parentTagFamily = tagFamily("basic");
 
@@ -352,20 +352,20 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(tag("vehicle"), DELETE_PERM);
 			tx.success();
 		}
 
 		String uuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Tag tag = tag("vehicle");
 			uuid = tag.getUuid();
 			TagFamily parentTagFamily = tagFamily("basic");
 			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid), FORBIDDEN, "error_missing_perm", uuid);
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Tag tag = boot().tagRoot().findByUuid(uuid);
 			assertNotNull("The tag should not have been deleted", tag);
 		}
@@ -373,7 +373,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 	@Test
 	public void testCreateConflictingName() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily tagFamily = tagFamily("colors");
 
 			TagCreateRequest tagCreateRequest = new TagCreateRequest();
@@ -403,7 +403,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(projectUuid), Tag.composeIndexType(),
 				Tag.composeDocumentId(response.getUuid()));
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
 		}
 
@@ -420,7 +420,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		String parentTagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
 
 		String tagRootUuid = db().tx(() -> tagFamily("colors").getUuid());
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(tagFamily("colors"), CREATE_PERM);
 			tx.success();
 		}
@@ -429,7 +429,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 	@Test
 	public void testCreateTagWithSameNameInSameTagFamily() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			TagCreateRequest tagCreateRequest = new TagCreateRequest();
@@ -450,7 +450,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Ignore("Not yet supported")
 	public void testUpdateMultithreaded() throws Exception {
 		int nJobs = 5;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			TagUpdateRequest request = new TagUpdateRequest();
@@ -470,7 +470,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 100;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			String uuid = tag("red").getUuid();
@@ -488,7 +488,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Ignore("Not yet supported")
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			String uuid = tag("red").getUuid();
@@ -522,7 +522,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			Set<MeshResponse<TagResponse>> set = new HashSet<>();
@@ -544,7 +544,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		TagFamily tagFamily = data().getTagFamilies().get("colors");
 		// tagCreateRequest.setTagFamily(new TagFamilyReference().setName(tagFamily.getName()).setUuid(tagFamily.getUuid()));
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			// Create
 			TagResponse response = call(() -> client().createTag(PROJECT_NAME, tagFamily.getUuid(), tagCreateRequest));
 			assertEquals("SomeName", response.getName());
@@ -566,7 +566,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	public void testReadByUUIDWithMissingPermission() throws Exception {
 		String uuid;
 		String parentTagFamilyUuid;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Tag tag = tag("red");
 
 			TagFamily parentTagFamily = tagFamily("colors");
@@ -587,7 +587,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.setName("newName");
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			TagFamily parentTagFamily = tagFamily("colors");
 
 			call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), "bogus", request), NOT_FOUND, "object_not_found_for_uuid",

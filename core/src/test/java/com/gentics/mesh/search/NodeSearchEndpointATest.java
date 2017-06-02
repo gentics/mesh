@@ -36,7 +36,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testReindexNodeIndex() throws Exception {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -57,7 +57,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Published search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
 		// // Add the user to the admin group - this way the user is in fact an admin.
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			user().addGroup(data().getGroups().get("admin"));
 		}
 
@@ -74,7 +74,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchPublishedNodes() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -119,7 +119,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchAfterSchemaUpdate() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 

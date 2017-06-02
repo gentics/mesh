@@ -24,7 +24,7 @@ public class RoleEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			String actualEtag = callETag(() -> client().findRoles());
 			assertNotNull(actualEtag);
 
@@ -35,7 +35,7 @@ public class RoleEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Role role = role();
 			MeshResponse<RoleResponse> response = client().findRoleByUuid(role.getUuid()).invoke();
 			latchFor(response);
