@@ -136,17 +136,20 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 		String uuid = tx(() -> folder("news").getUuid());
 		try (Tx tx = tx()) {
 			updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(uuid));
+			tx.success();
+		}
+		try (Tx tx = tx()) {
 			updateNodeFailure(FIELD_NAME, new NodeFieldImpl(), BAD_REQUEST, "node_error_field_property_missing", "uuid", FIELD_NAME);
 		}
 	}
 
 	@Test
 	public void testUpdateNodeFieldWithNodeResponseJson() {
-		try (Tx tx = tx()) {
-			Node node = folder("news");
-			Node node2 = folder("deals");
+		Node node = folder("news");
+		Node node2 = folder("deals");
+		Node updatedNode = folder("2015");
 
-			Node updatedNode = folder("2015");
+		try (Tx tx = tx()) {
 			// Load the node so that we can use it to prepare the update request
 			NodeResponse loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 
@@ -268,14 +271,17 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadNodeExpandAll() throws IOException {
-		try (Tx tx = tx()) {
-			Node referencedNode = folder("news");
-			Node node = folder("2015");
+		Node referencedNode = folder("news");
+		Node node = folder("2015");
 
+		try (Tx tx = tx()) {
 			// Create test field
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(FIELD_NAME, referencedNode);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
 					new VersioningParametersImpl().draft()));
 
@@ -314,14 +320,17 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeWithExistingField() throws IOException {
-		try (Tx tx = tx()) {
-			Node newsNode = folder("news");
-			Node node = folder("2015");
+		Node newsNode = folder("news");
+		Node node = folder("2015");
 
-			// Create test field
+		// Create test field
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(FIELD_NAME, newsNode);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			// 1. Read node with collapsed fields and check that the collapsed node field can be read
 			NodeResponse responseCollapsed = readNode(node);
 			NodeField deserializedNodeField = responseCollapsed.getFields().getNodeField(FIELD_NAME);

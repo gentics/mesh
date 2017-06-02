@@ -51,8 +51,9 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		Node node = folder("2015");
+		
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
 			prepareNode(node, MICRONODE_LIST, "micronode");
 			InternalActionContext ac = mockActionContext("");
 
@@ -72,7 +73,10 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			field.getItems().add(micronodeB);
 
 			updateContainer(ac, container, MICRONODE_LIST, field);
-
+			tx.success();
+		}
+		
+		try (Tx tx = tx()) {
 			NodeResponse response = transform(node);
 			assertList(2, "micronodeList", "micronode", response);
 			MicronodeFieldList micronodeRestList = response.getFields().getMicronodeFieldList(MICRONODE_LIST);

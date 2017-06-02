@@ -45,8 +45,9 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		Node node = folder("2015");
+
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
 			prepareNode(node, BOOLEAN_LIST, "boolean");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 
@@ -54,9 +55,11 @@ public class BooleanListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			booleanList.createBoolean(true);
 			booleanList.createBoolean(null);
 			booleanList.createBoolean(false);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeResponse response = transform(node);
-
 			assertList(2, BOOLEAN_LIST, "boolean", response);
 		}
 	}

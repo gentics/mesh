@@ -198,6 +198,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
+			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
 			assertThat(latest.getMicronodeList(FIELD_NAME)).isNull();

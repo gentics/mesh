@@ -92,7 +92,9 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		Node node = folder("2015");
 		NodeResponse secondResponse;
+
 		try (Tx tx = tx()) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
@@ -103,18 +105,21 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
 
 			// Assert that the old version was not modified
-			Node node = folder("2015");
+			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
 			assertThat(latest.getDate(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getDate(FIELD_NAME)).isNotNull();
 			Long oldValue = latest.getPreviousVersion().getDate(FIELD_NAME).getDate();
 			assertThat(oldValue).isEqualTo(nowEpoch);
+			tx.success();
 		}
 
-		NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-				secondResponse.getVersion().getNumber());
+		try (Tx tx = tx()) {
+			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
+					secondResponse.getVersion().getNumber());
+		}
 	}
 
 	@Test

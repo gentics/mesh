@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.test.TestDataProvider.INITIAL_RELEASE_NAME;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
@@ -20,7 +21,6 @@ import org.junit.Test;
 import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -288,34 +288,34 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNavigationForRelease() {
+		Project project = project();
+		String newReleaseName = "newrelease";
+		String baseNodeUuid = tx(() -> project.getBaseNode().getUuid());
+
+		// latest release
+		NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
+				new VersioningParametersImpl().draft()));
+		assertThat(response).hasDepth(1).isValid(4);
+
 		try (Tx tx = tx()) {
-			Project project = project();
-			Node baseNode = project.getBaseNode();
-			String baseNodeUuid = baseNode.getUuid();
-
-			// latest release
-			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid,
-					new NavigationParametersImpl().setMaxDepth(1), new VersioningParametersImpl().draft()));
-			assertThat(response).hasDepth(1).isValid(4);
-
-			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
-
-			// latest release (again)
-			response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
-					new VersioningParametersImpl().draft()));
-			assertThat(response).hasDepth(0);
-
-			// latest release by name
-			response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
-					new VersioningParametersImpl().draft().setRelease(newRelease.getName())));
-			assertThat(response).hasDepth(0);
-
-			// initial release by name
-			response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
-					new VersioningParametersImpl().draft().setRelease(initialRelease.getName())));
-			assertThat(response).hasDepth(1).isValid(4);
+			project.getReleaseRoot().create(newReleaseName, user());
+			tx.success();
 		}
+
+		// latest release (again)
+		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
+				new VersioningParametersImpl().draft()));
+		assertThat(response).hasDepth(0);
+
+		// latest release by name
+		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
+				new VersioningParametersImpl().draft().setRelease(newReleaseName)));
+		assertThat(response).hasDepth(0);
+
+		// initial release by name
+		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
+				new VersioningParametersImpl().draft().setRelease(INITIAL_RELEASE_NAME)));
+		assertThat(response).hasDepth(1).isValid(4);
 	}
 
 	@Test

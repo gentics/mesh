@@ -8,7 +8,7 @@ import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestDataProvider.RELEASE_NAME;
+import static com.gentics.mesh.test.TestDataProvider.INITIAL_RELEASE_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -443,7 +443,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			// Generate version 3 which should not be auto assigned to the project release
 			updateSchema(schema.getUuid(), "anothernewschemaname",
-					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true).setReleaseNames(RELEASE_NAME));
+					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true).setReleaseNames(INITIAL_RELEASE_NAME));
 
 			// Assert that version 2 is still assigned to the release
 			list = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));
@@ -760,7 +760,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			// Generate version 4
 			updateMicroschema(microschema.getUuid(), "anothernewschemaname1",
-					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true).setReleaseNames(RELEASE_NAME));
+					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true).setReleaseNames(INITIAL_RELEASE_NAME));
 
 			// Assert that version 4 is assigned to the release
 			list = call(() -> client().getReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid()));

@@ -50,9 +50,9 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
+		Node node = folder("2015");
 
+		try (Tx tx = tx()) {
 			// Update the schema and add a boolean field
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			BooleanFieldSchemaImpl booleanFieldSchema = new BooleanFieldSchemaImpl();
@@ -65,7 +65,10 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			BooleanGraphField field = container.createBoolean(BOOLEAN_FIELD);
 			field.setBoolean(true);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			String json = getJson(node);
 			assertTrue("The json should contain the boolean field but it did not.{" + json + "}", json.indexOf("booleanField\" : true") > 1);
 			assertNotNull(json);
@@ -178,7 +181,7 @@ public class BooleanFieldTest extends AbstractFieldTest<BooleanFieldSchema> {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BooleanGraphField fieldA = container.createBoolean("fieldA");
 
-			// graph empty - rest empty 
+			// graph empty - rest empty
 			assertTrue("The field should be equal to the rest field since both fields have no value.", fieldA.equals(new BooleanFieldImpl()));
 
 			// graph set - rest set - same value - different type
