@@ -88,11 +88,14 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	 */
 	@Test
 	public void testSearchMissingVertex() throws Exception {
+		Node node = content("honda nr");
 		try (Tx tx = tx()) {
 			recreateIndices();
-
-			Node node = content("honda nr");
 			node.remove();
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			NodeListResponse response = call(() -> client().searchNodes(getSimpleQuery("the"), new PagingParametersImpl().setPage(1).setPerPage(2)));
 			assertEquals(0, response.getData().size());
 			assertEquals(0, response.getMetainfo().getTotalCount());

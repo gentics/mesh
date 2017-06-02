@@ -1,10 +1,8 @@
 package com.gentics.mesh.core.release;
 
-import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
@@ -12,15 +10,10 @@ import org.junit.Test;
 
 import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.rest.release.ReleaseListResponse;
-import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.client.MeshRequest;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.ETag;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class ReleaseEndpointETagTest extends AbstractMeshTest {

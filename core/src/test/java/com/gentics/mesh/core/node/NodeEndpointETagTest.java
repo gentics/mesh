@@ -1,15 +1,12 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
@@ -20,15 +17,12 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.ETag;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeEndpointETagTest extends AbstractMeshTest {
@@ -37,7 +31,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 	public void testReadMultiple() {
 		try (Tx tx = tx()) {
 			String etag = callETag(() -> client().findNodes(PROJECT_NAME));
-	
+
 			callETag(() -> client().findNodes(PROJECT_NAME), etag, true, 304);
 			callETag(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPage(2)), etag, true, 200);
 			callETag(() -> client().findNodes(PROJECT_NAME, new PagingParametersImpl().setPerPage(2)), etag, true, 200);
@@ -46,15 +40,12 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeTags() {
+		Node node = content();
+
 		try (Tx tx = tx()) {
-			Node node = content();
 			String nodeUuid = node.getUuid();
 
-			MeshResponse<TagListResponse> response = client().findTagsForNode(PROJECT_NAME, nodeUuid).invoke();
-			latchFor(response);
-			String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));
-			assertNotNull(etag);
-
+			String etag = callETag(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid));
 			callETag(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid), etag, true, 304);
 			callETag(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid, new PagingParametersImpl().setPage(2)), etag, true, 200);
 			callETag(() -> client().findTagsForNode(PROJECT_NAME, nodeUuid, new PagingParametersImpl().setPerPage(2)), etag, true, 200);
@@ -98,32 +89,34 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadOne() {
-		try (Tx tx = tx()) {
-			Node node = content();
+		Node node = content();
 
+		try (Tx tx = tx()) {
 			// Inject the reference node field
 			SchemaModel schema = node.getGraphFieldContainer("en").getSchemaContainerVersion().getSchema();
 			schema.addField(FieldUtil.createNodeFieldSchema("reference"));
 			node.getGraphFieldContainer("en").getSchemaContainerVersion().setSchema(schema);
 			node.getGraphFieldContainer("en").createNode("reference", folder("2015"));
+			tx.success();
+		}
 
-			String actualEtag = callETag(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+		try (Tx tx = tx()) {
+			String actualEtag = callETag(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()));
 			String etag = node.getETag(mockActionContext());
 			assertEquals(etag, actualEtag);
 
 			// Check whether 304 is returned for correct etag
-			assertThat(callETag(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()), etag, true, 304)).contains(etag);
+			assertThat(callETag(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid()), etag, true, 304)).contains(etag);
 
 			assertNotEquals("A different etag should have been generated since we are not requesting the expanded node.", etag, callETag(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true, 304));
+					() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true, 200));
 
 			String newETag = callETag(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandedFieldNames("reference")), etag,
+					() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new NodeParametersImpl().setExpandedFieldNames("reference")), etag,
 					true, 200);
 			assertNotEquals("We added parameters and thus a new etag should have been generated.", newETag, callETag(
-					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandedFieldNames("reference", "bla")),
+					() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new NodeParametersImpl().setExpandedFieldNames("reference", "bla")),
 					newETag, true, 200));
-
 		}
 
 	}

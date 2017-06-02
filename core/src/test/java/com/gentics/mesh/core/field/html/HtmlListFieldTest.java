@@ -65,6 +65,10 @@ public class HtmlListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			HtmlGraphFieldList htmlList = container.createHTMLList(HTML_LIST);
 			htmlList.createHTML("some<b>html</b>");
 			htmlList.createHTML("some<b>more html</b>");
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			NodeResponse response = transform(node);
 			assertList(2, HTML_LIST, "html", response);
 		}

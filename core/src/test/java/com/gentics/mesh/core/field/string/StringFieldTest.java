@@ -48,9 +48,9 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
+		Node node = folder("2015");
 
+		try (Tx tx = tx()) {
 			// Add a new string field to the schema
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			StringFieldSchemaImpl stringFieldSchema = new StringFieldSchemaImpl();
@@ -63,7 +63,10 @@ public class StringFieldTest extends AbstractFieldTest<StringFieldSchema> {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			StringGraphField field = container.createString("stringField");
 			field.setString("someString");
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			String json = getJson(node);
 			assertTrue("The json should contain the string but it did not.{" + json + "}", json.indexOf("someString") > 1);
 			assertNotNull(json);

@@ -274,11 +274,11 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	 */
 	@Test
 	public void testExpandAllCyclicMicronodeWithNodeReference() {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
+		Node node = folder("2015");
+		MicroschemaModel nodeMicroschema = new MicroschemaModelImpl();
 
+		try (Tx tx = tx()) {
 			// 1. Create microschema noderef with nodefield
-			MicroschemaModel nodeMicroschema = new MicroschemaModelImpl();
 			nodeMicroschema.setName("noderef");
 			for (int i = 0; i < 10; i++) {
 				nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield_" + i));
@@ -293,8 +293,11 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "noderef" });
 			schema.addField(microschemaFieldSchema);
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			tx.success();
+		}
 
-			// 3. Update the node
+		// 3. Update the node
+		try (Tx tx = tx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			field.setMicroschema(new MicroschemaReference().setName("noderef"));
 			for (int i = 0; i < 10; i++) {
@@ -350,30 +353,34 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "full" });
 			schema.addField(microschemaFieldSchema);
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
-
 			tx.success();
 		}
+
 		// 4. Prepare the micronode field for the update request
 		MicronodeResponse field = new MicronodeResponse();
-		field.setMicroschema(new MicroschemaReference().setName("full"));
-		field.getFields().put("booleanfield", FieldUtil.createBooleanField(true));
-		field.getFields().put("datefield", FieldUtil.createDateField(toISO8601(date)));
-		field.getFields().put("htmlfield", FieldUtil.createHtmlField("<b>HTML</b> value"));
-		field.getFields().put("listfield-boolean", FieldUtil.createBooleanListField(true, false));
-		field.getFields().put("listfield-date", FieldUtil.createDateListField(toISO8601(date), toISO8601(0)));
-		field.getFields().put("listfield-html", FieldUtil.createHtmlListField("<b>first</b>", "<i>second</i>", "<u>third</u>"));
-		field.getFields().put("listfield-node", FieldUtil.createNodeListField(newsOverview.getUuid(), newsFolder.getUuid()));
-		field.getFields().put("listfield-number", FieldUtil.createNumberListField(47, 11));
-		field.getFields().put("listfield-string", FieldUtil.createStringListField("first", "second", "third"));
-		field.getFields().put("nodefield", FieldUtil.createNodeField(newsOverview.getUuid()));
-		field.getFields().put("numberfield", FieldUtil.createNumberField(4711));
-		field.getFields().put("stringfield", FieldUtil.createStringField("String value"));
+		try (Tx tx = tx()) {
+			field.setMicroschema(new MicroschemaReference().setName("full"));
+			field.getFields().put("booleanfield", FieldUtil.createBooleanField(true));
+			field.getFields().put("datefield", FieldUtil.createDateField(toISO8601(date)));
+			field.getFields().put("htmlfield", FieldUtil.createHtmlField("<b>HTML</b> value"));
+			field.getFields().put("listfield-boolean", FieldUtil.createBooleanListField(true, false));
+			field.getFields().put("listfield-date", FieldUtil.createDateListField(toISO8601(date), toISO8601(0)));
+			field.getFields().put("listfield-html", FieldUtil.createHtmlListField("<b>first</b>", "<i>second</i>", "<u>third</u>"));
+			field.getFields().put("listfield-node", FieldUtil.createNodeListField(newsOverview.getUuid(), newsFolder.getUuid()));
+			field.getFields().put("listfield-number", FieldUtil.createNumberListField(47, 11));
+			field.getFields().put("listfield-string", FieldUtil.createStringListField("first", "second", "third"));
+			field.getFields().put("nodefield", FieldUtil.createNodeField(newsOverview.getUuid()));
+			field.getFields().put("numberfield", FieldUtil.createNumberField(4711));
+			field.getFields().put("stringfield", FieldUtil.createStringField("String value"));
+		}
 
-		// 5. Invoke the update request
-		NodeResponse response = updateNode("full", field);
+		try (Tx tx = tx()) {
+			// 5. Invoke the update request
+			NodeResponse response = updateNode("full", field);
 
-		// 6. Compare the response with the update request
-		assertThat(response.getFields().getMicronodeField("full")).matches(field, fullMicroschema);
+			// 6. Compare the response with the update request
+			assertThat(response.getFields().getMicronodeField("full")).matches(field, fullMicroschema);
+		}
 
 	}
 

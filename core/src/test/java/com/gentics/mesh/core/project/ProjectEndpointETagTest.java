@@ -1,22 +1,16 @@
 package com.gentics.mesh.core.project;
 
-import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
 import com.gentics.ferma.Tx;
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.ETag;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class ProjectEndpointETagTest extends AbstractMeshTest {

@@ -55,13 +55,11 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField testField = container.createNode("testField", node);
 
-			NodeGraphFieldContainerImpl otherContainer = tx.getGraph()
-					.addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNode("testField")).as("cloned field").isNotNull();
-			assertThat(otherContainer.getNode("testField").getNode()).as("cloned target node").isNotNull()
-					.isEqualToComparingFieldByField(node);
+			assertThat(otherContainer.getNode("testField").getNode()).as("cloned target node").isNotNull().isEqualToComparingFieldByField(node);
 		}
 	}
 
@@ -89,9 +87,10 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		Node newsNode = folder("news");
+		Node node = folder("2015");
+
 		try (Tx tx = tx()) {
-			Node newsNode = folder("news");
-			Node node = folder("2015");
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 
 			// 1. Create the node field schema and add it to the schema of the node
@@ -102,7 +101,10 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			// 2. Add the node reference to the node fields
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(NODE_FIELD, newsNode);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			// 3. Transform the node to json and examine the data
 			String json = getJson(node);
 			assertNotNull(json);
@@ -110,8 +112,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			assertNotNull(response);
 
 			NodeField deserializedNodeField = response.getFields().getNodeField(NODE_FIELD);
-			assertNotNull("The field {" + NODE_FIELD + "} should not be null. Json: {" + json + "}",
-					deserializedNodeField);
+			assertNotNull("The field {" + NODE_FIELD + "} should not be null. Json: {" + json + "}", deserializedNodeField);
 			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 		}
 	}
@@ -213,8 +214,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			}, (container) -> {
 				NodeGraphField field = container.getNode(NODE_FIELD);
 				assertNotNull("The graph field {" + NODE_FIELD + "} could not be found.", field);
-				assertEquals("The node reference of the field was not updated.", content().getUuid(),
-						field.getNode().getUuid());
+				assertEquals("The node reference of the field was not updated.", content().getUuid(), field.getNode().getUuid());
 			});
 		}
 	}

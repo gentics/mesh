@@ -67,18 +67,21 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {
-		try (Tx tx = tx()) {
-			Node node = content("news_2015");
+		Node node = content("news_2015");
+		String contentType = "application/octet-stream";
+		int binaryLen = 8000;
+		String fileName = "somefile.dat";
 
+		try (Tx tx = tx()) {
 			// 1. Transform the node into a binary content
 			SchemaContainer container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
 			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
-			String contentType = "application/octet-stream";
-			int binaryLen = 8000;
-			String fileName = "somefile.dat";
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			// 2. Update the binary data
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
