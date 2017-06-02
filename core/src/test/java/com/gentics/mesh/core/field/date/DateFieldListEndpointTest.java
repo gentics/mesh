@@ -153,6 +153,9 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		NodeResponse secondResponse;
+		Node node = folder("2015");
+
 		try (Tx tx = tx()) {
 			DateFieldListImpl list = new DateFieldListImpl();
 			String dateA = toISO8601(42000L);
@@ -163,12 +166,15 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
 			String oldVersion = firstResponse.getVersion().getNumber();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+			secondResponse = updateNode(FIELD_NAME, null);
 			assertThat(secondResponse.getFields().getDateFieldList(FIELD_NAME)).as("Updated Field").isNull();
 			assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			// Assert that the old version was not modified
-			Node node = folder("2015");
+			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
 			assertThat(latest.getDateList(FIELD_NAME)).isNull();
