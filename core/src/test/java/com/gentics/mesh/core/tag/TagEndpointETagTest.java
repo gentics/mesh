@@ -1,10 +1,8 @@
 package com.gentics.mesh.core.tag;
 
-import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -13,15 +11,10 @@ import org.junit.Test;
 import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.client.MeshRequest;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.ETag;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TagEndpointETagTest extends AbstractMeshTest {
@@ -31,7 +24,6 @@ public class TagEndpointETagTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			String tagFamilyUuid = tagFamily("colors").getUuid();
 			String etag = callETag(() -> client().findTags(PROJECT_NAME, tagFamilyUuid));
-			assertNotNull(etag);
 
 			callETag(() -> client().findTags(PROJECT_NAME, tagFamilyUuid), etag, true, 304);
 			callETag(() -> client().findTags(PROJECT_NAME, tagFamilyUuid, new PagingParametersImpl().setPage(2)), etag, true, 200);

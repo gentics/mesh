@@ -1,23 +1,17 @@
 package com.gentics.mesh.core.node;
 
-import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
 import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.ETag;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeEndpointFieldAPIeTagTest extends AbstractMeshTest {
@@ -29,11 +23,14 @@ public class NodeEndpointFieldAPIeTagTest extends AbstractMeshTest {
 		String contentType = "application/octet-stream";
 		int binaryLen = 8000;
 		String fileName = "somefile.dat";
+		Node node = folder("news");
 
 		try (Tx tx = tx()) {
-			Node node = folder("news");
 			prepareSchema(node, "", "binary");
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
 			node.reload();

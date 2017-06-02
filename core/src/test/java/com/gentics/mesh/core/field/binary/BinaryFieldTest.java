@@ -48,9 +48,8 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
-
 			// Update the schema and add a binary field
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 
@@ -64,7 +63,10 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
 			field.setImageHeight(200);
 			field.setImageWidth(300);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			String json = getJson(node);
 			System.out.println(json);
 			assertNotNull(json);
@@ -177,7 +179,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			BinaryGraphField fieldA = container.createBinary("fieldA");
 
-			// graph empty - rest empty 
+			// graph empty - rest empty
 			assertTrue("The field should be equal to the html rest field since both fields have no value.", fieldA.equals(new BinaryFieldImpl()));
 
 			// graph set - rest set - same value - different type

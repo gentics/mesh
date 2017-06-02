@@ -49,15 +49,18 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		Node node = folder("2015");
 		try (Tx tx = tx()) {
 			Node newsNode = folder("news");
-			Node node = folder("2015");
 			prepareNode(node, NODE_LIST, "node");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			NodeGraphFieldList nodeList = container.createNodeList(NODE_LIST);
 			nodeList.createNode("1", newsNode);
 			nodeList.createNode("2", newsNode);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeResponse response = transform(node);
 			assertList(2, NODE_LIST, "node", response);
 		}

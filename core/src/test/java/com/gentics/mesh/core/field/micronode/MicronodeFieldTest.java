@@ -111,15 +111,18 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 	public void addDummySchema() throws Exception {
 		try (Tx tx = tx()) {
 			dummyMicroschema = createDummyMicroschema();
+			tx.success();
 		}
 	}
 
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
+		Node node = folder("2015");
+		Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
+		Node newOverview = content("news overview");
+
 		try (Tx tx = tx()) {
-			Node newOverview = content("news overview");
-			Long date = fromISO8601(toISO8601(System.currentTimeMillis()));
 
 			MicroschemaModel fullMicroschema = new MicroschemaModelImpl();
 			fullMicroschema.setName("full");
@@ -141,7 +144,6 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 
 			MicroschemaContainer microschemaContainer = boot().microschemaContainerRoot().create(fullMicroschema, getRequestUser());
 
-			Node node = folder("2015");
 			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 			schema.addField(new MicronodeFieldSchemaImpl().setName("micronodefield").setLabel("Micronode Field"));
 			node.getSchemaContainer().getLatestVersion().setSchema(schema);
@@ -186,7 +188,10 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			micronode.createNumber("numberfield").setNumber(4711);
 			// micronode.createSelect("selectfield");
 			micronode.createString("stringfield").setString("String Value");
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			String json = getJson(node);
 			System.out.println(json);
 			JsonObject jsonObject = new JsonObject(json);

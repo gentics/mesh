@@ -62,20 +62,24 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddMicroschemaToProjectWithPerm() throws Exception {
+		Project extraProject;
+		MicroschemaContainer microschema = microschemaContainer("vcard");
+
 		try (Tx tx = tx()) {
-			MicroschemaContainer microschema = microschemaContainer("vcard");
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setSchema(new SchemaReference().setName("folder"));
 			request.setName("extraProject");
 			ProjectResponse created = call(() -> client().createProject(request));
-			Project extraProject = projectRoot.findByUuid(created.getUuid());
+			extraProject = projectRoot.findByUuid(created.getUuid());
 
 			// Add only read perms
 			role().grantPermissions(microschema, READ_PERM);
 			role().grantPermissions(extraProject, UPDATE_PERM);
-
+			tx.success();
+		}
+		try (Tx tx = tx()) {
 			MicroschemaResponse restMicroschema = call(() -> client().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()));
 			assertThat(restMicroschema.getUuid()).isEqualTo(microschema.getUuid());
 			extraProject.reload();
@@ -102,6 +106,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			extraProject = projectRoot.findByUuid(projectUuid);
 			// Revoke Update perm on project
 			role().revokePermissions(extraProject, UPDATE_PERM);
+			tx.success();
 		}
 
 		call(() -> client().assignMicroschemaToProject("extraProject", microschemaUuid), FORBIDDEN, "error_missing_perm", projectUuid);
@@ -136,14 +141,17 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveMicroschemaFromProjectWithoutPerm() throws Exception {
-		try (Tx tx = tx()) {
-			MicroschemaContainer microschema = microschemaContainer("vcard");
-			Project project = project();
+		Project project = project();
+		MicroschemaContainer microschema = microschemaContainer("vcard");
 
+		try (Tx tx = tx()) {
 			assertTrue("The microschema should be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
 			// Revoke update perms on the project
 			role().revokePermissions(project, UPDATE_PERM);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			call(() -> client().unassignMicroschemaFromProject(project.getName(), microschema.getUuid()), FORBIDDEN, "error_missing_perm",
 					project.getUuid());
 

@@ -50,7 +50,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		// 1. Take the parent folder offline
 		String parentFolderUuid;
 		String subFolderUuid;
-		try (Tx notrx = tx()) {
+		try (Tx tx = tx()) {
 			InternalActionContext ac = mockActionContext("recursive=true");
 			Node subFolder = folder("2015");
 			Node parentFolder = folder("news");
@@ -59,6 +59,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			subFolder.takeOffline(ac, batch);
 			subFolderUuid = subFolder.getUuid();
 			parentFolderUuid = parentFolder.getUuid();
+			tx.success();
 		}
 
 		assertPublishStatus("Node 2015 should not be published", subFolderUuid, false);
@@ -99,7 +100,6 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String nodeUuid = node.getUuid();
-			String projectUuid = db().tx(() -> project().getUuid());
 			String releaseUuid = db().tx(() -> project().getLatestRelease().getUuid());
 			String schemaContainerVersionUuid = db().tx(() -> node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid());
 
@@ -107,7 +107,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			assertThat(statusResponse).as("Publish status").isNotNull().isPublished("en").hasVersion("en", "1.0");
 
 			assertThat(dummySearchProvider()).hasStore(
-					NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, PUBLISHED),
+					NodeGraphFieldContainer.composeIndexName(projectUuid(), releaseUuid, schemaContainerVersionUuid, PUBLISHED),
 					NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
 			assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
@@ -143,21 +143,25 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatusForRelease() {
-		try (Tx tx = tx()) {
-			Project project = project();
-			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
-			Node node = folder("2015");
-			String nodeUuid = node.getUuid();
+		Node node = folder("2015");
+		Project project = project();
+		Release newRelease;
 
+		try (Tx tx = tx()) {
+			newRelease = project.getReleaseRoot().create("newrelease", user());
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
+			String nodeUuid = node.getUuid();
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
 			update.getFields().put("name", FieldUtil.createStringField("2015"));
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 			call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 
-			PublishStatusResponse publishStatus = call(
-					() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(initialRelease.getName())));
+			PublishStatusResponse publishStatus = call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid,
+					new VersioningParametersImpl().setRelease(initialRelease().getName())));
 			assertThat(publishStatus).as("Initial release publish status").isNotNull().isPublished("en").hasVersion("en", "1.0").doesNotContain("de");
 
 			publishStatus = call(
@@ -171,11 +175,14 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testGetPublishStatusNoPermission() {
+		Node node = folder("news");
 		try (Tx tx = tx()) {
-			Node node = folder("news");
-			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, READ_PERM);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
+			String nodeUuid = node.getUuid();
 			call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid);
 		}
 	}
@@ -221,13 +228,16 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishNodeForRelease() {
-		try (Tx tx = tx()) {
-			Project project = project();
-			Release initialRelease = project.getInitialRelease();
-			project.getReleaseRoot().create("newrelease", user());
-			Node node = folder("2015");
-			String nodeUuid = node.getUuid();
+		Project project = project();
+		Node node = folder("2015");
 
+		try (Tx tx = tx()) {
+			project.getReleaseRoot().create("newrelease", user());
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
+			String nodeUuid = node.getUuid();
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
 			update.getFields().put("slug", FieldUtil.createStringField("2015"));
@@ -235,18 +245,22 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 			// publish for the initial release
 			PublishStatusResponse publishStatus = call(
-					() -> client().publishNode(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(initialRelease.getName())));
+					() -> client().publishNode(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(initialRelease().getName())));
 			assertThat(publishStatus).as("Initial publish status").isPublished("en").hasVersion("en", "1.0").doesNotContain("de");
 		}
 	}
 
 	@Test
 	public void testPublishNodeNoPermission() {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
-			String nodeUuid = node.getUuid();
-			role().revokePermissions(node, PUBLISH_PERM);
+		Node node = folder("2015");
 
+		try (Tx tx = tx()) {
+			role().revokePermissions(node, PUBLISH_PERM);
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
+			String nodeUuid = node.getUuid();
 			call(() -> client().publishNode(PROJECT_NAME, nodeUuid), FORBIDDEN, "error_missing_perm", nodeUuid);
 		}
 	}
@@ -335,20 +349,24 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishLanguageForRelease() {
-		try (Tx tx = tx()) {
-			Project project = project();
-			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
-			Node node = folder("2015");
-			String nodeUuid = node.getUuid();
+		Project project = project();
+		Node node = folder("2015");
+		Release newRelease;
 
+		try (Tx tx = tx()) {
+			newRelease = project.getReleaseRoot().create("newrelease", user());
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
+			String nodeUuid = node.getUuid();
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(),
-					new VersioningParametersImpl().setRelease(initialRelease.getUuid()), new PublishParametersImpl().setRecursive(true)));
+					new VersioningParametersImpl().setRelease(initialReleaseUuid()), new PublishParametersImpl().setRecursive(true)));
 
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
 			update.getFields().put("name", FieldUtil.createStringField("2015 de"));
-			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setRelease(initialRelease.getName())));
+			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setRelease(initialRelease().getName())));
 
 			update.getFields().put("name", FieldUtil.createStringField("2015 new de"));
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setRelease(newRelease.getName())));
@@ -357,12 +375,12 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update, new VersioningParametersImpl().setRelease(newRelease.getName())));
 
 			PublishStatusModel publishStatus = call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de",
-					new VersioningParametersImpl().setRelease(initialRelease.getName())));
+					new VersioningParametersImpl().setRelease(initialRelease().getName())));
 			assertThat(publishStatus).isPublished();
 
-			assertThat(call(
-					() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(initialRelease.getName()))))
-							.as("Initial Release Publish Status").isPublished("de").isNotPublished("en");
+			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid,
+					new VersioningParametersImpl().setRelease(initialRelease().getName())))).as("Initial Release Publish Status").isPublished("de")
+							.isNotPublished("en");
 			assertThat(call(
 					() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setRelease(newRelease.getName()))))
 							.as("New Release Publish Status").isNotPublished("de").isNotPublished("en");
@@ -371,11 +389,14 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPublishLanguageNoPermission() {
+		Node node = folder("2015");
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
-			String nodeUuid = node.getUuid();
 			role().revokePermissions(node, PUBLISH_PERM);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
+			String nodeUuid = node.getUuid();
 			call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid);
 		}
 	}

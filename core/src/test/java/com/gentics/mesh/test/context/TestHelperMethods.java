@@ -260,7 +260,7 @@ public interface TestHelperMethods {
 
 	default MicroschemaContainer microschemaContainer(String key) {
 		MicroschemaContainer container = data().getMicroschemaContainers().get(key);
-		container.reload();
+//		container.reload();
 		return container;
 	}
 

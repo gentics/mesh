@@ -75,17 +75,20 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeWithoutPerm() {
-		try (Tx tx = tx()) {
-			String releaseUuid = project().getLatestRelease().getUuid();
-			Node sourceNode = folder("deals");
-			Node targetNode = folder("2015");
-			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
+		Node sourceNode = folder("deals");
+		Node targetNode = folder("2015");
 
+		try (Tx tx = tx()) {
+			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(initialReleaseUuid()).getUuid());
+			role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), FORBIDDEN, "error_missing_perm",
 					sourceNode.getUuid());
 			assertNotEquals("The source node should not have been moved.", targetNode.getUuid(),
-					folder("deals").getParentNode(releaseUuid).getUuid());
+					folder("deals").getParentNode(initialReleaseUuid()).getUuid());
 		}
 	}
 
@@ -116,7 +119,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 
-			//1. Create new schema which does not have a segmentfield defined
+			// 1. Create new schema which does not have a segmentfield defined
 			SchemaCreateRequest createRequest = new SchemaCreateRequest();
 			createRequest.setName("test");
 			createRequest.setDescription("Some test schema");
@@ -156,25 +159,28 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveInRelease() {
+		Release newRelease;
+		Project project = project();
+		Node movedNode = folder("deals");
+		Node targetNode = folder("2015");
+		String oldParentUuid;
 		try (Tx tx = tx()) {
-			Project project = project();
-			Node movedNode = folder("deals");
-			Node targetNode = folder("2015");
-
 			// 1. Get original parent uuid
-			String oldParentUuid = call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParametersImpl().draft()))
+			oldParentUuid = call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParametersImpl().draft()))
 					.getParentNode().getUuid();
 
-			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+			newRelease = project.getReleaseRoot().create("newrelease", user());
+			tx.success();
+		}
 
-			NodeResponse migrated = migrateNode(PROJECT_NAME, movedNode.getUuid(), initialRelease.getName(), newRelease.getName());
+		try (Tx tx = tx()) {
+			NodeResponse migrated = migrateNode(PROJECT_NAME, movedNode.getUuid(), initialRelease().getName(), newRelease.getName());
 			assertThat(migrated.getParentNode()).as("Migrated node parent").isNotNull();
 			assertThat(migrated.getParentNode().getUuid()).as("Migrated node parent").isEqualTo(oldParentUuid);
 
 			// 2. Move in initial release
 			call(() -> client().moveNode(PROJECT_NAME, movedNode.getUuid(), targetNode.getUuid(),
-					new VersioningParametersImpl().setRelease(initialRelease.getName())));
+					new VersioningParametersImpl().setRelease(initialRelease().getName())));
 
 			// 3. Assert that the node still uses the old parent for the new release
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParametersImpl().draft())).getParentNode()
@@ -182,7 +188,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 			// 4. Assert that the node uses the new parent for the initial release
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(),
-					new VersioningParametersImpl().setRelease(initialRelease.getName()).draft())).getParentNode().getUuid())
+					new VersioningParametersImpl().setRelease(initialRelease().getName()).draft())).getParentNode().getUuid())
 							.as("Parent Uuid in initial release").isEqualTo(targetNode.getUuid());
 		}
 	}
