@@ -104,6 +104,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSetNull() {
 		String oldVersion;
 		Node target = folder("news");
+
 		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
 			oldVersion = firstResponse.getVersion().getNumber();
