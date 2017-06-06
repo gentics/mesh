@@ -1,4 +1,4 @@
-package com.gentics.mesh.graphql.type;
+package com.gentics.mesh.graphql.type.field;
 
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLUnionType.newUnionType;
@@ -19,24 +19,25 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
+import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 
 import dagger.Lazy;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLUnionType;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
 public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 
 	public static final String MICRONODE_TYPE_NAME = "Micronode";
 
+	private static final Logger log = LoggerFactory.getLogger(MicronodeFieldTypeProvider.class);
+
 	@Inject
 	public Lazy<FieldDefinitionProvider> fields;
 
-	
-
-	
 	@Inject
 	public MicronodeFieldTypeProvider() {
 	}
@@ -63,14 +64,8 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 		return fieldType;
 	}
 
-
 	private Map<String, GraphQLObjectType> generateMicroschemaFieldType(Project project) {
-
-		 Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
-//		if (!schemaTypes.isEmpty()) {
-//			return schemaTypes;
-//		}
-
+		Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
 		List<GraphQLObjectType> list = new ArrayList<>();
 		for (MicroschemaContainer container : project.getMicroschemaContainerRoot().findAll()) {
 			MicroschemaContainerVersion version = container.getLatestVersion();
@@ -105,6 +100,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 					root.field(fields.get().createListDef(listFieldSchema));
 					break;
 				default:
+					log.error("Micronode field type {" + type + "} is not supported.");
 					// TODO throw exception for unsupported type
 					break;
 				}

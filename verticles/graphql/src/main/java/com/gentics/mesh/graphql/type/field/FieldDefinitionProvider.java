@@ -43,7 +43,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
-import com.gentics.mesh.graphql.type.MicronodeFieldTypeProvider;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.util.DateUtils;
 
