@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.type.field;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
 import static graphql.Scalars.GraphQLBigDecimal;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLInt;
@@ -56,6 +57,8 @@ import graphql.schema.GraphQLTypeReference;
 @Singleton
 public class FieldDefinitionProvider extends AbstractTypeProvider {
 
+	public static final String BINARY_FIELD_TYPE_NAME = "BinaryField";
+
 	@Inject
 	public MicronodeFieldTypeProvider micronodeFieldTypeProvider;
 
@@ -67,7 +70,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	}
 
 	public GraphQLObjectType createBinaryFieldType() {
-		Builder type = newObject().name("BinaryField").description("Binary field");
+		Builder type = newObject().name(BINARY_FIELD_TYPE_NAME).description("Binary field");
 
 		// .fileName
 		type.field(newFieldDefinition().name("fileName").description("Filename of the uploaded file.").type(GraphQLString));
@@ -108,10 +111,11 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	}
 
 	public GraphQLFieldDefinition createBinaryDef(FieldSchema schema) {
-		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(createBinaryFieldType()).dataFetcher(env -> {
-			GraphFieldContainer container = env.getSource();
-			return container.getBinary(schema.getName());
-		}).build();
+		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(BINARY_FIELD_TYPE_NAME))
+				.dataFetcher(env -> {
+					GraphFieldContainer container = env.getSource();
+					return container.getBinary(schema.getName());
+				}).build();
 
 	}
 
@@ -249,7 +253,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return nodeList.getList().stream().map(item -> {
 					Node node = item.getNode();
 					List<String> languageTags = Arrays.asList(container.getLanguage().getLanguageTag());
-					//TODO we need to add more assertions and check what happens if the itemContainer is null
+					// TODO we need to add more assertions and check what happens if the itemContainer is null
 					NodeGraphFieldContainer itemContainer = node.findNextMatchingFieldContainer(gc, languageTags);
 					return new NodeContent(node, itemContainer);
 				}).collect(Collectors.toList());
@@ -286,9 +290,16 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 		}
 	}
 
+	/**
+	 * Create the GraphQL micronode field definition for the given schema.
+	 * 
+	 * @param schema
+	 * @param project
+	 * @return Created field definition
+	 */
 	public GraphQLFieldDefinition createMicronodeDef(FieldSchema schema, Project project) {
 		return newFieldDefinition().name(schema.getName()).description(schema.getLabel())
-				.type(micronodeFieldTypeProvider.getMicroschemaFieldsType(project)).dataFetcher(env -> {
+				.type(micronodeFieldTypeProvider.createMicroschemaFieldsType(project)).dataFetcher(env -> {
 					GraphFieldContainer container = env.getSource();
 					MicronodeGraphField micronodeField = container.getMicronode(schema.getName());
 					if (micronodeField != null) {
@@ -306,7 +317,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 */
 	public GraphQLFieldDefinition createNodeDef(FieldSchema schema) {
 		return newFieldDefinition().name(schema.getName()).argument(createLanguageTagArg()).description(schema.getLabel())
-				.type(new GraphQLTypeReference("Node")).dataFetcher(env -> {
+				.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
 					GraphQLContext gc = env.getContext();
 					GraphFieldContainer source = env.getSource();
 					// TODO decide whether we want to reference the default content by default

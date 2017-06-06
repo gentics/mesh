@@ -297,6 +297,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		// perPage:1) {name}}, schemas(name:\"content\") {name}, nodes(uuid:\"" + contentUuid + "\"){uuid, languagePaths(linkType: FULL) {languageTag, link},
 		// availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
 
+		call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
 		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
 		JsonObject json = new JsonObject(JsonUtil.toJson(response));
 		System.out.println(json.encodePrettily());

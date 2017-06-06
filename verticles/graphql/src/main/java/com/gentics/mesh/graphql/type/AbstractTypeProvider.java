@@ -1,14 +1,12 @@
 package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLInt;
 import static graphql.Scalars.GraphQLLong;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLEnumType.newEnum;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLObjectType.newObject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,12 +14,9 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.lang.WordUtils;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.error.MeshConfigurationException;
@@ -36,13 +31,16 @@ import graphql.schema.GraphQLArgument;
 import graphql.schema.GraphQLEnumType;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLObjectType.Builder;
-import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 import rx.functions.Func1;
 
 public abstract class AbstractTypeProvider {
+
+	public static final String LINK_TYPE_NAME = "LinkType";
+
+	public AbstractTypeProvider() {
+
+	}
 
 	/**
 	 * Return the elasticsearch query argument.
@@ -69,7 +67,7 @@ public abstract class AbstractTypeProvider {
 		return arguments;
 	}
 
-	public GraphQLArgument getReleaseUuidArg() {
+	public GraphQLArgument createReleaseUuidArg() {
 		// #release
 		return newArgument().name("release").type(GraphQLString).description("Release Uuid").build();
 	}
@@ -125,7 +123,6 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLArgument createPathArg() {
-
 		return newArgument().name("path").type(GraphQLString).description("Webroot path which points to a container of a node.").build();
 	}
 
@@ -145,7 +142,7 @@ public abstract class AbstractTypeProvider {
 	 * @param fetcher
 	 * @return
 	 */
-	public PagingParameters createPagingParameters(DataFetchingEnvironment env) {
+	public PagingParameters getPagingParameters(DataFetchingEnvironment env) {
 		PagingParameters params = new PagingParametersImpl();
 		Long page = env.getArgument("page");
 		if (page != null) {
@@ -158,15 +155,26 @@ public abstract class AbstractTypeProvider {
 		return params;
 	}
 
-	public GraphQLArgument createLinkTypeArg() {
-		GraphQLEnumType linkTypeEnum = newEnum().name("LinkType").description("Mesh resolve link type")
+	public GraphQLEnumType createLinkEnumType() {
+		GraphQLEnumType linkTypeEnum = newEnum().name(LINK_TYPE_NAME).description("Mesh resolve link type")
 				.value(LinkType.FULL.name(), LinkType.FULL, "Render full links").value(LinkType.MEDIUM.name(), LinkType.MEDIUM, "Render medium links")
 				.value(LinkType.SHORT.name(), LinkType.SHORT, "Render short links").value(LinkType.OFF.name(), LinkType.OFF, "Don't render links")
 				.build();
-
-		return newArgument().name("linkType").type(linkTypeEnum).defaultValue(LinkType.OFF).description("Specify the resolve type").build();
+		return linkTypeEnum;
 	}
 
+	public GraphQLArgument createLinkTypeArg() {
+
+		return newArgument().name("linkType").type(new GraphQLTypeReference(LINK_TYPE_NAME)).defaultValue(LinkType.OFF)
+				.description("Specify the resolve type").build();
+	}
+
+	/**
+	 * Returns the linkType argument value from the given environment.
+	 * 
+	 * @param env
+	 * @return Found value or default value.
+	 */
 	public LinkType getLinkType(DataFetchingEnvironment env) {
 		return env.getArgument("linkType");
 	}
@@ -198,64 +206,36 @@ public abstract class AbstractTypeProvider {
 	}
 
 	/**
-	 * Construct a page type with the given element type for its nested elements.
+	 * Construct a field which can page the result set and also accept a elasticsearch query for processing.
 	 * 
 	 * @param name
-	 *            Name of the element that is being nested
-	 * @param elementType
-	 *            Type of the nested element
+	 *            Name of the field
+	 * @param description
+	 *            Description of the field
+	 * @param rootProvider
+	 *            Provider of the root element (will only be used when no query was specified)
+	 * @param pageTypeName
+	 *            Name of the page type
+	 * @param indexHandler
+	 *            Handler which will be used to invoke the query
 	 * @return
 	 */
-	protected GraphQLObjectType newPageType(String name, GraphQLType elementType) {
-		Builder type = newObject().name("Page" + WordUtils.capitalize(name)).description("Paged result");
-		type.field(newFieldDefinition().name("elements").type(new GraphQLList(elementType)).dataFetcher(env -> {
-			return env.getSource();
-		}));
-
-		type.field(newFieldDefinition().name("totalCount").description("Return the total item count which the resource could provide.")
-				.dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.getTotalElements();
-				}).type(GraphQLLong));
-
-		type.field(newFieldDefinition().name("currentPage").description("Return the current page number.").dataFetcher(env -> {
-			Page<?> page = env.getSource();
-			return page.getNumber();
-		}).type(GraphQLLong));
-
-		type.field(newFieldDefinition().name("pageCount").description("Return the total amount of pages which the resource can provide.")
-				.dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.getPageCount();
-				}).type(GraphQLLong));
-
-		type.field(newFieldDefinition().name("perPage").description("Return the per page parameter value that was used to load the page.")
-				.dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.getPerPage();
-				}).type(GraphQLLong));
-
-		type.field(newFieldDefinition().name("size")
-				.description(
-						"Return the amount of items which the page is containing. Please note that a page may always contain less items compared to its maximum capacity.")
-				.dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.getSize();
-				}).type(GraphQLLong));
-
-		type.field(newFieldDefinition().name("hasNextPage").description("Check whether the paged resource could serve another page")
-				.type(GraphQLBoolean).dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.getPageCount() > page.getNumber();
-				}));
-
-		type.field(newFieldDefinition().name("hasPreviousPage").description("Check whether the current page has a previous page.")
-				.type(GraphQLBoolean).dataFetcher(env -> {
-					Page<?> page = env.getSource();
-					return page.getNumber() > 1;
-				}));
-
-		return type.build();
+	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
+			String pageTypeName, IndexHandler<?> indexHandler) {
+		return newFieldDefinition().name(name).description(description).argument(createPagingArgs()).argument(createQueryArg())
+				.type(new GraphQLTypeReference(pageTypeName)).dataFetcher((env) -> {
+					GraphQLContext gc = env.getContext();
+					String query = env.getArgument("query");
+					if (query != null) {
+						try {
+							return indexHandler.query(gc, query, getPagingInfo(env), READ_PERM);
+						} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
+							throw new RuntimeException(e);
+						}
+					} else {
+						return rootProvider.call(gc).findAll(gc, getPagingInfo(env));
+					}
+				}).build();
 	}
 
 	/**
@@ -277,42 +257,9 @@ public abstract class AbstractTypeProvider {
 	}
 
 	protected graphql.schema.GraphQLFieldDefinition.Builder newPagingFieldWithFetcherBuilder(String name, String description,
-			DataFetcher<?> dataFetcher, String referenceTypeName) {
-		return newFieldDefinition().name(name).description(description).argument(createPagingArgs())
-				.type(newPageType(name, new GraphQLTypeReference(referenceTypeName))).dataFetcher(dataFetcher);
-	}
-
-	/**
-	 * Construct a field which can page the result set and also accept a elasticsearch query for processing.
-	 * 
-	 * @param name
-	 *            Name of the field
-	 * @param description
-	 *            Description of the field
-	 * @param rootProvider
-	 *            Provider of the root element (will only be used when no query was specified)
-	 * @param referenceTypeName
-	 *            Name of the type of elements returned
-	 * @param indexHandler
-	 *            Handler which will be used to invoke the query
-	 * @return
-	 */
-	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
-			String referenceTypeName, IndexHandler<?> indexHandler) {
-		return newFieldDefinition().name(name).description(description).argument(createPagingArgs()).argument(createQueryArg())
-				.type(newPageType(name, new GraphQLTypeReference(referenceTypeName))).dataFetcher((env) -> {
-					GraphQLContext gc = env.getContext();
-					String query = env.getArgument("query");
-					if (query != null) {
-						try {
-							return indexHandler.query(gc, query, getPagingInfo(env), READ_PERM);
-						} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
-							throw new RuntimeException(e);
-						}
-					} else {
-						return rootProvider.call(gc).findAll(gc, getPagingInfo(env));
-					}
-				}).build();
+			DataFetcher<?> dataFetcher, String pageTypeName) {
+		return newFieldDefinition().name(name).description(description).argument(createPagingArgs()).type(new GraphQLTypeReference(pageTypeName))
+				.dataFetcher(dataFetcher);
 	}
 
 	protected GraphQLFieldDefinition newPagingField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
@@ -332,14 +279,14 @@ public abstract class AbstractTypeProvider {
 	 *            Description of the field
 	 * @param rootProvider
 	 *            Function which will return the root vertex which is used to load the element
-	 * @param type
-	 *            Type of the element which can be loaded
+	 * @param elementType
+	 *            Type name of the element which can be loaded
 	 * @return
 	 */
 	protected GraphQLFieldDefinition newElementField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
-			GraphQLObjectType type) {
+			String elementType) {
 		return newFieldDefinition().name(name).description(description).argument(createUuidArg("Uuid of the " + name + "."))
-				.argument(createNameArg("Name of the " + name + ".")).type(type).dataFetcher(env -> {
+				.argument(createNameArg("Name of the " + name + ".")).type(new GraphQLTypeReference(elementType)).dataFetcher(env -> {
 					GraphQLContext gc = env.getContext();
 					return handleUuidNameArgs(env, rootProvider.call(gc));
 				}).build();

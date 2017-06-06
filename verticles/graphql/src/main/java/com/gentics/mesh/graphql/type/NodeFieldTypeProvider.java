@@ -32,6 +32,8 @@ import graphql.schema.GraphQLUnionType;
 @Singleton
 public class NodeFieldTypeProvider extends AbstractTypeProvider {
 
+	public static final String NODE_FIELDS_TYPE_NAME = "Fields";
+
 	@Inject
 	public FieldDefinitionProvider fields;
 
@@ -42,22 +44,17 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 	public GraphQLUnionType getSchemaFieldsType(Project project) {
 		Map<String, GraphQLObjectType> types = generateSchemaFieldType(project);
 
-		GraphQLObjectType[] typeArray = types.values()
-				.toArray(new GraphQLObjectType[types.values()
-						.size()]);
+		GraphQLObjectType[] typeArray = types.values().toArray(new GraphQLObjectType[types.values().size()]);
 
-		GraphQLUnionType fieldType = newUnionType().name("Fields")
-				.possibleTypes(typeArray)
-				.description("Fields of the node.")
-				.typeResolver(object -> {
+		GraphQLUnionType fieldType = newUnionType().name(NODE_FIELDS_TYPE_NAME).possibleTypes(typeArray).description("Fields of the node.")
+				.typeResolver(env -> {
+					Object object = env.getObject();
 					if (object instanceof NodeGraphFieldContainer) {
 						NodeGraphFieldContainer fieldContainer = (NodeGraphFieldContainer) object;
-						return types.get(fieldContainer.getSchemaContainerVersion()
-								.getName());
+						return types.get(fieldContainer.getSchemaContainerVersion().getName());
 					}
 					return null;
-				})
-				.build();
+				}).build();
 
 		return fieldType;
 
@@ -72,14 +69,12 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 	private Map<String, GraphQLObjectType> generateSchemaFieldType(Project project) {
 		Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
 		List<GraphQLObjectType> list = new ArrayList<>();
-		for (SchemaContainer container : project.getSchemaContainerRoot()
-				.findAll()) {
+		for (SchemaContainer container : project.getSchemaContainerRoot().findAll()) {
 			SchemaContainerVersion version = container.getLatestVersion();
 			Schema schema = version.getSchema();
 			Builder root = newObject();
-			//TODO remove this workaround
-			root.name(schema.getName()
-					.replaceAll("-", "_"));
+			// TODO remove this workaround
+			root.name(schema.getName().replaceAll("-", "_"));
 			root.description(schema.getDescription());
 
 			// TODO add link resolving argument / code

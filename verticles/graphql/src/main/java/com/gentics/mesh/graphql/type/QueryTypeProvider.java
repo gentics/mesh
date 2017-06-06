@@ -2,10 +2,34 @@ package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.graphql.type.GroupTypeProvider.GROUP_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.GroupTypeProvider.GROUP_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.MicroschemaTypeProvider.MICROSCHEMA_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.MicroschemaTypeProvider.MICROSCHEMA_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.ReleaseTypeProvider.RELEASE_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.ReleaseTypeProvider.RELEASE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.TagFamilyTypeProvider.TAG_FAMILY_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.TagFamilyTypeProvider.TAG_FAMILY_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
+import static graphql.Scalars.GraphQLBoolean;
+import static graphql.Scalars.GraphQLLong;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -17,11 +41,13 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.graphql.context.GraphQLContext;
+import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
@@ -32,9 +58,11 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 
 import graphql.schema.DataFetchingEnvironment;
+import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLSchema;
+import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
 
 /**
@@ -54,7 +82,13 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	public MeshTypeProvider meshTypeProvider;
 
 	@Inject
+	public InterfaceTypeProvider interfaceTypeProvider;
+
+	@Inject
 	public NodeFieldTypeProvider nodeFieldTypeProvider;
+
+	@Inject
+	public FieldDefinitionProvider fieldDefProvider;
 
 	@Inject
 	public NodeTypeProvider nodeTypeProvider;
@@ -199,12 +233,12 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.name("Query");
 
 		// .me
-		root.field(newFieldDefinition().name("me").description("The current user").type(userTypeProvider.getUserType())
+		root.field(newFieldDefinition().name("me").description("The current user").type(new GraphQLTypeReference(USER_TYPE_NAME))
 				.dataFetcher(this::userMeFetcher).build());
 
 		// .project
 		root.field(newFieldDefinition().name("project").description("Load the project that is active for this graphql query.")
-				.type(projectTypeProvider.createProjectType(project)).dataFetcher(this::projectFetcher).build());
+				.type(new GraphQLTypeReference(PROJECT_TYPE_NAME)).dataFetcher(this::projectFetcher).build());
 
 		// NOT ALLOWED - See class description for details
 		// .projects
@@ -213,12 +247,12 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		// .node
 		root.field(newFieldDefinition().name("node").description("Load a node by uuid, uuid and language or webroot path.")
 				.argument(createUuidArg("Node uuid")).argument(createLanguageTagArg()).argument(createPathArg()).dataFetcher(this::nodeFetcher)
-				.type(nodeTypeProvider.createNodeType(project)).build());
+				.type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
 
 		// .nodes
 		root.field(newFieldDefinition().name("nodes").description("Load a page of nodes via the regular nodes list or via a search.")
 				.argument(createPagingArgs()).argument(createQueryArg()).argument(createLanguageTagArg())
-				.type(newPageType("nodes", new GraphQLTypeReference("Node"))).dataFetcher((env) -> {
+				.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME)).dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
 					PagingParameters pagingInfo = getPagingInfo(env);
 					String query = env.getArgument("query");
@@ -242,64 +276,124 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		// .baseNode
 		root.field(newFieldDefinition().name("rootNode").description("Return the project root node.").argument(createLanguageTagArg())
-				.type(new GraphQLTypeReference("Node")).dataFetcher(this::rootNodeFetcher).build());
+				.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(this::rootNodeFetcher).build());
 
 		// .tag
-		root.field(newElementField("tag", "Load tag by name or uuid.", (ac) -> boot.tagRoot(), tagTypeProvider.createTagType()));
+		root.field(newElementField("tag", "Load tag by name or uuid.", (ac) -> boot.tagRoot(), TAG_TYPE_NAME));
 
 		// .tags
-		root.field(newPagingSearchField("tags", "Load page of tags.", (ac) -> boot.tagRoot(), "Tag", tagIndexHandler));
+		root.field(newPagingSearchField("tags", "Load page of tags.", (ac) -> boot.tagRoot(), TAG_PAGE_TYPE_NAME, tagIndexHandler));
 
 		// .tagFamily
-		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", (ac) -> ac.getProject().getTagFamilyRoot(),
-				tagFamilyTypeProvider.getTagFamilyType()));
+		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", (ac) -> ac.getProject().getTagFamilyRoot(), TAG_FAMILY_TYPE_NAME));
 
 		// .tagFamilies
-		root.field(
-				newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), "TagFamily", tagFamilyIndexHandler));
+		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), TAG_FAMILY_PAGE_TYPE_NAME,
+				tagFamilyIndexHandler));
 
 		// .release
-		root.field(newElementField("release", "Load release by name or uuid.", (ac) -> ac.getProject().getReleaseRoot(),
-				releaseTypeProvider.getReleaseType()));
+		root.field(newElementField("release", "Load release by name or uuid.", (ac) -> ac.getProject().getReleaseRoot(), RELEASE_TYPE_NAME));
 
 		// .releases
-		root.field(newPagingField("releases", "Load page of releases.", (ac) -> ac.getProject().getReleaseRoot(), "Release"));
+		root.field(newPagingField("releases", "Load page of releases.", (ac) -> ac.getProject().getReleaseRoot(), RELEASE_PAGE_TYPE_NAME));
 
 		// .schema
-		root.field(newElementField("schema", "Load schema by name or uuid.", (ac) -> boot.schemaContainerRoot(), schemaTypeProvider.getSchemaType()));
+		root.field(newElementField("schema", "Load schema by name or uuid.", (ac) -> boot.schemaContainerRoot(), SCHEMA_TYPE_NAME));
 
 		// .schemas
-		root.field(newPagingField("schemas", "Load page of schemas.", (ac) -> boot.schemaContainerRoot(), "Schema"));
+		root.field(newPagingField("schemas", "Load page of schemas.", (ac) -> boot.schemaContainerRoot(), SCHEMA_PAGE_TYPE_NAME));
 
 		// .microschema
-		root.field(newElementField("microschema", "Load microschema by name or uuid.", (ac) -> boot.microschemaContainerRoot(),
-				microschemaTypeProvider.createMicroschemaType()));
+		root.field(
+				newElementField("microschema", "Load microschema by name or uuid.", (ac) -> boot.microschemaContainerRoot(), MICROSCHEMA_TYPE_NAME));
 
 		// .microschemas
-		root.field(newPagingField("microschemas", "Load page of microschemas.", (ac) -> boot.microschemaContainerRoot(), "Microschema"));
+		root.field(newPagingField("microschemas", "Load page of microschemas.", (ac) -> boot.microschemaContainerRoot(), MICROSCHEMA_PAGE_TYPE_NAME));
 
 		// .role
-		root.field(newElementField("role", "Load role by name or uuid.", (ac) -> boot.roleRoot(), roleTypeProvider.createRoleType()));
+		root.field(newElementField("role", "Load role by name or uuid.", (ac) -> boot.roleRoot(), ROLE_TYPE_NAME));
 
 		// .roles
-		root.field(newPagingSearchField("roles", "Load page of roles.", (ac) -> boot.roleRoot(), "Role", roleIndexHandler));
+		root.field(newPagingSearchField("roles", "Load page of roles.", (ac) -> boot.roleRoot(), ROLE_PAGE_TYPE_NAME, roleIndexHandler));
 
 		// .group
-		root.field(newElementField("group", "Load group by name or uuid.", (ac) -> boot.groupRoot(), groupTypeProvider.createGroupType()));
+		root.field(newElementField("group", "Load group by name or uuid.", (ac) -> boot.groupRoot(), GROUP_TYPE_NAME));
 
 		// .groups
-		root.field(newPagingSearchField("groups", "Load page of groups.", (ac) -> boot.groupRoot(), "Group", groupIndexHandler));
+		root.field(newPagingSearchField("groups", "Load page of groups.", (ac) -> boot.groupRoot(), GROUP_PAGE_TYPE_NAME, groupIndexHandler));
 
 		// .user
-		root.field(newElementField("user", "Load user by name or uuid.", (ac) -> boot.userRoot(), userTypeProvider.getUserType()));
+		root.field(newElementField("user", "Load user by name or uuid.", (ac) -> boot.userRoot(), USER_TYPE_NAME));
 
 		// .users
-		root.field(newPagingSearchField("users", "Load page of users.", (ac) -> boot.userRoot(), "User", userIndexHandler));
+		root.field(newPagingSearchField("users", "Load page of users.", (ac) -> boot.userRoot(), USER_PAGE_TYPE_NAME, userIndexHandler));
 
 		// .mesh
 		root.field(meshTypeProvider.createMeshFieldType());
 
 		return root.build();
+	}
+
+	/**
+	 * Construct a page type with the given element type for its nested elements.
+	 * 
+	 * @param name
+	 *            Name of the element that is being nested
+	 * @param elementType
+	 *            Type of the nested element
+	 * @return
+	 */
+	private GraphQLObjectType newPageType(String pageTypeName, String elementType) {
+
+		Builder type = newObject().name(pageTypeName).description("Paged result");
+		type.field(newFieldDefinition().name("elements").type(new GraphQLList(new GraphQLTypeReference(elementType))).dataFetcher(env -> {
+			return env.getSource();
+		}));
+
+		type.field(newFieldDefinition().name("totalCount").description("Return the total item count which the resource could provide.")
+				.dataFetcher(env -> {
+					Page<?> page = env.getSource();
+					return page.getTotalElements();
+				}).type(GraphQLLong));
+
+		type.field(newFieldDefinition().name("currentPage").description("Return the current page number.").dataFetcher(env -> {
+			Page<?> page = env.getSource();
+			return page.getNumber();
+		}).type(GraphQLLong));
+
+		type.field(newFieldDefinition().name("pageCount").description("Return the total amount of pages which the resource can provide.")
+				.dataFetcher(env -> {
+					Page<?> page = env.getSource();
+					return page.getPageCount();
+				}).type(GraphQLLong));
+
+		type.field(newFieldDefinition().name("perPage").description("Return the per page parameter value that was used to load the page.")
+				.dataFetcher(env -> {
+					Page<?> page = env.getSource();
+					return page.getPerPage();
+				}).type(GraphQLLong));
+
+		type.field(newFieldDefinition().name("size")
+				.description(
+						"Return the amount of items which the page is containing. Please note that a page may always contain less items compared to its maximum capacity.")
+				.dataFetcher(env -> {
+					Page<?> page = env.getSource();
+					return page.getSize();
+				}).type(GraphQLLong));
+
+		type.field(newFieldDefinition().name("hasNextPage").description("Check whether the paged resource could serve another page")
+				.type(GraphQLBoolean).dataFetcher(env -> {
+					Page<?> page = env.getSource();
+					return page.getPageCount() > page.getNumber();
+				}));
+
+		type.field(newFieldDefinition().name("hasPreviousPage").description("Check whether the current page has a previous page.")
+				.type(GraphQLBoolean).dataFetcher(env -> {
+					Page<?> page = env.getSource();
+					return page.getNumber() > 1;
+				}));
+
+		return type.build();
 	}
 
 	/**
@@ -309,8 +403,48 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	 * @return
 	 */
 	public GraphQLSchema getRootSchema(Project project) {
-		graphql.schema.GraphQLSchema.Builder schema = GraphQLSchema.newSchema();
-		return schema.query(getRootType(project)).build();
+		graphql.schema.GraphQLSchema.Builder builder = GraphQLSchema.newSchema();
+
+		Set<GraphQLType> additionalTypes = new HashSet<>();
+
+		additionalTypes.add(schemaTypeProvider.createType());
+		additionalTypes.add(newPageType(SCHEMA_PAGE_TYPE_NAME, SCHEMA_TYPE_NAME));
+
+		additionalTypes.add(microschemaTypeProvider.createType());
+		additionalTypes.add(newPageType(MICROSCHEMA_PAGE_TYPE_NAME, MICROSCHEMA_TYPE_NAME));
+
+		additionalTypes.add(nodeTypeProvider.createType(project));
+		additionalTypes.add(newPageType(NODE_PAGE_TYPE_NAME, NODE_TYPE_NAME));
+
+		additionalTypes.add(projectTypeProvider.createType(project));
+		additionalTypes.add(newPageType(PROJECT_PAGE_TYPE_NAME, PROJECT_TYPE_NAME));
+
+		additionalTypes.add(tagTypeProvider.createType());
+		additionalTypes.add(newPageType(TAG_PAGE_TYPE_NAME, TAG_TYPE_NAME));
+
+		additionalTypes.add(tagFamilyTypeProvider.createType());
+		additionalTypes.add(newPageType(TAG_FAMILY_PAGE_TYPE_NAME, TAG_FAMILY_TYPE_NAME));
+
+		additionalTypes.add(userTypeProvider.createType());
+		additionalTypes.add(newPageType(USER_PAGE_TYPE_NAME, USER_TYPE_NAME));
+
+		additionalTypes.add(groupTypeProvider.createType());
+		additionalTypes.add(newPageType(GROUP_PAGE_TYPE_NAME, GROUP_TYPE_NAME));
+
+		additionalTypes.add(roleTypeProvider.createType());
+		additionalTypes.add(newPageType(ROLE_PAGE_TYPE_NAME, ROLE_TYPE_NAME));
+
+		additionalTypes.add(releaseTypeProvider.createType());
+		additionalTypes.add(newPageType(RELEASE_PAGE_TYPE_NAME, RELEASE_TYPE_NAME));
+
+		additionalTypes.add(meshTypeProvider.createType());
+		additionalTypes.add(interfaceTypeProvider.createPermInfoType());
+		additionalTypes.add(fieldDefProvider.createBinaryFieldType());
+
+		additionalTypes.add(createLinkEnumType());
+
+		GraphQLSchema schema = builder.query(getRootType(project)).build(additionalTypes);
+		return schema;
 	}
 
 }

@@ -2,6 +2,8 @@ package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -49,6 +51,10 @@ import graphql.schema.GraphQLTypeReference;
  */
 @Singleton
 public class NodeTypeProvider extends AbstractTypeProvider {
+
+	public static final String NODE_TYPE_NAME = "Node";
+
+	public static final String NODE_PAGE_TYPE_NAME = "NodesPage";
 
 	@Inject
 	public NodeIndexHandler nodeIndexHandler;
@@ -155,9 +161,9 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		return new NodeContent(node, node.findNextMatchingFieldContainer(gc, languageTags));
 	}
 
-	public GraphQLObjectType createNodeType(Project project) {
+	public GraphQLObjectType createType(Project project) {
 		Builder nodeType = newObject();
-		nodeType.name("Node");
+		nodeType.name(NODE_TYPE_NAME);
 		nodeType.description(
 				"A Node is the basic building block for contents. Nodes can contain multiple language specific contents. These contents contain the fields with the actual content.");
 		interfaceTypeProvider.addCommonFields(nodeType, true);
@@ -176,7 +182,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .breadcrumb
 		nodeType.field(newFieldDefinition().name("breadcrumb").description("Breadcrumb of the node")
-				.type(new GraphQLList(new GraphQLTypeReference("Node"))).dataFetcher(this::breadcrumbFetcher));
+				.type(new GraphQLList(new GraphQLTypeReference(NODE_TYPE_NAME))).dataFetcher(this::breadcrumbFetcher));
 
 		// .availableLanguages
 		nodeType.field(newFieldDefinition().name("availableLanguages").description("List all available languages for the node")
@@ -191,7 +197,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .child
 		nodeType.field(newFieldDefinition().name("child").description("Resolve a webroot path to a specific child node.").argument(createPathArg())
-				.type(new GraphQLTypeReference("Node")).dataFetcher((env) -> {
+				.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher((env) -> {
 					String nodePath = env.getArgument("path");
 					if (nodePath != null) {
 						GraphQLContext gc = env.getContext();
@@ -249,22 +255,23 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				return new NodeContent(item, container);
 			}).collect(Collectors.toList());
 			return new PageImpl<NodeContent>(contents, page);
-		}, "Node").argument(createLanguageTagArg()));
+		}, NODE_PAGE_TYPE_NAME).argument(createLanguageTagArg()));
 
 		// .parent
-		nodeType.field(newFieldDefinition().name("parent").description("Parent node").type(new GraphQLTypeReference("Node"))
+		nodeType.field(newFieldDefinition().name("parent").description("Parent node").type(new GraphQLTypeReference(NODE_TYPE_NAME))
 				.dataFetcher(this::parentNodeFetcher));
 
 		// .tags
-		nodeType.field(newFieldDefinition().name("tags").argument(createPagingArgs()).type(tagTypeProvider.createTagType()).dataFetcher((env) -> {
-			GraphQLContext gc = env.getContext();
-			NodeContent content = env.getSource();
-			if (content == null) {
-				return null;
-			}
-			Node node = content.getNode();
-			return node.getTags(gc.getUser(), createPagingParameters(env), gc.getRelease());
-		}));
+		nodeType.field(
+				newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_TYPE_NAME)).dataFetcher((env) -> {
+					GraphQLContext gc = env.getContext();
+					NodeContent content = env.getSource();
+					if (content == null) {
+						return null;
+					}
+					Node node = content.getNode();
+					return node.getTags(gc.getUser(), getPagingParameters(env), gc.getRelease());
+				}));
 
 		// TODO Fix name confusion and check what version of schema should be used to determine this type
 		// .isContainer
@@ -282,7 +289,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .node
 		nodeType.field(newFieldDefinition().name("node").description("Load the node with a different language.").argument(createLanguageTagArg())
-				.argument(createLanguageTagArg()).dataFetcher(this::nodeLanguageFetcher).type(new GraphQLTypeReference("Node")).build());
+				.argument(createLanguageTagArg()).dataFetcher(this::nodeLanguageFetcher).type(new GraphQLTypeReference(NODE_TYPE_NAME)).build());
 
 		// .path
 		nodeType.field(newFieldDefinition().name("path").description("Webroot path of the content.").type(GraphQLString).dataFetcher(env -> {
@@ -312,7 +319,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}));
 
 		// .editor
-		nodeType.field(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference("User"))
+		nodeType.field(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference(USER_TYPE_NAME))
 				.dataFetcher(this::editorFetcher));
 
 		// .isPublished
