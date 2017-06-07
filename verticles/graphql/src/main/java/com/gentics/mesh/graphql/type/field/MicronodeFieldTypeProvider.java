@@ -1,4 +1,4 @@
-package com.gentics.mesh.graphql.type;
+package com.gentics.mesh.graphql.type.field;
 
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLUnionType.newUnionType;
@@ -19,15 +19,21 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
+import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 
 import dagger.Lazy;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLUnionType;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
 public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
+
+	public static final String MICRONODE_TYPE_NAME = "Micronode";
+
+	private static final Logger log = LoggerFactory.getLogger(MicronodeFieldTypeProvider.class);
 
 	@Inject
 	public Lazy<FieldDefinitionProvider> fields;
@@ -36,18 +42,15 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 	public MicronodeFieldTypeProvider() {
 	}
 
-	public GraphQLUnionType getMicroschemaFieldsType(Project project) {
+	public GraphQLUnionType createMicroschemaFieldsType(Project project) {
 
 		Map<String, GraphQLObjectType> types = generateMicroschemaFieldType(project);
 
-		GraphQLObjectType[] typeArray = types.values()
-				.toArray(new GraphQLObjectType[types.values()
-						.size()]);
+		GraphQLObjectType[] typeArray = types.values().toArray(new GraphQLObjectType[types.values().size()]);
 
-		GraphQLUnionType fieldType = newUnionType().name("Micronode")
-				.possibleTypes(typeArray)
-				.description("Fields of the micronode.")
-				.typeResolver(object -> {
+		GraphQLUnionType fieldType = newUnionType().name(MICRONODE_TYPE_NAME).possibleTypes(typeArray).description("Fields of the micronode.")
+				.typeResolver(env -> {
+					Object object = env.getObject();
 					if (object instanceof Micronode) {
 						Micronode fieldContainer = (Micronode) object;
 						MicroschemaContainerVersion micronodeFieldSchema = fieldContainer.getSchemaContainerVersion();
@@ -56,23 +59,15 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 						return foundType;
 					}
 					return null;
-				})
-				.build();
+				}).build();
 
 		return fieldType;
 	}
 
-	static Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
-
 	private Map<String, GraphQLObjectType> generateMicroschemaFieldType(Project project) {
-
-		if (!schemaTypes.isEmpty()) {
-			return schemaTypes;
-		}
-
+		Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
 		List<GraphQLObjectType> list = new ArrayList<>();
-		for (MicroschemaContainer container : project.getMicroschemaContainerRoot()
-				.findAll()) {
+		for (MicroschemaContainer container : project.getMicroschemaContainerRoot().findAll()) {
 			MicroschemaContainerVersion version = container.getLatestVersion();
 			Microschema microschema = version.getSchema();
 			Builder root = newObject();
@@ -83,36 +78,30 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 				switch (type) {
 				case STRING:
-					root.field(fields.get()
-							.createStringDef(fieldSchema));
+					root.field(fields.get().createStringDef(fieldSchema));
 					break;
 				case HTML:
-					root.field(fields.get()
-							.createHtmlDef(fieldSchema));
+					root.field(fields.get().createHtmlDef(fieldSchema));
 					break;
 				case NUMBER:
-					root.field(fields.get()
-							.createNumberDef(fieldSchema));
+					root.field(fields.get().createNumberDef(fieldSchema));
 					break;
 				case DATE:
-					root.field(fields.get()
-							.createDateDef(fieldSchema));
+					root.field(fields.get().createDateDef(fieldSchema));
 					break;
 				case BOOLEAN:
-					root.field(fields.get()
-							.createBooleanDef(fieldSchema));
+					root.field(fields.get().createBooleanDef(fieldSchema));
 					break;
 				case NODE:
-					root.field(fields.get()
-							.createNodeDef(fieldSchema));
+					root.field(fields.get().createNodeDef(fieldSchema));
 					break;
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-					root.field(fields.get()
-							.createListDef(listFieldSchema));
+					root.field(fields.get().createListDef(listFieldSchema));
 					break;
 				default:
-					//TODO throw exception for unsupported type
+					log.error("Micronode field type {" + type + "} is not supported.");
+					// TODO throw exception for unsupported type
 					break;
 				}
 

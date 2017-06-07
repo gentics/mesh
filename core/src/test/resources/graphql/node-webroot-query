@@ -34,7 +34,6 @@
 
 			# [$.data.node.enNode.uuid=<is-uuid>]
 			uuid
-			}
 		}
 	}
 }

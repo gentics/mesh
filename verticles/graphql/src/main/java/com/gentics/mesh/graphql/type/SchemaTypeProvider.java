@@ -16,6 +16,10 @@ import graphql.schema.GraphQLObjectType.Builder;
 @Singleton
 public class SchemaTypeProvider extends AbstractTypeProvider {
 
+	public static final String SCHEMA_TYPE_NAME = "Schema";
+	
+	public static final String SCHEMA_PAGE_TYPE_NAME = "SchemasPage";
+
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;
 
@@ -23,26 +27,20 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 	public SchemaTypeProvider() {
 	}
 
-	public GraphQLObjectType getSchemaType() {
-		Builder schemaType = newObject().name("Schema")
-				.description("Node schema");
+	public GraphQLObjectType createType() {
+		Builder schemaType = newObject().name(SCHEMA_TYPE_NAME).description("Node schema");
 		interfaceTypeProvider.addCommonFields(schemaType);
 
-		schemaType.field(newFieldDefinition().name("name")
-				.type(GraphQLString)
-				.dataFetcher((env) -> {
-					SchemaContainer schemaContainer = env.getSource();
-					return schemaContainer.getName();
-				}));
+		schemaType.field(newFieldDefinition().name("name").type(GraphQLString).dataFetcher((env) -> {
+			SchemaContainer schemaContainer = env.getSource();
+			return schemaContainer.getName();
+		}));
 
-		schemaType.field(newFieldDefinition().name("isContainer")
-				.type(GraphQLBoolean));
+		schemaType.field(newFieldDefinition().name("isContainer").type(GraphQLBoolean));
 
-		schemaType.field(newFieldDefinition().name("displayField")
-				.type(GraphQLString));
+		schemaType.field(newFieldDefinition().name("displayField").type(GraphQLString));
 
-		schemaType.field(newFieldDefinition().name("segmentField")
-				.type(GraphQLString));
+		schemaType.field(newFieldDefinition().name("segmentField").type(GraphQLString));
 
 		// TODO add fields
 
