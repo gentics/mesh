@@ -58,7 +58,7 @@ public class BinaryFieldResponseHandler implements Handler<BinaryGraphField> {
 				rc.response().setStatusCode(NOT_MODIFIED.code()).end();
 			} else if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
 				// Resize the image if needed
-				Single<io.vertx.rxjava.core.buffer.Buffer> buffer = imageManipulator.handleResize(binaryField.getFile(), binaryField.getSHA512Sum(),
+				Single<Buffer> buffer = imageManipulator.handleResize(binaryField.getFile(), binaryField.getSHA512Sum(),
 						ac.getImageParameters());
 				buffer.subscribe(imageBuffer -> {
 					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(imageBuffer.length()));
@@ -66,7 +66,7 @@ public class BinaryFieldResponseHandler implements Handler<BinaryGraphField> {
 					rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
 					// TODO encode filename?
 					rc.response().putHeader("content-disposition", "inline; filename=" + fileName);
-					rc.response().end((Buffer) imageBuffer.getDelegate());
+					rc.response().end(imageBuffer);
 				}, error -> {
 					rc.fail(error);
 				});

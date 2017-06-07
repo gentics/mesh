@@ -7,7 +7,7 @@ import java.util.Map;
 
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 
-import io.vertx.rxjava.core.buffer.Buffer;
+import io.vertx.core.buffer.Buffer;
 import rx.Single;
 import rx.functions.Func0;
 
