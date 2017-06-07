@@ -1,5 +1,5 @@
-[options="header"]
+[options="header",cols="10%,10%,10%"]
 |======
-| Name      | Description | Mandatory | Type | Example | Default
-{{#each entries}}| {{this.name}}	| {{this.description}}	| {{this.required}}	| {{this.type}}	| {{this.example}} | {{this.default}}
+| Name      | Type | Mandatory | Description
+{{#each entries}}| {{this.name}}	| {{this.type}} {{#if this.default}} (default: {{this.default}} ) {{/if}} | {{this.required}}	| {{this.description}}
 {{/each}}|======

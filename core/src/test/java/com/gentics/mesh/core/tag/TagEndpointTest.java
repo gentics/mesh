@@ -197,14 +197,15 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		try (Tx tx = tx()) {
-			Tag tag = tag("vehicle");
-			TagFamily parentTagFamily = tagFamily("basic");
+		Tag tag = tag("vehicle");
+		TagFamily parentTagFamily = tagFamily("basic");
+		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
+		List<? extends Node> nodes;
 
-			String tagUuid = tag.getUuid();
+		try (Tx tx = tx()) {
 			String tagName = tag.getName();
 			assertNotNull(tag.getEditor());
-			TagResponse restTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
+			TagResponse restTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tag.getUuid()));
 
 			// 1. Read the current tag
 			assertNotNull("The name of the tag should be loaded.", tagName);
@@ -213,16 +214,20 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			assertEquals(tagName, restName);
 
 			// 2. Update the tag
-			TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 			final String newName = "new Name";
 			tagUpdateRequest.setName(newName);
 			assertEquals(newName, tagUpdateRequest.getName());
 
 			// 3. Send the request to the server
 			dummySearchProvider().clear();
-			List<? extends Node> nodes = tag.getNodes(project().getLatestRelease());
+			nodes = tag.getNodes(project().getLatestRelease());
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
+			String tagUuid = tag.getUuid();
 			TagResponse tag2 = call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, tagUpdateRequest));
+			tag.reload();
 			assertThat(tag2).matches(tag);
 			assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(project().getUuid()), Tag.composeIndexType(),
 					Tag.composeDocumentId(tag2.getUuid()));

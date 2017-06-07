@@ -34,22 +34,26 @@ public class NestedTransactionTest {
 	@Test
 	public void testNestedTransaction() {
 		try {
-			db.tx(() -> {
-				Vertex v = Database.getThreadLocalGraph().addVertex(null);
+			db.tx((tx) -> {
+				Vertex v = tx.getGraph().addVertex(null);
 				System.out.println("Outer");
-				db.tx(() -> {
-					long count = Database.getThreadLocalGraph().v().count();
+				db.tx((tx2) -> {
+					long count = tx2.getGraph().v().count();
 					System.out.println("Inner " + count);
-					return null;
 				});
 				System.out.println("Outer Done");
+				if (true == false) {
+					return null;
+				}
 				throw new RuntimeException();
-				//			return null;
 			});
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 		}
-		long count = db.tx(() -> Database.getThreadLocalGraph().v().count());
+		long count = db.tx((tx) -> {
+			tx.getGraph().v().count();
+			return null;
+		});
 		assertEquals("A runtime exception occured in the tx transaction. Nothing should have been comitted", 0, count);
 	}
 

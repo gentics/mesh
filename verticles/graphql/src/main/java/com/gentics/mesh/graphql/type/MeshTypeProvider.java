@@ -15,91 +15,72 @@ import com.gentics.mesh.search.SearchProvider;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
+import graphql.schema.GraphQLTypeReference;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 
 @Singleton
-public class MeshTypeProvider extends AbstractTypeProvider {
+public class MeshTypeProvider {
+
+	public static final String MESH_TYPE_NAME = "Mesh";
+
+	private final Database db;
+
+	private final SearchProvider searchProvider;
 
 	@Inject
-	public Database db;
-
-	@Inject
-	public SearchProvider searchProvider;
-
-	@Inject
-	public MeshTypeProvider() {
+	public MeshTypeProvider(Database db, SearchProvider searchProvider) {
+		this.db = db;
+		this.searchProvider = searchProvider;
 	}
 
-	public GraphQLObjectType createMeshType() {
+	public GraphQLObjectType createType() {
 		Builder root = newObject();
-		root.name("Mesh");
+		root.name(MESH_TYPE_NAME);
 		root.description("Mesh version information");
-		root.field(newFieldDefinition().name("meshVersion")
-				.description("Version of mesh")
-				.type(GraphQLString)
-				.dataFetcher((env) -> {
-					return Mesh.getPlainVersion();
-				}));
+		root.field(newFieldDefinition().name("meshVersion").description("Version of mesh").type(GraphQLString).dataFetcher((env) -> {
+			return Mesh.getPlainVersion();
+		}));
 
 		// .meshNodeId
-		root.field(newFieldDefinition().name("meshNodeId")
-				.description("Node id of this mesh instance")
-				.type(GraphQLString)
-				.dataFetcher((env) -> {
-					return MeshNameProvider.getInstance()
-							.getName();
-				}));
+		root.field(newFieldDefinition().name("meshNodeId").description("Node id of this mesh instance").type(GraphQLString).dataFetcher((env) -> {
+			return MeshNameProvider.getInstance().getName();
+		}));
 
 		// .databaseVendor
-		root.field(newFieldDefinition().name("databaseVendor")
-				.description("Name of the graph database vendor")
-				.type(GraphQLString)
+		root.field(newFieldDefinition().name("databaseVendor").description("Name of the graph database vendor").type(GraphQLString)
 				.dataFetcher((env) -> {
 					return db.getVendorName();
 				}));
 
 		// .databaseVersion
-		root.field(newFieldDefinition().name("databaseVersion")
-				.description("Version of the used graph database")
-				.type(GraphQLString)
+		root.field(newFieldDefinition().name("databaseVersion").description("Version of the used graph database").type(GraphQLString)
 				.dataFetcher((env) -> {
 					return db.getVersion();
 				}));
 
 		// .searchVendor
-		root.field(newFieldDefinition().name("searchVendor")
-				.description("Name of the search index vendor")
-				.type(GraphQLString)
-				.dataFetcher((env) -> {
-					return searchProvider.getVendorName();
-				}));
+		root.field(newFieldDefinition().name("searchVendor").description("Name of the search index vendor").type(GraphQLString).dataFetcher((env) -> {
+			return searchProvider.getVendorName();
+		}));
 
 		// .searchVersion
-		root.field(newFieldDefinition().name("searchVersion")
-				.description("Version of the used search index")
-				.type(GraphQLString)
-				.dataFetcher((env) -> {
+		root.field(
+				newFieldDefinition().name("searchVersion").description("Version of the used search index").type(GraphQLString).dataFetcher((env) -> {
 					return searchProvider.getVersion();
 				}));
 
 		// .vertxVersion
-		root.field(newFieldDefinition().name("vertxVersion")
-				.description("Vert.x version")
-				.type(GraphQLString)
-				.dataFetcher((env) -> {
-					return VersionCommand.getVersion();
-				}));
+		root.field(newFieldDefinition().name("vertxVersion").description("Vert.x version").type(GraphQLString).dataFetcher((env) -> {
+			return VersionCommand.getVersion();
+		}));
 		return root.build();
 	}
 
 	public GraphQLFieldDefinition createMeshFieldType() {
-		return newFieldDefinition().name("mesh")
-				.description("The mesh instance")
-				.type(createMeshType())
+		return newFieldDefinition().name("mesh").description("The mesh instance").type(new GraphQLTypeReference(MESH_TYPE_NAME))
 				.dataFetcher((env) -> {
 					return Mesh.mesh();
-				})
-				.build();
+				}).build();
 	}
 
 }

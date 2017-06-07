@@ -339,7 +339,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					isInitialSetup = false;
 					meshRoot = it.next();
 				} else {
-					meshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
+					meshRoot = Tx.getActive().getGraph().addFramedVertex(MeshRootImpl.class);
 					if (log.isDebugEnabled()) {
 						log.debug("Created mesh root {" + meshRoot.getUuid() + "}");
 					}

@@ -8,12 +8,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static java.util.Comparator.comparing;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
 import javax.inject.Inject;
 
 import org.apache.commons.lang3.NotImplementedException;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
@@ -45,17 +47,12 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleBackup(InternalActionContext ac) {
 		db.operateTx(() -> {
-			if (!ac.getUser()
-					.hasAdminRole()) {
+			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			db.backupGraph(Mesh.mesh()
-					.getOptions()
-					.getStorageOptions()
-					.getBackupDirectory());
+			db.backupGraph(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
 			return Single.just(message(ac, "backup_finished"));
-		})
-				.subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -65,30 +62,21 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleRestore(InternalActionContext ac) {
 		db.operateTx(() -> {
-			if (!ac.getUser()
-					.hasAdminRole()) {
+			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			File backupDir = new File(Mesh.mesh()
-					.getOptions()
-					.getStorageOptions()
-					.getBackupDirectory());
+			File backupDir = new File(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
 
 			// Find the file which was last modified
-			File latestFile = Arrays.asList(backupDir.listFiles())
-					.stream()
-					.filter(file -> file.getName()
-							.endsWith(".zip"))
-					.sorted(comparing(File::lastModified))
-					.reduce((first, second) -> second).orElseGet(()-> null);
+			File latestFile = Arrays.asList(backupDir.listFiles()).stream().filter(file -> file.getName().endsWith(".zip"))
+					.sorted(comparing(File::lastModified)).reduce((first, second) -> second).orElseGet(() -> null);
 
 			if (latestFile == null) {
 				throw error(INTERNAL_SERVER_ERROR, "error_backup", backupDir.getAbsolutePath());
 			}
 			db.restoreGraph(latestFile.getAbsolutePath());
 			return Single.just(message(ac, "restore_finished"));
-		})
-				.subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -98,17 +86,12 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleExport(InternalActionContext ac) {
 		db.operateTx((tx) -> {
-			if (!ac.getUser()
-					.hasAdminRole()) {
+			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			db.exportGraph(Mesh.mesh()
-					.getOptions()
-					.getStorageOptions()
-					.getExportDirectory());
+			db.exportGraph(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory());
 			return Single.just(message(ac, "export_finished"));
-		})
-				.subscribe(model -> ac.send(model, OK), ac::fail);
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 	/**
@@ -117,27 +100,22 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleImport(InternalActionContext ac) {
-		db.operateTx(() -> {
-			if (!ac.getUser()
-					.hasAdminRole()) {
+		try (Tx tx = db.tx()) {
+			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
-			File importsDir = new File(Mesh.mesh()
-					.getOptions()
-					.getStorageOptions()
-					.getExportDirectory());
-			
-			// Find the file which was last modified
-			File latestFile = Arrays.asList(importsDir.listFiles())
-					.stream()
-					.filter(file -> file.getName()
-							.endsWith(".gz"))
-					.sorted(comparing(File::lastModified))
-					.reduce((first, second) -> second).orElseGet(()-> null);
+		}
+		File importsDir = new File(Mesh.mesh().getOptions().getStorageOptions().getExportDirectory());
+
+		// Find the file which was last modified
+		File latestFile = Arrays.asList(importsDir.listFiles()).stream().filter(file -> file.getName().endsWith(".gz"))
+				.sorted(comparing(File::lastModified)).reduce((first, second) -> second).orElseGet(() -> null);
+		try {
 			db.importGraph(latestFile.getAbsolutePath());
-			return Single.just(message(ac, "import_finished"));
-		})
-				.subscribe(model -> ac.send(model, OK), ac::fail);
+			Single.just(message(ac, "import_finished")).subscribe(model -> ac.send(model, OK), ac::fail);
+		} catch (IOException e) {
+			ac.fail(e);
+		}
 	}
 
 	/**
@@ -161,8 +139,7 @@ public class AdminHandler extends AbstractHandler {
 			// }
 			// });
 		} else {
-			LocalMap<String, String> map = vertx.sharedData()
-					.getLocalMap("migrationStatus");
+			LocalMap<String, String> map = vertx.sharedData().getLocalMap("migrationStatus");
 			String statusKey = "migration_status_idle";
 			String currentStatusKey = map.get("status");
 			if (currentStatusKey != null) {

@@ -1,6 +1,8 @@
 package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.TagFamilyTypeProvider.TAG_FAMILY_TYPE_NAME;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
@@ -27,11 +29,15 @@ import graphql.schema.GraphQLTypeReference;
 @Singleton
 public class TagTypeProvider extends AbstractTypeProvider {
 
-	@Inject
-	InterfaceTypeProvider interfaceTypeProvider;
+	public static final String TAG_TYPE_NAME = "Tag";
+
+	public static final String TAG_PAGE_TYPE_NAME = "TagsPage";
+
+	private final InterfaceTypeProvider interfaceTypeProvider;
 
 	@Inject
-	public TagTypeProvider() {
+	public TagTypeProvider(InterfaceTypeProvider interfaceTypeProvider) {
+		this.interfaceTypeProvider = interfaceTypeProvider;
 	}
 
 	/**
@@ -39,8 +45,8 @@ public class TagTypeProvider extends AbstractTypeProvider {
 	 * 
 	 * @return
 	 */
-	public GraphQLObjectType createTagType() {
-		Builder tagType = newObject().name("Tag").description("Tag of a node.");
+	public GraphQLObjectType createType() {
+		Builder tagType = newObject().name(TAG_TYPE_NAME).description("Tag of a node.");
 		interfaceTypeProvider.addCommonFields(tagType);
 
 		// .name
@@ -55,11 +61,11 @@ public class TagTypeProvider extends AbstractTypeProvider {
 			Tag tag = env.getSource();
 			TagFamily tagFamily = tag.getTagFamily();
 			return gc.requiresPerm(tagFamily, READ_PERM);
-		}).type(new GraphQLTypeReference("TagFamily")));
+		}).type(new GraphQLTypeReference(TAG_FAMILY_TYPE_NAME)));
 
 		// .nodes
 		tagType.field(newFieldDefinition().name("nodes").description("Nodes which are tagged with the tag.")
-				.type(newPageType("nodes", new GraphQLTypeReference("Node"))).argument(createPagingArgs()).argument(createLanguageTagArg())
+				.type(new GraphQLTypeReference(NODE_PAGE_TYPE_NAME)).argument(createPagingArgs()).argument(createLanguageTagArg())
 				.dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
 					Tag tag = env.getSource();
@@ -76,4 +82,5 @@ public class TagTypeProvider extends AbstractTypeProvider {
 
 		return tagType.build();
 	}
+
 }

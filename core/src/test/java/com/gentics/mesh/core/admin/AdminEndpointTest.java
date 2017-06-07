@@ -1,12 +1,12 @@
 package com.gentics.mesh.core.admin;
 
+import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
 
 import java.io.IOException;
 
-import static com.gentics.mesh.test.TestSize.PROJECT;
-
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.ferma.Tx;
@@ -37,6 +37,7 @@ public class AdminEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	@Ignore("Endpoint disabled")
 	public void testExportImport() {
 		try (Tx tx = tx()) {
 			group().addRole(roles().get("admin"));

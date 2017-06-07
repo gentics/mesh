@@ -136,7 +136,8 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	 */
 	public JsonObjectAssert pathIsUndefined(String path, String msg) {
 		try {
-			JsonPath.read(actual.toString(), path);
+			Object value = JsonPath.read(actual.toString(), path);
+			System.out.println(value);
 			fail(msg + " The value at path {" + path + "} was present but it should be undefined.");
 		} catch (PathNotFoundException e) {
 			// OK

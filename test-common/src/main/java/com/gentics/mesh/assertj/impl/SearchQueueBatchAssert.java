@@ -9,12 +9,12 @@ import java.util.Map;
 
 import org.assertj.core.api.AbstractAssert;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.node.ElementEntry;
-import com.gentics.mesh.graphdb.spi.Database;
 
 public class SearchQueueBatchAssert extends AbstractAssert<SearchQueueBatchAssert, SearchQueueBatch> {
 
@@ -44,7 +44,7 @@ public class SearchQueueBatchAssert extends AbstractAssert<SearchQueueBatchAsser
 			// 1. Check for deletion from graph
 			if (DELETE_ACTION.equals(entry.getAction()) && entry.getType() == null) {
 				assertFalse("The element {" + key + "} vertex for uuid: {" + entry.getUuid() + "}",
-						Database.getThreadLocalGraph().v().has("uuid", entry.getUuid()).hasNext());
+						Tx.getActive().getGraph().v().has("uuid", entry.getUuid()).hasNext());
 			}
 			// 2. Check batch entries
 			if (entry.getAction() != null) {

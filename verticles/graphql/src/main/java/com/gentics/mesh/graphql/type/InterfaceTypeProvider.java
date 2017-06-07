@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLInterfaceType.newInterface;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 import javax.inject.Inject;
@@ -18,13 +17,13 @@ import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import dagger.Lazy;
-import graphql.schema.GraphQLInterfaceType;
-import graphql.schema.GraphQLInterfaceType.Builder;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLTypeReference;
 
 @Singleton
 public class InterfaceTypeProvider extends AbstractTypeProvider {
+
+	public static final String PERM_INFO_TYPE_NAME = "PermInfo";
 
 	@Inject
 	public Lazy<UserTypeProvider> userTypeProvider;
@@ -33,42 +32,42 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 	public InterfaceTypeProvider() {
 	}
 
-	protected GraphQLInterfaceType createCommonType() {
-
-		Builder common = newInterface().name("MeshElement");
-		// .uuid
-		common.field(newFieldDefinition().name("uuid").description("UUID of the element").type(GraphQLString));
-
-		// .edited
-		common.field(newFieldDefinition().name("edited").description("ISO8601 formatted edit timestamp").type(GraphQLString));
-
-		// .created
-		common.field(newFieldDefinition().name("created").description("ISO8601 formatted created date string").type(GraphQLString));
-
-		// .permissions
-		common.field(newFieldDefinition().name("permissions").description("Permission information of the element").type(createPermInfoType()));
-
-		// TODO add rolePerms
-
-		// .creator
-		common.field(newFieldDefinition().name("creator").description("Creator of the element").type(new GraphQLTypeReference("User")));
-
-		// .editor
-		common.field(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference("User")));
-
-		common.typeResolver(resolver -> {
-			return null;
-		});
-		return common.build();
-	}
+	// protected GraphQLInterfaceType createCommonType() {
+	//
+	// Builder common = newInterface().name("MeshElement");
+	// // .uuid
+	// common.field(newFieldDefinition().name("uuid").description("UUID of the element").type(GraphQLString));
+	//
+	// // .edited
+	// common.field(newFieldDefinition().name("edited").description("ISO8601 formatted edit timestamp").type(GraphQLString));
+	//
+	// // .created
+	// common.field(newFieldDefinition().name("created").description("ISO8601 formatted created date string").type(GraphQLString));
+	//
+	// // .permissions
+	// common.field(newFieldDefinition().name("permissions").description("Permission information of the element").type(createPermInfoType()));
+	//
+	// // TODO add rolePerms
+	//
+	// // .creator
+	// common.field(newFieldDefinition().name("creator").description("Creator of the element").type(new GraphQLTypeReference("User")));
+	//
+	// // .editor
+	// common.field(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference("User")));
+	//
+	// common.typeResolver(env -> {
+	// return null;
+	// });
+	// return common.build();
+	// }
 
 	/**
 	 * Create the permission information type.
 	 * 
 	 * @return
 	 */
-	private GraphQLObjectType createPermInfoType() {
-		graphql.schema.GraphQLObjectType.Builder builder = newObject().name("permissions").description("Permission information");
+	public GraphQLObjectType createPermInfoType() {
+		graphql.schema.GraphQLObjectType.Builder builder = newObject().name(PERM_INFO_TYPE_NAME).description("Permission information");
 
 		// .create
 		builder.field(newFieldDefinition().name("create").type(GraphQLBoolean)
@@ -130,7 +129,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		}));
 
 		// .permission
-		builder.field(newFieldDefinition().name("permissions").description("Permission information of the element").type(createPermInfoType()));
+		builder.field(newFieldDefinition().name("permissions").description("Permission information of the element")
+				.type(new GraphQLTypeReference(PERM_INFO_TYPE_NAME)));
 
 		// TODO rolePerms
 
