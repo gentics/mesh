@@ -225,7 +225,7 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 
 		// cropx
 		QueryParameter cropxParameter = new QueryParameter();
-		cropxParameter.setDescription("Set image crop area x coordinate.");
+		cropxParameter.setDescription("Set image crop area start x coordinate.");
 		cropxParameter.setExample("260");
 		cropxParameter.setRequired(false);
 		cropxParameter.setType(ParamType.NUMBER);
@@ -233,7 +233,7 @@ public class ImageManipulationParametersImpl extends AbstractParameters implemen
 
 		// cropy
 		QueryParameter cropyParameter = new QueryParameter();
-		cropyParameter.setDescription("Set image crop area y coordinate.");
+		cropyParameter.setDescription("Set image crop area start y coordinate.");
 		cropyParameter.setExample("260");
 		cropyParameter.setRequired(false);
 		cropyParameter.setType(ParamType.NUMBER);

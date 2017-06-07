@@ -14,6 +14,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -69,8 +71,8 @@ import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
-import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.admin.AdminHandler;
 import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
@@ -102,7 +104,6 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.WebSocket;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.FileUpload;
 import rx.Single;
 
@@ -276,7 +277,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
-	
+
 	@Override
 	public MeshRequest<TagListResponse> updateTagsForNode(String projectName, String nodeUuid, TagListUpdateRequest request,
 			ParameterProvider... parameters) {
@@ -1164,19 +1165,13 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<JsonObject> graphql(String projectName, String query, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public MeshRequest<String> getRAML() {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
+	
 	@Override
-	public MeshRequest<JsonObject> graphqlQuery(String projectName, String query, ParameterProvider... parameters) {
+	public MeshRequest<GraphQLResponse> graphql(String projectName, GraphQLRequest request, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1215,5 +1210,23 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public MeshRestClient enableAnonymousAccess() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	@Override
+	public MeshRestClient disableAnonymousAccess() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	@Override
+	public MeshRestClient setAuthenticationProvider(JWTAuthentication authentication) {
+		// TODO Auto-generated method stub
+		return this;
 	}
 }

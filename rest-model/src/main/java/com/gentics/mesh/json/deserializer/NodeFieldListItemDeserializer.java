@@ -1,4 +1,4 @@
-package com.gentics.mesh.json;
+package com.gentics.mesh.json.deserializer;
 
 import java.io.IOException;
 
@@ -12,6 +12,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
+import com.gentics.mesh.json.JsonUtil;
 
 /**
  * Deserializer which is used to deserialize node list items.

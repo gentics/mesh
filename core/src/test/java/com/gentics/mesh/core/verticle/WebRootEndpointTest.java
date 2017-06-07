@@ -142,10 +142,10 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			// Grant permissions to the node otherwise it will not be able to be loaded
 			role().grantPermissions(node, GraphPermission.values());
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(german(), project().getLatestRelease(), user());
-			englishContainer.createString("name").setString("german_name");
+			englishContainer.createString("teaser").setString("german teaser");
 			englishContainer.createString("title").setString("german title");
 			englishContainer.createString("displayName").setString("german displayName");
-			englishContainer.createString("fileName").setString("test.de.html");
+			englishContainer.createString("slug").setString("test.de.html");
 
 			// Add node reference to node 2015
 			parentNode.getLatestDraftFieldContainer(english()).createNode("nodeRef", node);
@@ -197,7 +197,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String uuid = db().noTx(() -> folder("2015").getUuid());
 		try (NoTx noTx = db().noTx()) {
 			Node folder = folder("2015");
-			folder.getGraphFieldContainer("en").getString("folderName").setString(newName);
+			folder.getGraphFieldContainer("en").getString("slug").setString(newName);
 		}
 
 		String[] path = new String[] { "News", newName };
@@ -301,8 +301,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest createErrorFolder = new NodeCreateRequest();
 			createErrorFolder.setSchema(new SchemaReference().setName("folder"));
 			createErrorFolder.setParentNodeUuid(project().getBaseNode().getUuid());
-			createErrorFolder.getFields().put("name", FieldUtil.createStringField("error"));
-			createErrorFolder.getFields().put("folderName", FieldUtil.createStringField("error"));
+			createErrorFolder.getFields().put("slug", FieldUtil.createStringField("error"));
 			createErrorFolder.setLanguage("en");
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, createErrorFolder));
 			String errorNodeUuid = response.getUuid();
@@ -310,8 +309,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create404Node = new NodeCreateRequest();
 			create404Node.setSchema(new SchemaReference().setName("content"));
 			create404Node.setParentNodeUuid(errorNodeUuid);
-			create404Node.getFields().put("fileName", FieldUtil.createStringField("404"));
-			create404Node.getFields().put("name", FieldUtil.createStringField("Error Content"));
+			create404Node.getFields().put("slug", FieldUtil.createStringField("404"));
+			create404Node.getFields().put("teaser", FieldUtil.createStringField("Error Content"));
 			create404Node.getFields().put("content", FieldUtil.createStringField("An error happened"));
 			create404Node.setLanguage("en");
 			call(() -> client().createNode(PROJECT_NAME, create404Node));
@@ -363,8 +362,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 2. Change names
 		db().noTx(() -> {
-			updateFolderName(folder("news"), "en", "News_draft");
-			updateFolderName(folder("2015"), "en", "2015_draft");
+			updateSlug(folder("news"), "en", "News_draft");
+			updateSlug(folder("2015"), "en", "2015_draft");
 			return null;
 		});
 
@@ -412,8 +411,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		// 2. update nodes in new release
 		db().noTx(() -> {
-			updateFolderName(folder("news"), "en", "News_new");
-			updateFolderName(folder("2015"), "en", "2015_new");
+			updateSlug(folder("news"), "en", "News_new");
+			updateSlug(folder("2015"), "en", "2015_new");
 			return null;
 		});
 
@@ -449,7 +448,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	}
 
 	/**
-	 * Update the node name for the latest release
+	 * Update the node slug field for the latest release.
 	 * 
 	 * @param node
 	 *            node
@@ -458,12 +457,12 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	 * @param newName
 	 *            new name
 	 */
-	protected void updateFolderName(Node node, String language, String newName) {
+	protected void updateSlug(Node node, String language, String newName) {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(language);
 		update.setVersion(
 				new VersionReference(node.getGraphFieldContainer(language).getUuid(), node.getGraphFieldContainer(language).getVersion().toString()));
-		update.getFields().put("folderName", FieldUtil.createStringField(newName));
+		update.getFields().put("slug", FieldUtil.createStringField(newName));
 		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update));
 	}
 

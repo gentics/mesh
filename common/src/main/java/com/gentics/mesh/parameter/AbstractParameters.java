@@ -1,6 +1,6 @@
 package com.gentics.mesh.parameter;
 
-import com.gentics.mesh.core.rest.common.GenerateDocumentation;
+import com.gentics.mesh.doc.GenerateDocumentation;
 import com.gentics.mesh.handler.ActionContext;
 
 import io.vertx.core.MultiMap;

@@ -25,12 +25,10 @@ import org.elasticsearch.index.query.RangeQueryBuilder;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.rest.client.MeshRestClientJsonObjectException;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -101,33 +99,6 @@ public final class MeshTestHelper {
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
-	}
-
-	/**
-	 * Returns the failure response and asserts the given status code.
-	 * 
-	 * @param handler
-	 * @param status
-	 * @return
-	 * @throws Throwable
-	 */
-	public static JsonObject call(ClientHandler<JsonObject> handler, HttpResponseStatus status) throws Throwable {
-		MeshResponse<JsonObject> future;
-		try {
-			future = handler.handle()
-					.invoke();
-		} catch (Exception e) {
-			future = new MeshResponse<>(Future.failedFuture(e));
-		}
-		latchFor(future);
-		if (!future.failed()) {
-			fail("Request should have failed but it did not.");
-		}
-		if (future.cause() instanceof MeshRestClientJsonObjectException) {
-			MeshRestClientJsonObjectException error = (MeshRestClientJsonObjectException) future.cause();
-			return error.getResponseInfo();
-		}
-		throw future.cause();
 	}
 
 	/**

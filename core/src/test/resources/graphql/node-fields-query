@@ -13,6 +13,9 @@
 					# [$.data.node.fields.nodeRef.isContainer=false]
 					isContainer
 
+					# [$.data.node.fields.nodeRef.path=/News/News%20Overview.en.html]
+					path
+
 					node(lang: "en") {
 						# [$.data.node.fields.nodeRef.node.isPublished=true]
 						isPublished
@@ -96,3 +99,4 @@
 		availableLanguages
 	}
 }
+# [$.errors=<is-undefined>]

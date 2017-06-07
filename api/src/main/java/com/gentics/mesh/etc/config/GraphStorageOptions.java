@@ -4,21 +4,38 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.doc.GenerateDocumentation;
+
 /**
  * Underlying graph database storage configuration.
  */
+@GenerateDocumentation
 public class GraphStorageOptions {
 
 	public static final String DEFAULT_DIRECTORY = "data" + File.separator + "graphdb";
 	public static final String DEFAULT_BACKUP_DIRECTORY = "data" + File.separator + "backup";
 	public static final String DEFAULT_EXPORT_DIRECTORY = "data" + File.separator + "export";
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Path to the graph database data directory.")
 	private String directory = DEFAULT_DIRECTORY;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Path to the graph database backup directory.")
 	private String backupDirectory = DEFAULT_BACKUP_DIRECTORY;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Path to the graph database export directory.")
 	private String exportDirectory = DEFAULT_EXPORT_DIRECTORY;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Flag which indicates whether the graph database admin web server should be started.")
 	private Boolean startServer = false;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Additional set of graph database parameters.")
 	private Map<String, String> parameters = new HashMap<>();
 
 	/**

@@ -72,6 +72,9 @@ public class MeshTestContext extends TestWatcher {
 				init(settings);
 				initDagger(settings.testSize());
 			} else {
+				if (!settings.inMemoryDB()) {
+					new DatabaseHelper(meshDagger.database()).init();
+				}
 				setupData();
 				if (settings.useElasticsearch()) {
 					setupIndexHandlers();
@@ -265,7 +268,7 @@ public class MeshTestContext extends TestWatcher {
 		MeshOptions options = new MeshOptions();
 
 		// Setup the keystore
-		File keystoreFile = new File("target", "keystore_"  + UUIDUtil.randomUUID() +".jceks");
+		File keystoreFile = new File("target", "keystore_" + UUIDUtil.randomUUID() + ".jceks");
 		keystoreFile.deleteOnExit();
 		String keystorePassword = "finger";
 		if (!keystoreFile.exists()) {

@@ -20,6 +20,16 @@ public class PageImpl<T> implements Iterable<T>, Page<T> {
 	protected int perPage;
 
 	/**
+	 * Construct a new page and use the given page as a source for the page meta information.
+	 * 
+	 * @param wrappedList
+	 * @param page
+	 */
+	public PageImpl(List<? extends T> wrappedList, Page<?> page) {
+		this(wrappedList, page.getTotalElements(), page.getNumber(), page.getPageCount(), page.getPerPage());
+	}
+
+	/**
 	 * Construct a new page
 	 * 
 	 * @param wrappedList

@@ -1,8 +1,13 @@
 package com.gentics.mesh.etc.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.doc.GenerateDocumentation;
+
 /**
  * Authentication options POJO.
  */
+@GenerateDocumentation
 public class AuthenticationOptions {
 
 	public static final String DEFAULT_ALGORITHM = "HS256";
@@ -11,14 +16,24 @@ public class AuthenticationOptions {
 
 	public static final String DEFAULT_KEYSTORE_PATH = "keystore.jceks";
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Time in minutes which an issued token stays valid.")
 	private long tokenExpirationTime = DEFAULT_TOKEN_EXPIRATION_TIME;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("The Java keystore password for the keystore file.")
 	private String keystorePassword = null;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Path to the java keystore file which will be used to store cryptographic keys.")
 	private String keystorePath = DEFAULT_KEYSTORE_PATH;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Algorithm which is used to verify and sign JWT.")
 	private String algorithm = DEFAULT_ALGORITHM;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Flag which indicates whether anonymous access should be enabled.")
 	private boolean enableAnonymousAccess = true;
 
 	/**

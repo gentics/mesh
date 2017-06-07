@@ -147,7 +147,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.name.raw", "Concorde_english_name"),
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
 				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
 	}
@@ -167,7 +167,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		GenericMessageResponse message = call(() -> client().invokeReindex());
 		expectResponseMessage(message, "search_admin_reindex_invoked");
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.name.raw", "Concorde_english_name"),
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
 				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
 	}

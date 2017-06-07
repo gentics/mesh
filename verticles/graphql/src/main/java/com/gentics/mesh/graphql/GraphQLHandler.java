@@ -1,7 +1,6 @@
 package com.gentics.mesh.graphql;
 
 import static graphql.GraphQL.newGraphQL;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.Collections;
@@ -23,7 +22,6 @@ import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.GraphQLError;
 import graphql.language.SourceLocation;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -62,17 +60,12 @@ public class GraphQLHandler {
 			if (!errors.isEmpty()) {
 				log.error("Could not execute query {" + query + "}");
 			}
-
 			addErrors(errors, response);
-
 			if (result.getData() != null) {
 				Map<String, Object> data = (Map<String, Object>) result.getData();
 				response.put("data", new JsonObject(JsonUtil.toJson(data)));
 			}
-
-			boolean hasErrors = result.getErrors() != null && !result.getErrors().isEmpty();
-			HttpResponseStatus code = hasErrors ? BAD_REQUEST : OK;
-			gc.send(response.toString(), code);
+			gc.send(response.toString(), OK);
 		}
 
 	}

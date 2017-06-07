@@ -13,7 +13,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.vertx.core.Vertx;
 
-public class MeshRestClientTest {
+public class RestClientTest {
 
 	@Test
 	public void testRestClient() {

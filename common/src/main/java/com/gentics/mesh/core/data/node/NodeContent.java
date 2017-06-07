@@ -15,10 +15,6 @@ public class NodeContent {
 		this.container = container;
 	}
 
-	public NodeContent(NodeGraphFieldContainer container) {
-		this.container = container;
-	}
-
 	public Node getNode() {
 		if (node == null && container != null) {
 			node = container.getParentNode();

@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
@@ -24,7 +25,10 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.example.GraphQLExamples;
 import com.gentics.mesh.json.JsonUtil;
+
+import io.vertx.core.json.JsonObject;
 
 public class JsonUtilTest {
 
@@ -40,6 +44,18 @@ public class JsonUtilTest {
 		list.getData().add(user);
 		String json = JsonUtil.toJson(list);
 		assertNotNull(json);
+	}
+
+	@Test
+	public void testGraphQLResponse() {
+		GraphQLExamples examples = new GraphQLExamples();
+		GraphQLResponse response = examples.createResponse();
+		String jsonStr = JsonUtil.toJson(response);
+		JsonObject json = new JsonObject(jsonStr);
+		System.out.println(json.encodePrettily());
+		GraphQLResponse response2 = JsonUtil.readValue(jsonStr, GraphQLResponse.class);
+		String username = response2.getData().getJsonObject("me").getString("username");
+		assertEquals("anonymous", username);
 	}
 
 	@Test
