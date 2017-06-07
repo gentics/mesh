@@ -394,7 +394,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 *            Upload which will be handled
 	 * @param uuid
 	 * @param segmentedPath
-	 * @return calculated sha hash
+	 * @return calculated SHA 512 sum
 	 */
 	protected String hashAndMoveBinaryFile(FileUpload fileUpload, String uuid, String segmentedPath) {
 		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
@@ -440,7 +440,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * Hash the given fileupload and return a sha512 checksum.
 	 * 
 	 * @param fileUpload
-	 * @return
+	 * @return SHA 512 hashsum
 	 */
 	protected String hashFileupload(FileUpload fileUpload) {
 		return FileUtils.generateSha512Sum(fileUpload.uploadedFileName());
@@ -461,7 +461,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * Delete potential existing file uploads from the given path.
 	 * 
 	 * @param targetPath
-	 * @return
 	 */
 	protected void deletePotentialUpload(String targetPath) {
 		FileSystem fileSystem = Mesh.vertx().fileSystem();
@@ -479,7 +478,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * 
 	 * @param fileUpload
 	 * @param targetPath
-	 * @return
 	 */
 	protected void moveUploadIntoPlace(FileUpload fileUpload, String targetPath) {
 		FileSystem fileSystem = Mesh.vertx().fileSystem();
@@ -509,7 +507,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * Check the target upload folder and create it if needed.
 	 * 
 	 * @param uploadFolder
-	 * @return
 	 */
 	protected void checkUploadFolderExists(File uploadFolder) {
 
