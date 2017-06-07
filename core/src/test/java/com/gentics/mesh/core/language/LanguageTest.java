@@ -19,7 +19,6 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.error.InvalidArgumentException;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -54,9 +53,9 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	public void testLanguageIndex() {
 		try (Tx tx = tx()) {
 			stopWatch("languageindex.read", 50000, (step) -> {
-				Iterable<Vertex> it = Database.getThreadLocalGraph().getVertices("LanguageImpl.languageTag", "en");
+				Iterable<Vertex> it = tx.getGraph().getVertices("LanguageImpl.languageTag", "en");
 				assertTrue(it.iterator().hasNext());
-				Iterable<Vertex> it2 = Database.getThreadLocalGraph()
+				Iterable<Vertex> it2 = tx.getGraph()
 						.getVertices(LanguageImpl.class.getSimpleName() + "." + LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY, "en");
 				assertTrue(it2.iterator().hasNext());
 				Vertex vertex = it2.iterator().next();

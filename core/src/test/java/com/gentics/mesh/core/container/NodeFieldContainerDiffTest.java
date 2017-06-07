@@ -20,7 +20,6 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.FramedGraph;
 
@@ -95,7 +94,7 @@ public class NodeFieldContainerDiffTest extends AbstractFieldContainerDiffTest i
 					FieldUtil.createMicronodeFieldSchema("micronodeField").setAllowedMicroSchemas("vcard"));
 
 			// Create microschema vcard 
-			FramedGraph graph = Database.getThreadLocalGraph();
+			FramedGraph graph = tx.getGraph();
 			MicroschemaContainer schemaContainer = graph.addFramedVertex(MicroschemaContainerImpl.class);
 			MicroschemaContainerVersionImpl version = graph.addFramedVertex(MicroschemaContainerVersionImpl.class);
 			schemaContainer.setLatestVersion(version);

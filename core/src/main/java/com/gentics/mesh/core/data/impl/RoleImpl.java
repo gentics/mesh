@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -87,7 +88,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public boolean hasPermission(GraphPermission permission, MeshVertex vertex) {
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = Tx.getActive().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
 				MeshInternal.get().database().createComposedIndexKey(vertex.getId(), getId()));
 		return edges.iterator().hasNext();

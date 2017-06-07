@@ -22,12 +22,13 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 import com.gentics.ferma.Tx;
 import com.gentics.ferma.TxHandler;
+import com.gentics.ferma.orientdb.DelegatingFramedOrientGraph;
+import com.gentics.ferma.orientdb.OrientDBTx;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.graphdb.ferma.AbstractDelegatingFramedOrientGraph;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
@@ -85,7 +86,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void stop() {
 		factory.close();
 		Orient.instance().shutdown();
-		Database.setThreadLocalGraph(null);
+		Tx.setActive(null);
 	}
 
 	@Override
@@ -327,7 +328,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public <T extends MeshVertex> Iterator<? extends T> getVerticesForType(Class<T> classOfVertex) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		FramedGraph fermaGraph = Database.threadLocalGraph.get();
+		FramedGraph fermaGraph = Tx.getActive().getGraph();
 		Iterator<Vertex> rawIt = orientBaseGraph.getVertices("@class", classOfVertex.getSimpleName()).iterator();
 		return fermaGraph.frameExplicit(rawIt, classOfVertex);
 	}
@@ -338,8 +339,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * @return
 	 */
 	private OrientBaseGraph unwrapCurrentGraph() {
-		FramedGraph graph = Database.getThreadLocalGraph();
-		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph) graph).getBaseGraph();
+		FramedGraph graph = Tx.getActive().getGraph();
+		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph tx = ((OrientBaseGraph) baseGraph);
 		return tx;
 	}
@@ -451,7 +452,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public <T extends MeshElement> T checkIndexUniqueness(String indexName, T element, Object key) {
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = Tx.getActive().getGraph();
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 
 		OrientVertexType vertexType = orientBaseGraph.getVertexType(element.getClass().getSimpleName());
@@ -473,7 +474,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public <T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = Tx.getActive().getGraph();
 		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph<?>) graph).getBaseGraph();
 		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
 

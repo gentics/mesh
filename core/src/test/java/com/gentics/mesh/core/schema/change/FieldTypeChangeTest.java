@@ -19,7 +19,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
 
@@ -30,7 +29,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Override
 	public void testFields() throws IOException {
 		try (Tx tx = tx()) {
-			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange change = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			change.setFieldName("name");
 			assertEquals("name", change.getFieldName());
 		}
@@ -40,7 +39,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Override
 	public void testApply() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl();
@@ -51,7 +50,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			stringField.setRequired(true);
 			schema.addField(stringField);
 
-			FieldTypeChange fieldTypeUpdate = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange fieldTypeUpdate = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			fieldTypeUpdate.setFieldName("stringField");
 			fieldTypeUpdate.setType("html");
 
@@ -68,7 +67,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Test
 	public void testChangeFieldTypeToList() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl();
@@ -80,7 +79,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			stringField.setLabel("test123");
 			schema.addField(stringField);
 
-			FieldTypeChange fieldTypeUpdate = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange fieldTypeUpdate = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			fieldTypeUpdate.setFieldName("stringField");
 			fieldTypeUpdate.setType("list");
 			fieldTypeUpdate.setListType("html");
@@ -105,7 +104,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 			SchemaChangeModel model = SchemaChangeModel.createChangeFieldTypeChange("testField", "list");
 			model.setMigrationScript("test");
 			model.setProperty(SchemaChangeModel.LIST_TYPE_KEY, "html");
-			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange change = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			change.updateFromRest(model);
 
 			assertEquals("test", change.getMigrationScript());
@@ -119,7 +118,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Override
 	public void testGetMigrationScript() throws IOException {
 		try (Tx tx = tx()) {
-			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange change = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			assertNotNull("Field Type changes have a auto migation script.", change.getAutoMigrationScript());
 
 			assertNotNull("Intitially the default migration script should be set.", change.getMigrationScript());
@@ -132,7 +131,7 @@ public class FieldTypeChangeTest extends AbstractChangeTest {
 	@Override
 	public void testTransformToRest() throws IOException {
 		try (Tx tx = tx()) {
-			FieldTypeChange change = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange change = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			change.setFieldName("test");
 			change.setCustomMigrationScript("script");
 			change.setListType("html");

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema.change;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ALLOW_KEY;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -38,10 +39,8 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 /**
  * Test for common mutator operations on a field containers.
@@ -54,7 +53,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testNullOperation() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			SchemaModelImpl schema = new SchemaModelImpl();
 			version.setSchema(schema);
 			Schema updatedSchema = mutator.apply(version);
@@ -66,7 +65,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateTypeAndAllowProperty() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl("testschema");
@@ -79,7 +78,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 			version.setSchema(schema);
 
-			FieldTypeChange fieldTypeChange = Database.getThreadLocalGraph().addFramedVertex(FieldTypeChangeImpl.class);
+			FieldTypeChange fieldTypeChange = tx.getGraph().addFramedVertex(FieldTypeChangeImpl.class);
 			fieldTypeChange.setFieldName("testField");
 			fieldTypeChange.setRestProperty(SchemaChangeModel.TYPE_KEY, "string");
 			fieldTypeChange.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "testValue" });
@@ -97,7 +96,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateLabel() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl("testschema");
@@ -111,7 +110,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 			version.setSchema(schema);
 
-			UpdateFieldChange stringFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange stringFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			stringFieldUpdate.setFieldName("stringField");
 			stringFieldUpdate.setRestProperty(SchemaChangeModel.LABEL_KEY, "UpdatedLabel");
 			version.setNextChange(stringFieldUpdate);
@@ -128,7 +127,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 	@Test
 	public void testAUpdateFields() {
 		try (Tx tx = tx()) {
-			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
 			SchemaModelImpl schema = new SchemaModelImpl("testschema");
@@ -186,51 +185,51 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			version.setSchema(schema);
 
 			// 2. Create schema field update change
-			UpdateFieldChange binaryFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange binaryFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			binaryFieldUpdate.setFieldName("binaryField");
 			binaryFieldUpdate.setRestProperty("allowedMimeTypes", new String[] { "newTypes" });
 			binaryFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			version.setNextChange(binaryFieldUpdate);
 
-			UpdateFieldChange nodeFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange nodeFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			nodeFieldUpdate.setFieldName("nodeField");
 			nodeFieldUpdate.setRestProperty("allowedSchemas", new String[] { "schemaA", "schemaB" });
 			nodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			binaryFieldUpdate.setNextChange(nodeFieldUpdate);
 
-			UpdateFieldChange stringFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange stringFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			stringFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { "valueA", "valueB" });
 			stringFieldUpdate.setFieldName("stringField");
 			stringFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			nodeFieldUpdate.setNextChange(stringFieldUpdate);
 
-			UpdateFieldChange htmlFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange htmlFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			htmlFieldUpdate.setFieldName("htmlField");
 			htmlFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			stringFieldUpdate.setNextChange(htmlFieldUpdate);
 
-			UpdateFieldChange numberFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange numberFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			numberFieldUpdate.setFieldName("numberField");
 			numberFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			htmlFieldUpdate.setNextChange(numberFieldUpdate);
 
-			UpdateFieldChange dateFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange dateFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			dateFieldUpdate.setFieldName("dateField");
 			dateFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			numberFieldUpdate.setNextChange(dateFieldUpdate);
 
-			UpdateFieldChange booleanFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange booleanFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			booleanFieldUpdate.setFieldName("booleanField");
 			booleanFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			dateFieldUpdate.setNextChange(booleanFieldUpdate);
 
-			UpdateFieldChange micronodeFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange micronodeFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			micronodeFieldUpdate.setFieldName("micronodeField");
 			micronodeFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A", "B", "C" });
 			micronodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			booleanFieldUpdate.setNextChange(micronodeFieldUpdate);
 
-			UpdateFieldChange listFieldUpdate = Database.getThreadLocalGraph().addFramedVertex(UpdateFieldChangeImpl.class);
+			UpdateFieldChange listFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			listFieldUpdate.setFieldName("listField");
 			listFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			listFieldUpdate.setRestProperty(SchemaChangeModel.ALLOW_KEY, new String[] { "A1", "B1", "C1" });

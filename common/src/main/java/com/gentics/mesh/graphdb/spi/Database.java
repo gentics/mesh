@@ -1,8 +1,5 @@
 package com.gentics.mesh.graphdb.spi;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -19,7 +16,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
-import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -36,28 +32,6 @@ import rx.Single;
 public interface Database {
 
 	static final Logger log = LoggerFactory.getLogger(Database.class);
-
-	/**
-	 * Thread local that is used to store references to the used graph.
-	 */
-	public static ThreadLocal<FramedGraph> threadLocalGraph = new ThreadLocal<>();
-
-	public static void setThreadLocalGraph(FramedGraph graph) {
-		Database.threadLocalGraph.set(graph);
-	}
-
-	/**
-	 * Return the current active graph. A transaction should be the only place where this threadlocal is updated.
-	 * 
-	 * @return
-	 */
-	public static FramedGraph getThreadLocalGraph() {
-		FramedGraph graph = Database.threadLocalGraph.get();
-		if (graph == null) {
-			throw error(INTERNAL_SERVER_ERROR, "Could not find thread local graph. Maybe you are executing this code outside of a transaction.");
-		}
-		return graph;
-	}
 
 	/**
 	 * Stop the graph database.

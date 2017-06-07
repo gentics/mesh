@@ -64,15 +64,17 @@ public class NestedOrientDBTransactionTest {
 		try {
 			OrientGraph tx = factory.getTx();
 			try {
+				
+				// 1. Add a vertex in the inner transaction
 				tx.addVertex(null);
 
 				OrientGraph tx2 = factory.getTx();
 				try {
-					// tx2.addVertex(null);
+					// Verify that the inner count is 1
 					long count = tx2.countVertices();
 					System.out.println("Inner " + count);
 				} finally {
-					// tx2.rollback();
+					tx2.rollback();
 					tx2.shutdown();
 				}
 				throw new RuntimeException();

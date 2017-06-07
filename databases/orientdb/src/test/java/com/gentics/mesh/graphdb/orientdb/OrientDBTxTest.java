@@ -66,11 +66,11 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 		AtomicInteger i = new AtomicInteger(0);
 
 		run(() -> {
-			db.tx(() -> {
+			db.tx((tx) -> {
 				i.incrementAndGet();
 
-				System.out.println("Trx1");
-				addFriend(Database.getThreadLocalGraph(), p);
+				System.out.println("Tx1");
+				addFriend(tx.getGraph(), p);
 				if (i.get() <= 2) {
 					b.await();
 				}
@@ -79,11 +79,11 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 		});
 
 		run(() -> {
-			db.tx(() -> {
+			db.tx((tx) -> {
 				i.incrementAndGet();
 
-				System.out.println("Trx2");
-				addFriend(Database.getThreadLocalGraph(), p);
+				System.out.println("Tx2");
+				addFriend(tx.getGraph(), p);
 				if (i.get() <= 2) {
 					b.await();
 				}

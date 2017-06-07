@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -455,7 +456,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// return inE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY,
 		// releaseUuid).outV().has(NodeImpl.class).toListExplicit(NodeImpl.class);
 		Database db = MeshInternal.get().database();
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = Tx.getActive().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_release", db.createComposedIndexKey(getId(), releaseUuid));
 		List<Node> nodes = new ArrayList<>();
 		Iterator<Edge> it = edges.iterator();
