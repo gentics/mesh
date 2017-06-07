@@ -1,4 +1,4 @@
-package com.gentics.mesh.graphql.type;
+package com.gentics.mesh.graphql.type.field;
 
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLUnionType.newUnionType;
@@ -19,7 +19,7 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
+import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
