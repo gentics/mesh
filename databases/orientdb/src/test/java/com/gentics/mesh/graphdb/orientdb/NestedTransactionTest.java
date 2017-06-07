@@ -51,8 +51,7 @@ public class NestedTransactionTest {
 			e.printStackTrace();
 		}
 		long count = db.tx((tx) -> {
-			tx.getGraph().v().count();
-			return null;
+			return tx.getGraph().v().count();
 		});
 		assertEquals("A runtime exception occured in the tx transaction. Nothing should have been comitted", 0, count);
 	}
