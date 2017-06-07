@@ -34,10 +34,9 @@ public class RolePermissionParametersImpl extends AbstractParameters implements 
 		// role
 		QueryParameter pageParameter = new QueryParameter();
 		pageParameter.setDescription(
-				"The role permission parameter can be used to set the role parameter value in form of an UUID which will cause mesh to add the rolePerm field to the rest response.\n" + 
-				"This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node.\n" +
-				"When used, the response will include the *rolePerms* property which lists the permissions for the specified role.\n" + 
-				"Endpoint: */api/v1/:projectName/nodes?role=:roleUuid*");
+				"The _role_ query parameter take a UUID of a role and may be used to add permission information to the response via the _rolePerm_ property which lists the permissions for the specified role on the element.\n"
+						+ "This may be useful when you are logged in as admin but you want to retrieve the editor role permissions on a given node.\n"
+						+ "Endpoint: */api/v1/:projectName/nodes?role=:roleUuid*");
 		pageParameter.setExample("24cf92691c7641158f92691c76c115ef");
 		pageParameter.setRequired(false);
 		pageParameter.setType(ParamType.STRING);
