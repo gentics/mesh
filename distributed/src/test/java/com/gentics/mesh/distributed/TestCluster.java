@@ -9,8 +9,24 @@ import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientConfig;
 import com.github.dockerjava.core.command.LogContainerResultCallback;
+import com.github.dockerjava.core.command.PullImageResultCallback;
 
 public class TestCluster {
+
+	LogContainerResultCallback callback = new LogContainerResultCallback() {
+		@Override
+		public void onNext(Frame item) {
+			System.out.print(new String(item.getPayload()));
+		}
+	};
+
+	PullImageResultCallback pullCallback = new PullImageResultCallback() {
+		
+		@Override
+		public void onNext(com.github.dockerjava.api.model.PullResponseItem item) {
+			System.out.println(item.toString());
+		}
+	};
 
 	@Test
 	public void testCluster() throws InterruptedException {
@@ -26,16 +42,10 @@ public class TestCluster {
 				.withDockerTlsVerify(false).build();
 		DockerClient docker = DockerClientBuilder.getInstance(config).build();
 
-		CreateContainerResponse container = docker.createContainerCmd("debian").withCmd("ls","-la").exec();
+		docker.pullImageCmd("debian:latest").exec(pullCallback).awaitCompletion();
+		CreateContainerResponse container = docker.createContainerCmd("debian").withCmd("ls", "-la").exec();
 		docker.startContainerCmd(container.getId()).exec();
 
-		LogContainerResultCallback callback = new LogContainerResultCallback() {
-			@Override
-			public void onNext(Frame item) {
-				System.out.print(new String(item.getPayload()));
-			}
-
-		};
 		docker.logContainerCmd(container.getId()).withStdErr(true).withStdOut(true).withFollowStream(true).withTailAll().exec(callback);
 
 		docker.stopContainerCmd(container.getId()).exec();

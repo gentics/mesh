@@ -26,7 +26,6 @@ import com.gentics.ferma.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.ferma.orientdb.OrientDBTx;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.graphdb.ferma.AbstractDelegatingFramedOrientGraph;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.orientechnologies.orient.core.OConstants;
@@ -475,7 +474,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public <T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
 		FramedGraph graph = Tx.getActive().getGraph();
-		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph<?>) graph).getBaseGraph();
+		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
 
 		OrientVertexType vertexType = orientBaseGraph.getVertexType(classOfT.getSimpleName());
