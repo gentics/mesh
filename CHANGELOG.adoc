@@ -6,6 +6,8 @@
 
 icon:check[] UI: The UI was updated. An file upload related bug was fixed.
 
+icon:check[] UI: Schema & Microschema description is no longer a required field.
+
 == 0.9.12 (08.06.2017)
 
 icon:check[] GraphQL: Fixed handling of node lists within micronodes.
@@ -27,7 +29,6 @@ These changes are optional and thus not automatically applied to existing instal
 
 icon:plus[] Demo: The `folderName` and `fileName` fields have been renamed to `slug`. This change only affects new demo installations.
 
-icon:check[] UI: Schema & Microschema description is no longer a required field.
 
 icon:check[] GraphQL: The language fallback handling was overhauled. The default language will no longer be automatically be append to the list of fallback languages. This means that loading nodes will only return nodes in those languages which have been specified by the `lang` argument.
 
