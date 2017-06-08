@@ -4,6 +4,7 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.JWTAuthentication;
+
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpMethod;
@@ -12,7 +13,7 @@ import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
 /**
- * Abstract class for mesh rest clients.
+ * Abstract class for mesh REST clients.
  */
 public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
@@ -24,6 +25,8 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	protected HttpClient client;
 
 	protected JWTAuthentication authentication;
+
+	protected boolean disableAnonymousAccess = false;
 
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
@@ -66,13 +69,10 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 		return authentication.logout(getClient());
 	}
 
-	/**
-	 * Set the authentication provider.
-	 *
-	 * @param authentication
-	 */
-	public void setAuthentication(JWTAuthentication authentication) {
+	@Override
+	public MeshRestClient setAuthenticationProvider(JWTAuthentication authentication) {
 		this.authentication = authentication;
+		return this;
 	}
 
 	/**
@@ -100,7 +100,8 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @return
 	 */
 	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType) {
-		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, bodyData, contentType, client, authentication, "application/json");
+		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, bodyData, contentType, client, authentication, disableAnonymousAccess,
+				"application/json");
 	}
 
 	/**
@@ -117,7 +118,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @return
 	 */
 	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel) {
-		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, restModel, client, authentication);
+		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, restModel, client, authentication, disableAnonymousAccess);
 	}
 
 	/**
@@ -130,7 +131,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @return
 	 */
 	protected <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData) {
-		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, jsonBodyData, client, authentication);
+		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, jsonBodyData, client, authentication, disableAnonymousAccess);
 	}
 
 	/**
@@ -145,7 +146,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @return
 	 */
 	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT) {
-		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, client, authentication);
+		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, client, authentication, disableAnonymousAccess);
 	}
 
 	/**

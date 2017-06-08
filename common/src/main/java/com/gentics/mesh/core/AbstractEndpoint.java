@@ -7,6 +7,7 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.example.GraphQLExamples;
 import com.gentics.mesh.example.GroupExamples;
 import com.gentics.mesh.example.MicroschemaExamples;
 import com.gentics.mesh.example.MiscExamples;
@@ -41,6 +42,7 @@ public abstract class AbstractEndpoint {
 	protected ProjectExamples projectExamples = new ProjectExamples();
 	protected UserExamples userExamples = new UserExamples();
 	protected MicroschemaExamples microschemaExamples = new MicroschemaExamples();
+	protected GraphQLExamples graphqlExamples = new GraphQLExamples();
 
 	protected Router localRouter = null;
 	protected String basePath;

@@ -14,6 +14,10 @@ import graphql.schema.GraphQLObjectType.Builder;
 @Singleton
 public class ReleaseTypeProvider extends AbstractTypeProvider {
 
+	public static final String RELEASE_TYPE_NAME = "Release";
+
+	public static final String RELEASE_PAGE_TYPE_NAME = "ReleasesPages";
+
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;
 
@@ -21,24 +25,17 @@ public class ReleaseTypeProvider extends AbstractTypeProvider {
 	public ReleaseTypeProvider() {
 	}
 
-	/**
-	 * Create the release type.
-	 * 
-	 * @return
-	 */
-	public GraphQLObjectType getReleaseType() {
-		Builder releaseType = newObject().name("Release");
+	public GraphQLObjectType createType() {
+		Builder releaseType = newObject().name(RELEASE_TYPE_NAME);
 		interfaceTypeProvider.addCommonFields(releaseType);
 
 		// .name
-		releaseType.field(newFieldDefinition().name("name")
-				.type(GraphQLString));
+		releaseType.field(newFieldDefinition().name("name").type(GraphQLString));
 
 		// .migrated
-		releaseType.field(newFieldDefinition().name("migrated")
-				.type(GraphQLBoolean));
+		releaseType.field(newFieldDefinition().name("migrated").type(GraphQLBoolean));
 
-		//TODO add more fields
+		// TODO add more fields
 
 		return releaseType.build();
 	}

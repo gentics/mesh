@@ -88,10 +88,13 @@ public class DemoDataProvider {
 
 	private Map<String, String> uuidMapping = new HashMap<>();
 
+	private BootstrapInitializer boot;
+
 	@Inject
-	public DemoDataProvider(Database database, MeshLocalClientImpl client) {
+	public DemoDataProvider(Database database, MeshLocalClientImpl client, BootstrapInitializer boot) {
 		this.db = database;
 		this.client = client;
+		this.boot = boot;
 	}
 
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
@@ -113,12 +116,18 @@ public class DemoDataProvider {
 		addSchemaContainers();
 		addNodes();
 		// updatePermissions();
-		// invokeFullIndex();
 		publishAllNodes();
 		addWebclientPermissions();
 		addAnonymousPermissions();
+
+		// Update the uuids and index all contents. 
 		updateUuids();
+		invokeFullIndex();
 		log.info("Demo data setup completed");
+	}
+
+	private void invokeFullIndex() {
+		boot.reindexAll();
 	}
 
 	/**
@@ -352,10 +361,8 @@ public class DemoDataProvider {
 			switch (schemaName) {
 			case "category":
 			case "folder":
-				nodeCreateRequest.getFields().put("folderName", FieldUtil.createStringField(segmentFieldValue));
-				break;
 			case "vehicle":
-				nodeCreateRequest.getFields().put("fileName", FieldUtil.createStringField(segmentFieldValue));
+				nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField(segmentFieldValue));
 				break;
 			}
 

@@ -52,9 +52,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rxjava.core.buffer.Buffer;
 import jdk.nashorn.api.scripting.ClassFilter;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import rx.Completable;
@@ -82,12 +82,12 @@ public class NodeMigrationHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Script engine factory
+	 * Script engine factory.
 	 */
 	private NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 
 	/**
-	 * Migrate all nodes of a release referencing the given schema container to the latest version of the schema
+	 * Migrate all nodes of a release referencing the given schema container to the latest version of the schema.
 	 *
 	 * @param project
 	 *            Specific project to handle
@@ -486,8 +486,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 			BinaryGraphField binaryField = container.getBinary(fieldName);
 			if (binaryField != null && !binaryField.getFile().exists() && filePaths.containsKey(sha512Sum)) {
-				Buffer buffer = Buffer.newInstance(Mesh.vertx().fileSystem().readFileBlocking(filePaths.get(sha512Sum)));
-				nodeFieldAPIHandler.hashAndStoreBinaryFile(buffer, binaryField.getUuid(), binaryField.getSegmentedPath()).toBlocking().value();
+				Buffer buffer = Mesh.vertx().fileSystem().readFileBlocking(filePaths.get(sha512Sum));
+				nodeFieldAPIHandler.hashAndStoreBinaryFile(buffer, binaryField.getUuid(), binaryField.getSegmentedPath());
 				binaryField.setSHA512Sum(sha512Sum);
 			}
 		});

@@ -43,8 +43,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			requestA.setLanguage("en");
 			requestA.setParentNodeUuid(folderA.getUuid());
 			requestA.setSchema(new SchemaReference().setName("content"));
-			requestA.getFields().put("name", FieldUtil.createStringField("nodeA"));
-			requestA.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			requestA.getFields().put("teaser", FieldUtil.createStringField("nodeA"));
+			requestA.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			NodeResponse nodeA = call(() -> client().createNode(PROJECT_NAME, requestA));
 
 			// 2. Publish nodeA
@@ -56,8 +56,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			requestB.setLanguage("en");
 			requestB.setParentNodeUuid(folderB.getUuid());
 			requestB.setSchema(new SchemaReference().setName("content"));
-			requestB.getFields().put("name", FieldUtil.createStringField("nodeB"));
-			requestB.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			requestB.getFields().put("teaser", FieldUtil.createStringField("nodeB"));
+			requestB.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			NodeResponse nodeB = call(() -> client().createNode(PROJECT_NAME, requestB));
 
 			// 4. Publish nodeB
@@ -66,13 +66,13 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			// 5. Update node b to create a draft which would not conflict with node a
 			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 			nodeUpdateRequest.setVersion(nodeB.getVersion());
-			nodeUpdateRequest.getFields().put("fileName", FieldUtil.createStringField("nodeB"));
+			nodeUpdateRequest.getFields().put("slug", FieldUtil.createStringField("nodeB"));
 			nodeUpdateRequest.setLanguage("en");
 			call(() -> client().updateNode(PROJECT_NAME, nodeB.getUuid(), nodeUpdateRequest));
 
 			// 6. Move Node B into FolderA
 			call(() -> client().moveNode(PROJECT_NAME, nodeB.getUuid(), folderA.getUuid()), CONFLICT, "node_conflicting_segmentfield_move",
-					"fileName", conflictingName);
+					"slug", conflictingName);
 
 		}
 	}
@@ -90,25 +90,25 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("name", FieldUtil.createStringField("some name"));
-			create.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("teaser", FieldUtil.createStringField("some name"));
+			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
 			assertSuccess(future);
 
-			// try to create the new content with same filename
+			// try to create the new content with same slug
 			create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some other title"));
-			create.getFields().put("name", FieldUtil.createStringField("some other name"));
-			create.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("teaser", FieldUtil.createStringField("some other name"));
+			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			future = client().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
-			expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "fileName", conflictingName);
+			expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "slug", conflictingName);
 			return null;
 		});
 	}
@@ -127,8 +127,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("name", FieldUtil.createStringField("some name"));
-			create.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("teaser", FieldUtil.createStringField("some name"));
+			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, create));
 
@@ -138,8 +138,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create2.setLanguage("en");
 			create2.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create2.getFields().put("title", FieldUtil.createStringField("some title"));
-			create2.getFields().put("name", FieldUtil.createStringField("some name"));
-			create2.getFields().put("fileName", FieldUtil.createStringField(nonConflictingName));
+			create2.getFields().put("teaser", FieldUtil.createStringField("some name"));
+			create2.getFields().put("slug", FieldUtil.createStringField(nonConflictingName));
 			create2.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			response = call(() -> client().createNode(PROJECT_NAME, create2));
 			String uuid = response.getUuid();
@@ -148,8 +148,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
-			update.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
-			call(() -> client().updateNode(PROJECT_NAME, uuid, update), CONFLICT, "node_conflicting_segmentfield_update", "fileName", conflictingName);
+			update.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+			call(() -> client().updateNode(PROJECT_NAME, uuid, update), CONFLICT, "node_conflicting_segmentfield_update", "slug", conflictingName);
 			return null;
 		});
 	}
@@ -167,8 +167,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("name", FieldUtil.createStringField("some name"));
-			create.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			MeshResponse<NodeResponse> future = client().createNode(PROJECT_NAME, create).invoke();
 			latchFor(future);
@@ -179,12 +179,12 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("de");
 			update.getFields().put("title", FieldUtil.createStringField("Irgendein Titel"));
-			update.getFields().put("name", FieldUtil.createStringField("Irgendein Name"));
-			update.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			update.getFields().put("teaser", FieldUtil.createStringField("Irgendein teaser"));
+			update.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			update.getFields().put("content", FieldUtil.createStringField("Gesegnete Mahlzeit!"));
 			future = client().updateNode(PROJECT_NAME, uuid, update).invoke();
 			latchFor(future);
-			expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "fileName", conflictingName);
+			expectException(future, CONFLICT, "node_conflicting_segmentfield_update", "slug", conflictingName);
 			return null;
 		});
 	}
@@ -203,8 +203,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("name", FieldUtil.createStringField("some name"));
-			create.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, create));
 			String uuid = response.getUuid();
@@ -215,13 +215,13 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create2.setLanguage("en");
 			create2.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create2.getFields().put("title", FieldUtil.createStringField("some other title"));
-			create2.getFields().put("name", FieldUtil.createStringField("some other name"));
-			create2.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			create2.getFields().put("teaser", FieldUtil.createStringField("some other teaser"));
+			create2.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create2.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			call(() -> client().createNode(PROJECT_NAME, create2));
 
 			// try to move the original node
-			call(() -> client().moveNode(PROJECT_NAME, uuid, otherParent.getUuid()), CONFLICT, "node_conflicting_segmentfield_move", "fileName",
+			call(() -> client().moveNode(PROJECT_NAME, uuid, otherParent.getUuid()), CONFLICT, "node_conflicting_segmentfield_move", "slug",
 					conflictingName);
 			return null;
 		});
@@ -249,8 +249,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("name", FieldUtil.createStringField("some name"));
-			create.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			call(() -> client().createNode(PROJECT_NAME, create));
 
@@ -264,8 +264,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("name", FieldUtil.createStringField("some name"));
-			create.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			call(() -> client().createNode(PROJECT_NAME, create, new VersioningParametersImpl().setRelease(project().getInitialRelease().getUuid())));
 
@@ -289,8 +289,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("name", FieldUtil.createStringField("some name"));
-			create.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			return call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 		});
@@ -300,7 +300,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
-			update.getFields().put("fileName", FieldUtil.createStringField(newName));
+			update.getFields().put("slug", FieldUtil.createStringField(newName));
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 			return null;
 		});
@@ -312,8 +312,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("name", FieldUtil.createStringField("some name"));
-			create.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			return call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 		});
@@ -334,8 +334,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("name", FieldUtil.createStringField("some name"));
-			create.getFields().put("fileName", FieldUtil.createStringField(initialName));
+			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			create.getFields().put("slug", FieldUtil.createStringField(initialName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			String createdUuid = call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 			return createdUuid;
@@ -346,7 +346,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
-			update.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			update.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 			return null;
 		});
@@ -358,8 +358,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("name", FieldUtil.createStringField("some name"));
-			create.getFields().put("fileName", FieldUtil.createStringField(initialName));
+			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			create.getFields().put("slug", FieldUtil.createStringField(initialName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			return call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 		});
@@ -369,8 +369,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
-			update.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
-			call(() -> client().updateNode(PROJECT_NAME, otherNodeUuid, update), CONFLICT, "node_conflicting_segmentfield_update", "fileName",
+			update.getFields().put("slug", FieldUtil.createStringField(conflictingName));
+			call(() -> client().updateNode(PROJECT_NAME, otherNodeUuid, update), CONFLICT, "node_conflicting_segmentfield_update", "slug",
 					conflictingName);
 			return null;
 		});
@@ -393,8 +393,8 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("name", FieldUtil.createStringField("some name"));
-			create.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			String createdUuid = call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 
@@ -408,7 +408,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
 			update.setVersion(new VersionReference(null, "0.1"));
-			update.getFields().put("fileName", FieldUtil.createStringField(newName));
+			update.getFields().put("slug", FieldUtil.createStringField(newName));
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 			return null;
 		});
@@ -420,15 +420,15 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create.setLanguage("en");
 			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
-			create.getFields().put("name", FieldUtil.createStringField("some name"));
-			create.getFields().put("fileName", FieldUtil.createStringField(conflictingName));
+			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			create.getFields().put("content", FieldUtil.createStringField("Blessed mealtime!"));
 			return call(() -> client().createNode(PROJECT_NAME, create)).getUuid();
 		});
 
 		// 4. Publish conflicting content
 		db().noTx(() -> {
-			call(() -> client().publishNode(PROJECT_NAME, otherNodeUuid), CONFLICT, "node_conflicting_segmentfield_publish", "fileName",
+			call(() -> client().publishNode(PROJECT_NAME, otherNodeUuid), CONFLICT, "node_conflicting_segmentfield_publish", "slug",
 					conflictingName);
 
 			return null;

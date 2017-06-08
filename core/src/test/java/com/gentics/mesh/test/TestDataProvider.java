@@ -484,8 +484,8 @@ public class TestDataProvider {
 			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german,
 					project.getLatestRelease(), userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
-			germanContainer.createString("name").setString(germanName);
-			germanContainer.createString("folderName").setString(germanName);
+			germanContainer.createString("teaser").setString(germanName);
+			germanContainer.createString("slug").setString(germanName);
 			germanContainer.updateDisplayFieldValue();
 			folderNode.publish(getGerman(), getProject().getLatestRelease(), getUserInfo().getUser());
 		}
@@ -494,7 +494,7 @@ public class TestDataProvider {
 					project.getLatestRelease(), userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
-			englishContainer.createString("folderName").setString(englishName);
+			englishContainer.createString("slug").setString(englishName);
 			englishContainer.updateDisplayFieldValue();
 			folderNode.publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
 		}
@@ -529,10 +529,10 @@ public class TestDataProvider {
 		if (englishContent != null) {
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english,
 					project.getLatestRelease(), userInfo.getUser());
-			englishContainer.createString("name").setString(name + "_english_name");
+			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
-			englishContainer.createString("fileName").setString(name + ".en.html");
+			englishContainer.createString("slug").setString(name + ".en.html");
 			englishContainer.createHTML("content").setHtml(englishContent);
 			englishContainer.updateDisplayFieldValue();
 			node.publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
@@ -541,10 +541,10 @@ public class TestDataProvider {
 		if (germanContent != null) {
 			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, project.getLatestRelease(),
 					userInfo.getUser());
-			germanContainer.createString("name").setString(name + " german");
+			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
 			germanContainer.createString("displayName").setString(name + " german");
-			germanContainer.createString("fileName").setString(name + ".de.html");
+			germanContainer.createString("slug").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);
 			germanContainer.updateDisplayFieldValue();
 			node.publish(getGerman(), getProject().getLatestRelease(), getUserInfo().getUser());

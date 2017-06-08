@@ -1,5 +1,8 @@
 package com.gentics.mesh.util;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -7,14 +10,13 @@ import java.nio.file.Paths;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 
-import com.gentics.mesh.Mesh;
-
-import io.vertx.rx.java.RxHelper;
-import io.vertx.rxjava.core.buffer.Buffer;
-import rx.Scheduler;
-import rx.Single;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public final class FileUtils {
+
+	private static final Logger log = LoggerFactory.getLogger(FileUtils.class);
 
 	protected static final char[] hexArray = "0123456789abcdef".toCharArray();
 
@@ -26,24 +28,20 @@ public final class FileUtils {
 	 * 
 	 * @param path
 	 */
-	public static Single<String> generateSha512Sum(String path) {
-		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
-		Single<String> obs = Single.create(sub -> {
-			try {
-				MessageDigest md = MessageDigest.getInstance("SHA-512");
-				try (InputStream is = Files.newInputStream(Paths.get(path)); DigestInputStream mis = new DigestInputStream(is, md)) {
-					byte[] buffer = new byte[4096];
-					while (mis.read(buffer) >= 0) {
-					}
+	public static String generateSha512Sum(String path) {
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-512");
+			try (InputStream is = Files.newInputStream(Paths.get(path)); DigestInputStream mis = new DigestInputStream(is, md)) {
+				byte[] buffer = new byte[4096];
+				while (mis.read(buffer) >= 0) {
 				}
-				byte[] digest = md.digest();
-				sub.onSuccess(bytesToHex(digest));
-			} catch (Exception e) {
-				sub.onError(e);
 			}
-		});
-		obs = obs.observeOn(scheduler);
-		return obs;
+			byte[] digest = md.digest();
+			return bytesToHex(digest);
+		} catch (Exception e) {
+			log.error("Error while hashing file {" + path + "}", e);
+			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", e);
+		}
 	}
 
 	/**
@@ -52,25 +50,22 @@ public final class FileUtils {
 	 * @param buffer
 	 * @return Observable emitting the SHA 512 checksum
 	 */
-	public static Single<String> generateSha512Sum(Buffer buffer) {
-		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
-		Single<String> obs = Single.create(sub -> {
-			try {
-				MessageDigest md = MessageDigest.getInstance("SHA-512");
-				try (InputStream is = new ByteArrayInputStream(((io.vertx.core.buffer.Buffer) buffer.getDelegate()).getBytes());
-						DigestInputStream mis = new DigestInputStream(is, md)) {
-					byte[] b = new byte[4096];
-					while (mis.read(b) >= 0) {
-					}
+	public static String generateSha512Sum(Buffer buffer) {
+
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-512");
+			try (InputStream is = new ByteArrayInputStream(((io.vertx.core.buffer.Buffer) buffer).getBytes());
+					DigestInputStream mis = new DigestInputStream(is, md)) {
+				byte[] b = new byte[4096];
+				while (mis.read(b) >= 0) {
 				}
-				byte[] digest = md.digest();
-				sub.onSuccess(bytesToHex(digest));
-			} catch (Exception e) {
-				sub.onError(e);
 			}
-		});
-		obs = obs.observeOn(scheduler);
-		return obs;
+			byte[] digest = md.digest();
+			return bytesToHex(digest);
+		} catch (Exception e) {
+			log.error("Error while hashing data", e);
+			throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", e);
+		}
 	}
 
 	/**

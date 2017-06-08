@@ -89,7 +89,8 @@ public class NodeEndpointETagTest extends AbstractETagTest {
 			request.setLanguage("en");
 			request.setParentNode(new NodeReference().setUuid(uuid));
 			request.setSchema(new SchemaReference().setName("content"));
-			request.getFields().put("name", FieldUtil.createStringField("someName"));
+			request.getFields().put("teaser", FieldUtil.createStringField("someTeaser"));
+			request.getFields().put("slug", FieldUtil.createStringField("someSlug"));
 			NodeResponse createdNode = call(() -> client().createNode(PROJECT_NAME, request));
 
 			// We added another node but it has not yet been published

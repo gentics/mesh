@@ -30,6 +30,7 @@ In Gentics Mesh a *project* is the place to organize all the contents and media 
 A project represents the base element of your content structure, which includes your actual content items called nodes as well as tag families. The tags for tagging content items are grouped in tag families and are defined for a specific project. Schemas are assigned to projects in order to specify what types of nodes can be created. Users have access to a project and its contained content items depending on the role(s) they’ve been assigned.
 
 === API end points
+
 [options="header",cols="2*"]
 |======
 //TODO add links and example columns
@@ -58,16 +59,22 @@ A project represents the base element of your content structure, which includes 
 
 ==== Read Properties
 
-include::examples/models/ProjectResponse.adoc[]
+include::examples/tables/ProjectResponse.adoc[]
 
 ==== Create Properties
 
-include::examples/models/ProjectCreateRequest.adoc[]
+include::examples/tables/ProjectCreateRequest.adoc[]
 
 ==== Update Properties
-include::examples/models/ProjectUpdateResquest.adoc[]
+
+include::examples/tables/ProjectUpdateRequest.adoc[]
 
 === Query Parameters
+
+==== Paging Parameters
+
+include::examples/tables/PagingParametersImpl.adoc[]
+
 
 [options="header",cols="3*"]
 |======
@@ -98,6 +105,7 @@ include::examples/api/response/api/v1/projects/\{projectUuid\}/200/example.json[
 ----
 
 == Node
+
 Content items in Gentics Mesh are called *nodes* and represent the main structural building blocks for your content. A node is a specific piece of content within your project. The type of a node is always defined by the assigned schema. Let’s take the example of a product catalogue website: in your project you will create nodes for all of your content types, such as products, product categories, product images, and product manuals. 
 
 NOTE: In Gentics Mesh every content item is a node, there is no separate concept for media assets such as images, videos, and documents. Instead content types for them can be defined individually giving you the freedom to store any metadata with your assets. For your convenience Gentics Mesh is shipped with four default schemas - _image_, _video_, _audio_ and _document_ to be customized to your needs and liking!
@@ -176,46 +184,26 @@ NOTE: It is important to understand that a node is just a container for language
 |======
 
 === Properties
-include::examples/models/NodeResponse.adoc[]
+
+include::examples/tables/NodeResponse.adoc[]
 
 === Query Parameters
 
-[options="header",cols="3*"]
-|======
+==== Versioning Parameters
 
-| Name
-| Type
-| Description
+include::examples/tables/VersioningParametersImpl.adoc[]
 
-| lang
-| string
-| The ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned. If omitted or the requested language is not available then the ```defaultLanguage``` as configured in ```mesh.yml``` will be returned.
+===== Paging Parameters
 
-| page
-| number (default: 1)
-| Number of page to be loaded. This query parameter is used in queries returning a data set with multiple items.
+include::examples/tables/PagingParametersImpl.adoc[]
 
-| perPage
-| number (default: 25)
-| Number of elements per page. This query parameter is used in queries returning a data set with multiple items.
+===== Node Parameters
 
-| release
-| string
-| Specifies the release UUID to be used for loading data. The latest project release will be used if this parameter is omitted.
+include::examples/tables/NodeParametersImpl.adoc[]
 
-| resolveLinks
-| string
-| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. With the parameter set the ```path``` property as well as the ```languagesPath``` property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved link:features.html#_link_resolving[WebRoot path]. No resolving occurs if the query parameter is omitted.
+===== Role Permission Parameters
 
-| role
-| string
-| The ```role``` query parameter takes a UUID and may be used in order to add permission information to the response which is related to the specified role. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role on this node. E.g., this may be useful when you are logged in as administrator but want to retrieve the editor role permissions on a given node.
-
-| version
-| string
-| Specifies the version of the node’s language variant, e.g.: ```0.1```, ```1.0```, ```draft```, ```published```.
-
-|======
+include::examples/tables/RolePermissionParametersImpl.adoc[]
 
 === Response Sample
 
@@ -262,43 +250,18 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 |======
 
 === Properties
-include::examples/models/SchemaResponse.adoc[]
+
+include::examples/tables/SchemaResponse.adoc[]
 
 === Query Parameters
 
-[options="header",cols="3*"]
-|======
+===== Paging Parameters
 
-| Name
-| Type
-| Description
+include::examples/tables/PagingParametersImpl.adoc[]
 
-| lang
-| string
-| The ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned. If omitted or the requested language is not available then the ```defaultLanguage``` as configured in ```mesh.yml``` will be returned.
+===== Role Permission Parameters
 
-| page
-| number (default: 1)
-| Number of page to be loaded. This query parameter is used in queries returning a data set with multiple items.
-
-| perPage
-| number (default: 25)
-| Number of elements per page. This query parameter is used in queries returning a data set with multiple items.
-
-| release
-| string
-| Specifies the release UUID to be used for loading data. The latest project release will be used if this parameter is omitted.
-
-| role
-| string
-| The ```role``` query parameter takes a UUID and may be used in order to add permission information to the response which is related to the specified role. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role on this node. E.g., this may be useful when you are logged in as administrator but want to retrieve the editor role permissions on a given node.
-
-| version
-| string
-| Specifies the version of the node’s language variant, e.g.: ```0.1```, ```1.0```, ```draft```, ```published```.
-
-|======
-
+include::examples/tables/RolePermissionParametersImpl.adoc[]
 
 === Response Sample
 
@@ -308,6 +271,7 @@ include::examples/api/response/api/v1/schemas/\{schemaUuid\}/200/example.json[]
 ----
 
 === Schema Field
+
 Gentics Mesh allows you to define custom content types with a set of schema fields. A field is defined by an object which must have the following properties:
 
 * **`name`** A unique name to identify the field
@@ -324,13 +288,13 @@ properties are defined in the <<Schema Field Types>> section.
 ==== Schema Field Types
 //TODO add examples
 
+
 [options="header",cols="3*"]
 |======
 
 | Type Key
 | Description
 | Validations
-
 
 | ```string```
 | A string field type is used for textual content, like title, names or paragraphs of text. 
@@ -394,6 +358,7 @@ Depending on the actual data, Gentics Mesh will store related meta data e.g., ``
 
 [[micronode]]
 == Micronode & Microschema
+
 A *micronode* is similar to a node. It also follows a schema - a *microschema*. It is bound to a node and thus is not directly accessible from within the project node tree structure. 
 
 With micronodes it is possible to build complex object data structures as they are basically representing subnodes of nodes.
@@ -434,9 +399,11 @@ NOTE: Nodes can contain micronodes. Micronodes, however, can not contain further
 |======
 
 === Properties
+
 Microschemas share the same properties as schemas except for the properties ```displayField```, ```container```, and ```segmentField```, which are not available in a microschema.
 
 === Schema Field Types
+
 In comparison to nodes, micronodes can be built with schema field types ```String```, ```Number```, ```Date```, ```Boolean```, ```HTML```, ```Node```, and ```Lists```. 
 
 Fields of type ```list``` in micronodes can be of type: ```String```, ```Number```, ```Date```, ```Boolean```, ```HTML```, and ```Node```.
@@ -445,6 +412,7 @@ Fields of type ```list``` in micronodes can be of type: ```String```, ```Number`
 //TODO
 
 == Tag
+
 Gentics Mesh allows tagging of nodes. Tags can not be hierarchically structured. 
 
 === API end points
@@ -470,7 +438,7 @@ Gentics Mesh allows tagging of nodes. Tags can not be hierarchically structured.
 
 === Properties
 
-include::examples/models/TagResponse.adoc[]
+include::examples/tables/TagResponse.adoc[]
 
 === Response Sample
 
@@ -542,7 +510,7 @@ A tag family is defined as part of a project. Tag families can’t be nested.
 
 === Properties
 
-include::examples/models/TagFamilyResponse.adoc[]
+include::examples/tables/TagFamilyResponse.adoc[]
 
 === Response Sample
 
@@ -598,53 +566,29 @@ In order to be able to store and retrieve content, a user needs to authenticate 
 
 === Properties
 
-include::examples/models/UserResponse.adoc[]
+include::examples/tables/UserResponse.adoc[]
 
 === Query Parameters
 
-[options="header",cols="3*"]
-|======
+==== Paging Parameters
 
-| Name
-| Type
-| Description
+include::examples/tables/PagingParametersImpl.adoc[]
 
-| lang
-| string
-| The ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned. If omitted or the requested language is not available then the ```defaultLanguage``` as configured in ```mesh.yml``` will be returned.
+==== Role Permission Parameters
 
-| page
-| number (default: 1)
-| Number of page to be loaded. This query parameter is used in queries returning a data set with multiple items.
+include::examples/tables/RolePermissionParametersImpl.adoc[]
 
-| perPage
-| number (default: 25)
-| Number of elements per page. This query parameter is used in queries returning a data set with multiple items.
+==== Node Parameters
 
-| release
-| string
-| Specifies the release UUID to be used for loading the ```nodeReference``` object. The latest project release will be used if this parameter is omitted.
+Parameters which affect the optional returned user ```nodeReference``` property.
 
-| resolveLinks
-| string
-| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. With the parameter set the ```path``` property as well as the ```languagesPath``` property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved link:features.html#_link_resolving[WebRoot path]. No resolving occurs if the query parameter is omitted.
+include::examples/tables/NodeParametersImpl.adoc[]
 
-| role
-| string
-| The ```role``` query parameter takes a UUID and may be used in order to add permission information to the response which is related to the specified role. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role on this node. E.g., this may be useful when you are logged in as administrator but want to retrieve the editor role permissions on a given node.
+include::examples/tables/VersioningParametersImpl.adoc[]
 
-| token
-| string
-| Token code which can be used to update the user even if the connection is not authenticated. E.g., this can be used to implement a password recovery feature.
+==== User Parameters
 
-| string
-| The ```role``` query parameter takes a UUID and may be used in order to add permission information to the response which is related to the specified role. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role on this node. E.g., this may be useful when you are logged in as administrator but want to retrieve the editor role permissions on a given node.
-
-| version
-| string
-| Specifies the version of the ```nodeReference``` object’s language variant, e.g.: ```0.1```, ```1.0```, ```draft```, ```published```.
-
-|======
+include::examples/tables/UserParametersImpl.adoc[]
 
 === Response Sample
 
@@ -701,30 +645,17 @@ include::examples/api/response/api/v1/users/\{userUuid\}/200/example.json[]
 
 === Properties
 
-include::examples/models/GroupResponse.adoc[]
+include::examples/tables/GroupResponse.adoc[]
 
 === Query Parameters
 
-[options="header",cols="3*"]
-|======
+==== Paging Parameters
 
-| Name
-| Type
-| Description
+include::examples/tables/PagingParametersImpl.adoc[]
 
-| page
-| number (default: 1)
-| Number of page to be loaded. This query parameter is used in queries returning a data set with multiple items.
+==== Role Permission Parameters
 
-| perPage
-| number (default: 25)
-| Number of elements per page. This query parameter is used in queries returning a data set with multiple items.
-
-| role
-| string
-| The ```role``` query parameter takes a UUID and may be used in order to add permission information to the response which is related to the specified role. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role on this node. E.g., this may be useful when you are logged in as administrator but want to retrieve the editor role permissions on a given node.
-
-|======
+include::examples/tables/RolePermissionParametersImpl.adoc[]
 
 === Response Sample
 
@@ -771,30 +702,17 @@ include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
 
 === Properties
 
-include::examples/models/RoleResponse.adoc[]
+include::examples/tables/RoleResponse.adoc[]
 
 === Query Parameters
 
-[options="header",cols="3*"]
-|======
+==== Paging Parameters
 
-| Name
-| Type
-| Description
+include::examples/tables/PagingParametersImpl.adoc[]
 
-| page
-| number (default: 1)
-| Number of page to be loaded. This query parameter is used in queries returning a data set with multiple items.
+==== Role Permission Parameters
 
-| perPage
-| number (default: 25)
-| Number of elements per page. This query parameter is used in queries returning a data set with multiple items.
-
-| role
-| string
-| The ```role``` query parameter takes a UUID and may be used in order to add permission information to the response which is related to the specified role. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role on this node. E.g., this may be useful when you are logged in as administrator but want to retrieve the editor role permissions on a given node.
-
-|======
+include::examples/tables/RolePermissionParametersImpl.adoc[]
 
 === Response Sample
 

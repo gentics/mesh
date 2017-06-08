@@ -38,7 +38,7 @@ public class UserParametersImpl extends AbstractParameters implements UserParame
 		// token
 		QueryParameter pageParameter = new QueryParameter();
 		pageParameter.setDescription(
-				"Token code which can be used to update the user even if the connection is not authenticated. This can be used to implement a password reset feature.");
+				"Token code which can be used to update the user even if the connection is not authenticated. This can be used to implement a password recovery feature.");
 		pageParameter.setExample(TokenUtil.randomToken());
 		pageParameter.setRequired(false);
 		pageParameter.setType(ParamType.STRING);

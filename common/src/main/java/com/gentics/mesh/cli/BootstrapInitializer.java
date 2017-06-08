@@ -188,4 +188,16 @@ public interface BootstrapInitializer {
 	 */
 	void handleMeshVersion();
 
+	/**
+	 * Check whether there are any vertices in the graph.
+	 * 
+	 * @return
+	 */
+	boolean isEmptyInstallation();
+
+	/**
+	 * Clear all indices and reindex all elements. This is a blocking action and could potentially take a lot of time.
+	 */
+	void reindexAll();
+
 }

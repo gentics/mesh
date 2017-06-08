@@ -51,7 +51,7 @@ public class DemoDumpGeneratorTest {
 		boot = meshDagger.boot();
 		searchProvider = meshDagger.searchProvider();
 		db = meshDagger.database();
-		dataProvider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl());
+		dataProvider = new DemoDataProvider(db, meshDagger.meshLocalClientImpl(), boot);
 	}
 
 	@Test

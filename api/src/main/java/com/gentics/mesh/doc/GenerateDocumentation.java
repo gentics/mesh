@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.rest.common;
+package com.gentics.mesh.doc;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

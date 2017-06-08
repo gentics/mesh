@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.graphdb.ferma.AbstractDelegatingFramedOrientGraph;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -295,7 +296,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			OIndex<?> index = edgeType.getClassIndex("e." + edgeLabel.toLowerCase() + "_" + indexPostfix);
 			if (index != null) {
 				// Iterate over the sb-tree index entries
-				OIndexCursor cursor = index.iterateEntriesMajor(new OCompositeKey(key), true, true);
+				OIndexCursor cursor = index.iterateEntriesMajor(new OCompositeKey(key), true, false);
 				while (cursor.hasNext()) {
 					Entry<Object, OIdentifiable> entry = cursor.nextEntry();
 					if (entry != null) {
@@ -319,6 +320,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		return orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
+	}
+
+	@Override
+	public <T extends MeshVertex> Iterator<? extends T> getVerticesForType(Class<T> classOfVertex) {
+		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
+		FramedGraph fermaGraph = Database.threadLocalGraph.get();
+		Iterator<Vertex> rawIt = orientBaseGraph.getVertices("@class", classOfVertex.getSimpleName()).iterator();
+		return fermaGraph.frameExplicit(rawIt, classOfVertex);
 	}
 
 	/**

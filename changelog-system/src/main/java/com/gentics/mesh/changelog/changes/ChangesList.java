@@ -23,6 +23,7 @@ public final class ChangesList {
 		list.add(new AddTagFamiliesToNodeIndex());
 		list.add(new RestructureTags());
 		list.add(new ReindexAllToFixFailedMigrations());
+		list.add(new SanitizeMicroschemaJson());
 		// ADD NEW CHANGES HERE!
 		return list;
 	}

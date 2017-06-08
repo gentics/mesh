@@ -37,7 +37,21 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
+import com.gentics.mesh.json.deserializer.FieldDeserializer;
+import com.gentics.mesh.json.deserializer.FieldMapDeserializer;
+import com.gentics.mesh.json.deserializer.FieldSchemaDeserializer;
+import com.gentics.mesh.json.deserializer.JsonArrayDeserializer;
+import com.gentics.mesh.json.deserializer.JsonObjectDeserializer;
+import com.gentics.mesh.json.deserializer.NodeFieldListItemDeserializer;
+import com.gentics.mesh.json.deserializer.RestExceptionDeserializer;
+import com.gentics.mesh.json.deserializer.UserNodeReferenceDeserializer;
+import com.gentics.mesh.json.serializer.BasicFieldSerializer;
+import com.gentics.mesh.json.serializer.FieldListSerializer;
+import com.gentics.mesh.json.serializer.JsonArraySerializer;
+import com.gentics.mesh.json.serializer.JsonObjectSerializer;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -73,6 +87,9 @@ public final class JsonUtil {
 		module.addSerializer(DateFieldImpl.class, new BasicFieldSerializer<DateFieldImpl>());
 		module.addSerializer(BooleanFieldImpl.class, new BasicFieldSerializer<BooleanFieldImpl>());
 		module.addSerializer(FieldList.class, new FieldListSerializer());
+		module.addSerializer(JsonObject.class, new JsonObjectSerializer());
+		module.addSerializer(JsonArray.class, new JsonArraySerializer());
+
 		module.addSerializer(FieldMapImpl.class, new JsonSerializer<FieldMapImpl>() {
 			@Override
 			public void serialize(FieldMapImpl value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
@@ -80,6 +97,8 @@ public final class JsonUtil {
 			}
 		});
 
+		module.addDeserializer(JsonObject.class, new JsonObjectDeserializer());
+		module.addDeserializer(JsonArray.class, new JsonArrayDeserializer());
 		module.addDeserializer(FieldMap.class, new FieldMapDeserializer());
 		module.addDeserializer(ExpandableNode.class, new UserNodeReferenceDeserializer());
 		module.addDeserializer(ListableField.class, new FieldDeserializer<ListableField>());
@@ -176,10 +195,10 @@ public final class JsonUtil {
 	 *            Model class
 	 * @return
 	 */
-	public static String getJsonSchema(Class<?> clazz)  {
+	public static String getJsonSchema(Class<?> clazz) {
 		try {
-		com.fasterxml.jackson.module.jsonSchema.JsonSchema schema = schemaGen.generateSchema(clazz);
-		return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
+			com.fasterxml.jackson.module.jsonSchema.JsonSchema schema = schemaGen.generateSchema(clazz);
+			return defaultMapper.writerWithDefaultPrettyPrinter().writeValueAsString(schema);
 		} catch (Exception e) {
 			throw new GenericRestException(INTERNAL_SERVER_ERROR, "error_internal", e);
 		}

@@ -21,6 +21,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -162,8 +163,9 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldGet.path("/:nodeUuid/binary/:fieldName");
 		fieldGet.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		fieldGet.addUriParameter("fieldName", "Name of the binary field", "image");
+		fieldGet.addQueryParameters(ImageManipulationParametersImpl.class);
 		fieldGet.method(GET);
-		fieldGet.description("Download the binary field with the given name.");
+		fieldGet.description("Download the binary field with the given name. You canuse image query parameters for crop and resize if the binary data represents an image.");
 		fieldGet.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");

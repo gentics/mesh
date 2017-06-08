@@ -89,7 +89,7 @@ public class DemoDumpGenerator {
 		boot.createSearchIndicesAndMappings();
 
 		// 6. Initialise demo data
-		DemoDataProvider provider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl());
+		DemoDataProvider provider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl(), boot);
 		SearchProvider searchProvider = meshDagger.searchProvider();
 		invokeDump(boot, provider);
 

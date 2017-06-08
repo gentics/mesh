@@ -8,17 +8,43 @@
 				# [$.data.deNode.children.elements[1].uuid=<is-uuid>]
 				# [$.data.deNode.children.elements[2].uuid=<is-uuid>]
 				uuid
+				# [$.data.deNode.children.elements[0].language=en]
+				# [$.data.deNode.children.elements[1].language=en]
+				# [$.data.deNode.children.elements[2].language=en]
+				language
+				breadcrumb {
+					# [$.data.deNode.children.elements[0].breadcrumb[0].path=/News]
+					# [$.data.deNode.children.elements[1].breadcrumb[0].path=/News]
+					# [$.data.deNode.children.elements[2].breadcrumb[0].path=/News]
+					path
+					language
+				}
 			}
 		}
 		parent {
 			# [$.data.deNode.parent.uuid=<is-uuid>]
 			uuid
+			# The node is not in german and thus mesh can't find the container. 
+			# The default language is not used here since a language is already known (via deNode) 
+			# [$.data.deNode.parent.language=<is-null>]
+			language
+			# Load the node again in a different language
+			node(lang: "en") {
+				# [$.data.deNode.parent.node.language=en]
+				language 
+			}
 		}
 		child(path: "2015") {
 			# [$.data.deNode.child.language=en]
 			language
 			# [$.data.deNode.child.uuid=<is-uuid>]
 			uuid
+			parent {
+				fields {
+					# [$.data.deNode.child.parent.fields.slug=News]
+					... on folder { slug }
+				}
+			}
 		}
 
 		# [$.data.deNode.nullChild=<is-null>]
@@ -35,3 +61,4 @@
 		name
 	}
 }
+# [$.errors=<is-undefined>]

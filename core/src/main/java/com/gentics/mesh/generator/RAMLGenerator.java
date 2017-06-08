@@ -43,6 +43,7 @@ import com.gentics.mesh.core.verticle.user.UserEndpoint;
 import com.gentics.mesh.core.verticle.utility.UtilityEndpoint;
 import com.gentics.mesh.core.verticle.webroot.WebRootEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.graphql.GraphQLEndpoint;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.ProjectSearchEndpoint;
 import com.gentics.mesh.search.SearchEndpoint;
@@ -254,6 +255,10 @@ public class RAMLGenerator extends AbstractGenerator {
 		ReleaseEndpoint releaseEndpoint = Mockito.spy(new ReleaseEndpoint());
 		initEndpoint(releaseEndpoint);
 		addEndpoints(projectBasePath, resources, releaseEndpoint);
+
+		GraphQLEndpoint graphqlEndpoint = Mockito.spy(new GraphQLEndpoint());
+		initEndpoint(graphqlEndpoint);
+		addEndpoints(projectBasePath, resources, graphqlEndpoint);
 
 		ProjectSearchEndpoint projectSearchEndpoint = Mockito.spy(new ProjectSearchEndpoint());
 		initEndpoint(projectSearchEndpoint);

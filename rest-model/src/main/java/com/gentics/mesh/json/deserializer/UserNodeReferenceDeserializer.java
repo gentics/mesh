@@ -1,4 +1,4 @@
-package com.gentics.mesh.json;
+package com.gentics.mesh.json.deserializer;
 
 import java.io.IOException;
 
@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.json.JsonUtil;
 
 /**
  * Deserialize for node references. The deserializer will first try to deserialize the JSON node by passing the JSON to the NodeResponse deserializer. This is

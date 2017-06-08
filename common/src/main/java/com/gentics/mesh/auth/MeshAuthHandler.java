@@ -12,6 +12,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.http.MeshHeaders;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -125,7 +126,16 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 		} else {
 			if (Mesh.mesh().getOptions().getAuthenticationOptions().isEnableAnonymousAccess()) {
 				if (log.isDebugEnabled()) {
-					log.debug("No Authorization header was found. Using anonymous user.");
+					log.debug("No Authorization header was found.");
+				}
+				// Check whether the Anonymous-Authentication header was set to disable. This will disable the anonymous authentication method altogether.
+				String anonymousAuthHeaderValue = request.headers().get(MeshHeaders.ANONYMOUS_AUTHENTICATION);
+				if ("disable".equals(anonymousAuthHeaderValue)) {
+					handle401(context);
+					return;
+				}
+				if(log.isDebugEnabled()) {
+					log.debug("Using anonymous user.");
 				}
 				MeshAuthUser anonymousUser = database.noTx(() -> boot.userRoot().findMeshAuthUserByUsername(ANONYMOUS_USERNAME));
 				if (anonymousUser == null) {

@@ -1,8 +1,15 @@
-== {{name}}
-
-[options="header"]
+[options="header",cols="10%,10%,10%,70%"]
 |======
-| Property      | Mandatory | Type | Description
-{{#each entries}}| {{this.key}}	| {{this.required}}	| {{this.type}}	|{{this.description}}
-{{/each}}|======
 
+| Property
+| Mandatory 
+| Type
+| Description
+
+{{#each entries}}
+| {{this.key}}
+| {{this.required}}
+| {{this.type}}
+| {{this.description}}
+{{/each}}
+|======

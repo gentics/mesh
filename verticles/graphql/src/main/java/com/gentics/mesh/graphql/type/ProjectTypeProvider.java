@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
@@ -17,10 +18,15 @@ import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
+import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLObjectType.Builder;
 
 @Singleton
 public class ProjectTypeProvider extends AbstractTypeProvider {
+
+	public static final String PROJECT_TYPE_NAME = "Project";
+
+	public static final String PROJECT_PAGE_TYPE_NAME = "ProjectsPage";
 
 	@Inject
 	public NodeTypeProvider nodeTypeProvider;
@@ -50,22 +56,17 @@ public class ProjectTypeProvider extends AbstractTypeProvider {
 		return new NodeContent(node, container);
 	}
 
-	public GraphQLObjectType createProjectType(Project project) {
+	public GraphQLObjectType createType(Project project) {
 		Builder root = newObject();
-		root.name("Project");
+		root.name(PROJECT_TYPE_NAME);
 		interfaceTypeProvider.addCommonFields(root);
 
 		// .name
-		root.field(newFieldDefinition().name("name")
-				.description("The name of the project")
-				.type(GraphQLString));
+		root.field(newFieldDefinition().name("name").description("The name of the project").type(GraphQLString));
 
 		// .rootNode
-		root.field(newFieldDefinition().name("rootNode")
-				.description("The root node of the project")
-				.type(nodeTypeProvider.createNodeType(project))
-				.argument(createLanguageTagArg())
-				.dataFetcher(this::baseNodeFetcher));
+		root.field(newFieldDefinition().name("rootNode").description("The root node of the project").type(new GraphQLTypeReference(NODE_TYPE_NAME))
+				.argument(createLanguageTagArg()).dataFetcher(this::baseNodeFetcher));
 
 		return root.build();
 	}

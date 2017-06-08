@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -202,7 +203,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of
 		// the ES index in those cases in order to ensure consistency.
 		if (hasOldLock) {
-			REINDEX_ACTION.invoke();
+			reindexAll();
 		}
 
 		// Mark all changelog entries as applied for new installations
@@ -225,6 +226,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Finally fire the startup event and log that bootstrap has completed
 		log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
+	}
+
+	@Override
+	public void reindexAll() {
+		REINDEX_ACTION.invoke();
 	}
 
 	@Override
@@ -287,14 +293,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 	}
 
-	/**
-	 * Check whether there are any vertices in the graph.
-	 * 
-	 * @return
-	 */
-	private boolean isEmptyInstallation() {
+	@Override
+	public boolean isEmptyInstallation() {
 		try (NoTx noTx = db.noTx()) {
-			return noTx.getGraph().v().count() == 0;
+			return !noTx.getGraph().v().hasNext();
 		}
 	}
 
@@ -333,16 +335,15 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		if (meshRoot == null) {
 			synchronized (BootstrapInitializer.class) {
 				// Check reference graph and finally create the node when it can't be found.
-				MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
-				if (foundMeshRoot == null) {
-
+				Iterator<? extends MeshRootImpl> it = db.getVerticesForType(MeshRootImpl.class);
+				if (it.hasNext()) {
+					isInitialSetup = false;
+					meshRoot = it.next();
+				} else {
 					meshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
 					if (log.isDebugEnabled()) {
 						log.debug("Created mesh root {" + meshRoot.getUuid() + "}");
 					}
-				} else {
-					isInitialSetup = false;
-					meshRoot = foundMeshRoot;
 				}
 			}
 		}
@@ -454,23 +455,24 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.setName("content");
 				schema.setDescription("Content schema for blogposts");
 				schema.setDisplayField("title");
-				schema.setSegmentField("fileName");
+				schema.setSegmentField("slug");
 
-				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
-				nameFieldSchema.setName("name");
-				nameFieldSchema.setLabel("Name");
-				nameFieldSchema.setRequired(true);
-				schema.addField(nameFieldSchema);
-
-				StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
-				filenameFieldSchema.setName("fileName");
-				filenameFieldSchema.setLabel("Filename");
-				schema.addField(filenameFieldSchema);
+				StringFieldSchema slugFieldSchema = new StringFieldSchemaImpl();
+				slugFieldSchema.setName("slug");
+				slugFieldSchema.setLabel("Slug");
+				slugFieldSchema.setRequired(true);
+				schema.addField(slugFieldSchema);
 
 				StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 				titleFieldSchema.setName("title");
 				titleFieldSchema.setLabel("Title");
 				schema.addField(titleFieldSchema);
+
+				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
+				nameFieldSchema.setName("teaser");
+				nameFieldSchema.setLabel("Teaser");
+				nameFieldSchema.setRequired(true);
+				schema.addField(nameFieldSchema);
 
 				HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
 				contentFieldSchema.setName("content");
@@ -489,11 +491,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				schema.setName("folder");
 				schema.setDescription("Folder schema to create containers for other nodes.");
 				schema.setDisplayField("name");
-				schema.setSegmentField("folderName");
+				schema.setSegmentField("slug");
 
 				StringFieldSchema folderNameFieldSchema = new StringFieldSchemaImpl();
-				folderNameFieldSchema.setName("folderName");
-				folderNameFieldSchema.setLabel("Folder Name");
+				folderNameFieldSchema.setName("slug");
+				folderNameFieldSchema.setLabel("Slug");
 				schema.addField(folderNameFieldSchema);
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();

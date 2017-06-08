@@ -35,6 +35,7 @@
 				nodes {
 					elements  { 
 						uuid
+						fields { ... on content { slug } }
 					}
 				}
 			}
@@ -42,3 +43,4 @@
 		etag
 	}
 }
+# [$.errors=<is-undefined>]

@@ -1650,8 +1650,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// segmentField
 			BinaryGraphField binaryField = container.getBinary(segmentFieldName);
 			if (binaryField == null) {
-				log.error(
-						"The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName + "}");
+				if (log.isDebugEnabled()) {
+					log.debug("The node {" + getUuid() + "} did not contain a string or a binary field for segment field name {" + segmentFieldName
+							+ "}");
+				}
 			} else {
 				String binaryFilename = binaryField.getFileName();
 				if (segment.equals(binaryFilename)) {
