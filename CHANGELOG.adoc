@@ -8,6 +8,10 @@ icon:check[] GraphQL: Fixed handling of node lists within micronodes.
 
 icon:check[] GraphQL: Fixed Micronode type not found error.
 
+icon:check[] GraphQL: Fixed GraphQL API for system which do not contain any microschemas.
+
+icon:check[] GraphQL: Fixed permission handling and filtering when dealing with node children.
+
 == 0.9.11 (07.06.2017)
 
 icon:plus[] GraphQL: The graphql library was updated. Various graphql related issues have been fixed.

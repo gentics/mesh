@@ -24,6 +24,7 @@ import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 import dagger.Lazy;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
+import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLUnionType;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -42,10 +43,12 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 	public MicronodeFieldTypeProvider() {
 	}
 
-	public GraphQLUnionType createType(Project project) {
-
+	public GraphQLType createType(Project project) {
 		Map<String, GraphQLObjectType> types = generateMicroschemaFieldType(project);
-
+		// No microschemas have been found thus the microschema field type is not necessary
+		if (types.isEmpty()) {
+			return newObject().name(MICRONODE_TYPE_NAME).build();
+		}
 		GraphQLObjectType[] typeArray = types.values().toArray(new GraphQLObjectType[types.values().size()]);
 
 		GraphQLUnionType fieldType = newUnionType().name(MICRONODE_TYPE_NAME).possibleTypes(typeArray).description("Fields of the micronode.")

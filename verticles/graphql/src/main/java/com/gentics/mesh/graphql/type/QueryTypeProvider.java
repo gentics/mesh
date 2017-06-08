@@ -66,6 +66,7 @@ import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
+import graphql.schema.GraphQLUnionType;
 
 /**
  * The {@link QueryTypeProvider} provides as the name suggests the query type for the GraphQL schema. This type is the starting point for all GraphQL queries.
@@ -447,7 +448,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(meshTypeProvider.createType());
 		additionalTypes.add(interfaceTypeProvider.createPermInfoType());
 		additionalTypes.add(fieldDefProvider.createBinaryFieldType());
-		
+
 		additionalTypes.add(createLinkEnumType());
 
 		GraphQLSchema schema = builder.query(getRootType(project)).build(additionalTypes);
