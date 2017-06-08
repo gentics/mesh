@@ -2,6 +2,12 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.12 (08.06.2017)
+
+icon:check[] GraphQL: Fixed handling of node lists within micronodes.
+
+icon:check[] GraphQL: Fixed Micronode type not found error.
+
 == 0.9.11 (07.06.2017)
 
 icon:plus[] GraphQL: The graphql library was updated. Various graphql related issues have been fixed.

@@ -42,7 +42,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 	public MicronodeFieldTypeProvider() {
 	}
 
-	public GraphQLUnionType createMicroschemaFieldsType(Project project) {
+	public GraphQLUnionType createType(Project project) {
 
 		Map<String, GraphQLObjectType> types = generateMicroschemaFieldType(project);
 

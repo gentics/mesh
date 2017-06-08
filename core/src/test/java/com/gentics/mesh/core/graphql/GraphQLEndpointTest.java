@@ -107,6 +107,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		microschemaRequest.setName("TestMicroschema");
 		microschemaRequest.addField(FieldUtil.createStringFieldSchema("text"));
 		microschemaRequest.addField(FieldUtil.createNodeFieldSchema("nodeRef").setAllowedSchemas("content"));
+		microschemaRequest.addField(FieldUtil.createListFieldSchema("nodeList", "node"));
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
 		String microschemaUuid = microschemaResponse.getUuid();
 
@@ -197,9 +198,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			micronodeFieldSchema.setAllowedMicroSchemas("vcard");
 			micronodeFieldSchema.setName("micronode");
 			schema.addField(micronodeFieldSchema);
-
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
 
+			// Setup some test data
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 
 			// node
@@ -281,6 +282,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			secondMicronode.setSchemaContainerVersion(boot().microschemaContainerRoot().findByUuid(microschemaUuid).getLatestVersion());
 			secondMicronode.createString("text").setString("Joe");
 			secondMicronode.createNode("nodeRef", content());
+			NodeGraphFieldList micrnodeNodeList = secondMicronode.createNodeList("nodeList");
+			micrnodeNodeList.createNode("0", node2);
+			micrnodeNodeList.createNode("1", node3);
 
 			// micronode
 			MicronodeGraphField micronodeField = container.createMicronode("micronode", microschemaContainer("vcard").getLatestVersion());
@@ -292,7 +296,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			// folder("news").getChildren().forEach(e -> role().revokePermissions(e, GraphPermission.READ_PERM));
 			tx.success();
 		}
-		
+
 		// JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{ tagFamilies(name: \"colors\") { name, creator {firstname, lastname}, tags(page: 1,
 		// perPage:1) {name}}, schemas(name:\"content\") {name}, nodes(uuid:\"" + contentUuid + "\"){uuid, languagePaths(linkType: FULL) {languageTag, link},
 		// availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
