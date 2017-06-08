@@ -1,7 +1,12 @@
 package com.gentics.mesh.demo;
 
+import static org.elasticsearch.client.Requests.refreshRequest;
+
 import java.io.File;
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.node.Node;
@@ -28,12 +33,15 @@ import com.gentics.mesh.util.UUIDUtil;
 public class DemoDumpGenerator {
 
 	public static void main(String[] args) throws Exception {
-		FileUtils.deleteDirectory(new File("target", "dump"));
-		initPaths();
-		new DemoDumpGenerator().dump();
+		DemoDumpGenerator generator = new DemoDumpGenerator();
+		generator.cleanup();
+		generator.init();
+		generator.dump();
+		generator.shutdown();
+
 	}
 
-	public static void initPaths() {
+	public void init() throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 
@@ -53,20 +61,8 @@ public class DemoDumpGenerator {
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory("target/dump/" + options.getStorageOptions().getDirectory());
 		options.getSearchOptions().setDirectory("target/dump/" + options.getSearchOptions().getDirectory());
-		Mesh.mesh(options);
-	}
-
-	/**
-	 * Invoke the demo data dump.
-	 * 
-	 * @throws Exception
-	 */
-	private void dump() throws Exception {
-		// 1. Cleanup in preparation for dumping the demo data
-		cleanup();
 
 		// 2. Setup the java keystore
-		MeshOptions options = Mesh.mesh().getOptions();
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
 		File keyStoreFile = new File("target", "keystore_" + UUIDUtil.randomUUID() + ".jks");
 		options.getAuthenticationOptions().setKeystorePath(keyStoreFile.getAbsolutePath());
@@ -75,34 +71,48 @@ public class DemoDumpGenerator {
 			KeyStoreHelper.gen(keyStoreFile.getAbsolutePath(), keyStorePass);
 		}
 
-		// 3. Setup dagger
+		Mesh.mesh(options);
+	}
+
+	/**
+	 * Invoke the demo data dump.
+	 * 
+	 * @throws Exception
+	 */
+	public void dump() throws Exception {
+		// 1. Setup dagger
 		MeshComponent meshDagger = MeshInternal.create();
 
-		// 4. Setup GraphDB
-		new DatabaseHelper(meshDagger.database()).init();
+		// 2. Setup GraphDB
+		DatabaseHelper.init(meshDagger.database());
 
-		// 5. Initialise mesh
+		// 3. Initialise mesh
 		BootstrapInitializer boot = meshDagger.boot();
 		boot.initMandatoryData();
 		boot.initPermissions();
 		boot.markChangelogApplied();
 		boot.createSearchIndicesAndMappings();
 
-		// 6. Initialise demo data
+		// 4. Initialise demo data
 		DemoDataProvider provider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl(), boot);
-		SearchProvider searchProvider = meshDagger.searchProvider();
 		invokeDump(boot, provider);
 
-		// 7. Close the elastic search instance
+	}
+
+	private void shutdown() throws MeshConfigurationException, InterruptedException {
+		// Close the elastic search instance
+		SearchProvider searchProvider = MeshInternal.get().searchProvider();
 		org.elasticsearch.node.Node esNode = null;
 		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
 			esNode = (Node) searchProvider.getNode();
+			esNode.client().admin().indices().refresh(refreshRequest().indices("_all")).actionGet();
 		} else {
 			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
 		}
 		esNode.close();
-
+		Thread.sleep(5000);
 		System.exit(0);
+
 	}
 
 	/**
@@ -129,7 +139,7 @@ public class DemoDumpGenerator {
 	 * @throws MeshSchemaException
 	 * @throws InterruptedException
 	 */
-	public void invokeDump(BootstrapInitializer boot, DemoDataProvider provider)
+	private void invokeDump(BootstrapInitializer boot, DemoDataProvider provider)
 			throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
 		boot.initMandatoryData();
 		boot.initOptionalData(true);
