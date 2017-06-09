@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
@@ -114,8 +115,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadContentByPath() throws Exception {
 		String path = "/News/2015/News_2015.en.html";
 
-		WebRootResponse restNode = call(
-				() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
+		WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+				new NodeParametersImpl().setLanguages("en", "de")));
 
 		try (NoTx noTrx = db().noTx()) {
 			Node node = content("news_2015");
@@ -174,8 +175,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		List<MeshResponse<WebRootResponse>> futures = new ArrayList<>();
 		for (int i = 0; i < nJobs; i++) {
-			futures.add(
-					client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")).invoke());
+			futures.add(client()
+					.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")).invoke());
 		}
 
 		for (MeshResponse<WebRootResponse> fut : futures) {
@@ -192,7 +193,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPathWithPlus() throws Exception {
-		//Test RFC3986 subdelims and an additional space and questionmark
+		// Test RFC3986 subdelims and an additional space and questionmark
 		String newName = "20!$&'()*+,;=%3F? 15";
 		String uuid = db().noTx(() -> folder("2015").getUuid());
 		try (NoTx noTx = db().noTx()) {
@@ -266,6 +267,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			Node newsFolder = folder("2015");
 			uuid = newsFolder.getUuid();
 			role().revokePermissions(newsFolder, READ_PERM);
+			role().revokePermissions(newsFolder, READ_PUBLISHED_PERM);
 		}
 
 		call(() -> client().webroot(PROJECT_NAME, englishPath, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid);
@@ -315,7 +317,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			create404Node.setLanguage("en");
 			call(() -> client().createNode(PROJECT_NAME, create404Node));
 
-			MeshResponse<WebRootResponse> webrootFuture = client().webroot(PROJECT_NAME, notFoundPath, new VersioningParametersImpl().draft()).invoke();
+			MeshResponse<WebRootResponse> webrootFuture = client().webroot(PROJECT_NAME, notFoundPath, new VersioningParametersImpl().draft())
+					.invoke();
 			latchFor(webrootFuture);
 			expectFailureMessage(webrootFuture, NOT_FOUND, null);
 		}
@@ -344,6 +347,29 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		try (NoTx noTx = db().noTx()) {
 			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new NodeParametersImpl()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("2.0").hasLanguage("en");
+		}
+	}
+
+	@Test
+	public void testReadPublishedWithNoReadPerm() {
+		String path = "/News/2015";
+
+		// 1. Publish all nodes
+		try (NoTx noTx = db().noTx()) {
+			call(() -> client().publishNode(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
+		}
+
+		// 2. Remove read perm and grant only publish perm to node
+		try (NoTx noTx = db().noTx()) {
+			role().revokePermissions(folder("2015"), READ_PERM);
+			role().grantPermissions(folder("2015"), READ_PUBLISHED_PERM);
+		}
+
+		// 3. Assert that published path can be found
+		try (NoTx noTx = db().noTx()) {
+			WebRootResponse restNode = call(
+					() -> client().webroot(PROJECT_NAME, path, new NodeParametersImpl(), new VersioningParametersImpl().published()));
+			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 		}
 	}
 

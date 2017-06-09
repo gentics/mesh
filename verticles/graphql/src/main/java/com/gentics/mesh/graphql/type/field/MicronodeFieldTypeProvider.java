@@ -1,5 +1,7 @@
 package com.gentics.mesh.graphql.type.field;
 
+import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLUnionType.newUnionType;
 
@@ -45,9 +47,9 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 
 	public GraphQLType createType(Project project) {
 		Map<String, GraphQLObjectType> types = generateMicroschemaFieldType(project);
-		// No microschemas have been found thus the microschema field type is not necessary
+		// No microschemas have been found - We need to add a dummy type in order to keep the type system working
 		if (types.isEmpty()) {
-			return newObject().name(MICRONODE_TYPE_NAME).build();
+			types.put("dummy", newObject().name("dummy").field(newFieldDefinition().name("dummy").type(GraphQLString).staticValue(null).build()).description("Placeholder dummy microschema type").build());
 		}
 		GraphQLObjectType[] typeArray = types.values().toArray(new GraphQLObjectType[types.values().size()]);
 
@@ -73,34 +75,34 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 		for (MicroschemaContainer container : project.getMicroschemaContainerRoot().findAll()) {
 			MicroschemaContainerVersion version = container.getLatestVersion();
 			Microschema microschema = version.getSchema();
-			Builder root = newObject();
-			root.name(microschema.getName());
-			root.description(microschema.getDescription());
+			Builder microschemaType = newObject();
+			microschemaType.name(microschema.getName());
+			microschemaType.description(microschema.getDescription());
 
 			for (FieldSchema fieldSchema : microschema.getFields()) {
 				FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 				switch (type) {
 				case STRING:
-					root.field(fields.get().createStringDef(fieldSchema));
+					microschemaType.field(fields.get().createStringDef(fieldSchema));
 					break;
 				case HTML:
-					root.field(fields.get().createHtmlDef(fieldSchema));
+					microschemaType.field(fields.get().createHtmlDef(fieldSchema));
 					break;
 				case NUMBER:
-					root.field(fields.get().createNumberDef(fieldSchema));
+					microschemaType.field(fields.get().createNumberDef(fieldSchema));
 					break;
 				case DATE:
-					root.field(fields.get().createDateDef(fieldSchema));
+					microschemaType.field(fields.get().createDateDef(fieldSchema));
 					break;
 				case BOOLEAN:
-					root.field(fields.get().createBooleanDef(fieldSchema));
+					microschemaType.field(fields.get().createBooleanDef(fieldSchema));
 					break;
 				case NODE:
-					root.field(fields.get().createNodeDef(fieldSchema));
+					microschemaType.field(fields.get().createNodeDef(fieldSchema));
 					break;
 				case LIST:
 					ListFieldSchema listFieldSchema = ((ListFieldSchema) fieldSchema);
-					root.field(fields.get().createListDef(listFieldSchema));
+					microschemaType.field(fields.get().createListDef(listFieldSchema));
 					break;
 				default:
 					log.error("Micronode field type {" + type + "} is not supported.");
@@ -109,7 +111,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 				}
 
 			}
-			GraphQLObjectType type = root.build();
+			GraphQLObjectType type = microschemaType.build();
 			list.add(type);
 			schemaTypes.put(microschema.getName(), type);
 		}

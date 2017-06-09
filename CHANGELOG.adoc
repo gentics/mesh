@@ -2,6 +2,12 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.14 (09.06.2017)
+
+icon:check[] WebRoot: Bugs within the permission handling have been fixed. It is now possible to load nodes using only the *read_published* permission. This permission was previously ignored.
+
+icon:check[] GraphQL: An introspection bug which prevented graphiql browser autocompletion from working correctly has been fixed. The bug did not occur on systems which already used microschemas. 
+
 == 0.9.13 (08.06.2017)
 
 icon:check[] UI: The UI was updated. An file upload related bug was fixed.
@@ -20,7 +26,7 @@ icon:check[] GraphQL: Fixed permission handling and filtering when dealing with 
 
 == 0.9.11 (07.06.2017)
 
-icon:plus[] GraphQL: The graphql library was updated. Various graphql related issues have been fixed.
+icon:plus[] GraphQL: The GraphQL library was updated. Various GraphQL related issues have been fixed.
 
 == 0.9.10 (29.05.2017)
 
