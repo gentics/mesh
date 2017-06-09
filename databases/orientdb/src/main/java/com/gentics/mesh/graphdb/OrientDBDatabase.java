@@ -176,7 +176,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		String safeParentDirPath = StringEscapeUtils
 				.escapeJava(StringEscapeUtils.escapeXml11(new File(options.getDirectory()).getParentFile().getAbsolutePath()));
 		configString = configString.replaceAll("%MESH_DB_PARENT_PATH%", safeParentDirPath);
-		System.out.println(configString);
+		if (log.isDebugEnabled()) {
+			log.debug("OrientDB config");
+			log.debug(configString);
+		}
 		InputStream stream = new ByteArrayInputStream(configString.getBytes(StandardCharsets.UTF_8));
 		return stream;
 	}

@@ -1,22 +1,20 @@
-package com.gentics.mesh.server;
+package com.gentics.mesh.distributed;
 
 import java.io.File;
+
+import org.apache.commons.io.FileUtils;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.etc.config.MeshOptions;
 
-import io.vertx.core.json.JsonObject;
+import ch.qos.logback.core.net.server.ServerRunner;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
-/**
- * Main runner that is used to deploy a preconfigured set of verticles.
- */
-public class ServerRunner {
-
+public class NodeB {
 	private static final Logger log;
 
 	static {
@@ -26,16 +24,25 @@ public class ServerRunner {
 	}
 
 	public static void main(String[] args) throws Exception {
-		MeshOptions options = OptionsLoader.createOrloadOptions();
-		setupKeystore(options);
+		String baseDirPath = "target/nodeB";
+		File baseDir = new File(baseDirPath);
+		FileUtils.deleteDirectory(baseDir);
+		baseDir.mkdirs();
+
+		MeshOptions options = new MeshOptions();
 		options.setClusterMode(true);
+		options.getHttpServerOptions().setPort(8081);
+		options.getAuthenticationOptions().setKeystorePassword("nodeB");
+		options.setTempDirectory(baseDirPath + "/tmp");
+		options.getStorageOptions().setDirectory(baseDirPath + "/graphdb");
+		options.getSearchOptions().setDirectory(baseDirPath + "/search");
+		options.getImageOptions().setImageCacheDirectory(baseDirPath + "/imageCache");
+		options.getUploadOptions().setDirectory(baseDirPath + "/binaryFiles");
+		options.getUploadOptions().setTempDirectory(baseDirPath + "/tmpupload");
+		options.getAuthenticationOptions().setKeystorePath(baseDirPath + "/keystore.jceks");
+		setupKeystore(options);
 
 		Mesh mesh = Mesh.mesh(options);
-		mesh.setCustomLoader((vertx) -> {
-			JsonObject config = new JsonObject();
-			config.put("port", options.getHttpServerOptions().getPort());
-			// DeploymentUtil.deployAndWait(vertx, config, new AdminGUIVerticle(MeshInternal.get().routerStorage()), false);
-		});
 		mesh.run();
 	}
 

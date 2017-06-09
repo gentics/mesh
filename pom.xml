@@ -96,8 +96,8 @@
 		<module>performance-tests</module>
 		<module>verticles</module>
 		<module>server</module>
-		<module>distributed</module>
 		<module>demo</module>
+		<module>distributed</module>
 		<module>doc</module>
 	</modules>
 
