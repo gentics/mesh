@@ -28,8 +28,8 @@ import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.rxjava.core.Vertx;
-import io.vertx.rxjava.core.buffer.Buffer;
 import rx.Single;
 
 /**
@@ -40,9 +40,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	Vertx vertx;
 
 	public ImgscalrImageManipulator() {
-		this(new Vertx(Mesh.vertx()), Mesh.mesh()
-				.getOptions()
-				.getImageOptions());
+		this(new Vertx(Mesh.vertx()), Mesh.mesh().getOptions().getImageOptions());
 	}
 
 	ImgscalrImageManipulator(Vertx vertx, ImageManipulatorOptions options) {
@@ -128,8 +126,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 		// 1. Check the cache file directory
 		if (cacheFile.exists()) {
-			return vertx.fileSystem()
-					.rxReadFile(cacheFile.getAbsolutePath());
+			return vertx.fileSystem().rxReadFile(cacheFile.getAbsolutePath()).map(buffer -> buffer.getDelegate());
 		}
 
 		// 2. Read the image
@@ -144,7 +141,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 				// and this model will contain the "real" color of the transparent parts
 				// which is likely a better fit than unconditionally setting it to white.
 
-				// Fill background  with white
+				// Fill background with white
 				Graphics2D graphics = bi.createGraphics();
 				try {
 					graphics.setComposite(AlphaComposite.DstOver); // Set composite rules to paint "behind"
@@ -179,8 +176,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		}
 
 		// 5. Return buffer to written cache file
-		return vertx.fileSystem()
-				.rxReadFile(cacheFile.getAbsolutePath());
+		return vertx.fileSystem().rxReadFile(cacheFile.getAbsolutePath()).map(buffer -> buffer.getDelegate());
 	}
 
 	@Override
@@ -188,8 +184,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		// Resize the image to 1x1 and sample the pixel
 		BufferedImage pixel = Scalr.resize(image, Mode.FIT_EXACT, 1, 1);
 		image.flush();
-		int[] color = pixel.getData()
-				.getPixel(0, 0, (int[]) null);
+		int[] color = pixel.getData().getPixel(0, 0, (int[]) null);
 		return color;
 	}
 

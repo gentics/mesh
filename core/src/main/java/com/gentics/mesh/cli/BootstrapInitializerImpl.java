@@ -187,7 +187,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		// Update graph indices and vertex types (This may take some time)
-		new DatabaseHelper(db).init();
+		DatabaseHelper.init(db);
 
 		// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
 		initMandatoryData();

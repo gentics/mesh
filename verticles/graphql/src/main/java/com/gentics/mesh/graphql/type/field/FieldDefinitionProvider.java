@@ -3,6 +3,7 @@ package com.gentics.mesh.graphql.type.field;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider.MICRONODE_TYPE_NAME;
 import static graphql.Scalars.GraphQLBigDecimal;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLInt;
@@ -12,12 +13,14 @@ import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -251,7 +254,15 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				}
 				return nodeList.getList().stream().map(item -> {
 					Node node = item.getNode();
-					List<String> languageTags = Arrays.asList(container.getLanguage().getLanguageTag());
+					List<String> languageTags = Collections.emptyList();
+					if (container instanceof NodeGraphFieldContainer) {
+						languageTags = Arrays.asList(container.getLanguage().getLanguageTag());
+					} else {
+						// Other containers (e.g. micronodes do not have a language thus we can't use that language to define the loaded language variant. We
+						// thus fallback to the default mesh language.
+						String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
+						languageTags = Arrays.asList(defaultLanguage);
+					}
 					// TODO we need to add more assertions and check what happens if the itemContainer is null
 					NodeGraphFieldContainer itemContainer = node.findNextMatchingFieldContainer(gc, languageTags);
 					return new NodeContent(node, itemContainer);
@@ -297,8 +308,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 	 * @return Created field definition
 	 */
 	public GraphQLFieldDefinition createMicronodeDef(FieldSchema schema, Project project) {
-		return newFieldDefinition().name(schema.getName()).description(schema.getLabel())
-				.type(micronodeFieldTypeProvider.createMicroschemaFieldsType(project)).dataFetcher(env -> {
+		return newFieldDefinition().name(schema.getName()).description(schema.getLabel()).type(new GraphQLTypeReference(MICRONODE_TYPE_NAME))
+				.dataFetcher(env -> {
 					GraphFieldContainer container = env.getSource();
 					MicronodeGraphField micronodeField = container.getMicronode(schema.getName());
 					if (micronodeField != null) {
@@ -324,6 +335,8 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					if (nodeField != null) {
 						Node node = nodeField.getNode();
 						if (node != null) {
+							// TODO the language should be loaded using the parent node language. Note that we would need to check for micronodes which are not
+							// language specific!
 							List<String> languageTags = getLanguageArgument(env);
 							// Check permissions for the linked node
 							gc.requiresPerm(node, READ_PERM, READ_PUBLISHED_PERM);

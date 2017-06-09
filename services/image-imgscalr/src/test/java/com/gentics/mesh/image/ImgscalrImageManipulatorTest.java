@@ -33,10 +33,10 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rxjava.core.Vertx;
-import io.vertx.rxjava.core.buffer.Buffer;
 import rx.Single;
 import rx.functions.Action6;
 import rx.functions.Func0;
@@ -67,20 +67,17 @@ public class ImgscalrImageManipulatorTest {
 
 		checkImages((imageName, width, height, color, refImage, ins) -> {
 			log.debug("Handling " + imageName);
-			Single<Buffer> obs = manipulator.handleResize(ins.call(), imageName, new ImageManipulationParametersImpl().setWidth(150)
-					.setHeight(180));
+			Single<Buffer> obs = manipulator.handleResize(ins.call(), imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180));
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(buffer -> {
 				try {
 					assertNotNull(buffer);
-					byte[] data = buffer.getDelegate()
-							.getBytes();
+					byte[] data = buffer.getBytes();
 					ByteArrayInputStream bis = new ByteArrayInputStream(data);
 					BufferedImage resizedImage = ImageIO.read(bis);
 					bis.close();
-					assertThat(resizedImage).hasSize(150, 180)
-							.matches(refImage);
-					//FileUtils.writeByteArrayToFile(new File("/tmp/" + imageName + "reference.jpg"), data);
+					assertThat(resizedImage).hasSize(150, 180).matches(refImage);
+					// FileUtils.writeByteArrayToFile(new File("/tmp/" + imageName + "reference.jpg"), data);
 				} catch (Exception e) {
 					e.printStackTrace();
 					fail("Error occured");
@@ -102,8 +99,7 @@ public class ImgscalrImageManipulatorTest {
 	public void testExtractImageInfo() throws IOException, JSONException {
 		checkImages((imageName, width, height, color, refImage, ins) -> {
 			Single<ImageInfo> obs = manipulator.readImageInfo(ins);
-			ImageInfo info = obs.toBlocking()
-					.value();
+			ImageInfo info = obs.toBlocking().value();
 			assertEquals("The width or image {" + imageName + "} did not match.", width, info.getWidth());
 			assertEquals("The height or image {" + imageName + "} did not match.", height, info.getHeight());
 			assertEquals("The dominant color of the image did not match {" + imageName + "}", color, info.getDominantColor());
@@ -168,8 +164,7 @@ public class ImgscalrImageManipulatorTest {
 
 		// Height and Width
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		bi = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setWidth(200)
-				.setHeight(300));
+		bi = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setWidth(200).setHeight(300));
 		assertEquals(200, bi.getWidth());
 		assertEquals(300, bi.getHeight());
 
@@ -182,8 +177,7 @@ public class ImgscalrImageManipulatorTest {
 
 		// Same height / width
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setWidth(100)
-				.setHeight(200));
+		outputImage = manipulator.resizeIfRequested(bi, new ImageManipulationParametersImpl().setWidth(100).setHeight(200));
 		assertEquals(100, bi.getWidth());
 		assertEquals(200, bi.getHeight());
 		assertEquals("The image should not have been resized since the parameters match the source image dimension.", bi.hashCode(),
@@ -201,19 +195,13 @@ public class ImgscalrImageManipulatorTest {
 	@Test(expected = GenericRestException.class)
 	public void testCropStartOutOfBounds() throws Exception {
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setStartx(500)
-				.setStarty(500)
-				.setCroph(20)
-				.setCropw(25));
+		manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setStartx(500).setStarty(500).setCroph(20).setCropw(25));
 	}
 
 	@Test(expected = GenericRestException.class)
 	public void testCropAreaOutOfBounds() throws Exception {
 		BufferedImage bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setStartx(1)
-				.setStarty(1)
-				.setCroph(400)
-				.setCropw(400));
+		manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setStartx(1).setStarty(1).setCroph(400).setCropw(400));
 	}
 
 	@Test
@@ -228,10 +216,7 @@ public class ImgscalrImageManipulatorTest {
 
 		// Valid cropping
 		bi = new BufferedImage(100, 200, BufferedImage.TYPE_INT_ARGB);
-		outputImage = manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setStartx(1)
-				.setStarty(1)
-				.setCroph(20)
-				.setCropw(25));
+		outputImage = manipulator.cropIfRequested(bi, new ImageManipulationParametersImpl().setStartx(1).setStarty(1).setCroph(20).setCropw(25));
 		assertEquals(25, outputImage.getWidth());
 		assertEquals(20, outputImage.getHeight());
 
@@ -240,9 +225,7 @@ public class ImgscalrImageManipulatorTest {
 	@Test
 	public void testTikaMetadata() throws IOException, SAXException, TikaException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/12382975864_09e6e069e7_o.jpg");
-		Map<String, String> metadata = manipulator.getMetadata(ins)
-				.toBlocking()
-				.value();
+		Map<String, String> metadata = manipulator.getMetadata(ins).toBlocking().value();
 		assertTrue(!metadata.isEmpty());
 		for (String key : metadata.keySet()) {
 			System.out.println(key + "=" + metadata.get(key));
