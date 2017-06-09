@@ -7,8 +7,8 @@ import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.Vector;
 
 import org.json.JSONException;
 import org.junit.Test;
@@ -29,9 +29,11 @@ import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.DateFieldSchema;
@@ -41,6 +43,7 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -51,7 +54,10 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -62,37 +68,45 @@ import io.vertx.core.json.JsonObject;
 @RunWith(Parameterized.class)
 public class GraphQLEndpointTest extends AbstractMeshTest {
 
-	@Parameters(name = "query={0}")
-	public static List<String> paramData() {
-		List<String> testQueries = new ArrayList<>();
-		testQueries.add("full-query");
-		testQueries.add("role-user-group-query");
-		testQueries.add("group-query");
-		testQueries.add("schema-query");
-		testQueries.add("microschema-query");
-		testQueries.add("paging-query");
-		testQueries.add("tagFamily-query");
-		testQueries.add("node-query");
-		testQueries.add("nodes-query");
-		testQueries.add("node-breadcrumb-query");
-		testQueries.add("node-language-fallback-query");
-		testQueries.add("node-webroot-query");
-		testQueries.add("node-relations-query");
-		testQueries.add("node-fields-query");
-		testQueries.add("node-fields-link-resolve-query");
-		testQueries.add("node-field-list-path-query");
-		testQueries.add("project-query");
-		testQueries.add("tag-query");
-		testQueries.add("release-query");
-		testQueries.add("user-query");
-		testQueries.add("mesh-query");
-		return testQueries;
-	}
-
 	private final String queryName;
 
-	public GraphQLEndpointTest(String queryName) {
+	private final boolean withMicroschema;
+
+	private final String version;
+
+	public GraphQLEndpointTest(String queryName, boolean withMicroschema, String version) {
 		this.queryName = queryName;
+		this.withMicroschema = withMicroschema;
+		this.version = version;
+	}
+
+	@Parameters(name = "query={0},version={2}")
+	public static Collection<Object[]> paramData() {
+		Collection<Object[]> testData = new Vector<Object[]>();
+		testData.add(new Object[] { "full-query", true, "draft" });
+		testData.add(new Object[] { "role-user-group-query", true, "draft" });
+		testData.add(new Object[] { "group-query", true, "draft" });
+		testData.add(new Object[] { "schema-query", true, "draft" });
+		testData.add(new Object[] { "microschema-query", true, "draft" });
+		testData.add(new Object[] { "paging-query", true, "draft" });
+		testData.add(new Object[] { "tagFamily-query", true, "draft" });
+		testData.add(new Object[] { "node-query", true, "draft" });
+		testData.add(new Object[] { "nodes-query", true, "draft" });
+		testData.add(new Object[] { "node-breadcrumb-query", true, "draft" });
+		testData.add(new Object[] { "node-language-fallback-query", true, "draft" });
+		testData.add(new Object[] { "node-webroot-query", true, "draft" });
+		testData.add(new Object[] { "node-relations-query", true, "draft" });
+		testData.add(new Object[] { "node-fields-query", true, "draft" });
+		testData.add(new Object[] { "node-fields-no-microschema-query", false, "draft" });
+		testData.add(new Object[] { "node-fields-link-resolve-query", true, "draft" });
+		testData.add(new Object[] { "node-field-list-path-query", true, "draft" });
+		testData.add(new Object[] { "project-query", true, "draft" });
+		testData.add(new Object[] { "tag-query", true, "draft" });
+		testData.add(new Object[] { "release-query", true, "draft" });
+		testData.add(new Object[] { "user-query", true, "draft" });
+		testData.add(new Object[] { "mesh-query", true, "draft" });
+		testData.add(new Object[] { "node-version-published-query", true, "published" });
+		return testData;
 	}
 
 	@Test
@@ -102,15 +116,25 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		// String creationDate = db().tx(() -> content().getCreationDate());
 		// String uuid = db().tx(() -> folder("2015").getUuid());
 
-		// 1. Create the microschema
-		MicroschemaCreateRequest microschemaRequest = new MicroschemaCreateRequest();
-		microschemaRequest.setName("TestMicroschema");
-		microschemaRequest.addField(FieldUtil.createStringFieldSchema("text"));
-		microschemaRequest.addField(FieldUtil.createNodeFieldSchema("nodeRef").setAllowedSchemas("content"));
-		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
-		String microschemaUuid = microschemaResponse.getUuid();
-
-		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaUuid));
+		String microschemaUuid = null;
+		if (withMicroschema) {
+			// 1. Create the microschema
+			MicroschemaCreateRequest microschemaRequest = new MicroschemaCreateRequest();
+			microschemaRequest.setName("TestMicroschema");
+			microschemaRequest.addField(FieldUtil.createStringFieldSchema("text"));
+			microschemaRequest.addField(FieldUtil.createNodeFieldSchema("nodeRef").setAllowedSchemas("content"));
+			microschemaRequest.addField(FieldUtil.createListFieldSchema("nodeList", "node"));
+			MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
+			microschemaUuid = microschemaResponse.getUuid();
+			call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaResponse.getUuid()));
+		} else {
+			try (Tx tx = db().tx()) {
+				for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
+					microschema.remove();
+				}
+				tx.success();
+			}
+		}
 
 		try (Tx tx = tx()) {
 			Node node = folder("2015");
@@ -193,13 +217,15 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			micronodeListSchema.setName("micronodeList");
 			schema.addField(micronodeListSchema);
 
-			MicronodeFieldSchema micronodeFieldSchema = new MicronodeFieldSchemaImpl();
-			micronodeFieldSchema.setAllowedMicroSchemas("vcard");
-			micronodeFieldSchema.setName("micronode");
-			schema.addField(micronodeFieldSchema);
-
+			if (withMicroschema) {
+				MicronodeFieldSchema micronodeFieldSchema = new MicronodeFieldSchemaImpl();
+				micronodeFieldSchema.setAllowedMicroSchemas("vcard");
+				micronodeFieldSchema.setName("micronode");
+				schema.addField(micronodeFieldSchema);
+			}
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
 
+			// Setup some test data
 			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 
 			// node
@@ -268,47 +294,54 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			nodeList.createNode("0", node2);
 			nodeList.createNode("1", node3);
 
-			// micronodeList
-			MicronodeGraphFieldList micronodeList = container.createMicronodeFieldList("micronodeList");
-			Micronode firstMicronode = micronodeList.createMicronode();
-			firstMicronode.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
-			firstMicronode.createString("firstName").setString("Joe");
-			firstMicronode.createString("lastName").setString("Doe");
-			firstMicronode.createString("address").setString("Somewhere");
-			firstMicronode.createString("postcode").setString("1010");
+			if (withMicroschema) {
+				// micronodeList
+				MicronodeGraphFieldList micronodeList = container.createMicronodeFieldList("micronodeList");
+				Micronode firstMicronode = micronodeList.createMicronode();
+				firstMicronode.setSchemaContainerVersion(microschemaContainer("vcard").getLatestVersion());
+				firstMicronode.createString("firstName").setString("Joe");
+				firstMicronode.createString("lastName").setString("Doe");
+				firstMicronode.createString("address").setString("Somewhere");
+				firstMicronode.createString("postcode").setString("1010");
 
-			Micronode secondMicronode = micronodeList.createMicronode();
-			secondMicronode.setSchemaContainerVersion(boot().microschemaContainerRoot().findByUuid(microschemaUuid).getLatestVersion());
-			secondMicronode.createString("text").setString("Joe");
-			secondMicronode.createNode("nodeRef", content());
+				Micronode secondMicronode = micronodeList.createMicronode();
+				secondMicronode.setSchemaContainerVersion(boot().microschemaContainerRoot().findByUuid(microschemaUuid).getLatestVersion());
+				secondMicronode.createString("text").setString("Joe");
+				secondMicronode.createNode("nodeRef", content());
+				NodeGraphFieldList micrnodeNodeList = secondMicronode.createNodeList("nodeList");
+				micrnodeNodeList.createNode("0", node2);
+				micrnodeNodeList.createNode("1", node3);
 
-			// micronode
-			MicronodeGraphField micronodeField = container.createMicronode("micronode", microschemaContainer("vcard").getLatestVersion());
-			micronodeField.getMicronode().createString("firstName").setString("Joe");
-			micronodeField.getMicronode().createString("lastName").setString("Doe");
-			micronodeField.getMicronode().createString("address").setString("Somewhere");
-			micronodeField.getMicronode().createString("postcode").setString("1010");
-
-			// folder("news").getChildren().forEach(e -> role().revokePermissions(e, GraphPermission.READ_PERM));
+				// micronode
+				MicronodeGraphField micronodeField = container.createMicronode("micronode", microschemaContainer("vcard").getLatestVersion());
+				micronodeField.getMicronode().createString("firstName").setString("Joe");
+				micronodeField.getMicronode().createString("lastName").setString("Doe");
+				micronodeField.getMicronode().createString("address").setString("Somewhere");
+				micronodeField.getMicronode().createString("postcode").setString("1010");
+			}
+			//folder("news").getChildren().forEach(e -> role().revokePermissions(e, GraphPermission.READ_PUBLISHED_PERM));
 			tx.success();
 		}
-		
-		// JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{ tagFamilies(name: \"colors\") { name, creator {firstname, lastname}, tags(page: 1,
-		// perPage:1) {name}}, schemas(name:\"content\") {name}, nodes(uuid:\"" + contentUuid + "\"){uuid, languagePaths(linkType: FULL) {languageTag, link},
-		// availableLanguages, project {name, rootNode {uuid}}, created, creator { username, groups { name, roles {name} } }}}"));
 
-		call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
-		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
+		// Publish all nodes
+		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
+		call(() -> client().publishNode(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
+
+		// Create a draft node
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setLanguage("en");
+		request.setSchema(new SchemaReference().setName("content"));
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page"));
+		request.setParentNode(new NodeReference().setUuid(baseNodeUuid));
+		call(() -> client().createNode(PROJECT_NAME, request));
+
+		GraphQLResponse response = call(
+				() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new VersioningParametersImpl().setVersion(version)));
 		JsonObject json = new JsonObject(JsonUtil.toJson(response));
 		System.out.println(json.encodePrettily());
 		assertThat(json).compliesToAssertions(queryName);
-
-		// MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "', 'created': '" + creationDate + "'}}}", response);
-
-		// JsonObject response = call(() -> client().graphql(PROJECT_NAME, "{nodes(uuid:\"" + contentUuid + "\") {uuid, fields { ... on content { name, content
-		// }}}}"));
-		// System.out.println(response.toString());
-		// MeshJSONAssert.assertEquals("{'data':{'nodes':{'uuid':'" + contentUuid + "'}}}", response);
 	}
 
 	private long dateToMilis(String date) throws ParseException {

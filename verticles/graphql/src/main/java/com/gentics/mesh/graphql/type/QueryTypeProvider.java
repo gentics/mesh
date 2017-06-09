@@ -48,6 +48,7 @@ import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.field.FieldDefinitionProvider;
+import com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider;
 import com.gentics.mesh.graphql.type.field.NodeFieldTypeProvider;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
@@ -65,6 +66,7 @@ import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
+import graphql.schema.GraphQLUnionType;
 
 /**
  * The {@link QueryTypeProvider} provides as the name suggests the query type for the GraphQL schema. This type is the starting point for all GraphQL queries.
@@ -87,6 +89,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public NodeFieldTypeProvider nodeFieldTypeProvider;
+
+	@Inject
+	public MicronodeFieldTypeProvider micronodeFieldTypeProvider;
 
 	@Inject
 	public FieldDefinitionProvider fieldDefProvider;
@@ -416,6 +421,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		additionalTypes.add(nodeTypeProvider.createType(project));
 		additionalTypes.add(newPageType(NODE_PAGE_TYPE_NAME, NODE_TYPE_NAME));
+
+		additionalTypes.add(micronodeFieldTypeProvider.createType(project));
 
 		additionalTypes.add(projectTypeProvider.createType(project));
 		additionalTypes.add(newPageType(PROJECT_PAGE_TYPE_NAME, PROJECT_TYPE_NAME));

@@ -50,7 +50,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 		File uploadFolder = getUploadFolder();
 		assertFalse("Initially no upload folder should exist.", uploadFolder.exists());
 
-		String hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath).toBlocking().value();
+		String hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath);
 		assertNotNull(hashOutput);
 		assertEquals("The generated hash did not out expected value for data {" + data + "}", hash, hashOutput);
 		assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
@@ -59,7 +59,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 
 		fileUpload = mockUpload();
 		assertThat(uploadFolder).as("The upload folder should have been created").doesNotExist();
-		hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath).toBlocking().value();
+		hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath);
 		assertNotNull(hashOutput);
 		assertEquals("The generated hash did not out expected value for data {" + data + "}", hash, hashOutput);
 		assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
@@ -73,7 +73,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 		File uploadFolder = getUploadFolder();
 		assertFalse("Initially no upload folder should exist.", uploadFolder.exists());
 
-		String hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath).toBlocking().value();
+		String hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath);
 		assertNotNull(hashOutput);
 		assertEquals("The generated hash did not out expected value for data {" + data + "}", hash, hashOutput);
 		assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
@@ -87,7 +87,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 		// Delete the file on purpose in order to invoke an error
 		new File(fileUpload.uploadedFileName()).delete();
 		try {
-			handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath).toBlocking().value();
+			handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath);
 		} catch (CompositeException e) {
 			throw e.getExceptions().get(1);
 		}

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
@@ -276,6 +277,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			Node newsFolder = folder("2015");
 			uuid = newsFolder.getUuid();
 			role().revokePermissions(newsFolder, READ_PERM);
+			role().revokePermissions(newsFolder, READ_PUBLISHED_PERM);
 			tx.success();
 		}
 
@@ -357,6 +359,30 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new NodeParametersImpl()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("2.0").hasLanguage("en");
+		}
+	}
+
+	@Test
+	public void testReadPublishedWithNoReadPerm() {
+		String path = "/News/2015";
+
+		// 1. Publish all nodes
+		try (Tx tx = tx()) {
+			call(() -> client().publishNode(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
+		}
+
+		// 2. Remove read perm and grant only publish perm to node
+		try (Tx tx = tx()) {
+			role().revokePermissions(folder("2015"), READ_PERM);
+			role().grantPermissions(folder("2015"), READ_PUBLISHED_PERM);
+			tx.success();
+		}
+
+		// 3. Assert that published path can be found
+		try (Tx tx = db().tx()) {
+			WebRootResponse restNode = call(
+					() -> client().webroot(PROJECT_NAME, path, new NodeParametersImpl(), new VersioningParametersImpl().published()));
+			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 		}
 	}
 

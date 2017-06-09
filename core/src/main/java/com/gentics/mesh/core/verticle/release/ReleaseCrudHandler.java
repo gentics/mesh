@@ -48,6 +48,8 @@ import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 import rx.Single;
 
@@ -55,6 +57,8 @@ import rx.Single;
  * CRUD Handler for Releases
  */
 public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResponse> {
+
+	private static final Logger log = LoggerFactory.getLogger(ReleaseCrudHandler.class);
 
 	private SearchQueue searchQueue;
 
@@ -310,8 +314,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					MicroschemaContainerVersion version = currentVersion;
 					Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
 						try (Tx tx = db.tx()) {
-							System.out.println("After migration " + microschemaContainer.getName() + " - " + version.getUuid() + "="
-									+ version.getFieldContainers(releaseUuid).size());
+							log.info("After migration " + microschemaContainer.getName() + ":" + version.getVersion() + " - "
+									+ version.getUuid() + "=" + version.getFieldContainers(releaseUuid).size());
 						}
 						latch.countDown();
 					});
@@ -362,7 +366,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					SchemaContainerVersion version = currentVersion;
 					Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
 						try (Tx tx = db.tx()) {
-							System.out.println("After migration " + schemaContainer.getName() + " - " + version.getUuid() + "="
+							log.info("After migration " + schemaContainer.getName() + ":" + version.getVersion() + " - " + version.getUuid() + "="
 									+ version.getFieldContainers(releaseUuid).size());
 						}
 						latch.countDown();

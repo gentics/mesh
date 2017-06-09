@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.verticle.webroot;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
@@ -65,6 +63,7 @@ public class WebRootHandler {
 		// List<String> languageTags = ac.getSelectedLanguageTags();
 		db.operateTx(() -> {
 
+			String releaseUuid = ac.getRelease().getUuid();
 			// Load all nodes for the given path
 			Path nodePath = webrootService.findByProjectPath(ac, decodedPath);
 			PathSegment lastSegment = nodePath.getLast();
@@ -77,10 +76,9 @@ public class WebRootHandler {
 			if (container == null) {
 				throw error(NOT_FOUND, "node_not_found_for_path", decodedPath);
 			}
-			Node node = container.getParentNode();
-			if (!requestUser.hasPermission(node, READ_PERM)) {
-				throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
-			}
+
+			requestUser.failOnNoReadPermission(container, releaseUuid);
+
 			GraphField field = lastSegment.getPathField();
 			if (field instanceof BinaryGraphField) {
 				BinaryGraphField binaryField = (BinaryGraphField) field;
@@ -104,6 +102,7 @@ public class WebRootHandler {
 					}
 				}
 			} else {
+				Node node = container.getParentNode();
 				String etag = node.getETag(ac);
 				ac.setEtag(etag, true);
 				if (ac.matches(etag, true)) {
@@ -116,15 +115,6 @@ public class WebRootHandler {
 					return node.transformToRest(ac, 0, languageTags.toArray(new String[0]));
 				}
 			}
-
-			// requestUser.isAuthorised(node, READ_PERM, rh -> {
-			// languageTags.add(lastSegment.getLanguageTag());
-			// if (rh.result()) {
-			// bch.complete(node);
-			// } else {
-			// bch.fail(error(FORBIDDEN, "error_missing_perm", node.getUuid());
-			// }
-			// });
 
 		}).subscribe(model -> {
 			if (model != null) {

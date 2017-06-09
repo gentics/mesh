@@ -16,6 +16,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
@@ -30,6 +31,7 @@ import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -197,7 +199,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public Page<? extends Group> getGroups(User user, PagingParameters params) {
-		//TODO add permissions
+		// TODO add permissions
 		VertexTraversal<?, ?, ?> traversal = out(HAS_USER);
 		return TraversalHelper.getPagedResult(traversal, params, GroupImpl.class);
 	}
@@ -209,8 +211,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public List<? extends Role> getRoles() {
-		return out(HAS_USER).in(HAS_ROLE)
-				.toListExplicit(RoleImpl.class);
+		return out(HAS_USER).in(HAS_ROLE).toListExplicit(RoleImpl.class);
 	}
 
 	@Override
@@ -276,11 +277,9 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				Vertex role = roleEdge.getVertex(Direction.IN);
 				// Find all permission edges between the found role and target
 				// vertex with the specified label
-				Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout", MeshInternal.get()
-						.database()
-						.createComposedIndexKey(elementId, role.getId()));
-				boolean foundPermEdge = edges.iterator()
-						.hasNext();
+				Iterable<Edge> edges = graph.getEdges("e." + permission.label() + "_inout",
+						MeshInternal.get().database().createComposedIndexKey(elementId, role.getId()));
+				boolean foundPermEdge = edges.iterator().hasNext();
 				if (foundPermEdge) {
 					// We only store granting permissions in the store in order
 					// reduce the invalidation calls.
@@ -304,10 +303,20 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
+	public void failOnNoReadPermission(NodeGraphFieldContainer container, String releaseUuid) {
+		Node node = container.getParentNode();
+		if (hasPermission(node, READ_PERM)) {
+			return;
+		}
+		if (container.isPublished(releaseUuid) && hasPermission(node, READ_PUBLISHED_PERM)) {
+			return;
+		}
+		throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
+	}
+
+	@Override
 	public UserReference transformToReference() {
-		return new UserReference().setFirstName(getFirstname())
-				.setLastName(getLastname())
-				.setUuid(getUuid());
+		return new UserReference().setFirstName(getFirstname()).setLastName(getLastname()).setUuid(getUuid());
 	}
 
 	@Override
@@ -335,11 +344,10 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 * @param restUser
 	 */
 	private void setGroups(InternalActionContext ac, UserResponse restUser) {
-		//TODO filter by permissions
+		// TODO filter by permissions
 		for (Group group : getGroups()) {
 			GroupReference reference = group.transformToReference();
-			restUser.getGroups()
-					.add(reference);
+			restUser.getGroups().add(reference);
 		}
 	}
 
@@ -361,8 +369,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		}
 
 		// Check whether the node reference field of the user should be expanded
-		boolean expandReference = parameters.getExpandedFieldnameList()
-				.contains("nodeReference") || parameters.getExpandAll();
+		boolean expandReference = parameters.getExpandedFieldnameList().contains("nodeReference") || parameters.getExpandAll();
 		if (expandReference) {
 			restUser.setNodeResponse(node.transformToRestSync(ac, level));
 		} else {
@@ -400,8 +407,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant) {
 		// 1. Determine all roles that grant given permission on the source
 		// node.
-		List<? extends Role> rolesThatGrantPermission = sourceNode.in(permission.label())
-				.toListExplicit(RoleImpl.class);
+		List<? extends Role> rolesThatGrantPermission = sourceNode.in(permission.label()).toListExplicit(RoleImpl.class);
 
 		// 2. Add CRUD permission to identified roles and target node
 		for (Role role : rolesThatGrantPermission) {
@@ -416,9 +422,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode) {
 
 		for (GraphPermission perm : GraphPermission.values()) {
-			List<? extends Role> rolesWithPerm = sourceNode.in(perm.label())
-					.has(RoleImpl.class)
-					.toListExplicit(RoleImpl.class);
+			List<? extends Role> rolesWithPerm = sourceNode.in(perm.label()).has(RoleImpl.class).toListExplicit(RoleImpl.class);
 			for (Role role : rolesWithPerm) {
 				if (log.isDebugEnabled()) {
 					log.debug("Granting permission {" + perm.name() + "} to node {" + targetNode.getUuid() + "} on role {" + role.getName() + "}");
@@ -454,9 +458,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 */
 	@Override
 	public User setPassword(String password) {
-		setPasswordHash(MeshInternal.get()
-				.passwordEncoder()
-				.encode(password));
+		setPasswordHash(MeshInternal.get().passwordEncoder().encode(password));
 		return this;
 	}
 
@@ -464,12 +466,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	public User update(InternalActionContext ac, SearchQueueBatch batch) {
 		UserUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), UserUpdateRequest.class);
 		if (shouldUpdate(requestModel.getUsername(), getUsername())) {
-			User conflictingUser = MeshInternal.get()
-					.boot()
-					.userRoot()
-					.findByUsername(requestModel.getUsername());
-			if (conflictingUser != null && !conflictingUser.getUuid()
-					.equals(getUuid())) {
+			User conflictingUser = MeshInternal.get().boot().userRoot().findByUsername(requestModel.getUsername());
+			if (conflictingUser != null && !conflictingUser.getUuid().equals(getUuid())) {
 				throw conflict(conflictingUser.getUuid(), requestModel.getUsername(), "user_conflicting_username");
 			}
 			setUsername(requestModel.getUsername());
@@ -488,8 +486,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		}
 
 		if (!isEmpty(requestModel.getPassword())) {
-			BCryptPasswordEncoder encoder = MeshInternal.get()
-					.passwordEncoder();
+			BCryptPasswordEncoder encoder = MeshInternal.get().passwordEncoder();
 			setPasswordHash(encoder.encode(requestModel.getPassword()));
 		}
 
@@ -514,10 +511,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 				/*
 				 * TODO decide whether we need to check perms on the project as well
 				 */
-				Project project = MeshInternal.get()
-						.boot()
-						.projectRoot()
-						.findByName(projectName);
+				Project project = MeshInternal.get().boot().projectRoot().findByName(projectName);
 				if (project == null) {
 					throw error(BAD_REQUEST, "project_not_found", projectName);
 				}
@@ -537,11 +531,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		keyBuilder.append(getUuid());
 		keyBuilder.append("-");
 		keyBuilder.append(getLastEditedTimestamp());
-		boolean expandReference = ac.getNodeParameters()
-				.getExpandedFieldnameList()
-				.contains("nodeReference")
-				|| ac.getNodeParameters()
-						.getExpandAll();
+		boolean expandReference = ac.getNodeParameters().getExpandedFieldnameList().contains("nodeReference")
+				|| ac.getNodeParameters().getExpandAll();
 		// We only need to compute the full etag if the referenced node is
 		// expanded.
 		if (referencedNode != null && expandReference) {
@@ -550,8 +541,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		} else if (referencedNode != null) {
 			keyBuilder.append("-");
 			keyBuilder.append(referencedNode.getUuid());
-			keyBuilder.append(referencedNode.getProject()
-					.getName());
+			keyBuilder.append(referencedNode.getProject().getName());
 		}
 
 		return ETag.hash(keyBuilder.toString());
@@ -564,14 +554,11 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public boolean canReadNode(InternalActionContext ac, Node node) {
-		String version = ac.getVersioningParameters()
-				.getVersion();
+		String version = ac.getVersioningParameters().getVersion();
 		if (ContainerType.forVersion(version) == ContainerType.PUBLISHED) {
-			return ac.getUser()
-					.hasPermission(node, GraphPermission.READ_PUBLISHED_PERM);
+			return ac.getUser().hasPermission(node, GraphPermission.READ_PUBLISHED_PERM);
 		} else {
-			return ac.getUser()
-					.hasPermission(node, GraphPermission.READ_PERM);
+			return ac.getUser().hasPermission(node, GraphPermission.READ_PERM);
 		}
 	}
 
