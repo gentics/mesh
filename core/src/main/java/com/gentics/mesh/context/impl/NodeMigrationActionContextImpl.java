@@ -14,6 +14,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
@@ -257,6 +258,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public boolean hasPermission(MeshVertex element, GraphPermission permission) {
 				return true;
+			}
+
+			@Override
+			public void failOnNoReadPermission(NodeGraphFieldContainer container, String releaseUuid) {
+
 			}
 
 			@Override
@@ -763,11 +769,9 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-				return MeshInternal.get()
-						.database()
-						.operateNoTx(() -> {
-							return Single.just(transformToRestSync(ac, level, languageTags));
-						});
+				return MeshInternal.get().database().operateNoTx(() -> {
+					return Single.just(transformToRestSync(ac, level, languageTags));
+				});
 			}
 
 			@Override
