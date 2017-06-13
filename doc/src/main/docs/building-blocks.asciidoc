@@ -5,7 +5,7 @@ This part of the documentation will be about the core concepts of Gentics Mesh. 
 
 == The Gentics Mesh building blocks in a nutshell
 
-image:overview.png[]
+image:overview.png[Gentics Mesh Overview of Core Concepts]
 
 * You organize your contents and media assets in *projects*. 
 * A *schema* is used to define the structure of a content type (e.g. product, blogpost). It has a set of standard fields (uuid, name, version etc.) and defines the types of an arbitrary number of custom fields for your content type (i.e. string, number, HTML, date, binary, list, node reference, micronode, boolean).
