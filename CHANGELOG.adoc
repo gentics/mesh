@@ -2,6 +2,10 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.15 (19.06.2017)
+
+icon:check[] GraphQL: Fixed loading tags for nodes.
+
 == 0.9.14 (09.06.2017)
 
 icon:check[] WebRoot: Bugs within the permission handling have been fixed. It is now possible to load nodes using only the *read_published* permission. This permission was previously ignored.
