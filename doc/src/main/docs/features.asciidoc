@@ -1341,9 +1341,9 @@ NOTE: Taking node language variants offline requires the user have ```publish```
 
 It is possible to fetch older versions by specifying the ```?version``` query parameter. Similarly, the published version of a node language variant can also be loaded using the parameter ```?version=published``` or the draft version via ```?version=draft```.
 
-NOTE: By default, nodes will be loaded using ```?version=published```. A nodes list thus may not contain your previously created node because it was not yet published.
+NOTE: By default, nodes will be loaded using ```?version=draft```.
 
-NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readpublished``` permission.
+NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readPublished``` permission.
 
 == Content Releases
 
