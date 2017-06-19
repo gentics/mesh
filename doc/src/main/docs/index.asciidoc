@@ -136,7 +136,7 @@ ul.doc-toc h2 {
                                 <a href="features.html#contenttree">Content Tree</a>
                             </li>
                             <li>
-                                <a href="features.htmll#prettyurls">Pretty URLs</a>
+                                <a href="features.html#prettyurls">Pretty URLs</a>
                             </li>
                             <li>
                                 <a href="features.html#navigation">Navigation Menus</a>
@@ -252,7 +252,7 @@ ul.doc-toc h2 {
                                         <a href="references.html#_overview">Overview</a>
                                     </li>
                                     <li>
-                                        <a href="references.htmll#_login">Login</a>
+                                        <a href="references.html#_login">Login</a>
                                     </li>
                                     <li>
                                         <a href="references.html#_api_token">API Token</a>
