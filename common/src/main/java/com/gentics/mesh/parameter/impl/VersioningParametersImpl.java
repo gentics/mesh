@@ -89,7 +89,7 @@ public class VersioningParametersImpl extends AbstractParameters implements Vers
 		// version
 		QueryParameter versionParameter = new QueryParameter();
 		versionParameter.setDefaultValue("draft");
-		versionParameter.setDescription("Specifies the version to be loaded. Can either be published/draft or version number.");
+		versionParameter.setDescription("Specifies the version to be loaded. Can either be published/draft or version number. e.g.: _0.1_, _1.0_, _draft_, _published_.");
 		versionParameter.setExample("1.1");
 		versionParameter.setRequired(false);
 		versionParameter.setType(ParamType.STRING);

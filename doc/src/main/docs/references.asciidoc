@@ -1,0 +1,273 @@
+:toc-title: APIs
+
+= APIs
+
+== REST API
+
+The link:raml[Gentics Mesh REST API] provides end points enabling you to invoke CRUD operations on just ANY Gentics Mesh element. 
+There are many things you can do with the REST API. To name a few:
+
+* Obviously you can create, update & fetch multilingual content items as well as tag them.
+* But you can also define the schemas, i.e. the content types of your project.
+* You can do file upload and image manipulation.
+* WebRoot Paths for fetching content by path as well as automatic link resolving greatly simplify the integration with any routing framework.
+* Fetching dynamic navigation menus and breadcrumbs based on the content structure will make your editors happy.
+* With Elasticsearch under the hood you can search your content.
+* You can manage your users and their permissions on content elements.
+
+NOTE: All REST API responses are available in JSON, only, except for binary data.
+
+=== DEMO
+
+We have set up a Gentics Mesh instance for demo purposes, that you can play with.
+
+*Let's see what's inside...*
+
+List all projects: http://getmesh.io/api/v1/projects
+
+Well, it's our demo project.
+
+Want to fetch all content items including media? With pretty URLs? Here you go: http://getmesh.io/api/v1/demo/nodes/?resolveLinks=short
+
+OK, let's load a single content item: http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0
+
+And now forget about UUIDs and do it with its corresponding WebRoot path: http://getmesh.io/api/v1/demo/webroot/automobiles/ford-gt
+
+That's easy. Well, what about an image?
+
+That's the image node: http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
+
+And that's the actual image: http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
+
+Let's do some resizing: http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=400
+
+And now again with a readable WebRoot path: http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?width=400
+
+TIP: The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en[Postman] chrome extension can be used to build and invoke requests from your browser to Gentics Mesh.
+
+== HTTP details
+
+//=== Security/SSL
+
+=== Encoding
+
+Gentics Mesh expects and returns UTF-8 encoded data. Sending data in any other encoding format will result in encoding issues.
+
+=== Headers
+
+It is important to set the ```Content-Type: application/json``` when sending JSON data and to also set the ```Accept``` header in order to signal Gentics Mesh that your client is accepting JSON.
+
+[source,bash]
+----
+Content-Type: application/json
+Accept: application/json
+----
+
+A request which is not well formatted may fail. Gentics Mesh will do its best to identify the issue and return a meaningful error response in those cases.
+
+=== CORS
+
+The Cross-Origin Resource Sharing mechanism enables Gentics Mesh to configure cross-domain access controls.
+
+You can read up on this topic on the link:https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS[MDN article].
+
+The CORS header handling can be configured using the ```httpServerOptions.corsAllowedOriginPattern``` and ```httpServerOptions.enableCors``` configuration settings.
+
+=== ETag Handling
+
+Most endpoints of the Gentics Mesh REST API will return an ETag header within the response. 
+
+```
+ETag:W/"1125-7cc5c6fb"
+```
+
+These headers values can be used to implement or utilize existing web caching solutions.
+
+An ETag validation ocures once the ETag is passed along a http request.  
+
+```
+If-None-Match:W/"1125-7cc5c6fb"
+```
+
+Gentics Mesh will compare the provided ETag with the current state of the content and return a 304 response if the ETag is the same and the response did not change. Updating the requested resource will alter its ETag and thus another request would return the response which includes the current ETag.
+
+//=== Error Codes
+
+
+== Authentication
+
+=== Overview
+
+Gentics Mesh provides multiple ways of authentication:
+
+* Authentication via login
+* Authentication via API token
+* No authentication - Access via anonymous user
+
+NOTE: Currently, all data including media assets such as images, videos, and documents are secured and need authentication to be retrieved.
+
+WARNING: Sending user credentials as base64 encoded string, or as plaintext is highly insecure to be used on an open network. This method MUST not be used in scenarios other than debugging and development when the connection between server and client is trusted.
+
+==== Authentication Configuration
+
+Gentics Mesh uses JWT (JSON Web Token) to handle authentication. It is thus required to create a cryptograph key to sign and verify the generated JWT's. 
+Typically, if no keystore file has been provided, Gentics Mesh will create one on the basis of the configuration details in ```mesh.yml```. If the ```keystorePassword``` property is omitted, a password will be generated randomly and stored in the configuration file.
+
+[source,bash]
+----
+security:
+  tokenExpirationTime: 3600
+  keystorePassword: "secret"
+  keystorePath: "keystore.jceks"
+  algorithm: "HS256"
+----
+
+Alternatively, you can use the https://docs.oracle.com/javase/8/docs/technotes/tools/windows/keytool.html[Java keytool] to create a new keystore. Here is an example on how to create a keystore which contains a HMacSHA256 key:
+[source,bash]
+----
+keytool -genseckey -keystore keystore.jceks -storetype jceks -storepass secret -keyalg HMacSHA256 -keysize 2048 -alias HS256 -keypass secret
+----
+
+After creating the keystore, you need to set the keystore password, the path to the keystore file, and the used algorithm in the ```mesh.yml``` configuration file.
+
+==== JWT 
+
+In order to be able to store and retrieve content, a Gentics Mesh user needs to authenticate (`username:password`). 
+
+Each way will store a JWT in a cookie which is used to authenticate the user for succeeding requests. The token only lasts a certain amount of time (which can be configured in the ```mesh.yml``` file), so it might be necessary to refresh the token. The JWT will be automatically renewed with every request on the Gentics Mesh API. 
+
+=== Login
+
+==== Basic Authentication Header
+In basic authentication, when a client requests a URL that requires authentication, the server requests the client to authenticate itself by sending a `401-Not Authorized` code. The client, in return, answers with login credentials sent in the ```authorization``` header:
+
+[source,bash]
+----
+authorization: Basic {base64_encode(username:password)}
+----
+
+In Gentics Mesh, a user can be authenticated by invoking a regular ```GET``` request to the ```/api/v1/auth/login``` end point including a basic authentication HTTP header.
+
+Example:
+
+[source,bash]
+----
+curl -v -X GET   http://localhost:8080/api/v1/auth/login   -H 'authorization: Basic YWRtaW46YWRtaW4='
+----
+
+The response will be a valid JWT as well as set a cookie with the token.
+
+[source,bash]
+----
+{
+  "token" : "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzczMDYzLCJleHAiOjE0OTE3NzY2NjN9.8iG3I0Pe1M7J43pwbsBXiBOd6p0sn9dRxO3NfazVbOk="
+}
+----
+
+==== POST JSON Data
+Alternatively, the user can ```POST``` his or her credentials to the ```/api/v1/auth/login``` end point in order to retrieve a token.
+The JSON object must contain the following fields:
+
+* ```username```: The username of the user
+* ```password```: The password of the user
+
+If authentication has been successful, the server will respond with a JSON object containing a single property:
+
+* ```token```: The token to be sent on every subsequent request.
+
+Additionally, the token will also be provided in a cookie.
+
+Example:
+[source,bash]
+----
+curl -v -X POST \
+  http://localhost:8080/api/v1/auth/login \
+  -H 'content-type: application/json' \
+  -d '{
+  "username" : "admin",
+  "password" : "admin"
+}'
+----
+
+[source,bash]
+----
+
+*   Trying ::1...
+* TCP_NODELAY set
+* Connected to localhost (::1) port 8080 (#0)
+> POST /api/v1/auth/login HTTP/1.1
+> Host: localhost:8080
+> User-Agent: curl/7.50.3
+> Accept: */*
+> content-type: application/json
+> Content-Length: 50
+> 
+* upload completely sent off: 50 out of 50 bytes
+< HTTP/1.1 200 OK
+< Content-Type: application/json; charset=utf-8
+< Cache-Control: no-cache
+< Content-Length: 208
+< Set-Cookie: mesh.token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzczODU0LCJleHAiOjE0OTE3Nzc0NTR9._qt3Eufi7-3jnvgQ8lfe_KwJbd5ePwx5jOFrCK9w76A=; Max-Age=3600; Expires=Sun, 9 Apr 2017 22:37:34 GMT; Path=/
+< 
+{
+  "token" : "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzczODU0LCJleHAiOjE0OTE3Nzc0NTR9._qt3Eufi7-3jnvgQ8lfe_KwJbd5ePwx5jOFrCK9w76A="
+* Curl_http_done: called premature == 0
+* Connection #0 to host localhost left intact
+}
+----
+
+Both login methods will yield a JSON web token.
+
+For further requests, the JWT can be provided in two ways. By default it is passed along with a cookie value. E.g., this is useful for embedding binary image nodes directly in HTML, since the browser will automatically handle authentication on the basis of the cookie.
+Alternatively, the token can be passed along within the ```Authorization``` header which includes the regular JWT ```Bearer <Token>```, where ```<Token>``` is the token you received from the login/cookie.
+
+[source,bash]
+----
+curl -X GET \
+  http://localhost:8080/api/v1/demo/nodes \
+  -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzY1NDEzLCJleHAiOjE0OTE3NjkwMTN9.UY8OgjiK5qyZobAWt6X1Vd1Z-zg68BeJgGZKbW4Ucj0=' \
+----
+
+=== API Token
+
+An API token will never expire. This is different from regular tokens which will be issued when calling `/api/v1/auth/login`. 
+
+WARNING: Leaking an API token is potentially dangerous and thus the API token should only be used in combination with a secure connection.
+
+Typical use cases for API tokens are backend implementations which constantly communicate with Gentics Mesh using a secure or local connection.
+
+The token can be issued per user with ```POST /api/v1/users/:userUuid/token```.
+
+NOTE: Creating a new API token will automatically invalidate a previously issued token.
+
+Since the token is just a regular JWT you just need to add it to your request `Authorization` header field.
+
+[source,bash]
+----
+curl -X GET \
+  http://localhost:8080/api/v1/demo/nodes \
+  -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzY1NDEzLCJleHAiOjE0OTE3NjkwMTN9.UY8OgjiK5qyZobAWt6X1Vd1Z-zg68BeJgGZKbW4Ucj0=' \
+----
+
+It is possible to manually revoke a previously issued token via ```DELETE /api/v1/users/:userUuid/token```. Once the token is invalidated it can no longer be used for authentication.
+
+=== Anonymous Access 
+
+Gentics Mesh first and foremost keeps your content safe - all data including media assets such as images, videos, and documents are secured and need authentication to be retrieved. However, sometimes it may be desirable to serve public content with Gentics Mesh. 
+
+That is why Gentics Mesh instances ship with an included ```anonymous``` user/role/group set. 
+If no authentication details are provided Gentics Mesh will automatically try to authenticate with the user ```anonymous```.
+
+You can assign ```readPublished``` permissions to the ```anonymous``` role for all elements you want to be publicly available.
+
+NOTE: Assigning further permissions would of course allow for other operations to be granted. 
+
+Anonymous access can be configured in the ```mesh.yml``` configuration file:
+
+[source,yaml]
+----
+security:
+   enableAnonymousAccess: true
+----
+
+WARNING: Recreating a previously deleted ```anonymous``` user would automatically re-enable the feature if the configuration setting ```enableAnonymousAccess``` is set to ```true```.

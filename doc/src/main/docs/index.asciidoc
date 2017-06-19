@@ -1,1510 +1,289 @@
-= Gentics Mesh Documentation
+= Documentation
 
-:raml-json: ../raml/json
-
-This documentation provides information on the structure and functionality of the Gentics Mesh server and its API endpoints.
-
-== TL;DR
-
-Gentics Mesh is a API-Centric CMS Server written in Java which enables you to store and retrieve JSON documents and binaries via REST.
-Gentics Mesh will also provide you a lot of powerful tools build around and for those documents.
-
- * Document level permission system
- * Search API
- * link:graphql.html[GraphQL API]
- * Webroot API for easy integration with modern routing frameworks
- * Image Manipulation API
- * Tagging system
- * Schema system for documents
- * Clustering (in development)
- * Versioning of your documents
-
-== link:changelog.html[Changelog]
-
-== link:graphql.html[GraphQL]
-
-== REST API
-
-The link:raml[Gentics Mesh REST API] provides endpoints which enable you to invoke CRUD operations on any Gentics Mesh element.
-There are many things you can do with the REST API. For example:
-
-* You can create new users.
-* You can create nodes and tag them with tags.
-* Binary data can be added to nodes.
-* You can find nodes which match your search parameters.
-
-All REST API responses are only available in JSON.
-
-The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en[Postman] chrome extension can be used to build and invoke requests from your browser to Gentics Mesh.
-
-=== Authentication
-
-==== Overview
-
-Gentics Mesh provides multiple ways of authentication:
-
-* Authentication via login
-* Authentication via API token
-* No authentication - Access via anonymous user
-
-WARNING: Sending user credentials as base64 encoded string, or as plaintext is highly insecure to be used on an open network. This method MUST not be used in scenarios other than debugging and development when the connection between server and client is trusted.
-
-===== Authentication Configuration
-
-Gentics Mesh uses JWT (JSON Web Token) to handle authentication. It is thus required to create a cryptograph key to sign the sign and verify the generated JWT's. 
-Typically, if no keystore file has been provided, Gentics Mesh will create one on the basis of the configuration details in `mesh.yml`. If the `keystorePassword` property is omitted, a password will be generated randomly and stored in the configuration file.
-
-It can be configured within the `mesh.yml` configuration file. 
-
-[source,bash]
-----
-security:
-  tokenExpirationTime: 3600
-  keystorePassword: "secret"
-  keystorePath: "keystore.jceks"
-  algorithm: "HS256"
-----
-
-Alternatively, you can use the https://docs.oracle.com/javase/8/docs/technotes/tools/windows/keytool.html[Java keytool] to create a new keystore. Here is an example on how to create a keystore which contains a HMacSHA256 key:
-[source,bash]
-----
-keytool -genseckey -keystore keystore.jceks -storetype jceks -storepass secret -keyalg HMacSHA256 -keysize 2048 -alias HS256 -keypass secret
-----
-
-After creating the keystore, you need to set the keystore password, the path to the keystore file, and the used algorithm in the `mesh.yml` configuration file.
-
-==== JWT 
-
-In order to be able to store and retrieve content, a Gentics Mesh user needs to authenticate (`username:password`). 
-
-Each way will store a JWT in a cookie which is used to authenticate the user for succeeding requests. The token only lasts a certain amount of time (which can be configured in the `mesh.yml` file), so it might be necessary to refresh the token. The JWT will be automatically renewed with every request on the Gentics Mesh API. 
-
-NOTE: Currently, all data including media assets such as images, videos, and documents are secured and need authentication to be retrieved.
-
-==== Login
-
-===== Basic Authentication Header
-In basic authentication, when a client requests a URL that requires authentication, the server requests the client to authenticate itself by sending a `401-Not Authorized` code. The client, in return, answers with login credentials sent in the `authorization` header:
-
-[source,bash]
-----
-authorization: Basic {base64_encode(username:password)}
-----
-
-In Gentics Mesh, a user can be authenticated by invoking a regular `GET` request to the `/api/v1/auth/login` end point including a basic authentication HTTP header.
-
-Example:
-
-[source,bash]
-----
-curl -v -X GET   http://localhost:8080/api/v1/auth/login   -H 'authorization: Basic YWRtaW46YWRtaW4='
-----
-
-The response will be a valid JWT as well as set a cookie with the token.
-
-[source,bash]
-----
-{
-  "token" : "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzczMDYzLCJleHAiOjE0OTE3NzY2NjN9.8iG3I0Pe1M7J43pwbsBXiBOd6p0sn9dRxO3NfazVbOk="
+++++
+<style>
+ul.doc-toc, ul.doc-toc ul {
+    list-style: none;
+    line-height:150%;
+    padding-left: 0px;
 }
-----
 
-===== POST JSON Data
-Alternatively, the user can `POST` his or her credentials to the `/api/v1/auth/login` end point in order to retrieve a token.
-The JSON object must contain these fields:
-
-* `username` The username of the user
-* `password` The password of the user
-
-If the authentication was successful, the server will respond with a JSON object containing a single property:
-
-* `token` The token to be sent on every subsequent request.
-
-Additionally, the token will also be provided in a cookie.
-
-Example:
-[source,bash]
-----
-curl -v -X POST \
-  http://localhost:8080/api/v1/auth/login \
-  -H 'content-type: application/json' \
-  -d '{
-  "username" : "admin",
-  "password" : "admin"
-}'
-----
-
-[source,bash]
-----
-
-*   Trying ::1...
-* TCP_NODELAY set
-* Connected to localhost (::1) port 8080 (#0)
-> POST /api/v1/auth/login HTTP/1.1
-> Host: localhost:8080
-> User-Agent: curl/7.50.3
-> Accept: */*
-> content-type: application/json
-> Content-Length: 50
-> 
-* upload completely sent off: 50 out of 50 bytes
-< HTTP/1.1 200 OK
-< Content-Type: application/json; charset=utf-8
-< Cache-Control: no-cache
-< Content-Length: 208
-< Set-Cookie: mesh.token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzczODU0LCJleHAiOjE0OTE3Nzc0NTR9._qt3Eufi7-3jnvgQ8lfe_KwJbd5ePwx5jOFrCK9w76A=; Max-Age=3600; Expires=Sun, 9 Apr 2017 22:37:34 GMT; Path=/
-< 
-{
-  "token" : "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzczODU0LCJleHAiOjE0OTE3Nzc0NTR9._qt3Eufi7-3jnvgQ8lfe_KwJbd5ePwx5jOFrCK9w76A="
-* Curl_http_done: called premature == 0
-* Connection #0 to host localhost left intact
+ul.doc-toc ul ul {
+    padding-left: 15px;
 }
-----
 
-All the login method will yield a JSON web token. To make this easy mesh will directly set this token within a cookie.
-
-The JWT can be provided in two ways. By default it is passed along with a cookie value. This is useful for embedding binary image nodes directly in HTML, since the browser will automatically handle authentication on the basis of the cookie.
-Alternatively, the token can be passed along within the `Authorization` header which includes the regular JWT `Bearer <Token>`, where `<Token>` is the token you received from the login/cookie.
-
-[source,bash]
-----
-curl -X GET \
-  http://localhost:8080/api/v1/demo/nodes \
-  -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzY1NDEzLCJleHAiOjE0OTE3NjkwMTN9.UY8OgjiK5qyZobAWt6X1Vd1Z-zg68BeJgGZKbW4Ucj0=' \
-----
-
-==== API token
-
-An API token can be used to authenticate an user. The API token will never expire. This is different from regular tokens which will be issued when calling `/api/v1/auth/login`. 
-Leaking an API token is potentially dangerous and thus the API token should only be used in combination with a secure connection.
-
-Typical use cases are backend implementations which constantly communicate with Gentics Mesh via a secure / local connection.
-
-The token can be issued on a user basis via `POST /api/v1/users/:userUuid/token`.
-
-NOTE: Creating a new API token will automatically invalidate the previously issued token.
-
-Since the token is just a regular JWT you just need to add it to your request `Authorization` header field.
-
-[source,bash]
-----
-curl -X GET \
-  http://localhost:8080/api/v1/demo/nodes \
-  -H 'Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyVXVpZCI6IjNjYjY2YzU0MmFlMzRiMDFiNjZjNTQyYWUzY2IwMWRiIiwiaWF0IjoxNDkxNzY1NDEzLCJleHAiOjE0OTE3NjkwMTN9.UY8OgjiK5qyZobAWt6X1Vd1Z-zg68BeJgGZKbW4Ucj0=' \
-----
-
-It is possible to manually revoke the issued token via `DELETE /api/v1/users/:userUuid/token`. Once the token is invalidated it can no longer be used for authentication.
-
-==== Anonymous Access 
-
-Sometimes it may be desirable to serve public content via Gentics Mesh. All Gentics Mesh instances ship with an included `anonymous` user/role/group set. 
-If no authentication details are provided Gentics Mesh will automatically try to authenticate with the user `anonymous`.
-
-You can assign `read` permissions to the `anonymous` role for all elements you want to be publicly available.
-
-NOTE: Assigning further permissions would of course allow for other operations to be granted. 
-
-Anonymous access can be configured in the `mesh.yml` configuration file:
-
-[source,yaml]
-----
-security:
-   enableAnonymousAccess: true
-----
-
-NOTE: Recreating a previously deleted `anonymous` user would automatically re-enable the feature if the configuration setting `enableAnonymousAccess` is set to `true`.
-
-=== Encoding
-
-Gentics Mesh expects and returns UTF-8 encoded data. Sending data in any other encoding format will result in encoding issues.
-
-=== Headers
-
-It is important to set the ```Content-Type: application/json``` when sending JSON data and to also set the ```Accept``` header in order to signal Gentics Mesh that your client is accepting JSON.
-
-[source,bash]
-----
-Content-Type: application/json
-Accept: application/json
-----
-
-A request which is not well formatted may fail. Gentics Mesh will do its best to identify the issue and return a meaningful error response in those cases.
-
-=== Paging
-
-The paging query parameters are `perPage` and `page` . It is important to note that ```page``` is 1-based and ```perPage``` can be set to ```0``` in order to just retrieve a count of elements.
-
-=== File Upload
-
-Binary data can be attached to node binary fields which have been created using a schema that lists one or more binary fields. The ```/api/v1/nodes/:uuid/binary/:fieldName``` endpoint can be used to POST binary data and thus update the stored binary field. This endpoint is accepting only ```multipart/form-data``` .
-It is required to specify the `version` and `language` within the update request. This is similar to regular node update requests in which these information must be added to the JSON.
-
-
-```
-----------Geg2Oob
-Content-Disposition: form-data; name="version"
-
-1.0
-
-----------Geg2Oob
-Content-Disposition: form-data; name="language"
-
-en
-
-----------Geg2Oob
-Content-Disposition: form-data; name="shohY6d"; filename="somefile.bin"
-Content-Type: application/octet-stream
-Content-Transfer-Encoding: binary
-
-fileData
-
-----------Geg2Oob--
-```
-
-
-=== Examples
-
-*Create a new node*
-
-It is mandatory to specify the ```parentNode``` reference, ```language```  and ```schema``` field when creating a node. 
-It is possible specify the schema uuid instead of the name. At least one property within the ```schema``` object must be set.
-
-[source]
-----
-POST /api/v1/demo/nodes HTTP/1.1
-Host: localhost:8080
-Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
-Content-Type: application/json
-Accept: application/json
-
-include::examples/api/request/api/v1/\{project\}/nodes/request-body.json[]
-----
-
-*Update an existing node*
-
-The created node can be updated via a ```PUT``` request. You may only include those field which should be updated.
-
-[source]
-----
-PUT /api/v1/demo/nodes/5af8d0e077e34361b8d0e077e353619e HTTP/1.1
-Host: localhost:8080
-Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
-Content-Type: application/json
-Accept: application/json
-
-include::examples/api/request/api/v1/\{project\}/nodes/\{nodeUuid\}/request-body.json[]
-----
-
-*Add a tag to a node*
-
-Tagging nodes requires just a simple ```PUT``` request.
-
-[source]
-----
-PUT /api/v1/demo/nodes/5af8d0e077e34361b8d0e077e353619e/tags/ba2edcdb1234489daedcdb1234289d38 HTTP/1.1
-Host: localhost:8080
-Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
-Accept: application/json
-----
-
-
-== link:building-blocks.html[Building Blocks]
-
-== Software Stack
-
-[options="header"]
-|======
-| Component                                                    | Type                 | Version
-| http://orientdb.com/[OrientDB]                               | Graph Database       | 2.2.x
-| https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.2.x
-| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 2.3.x
-| http://vertx.io/[Vert.x]                                     | Core Framework       | 3.4.x
-| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.5.x
-| https://google.github.io/dagger/                             | Dependency Injection | 2.6.x
-|======
-
-== Installation
-
-There is no dedicated installation procedure for Gentics Mesh. You just http://getmesh.io/Download[download the mesh jar] file and start it using Java.
-
-Oracle Java Runtime 1.8.0_40 or newer is required to run Gentics Mesh.
-
-[source,bash]
-----
-java -jar mesh-demo-0.9.0.jar
-----
-
-=== Docker
-
-Alternatively you can start mesh using docker via:
-
-The https://hub.docker.com/r/gentics/mesh-demo/[mesh-demo] image contains mesh which provides the demo data and demo application.
-
-[source,bash]
-----
-docker run -p 8080:8080 gentics/mesh-demo
-or
-docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh-demo
-----
-
-The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty Gentics Mesh server without any demo content.
-
-[source,bash]
-----
-docker run -p 8080:8080 gentics/mesh
-or
-docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh
-----
-
-
-=== System Requirements
-
- * Oracle Java Runtime (JRE) 8u60+
-
-=== System Configuration
-
-The max open file limit on Linux has to be raised on most Linux systems since the embedded graph database and elasticsearch server often exceed the amount of concurrent open files.
-
-Edit _/etc/security/limits.conf_ and add these two lines:
-
-[source,bash]
-----
-Mesh   soft    nofile  60000
-Mesh   hard    nofile  60000
-----
-
-Edit _/etc/pam.d/su_ and uncomment or add the following line:
-
-[source,bash]
-----
-session    required   pam_limits.so
-----
-
-Please note that this change may require a logout and login after it is being applied.
-
-== Settings
-
-The main ```mesh.yml``` configuration file contains various settings to configure the graph database and various file system paths.
-
-[source,json]
-----
-include::examples/models/mesh-config.yml[]
-----
-
-[options="header"]
-|======
-| Configuration            | Type   | Description
-| ```clusterMode```        | Flag   | The internal hazelcast in-memory data grid will be enabled if this flag is set to true.
-| ```updateCheck```        | Flag   | A update check to the mesh update server will be invoked during startup if this flag is set to true.
-| ```defaultPageSize```    | Number | Default page size.
-| ```defaultLanguage```    | String | Default language which is used as a fallback when no language was specified.
-| ```verticles```          | List   | List of vert.x java verticle classes which will be loaded during startup.
-| ```tempDirectory```      | Path   | Path to the main temporary filesystem directory.
-|======
-
-=== HTTPS/SSL
-
-To enable https you have to specify the server key and the server certificate within the configuration.
-
-You can create a snakeoil certificate for testing purposes this way:
-
-[source,bash]
-----
-openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 90 -nodes
-----
-
-=== Server Options
-
-[options="header"]
-|======
-| Configuration                                     | Type      | Description
-| ```httpServerOptions.port```                      | Number    | Http Port number.
-| ```httpServerOptions.ssl```                       | Boolean   | Enable or disable SSL support.
-| ```httpServerOptions.corsAllowedOriginPattern```  | RegEx     | Regex which will validate the origin CORS header.
-| ```httpServerOptions.enableCors```                | Boolean   | Enable CORS support.
-| ```httpServerOptions.certPath```                  | Path      | SSL certificate path.
-| ```httpServerOptions.keyPath```                   | Path      | SSL key path.
-|======
-
-=== Storage Options
-
-By default all specified directories are relative to the current working directory.
-
-[options="header"]
-|======
-| Configuration                        | Type      | Description
-| ```storageOptions.directory```       | Path      | Path to the graph database storage location.
-| ```storageOptions.backupDirectory``` | Path      | Backup directory.
-| ```storageOptions.exportDirectory``` | Path      | Export directory.
-| ```storageOptions.startServer```     | Boolean   | Flag that indicates whether the graph database server component should be started. By default only an embedded graph database is used which does not start a graph server.
-| ```storageOptions.parameters```      | JSON      | Additional JSON parameters that will be passed on to the used graph database implementation.
-|======
-
-=== Upload Options
-
-[options="header"]
-|======
-| Configuration                       | Type   | Description
-| ```uploadOptions.byteLimit```      | Number | Upload limit in bytes.
-| ```uploadOptions.directory```      | Path   | Filesystem directory for uploaded binary data.
-| ```uploadOptions.tempDirectory```  | Path   | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory.
-|======
-
-=== Cache Options
-
-Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying graph and elasticsearch database cache settings.
-
-== Features
-
-=== Password Recovery
-
-A user who lost his password can recover it using a recovery token. This token can be issued by a user or admin which has permissions to create new users. The ```/api/v1/users/:userUuid/reset_token``` endpoint will return a token code which can for example be passed along to an email service which sends a recovery email to the user which includes this token. The token is valid for 30 minutes.
-
-The user can use this token to update his user record via ```/api/v1/users/:userUuid?token=TOKENCODE```. This works even if the user is not authenticated. The token will be invalidated once it has been used. 
-
-=== Permissions
-
-Permissions exist between roles and other elements (including other roles).
-Most responses within Gentics Mesh will contain a list of permissions which may indicate that CRUD operations on the returned element is restricted in a way.
-
-The ```/api/v1/roles/:roleUuid/permissions``` endpoint can be used to assign or revoke permissions to/from a role.
-
-This endpoint can also be used to apply recursive permissions.
-It is important to note that permissions can be applied to individual elements and onto the set of elements which is identified by the endpoint name (e.g: /groups).
-
-
-For newly created objects CRUD permissions are assigned to those roles that would be able to also create the object in the first place. 
-By this we ensure that roles that would also be able to create the object are now able to invoke CRUD on the newly created object.
-
-Example:
-
-* User John is assigned to Role A. Role A grants him to create a new child Node in a parent Node.
-* User Mary is assigned to Role B. Role B grants her to also create a new child Node in the same parent Node.
-* When John creates a new Node the permission system identifies Role B as a role that would also be able to create the object. 
-  Therefore CRUD permissions are assigned in between Role A and B and the newly created object.
-
-==== Users
-
-Recursive permission changes on ```/users``` will also affect all listed users.
-
-[options="header"]
-|======
-| Element             | Permission     | Description
-| ```/api/v1/users``` | Create         | New users can be created.
-| ```/api/v1/users``` | Read           | _Not used_
-| ```/api/v1/users``` | Update         | _Not used_
-| ```/api/v1/users``` | Delete         | _Not used_
-| ```/api/v1/users``` | Read Published | _Not used_
-| ```/api/v1/users``` | Publish        | _Not used_
-|======
-
-Recursive permission changes on ```/users/:uuid``` have no effect on referenced elements such as node references.
-
-[options="header"]
-|======
-| Element                   | Permission     | Description
-| ```/api/v1/users/:uuid``` | Create         | _Not used_
-| ```/api/v1/users/:uuid``` | Read           | User can be read.
-| ```/api/v1/users/:uuid``` | Update         | User can be updated.
-| ```/api/v1/users/:uuid``` | Delete         | User can be deleted.
-| ```/api/v1/users/:uuid``` | Read Published | _Not used_
-| ```/api/v1/users/:uuid``` | Publish        | _Not used_
-|======
-
-==== Groups
-
-Recursive permission changes on ```/groups``` will affect all groups.
-
-[options="header"]
-|======
-| Element              | Permission     | Description
-| ```/api/v1/groups``` | Create         | New roles can be created.
-| ```/api/v1/groups``` | Read           | _Not used_
-| ```/api/v1/groups``` | Update         | _Not used_
-| ```/api/v1/groups``` | Delete         | _Not used_
-| ```/api/v1/groups``` | Read Published | _Not used_
-| ```/api/v1/groups``` | Publish        | _Not used_
-|======
-
-Recursive permission changes on ```/groups/:uuid``` will also affect users of the group but not roles that are linked to the group.
-
-[options="header"]
-|======
-| Element                    | Permission     | Description
-| ```/api/v1/groups/:uuid``` | Create         | _Not used_
-| ```/api/v1/groups/:uuid``` | Read           | Group can be read.
-| ```/api/v1/groups/:uuid``` | Update         | Group can be updated.
-| ```/api/v1/groups/:uuid``` | Delete         | Group can be deleted.
-| ```/api/v1/groups/:uuid``` | Read Published | _Not used_
-| ```/api/v1/groups/:uuid``` | Publish        | _Not used_
-|======
-
-==== Roles
-
-[options="header"]
-|======
-| Element             | Permission     | Description
-| ```/api/v1/roles``` | Create         | New roles can be created.
-| ```/api/v1/roles``` | Read           | _Not used_
-| ```/api/v1/roles``` | Update         | _Not used_
-| ```/api/v1/roles``` | Delete         | _Not used_
-| ```/api/v1/roles``` | Read Published | _Not used_
-| ```/api/v1/roles``` | Publish        | _Not used_
-|======
-
-Recursive permission changes on ```/roles/:uuid``` have no effect.
-
-[options="header"]
-|======
-| Element                   | Permission     | Description
-| ```/api/v1/roles/:uuid``` | Create         | _Not used_
-| ```/api/v1/roles/:uuid``` | Read           | Role can be read.
-| ```/api/v1/roles/:uuid``` | Update         | Role can be updated.
-| ```/api/v1/roles/:uuid``` | Delete         | Role can be deleted.
-| ```/api/v1/roles/:uuid``` | Read Published | _Not used_
-| ```/api/v1/roles/:uuid``` | Publish        | _Not used_
-|======
-
-==== Schemas
-
-Recursive permission changes on ```/schemas``` will also affect schemas.
-
-[options="header"]
-|======
-| Element               | Permission     | Description
-| ```/api/v1/schemas``` | Create         | New schemas can be created.
-| ```/api/v1/schemas``` | Read           | _Not used_
-| ```/api/v1/schemas``` | Update         | _Not used_
-| ```/api/v1/schemas``` | Delete         | _Not used_
-| ```/api/v1/schemas``` | Read Published | _Not used_
-| ```/api/v1/schemas``` | Publish        | _Not used_
-|======
-
-Recursive permission changes on ```/schemas/:uuid``` have no effect on referenced elements.
-
-[options="header"]
-|======
-| Element                     | Permission     | Description
-| ```/api/v1/schemas/:uuid``` | Create         | _Not used_
-| ```/api/v1/schemas/:uuid``` | Read           | The schema can be read. Read permission on the schema is also needed to be able to create new nodes that are based upon the schema.
-| ```/api/v1/schemas/:uuid``` | Update         | The schema can be updated.
-| ```/api/v1/schemas/:uuid``` | Delete         | The schema can be deleted.
-| ```/api/v1/schemas/:uuid``` | Read Published | _Not used_
-| ```/api/v1/schemas/:uuid``` | Publish        | _Not used_
-|======
-
-==== Microschemas
-
-Recursive permission changes on ```/schemas``` will also affect schemas.
-
-[options="header"]
-|======
-| Element                    | Permission     | Description
-| ```/api/v1/microschemas``` | Create         | New microschemas can be created.
-| ```/api/v1/microschemas``` | Read           | _Not used_
-| ```/api/v1/microschemas``` | Update         | _Not used_
-| ```/api/v1/microschemas``` | Delete         | _Not used_
-| ```/api/v1/microschemas``` | Read Published | _Not used_
-| ```/api/v1/microschemas``` | Publish        | _Not used_
-|======
-
-Recursive permission changes on ```/microschemas/:uuid``` have no effect on referenced elements.
-
-[options="header"]
-|======
-| Element                          | Permission     | Description
-| ```/api/v1/microschemas/:uuid``` | Create         | _Not used_
-| ```/api/v1/microschemas/:uuid``` | Read           | The microschema can be read.
-| ```/api/v1/microschemas/:uuid``` | Update         | The microschema can be updated.
-| ```/api/v1/microschemas/:uuid``` | Delete         | The microschema can be deleted.
-| ```/api/v1/microschemas/:uuid``` | Read Published |  _Not used_
-| ```/api/v1/microschemas/:uuid``` | Publish        |  _Not used_
-|======
-
-==== Projects
-
-Recursive permission changes on ```/projects``` will also affect all projects and those elements.
-
-[options="header"]
-|======
-| Element                    | Permission     | Description
-| ```/api/v1/projects```     | Create         | Create new projects.
-| ```/api/v1/projects```     | Read           | _Not used_
-| ```/api/v1/projects```     | Update         | _Not used_
-| ```/api/v1/projects```     | Delete         | _Not used_
-| ```/api/v1/projects```     | Read Published | _Not used_
-| ```/api/v1/projects```     | Publish        | _Not used_
-|======
-
-Recursive permission changes on ```/projects/:uuid``` will also affect schemas, tagfamilies (and tags), nodes and subnodes.
-
-[options="header"]
-|======
-| Element                      | Permission     | Description
-| ```/api/v1/projects/:uuid``` | Create         | _Not used_
-| ```/api/v1/projects/:uuid``` | Read           | Project can be read.
-| ```/api/v1/projects/:uuid``` | Update         | Project can be updated.
-| ```/api/v1/projects/:uuid``` | Delete         | Project can be deleted.
-| ```/api/v1/projects/:uuid``` | Read Published | Affected node publish versions can be read.
-| ```/api/v1/projects/:uuid``` | Publish        | Affected node can be published.
-|======
-
-==== Tag Families
-
-Recursive permission changes on ```/projects/:uuid/tagFamilies``` will also all tagfamiles and those tags.
-
-[options="header"]
-|======
-| Element                                  | Permission     | Description
-| ```/api/v1/projects/:uuid/tagFamilies``` | Create         | Create new tag families.
-| ```/api/v1/projects/:uuid/tagFamilies``` | Read           | _Not used_
-| ```/api/v1/projects/:uuid/tagFamilies``` | Update         | _Not used_
-| ```/api/v1/projects/:uuid/tagFamilies``` | Delete         | _Not used_
-| ```/api/v1/projects/:uuid/tagFamilies``` | Read Published | _Not used_
-| ```/api/v1/projects/:uuid/tagFamilies``` | Publish        | _Not used_
-|======
-
-Recursive permission changes on ```/projects/:uuid/tagFamilies/:uuid``` will also affect tags.
-
-[options="header"]
-|======
-| Element                                       | Permission     | Description
-| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Create         | Tags can be created within the tag family.
-| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Read           | Tag family can be read.
-| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Update         | Tag family can be updated.
-| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Delete         | Tag family can be deleted.
-| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Read Published | _Not used_
-| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Publish        | _Not used_
-|======
-
-==== Tags
-
-Recursive permission on ```/api/v1/projects/:uuid/tagFamilies/:uuid/tags``` changes have no effect.
-
-[options="header"]
-|======
-| Element                                           | Permission    | Description
-| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Create         | Create new tags.
-| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Read           | _Not used_
-| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Update         | _Not used_
-| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Delete         | _Not used_
-| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Read Published | _Not used_
-| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Publish        | _Not used_
-|======
-
-Recursive permission changes on ```/projects/:uuid/tagFamilies/:uuid/tags/:uuid``` have no effect.
-
-[options="header"]
-|======
-| Element                                | Permission     | Description
-| ```/api/v1/:projectName/tags/:uuid```  | Create         | _Not used_
-| ```/api/v1/:projectName/tags/:uuid```  | Read           | Tag can be read.
-| ```/api/v1/:projectName/tags/:uuid```  | Update         | Tag can be updated.
-| ```/api/v1/:projectName/tags/:uuid```  | Delete         | Tag can be deleted.
-| ```/api/v1/:projectName/tags/:uuid```  | Read Published | _Not used_
-| ```/api/v1/:projectName/tags/:uuid```  | Publish        | _Not used_
-|======
-
-===== Nodes
-
-Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect children of the node.
-
-[options="header"]
-|======
-| Element                           | Permission     | Description
-| ```/api/v1/:projectName/nodes```  | Create         | _Not used_
-| ```/api/v1/:projectName/nodes```  | Read           | _Not used_
-| ```/api/v1/:projectName/nodes```  | Update         | _Not used_
-| ```/api/v1/:projectName/nodes```  | Delete         | _Not used_
-| ```/api/v1/:projectName/nodes```  | Read Published | _Not used_
-| ```/api/v1/:projectName/nodes```  | Publish        | _Not used_
-|======
-
-Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect children of the node.
-
-[options="header"]
-|======
-| Element                                | Permission     | Description
-| ```/api/v1/:projectName/nodes/:uuid``` | Create         | Create new nodes within the node
-| ```/api/v1/:projectName/nodes/:uuid``` | Read           | Node can be read.
-| ```/api/v1/:projectName/nodes/:uuid``` | Update         | Node can be updated.
-| ```/api/v1/:projectName/nodes/:uuid``` | Delete         | Node can be deleted.
-| ```/api/v1/:projectName/nodes/:uuid``` | Read Published | Published version can be read.
-| ```/api/v1/:projectName/nodes/:uuid``` | Publish        | Node can be published.
-|======
-
-==== Releases
-
-[options="header"]
-|======
-| Element                              | Permission     | Description
-| ```/api/v1/:projectName/releases```  | Create         | Releases can be created.
-| ```/api/v1/:projectName/releases```  | Read           | _Not used_
-| ```/api/v1/:projectName/releases```  | Update         | _Not used_
-| ```/api/v1/:projectName/releases```  | Delete         | _Not used_
-| ```/api/v1/:projectName/releases```  | Read Published | _Not used_
-| ```/api/v1/:projectName/releases```  | Publish        | _Not used_
-|======
-
-[options="header"]
-|======
-| Element                                    | Permission     | Description
-| ```/api/v1/:projectName/releases/:uuid```  | Create         | _Nod used_
-| ```/api/v1/:projectName/releases/:uuid```  | Read           | Release can be read.
-| ```/api/v1/:projectName/releases/:uuid```  | Update         | Release can be updated.
-| ```/api/v1/:projectName/releases/:uuid```  | Delete         | Permission does not apply. Releases can't be deleted.
-| ```/api/v1/:projectName/releases/:uuid```  | Read Published | _Not used_
-| ```/api/v1/:projectName/releases/:uuid```  | Publish        | _Not used_
-|======
-
-
-=== WebRoot
-
-The ```/api/v1/:projectName/webroot/:path``` endpoint can be used to access nodes via a regular web path instead of using uuids.
-
-Example: ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg?width=1000```
-
-This makes it possible to integrate Gentics Mesh with many known routing frameworks.
-
-[options="header"]
-|======
-| Framework                           | Language       | Example
-| http://silex.sensiolabs.org/[Silex] | PHP            | http://getmesh.io/Blog/Building+an+API-first+Web+App+with+Gentics+Mesh+and+the+PHP+Microframework+Silex[Blogpost]
-| http://expressjs.com/[ExpressJS]    | JS             | http://getmesh.io/Blog/Getting+started+with+Express+and+the+API-first+CMS+Gentics+Mesh[Blogpost]
-| http://vertx.io/[Vert.x]            | Java,JS,Ceylon | http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[Blogpost] 
-| http://lotusrb.org/[Lotus]          | Ruby           | -
-|======
-
-A webroot path consists of multiple path segments. Each segment of the url must be URL encoded. A list of segments can be provided by a single node. The `segmentField` information from the schema is used to determine the segment field value which the node provides. Each language of the node must provide different path segment.
-
-The `Ford GT Image` node for example provides the path segment `ford-gt.jpg` since the used schema `vehicleImage` points to the binary field `image`. The binary field contains the filename `ford-gt.jpg`.
-
-The `segmentField` parameter within the schema is therefore used to map in between fields and the path segment.
-
-* `ford-gt.jpg` -> ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg```
-
-The binary data will be returned if the path targets a node in which the binary `fileName` property provides the segment.
-It is possible to differentiate between a binary response and a normal JSON response by checking whether the `Content-Disposition` header parameter is set. The header value will only be set when binary data is returned.
-
-The router implementation can use this in order to be able to to decide whether to handle the JSON data or whether the binary data should just be passed through to the requester.
-
-=== Navigations
-
-There are two ways of generating a nested navigation response. You can either use ```/api/v1/:projectName/nodes/:uuid/navigation``` or ```/api/v1/:projectName/navroot/:path``` endpoints.
-
-Each endpoint will return a navigation response which contains the nested navigation tree structure. The ```maxDepth``` parameter may be used to limit the navigation depth (default: 10).
-
-=== Link Handling
-
-Gentics Mesh will try to resolve any found mesh-link within any text field of a node if the resolveLinks query parameter has been set to either `short`, `medium` or `full`.
-
-Example: ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/Vehicle%20Images/ford-gt.jpg``` when using the `?resolveLinks=full`
-
-Valid Links:
-
-* ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}```
-* ```{{mesh.link('2f2de9297c8143e8ade9297c8193e8fc', 'en')}}```
-* ```{{mesh.link(\"2f2de9297c8143e8ade9297c8193e8fc\", \"en\")}}```
-* ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc")}}``` (Link to default language)
-
-==== Resolver
-
-The ```/api/v1/utilities/linkResolver``` endpoint can be used to resolve mesh links within the posted text data. This is useful when resolving links for a preview page.
-
-=== Schema / Microschema Migration
-
-Gentics Mesh provides a changelog like system in order to apply and keep track of schema changes. A schema change may be a single change that adds a new field to the schema or a change which updates the schema properties.
-
-Gentics Mesh supports the following change operations:
-
-==== Operation: addfield
-
-[options="header"]
-|======
-| Properties  | Description
-| after       | Name of the field after which the new field should be inserted
-| field       | Name of the field that should be added
-| type        | Type of the field
-| listType    | Optional list type
-|======
-
-
-[source,json]
-----
-include::examples/models/addfield.json[]
-----
-
-
-==== Operation: removefield
-
-[options="header"]
-|======
-| Properties  | Description
-| field       | Name of the field to be removed
-|======
-
-[source,json]
-----
-include::examples/models/removefield.json[]
-----
-
-
-==== Operation: changefieldtype
-
-[options="header"]
-|======
-| Properties  | Description
-| field       | Name of the field to be modified
-| type        | New field type
-| listType    | (Only applies for lists) New list type
-|======
-
-[source,json]
-----
-include::examples/models/changefieldtype.json[]
-----
-
-==== Operation: updatefield
-
-[options="header"]
-|======
-| Properties       | Description
-| field            | Field to be updated
-| label            | New field label
-|======
-
-[source,json]
-----
-include::examples/models/updatefield.json[]
-----
-
-==== Operation: updateschema
-
-[options="header"]
-|======
-| Properties       | Description
-| description      | New schema description
-| order            | Array of strings that contains the field order
-| displayFieldname | New displayFieldname value of the schema
-| segmentFieldname | New segmentFieldname value of the schema
-| container        | New container flag of the schema
-|======
-
-[source,json]
-----
-include::examples/models/updateschema.json[]
-----
-
-==== Operation: updatemicroschema
-
-[options="header"]
-|======
-| Properties       | Description
-| description      | New microschema description
-|======
-
-[source,json]
-----
-include::examples/models/updatemicroschema.json[]
-----
-
-Each change may also provide a migration script. The migration script can be used to modify nodes that were affected by the migration.
-
-Typical usecases for migration scripts are for example dynamic field removal or even custom reformatting of field data.
-It is also possible to split a single field value into values for two new fields.
-
-The ```/api/v1/schemas/:uuid/diff``` and ```/api/v1/microschemas/:uuid/diff``` endpoints can be used to generate a list of changes by comparing the stored and posted schema.
-
-This list of changes can be modified and posted to ```/api/v1/schemas/:uuid/changes``` for schemas or ```/api/v1/microschemas/:uuid/changes``` for microschemas.
-The posted list of changes will be validated and stored when valid. A schema migration process will be started which runs in the background.
-
-The https://github.com/sockjs[SockJS] compliant ```/api/v1/eventbus``` endpoint can be used to register to migration specific messages.
-
-Additionally to websocket it is possible to query whether a migration is running via the ```/api/v1/admin/status/migrations``` endpoint.
-
-Sending a schema to ```/api/v1/schemas:uuid``` using the ```PUT``` method will conveniently combine the diff generation and invocation of the schema migration.
-
-Please note that by default conflicting data will be *removed* and this action can only be avoided by specifying a custom migration script.
-
-==== Custom Migration Scripts
-
-Sometimes it is desired to overwrite the default migration behaviour. 
-
-The following migration script converts the number value from field ```node.fields[fieldname]``` into a _ISO-8601_ date string which is then stored within the ```node.fields[fieldname]``` field. 
-
-[source,javascript]
-----
-function migrate(node, fieldname, convert) {
-    node.fields[fieldname] = new Date(new Date(node.fields[fieldname]).getTime() + 864000).toISOString(); 
-    return node;
+ul.doc-toc h2 {
+    font-size: 27px;
 }
-----
-
-Migration scripts also allow you to split up a field value into two different fields.
-
-[source,javascript]
-----
-function migrate(node, fieldname, convert) {
-    node.fields["fieldA"] = "First field set";
-    node.fields["fieldB"] = "Second field set"; 
-    return node;
-}
-----
-
-The provided converter can be used to convert in between field types. This converter will be used if no custom migration script was specified.
-
-
-[source,javascript]
-----
-function migrate(node, fieldname, convert) {
-    var stringValue = convert.toString(node.fields[fieldname]);
-
-    // It is important to use the Java.from method to convert the java list object into a number array.
-    var numberArray    = Java.from(convert.toNumberList(node.fields[fieldname]));
-    var micronodeArray = Java.from(convert.toMicronodeList(node.fields[fieldname]));
-    var dateArray      = Java.from(convert.toDateList(node.fields[fieldname]));
-    var booleanArray   = Java.from(convert.toBooleanList(node.fields[fieldname]));
-
-    var numberValue    = convert.toNumber(node.fields[fieldname]);
-    var nodeValue      = convert.toNode(node.fields[fieldname]);
-    var micronodeValue = convert.toMicronode(node.fields[fieldname]);
-    var dateValue      = convert.toDate(node.fields[fieldname]);
-    var booleanValue   = convert.toBoolean(node.fields[fieldname]);
-    var binaryValue    = convert.toBinary(node.fields[fieldname]);
-
-    // Delete the field
-    delete node.fields[fieldname];
-    return node;
-}
-----
-
-
-Finally the changes can be applied by sending the request to ```/api/v1/schemas/:uuid/changes```.
-
-[source,json]
-----
-include::examples/api/request/api/v1/schemas/\{schemaUuid\}/changes/request-body.json[]
-----
-
-
-=== Versioning
-
-In order to grasp the concept of versioning in Gentics Mesh it is important to remember that Nodes are containers for language variants. The language variant of a node contains the fields and thus stores all the content.
- 
-Versioning within Gentics Mesh only applies to *language variants* and their referenced fields. Other elements such as Users, groups, roles and even Nodes are not versioned.
- 
-Various interactions have different effects for versioning in Mesh. Below is a list of actions which involve versioning.
-
-==== Node Creation
-
-Once a node has been created the initial start version 0.1 will be assigned to its language variant.
-
-==== Node Updates
-
-Updating a node's language variant may create version 0.2 of that language variant if changes have been detected within the posted request fields. 
-
-* No Locks and Conflict detection
-
-It is not required to handle locks in Gentics Mesh. Instead it is required to specify the version in the update request which identifies the version on which the update request was based upon.
-Mesh will check whether new versions have been created in the meanwhile. Long running edit operations or multiple concurrent editors may create additional versions.
-The detected changes will automatically compared in order to determine whether the current update request causes a conflict with a newer edit request.
-Mesh will return a response which contains information about the conflict in those cases. Other update operations which do not cause a conflict will be stored and the changed fields will be updated.
-
-The latest version which was created using a update request is called the draft version. Only a single draft version per language exists.
-
-==== Publishing Nodes
-
-Node language variant can be published and taken offline. This is especially useful if you want to first work on a draft and review it and later publish it.
-Publishing a just requires a ```PUT``` request on ```/api/v1/:projectName/nodes/:uuid/published``` which will publish all language variants of the node. 
-It is also possible to just publish specific language variants via ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/published```. 
-Mesh will automatically create a new major version when publishing a node language variant (e.g.: 1.0, 2.0). The draft reference will also be updated to point to version 1.0.
-It is also possible to retrieve detailed information about the published status via a ```GET``` request on ```/api/v1/:/nodes/:uuid/published```.
-
-NOTE: Publishing node language variations requires the user to be assigned to a role which provides the ```publish``` permission.
-
-[source,json]
-----
-include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/published/200/example.json[]
-----
-
-It is not possible to publish a specific version. Publish always affects the latest draft version of the language variant.
-
-==== Taking Nodes Offline
-
-Similarly the language variants of a node can be taken offline via a ```DELETE``` request on ```/api/v1/:projectName/nodes/:uuid/published```. 
-Taking a node language variant with version 1.0 offline will just change the node's publish state. Version 1.0 will still be available.
-
-====  Reading Nodes
-
-It is possible to load older versions by specifying the ```?version``` parameter. Similarly the published version of can also be loaded using the parameter ```?version=published``` or the draft version via ```?version=draft```.
-
-NOTE: By default nodes will be loaded using ```?version=published```. A nodes list thus may not contain your previously created node because it was not yet published.
-
-NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readpublished``` permission.
-
-==== Permissions
-
-Permissions are not version specific. Permissions apply to nodes and not to language variants.
-
-==== Limitations
-
-At the moment it is not possible to delete older versions.
-
-=== Releases
-
-So far we learned that node language variants can be versioned and published. Additionally Mesh versioning provides a powerful concept we call `Releases`. A release is very similar to branches in a versioning control system.
-
-Releases can be used to restructure your nodes and change the contents within a specific release without affecting a different release which provides a different structure/content.
-
-Structural references for nodes always contain release information. This applies to parent/child relationship or taggings, publish states of nodes. This way releases are completely isolated from each other.
-
-NOTE: It is currently not possible to migrate from one release to another. Nodes of releases can't be automatically merged to other releases.
-
-Typical usecases are:
-
-* Updating an existing application installation which uses Gentics Mesh to a new version. The new application version requires new schema versions. 
-  By creating a release and migrating the nodes to the new release (new schema versions), it is possible to serve content for both application versions.
-  Each application versions chooses the correct release for getting nodes.
-
-* Schema versions must be assigned to the release.
-  Each project can have multiple releases.
-  An initial release will automatically be created when creating a project.
-
-All operations to nodes can be scoped to a specific release by adding the ```?release=name``` query parameter. If omitted the latest release will be used to execute the operation.
-
-TIP: Implementations which use mesh should always reference a specific release. Otherwise the document structure could change without the implementation being aware of these changes.
-
-==== Creating a Release
-
-A release requires an unique name. Existing nodes within the project will automatically be migrated into the release.
-Please note the started *node migration* will be processed asynchronously and thus not all nodes may be directly accessible within the scope of the release.
-
-This migration is different from a schema version migration. The release node migration just takes care of making all nodes from the previous release available in the newly created release.
-Unlike the schema migration the node migration will not create new language variant versions.
-
-You can use the eventbus bridge or the dedicated ```/api/v1/admin/status/migrations``` endpoint to query the migration status.
-The ```migrated``` JSON property within the release response also indicates whether the node migration has been completed.
-
-Note: Migrated nodes will still have the same _uuid_ as before.
-
-==== Updating a Release
-
-A release can be _renamed_ and new schema/microschema versions can be _assigned_ to it.
-
-Renaming is useful if you want to change your development release to be the current production release.
-
-Assigning schema versions to the release via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/schemas``` will automatically trigger a schema migration of the affected nodes language variants within the release.
-
-[source,json]
-----
-include::examples/api/request/api/v1/\{project\}/releases/\{releaseUuid\}/schemas/request-body.json[]
-----
-
-It is also possible to assign microschemas via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/microschemas``` to the release.
-
-[source,json]
-----
-include::examples/api/request/api/v1/\{project\}/releases/\{releaseUuid\}/microschemas/request-body.json[]
-----
-
-All nodes which reference the release via the updated schema version will automatically be migrated to use the newer schema version.
-Please note the started *schema migration* will be processed asynchronously and thus not all node language variants may be directly accessible within the scope of the release.
-
-The migration will create new versions for the affected node language variants.
-
-NOTE: It is note worthy that updating a schema and thus creating new schema version will not automatically affect the release. Each schema update created a new schema version. This new version must first be assigned to the release.
-
-==== Deleting a Release
-
-At the moment it is not possible to delete a release.
-
-==== Moving Nodes
-
-Releases enable Gentics Mesh to setup multiple content project tree structures. 
-Moving nodes can be scoped to a specific release using the ```?release``` request parameter. 
-The project's initial release will be used to execute the move operation if no release has been selected.
-
-==== Tagging Nodes
-
-The tag operation is also scoped to a specific release. This way new tags can be assigned to your nodes for a specific release without affecting the taggings of nodes within an older release. 
-
-NOTE: Tags and tag families are not versioned. Deleting a tag will remove the tag from all nodes that previously referenced this tag.
-
-NOTE: Taggings to nodes are not versioned.
-
-==== Deleting Nodes
-
-Deleting nodes is also release specific. Deleting a node via ```DELETE``` to ```/api/v1/:projectName/node/:uuid?release=winter2016``` will delete the node and all its sub nodes from the _winter2016_ release.
-The node will be completely removed from the system if no more language variants are referenced within any release.
-
-It is also possible to just delete a specific language variant via ```DELETE``` to ```/api/v1/:projectName/node/:uuid/languages/en?release=winter2016``` from release _winter2016_.
-
-
-==== Updating Nodes
-
-Releases are completely isolated from each other as explained earlier. This also applies to a node's language variant versions.
-
-Example:
-
-* Create release _summer2016_
-* Create node with language variant _de_ at version _1.0_ in release _summer2016_
-* Create release _winter2016_
-* Update previously created node in release _summer2016_ and thus create version _1.1_
-
-Release _summer2016_ will reference node language variant 1.1 and _winter2016_ will still reference version 1.0 since the _winder2016_ release was created at the specific point of time in which the language variant in release _summer2016_ was still at version _1.0_.
-
-NOTE: It is currently not possible to migrate _1.1_ from _summer2016_ to _winter2016_.
-
-Additionally creating new nodes in _summer2016_ will not be available in release _winter2016_.
-
-=== Permissions
-
-Permissions are not release specific.
-
-=== Eventbus Bridge / Websocket
-
-The ```/api/v1/eventbus``` endpoint allows clients to access the eventbus. This may be useful if you want to react on specific events.
-Currently only schema migration specific events are handled via this endpoint but more will follow.
-
-The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possible to access the websocket directly via: ```/api/v1/eventbus/websocket```.
-
-[options="header"]
-|======
-| Eventname       | Description
-| mesh.migration  | Receive node and micronode migration specific events
-|======
-
-=== Image Manipulation
-
-Images can be resized by appending the image manipulation query parameters on the binary node endpoint:
-
-Endpoint: ```/api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname?width=220```
-
-It is also possible to use the image manipulation in combination with the webroot endpoint:
-
-Endpoint: ```/api/v1/:projectName/webroot/:path?width=220```
-
-It is mandatory to specify all four crop parameters when cropping an image.
-
-
-include::examples/tables/ImageManipulationParametersImpl.adoc[]
-
-[options="header"]
-|=====
-| Parameter    | Description
-| ```width```  | Target image width.
-| ```height``` | Target image height.
-| ```cropx```  | Crop area start x coordinate.
-| ```cropy```  | Crop area start y coordinate.
-| ```cropw```  | Crop area width.
-| ```croph```  | Crop area height.
-|=====
-
-
-=== Language Fallback
-
-Nodes are translated into different languages. Requests for nodes should contain the requested languages (as comma separated list) as query parameter:
-
-Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=en,de```
-
-If the requested node is available in any of the languages, the response will contain the fields in that language (first language found).
-Otherwise, the node will still be returned, but without fields.
-
-=== Search
-
-Search requests are handled by the ```/api/v1/search``` or ```/api/v1/:projectName/search``` endpoints.
-
-Elasticsearch is used in order to provide the search functionality. This way elasticsearch queries can be posted to the search endpoints.
-
-The JSON format of stored documents within the elasticsearch differ from the JSON format that is returned via regular Gentics Mesh endpoints. Thus it is important to know the elasticsearch document format when building an elasticsearch query. Below is a list of various example documents.
-
-NOTE: It is not possible to search for specific individual versions. Instead only published and draft versions per release are stored in the search index.
-
-
-==== Users
-
-Endpoint: ```/api/v1/search/users```
-
-[source,json]
-----
-include::examples/search/user.search.json[]
-----
-
-==== Groups
-
-Endpoint: ```/api/v1/search/groups```
-
-[source,json]
-----
-include::examples/search/group.search.json[]
-----
-
-
-==== Roles
-
-Endpoint: ```/api/v1/search/roles```
-
-[source,json]
-----
-include::examples/search/role.search.json[]
-----
-
-==== Nodes
-
-Endpoint: ```/api/v1/search/nodes```
-
-[source,json]
-----
-include::examples/search/node.search.json[]
-----
-
-
-*Search nodes by schema name*
-
-Listed below is an example search query which can be posted to ```/api/v1/search/nodes``` in order to find all nodes across all projects which were created using the content schema.
-The found nodes will be sorted ascending by creator.
-
-[source,json]
-----
-{
-  "sort" : {
-     "created" : { "order" : "asc" }
-  },
-  "query":{
-    "bool" : {
-      "must" : {
-        "term" : { "schema.name" : "content" }
-       }
-    }
-  }
-}
-----
-
-
-
-*Search nodes by micronode field values*
-
-Find all nodes which have a micronode list field (vcardlist) that contain at least one micronode which contains the two string fields (firstName, lastName) with the values ("Joe", "Doe"):
-
-[source,json]
-----
-{
-  "query": {
-    "nested": {
-      "path": "fields.vcardlist",
-      "query": {
-        "bool": {
-          "must": [
-            {
-              "match": {
-                "fields.vcardlist.fields.firstName": "Joe"
-              }
-            },
-            {
-              "match": {
-                "fields.vcardlist.fields.lastName": "Doe"
-              }
-            }
-          ]
-        }
-      }
-    }
-  }
-}
-----
-
-
-==== Projects
-
-Endpoint: ```/api/v1/search/projects```
-
-[source,json]
-----
-include::examples/search/project.search.json[]
-----
-
-==== Tags
-
-Endpoint: ```/api/v1/search/tags```
-
-[source,json]
-----
-include::examples/search/tag.search.json[]
-----
-
-==== Tag Families
-
-Endpoint: ```/api/v1/search/tagFamilies```
-
-[source,json]
-----
-include::examples/search/tagFamily.search.json[]
-----
-
-==== Schemas
-
-Endpoint: ```/api/v1/search/schemas```
-
-[source,json]
-----
-include::examples/search/schema.search.json[]
-----
-
-==== Microschemas
-
-Endpoint: ```/api/v1/search/microschemas```
-
-[source,json]
-----
-include::examples/search/microschema.search.json[]
-----
-
-=== Clustering
-
-Clustering support is still in development.
-
-It will be possible to use master/master replication for OrientDB. Clustering for the elasticsearch nodes and the vertx event message bus.
-
-== Administration UI
-
-The Gentics Mesh Administration UI is an AngularJS single page application which uses the REST API to interface with Gentics Mesh. By default it can be reached via ```http://localhost:8080/mesh-ui/```.
-
-=== Configuration
-
-The mesh-ui can be configured using the mesh-ui-config.js file.
-
-[source,json]
-----
-(function(window, document) {
-
-    /**
-     * Settings which can be configured per app instance, without requiring the app be re-built from
-     * source.
-     */
-    var meshUiConfig = {
-        // The URL to the Mesh API
-        apiUrl: '/api/v1/',
-
-        // The ISO-639-1 code of the default language
-        defaultLanguage: 'en',
-        // The ISO-639-1 codes of the available languages
-        availableLanguages: ['en', 'de'],
-
-        // Provide an array or URLs for previewing nodes, in the following format:
-        //
-        // ```
-        // {
-        //   projectName: [
-        //     // label: url
-        //     { somePreview: 'http://some/url' },
-        //     { otherPreview: 'http://someother/url' }
-        //  ]
-        // }
-        // ```
-        // When this option is used, a "preview" button will be available
-        // in the node editor pane. Click it will POST the node data to the specified URL. The node will be
-        // encoded as form data under the key "node", and its value will need to be de-serialized back into JSON
-        // (e.g. using JSON.parse()). The "default" key will make the URls available to all projects.
-        previewUrls: {
-            default: [
-                { default: 'https://httpbin.org/post' }
-            ]
-        },
-
-        // A microschema control is a custom form component which can be used to render a
-        // specific microschema, in place of the default form generator. For full documentation, please
-        // see the example in `/microschemaControls/example/exampleControl.js`
-        //
-        // The `microschemaControlsLocation` may point to any location on the current server or even on
-        // another server. Note that if serving microschema controls from a different server or port, you
-        // must take CORS into consideration and set the Access-Control-Allow-Origin headers accordingly.
-        microschemaControlsLocation: '/microschemaControls',
-        microschemaControls: [
-            // "geolocation/geolocationControl",
-            // "example/exampleControl"
-        ],
-
-        // List any plugins to be loaded and made available to the Aloha editor.
-        // (For available plugins see http://www.alohaeditor.org/guides/plugins.html)
-        // If left empty, the following default plugins will be used:
-        //  'common/autoparagraph',
-        //  'common/contenthandler',
-        //  'common/format',
-        //  'common/highlighteditables',
-        //  'common/list',
-        //  'common/paste',
-        //  'common/table',
-        //  'common/ui'
-        // plus a custom link plugin (mesh/mesh-link) for linking to other Mesh nodes.
-        alohaPlugins: [],
-
-        // Custom settings object for the Aloha editor. If left empty, the default configuration
-        // will be used.
-        alohaSettings: {}
-    };
-
-
-    window.meshUiConfig = meshUiConfig;
-
-})(window, document);
-----
-
-=== Preview handling
-
-The mesh ui will provide a preview button when editing nodes. A post request to a configureable url is being dispatchen when the button will be triggered.
-The post request will contain the node JSON data of the current editing state. This way a preview page can be easily rendered by custom frontend implementations.
-
-==  JAVA REST client
-
-You can add the following maven dependency and repository to your project to get the mesh rest client.
-
-[source,xml]
-----
-…
-	<dependency>
-		<artifactId>mesh-rest-client</artifactId>
-		<groupId>com.gentics.mesh</groupId>
-		<version>${mesh.version}</version>
-	</dependency>
-…
-	<repositories>
-		<repository>
-			<id>maven.gentics.com</id>
-			<name>Gentics Maven Repository</name>
-			<url>https://maven.gentics.com/maven2</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
-	</repositories>
-…
-----
-
-Usage:
-
-[source,java]
-----
-	MeshRestClient client = MeshRestClient.create("localhost", 8080, vertx, BASIC_AUTH);
-	client.setLogin("username", "password");
-	client.login().toCompletable().await();
-
-	client.findNodes("demo", new NodeRequestParameter().setExpandAll(true).setLanguages("en")).setHandler(rh -> {
-		if (rh.succeeded()) {
-			NodeListResponse list = rh.result();
-			for(NodeResponse nodeResponse : list.getData()) {
-				System.out.println(nodeResponse.getUuid());
-				System.out.println(nodeResponse.getFields().getStringField("name").getString());
-			}
-		} else {
-			rh.cause().printStackTrace();
-		}
-	});
-----
-
-== License
-
-* Gentics Mesh is published under a commercial license. http://getmesh.io/Terms[License Terms]
-* https://github.com/graphql/graphiql[GraphiQL] is owned and developed by Facebook Inc.
+</style>
+
+<div class="container docs-content">
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="preamble">
+                <div class="sectionbody">
+                    <div class="paragraph">
+                        <p>This is the right place to getting started using API-first CMS Gentics Mesh. You'll find a short overview of the core concepts, a complete list of all features and references for available APIs. Furthermore, we provide information on how to configure and run Gentics Mesh in your environment.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="col-md-4">
+                <ul class="doc-toc">
+                    <li class="section">
+                        <h2><a href="getting-started.html">Getting Started</a></h2>
+                        <ul>
+                            <li>
+                                <a href="getting-started.html#_quickstart">Quickstart</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="section">
+                        <h2><a href="building-blocks.html">Building Blocks</a></h2>
+                        <ul>
+                            <li>
+                                <a href="building-blocks.html#_project">Project</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_node">Node</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_schema">Schema</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_micronode">Micronode &amp; Microschema</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_tag">Tag</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_tag_family">Tag Family</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_user">User</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_group">Group</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_role">Role</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="section">
+                        <h2><a href="administration-guide.html">Administration Guide</a></h2>
+                        <ul>
+                            <li>
+                                <a href="administration-guide.html#_software_stack">Software Stack</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide.html#_installation">Run with JAR File</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide.html#_docker">Run with Docker</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide.html#_system_requirements">System Requirements</a>
+                                <!--ul>
+                                    <li>
+                                        <a href="administration-guide.html">Gentics Mesh Server</a>
+                                    </li>
+                                    <li>
+                                        <a href="administration-guide.html">Gentics Mesh User Interface</a>
+                                    </li>
+                                </ul-->
+                            </li>
+                            <li>
+                                <a href="administration-guide.html">Settings</a>
+                                <!--ul>
+                                    <li>
+                                        <a href="administration-guide.html">HTTP/SSL</a>
+                                    </li>
+                                    <li>
+                                        <a href="administration-guide.html">Server Options</a>
+                                    </li>
+                                    <li>
+                                        <a href="administration-guide.html">Storage Options</a>
+                                    </li>
+                                    <li>
+                                        <a href="administration-guide.html">Upload Options</a>
+                                    </li>
+                                    <li>
+                                        <a href="administration-guide.html">Cache Options</a>
+                                    </li>
+                                </ul-->
+                            </li>
+                            <li>
+                                <a href="changelog.html">Changelog</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide.html#_backup_recovery">Backup &amp; Recovery</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide.html#_license">License</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <ul class="doc-toc">
+                    <li class="section">
+                        <h2><a href="features.html">Features</a></h2>
+                        <ul>
+                            <li>
+                                <a href="features.html#contenttree">Content Tree</a>
+                            </li>
+                            <li>
+                                <a href="features.htmll#prettyurls">Pretty URLs</a>
+                            </li>
+                            <li>
+                                <a href="features.html#navigation">Navigation Menus</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_breadcrumbs">Breadcrumbs</a>
+                            </li>
+                            <li>
+                                <a href="features.html#webroot">Fetching Content with WebRoot Paths</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_link_resolving">Link Resolving</a>
+                            </li>
+                            <li>
+                                <a href="features.html#imagemanipulation">Image Manipulation</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_file_upload">File Upload</a>
+                            </li>
+                            <li>
+                                <a href="features.html#multilanguage">Multi-Language</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_permissions">Permissions</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_versioning">Versioning</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_content_releases">Content Releases</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_search">Search</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_preview_handling">Preview Handling</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_password_recovery">Password Recovery</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_schema_microschema_migration">Schema &amp; Microschema Migration</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_eventbus_bridge_websocket">Eventbus Bridge &amp; Web Socket</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_clustering">Clustering</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="section">
+                        <h2><a href="user-interface.html">User Interface</a></h2>
+                        <ul>
+                            <li>
+                                <a href="user-interface.html">Editors Guide</a>
+                            </li>
+                            <li>
+                                <a href="user-interface.html">Developers Guide</a>
+                            </li>
+                            <li>
+                                <a href="user-interface.html#_configuration">Extensions</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <ul class="doc-toc">
+                    <li class="section">
+                        <h2><a href="references.html">References</a></h2>
+                        <ul>
+                            <li>
+                                <a href="references.html">APIs</a>
+                                <ul>
+                                    <li>
+                                        <a href="references.html#_rest_api">REST API</a>
+                                    </li>
+                                    <li>
+                                        <a href="graphql.html">GraphQL</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="references.html#_http_details">HTTP Details</a>
+                                <ul>
+                                    <li>
+                                        <a href="references.html#_http_details">Security/SSL</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.html#_encoding">Encoding</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.html#_headers">Headers</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.html#_cors">CORS</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.html#_etag_handling">ETag Handling</a>
+                                    </li>
+                                    <!--
+                                    <li>
+                                        <a href="references.html">Error Codes</a>
+                                    </li>
+                                    -->
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="references.html#_authentication">Authentication</a>
+                                <ul>
+                                    <li>
+                                        <a href="references.html#_overview">Overview</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.htmll#_login">Login</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.html#_api_token">API Token</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.html#_anonymous_access">Anonymous Access</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="section">
+                        <h2><a href="platforms.html">Platforms</a></h2>
+                        <ul>
+                            <li>
+                                <a href="platforms.html#_javascript">JavaScript</a>
+                            </li>
+                            <li>
+                                <a href="platforms.html#_java">Java</a>
+                            </li>
+                            <li>
+                                <a href="platforms.html#_go">Go</a>
+                            </li>
+                            <li>
+                                <a href="platforms.html#_php">PHP</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+++++

@@ -1,172 +1,262 @@
 
-= Building blocks
+= Building Blocks
 
-Gentics Mesh provides a various building blocks which can be used in order to setup your content structure. Below are elements which can be used to create your project datastructure.
+This part of the documentation will be about the core concepts of Gentics Mesh. It will describe the building blocks you'll need to setup your project. 
+We will start with an overview and then move on to discuss each concept in detail including examples and references to relevant parts of the API. 
+At the end you should be able to understand the core concepts and be ready to design your content model as well as manage users and their permissions on elements of your project using either the API or the Gentics Mesh user interface.
 
-image:overview.png[]
+== The Gentics Mesh building blocks in a nutshell
 
-== Users
+image::overview.png[role="img-responsive"]
 
-Users can log into Gentics Mesh in order to interact with other elements.
+* You organize your contents and media assets in *projects*. 
+* A *schema* is used to define the structure of a content type (e.g. product, blogpost). It has a set of standard fields (uuid, name, version etc.) and defines the types of an arbitrary number of custom fields for your content type (i.e. string, number, HTML, date, binary, list, node reference, micronode, boolean).
+* The actual content items of your project are called *nodes* and always follow a schema.
+* *Everything is a node*, there is no separate concept for media assets.To get you started, we ship with schemas for _image_, _video_, _document_, and _audio_ that you may customize to your needs and liking!
+* Nodes can be tagged. A *tag family* groups *tags* that semantically belong together and is defined for a specific project.
+* Gentics Mesh supports building *content trees*. Nodes can be hierarchically structured if a container-schema is provided. While it’s possible to organize your contents in a simple, flat structure with tagging and referencing, content trees are the basis for leveraging the power of *automatic navigation menus, breadcrumbs, pretty URLs and link resolving*. For your convenience, Gentics Mesh is shipped with a generic _folder_ schema that you may choose for hierarchically organizing your content in a tree and ultimately following the well-known file system paradigm.
+* With *micronodes* it is possible to build complex object data structures as they are basically representing subnodes of nodes. They allow for creating custom content components, e.g. media elements of your blogpost such as YouTube videos, image galleries, Google maps, image with caption, vcards, quotes, or text paragraphs to be mixed and matched.
+* Supporting *multi-language and localisation*, nodes can hold several language variants of your content.
+* Each user (a physical person or client app) has a *user* object counter part in Gentics Mesh, which can be extended by referencing a custom user node. By defining your custom user schema Gentics Mesh supports extensible user profiles for your apps.
+* *Groups* are used to organize users, e.g., of same access levels.
+* *Roles* are used to manage permissions between a role and other elements in Gentics Mesh (i.e., nodes, schemas, users, roles, etc.). Roles can be assigned to groups, thus efficiently granting the role's permissions to a set of users.
+//* *Permissions*
+//* References /List
+//* Versioning
+//* Content Releases
 
-Endpoint: ```/api/v1/users/:uuid```
+== Project
 
-include::examples/tables/UserResponse.adoc[]
+In Gentics Mesh a *project* is the place to organize all the contents and media assets for a given project, e.g. a product catalogue website, your blog, your company intranet, an e-commerce website, a social community app - you name it. You can create as many projects as you would like. 
 
-*Response Sample*
+A project represents the base element of your content structure, which includes your actual content items called nodes as well as tag families. The tags for tagging content items are grouped in tag families and are defined for a specific project. Schemas are assigned to projects in order to specify what types of nodes can be created. Users have access to a project and its contained content items depending on the role(s) they’ve been assigned.
 
-[source,json]
-----
-include::examples/api/response/api/v1/users/\{userUuid\}/200/example.json[]
-----
+=== API end points
 
-== Groups
+[options="header",cols="2*"]
+|======
+//TODO add links and example columns
 
-Groups are used to organize users. Roles can be assigned to groups. A user in a group with roles inherits those roles and the permissions that are bound to those roles.
-Groups can't be nested.
+| Description
+| API end point
 
-Endpoint: ```/api/v1/groups/:uuid```
+| Create a new project.
+| ```POST /api/v1/projects/```
 
-include::examples/tables/GroupResponse.adoc[]
+| Get all projects and return a paged list response.
+| ```GET /api/v1/projects/```
 
-*Response Sample*
+| Get the project with the given UUID.
+| ```GET /api/v1/projects/:projectUuid```
 
-[source,json]
-----
-include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
-----
+| Update the project with the given UUID.
+| ```POST /api/v1/projects/:projectUuid```
 
-== Roles
+| Delete the project with the given UUID and all attached nodes.
+| ```DELETE /api/v1/projects/:projectUuid```
 
-Roles are used to assign permissions to objects. A role can be assigned to multiple groups.
-Users can only assign permissions to roles to which they have access.
-Roles can't be nested.
+|======
 
-Endpoint: ```/api/v1/roles/:uuid```
+=== Properties
 
-include::examples/tables/RoleResponse.adoc[]
-
-*Response Sample*
-
-[source,json]
-----
-include::examples/api/response/api/v1/roles/\{roleUuid\}/200/example.json[]
-----
-
-== Projects
-
-A project is the base element your content structure which includes tagfamilies and your node tree.
-Schemas can be assigned to projects in order to allow creation of nodes which use one of the assigned schemas.
-
-Endpoint: ```/api/v1/projects/:uuid```
+==== Read Properties
 
 include::examples/tables/ProjectResponse.adoc[]
 
-*Response Sample*
+==== Create Properties
+
+include::examples/tables/ProjectCreateRequest.adoc[]
+
+==== Update Properties
+
+include::examples/tables/ProjectUpdateRequest.adoc[]
+
+=== Query Parameters
+
+==== Paging Parameters
+
+include::examples/tables/PagingParametersImpl.adoc[]
+
+==== Role Permission Parameters
+
+include::examples/tables/RolePermissionParametersImpl.adoc[]
+
+=== Response Sample
 
 [source,json]
 ----
 include::examples/api/response/api/v1/projects/\{projectUuid\}/200/example.json[]
 ----
 
-== Tag Families
+== Node
 
-Tag families are base elements for tags which are bound to single project.
-Tag families can't be nested.
+Content items in Gentics Mesh are called *nodes* and represent the main structural building blocks for your content. A node is a specific piece of content within your project. The type of a node is always defined by the assigned schema. Let’s take the example of a product catalogue website: in your project you will create nodes for all of your content types, such as products, product categories, product images, and product manuals. 
 
-Endpoint: ```/api/v1/:projectName/tagfamilies/:uuid```
+NOTE: In Gentics Mesh every content item is a node, there is no separate concept for media assets such as images, videos, and documents. Instead content types for them can be defined individually giving you the freedom to store any metadata with your assets. For your convenience Gentics Mesh is shipped with four default schemas - _image_, _video_, _audio_ and _document_ to be customized to your needs and liking!
 
-include::examples/tables/TagFamilyResponse.adoc[]
+Nodes can be hierarchically structured if the schema is allowing this. They can be tagged by any number of tags. Furthermore, nodes can be translated into other languages, thus supporting multiple locales.
 
-*Response Sample*
+NOTE: It is important to understand that a node is just a container for language variants. These language variants will store your fields. You can query individual language variants by appending the ```?lang``` query parameter. The ```language``` json property within an update or create request will be used to identify which language variant should be created or updated.
 
-[source,json]
-----
-include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/200/example.json[]
-----
+=== API end points
+[options="header",cols="2*"]
+|======
 
-== Tags
+| Description
+| API end point
 
-Tags can be added to nodes. Tags can not be hierarchically structured.
+| Create a new node.
+| ```POST /api/v1/projectName/nodes```
 
-Endpoint: ```/api/v1/:projectName/tagFamilies/:uuid/tags```
+| Get all nodes of a project and return a paged list response.
+| ```GET /api/v1/projectName/nodes```
 
-include::examples/tables/TagResponse.adoc[]
+| Get the node with the given UUID.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid```
 
-*Response Sample*
+| Update the node with the given UUID. 
+| ```POST /api/v1/:projectName/nodes/:nodeUuid```
 
-[source,json]
-----
-include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/tags/\{tagUuid\}/200/example.json[]
-----
+| Delete the node with the given UUID and all attached nodes.
+| ```DELETE /api/v1/:projectName/nodes/:nodeUuid```
 
-== Nodes
+| Update the binary field with the given name.
+| ```POST /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```
 
-Nodes are the main structural building blocks for your content. You may create different schemas to create multiple types of nodes.
-Nodes can be hierarchically structured if the schema is allowing this. The type of a node is always defined by the assigned schema. Nodes can be tagged by any number of tags.
+| Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```
 
-NOTE: It is important to understand that a node is just a container for language variants. These language variants will store your fields. 
-You can query individual language variants by appending the ```?lang``` request parameter. The ```language``` json property within an update or create request will be used to identify which language variant should be created or updated.
+| Image Manipulation: Transform the image with the given field name and overwrite the stored image with the transformation result.
+| ```POST /api/v1/:projectName/nodes/:projectName/binaryTransform/:fieldName```
 
-Endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=de,en&version=draft&release=winter2016```
+| Get all child nodes and return a paged list response.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid/children```
+
+| Delete the language specific content of the node.
+| ```DELETE /api/v1/:projectName/nodes/:nodeUuid/language/:language```
+
+| Get the publish status for the given language of the node.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid/language/:language/published```
+
+| Move the node into the target node.
+| ```POST /api/v1/:projectName/nodes/:nodeUuid/moveTo/:toUuid```
+
+| Get a navigation object for the provided node.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid/navigation```
+
+| Get the published status of the node.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid/published```
+
+| Publish the node with the given UUID.
+| ```POST /api/v1/:projectName/nodes/:nodeUuid/published```
+
+| Unpublish the given node.
+| ```DELETE /api/v1/:projectName/nodes/:nodeUuid/published```
+
+| Get a list of all tags which tag the node.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid/tags```
+
+| Update the list of assigned tags
+| ```POST /api/v1/:projectName/nodes/:nodeUuid/tags```
+
+| Assign the given tag to the node.
+| ```POST /api/v1/:projectName/nodes/:nodeUuid/tags/:tagUuid```
+
+| Remove the given tag from the node.
+| ```DELETE /api/v1/:projectName/nodes/:nodeUuid/tags/:tagUuid```
+
+|======
+
+=== Properties
 
 include::examples/tables/NodeResponse.adoc[]
 
-*Response Sample*
+=== Query Parameters
+
+==== Versioning Parameters
+
+include::examples/tables/VersioningParametersImpl.adoc[]
+
+===== Paging Parameters
+
+include::examples/tables/PagingParametersImpl.adoc[]
+
+===== Node Parameters
+
+include::examples/tables/NodeParametersImpl.adoc[]
+
+===== Role Permission Parameters
+
+include::examples/tables/RolePermissionParametersImpl.adoc[]
+
+=== Response Sample
 
 [source,json]
 ----
 include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/200/example.json[]
 ----
 
+== Schema
+
+Typically, each project will require a set of different content types. Together they can be considered the content model of your project. Staying with the example of a product catalogue website: a product, product category, product image, and product manual each represent a separate content type. In Gentics Mesh, a *schema* is used to define such content types in terms of a couple of standard fields (e.g. ```uuid```, ```name```, ```description```, ```version```, etc.) and an arbitrary number of custom fields (e.g., ```string```, ```number```, ```HTML```, ```date```, ```binary```, ```list```, ```node```, ```micronode```, ```boolean```). You can think of a schema as a blueprint for new content items.  
+
+TIP: Using the ```container``` property, a schema can be configured to allow for hierarchically structuring nodes. Nodes based on a such a schema may contain child nodes. This is the basis for building link:features.html#_contenttrees[content trees] in Gentics Mesh and leveraging the power of automatic link:features.html#_navigation[navigation menus], link:features.html#_breadcrumbs[breadcrumbs] and link:features.html#_prettyurls[pretty URLs].
+
+=== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Create a new schema.
+| ```POST /api/v1/schemas/```
+
+| Get multiple schemas and return a paged list response.
+| ```GET /api/v1/schemas/```
+
+| Get the schema with the given uuid.
+| ```GET /api/v1/schemas/:schemaUuid```
+
+| Update the schema with the given uuid.
+| ```POST /api/v1/schemas/:schemaUuid```
+
+| Delete the schema with the given uuid.
+| ```DELETE /api/v1/schema/:schemaUuid```
+
+| Apply the provided changes on the latest version of the schema and link:features.html#_schema_microschema_migration[migrate] all nodes which are based on the schema.
+| ```POST /api/v1/schema/:schemaUuid/changes```
+
+| Compare the given schema with the stored schema and create a changeset for link:features.html#_schema_microschema_migration[migration]. 
+| ```POST /api/v1/schema/:schemaUuid/diff```
+
+|======
+
+=== Properties
+
+include::examples/tables/SchemaResponse.adoc[]
+
 === Query Parameters
 
-include::examples/tables/VersioningParametersImpl.adoc[]
+===== Paging Parameters
 
-include::examples/tables/NodeParametersImpl.adoc[]
+include::examples/tables/PagingParametersImpl.adoc[]
+
+===== Role Permission Parameters
 
 include::examples/tables/RolePermissionParametersImpl.adoc[]
 
-
-=== Creation
-
-It is mandatory to set the ```language``` and ```parentNodeUuid``` parameter within the JSON request when sending a create request via POST to the nodes endpoint.
-
-Depending on the used schema it may also be mandatory to add fields to the request which are flagged as mandatory.
-
-[source,json]
-----
-include::examples/api/request/api/v1/\{project\}/nodes/request-body.json[]
-----
-
-=== Updating
-
-It is mandatory to set the ```language``` and ```version``` parameter within the JSON request. Updating may fail if a segment path conflict was detected. The request could also fail if a unresolvable version conflict has been detected. See versioning for more information.
-
-== Schemas
-
-A schema defines the type and name of each field for a node. You can think of a schema as a blueprint for new nodes.
-
-Endpoint: ```/api/v1/schemas/:uuid```
+=== Response Sample
 
 [source,json]
 ----
 include::examples/api/response/api/v1/schemas/\{schemaUuid\}/200/example.json[]
 ----
 
-=== Configuration properties
-
-The following configuration properties may be specified:
-
-* **`container`** Set to `true` to indicate that this schema can contain child nodes. This will cause the response
-object for such nodes to have a `childrenInfo` property.
-* **`displayField`** Used to specify which field (as defined in the "fields" list) should be considered the title for
-the purpose of displaying a list of nodes. The value must be a string which corresponds to the name of one of the
-schema's fields, and additionally that field must not be of type "list", "node".
-
 === Schema Field
 
-A field is defined by an object which must have the following properties:
+Gentics Mesh allows you to define custom content types with a set of schema fields. A field is defined by an object which must have the following properties:
 
 * **`name`** A unique name to identify the field
 * **`type`** The type of data to be stored in this field.
@@ -174,60 +264,443 @@ A field is defined by an object which must have the following properties:
 The following optional properties may be applied to any type of field:
 
 * **`required`** If `true`, this field may not be left empty.
-* **`label`** A human-readable label for the field to be used as a form label in the admin UI. If not defined, the "name" field would be used.
+* **`label`** A human-readable label for the field to be used as a form label in the Gentics Mesh User Interface. If not defined, the "name" field would be used.
 
 In addition to the above, certain types expose additional properties with which to configure the field. Such additional
-properties are defined in the [Types](#types) section.
+properties are defined in the <<Schema Field Types>> section.
 
-=== Schema Field Types
+==== Schema Field Types
+//TODO add examples
+
 
 [options="header",cols="3*"]
 |======
-| Name
+
 | Type Key
 | Description
+| Validations
 
-| String
 | ```string```
-| A string field type may have an ```allow``` property which acts as a white list for allowed field values
+| A string field type is used for textual content, like title, names or paragraphs of text. 
+| The ```required``` property indicates if the field is mandatory or not. 
 
-| HTML
-| ```html```
-| A html field type does not have any special configuration settings at this point of time.
+The optional ```allow``` property acts as a whitelist for allowed field values.
 
-| Number
 | ```number```
-| A number field type has three optional config properties: "min" is the lowest permitted value, "max" is the greatest permitted
-value, and "step" is the size of the permitted increment in value. For example:
+| The number field type is used for whole and decimal numbers.
+| The ```required``` property indicates if the field is mandatory or not.
 
-| Date
+The optional ```min``` property specifies the lowest permitted value.
+
+The optional ```max``` property represents the greatest permitted value. 
+
+The optional ```step``` property allows specifying the size of the permitted increment in value. 
+
 | ```date```
-| The date field type stores a date in a epoch date format.
+| The date field type stores a date as ISO8601 formatted date string.
+| The ```required``` property indicates if the field is mandatory or not.
 
-| Boolean
+
 | ```boolean```
-| A boolean field type does not have any special config settings.
+| The boolean field type doesn’t have any specific configuration settings.
+| The ```required``` property indicates if the field is mandatory or not.
 
-| Binary
-| ```binary```
-| The binary field type stores binary and binary related meta data (e.g: filename, sha512sum, image width and height, mimetype..). Binary fields within nodes can be updated using the fields API.
+| ```html```
+| The html field type stores HTML data.
+| The ```required``` property indicates if the field is mandatory or not.
 
-| Node
-| ```node```
-| A node field type must have an ```allow``` property which acts as a white list for schemas which may be used. If ```allow``` is an
-empty array, any type of node may be used.
-
-| Micronode
 | ```micronode```
-| A micronode field type stores a single micronode. A micronode is similar to a node but it is directly bound to the node and thus is not accessible within the project node tree structure. Typical usecases for micronodes are galleries, location boxes, vcards.
+| A micronode field type stores a single micronode. A micronode is similar to a node. Typically they do not exist on their own but are tied to their (parent) node, e.g. an image with caption to be used in a blogpost node. For a detailed description see our definition of <<micronode>>.
+| The ```required``` property indicates if the field is mandatory or not.
 
-| List
+A micronode field type must have an ```allow``` property that acts as a whitelist for allowed microschemas.  If allow is an empty array, any type of micronode may be used.
+
+| ```node```
+| A node field type is used to specify a structural relationship between nodes. This kind of reference represents a 1:1 relationship.
+| The ```required``` property indicates if the field is mandatory or not.
+
+A node field type must have an ```allow``` property, which acts as a whitelist for schemas which may be used. If allow is an empty array, any type of node may be used.
+
 | ```list```
-| A list field **must** be typed via the ```listType``` property. Possible listTypes are ```node``` ```boolean``` ```string``` ```html``` ```number``` ```date``` ```micronode```
+| A list field type allows for specifying a list with elements on the basis of other field types and thus represents a powerful mechanism for building your content model:
+
+(1) Within a node you can have simple lists of arbitrary length. The ```listType``` property then has to be of type ```string```, ```number```, ```date```, ```boolean```, or ```HTML```. E.g. handling your recipe nodes of your food blog will be a breeze with string-typed lists for ingredients.
+
+(2) You can unleash the power of micronodes, by specifying a list with the ```listType``` property set to ```micronode```, and the ```allow``` property set to the allowed microschemas. For example, besides having title, teaser, date and author fields, your blogpost schema could define a content field of type list allowing to insert any of your microschemas (e.g. YouTube Video, Image, Text, Galleries, Google Maps, etc.).
+
+(3) Furthermore, a ```list``` field type can be used to specify a structural relationship between nodes. In this case, the ```listType``` property has to be of type ```node```. This kind of reference represents a 1:n relationship. E.g., in your movie database app, you might want to list all actors of a movie.
+| The ```required``` property indicates if the field is mandatory or not.
+
+A micronode/node listType must have an ```allow property```, which acts as a whitelist for microschemas/schemas which may be used. If allow is an empty array, any type of node may be used.
+
+| ```binary```
+| The binary field type is used to store binary data, e.g., image, video, audio and documents.
+Depending on the actual data, Gentics Mesh will store related meta data e.g., ```fileName```, ```fileSize```, ```mimeType```, ```sha512sum``` and for images specifically ```width```, ```height```, and ```dominant Color```. Gentics Mesh will set values for all meta data properties automatically when uploading an image. The meta data properties mimeType, dominantColor and fileName can be changed on subsequent update requests. 
+| The ```required``` property indicates if the field is mandatory or not.
+
 |======
 
-=== Media type whitelist for binary schemas
+[[micronode]]
+== Micronode & Microschema
 
-Binary schemas should be able to specify which media types (aka MIME type or Content-type) they may contain. This would be done by means of a whitelist which is an array of multiple regular expressions.
+A *micronode* is similar to a node. It also follows a schema - a *microschema*. It is bound to a node and thus is not directly accessible from within the project node tree structure. 
 
-Since the JSON standard does not have a special regex type, it would need to be specified as a string, but would actually be converted to and interpreted as a regex by Gentics Mesh.
+With micronodes it is possible to build complex object data structures as they are basically representing subnodes of nodes.
+
+Typical use cases for micronodes are content items that do not exist on their own but are tied to their (parent) node, e.g., media elements of your blogpost such as YouTube videos, image galleries, Google maps, image with caption, vcards, quotes, text paragraphs. As another example consider a recipe having a list of ingredients which in turn consist of a name and a quantity. 
+
+NOTE: Nodes can contain micronodes. Micronodes, however, can not contain further micronodes, thus limiting the nesting level to one.
+
+=== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Create a new microschema.
+| ```POST /api/v1/microschemas/```
+
+| Get multiple microschemas and return a paged list response.
+| ```GET /api/v1/microschemas/```
+
+| Get the microschema with the given uuid.
+| ```GET /api/v1/microschemas/:microschemaUuid```
+
+| Update the microschema with the given uuid.
+| ```POST /api/v1/microschemas/:microschemaUuid```
+
+| Delete the microschema with the given uuid.
+| ```DELETE /api/v1/microschemas/:microschemaUuid```
+
+| Apply the provided changes on the latest version of the microschema and link:features.html#_schema_microschema_migration[migrate] all micronodes which are based on the schema.
+| ```POST /api/v1/microschemas/:microschemaUuid/changes```
+
+| Compare the provided schema with the schema which is currently stored and generate a set of changes that have been detected for link:features.html#_schema_microschema_migration[migrate].
+| ```POST /api/v1/microschemas/:microschemaUuid/diff```
+
+|======
+
+=== Properties
+
+Microschemas share the same properties as schemas except for the properties ```displayField```, ```container```, and ```segmentField```, which are not available in a microschema.
+
+=== Schema Field Types
+
+In comparison to nodes, micronodes can be built with schema field types ```String```, ```Number```, ```Date```, ```Boolean```, ```HTML```, ```Node```, and ```Lists```. 
+
+Fields of type ```list``` in micronodes can be of type: ```String```, ```Number```, ```Date```, ```Boolean```, ```HTML```, and ```Node```.
+
+=== Example
+//TODO
+
+== Tag
+
+Gentics Mesh allows tagging of nodes. Tags can not be hierarchically structured. 
+
+=== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Get a list of all tags which tag the node.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid/tags```
+
+| Update the list of assigned tags.
+| ```POST /api/v1/:projectName/nodes/:nodeUuid/tags```
+
+| Assign the given tag to the node.
+| ```POST /api/v1/:projectName/nodes/:nodeUuid/tags/:tagUuid```
+
+| Delete the given tag from the node.
+| ```DELETE /api/v1/:projectName/nodes/:nodeUuid/tags/:tagUuid```
+|======
+
+=== Properties
+
+include::examples/tables/TagResponse.adoc[]
+
+=== Response Sample
+
+[source,json]
+----
+include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/tags/\{tagUuid\}/200/example.json[]
+----
+
+== Tag Family
+
+Tags that semantically belong together are grouped in a *tag family*, allowing to handle disambiguation. 
+
+Example tags and tag families:
+[options="header",cols="2*"]
+
+|======
+| Tag Family
+| Tags
+
+| Fruit
+| Apple, Pear, Orange
+
+| Company
+| Apple, Microsoft, Google, Amazon
+|======
+
+A tag family is defined as part of a project. Tag families can’t be nested.
+
+=== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Get multiple tag families and return a paged list response.
+| ```GET /api/v1/:projectName/tagFamilies/```
+
+| Create a new tag family.
+| ```POST /api/v1/:projectName/tagFamilies/```
+
+| Get the tag family with the given uuid.
+| ```GET /api/v1/:projectName/tagFamilies/:tagFamilyUuid```
+
+| Update the tag family with the given uuid.
+| ```POST /api/v1/:projectName/tagFamilies/:tagFamilyUuid```
+
+| Delete the tag family.
+| ```DELETE /api/v1/:projectName/tagFamilies/:tagFamilyUuid```
+
+| Get tags which were assigned to this tag family and return a paged list response.
+| ```GET /api/v1/:projectName/tagFamilies/:tagFamilyUuid/tags```
+
+| Get the specified tag from the tag family.
+| ```GET /api/v1/:projectName/tagFamilies/:tagFamilyUuid/tags/:tagUuid```
+
+| Update the specified tag
+| ```POST /api/v1/:projectName/tagFamilies/:tagFamilyUuid/tags/:tagUuid```
+
+| Remove the tag from the tag family.
+| ```DELETE /api/v1/:projectName/tagFamilies/:tagFamilyUuid/tags/:tagUuid```
+
+| Get all nodes that have been tagged with the tag and return a paged list response.
+
+| ```GET /api/v1/:projectName/tagFamilies/:tagFamilyUuid/tags/:tagUuid/nodes```
+
+|======
+
+=== Properties
+
+include::examples/tables/TagFamilyResponse.adoc[]
+
+=== Response Sample
+
+[source,json]
+----
+include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/200/example.json[]
+----
+
+== User
+
+Gentics Mesh *users* can be physical persons or client apps interacting with elements in Gentics Mesh. Both have a user object counterpart in Gentics Mesh. 
+This user object has a standard set of properties, e.g.```firstname```, ```lastname```, ```username```, and ```emailAddress``` , which can be extended by referencing a custom user object. The property ```nodeReference``` is used for storing additional user-related data, thus allowing for extensible user profiles. 
+
+In order to be able to store and retrieve content, a user needs to authenticate using one of the available link:references.html#_authentication[authentication] mechanisms. 
+
+=== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Get multiple users and return a paged list response.
+| ```GET /api/v1/users/```
+
+| Create a new user.
+| ```POST /api/v1/users/```
+
+| Get the user with the given uuid
+| ```GET /api/v1/users/:userUuid```
+
+| Update the user with the given uuid.
+| ```POST /api/v1/users/:userUuid```
+
+| Deactivate the user with the given uuid. Please note that users can't be deleted since they are needed to construct creator/editor information.
+| ```DELETE /api/v1/users/:userUuid```
+
+| Read the user permissions on the element/s that are located by the specified path.
+| ```GET /api/v1/users/:userUuid/permissions/:path```
+
+| Return a one time token which can be used by any user to update a user (e.g.: Reset the password)
+| ```POST /api/v1/users/:userUuid/reset_token```
+
+| Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.
+| ```POST /api/v1/users/:userUuid/token```
+
+| Invalidate the issued API token.
+| ```DELETE /api/v1/users/:userUuid/token```
+
+|======
+
+=== Properties
+
+include::examples/tables/UserResponse.adoc[]
+
+=== Query Parameters
+
+==== Paging Parameters
+
+include::examples/tables/PagingParametersImpl.adoc[]
+
+==== Role Permission Parameters
+
+include::examples/tables/RolePermissionParametersImpl.adoc[]
+
+==== Node Parameters
+
+Parameters which affect the optional returned user ```nodeReference``` property.
+
+include::examples/tables/NodeParametersImpl.adoc[]
+
+include::examples/tables/VersioningParametersImpl.adoc[]
+
+==== User Parameters
+
+include::examples/tables/UserParametersImpl.adoc[]
+
+=== Response Sample
+
+[source,json]
+----
+include::examples/api/response/api/v1/users/\{userUuid\}/200/example.json[]
+----
+
+== Group
+
+*Groups* are used to organize users and efficiently grant them permissions by assigning relevant roles to groups. Groups can’t be nested. Instead, a user can be part of several groups. 
+
+=== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Get multiple groups and return a paged list response.
+| ```GET /api/v1/groups/```
+
+| Create a new group.
+| ```POST /api/v1/groups/```
+
+| Get the group with the given uuid.
+| ```GET /api/v1/group/:groupUuid```
+
+| Update the group with the given uuid.
+| ```POST /api/v1/group/:groupUuid```
+
+| Delete the group with the given uuid.
+| ```DELETE /api/v1/group/:groupUuid```
+
+| Get multiple roles that are assigned to the group. Return a paged list response.
+| ```GET /api/v1/group/:groupUuid/roles```
+
+| Add the specified role to the group.
+| ```POST /api/v1/group/:groupUuid/roles/:rolesUuid```
+
+| Remove the given role from the group.
+| ```DELETE /api/v1/group/:groupUuid/roles/:rolesUuid```
+
+| Get a list of users which have been assigned to the group.
+| ```GET /api/v1/group/:groupUuid/users```
+
+| Add the given user to the group
+| ```POST /api/v1/group/:groupUuid/users/:userUuid```
+
+| Remove the given user from the group.
+| ```DELETE /api/v1/group/:groupUuid/users/:userUuid```
+|======
+
+=== Properties
+
+include::examples/tables/GroupResponse.adoc[]
+
+=== Query Parameters
+
+==== Paging Parameters
+
+include::examples/tables/PagingParametersImpl.adoc[]
+
+==== Role Permission Parameters
+
+include::examples/tables/RolePermissionParametersImpl.adoc[]
+
+=== Response Sample
+
+[source,json]
+----
+include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
+----
+
+== Role
+
+*Roles* are used to manage link:features.html#_permissions[permissions] between the role and other elements in Gentics Mesh (i.e., nodes, schemas, users, roles, etc.). Roles can be assigned to groups. Thus, a user of a group with roles inherits the permissions that are bound to these roles. Roles can’t be nested.
+
+//TODO picture with example User/Group/Roles that we ship
+
+=== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Get multiple roles and return a paged list response.
+| ```GET /api/v1/roles/```
+
+| Create a new role.
+| ```POST /api/v1/roles/```
+
+| Get the role with the given uuid.
+| ```GET /api/v1/roles/:roleUuid```
+
+| Update the role with the given uuid.
+| ```POST /api/v1/roles/:roleUuid```
+
+| Delete the role with the given uuid.
+| ```DELETE /api/v1/roles/:roleUuid```
+
+| Get the permissions between given role and the targeted element.
+| ```GET /api/v1/roles/:roleUuid```
+
+| Set the permissions between role and the targeted element.
+| ```POST /api/v1/roles/:roleUuid```
+|======
+
+=== Properties
+
+include::examples/tables/RoleResponse.adoc[]
+
+=== Query Parameters
+
+==== Paging Parameters
+
+include::examples/tables/PagingParametersImpl.adoc[]
+
+==== Role Permission Parameters
+
+include::examples/tables/RolePermissionParametersImpl.adoc[]
+
+=== Response Sample
+
+[source,json]
+----
+include::examples/api/response/api/v1/roles/\{roleUuid\}/200/example.json[]
+----
+

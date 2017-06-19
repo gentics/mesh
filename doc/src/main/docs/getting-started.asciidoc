@@ -33,29 +33,3 @@ Once the Mesh setup is complete, a demo application will be automatically deploy
 
 The app is composed of static files and can therefore be edited in place. The two JavaScript files which make up the app contain in-line documentation to help you get started.
 
-== Mesh UI
-
-The Mesh UI is a web-based administration tool for the Mesh server. It enables all Mesh functionality via a visual user-interface.
-
-To start, go to `http://localhost:8080/mesh-ui/` and log in with the administrator credentials: `admin:admin`. You will
-see the _demo_ project is already set up. Click on the demo project to begin exploring its contents.
-
-=== Editing Nodes
-
-The Mesh UI is divided into two panes. On the left is the **explorer pane**. This is a list of the contents of the projects. Container nodes appear as blue links, and clicking on them will navigate into the selected node and list _its_ contents.
-
-All nodes have an **edit** button on the left. Clicking this button opens the node in the **edit pane** on the right-hand half of the screen.
-
-The edit pane consists of a form which is generated according to the **schema** used by the node, as well as information at the top about the available languages for this node and any tags which have been applied to it. Binary nodes additionaly feature a binary preview & upload component at the top of the form.
-
-When a node is opened for editing, a new tab is created. This means that multiple nodes may be worked on concurrently, and each will remain open until closed by clicking the `x` symbol at the left of each tab.
-
-=== Searching
-
-At the top of the explorer pane is an input field, which can be used to filter the contents of the current node. If you start the term with `#`, a tag-selector will allow you to filter by tags. Once a tag filter has been applied, it will persist until explicitly removed with the `x` button by the tag name.
-
-Clicking the "global" checkbox will allow you to perform a project-wide search - either a text-based filter, by tags, or a combination of both.
-
-=== Administrative Functions
-
-In the top left of the Mesh UI is a menu icon which gives access to the **admin area**. This is where all administrative actions may be performed - for example: adding new users, editing permissions, creating or editing schemas and so on.

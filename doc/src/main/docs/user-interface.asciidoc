@@ -1,0 +1,110 @@
+= Gentics Mesh User Interface
+
+The Gentics Mesh user interface is a web-based administration tool for the Gentics Mesh server. 
+By default it can be reached via ```http://localhost:8080/mesh-ui/```.
+
+
+NOTE: We are currently working on a complete redesign of the user interface to be available this fall.
+
+To start, log in with the administrator credentials: `admin:admin`. In case, you've downloaded Gentics Mesh including our _demo_ project, you can click on the project to begin exploring its contents. Otherwise, you create a new project in the **admin area**.
+
+== Creating and Managing Content
+
+The Gentics Mesh user interface is divided into two panes. On the left is the **explorer pane**: it shows a list of the project's contents. Container nodes appear as blue links, and clicking on them will navigate into the selected node and list _its_ contents.
+
+All nodes have an **edit** button on the left. Clicking this button opens the node in the **edit pane** on the right half of the screen.
+
+The edit pane consists of a form which is generated according to the **schema** used by the node, as well as information at the top about the available languages for this node and any tags which have been applied to it.
+
+When a node is opened for editing, a new tab is created. This means that multiple nodes may be worked on concurrently, and each will remain open until closed by clicking the `x` symbol at the right of each tab.
+
+== Searching
+
+At the top of the explorer pane is an input field, which can be used to filter the contents of the current node. If you start the term with `#`, a tag-selector will allow you to filter by tags. Once a tag filter has been applied, it will persist until explicitly removed with the `x` button by the tag name.
+
+Clicking the "global" checkbox will allow you to perform a project-wide search - either a text-based filter, by tags, or a combination of both.
+
+== Administrative Functions
+
+On the top left of the Gentics Mesh user interface is a menu icon which gives access to the **admin area**. This is where all administrative actions may be performed, e.g.: adding new users, editing permissions, creating or editing schemas.
+
+== Configuration
+
+The Gentics Mesh user interface can be configured using the mesh-ui-config.js file.
+
+[source,json]
+----
+(function(window, document) {
+
+    /**
+     * Settings which can be configured per app instance, without requiring the app be re-built from
+     * source.
+     */
+    var meshUiConfig = {
+        // The URL to the Mesh API
+        apiUrl: '/api/v1/',
+
+        // The ISO-639-1 code of the default language
+        defaultLanguage: 'en',
+        // The ISO-639-1 codes of the available languages
+        availableLanguages: ['en', 'de'],
+
+        // Provide an array or URLs for previewing nodes, in the following format:
+        //
+        // ```
+        // {
+        //   projectName: [
+        //     // label: url
+        //     { somePreview: 'http://some/url' },
+        //     { otherPreview: 'http://someother/url' }
+        //  ]
+        // }
+        // ```
+        // When this option is used, a "preview" button will be available
+        // in the node editor pane. Click it will POST the node data to the specified URL. The node will be
+        // encoded as form data under the key "node", and its value will need to be de-serialized back into JSON
+        // (e.g. using JSON.parse()). The "default" key will make the URls available to all projects.
+        previewUrls: {
+            default: [
+                { default: 'https://httpbin.org/post' }
+            ]
+        },
+
+        // A microschema control is a custom form component which can be used to render a
+        // specific microschema, in place of the default form generator. For full documentation, please
+        // see the example in `/microschemaControls/example/exampleControl.js`
+        //
+        // The `microschemaControlsLocation` may point to any location on the current server or even on
+        // another server. Note that if serving microschema controls from a different server or port, you
+        // must take CORS into consideration and set the Access-Control-Allow-Origin headers accordingly.
+        microschemaControlsLocation: '/microschemaControls',
+        microschemaControls: [
+            // "geolocation/geolocationControl",
+            // "example/exampleControl"
+        ],
+
+        // List any plugins to be loaded and made available to the Aloha editor.
+        // (For available plugins see http://www.alohaeditor.org/guides/plugins.html)
+        // If left empty, the following default plugins will be used:
+        //  'common/autoparagraph',
+        //  'common/contenthandler',
+        //  'common/format',
+        //  'common/highlighteditables',
+        //  'common/list',
+        //  'common/paste',
+        //  'common/table',
+        //  'common/ui'
+        // plus a custom link plugin (mesh/mesh-link) for linking to other Mesh nodes.
+        alohaPlugins: [],
+
+        // Custom settings object for the Aloha editor. If left empty, the default configuration
+        // will be used.
+        alohaSettings: {}
+    };
+
+
+    window.meshUiConfig = meshUiConfig;
+
+})(window, document);
+----
+

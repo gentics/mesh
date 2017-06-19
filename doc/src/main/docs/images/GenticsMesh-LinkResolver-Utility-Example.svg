@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 16.0.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 width="1200px" height="630px" viewBox="0 0 1200 630" enable-background="new 0 0 1200 630" xml:space="preserve">
+<text transform="matrix(1 0 0 1 1094.9619 27.6802)"><tspan x="0" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="12">g</tspan><tspan x="7.104" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="12">etmesh.io</tspan></text>
+<g>
+	<path fill="#0096DC" d="M1174.287,12.637c-0.08,0.023-0.2,0.065-0.27,0.1c-0.092,0.05-7.745,4.553-8.396,4.942
+		c-0.165,0.1-0.415,0.377-0.523,0.581l-0.088,0.165l-0.012,5.238l-0.008,5.239l0.081,0.215c0.169,0.457,0.077,0.392,4.665,3.096
+		c2.3,1.358,4.266,2.507,4.364,2.55c0.25,0.115,0.759,0.115,1.009,0c0.131-0.058,7.207-4.215,8.48-4.977
+		c0.165-0.1,0.415-0.377,0.523-0.581l0.088-0.165l0.012-5.238c0.008-5.211,0.008-5.239-0.069-5.45c-0.234-0.627-0.988-1-1.635-0.812
+		c-0.158,0.047-1.068,0.558-2.941,1.662c-2.978,1.75-3.023,1.781-3.188,2.223c-0.108,0.288-0.108,0.708,0,1
+		c0.104,0.277,0.399,0.6,0.677,0.734c0.288,0.143,0.711,0.17,1.012,0.066c0.115-0.039,0.923-0.488,1.792-1.004
+		c0.873-0.512,1.592-0.931,1.607-0.931c0.012,0,0.02,1.473,0.016,3.273l-0.012,3.273l-3.415,2.015
+		c-1.877,1.108-3.431,2.016-3.45,2.016s-1.573-0.908-3.45-2.016l-3.415-2.015v-4.103v-4.104l3.415-2.015
+		c1.877-1.108,3.431-2.016,3.45-2.016s0.708,0.396,1.527,0.881c0.992,0.585,1.569,0.904,1.718,0.946
+		c0.623,0.181,1.305-0.135,1.604-0.742c0.077-0.154,0.093-0.242,0.093-0.566c0-0.338-0.012-0.411-0.1-0.6
+		c-0.059-0.123-0.17-0.284-0.254-0.369c-0.143-0.142-3.708-2.281-4.073-2.442C1174.922,12.621,1174.499,12.583,1174.287,12.637"/>
+	<path fill="#0096DC" d="M1174.003,22.44c-0.854,0.315-1.192,1.35-0.696,2.127c0.308,0.488,0.958,0.738,1.53,0.592
+		c0.442-0.115,0.766-0.381,0.958-0.792c0.089-0.185,0.1-0.261,0.1-0.596c0-0.343-0.011-0.408-0.107-0.604
+		c-0.139-0.281-0.392-0.535-0.669-0.669C1174.826,22.353,1174.307,22.325,1174.003,22.44"/>
+</g>
+<text transform="matrix(1 0 0 1 917.3418 534.5879)" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">API Endpoint</text>
+<text transform="matrix(1 0 0 1 850.8359 562.5898)"><tspan x="0" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="23.3359">/utilities/link</tspan><tspan x="121.857" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="23.3359">R</tspan><tspan x="136.956" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="23.3359">esol</tspan><tspan x="179.754" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="23.3359">v</tspan><tspan x="190.955" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="23.3359">er</tspan></text>
+<text transform="matrix(1 0 0 1 149.3037 229.2974)" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">Body: </text>
+<text transform="matrix(1 0 0 1 149.3037 257.3008)" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="23.3359">&lt;img src=&quot;{{mesh.link(&apos;02f9b46a2d554c0cb9b46a2d559c0c20&apos;)}}&quot;/&gt;</text>
+<text transform="matrix(1 0 0 1 513.2539 188.5244)" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="19.1495">UUID of an image</text>
+<text transform="matrix(1 0 0 1 200 323.6719)"><tspan x="0" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">?</tspan><tspan x="11.668" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">r</tspan><tspan x="20.069" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">esol</tspan><tspan x="65.457" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">v</tspan><tspan x="77.965" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">eLinks=o</tspan><tspan x="177.188" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">f</tspan><tspan x="184.399" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">f:</tspan></text>
+<text transform="matrix(1 0 0 1 199.7671 352.6719)" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="18">Result:</text>
+<text transform="matrix(1 0 0 1 258.771 352.6719)" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18"> &lt;img src=&quot;{{mesh.link(&apos;02f9b46a2d554c0cb9b46a2d559c0c20&apos;)}}&quot;/&gt;</text>
+<text transform="matrix(1 0 0 1 199.7671 422.0977)" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="18">Result:</text>
+<text transform="matrix(1 0 0 1 258.771 422.0977)"><tspan x="0" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18"> &lt;img src=&quot;/api/v1/demo/</tspan><tspan x="200.825" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18">w</tspan><tspan x="215.369" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18">ebroot/</tspan><tspan x="272.392" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18" letter-spacing="-1">i</tspan><tspan x="275.001" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18">mages/</tspan><tspan x="334.024" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18">f</tspan><tspan x="339.622" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18">ord-gt.jpg&quot;/&gt;</tspan></text>
+<text transform="matrix(1 0 0 1 200 394.0039)"><tspan x="0" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">?</tspan><tspan x="11.668" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">r</tspan><tspan x="20.069" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">esol</tspan><tspan x="65.457" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">v</tspan><tspan x="77.965" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">eLinks=full</tspan></text>
+<text transform="matrix(1 0 0 1 199.7666 490.4277)" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="18">Result:</text>
+<text transform="matrix(1 0 0 1 258.7705 490.4277)"><tspan x="0" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18"> &lt;img src=&quot;/demo/</tspan><tspan x="148.805" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18" letter-spacing="-1">i</tspan><tspan x="151.378" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18">mages/</tspan><tspan x="210.4" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18">f</tspan><tspan x="215.999" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18">ord-gt.jpg&quot;/&gt;</tspan></text>
+<text transform="matrix(1 0 0 1 200 463.7656)"><tspan x="0" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">?</tspan><tspan x="11.668" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">r</tspan><tspan x="20.069" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">esol</tspan><tspan x="65.457" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">v</tspan><tspan x="77.965" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">eLinks=medium</tspan></text>
+<text transform="matrix(1 0 0 1 199.7671 562.3105)" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="18">Result:</text>
+<text transform="matrix(1 0 0 1 258.771 562.3105)"><tspan x="0" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18"> &lt;img src=&quot;/</tspan><tspan x="97.775" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18" letter-spacing="-1">images</tspan><tspan x="147.473" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18">/</tspan><tspan x="152.477" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18">f</tspan><tspan x="158.057" y="0" fill="#0096DC" font-family="'UniversLTStd-Light'" font-size="18">ord-gt.jpg&quot;/&gt;</tspan></text>
+<text transform="matrix(1 0 0 1 200 533.5273)"><tspan x="0" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">?</tspan><tspan x="11.668" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">r</tspan><tspan x="20.069" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">esol</tspan><tspan x="65.457" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">v</tspan><tspan x="77.965" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">eLinks=sho</tspan><tspan x="203.115" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">r</tspan><tspan x="211.726" y="0" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="23.3359">t</tspan></text>
+<text transform="matrix(1 0 0 1 426.6011 122.4854)" fill="#0096DC" font-family="'UniversLTStd-Bold'" font-size="48">Link Resolving </text>
+<g opacity="0.5">
+	
+		<line fill="none" stroke="#0096DC" stroke-width="3" stroke-miterlimit="10" x1="589.334" y1="199.571" x2="589.334" y2="218.237"/>
+	<g>
+		
+			<line fill="none" stroke="#0096DC" stroke-width="3" stroke-miterlimit="10" x1="385.082" y1="219.333" x2="793.586" y2="219.333"/>
+		
+			<line fill="none" stroke="#0096DC" stroke-width="3" stroke-miterlimit="10" x1="387.094" y1="218.237" x2="387.094" y2="236.904"/>
+		
+			<line fill="none" stroke="#0096DC" stroke-width="3" stroke-miterlimit="10" x1="791.762" y1="218.071" x2="791.762" y2="236.737"/>
+	</g>
+</g>
+<circle opacity="0.5" fill="#0096DC" cx="174" cy="315" r="8"/>
+<circle opacity="0.5" fill="#0096DC" cx="174" cy="385" r="8"/>
+<circle opacity="0.5" fill="#0096DC" cx="174" cy="455" r="8"/>
+<circle opacity="0.5" fill="#0096DC" cx="174" cy="525" r="8"/>
+</svg>

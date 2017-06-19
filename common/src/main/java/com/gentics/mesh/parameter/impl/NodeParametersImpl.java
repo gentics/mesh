@@ -48,7 +48,7 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		// lang
 		QueryParameter langParameter = new QueryParameter();
 		langParameter.setDescription(
-				"Name of the language which should be loaded. Fallback handling can be applied by specifying multiple languages. The first matching language will be returned.");
+				"ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned.  If omitted or the requested language is not available then the _defaultLanguage_ as configured in _mesh.yml_ will be returned.");
 		langParameter.setExample("en,de");
 		langParameter.setRequired(false);
 		langParameter.setType(ParamType.STRING);
@@ -57,7 +57,7 @@ public class NodeParametersImpl extends AbstractParameters implements NodeParame
 		// resolveLinks
 		QueryParameter resolveLinksParameter = new QueryParameter();
 		resolveLinksParameter.setDescription(
-				"The resolve links parameter can be set to either short, medium or full. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. No resolving occurs if no link has been specified.");
+				"The resolve links parameter can be set to either _short_, _medium_ or _full_. Stored mesh links will automatically be resolved and replaced by the resolved webroot link. With the parameter set the _path_ property as well as the _languagesPath_ property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved link:features.html#_link_resolving[WebRoot path]. No resolving occurs if no link has been specified.");
 		resolveLinksParameter.setExample("medium");
 		resolveLinksParameter.setRequired(false);
 		resolveLinksParameter.setType(ParamType.STRING);
