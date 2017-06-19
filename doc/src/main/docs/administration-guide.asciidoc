@@ -1,4 +1,3 @@
-
 = Administration Guide
 
 == Software Stack
@@ -14,7 +13,7 @@
 | https://google.github.io/dagger/                             | Dependency Injection | 2.6.x
 |======
 
-== "Installation"
+== Installation
 
 Good news: there is no dedicated installation procedure for Gentics Mesh! 
 
@@ -57,13 +56,13 @@ docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh
 ----
 
 
-=== System Requirements
+== System Requirements
 
-==== Server Requirements
+=== Server Requirements
 
 Gentics Mesh comes with OrientDB, an embedded graph database and Elasticsearch. There are no external dependencies besides Oracle Java Runtime 1.8.0_40 or newer.
 
-===== System Configuration
+==== System Configuration
 
 The max open file limit on Linux has to be raised on most Linux systems since the embedded graph database and Elasticsearch server often exceed the amount of concurrent open files.
 
@@ -99,6 +98,7 @@ include::examples/models/mesh-config.yml[]
 ----
 
 === General Settings 
+
 [options="header"]
 |======
 | Configuration            | Type   | Description
@@ -162,11 +162,12 @@ By default all specified directories are relative to the current working directo
 
 Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying graph and Elasticsearch database cache settings.
 
-////////
-== Backup
-TODO
-http://getmesh.io/docs/beta/raml/#admin
-////////
+== Backup & Recovery
+
+The ```/api/v1/admin/graphdb/backup``` and ```/api/v1/admin/graphdb/restore``` endpoints can be used to create and restore backups. Please note that invoking these endpoints will block all execution and request processing.
+
+The graph database backup process will write a backup file to the configured backup location.
+It is advised to restart mesh once a backup has been restored.
 
 == link:changelog.html[Changelog]
 

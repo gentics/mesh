@@ -1,0 +1,19 @@
+++++
+<div class="graphql-example">
+{
+  # Search for all nodes which contain the string 'car' in the content
+  nodes(query: "{\"query\":{\"query_string\":{\"query\":\"car\"}}}") {
+    elements {
+      uuid
+      fields {
+        ... on vehicle {
+          slug
+        }
+      }
+    }
+    # Total amount of found results
+    totalCount
+  }
+}
+</div>
+++++

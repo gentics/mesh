@@ -1,9 +1,11 @@
+:icons: font
 
 = Features
 
 This section will be about the features of Gentics Mesh. Each will be described in detail including examples and references to relevant parts of the API or related tutorials.
 
 [[contenttree]]
+
 == Content Trees
 
 Gentics Mesh provides the means to organize your contents in terms of a *content tree*, or rather a node tree. Nodes can be hierarchically structured if a container schema is provided.
@@ -21,7 +23,8 @@ There are two properties when defining a link:building-blocks.html#_schemas[sche
 [[example]]
 Let’s consider the following example on the basis of our demo app to demonstrate how these properties work together to support navigation menus, breadcrumbs and pretty URLs:
 
-image:GenticsMesh-ContentTree-Example.png[] 
+image::GenticsMesh-ContentTree-Example.png[role="img-responsive"]
+
 //TODO update (slug, font size)
 
 Within the demo project vehicles are organized in three different categories. The nodes _Automobiles_, _Aircrafts_ and _Yachts_ of type _category_ serve as containers for nodes of type _vehicle_, e.g., the node _Ford GT_ in category _Automobiles_.
@@ -40,7 +43,8 @@ Likewise, you can query your content using WebRoot paths instead of using UUIDs 
 
 The ```segmentField``` is used to build the path of a specific node. According to the nodes’ schemas in our <<example,example>>, the path ```/automobiles/ford-gt``` for the node _Ford GT_ is built using the _slug_ field of the _vehicle_ node, i.e. _Ford GT_, and the _slug_ field of the _category_ node, i.e. _Automobiles_.
 
-image:GenticsMesh-PrettyURL-Example.png[]
+image::GenticsMesh-PrettyURL-Example.png[role="img-responsive"]
+
 //TODO update (slug, font-size)
 
 The ```path``` property as well as the ```languagesPath``` property (for available language variants) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` end point together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
@@ -61,6 +65,8 @@ For more details see the documentation on link:building-blocks.html#_node[node] 
 
 ==== Response Sample
 
+.Try the example
+[TIP]
 http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
 [source,json]
@@ -167,8 +173,8 @@ Each endpoint will return a navigation response which contains the nested naviga
 By default, only container nodes are included in a navigation response. The `includeAll` query parameter will include all nodes, if set to `true`.
 The `maxDepth` parameter may be used to limit the navigation depth. In order to include the `path` property in the navigation response, the `resolveLinks` query parameter can be used.
 
-[.img-responsive]
-image:GenticsMesh-Navigation-Example.png[]
+image::GenticsMesh-Navigation-Example.png[role="img-responsive"]
+
 //TODO
 
 === API end points
@@ -248,10 +254,16 @@ image:GenticsMesh-Navigation-Example.png[]
 
 === Response Sample
 
-Retrieving a navigation object using the projects root node ```/``` including the top level navigation menu items:
+Retrieving a navigation object using the projects root node ```/``` including the top level navigation menu items.
+
+.Try the example
+[TIP]
 http://getmesh.io/api/v1/demo/navroot/?resolveLinks=short&maxDepth=1
 
-The same can be achieved with:
+The same can be achieved using the node specific navigation endpoint. In this case you can specify the root node of your navigation by providing the node uuid.
+
+.Try the example
+[TIP]
 http://getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navigation?resolveLinks=short&maxDepth=1
 
 [source,json]
@@ -576,7 +588,7 @@ NOTE: The current node will not be included in the list, since all the informati
 
 In our demo app example, the ```breadcrumb``` property for node _Ford GT_ will therefore include the node _Automobiles_. 
 
-image:GenticsMesh-Breadcrumb-Example.png[]
+image::GenticsMesh-Breadcrumb-Example.png[options="img-responsive"]
 
 The ```breadcrumb``` property will be returned in all API responses containing nodes. Using the ```resolveLink``` query parameter will also the paths of the nodes listed in the array.
 
@@ -600,6 +612,9 @@ The ```breadcrumb``` property will be returned in all API responses containing n
 |======
 
 === Response Sample
+
+.Try the example
+[TIP]
 http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
 [source,json]
@@ -701,7 +716,7 @@ http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLink
 
 The WebRoot API is an alternative way for fetching content from Gentics Mesh. Other than accessing nodes with their UUID, one can use the way more intuitive WebRoot paths. 
 
-image:GenticsMesh-WebRootAPI-Example.png[]
+image::GenticsMesh-WebRootAPI-Example.png[role="img-responsive"]
 
 This functionality builds on top of using the nodes' ```segmentField``` property to build the path of a specific node. 
 WebRoot paths of arbitrary depth can be created, in combination with organizing content hierarchically in terms of a <<contenttree,content tree>> by specifying nodes to be ```containers``` for their child nodes. 
@@ -740,23 +755,32 @@ A WebRoot path may consist of multiple path segments, each corresponding to a no
 NOTE: Each segment of the URL must be URL-encoded. A node's language variants must provide different path segment in order to guarantee unique paths.
 
 ==== Fetch node with UUID
+
+.Try the example
+[TIP]
 http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
 Loading the node with the given UUID using API end point ```GET /api/v1/:projectName/nodes/:nodeUuid```.
 
 ==== Fetch node with WebRoot path
-http://getmesh.io/api/v1/demo/webroot/automobiles/ford-gt?resolveLinks=short
 
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/webroot/automobiles/ford-gt?resolveLinks=short
 
 === Query binary content by path
 The WebRoot API, furthermore, directly supports delivering binary content using the ```fileName``` meta-data field of the ```binary``` field . 
 
 ==== Fetch an image with UUID
-http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
+
+> http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
 
 Downloading a node's binary field with the given name using API end point ```GET /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```.
 
 ==== Fetch an image with WebRoot path
+
+.Try the example
+[TIP]
 http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg
 
 TIP: When using a routing framework, in order to find out if a requested resource is binary data or JSON data you need to check the HTTP Content-Disposition response header. If it is set, it’s binary data. 
@@ -766,10 +790,12 @@ In case, the binary data is an image, the WebRoot API allows to directly perform
 
 ==== Crop and resize an image with UUID
 
-http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?cropx=10&cropy=100&cropw=800&croph=400&width=300
+> http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?cropx=10&cropy=100&cropw=800&croph=400&width=300
 
 ==== Crop and resize an image with WebRoot path
 
+.Try the example
+[TIP]
 http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?cropx=10&cropy=100&cropw=800&croph=400&width=300
 
 Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
@@ -779,47 +805,27 @@ Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gent
 
 === Query Parameters
 
-[options="header",cols="3*"]
-|======
+==== Paging Parameters
 
-| Name
-| Type
-| Description
+include::examples/tables/PagingParametersImpl.adoc[]
 
-| lang
-| string
-| The ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned. If omitted or the requested language is not available then the ```defaultLanguage``` as configured in ```mesh.yml``` will be returned.
+==== Versioning Parameters
 
-| page
-| number (default: 1)
-| Number of page to be loaded. This query parameter is used in queries returning a data set with multiple items.
+include::examples/tables/VersioningParametersImpl.adoc[]
 
-| perPage
-| number (default: 25)
-| Number of elements per page. This query parameter is used in queries returning a data set with multiple items.
+===== Node Parameters
 
-| release
-| string
-| Specifies the release UUID to be used for loading data. The latest project release will be used if this parameter is omitted.
+include::examples/tables/NodeParametersImpl.adoc[]
 
-| resolveLinks
-| string
-| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. With the parameter set the ```path``` property as well as the ```languagesPath``` property (for available language variants) will be included in the response. Gentics Mesh links in any HTML-typed field will automatically be resolved and replaced by the resolved  link:features.html#_link_resolving[WebRoot path]. No resolving occurs if the query parameter is omitted.
+===== Role Permission Parameters
 
-| role
-| string
-| The ```role``` query parameter takes a UUID and may be used in order to add permission information to the response which is related to the specified role. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role on this node. E.g., this may be useful when you are logged in as administrator but want to retrieve the editor role permissions on a given node.
-
-| version
-| string
-| Specifies the version of the node’s language variant, e.g.: ```0.1```, ```1.0```, ```draft```, ```published```.
-
-|======
+include::examples/tables/RolePermissionParametersImpl.adoc[]
 
 == Link Resolving
+
 Link resolving represents the counterpart of the <<webroot, WebRoot API>> - a node UUID can be resolved into a WebRoot path. 
 
-image:GenticsMesh-LinkResolver-Utility-Example.png[]
+image::GenticsMesh-LinkResolver-Utility-Example.png[role="img-responsive"]
 
 Typically, editors create content including internal links to other nodes. When fetching content for your apps, however, Gentics Mesh will resolve these internal links for you and return a WebRoot path. 
 
@@ -886,22 +892,30 @@ Images can be resized and/or cropped by appending the <<imagemanipulationparams,
 
 End point: ```/api/v1/:projectName/nodes/:uuid/binary/:fieldname?width=220```
 
+.Try the example
+[TIP]
 http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=300
 
 === Fetch and Crop an Image with WebRoot Path
+
 It is also possible to use the image manipulation in combination with the WebRoot end point.
 
 End point: ```/api/v1/:projectName/webroot/:path?cropx=10&cropy=100&cropw=800&croph=400```
 
+.Try the example
+[TIP]
 http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?cropx=10&cropy=100&cropw=800&croph=400
 
 NOTE: It is mandatory to specify all four crop parameters when cropping an image.
 
 === Transform and Update an Image
+
 Gentics Mesh also allows you to transform (i.e, crop and/or resize) and overwrite an image in a single step. The image manipulation parameters then are part of the request body.
 
 End point: ```POST /api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname```
 
+.Try the example
+[TIP]
 http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
 
 *Request Body:*
@@ -918,6 +932,7 @@ http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTrans
 
 [imagemanipulationparams]
 === Image Manipulation Query Parameters
+
 include::examples/tables/ImageManipulationParametersImpl.adoc[]
 
 Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
@@ -1434,7 +1449,6 @@ The node will be completely removed from the system if no more language variants
 
 It is also possible to just delete a specific language variant via ```DELETE``` to ```/api/v1/:projectName/node/:uuid/languages/en?release=winter2016``` from release _winter2016_.
 
-
 === Updating Nodes
 
 Releases are completely isolated from each other as explained earlier. This also applies to a node's language variant versions.
@@ -1454,7 +1468,7 @@ Additionally creating new nodes in _summer2016_ will not be available in release
 
 === Permissions
 
-Permissions are not release specific.
+NOTE: Permissions are not release specific.
 
 == Search
 
@@ -1465,7 +1479,6 @@ Elasticsearch is used in order to provide the search functionality. This way ela
 The JSON format of stored documents within the elasticsearch differ from the JSON format that is returned via regular Gentics Mesh endpoints. Thus it is important to know the elasticsearch document format when building an elasticsearch query. Below is a list of various example documents.
 
 NOTE: It is not possible to search for specific individual versions. Instead only published and draft versions per release are stored in the search index.
-
 
 === Users
 

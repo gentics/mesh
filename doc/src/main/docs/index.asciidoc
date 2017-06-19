@@ -1,74 +1,289 @@
-= Gentics Mesh Documentation
+= Documentation
 
-:raml-json: ../raml/json
+++++
+<style>
+ul.doc-toc, ul.doc-toc ul {
+    list-style: none;
+    line-height:150%;
+    padding-left: 0px;
+}
 
-This documentation provides information on the structure and functionality of the Gentics Mesh server and its API endpoints.
+ul.doc-toc ul ul {
+    padding-left: 15px;
+}
 
-== TL;DR
+ul.doc-toc h2 {
+    font-size: 27px;
+}
+</style>
 
-Gentics Mesh is a API-Centric CMS Server written in Java which enables you to store and retrieve JSON documents and binaries via REST.
-Gentics Mesh will also provide you a lot of powerful tools build around and for those documents.
-
- * Document level permission system
- * Search API
- * link:graphql.html[GraphQL API]
- * Webroot API for easy integration with modern routing frameworks
- * Image Manipulation API
- * Tagging system
- * Schema system for documents
- * Clustering (in development)
- * Versioning of your documents
-
-////////////////////
-=== Examples
-
-*Create a new node*
-
-It is mandatory to specify the ```parentNode``` reference, ```language```  and ```schema``` field when creating a node. 
-It is possible specify the schema uuid instead of the name. At least one property within the ```schema``` object must be set.
-
-[source]
-----
-POST /api/v1/demo/nodes HTTP/1.1
-Host: localhost:8080
-Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
-Content-Type: application/json
-Accept: application/json
-
-include::examples/api/request/api/v1/\{project\}/nodes/request-body.json[]
-----
-
-*Update an existing node*
-
-The created node can be updated via a ```PUT``` request. You may only include those field which should be updated.
-
-[source]
-----
-PUT /api/v1/demo/nodes/5af8d0e077e34361b8d0e077e353619e HTTP/1.1
-Host: localhost:8080
-Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
-Content-Type: application/json
-Accept: application/json
-
-include::examples/api/request/api/v1/\{project\}/nodes/\{nodeUuid\}/request-body.json[]
-----
-
-*Add a tag to a node*
-
-Tagging nodes requires just a simple ```PUT``` request.
-
-[source]
-----
-PUT /api/v1/demo/nodes/5af8d0e077e34361b8d0e077e353619e/tags/ba2edcdb1234489daedcdb1234289d38 HTTP/1.1
-Host: localhost:8080
-Cookie: mesh.session=61ac7969-e5ad-4c28-bc0f-0869a04e4db1
-Accept: application/json
-----
-////////////////////
-
-== link:building-blocks.html[Building Blocks]
-== link:features.html[Features]
-== link:references.html[References]
-== link:administration-guide.html[Administration Guide]
-== link:user-interface.html[Gentics Mesh User Interface]
-== link:platforms.html[Platforms]
+<div class="container docs-content">
+    <div class="row">
+        <div class="col-sm-12">
+            <div id="preamble">
+                <div class="sectionbody">
+                    <div class="paragraph">
+                        <p>This is the right place to getting started using API-first CMS Gentics Mesh. You'll find a short overview of the core concepts, a complete list of all features and references for available APIs. Furthermore, we provide information on how to configure and run Gentics Mesh in your environment.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-12">
+            <div class="col-md-4">
+                <ul class="doc-toc">
+                    <li class="section">
+                        <h2><a href="getting-started.html">Getting Started</a></h2>
+                        <ul>
+                            <li>
+                                <a href="getting-started.html#_quickstart">Quickstart</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="section">
+                        <h2><a href="building-blocks.html">Building Blocks</a></h2>
+                        <ul>
+                            <li>
+                                <a href="building-blocks.html#_project">Project</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_node">Node</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_schema">Schema</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_micronode">Micronode &amp; Microschema</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_tag">Tag</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_tag_family">Tag Family</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_user">User</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_group">Group</a>
+                            </li>
+                            <li>
+                                <a href="building-blocks.html#_role">Role</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="section">
+                        <h2><a href="administration-guide.html">Administration Guide</a></h2>
+                        <ul>
+                            <li>
+                                <a href="administration-guide.html#_software_stack">Software Stack</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide.html#_installation">Run with JAR File</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide.html#_docker">Run with Docker</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide.html#_system_requirements">System Requirements</a>
+                                <!--ul>
+                                    <li>
+                                        <a href="administration-guide.html">Gentics Mesh Server</a>
+                                    </li>
+                                    <li>
+                                        <a href="administration-guide.html">Gentics Mesh User Interface</a>
+                                    </li>
+                                </ul-->
+                            </li>
+                            <li>
+                                <a href="administration-guide.html">Settings</a>
+                                <!--ul>
+                                    <li>
+                                        <a href="administration-guide.html">HTTP/SSL</a>
+                                    </li>
+                                    <li>
+                                        <a href="administration-guide.html">Server Options</a>
+                                    </li>
+                                    <li>
+                                        <a href="administration-guide.html">Storage Options</a>
+                                    </li>
+                                    <li>
+                                        <a href="administration-guide.html">Upload Options</a>
+                                    </li>
+                                    <li>
+                                        <a href="administration-guide.html">Cache Options</a>
+                                    </li>
+                                </ul-->
+                            </li>
+                            <li>
+                                <a href="changelog.html">Changelog</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide.html#_backup_recovery">Backup &amp; Recovery</a>
+                            </li>
+                            <li>
+                                <a href="administration-guide.html#_license">License</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <ul class="doc-toc">
+                    <li class="section">
+                        <h2><a href="features.html">Features</a></h2>
+                        <ul>
+                            <li>
+                                <a href="features.html#contenttree">Content Tree</a>
+                            </li>
+                            <li>
+                                <a href="features.htmll#prettyurls">Pretty URLs</a>
+                            </li>
+                            <li>
+                                <a href="features.html#navigation">Navigation Menus</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_breadcrumbs">Breadcrumbs</a>
+                            </li>
+                            <li>
+                                <a href="features.html#webroot">Fetching Content with WebRoot Paths</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_link_resolving">Link Resolving</a>
+                            </li>
+                            <li>
+                                <a href="features.html#imagemanipulation">Image Manipulation</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_file_upload">File Upload</a>
+                            </li>
+                            <li>
+                                <a href="features.html#multilanguage">Multi-Language</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_permissions">Permissions</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_versioning">Versioning</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_content_releases">Content Releases</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_search">Search</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_preview_handling">Preview Handling</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_password_recovery">Password Recovery</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_schema_microschema_migration">Schema &amp; Microschema Migration</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_eventbus_bridge_websocket">Eventbus Bridge &amp; Web Socket</a>
+                            </li>
+                            <li>
+                                <a href="features.html#_clustering">Clustering</a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="section">
+                        <h2><a href="user-interface.html">User Interface</a></h2>
+                        <ul>
+                            <li>
+                                <a href="user-interface.html">Editors Guide</a>
+                            </li>
+                            <li>
+                                <a href="user-interface.html">Developers Guide</a>
+                            </li>
+                            <li>
+                                <a href="user-interface.html#_configuration">Extensions</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <ul class="doc-toc">
+                    <li class="section">
+                        <h2><a href="references.html">References</a></h2>
+                        <ul>
+                            <li>
+                                <a href="references.html">APIs</a>
+                                <ul>
+                                    <li>
+                                        <a href="references.html#_rest_api">REST API</a>
+                                    </li>
+                                    <li>
+                                        <a href="graphql.html">GraphQL</a>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="references.html#_http_details">HTTP Details</a>
+                                <ul>
+                                    <li>
+                                        <a href="references.html#_http_details">Security/SSL</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.html#_encoding">Encoding</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.html#_headers">Headers</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.html#_cors">CORS</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.html#_etag_handling">ETag Handling</a>
+                                    </li>
+                                    <!--
+                                    <li>
+                                        <a href="references.html">Error Codes</a>
+                                    </li>
+                                    -->
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="references.html#_authentication">Authentication</a>
+                                <ul>
+                                    <li>
+                                        <a href="references.html#_overview">Overview</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.htmll#_login">Login</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.html#_api_token">API Token</a>
+                                    </li>
+                                    <li>
+                                        <a href="references.html#_anonymous_access">Anonymous Access</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="section">
+                        <h2><a href="platforms.html">Platforms</a></h2>
+                        <ul>
+                            <li>
+                                <a href="platforms.html#_javascript">JavaScript</a>
+                            </li>
+                            <li>
+                                <a href="platforms.html#_java">Java</a>
+                            </li>
+                            <li>
+                                <a href="platforms.html#_go">Go</a>
+                            </li>
+                            <li>
+                                <a href="platforms.html#_php">PHP</a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+++++

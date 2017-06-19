@@ -1,6 +1,24 @@
 = Platforms
 
-==  JAVA REST client
+== JavaScript
+
+* link:https://github.com/gentics/mesh-angular-example[Mesh Angular Example]
+* link:https://github.com/gentics/mesh-express-example[Mesh Express Example]
+* link:https://github.com/gentics/mesh-js-api[Mesh Javascript API] - An API client for Gentics Mesh written in TypeScript.
+
+== PHP
+
+* link:https://github.com/gentics/mesh-silex-example[Mesh PHP Example] - This example shows how to use Gentics Mesh in combination with the Silex PHP routing framework.
+
+== Go
+
+* link:https://github.com/gentics/mesh-go-example[Mesh Go Example]
+
+== Java
+
+* link:https://github.com/gentics/mesh-vertx-example[Mesh Vert.x Example]
+
+* REST client
 
 You can add the following maven dependency and repository to your project to get the mesh rest client.
 
