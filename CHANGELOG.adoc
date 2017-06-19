@@ -2,6 +2,10 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.16 (19.06.2017)
+
+icon:plus[] Documentation: Huge documentation update.
+
 == 0.9.15 (19.06.2017)
 
 icon:check[] GraphQL: Fixed loading tags for nodes.
