@@ -305,15 +305,20 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testReadMultipleWithRestrictedPermissions() throws Exception {
-		Release initialRelease;
-		Release secondRelease;
-		try (Tx tx = tx()) {
-			Project project = project();
-			initialRelease = project.getInitialRelease();
-			Release firstRelease = project.getReleaseRoot().create("One", user());
-			secondRelease = project.getReleaseRoot().create("Two", user());
-			Release thirdRelease = project.getReleaseRoot().create("Three", user());
+		Project project = project();
+		Release initialRelease = tx(() -> initialRelease());
 
+		Release firstRelease;
+		Release secondRelease;
+		Release thirdRelease;
+
+		try (Tx tx = tx()) {
+			firstRelease = project.getReleaseRoot().create("One", user());
+			secondRelease = project.getReleaseRoot().create("Two", user());
+			thirdRelease = project.getReleaseRoot().create("Three", user());
+			tx.success();
+		}
+		try (Tx tx = tx()) {
 			role().revokePermissions(firstRelease, READ_PERM);
 			role().revokePermissions(thirdRelease, READ_PERM);
 			tx.success();
@@ -503,8 +508,8 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testAssignBogusSchemaVersion() throws Exception {
-		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), new SchemaReference().setName("content").setVersion(4711)),
-				BAD_REQUEST, "error_schema_reference_not_found", "content", "-", "4711");
+		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
+				new SchemaReference().setName("content").setVersion(4711)), BAD_REQUEST, "error_schema_reference_not_found", "content", "-", "4711");
 	}
 
 	@Test
@@ -729,8 +734,8 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			role().revokePermissions(project.getInitialRelease(), UPDATE_PERM);
 			tx.success();
 		}
-		call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(), new MicroschemaReference().setName("vcard").setVersion(1)),
-				FORBIDDEN, "error_missing_perm", initialReleaseUuid());
+		call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
+				new MicroschemaReference().setName("vcard").setVersion(1)), FORBIDDEN, "error_missing_perm", initialReleaseUuid());
 	}
 
 	@Test

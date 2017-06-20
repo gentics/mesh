@@ -116,15 +116,15 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		NodeResponse firstResponse = tx(() -> updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42)));
+		String oldVersion = firstResponse.getVersion().getNumber();
+
+		// Field should be deleted
+		NodeResponse secondResponse = tx(() -> updateNode(FIELD_NAME, null));
+		assertThat(secondResponse.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNull();
+		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+
 		try (Tx tx = tx()) {
-			NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
-			String oldVersion = firstResponse.getVersion().getNumber();
-
-			// Field should be deleted
-			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
-			assertThat(secondResponse.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
-
 			// Assert that the old version was not modified
 			Node node = folder("2015");
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
