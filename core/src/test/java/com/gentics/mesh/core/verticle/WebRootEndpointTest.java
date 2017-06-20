@@ -202,7 +202,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testPathWithPlus() throws Exception {
-		// Test RFC3986 subdelims and an additional space and questionmark
+		// Test RFC3986 sub-delims and an additional space and questionmark
 		String newName = "20!$&'()*+,;=%3F? 15";
 		String uuid = db().tx(() -> folder("2015").getUuid());
 		try (Tx tx = tx()) {

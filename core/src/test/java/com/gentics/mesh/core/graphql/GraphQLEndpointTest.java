@@ -91,6 +91,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testData.add(new Object[] { "paging-query", true, "draft" });
 		testData.add(new Object[] { "tagFamily-query", true, "draft" });
 		testData.add(new Object[] { "node-query", true, "draft" });
+		testData.add(new Object[] { "node-tag-query", true, "draft"});
 		testData.add(new Object[] { "nodes-query", true, "draft" });
 		testData.add(new Object[] { "node-breadcrumb-query", true, "draft" });
 		testData.add(new Object[] { "node-language-fallback-query", true, "draft" });

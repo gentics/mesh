@@ -2,6 +2,18 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.17 (TBD)
+
+icon:plus[] Core: The Vert.x core dependency was updated to version 3.4.2
+
+== 0.9.16 (19.06.2017)
+
+icon:plus[] Documentation: Huge documentation update.
+
+== 0.9.15 (19.06.2017)
+
+icon:check[] GraphQL: Fixed loading tags for nodes.
+
 == 0.9.14 (09.06.2017)
 
 icon:check[] WebRoot: Bugs within the permission handling have been fixed. It is now possible to load nodes using only the *read_published* permission. This permission was previously ignored.
