@@ -4,6 +4,8 @@
 
 == 0.9.17 (TBD)
 
+icon:plus[] Core: The internal transaction handling has been refactored.
+
 icon:plus[] Core: The Vert.x core dependency was updated to version 3.4.2
 
 icon:plus[] API: The version field of node responses and publish status responses are now strings instead of objects containing the version number.
