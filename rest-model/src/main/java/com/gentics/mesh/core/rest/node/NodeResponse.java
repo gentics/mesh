@@ -83,7 +83,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	@JsonPropertyDescription("List of nodes which construct the breadcrumb. Note that the start node will not be included in the list.")
 	private Deque<NodeReference> breadcrumb = new ArrayDeque<>();
 
-	@JsonProperty(required = false)
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Version of the node content.")
 	private String version;
 
