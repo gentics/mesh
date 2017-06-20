@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -70,7 +69,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 		node.reload();
-		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getLatestDraftFieldContainer(english()).getVersion().toString()));
+		nodeUpdateRequest.setVersion(node.getLatestDraftFieldContainer(english()).getVersion().toString());
 
 		NodeResponse response = call(
 				() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")));
@@ -84,7 +83,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
-		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getLatestDraftFieldContainer(english()).getVersion().toString()));
+		nodeUpdateRequest.setVersion(node.getLatestDraftFieldContainer(english()).getVersion().toString());
 
 		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")), status,
 				bodyMessageI18nKey, i18nParams);

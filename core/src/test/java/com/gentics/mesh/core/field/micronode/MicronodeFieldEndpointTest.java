@@ -100,7 +100,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 				node.reload();
 				container.reload();
 				NodeGraphFieldContainer newContainer = container.getNextVersion();
-				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				if (oldValue == null) {
 					assertThat(getMicronodeValue(container, FIELD_NAME)).as("old value").isNull();
 				} else {
@@ -123,10 +123,10 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
 			field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, field);
-			String oldNumber = firstResponse.getVersion().getNumber();
+			String oldNumber = firstResponse.getVersion();
 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, field);
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
+			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
 		}
 	}
 
@@ -139,17 +139,17 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
 			field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, field);
-			String oldNumber = firstResponse.getVersion().getNumber();
+			String oldNumber = firstResponse.getVersion();
 
 			// Assert that a null field value request will delete the micronode 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME)).isNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
+			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldNumber);
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getMicronode(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getMicronode(FIELD_NAME)).as("The old version micronode field could not be found.").isNotNull();
 			Micronode oldMicronode = latest.getPreviousVersion().getMicronode(FIELD_NAME).getMicronode();
@@ -157,8 +157,8 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 					.isEqualTo("Max");
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 		}
 	}
 
@@ -171,7 +171,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
 			field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, field);
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			createNodeAndExpectFailure(FIELD_NAME, new MicronodeResponse(), BAD_REQUEST, "micronode_error_missing_reference", "micronodeField");
 
@@ -183,11 +183,11 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME).getFields().getStringField("firstName").getString()).isEqualTo("Max");
 			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME).getFields().getStringField("lastName").getString())
 					.isEqualTo("Moritz");
-			assertThat(secondResponse.getVersion().getNumber()).as("No new version number should have been generated").isEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("No new version number should have been generated").isEqualTo(oldVersion);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 		}
 	}
 

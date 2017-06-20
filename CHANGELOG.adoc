@@ -6,6 +6,8 @@
 
 icon:plus[] Core: The Vert.x core dependency was updated to version 3.4.2
 
+icon:plus[] API: The version field of node responses and publish status responses are now strings instead of objects containing the version number.
+
 == 0.9.16 (19.06.2017)
 
 icon:plus[] Documentation: Huge documentation update.

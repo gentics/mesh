@@ -17,7 +17,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -147,7 +146,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			// try to update with conflict
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
-			update.setVersion(new VersionReference(null, "0.1"));
+			update.setVersion("0.1");
 			update.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, update), CONFLICT, "node_conflicting_segmentfield_update", "slug", conflictingName);
 			return null;
@@ -299,7 +298,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		db().noTx(() -> {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
-			update.setVersion(new VersionReference(null, "0.1"));
+			update.setVersion("0.1");
 			update.getFields().put("slug", FieldUtil.createStringField(newName));
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 			return null;
@@ -345,7 +344,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		db().noTx(() -> {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
-			update.setVersion(new VersionReference(null, "0.1"));
+			update.setVersion("0.1");
 			update.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 			return null;
@@ -368,7 +367,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		db().noTx(() -> {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
-			update.setVersion(new VersionReference(null, "0.1"));
+			update.setVersion("0.1");
 			update.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			call(() -> client().updateNode(PROJECT_NAME, otherNodeUuid, update), CONFLICT, "node_conflicting_segmentfield_update", "slug",
 					conflictingName);
@@ -407,7 +406,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		db().noTx(() -> {
 			NodeUpdateRequest update = new NodeUpdateRequest();
 			update.setLanguage("en");
-			update.setVersion(new VersionReference(null, "0.1"));
+			update.setVersion("0.1");
 			update.getFields().put("slug", FieldUtil.createStringField(newName));
 			call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 			return null;

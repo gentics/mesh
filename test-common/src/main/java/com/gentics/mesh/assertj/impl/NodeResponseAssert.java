@@ -51,7 +51,7 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 	 */
 	public NodeResponseAssert hasVersion(String number) {
 		assertThat(actual.getVersion()).as(descriptionText() + " version").isNotNull();
-		assertThat(actual.getVersion().getNumber()).as(descriptionText() + " version number").isEqualTo(number);
+		assertThat(actual.getVersion()).as(descriptionText() + " version number").isEqualTo(number);
 		return this;
 	}
 
