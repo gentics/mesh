@@ -13,6 +13,7 @@ import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.etc.config.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
@@ -97,7 +98,9 @@ public class MeshModule {
 	@Provides
 	@Singleton
 	public static CorsHandler corsHandler() {
-		String pattern = Mesh.mesh().getOptions().getHttpServerOptions().getCorsAllowedOriginPattern();
+		HttpServerConfig serverOptions = Mesh.mesh().getOptions().getHttpServerOptions();
+		String pattern = serverOptions.getCorsAllowedOriginPattern();
+		boolean allowCredentials = serverOptions.getCorsAllowCredentials();
 		CorsHandler corsHandler = CorsHandler.create(pattern);
 		corsHandler.allowedMethod(HttpMethod.GET);
 		corsHandler.allowedMethod(HttpMethod.POST);
@@ -106,7 +109,7 @@ public class MeshModule {
 		corsHandler.allowedHeader("Authorization");
 		corsHandler.allowedHeader("Content-Type");
 		corsHandler.allowedHeader("Set-Cookie");
-		corsHandler.allowCredentials(true);
+		corsHandler.allowCredentials(allowCredentials);
 		return corsHandler;
 	}
 
