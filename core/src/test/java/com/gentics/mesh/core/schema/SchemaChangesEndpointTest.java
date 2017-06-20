@@ -37,7 +37,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
@@ -237,13 +236,13 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertNotNull("The response should contain the content field.", response.getFields().hasField("content"));
 			assertEquals("The type of the content field was not changed to a number field.", NumberFieldImpl.class,
 					response.getFields().getNumberField("content").getClass());
-			assertEquals("2.0", response.getVersion().getNumber());
+			assertEquals("2.0", response.getVersion());
 
 			// 7. Update the node and set the new field
 			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 			nodeUpdateRequest.setLanguage("en");
 			nodeUpdateRequest.getFields().put("content", new NumberFieldImpl().setNumber(42.01));
-			nodeUpdateRequest.setVersion(new VersionReference().setNumber("2.0"));
+			nodeUpdateRequest.setVersion("2.0");
 			response = call(() -> client().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest));
 			assertNotNull(response);
 			assertNotNull(response.getFields().hasField("content"));
@@ -562,7 +561,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// Update the node and set the new field
 			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 			nodeUpdateRequest.setLanguage("en");
-			nodeUpdateRequest.setVersion(new VersionReference().setNumber("2.0"));
+			nodeUpdateRequest.setVersion("2.0");
 			nodeUpdateRequest.getFields().put("extraname", new StringFieldImpl().setString("sometext"));
 			response = call(() -> client().updateNode(PROJECT_NAME, content.getUuid(), nodeUpdateRequest));
 			assertNotNull(response);

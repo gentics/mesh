@@ -18,7 +18,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.graphdb.NoTx;
@@ -188,7 +187,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage("en");
 		update.getFields().put("content", FieldUtil.createHtmlField(newString));
-		update.setVersion(new VersionReference().setNumber("1.0"));
+		update.setVersion("1.0");
 		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, update));
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new PagingParametersImpl().setPage(1).setPerPage(2),

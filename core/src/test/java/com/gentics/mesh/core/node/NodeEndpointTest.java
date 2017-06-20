@@ -58,7 +58,6 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -764,7 +763,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		NodeResponse draftResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 		NodeResponse publishedResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
-		assertEquals("Draft and publish versions should be the same since mesh automatically creates a new draft based on the published version.", draftResponse.getVersion().getNumber(), publishedResponse.getVersion().getNumber());
+		assertEquals("Draft and publish versions should be the same since mesh automatically creates a new draft based on the published version.", draftResponse.getVersion(), publishedResponse.getVersion());
 
 		db().noTx(() -> {
 			Node node = content();
@@ -784,10 +783,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// version=published
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
 		// version=<draftversion>
-		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion(draftResponse.getVersion().getNumber())));
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion(draftResponse.getVersion())));
 		// version=<publishedversion>
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
-				new VersioningParametersImpl().setVersion(publishedResponse.getVersion().getNumber())));
+				new VersioningParametersImpl().setVersion(publishedResponse.getVersion())));
 
 	}
 
@@ -952,7 +951,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		Set<MeshResponse<NodeResponse>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
 			System.out.println(version.getFullVersion());
-			request.setVersion(new VersionReference().setNumber(version.getFullVersion()));
+			request.setVersion(version.getFullVersion());
 			request.getFields().put("name", FieldUtil.createStringField(newName + ":" + i));
 			set.add(client().updateNode(PROJECT_NAME, uuid, request, parameters).invoke());
 			// version = version.nextDraft();
@@ -1063,17 +1062,17 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// create version 1.1
 			NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 			updateRequest.setLanguage("en");
-			updateRequest.setVersion(new VersionReference(null, "1.0"));
+			updateRequest.setVersion("1.0");
 			updateRequest.getFields().put("name", FieldUtil.createStringField("one"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest));
 
 			// create version 1.2
-			updateRequest.setVersion(new VersionReference(null, "1.1"));
+			updateRequest.setVersion("1.1");
 			updateRequest.getFields().put("name", FieldUtil.createStringField("two"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest));
 
 			// create version 1.3
-			updateRequest.setVersion(new VersionReference(null, "1.2"));
+			updateRequest.setVersion("1.2");
 			updateRequest.getFields().put("name", FieldUtil.createStringField("three"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest));
 
@@ -1084,12 +1083,12 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest));
 
 			// create german version 0.2
-			updateRequest.setVersion(new VersionReference(null, "0.1"));
+			updateRequest.setVersion("0.1");
 			updateRequest.getFields().put("name", FieldUtil.createStringField("zwei"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest));
 
 			// create german version 0.3
-			updateRequest.setVersion(new VersionReference(null, "0.2"));
+			updateRequest.setVersion("0.2");
 			updateRequest.getFields().put("name", FieldUtil.createStringField("drei"));
 			call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest));
 
@@ -1203,21 +1202,21 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.1 new release"));
 			NodeResponse response = call(
 					() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setRelease(newRelease.getName())));
-			assertEquals("0.1", response.getVersion().getNumber());
+			assertEquals("0.1", response.getVersion());
 
 			// create version 1.1 in initial release (1.0 is the current published en node)
 			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v1.1 initial release"));
-			updateRequest.setVersion(new VersionReference(null, "1.0"));
+			updateRequest.setVersion("1.0");
 			response = call(() -> client().updateNode(PROJECT_NAME, uuid, updateRequest,
 					new VersioningParametersImpl().setRelease(initialRelease.getName())));
-			assertEquals("1.1", response.getVersion().getNumber());
+			assertEquals("1.1", response.getVersion());
 
 			// create version 0.2 in new release
 			updateRequest.getFields().put("name", FieldUtil.createStringField("2015 v0.2 new release"));
-			updateRequest.setVersion(new VersionReference(null, "0.1"));
+			updateRequest.setVersion("0.1");
 			response = call(
 					() -> client().updateNode(PROJECT_NAME, uuid, updateRequest, new VersioningParametersImpl().setRelease(newRelease.getName())));
-			assertEquals("0.2", response.getVersion().getNumber());
+			assertEquals("0.2", response.getVersion());
 
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 					new VersioningParametersImpl().setRelease(initialRelease.getName()).setVersion("0.1")))).as("Initial Release Version")
@@ -1496,7 +1495,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// 2. Prepare the update request (change name field of english node)
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		request.setLanguage("en");
-		request.setVersion(new VersionReference(null, "0.1"));
+		request.setVersion("0.1");
 		request.getFields().put("slug", FieldUtil.createStringField(newSlug));
 
 		// 3. Invoke update
@@ -1560,7 +1559,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		request.setLanguage("de");
-		request.setVersion(new VersionReference(null, "0.1"));
+		request.setVersion("0.1");
 		request.getFields().put("name", FieldUtil.createStringField(germanName));
 
 		String projectUuid = db().noTx(() -> project().getUuid());
@@ -1681,7 +1680,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			NodeUpdateRequest request = new NodeUpdateRequest();
 			request.setLanguage("en");
-			request.setVersion(new VersionReference(null, "0.1"));
+			request.setVersion("0.1");
 			final String newName = "english renamed name";
 			final String newDisplayName = "display name changed";
 

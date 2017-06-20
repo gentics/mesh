@@ -12,8 +12,8 @@ public class PublishStatusModel implements RestModel {
 	@JsonPropertyDescription("Flag which indicates whether the content is published.")
 	private boolean published;
 
-	@JsonPropertyDescription("Reference to the node content.")
-	private VersionReference version;
+	@JsonPropertyDescription("Version number.")
+	private String version;
 
 	@JsonPropertyDescription("Reference to the publisher user of the node content.")
 	private UserReference publisher;
@@ -50,7 +50,7 @@ public class PublishStatusModel implements RestModel {
 	 * 
 	 * @return
 	 */
-	public VersionReference getVersion() {
+	public String getVersion() {
 		return version;
 	}
 
@@ -60,7 +60,7 @@ public class PublishStatusModel implements RestModel {
 	 * @param version
 	 * @return Fluent API
 	 */
-	public PublishStatusModel setVersion(VersionReference version) {
+	public PublishStatusModel setVersion(String version) {
 		this.version = version;
 		return this;
 	}

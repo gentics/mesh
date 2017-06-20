@@ -105,7 +105,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 				assertEquals(newContainer.getUuid(), node.getLatestDraftFieldContainer(english()).getUuid());
 
 				NodeResponse response = readNode(PROJECT_NAME, node.getUuid());
-				assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion().getNumber());
+				assertEquals("Check version number", newContainer.getVersion().toString(), response.getVersion());
 				String value = container.getBinary("binary") == null ? null : container.getBinary("binary").getFileName();
 				assertEquals("Version {" + container.getVersion() + "} did not contain the old value", oldFilename, value);
 				assertNotNull("Version {" + newContainer.getVersion() + "} did not contain the updated field.", newContainer.getBinary("binary"));
@@ -165,14 +165,14 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			prepareSchema(node, "", fieldKey);
 
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
-			String originalVersion = response.getVersion().getNumber();
+			String originalVersion = response.getVersion();
 
 			// 1. Upload the image
 			int size = uploadImage(node, "en", fieldKey, fileName, mimeType);
 
 			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
-			assertNotEquals(originalVersion, response.getVersion().getNumber());
-			originalVersion = response.getVersion().getNumber();
+			assertNotEquals(originalVersion, response.getVersion());
+			originalVersion = response.getVersion();
 
 			// 2. Upload a non-image 
 			fileName = "somefile.dat";
@@ -183,7 +183,7 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 			node.reload();
 			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
-			assertNotEquals(originalVersion, response.getVersion().getNumber());
+			assertNotEquals(originalVersion, response.getVersion());
 			BinaryField binaryField = response.getFields().getBinaryField(fieldKey);
 
 			assertEquals("The filename should be set in the response.", fileName, binaryField.getFileName());
