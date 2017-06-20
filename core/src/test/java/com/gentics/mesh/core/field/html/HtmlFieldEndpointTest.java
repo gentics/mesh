@@ -69,7 +69,7 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 				node.reload();
 				container.reload();
 
-				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getHtmlValue(container, FIELD_NAME));
 			}
 		}
@@ -80,10 +80,10 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSameValue() {
 		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 		}
 	}
 
@@ -92,26 +92,26 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSetNull() {
 		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			// Simple field with no value results in a request JSON null value.
 			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 			assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
 			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getHtml(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getHtml(FIELD_NAME)).isNotNull();
 			String oldValue = latest.getPreviousVersion().getHtml(FIELD_NAME).getHTML();
 			assertThat(oldValue).isEqualTo("bla");
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 		}
 	}
 
@@ -120,18 +120,18 @@ public class HtmlFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSetEmpty() {
 		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new HtmlFieldImpl().setHTML("bla"));
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			HtmlFieldImpl emptyField = new HtmlFieldImpl();
 			emptyField.setHTML("");
 			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
 			assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME)).as("Updated Field").isNotNull();
 			assertThat(secondResponse.getFields().getHtmlField(FIELD_NAME).getHTML()).as("Updated Field Value").isEqualTo("");
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 		}
 	}
 

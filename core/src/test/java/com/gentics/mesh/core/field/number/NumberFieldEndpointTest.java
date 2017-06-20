@@ -95,7 +95,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 				node.reload();
 				container.reload();
 
-				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getNumberValue(container, FIELD_NAME));
 			}
 		}
@@ -106,10 +106,10 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSameValue() {
 		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
-			String oldNumber = firstResponse.getVersion().getNumber();
+			String oldNumber = firstResponse.getVersion();
 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
+			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
 		}
 	}
 
@@ -117,26 +117,26 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Override
 	public void testUpdateSetNull() {
 		NodeResponse firstResponse = tx(() -> updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42)));
-		String oldVersion = firstResponse.getVersion().getNumber();
+		String oldVersion = firstResponse.getVersion();
 
 		// Field should be deleted
 		NodeResponse secondResponse = tx(() -> updateNode(FIELD_NAME, null));
 		assertThat(secondResponse.getFields().getNumberField(FIELD_NAME)).as("Updated Field").isNull();
-		assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+		assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 
 		try (Tx tx = tx()) {
 			// Assert that the old version was not modified
 			Node node = folder("2015");
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNumber(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNumber(FIELD_NAME)).isNotNull();
 			Number oldValue = latest.getPreviousVersion().getNumber(FIELD_NAME).getNumber();
 			assertThat(oldValue).isEqualTo(42L);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 
 			// Update again to restore a value
 			updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(42));

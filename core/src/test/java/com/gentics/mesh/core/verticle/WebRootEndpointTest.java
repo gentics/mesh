@@ -35,7 +35,6 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -488,8 +487,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	protected void updateSlug(Node node, String language, String newName) {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(language);
-		update.setVersion(
-				new VersionReference(node.getGraphFieldContainer(language).getUuid(), node.getGraphFieldContainer(language).getVersion().toString()));
+		update.setVersion(node.getGraphFieldContainer(language).getVersion().toString());
 		update.getFields().put("slug", FieldUtil.createStringField(newName));
 		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update));
 	}

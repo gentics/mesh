@@ -28,7 +28,6 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -55,9 +54,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		request.setLanguage("en");
 		// Only update the name field
 		request.getFields().put("teaser", FieldUtil.createStringField(nameFieldValue));
-		VersionReference reference = new VersionReference();
-		reference.setNumber(baseVersion);
-		request.setVersion(reference);
+		request.setVersion(baseVersion);
 		return request;
 	}
 

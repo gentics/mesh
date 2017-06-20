@@ -90,10 +90,10 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			listField.add("B");
 
 			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 		}
 	}
 
@@ -187,7 +187,7 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 				NodeGraphFieldContainer newContainerVersion = container.getNextVersion();
 				assertEquals("The old container version did not match", container.getVersion().nextDraft().toString(),
 						response.getVersion().toString());
-				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion().getNumber());
+				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getListValues(container, StringGraphFieldListImpl.class, FIELD_NAME));
 				assertEquals("Check new value", newValue, getListValues(newContainerVersion, StringGraphFieldListImpl.class, FIELD_NAME));
 				container = newContainerVersion;
@@ -203,17 +203,17 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			list.add("A");
 			list.add("B");
 			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 			assertThat(secondResponse.getFields().getStringFieldList(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion());
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
 			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getStringList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getStringList(FIELD_NAME)).isNotNull();
 			List<String> oldValueList = latest.getPreviousVersion().getStringList(FIELD_NAME).getList().stream().map(item -> item.getString())
@@ -221,8 +221,8 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(oldValueList).containsExactly("A", "B");
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 		}
 	}
 
@@ -234,19 +234,19 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			list.add("A");
 			list.add("B");
 			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			StringFieldListImpl emptyField = new StringFieldListImpl();
 			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
 			assertThat(secondResponse.getFields().getStringFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
 			assertThat(secondResponse.getFields().getStringFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number should be generated").isNotEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number should be generated").isNotEqualTo(oldVersion);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
-			assertThat(secondResponse.getVersion().getNumber()).as("No new version number should be generated")
-					.isEqualTo(secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
+			assertThat(secondResponse.getVersion()).as("No new version number should be generated")
+					.isEqualTo(secondResponse.getVersion());
 		}
 	}
 

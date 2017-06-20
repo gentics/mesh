@@ -22,7 +22,6 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -58,7 +57,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage("en");
 		update.getFields().put("content", FieldUtil.createHtmlField(newContent));
-		update.setVersion(new VersionReference().setNumber("1.0"));
+		update.setVersion("1.0");
 		call(() -> client().updateNode(PROJECT_NAME, concorde.getUuid(), update));
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(oldContent), new VersioningParametersImpl().draft()));
@@ -140,7 +139,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
 		updateRequest.setLanguage("en");
 		// The migration bumped the version to 0.2
-		updateRequest.setVersion(new VersionReference().setNumber("0.2"));
+		updateRequest.setVersion("0.2");
 		micronodeField = new MicronodeResponse();
 		micronodeField.setMicroschema(new MicroschemaReference().setName("TestMicroschema"));
 		micronodeField.getFields().put("textNew", FieldUtil.createStringField("someNewText"));

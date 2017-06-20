@@ -20,7 +20,6 @@ import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -99,7 +98,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage("en");
 		update.getFields().put("content", FieldUtil.createHtmlField(newContent));
-		update.setVersion(new VersionReference().setNumber("1.0"));
+		update.setVersion("1.0");
 		call(() -> client().updateNode(PROJECT_NAME, concorde.getUuid(), update));
 
 		// "supersonic" still found, "urschnell" not found in published nodes

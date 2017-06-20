@@ -87,7 +87,7 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 				node.reload();
 				container.reload();
 
-				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getStringValue(container, FIELD_NAME));
 			}
 		}
@@ -98,10 +98,10 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSameValue() {
 		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
-			String oldNumber = firstResponse.getVersion().getNumber();
+			String oldNumber = firstResponse.getVersion();
 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
+			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
 		}
 	}
 
@@ -112,24 +112,24 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 			assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 
 			// Assert that the old version was not modified
 			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getString(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getString(FIELD_NAME)).isNotNull();
 			String oldValue = latest.getPreviousVersion().getString(FIELD_NAME).getString();
 			assertThat(oldValue).isEqualTo("bla");
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 		}
 	}
 
@@ -138,18 +138,18 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	public void testUpdateSetEmpty() {
 		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			StringField emptyField = new StringFieldImpl();
 			emptyField.setString("");
 			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
 			assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNotNull();
 			assertThat(secondResponse.getFields().getStringField(FIELD_NAME).getString()).as("Updated Field Value").isEqualTo("");
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 		}
 	}
 

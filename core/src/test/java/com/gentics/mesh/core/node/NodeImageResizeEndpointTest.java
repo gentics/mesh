@@ -27,7 +27,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
@@ -99,7 +98,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTransformImage() throws Exception {
 		String uuid = db().tx(() -> folder("news").getUuid());
-		VersionReference version = db().tx(() -> {
+		String version = db().tx(() -> {
 			Node node = folder("news");
 			// 1. Upload image
 			return uploadImage(node, "en", "image").getVersion();
@@ -108,12 +107,12 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		// 2. Transform the image
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
 		NodeResponse transformResponse = call(
-				() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version.getNumber(), "image", params));
+				() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "image", params));
 		assertEquals("The image should have been resized", 100, transformResponse.getFields().getBinaryField("image").getWidth().intValue());
 
 		// 3. Validate that a new version was created
-		String newNumber = transformResponse.getVersion().getNumber();
-		assertNotEquals("The version number should have changed.", version.getNumber(), newNumber);
+		String newNumber = transformResponse.getVersion();
+		assertNotEquals("The version number should have changed.", version, newNumber);
 
 		// 4. Download the image
 		NodeDownloadResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image"));
@@ -132,7 +131,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 			// 2. Transform the image
 			ImageManipulationParametersImpl params = new ImageManipulationParametersImpl();
-			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", response.getVersion().getNumber(), "image", params),
+			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", response.getVersion(), "image", params),
 					BAD_REQUEST, "error_no_image_transformation", "image");
 		}
 	}
@@ -167,7 +166,7 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 				Buffer.buffer("I am not an image"), "test.txt", "text/plain"));
 
 		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
-		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", response.getVersion().getNumber(), "image", params), BAD_REQUEST,
+		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", response.getVersion(), "image", params), BAD_REQUEST,
 				"error_transformation_non_image", "image");
 	}
 

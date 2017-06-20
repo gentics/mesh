@@ -82,7 +82,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
@@ -652,7 +651,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Version reference
 			if (fieldContainer.getVersion() != null) {
-				restNode.setVersion(new VersionReference(fieldContainer.getUuid(), fieldContainer.getVersion().toString()));
+				restNode.setVersion(fieldContainer.getVersion().toString());
 			}
 
 			// editor and edited
@@ -1005,14 +1004,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			String date = DateUtils.toISO8601(c.getLastEditedTimestamp(), 0);
 
 			PublishStatusModel status = new PublishStatusModel().setPublished(true)
-					.setVersion(new VersionReference(c.getUuid(), c.getVersion().toString())).setPublisher(c.getEditor().transformToReference())
+					.setVersion(c.getVersion().toString()).setPublisher(c.getEditor().transformToReference())
 					.setPublishDate(date);
 			languages.put(c.getLanguage().getLanguageTag(), status);
 		});
 
 		getGraphFieldContainers(release, DRAFT).stream().filter(c -> !languages.containsKey(c.getLanguage().getLanguageTag())).forEach(c -> {
 			PublishStatusModel status = new PublishStatusModel().setPublished(false)
-					.setVersion(new VersionReference(c.getUuid(), c.getVersion().toString()));
+					.setVersion(c.getVersion().toString());
 			languages.put(c.getLanguage().getLanguageTag(), status);
 		});
 
@@ -1104,7 +1103,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		if (container != null) {
 			String date = container.getLastEditedDate();
 			return new PublishStatusModel().setPublished(true)
-					.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString()))
+					.setVersion(container.getVersion().toString())
 					.setPublisher(container.getEditor().transformToReference()).setPublishDate(date);
 		} else {
 			container = getGraphFieldContainer(languageTag, release.getUuid(), DRAFT);
@@ -1112,7 +1111,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
 			return new PublishStatusModel().setPublished(false)
-					.setVersion(new VersionReference(container.getUuid(), container.getVersion().toString()));
+					.setVersion(container.getVersion().toString());
 		}
 	}
 
@@ -1450,7 +1449,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 			batch.store(latestDraftVersion, release.getUuid(), DRAFT, false);
 		} else {
-			if (requestModel.getVersion() == null || isEmpty(requestModel.getVersion().getNumber())) {
+			if (requestModel.getVersion() == null || isEmpty(requestModel.getVersion())) {
 				throw error(BAD_REQUEST, "node_error_version_missing");
 			}
 
@@ -1463,9 +1462,9 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Load the base version field container in order to create the diff
 			NodeGraphFieldContainer baseVersionContainer = findNextMatchingFieldContainer(Arrays.asList(requestModel.getLanguage()),
-					release.getUuid(), requestModel.getVersion().getNumber());
+					release.getUuid(), requestModel.getVersion());
 			if (baseVersionContainer == null) {
-				throw error(BAD_REQUEST, "node_error_draft_not_found", requestModel.getVersion().getNumber(), requestModel.getLanguage());
+				throw error(BAD_REQUEST, "node_error_draft_not_found", requestModel.getVersion(), requestModel.getLanguage());
 			}
 
 			latestDraftVersion.getSchemaContainerVersion().getSchema().assertForUnhandledFields(requestModel.getFields());
@@ -1479,7 +1478,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			List<FieldContainerChange> intersect = baseVersionDiff.stream().filter(requestVersionDiff::contains).collect(Collectors.toList());
 
 			// Check whether the update was not based on the latest draft version. In that case a conflict check needs to occur.
-			if (!latestDraftVersion.getVersion().equals(requestModel.getVersion().getNumber())) {
+			if (!latestDraftVersion.getVersion().equals(requestModel.getVersion())) {
 
 				// Check whether a conflict has been detected
 				if (intersect.size() > 0) {

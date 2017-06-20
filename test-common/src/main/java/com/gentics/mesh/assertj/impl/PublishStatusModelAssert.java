@@ -44,7 +44,7 @@ public class PublishStatusModelAssert extends AbstractAssert<PublishStatusModelA
 	 */
 	public PublishStatusModelAssert hasVersion(String version) {
 		assertThat(actual.getVersion()).as(descriptionText() + " Version").isNotNull();
-		assertThat(actual.getVersion().getNumber()).as(descriptionText() + " Version").isEqualTo(version);
+		assertThat(actual.getVersion()).as(descriptionText() + " Version").isEqualTo(version);
 		return this;
 	}
 }

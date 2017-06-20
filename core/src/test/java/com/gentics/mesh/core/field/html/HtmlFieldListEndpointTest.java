@@ -92,10 +92,10 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			listField.add("C");
 
 			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, listField);
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 		}
 	}
 
@@ -163,7 +163,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 				container.reload();
 				NodeGraphFieldContainer updatedContainer = container.getNextVersion();
 				assertEquals("The container version number did not match up with the response version number.",
-						updatedContainer.getVersion().toString(), response.getVersion().getNumber());
+						updatedContainer.getVersion().toString(), response.getVersion());
 				assertEquals("We expected container {" + container.getVersion().toString() + "} to contain the old value.", newValue,
 						getListValues(updatedContainer, HtmlGraphFieldListImpl.class, FIELD_NAME));
 				// assertEquals("We expected container {" + updatedContainer.getVersion().toString() +"} to contain the old value.", oldValue,
@@ -193,7 +193,7 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			// Assert that the old version was not modified
 			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getHTMLList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getHTMLList(FIELD_NAME)).isNotNull();
 			List<String> oldValueList = latest.getPreviousVersion().getHTMLList(FIELD_NAME).getList().stream().map(item -> item.getHTML())
@@ -201,8 +201,8 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(oldValueList).containsExactly("A", "B");
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 		}
 
 	}
@@ -215,19 +215,19 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			list.add("A");
 			list.add("B");
 			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			DateFieldListImpl emptyField = new DateFieldListImpl();
 			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
 			assertThat(secondResponse.getFields().getHtmlFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
 			assertThat(secondResponse.getFields().getHtmlFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number should be generated").isNotEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number should be generated").isNotEqualTo(oldVersion);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
-			assertThat(secondResponse.getVersion().getNumber()).as("No new version number should be generated")
-					.isEqualTo(secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
+			assertThat(secondResponse.getVersion()).as("No new version number should be generated")
+					.isEqualTo(secondResponse.getVersion());
 		}
 	}
 

@@ -18,8 +18,8 @@ public class NodeUpdateRequest implements FieldContainer {
 	private FieldMap fields = new FieldMapImpl();
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Version reference which must be provided in order to handle and detect concurrent changes to the node content.")
-	private VersionReference version;
+	@JsonPropertyDescription("Version number which must be provided in order to handle and detect concurrent changes to the node content.")
+	private String version;
 
 	public NodeUpdateRequest() {
 	}
@@ -69,7 +69,7 @@ public class NodeUpdateRequest implements FieldContainer {
 	 * 
 	 * @return version number
 	 */
-	public VersionReference getVersion() {
+	public String getVersion() {
 		return version;
 	}
 
@@ -78,7 +78,7 @@ public class NodeUpdateRequest implements FieldContainer {
 	 * 
 	 * @param version
 	 */
-	public void setVersion(VersionReference version) {
+	public void setVersion(String version) {
 		this.version = version;
 	}
 

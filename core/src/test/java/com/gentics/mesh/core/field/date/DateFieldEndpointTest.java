@@ -70,7 +70,7 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 
 				node.reload();
 				container.reload();
-				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getDateValue(container, FIELD_NAME));
 			}
 		}
@@ -82,10 +82,10 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 		}
 	}
 
@@ -98,16 +98,16 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			secondResponse = updateNode(FIELD_NAME, null);
 			assertThat(secondResponse.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 
 			// Assert that the old version was not modified
 			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getDate(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getDate(FIELD_NAME)).isNotNull();
 			Long oldValue = latest.getPreviousVersion().getDate(FIELD_NAME).getDate();
@@ -117,8 +117,8 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 
 		try (Tx tx = tx()) {
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 		}
 	}
 
@@ -128,22 +128,20 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		try (Tx tx = tx()) {
 			Long nowEpoch = fromISO8601(toISO8601(System.currentTimeMillis()));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new DateFieldImpl().setDate(toISO8601(nowEpoch)));
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			// Date fields can't be set to empty.
 			NodeResponse secondResponse = updateNode(FIELD_NAME, new DateFieldImpl());
 			assertThat(secondResponse.getFields().getDateField(FIELD_NAME)).as("Field Value").isNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 		}
 	}
 
 	/**
 	 * Get the date value
-	 * 
-	 * @param container
-	 *            container
-	 * @param fieldName
-	 *            field name
+	 *
+	 * @param container container
+	 * @param fieldName field name
 	 * @return date value (may be null)
 	 */
 	protected Long getDateValue(NodeGraphFieldContainer container, String fieldName) {

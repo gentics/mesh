@@ -80,14 +80,14 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		NodeResponse responseA = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer,
 				"filename.txt", "application/binary"));
 
-		assertThat(responseA.getVersion().getNumber().toString()).doesNotMatch(version.toString());
+		assertThat(responseA.getVersion()).doesNotMatch(version.toString());
 
 		// Upload again - A conflict should be detected since we provide the original outdated version
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 				"application/binary"), CONFLICT, "node_error_conflict_detected");
 
 		// Now use the correct version and verify that the upload succeeds
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", responseA.getVersion().getNumber(), FIELD_NAME, buffer, "filename.txt",
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", responseA.getVersion(), FIELD_NAME, buffer, "filename.txt",
 				"application/binary"));
 
 	}
@@ -105,13 +105,13 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
 			assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 			BinaryField binaryField = firstResponse.getFields().getBinaryField(FIELD_NAME);
 
 			// 2. Update the node using the loaded binary field data
 			NodeResponse secondResponse = updateNode(FIELD_NAME, binaryField);
 			assertThat(secondResponse.getFields().getBinaryField(FIELD_NAME)).as("Updated Field").isNotNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number should not be generated.").isEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number should not be generated.").isEqualTo(oldVersion);
 		}
 	}
 
@@ -131,17 +131,17 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 					"application/binary"));
 
 			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			// 2. Set the field to null
 			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 			assertThat(secondResponse.getFields().getBinaryField(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 
 			// Assert that the old version was not modified
 			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBinary(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getBinary(FIELD_NAME)).isNotNull();
 			String oldFilename = latest.getPreviousVersion().getBinary(FIELD_NAME).getFileName();
@@ -149,8 +149,8 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			// 3. Set the field to null one more time and assert that no new version was created
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 		}
 	}
 
@@ -167,12 +167,12 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
 			assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			// 2. Set the field to empty - Node should not be updated since nothing changes
 			NodeResponse secondResponse = updateNode(FIELD_NAME, new BinaryFieldImpl());
 			assertThat(secondResponse.getFields().getBinaryField(FIELD_NAME)).as("Updated Field").isNotNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 		}
 	}
 
