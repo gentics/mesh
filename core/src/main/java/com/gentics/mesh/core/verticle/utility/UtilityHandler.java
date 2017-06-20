@@ -35,7 +35,7 @@ public class UtilityHandler extends AbstractHandler {
 	 */
 	public void handleResolveLinks(RoutingContext rc) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			String projectName = ac.getParameter("project");
 			if (projectName == null) {
 				projectName = "project";

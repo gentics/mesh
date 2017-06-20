@@ -30,6 +30,7 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -51,7 +52,6 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.error.MeshConfigurationException;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
@@ -116,7 +116,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Completable init() {
 		Completable superCompletable = super.init();
 		return superCompletable.andThen(Completable.create(sub -> {
-			db.noTx(() -> {
+			db.tx(() -> {
 				updateNodeIndexMappings();
 				sub.onCompleted();
 				return null;
@@ -131,7 +131,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public Map<String, String> getIndices() {
-		return db.noTx(() -> {
+		return db.tx(() -> {
 			Map<String, String> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
@@ -163,7 +163,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public Set<String> getSelectedIndices(InternalActionContext ac) {
-		return db.noTx(() -> {
+		return db.tx(() -> {
 			Set<String> indices = new HashSet<>();
 			Project project = ac.getProject();
 			if (project != null) {
@@ -201,7 +201,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return Completable.defer(() -> {
 			HandleContext context = entry.getContext();
 			Set<Single<String>> obs = new HashSet<>();
-			try (NoTx noTrx = db.noTx()) {
+			try (Tx tx = db.tx()) {
 				store(obs, node, context);
 			}
 
@@ -478,7 +478,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 			@Override
 			public void onResponse(SearchResponse response) {
-				Page<? extends NodeContent> page = db.noTx(() -> {
+				Page<? extends NodeContent> page = db.tx(() -> {
 					List<NodeContent> elementList = new ArrayList<>();
 					for (SearchHit hit : response.getHits()) {
 

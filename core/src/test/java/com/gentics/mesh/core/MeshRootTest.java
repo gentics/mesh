@@ -10,11 +10,11 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.BuildInfo;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -25,7 +25,7 @@ public class MeshRootTest extends AbstractMeshTest {
 
 	@Test
 	public void testResolvePath() throws InterruptedException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			// Valid paths
 			expectSuccess("projects", meshRoot().getProjectRoot());
 			expectSuccess("projects/" + project().getUuid(), project());
@@ -144,8 +144,9 @@ public class MeshRootTest extends AbstractMeshTest {
 		Mesh.buildInfo.set(new BuildInfo(buildVersion, null));
 		assertEquals(buildVersion, Mesh.getPlainVersion());
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			meshRoot().setMeshVersion(graphVersion);
+			tx.success();
 		}
 	}
 

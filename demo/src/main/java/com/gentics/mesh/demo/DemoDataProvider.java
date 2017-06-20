@@ -20,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -48,7 +49,6 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
@@ -98,7 +98,7 @@ public class DemoDataProvider {
 	}
 
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
-		MeshAuthUser user = db.noTx(() -> {
+		MeshAuthUser user = db.tx(() -> {
 			return MeshInternal.get().boot().meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
 		});
 		client.setUser(user);
@@ -134,8 +134,8 @@ public class DemoDataProvider {
 	 * We currently can't specify the uuid during element creation. Thus we need to update it afterwards.
 	 */
 	private void updateUuids() {
-		try (NoTx noTx = db.noTx()) {
-			for (Vertex v : noTx.getGraph().getVertices()) {
+		try (Tx tx = db.tx()) {
+			for (Vertex v : tx.getGraph().getVertices()) {
 				String uuid = v.getProperty("uuid");
 				String mapping = uuidMapping.get(uuid);
 				if (mapping != null) {

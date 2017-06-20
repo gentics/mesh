@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
@@ -87,7 +88,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		MeshAuthUser requestUser = ac.getUser();
 
 		// Iterate over all vertices that are managed by this root vertex
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = getGraph();
 		Iterable<Edge> itemEdges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", this.getId());
 
 		AtomicLong counter = new AtomicLong();
@@ -175,7 +176,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return Found element or null if the element could not be located
 	 */
 	default public T findByUuid(String uuid) {
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = Tx.getActive().getGraph();
 		// 1. Find the element with given uuid within the whole graph
 		Iterator<Vertex> it = database().getVertices(getPersistanceClass(), new String[] { "uuid" }, new String[] { uuid });
 		if (it.hasNext()) {
@@ -260,7 +261,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param item
 	 */
 	default public void addItem(T item) {
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
 				database().createComposedIndexKey(item.getId(), getId()));
 		if (!edges.iterator().hasNext()) {

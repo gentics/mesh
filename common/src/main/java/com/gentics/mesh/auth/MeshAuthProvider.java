@@ -11,13 +11,13 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
@@ -162,7 +162,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 *            Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
 	 */
 	private void authenticate(String username, String password, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
-		try (NoTx noTx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUsername(username);
 			if (user != null) {
 				String accountPasswordHash = user.getPasswordHash();
@@ -238,7 +238,7 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 * @throws Exception
 	 */
 	private User loadUserByJWT(JsonObject jwt) throws Exception {
-		try (NoTx noTx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			String userUuid = jwt.getString(USERID_FIELD_NAME);
 			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUuid(userUuid);
 			if (user == null) {

@@ -105,7 +105,7 @@ public abstract class AbstractCrudHandler<T extends MeshCoreVertex<RM, T>, RM ex
 			String uuid = ac.getParameter("param0");
 			// Only try to load the root element when a uuid string was specified
 			if (!isEmpty(uuid)) {
-				boolean result = db.noTx(() -> {
+				boolean result = db.tx(() -> {
 					T foundElement = getRootVertex(ac).findByUuid(uuid);
 					if (foundElement == null) {
 						throw error(NOT_FOUND, i18nNotFoundMessage, uuid);

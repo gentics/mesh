@@ -12,7 +12,6 @@ import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
@@ -39,6 +38,7 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -56,8 +56,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
@@ -79,7 +77,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 		assertThat(dummySearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeIndexType(),
 				SchemaContainer.composeDocumentId(restSchema.getUuid()));
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			assertThat(createRequest).matches(restSchema);
 			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);
 
@@ -95,9 +93,10 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testCreateWithNoPerm() throws Exception {
 		SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
-		String schemaRootUuid = db().noTx(() -> meshRoot().getSchemaContainerRoot().getUuid());
-		try (NoTx noTx = db().noTx()) {
+		String schemaRootUuid = db().tx(() -> meshRoot().getSchemaContainerRoot().getUuid());
+		try (Tx tx = tx()) {
 			role().revokePermissions(meshRoot().getSchemaContainerRoot(), CREATE_PERM);
+			tx.success();
 		}
 		call(() -> client().createSchema(schema), FORBIDDEN, "error_missing_perm", schemaRootUuid);
 	}
@@ -106,7 +105,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testCreateReadDelete() throws GenericRestException, Exception {
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
 			SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 
@@ -127,16 +126,21 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testReadMultiple() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			int totalSchemas;
+		int totalSchemas;
+		final int nSchemas = 22;
+
+		try (Tx tx = tx()) {
 			SchemaContainerRoot schemaRoot = meshRoot().getSchemaContainerRoot();
-			final int nSchemas = 22;
+
+			// Create schema with no read permission
 			SchemaModel schema = FieldUtil.createMinimalValidSchema();
 			schema.setName("No_Perm_Schema");
 			SchemaContainer noPermSchema = schemaRoot.create(schema, user());
 			SchemaModel dummySchema = new SchemaModelImpl();
 			dummySchema.setName("dummy");
 			noPermSchema.getLatestVersion().setSchema(dummySchema);
+
+			// Create multiple schemas
 			for (int i = 0; i < nSchemas; i++) {
 				schema = FieldUtil.createMinimalValidSchema();
 				schema.setName("extra_schema_" + i);
@@ -144,22 +148,19 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 				extraSchema.getLatestVersion().setSchema(dummySchema);
 				role().grantPermissions(extraSchema, READ_PERM);
 			}
-			// Don't grant permissions to no perm schema
 			totalSchemas = nSchemas + data().getSchemaContainers().size();
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			// Test default paging parameters
-			MeshResponse<SchemaListResponse> future = client().findSchemas().invoke();
-			latchFor(future);
-			assertSuccess(future);
-			SchemaListResponse restResponse = future.result();
+			SchemaListResponse restResponse = call(() -> client().findSchemas());
 			assertEquals(25, restResponse.getMetainfo().getPerPage());
 			assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 			assertEquals(25, restResponse.getData().size());
 
 			int perPage = 11;
-			future = client().findSchemas(new PagingParametersImpl(2, perPage)).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			restResponse = future.result();
+			restResponse = call(() -> client().findSchemas(new PagingParametersImpl(2, perPage)));
 			assertEquals(perPage, restResponse.getData().size());
 
 			// Extra schemas + default schema
@@ -187,19 +188,11 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			// .collect(Collectors.toList());
 			// assertTrue("The no perm schema should not be part of the list since no permissions were added.", filteredSchemaList.size() == 0);
 
-			future = client().findSchemas(new PagingParametersImpl(-1, perPage)).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
+			call(() -> client().findSchemas(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
 
-			future = client().findSchemas(new PagingParametersImpl(1, -1)).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
+			call(() -> client().findSchemas(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-			future = client().findSchemas(new PagingParametersImpl(4242, 25)).invoke();
-			latchFor(future);
-			assertSuccess(future);
-
-			SchemaListResponse list = future.result();
+			SchemaListResponse list = call(() -> client().findSchemas(new PagingParametersImpl(4242, 25)));
 			assertEquals(4242, list.getMetainfo().getCurrentPage());
 			assertEquals(0, list.getData().size());
 		}
@@ -207,16 +200,14 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testReadMetaCountOnly() {
-		MeshResponse<SchemaListResponse> future = client().findSchemas(new PagingParametersImpl(1, 0)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		assertEquals(0, future.result().getData().size());
+		SchemaListResponse list = call(() -> client().findSchemas(new PagingParametersImpl(1, 0)));
+		assertEquals(0, list.getData().size());
 	}
 
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer container = schemaContainer("content");
 			SchemaContainerVersion schemaContainerVersion = container.getLatestVersion();
 			SchemaResponse restSchema = call(() -> client().findSchemaByUuid(container.getUuid()));
@@ -227,10 +218,10 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		String uuid = db().noTx(() -> schemaContainer("content").getUuid());
+		String uuid = db().tx(() -> schemaContainer("content").getUuid());
 
 		SchemaResponse schema = call(
-				() -> client().findSchemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(db().noTx(() -> role().getUuid()))));
+				() -> client().findSchemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(db().tx(() -> role().getUuid()))));
 		assertNotNull(schema.getRolePerms());
 		assertThat(schema.getRolePerms()).hasPerm(Permission.values());
 	}
@@ -238,17 +229,16 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		SchemaContainer schema;
-		try (NoTx noTx = db().noTx()) {
-			schema = schemaContainer("content");
-
+		SchemaContainer schema = schemaContainer("content");
+		try (Tx tx = tx()) {
 			role().grantPermissions(schema, DELETE_PERM);
 			role().grantPermissions(schema, UPDATE_PERM);
 			role().grantPermissions(schema, CREATE_PERM);
 			role().revokePermissions(schema, READ_PERM);
+			tx.success();
 		}
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			call(() -> client().findSchemaByUuid(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid());
 		}
 	}
@@ -284,8 +274,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testUpdateWithReferencedMicroschema() {
 
 		SchemaUpdateRequest schemaUpdate = db()
-				.noTx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(), SchemaUpdateRequest.class));
-		String schemaUuid = db().noTx(() -> schemaContainer("content").getUuid());
+				.tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(), SchemaUpdateRequest.class));
+		String schemaUuid = db().tx(() -> schemaContainer("content").getUuid());
 
 		// 1. Create the microschema
 		MicroschemaCreateRequest microschemaRequest = new MicroschemaCreateRequest();
@@ -332,7 +322,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			String oldName = schema.getName();
 			SchemaUpdateRequest request = new SchemaUpdateRequest();
@@ -348,15 +338,15 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			assertThat(schema.getNodes()).isNotEmpty();
 		}
 
-		String uuid = db().noTx(() -> schemaContainer("content").getUuid());
+		String uuid = db().tx(() -> schemaContainer("content").getUuid());
 		call(() -> client().deleteSchema(uuid), BAD_REQUEST, "schema_delete_still_in_use", uuid);
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(uuid);
 			assertNotNull("The schema should not have been deleted.", reloaded);
 			// Validate and delete all remaining nodes that use the schema
@@ -371,7 +361,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		call(() -> client().deleteSchema(uuid));
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			boot().schemaContainerRoot().reload();
 			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(uuid);
 			assertNull("The schema should have been deleted.", reloaded);
@@ -381,9 +371,13 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			SchemaContainer schema = schemaContainer("content");
+		SchemaContainer schema = schemaContainer("content");
+		try (Tx tx = tx()) {
 			role().revokePermissions(schema, DELETE_PERM);
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			call(() -> client().deleteSchema(schema.getUuid()), FORBIDDEN, "error_missing_perm", schema.getUuid());
 			assertElement(boot().schemaContainerRoot(), schema.getUuid(), true);
 		}
@@ -393,7 +387,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	@Ignore("not yet supported")
 	public void testUpdateMultithreaded() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			SchemaUpdateRequest request = new SchemaUpdateRequest();
 			request.setName("new-name");
@@ -413,7 +407,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Ignore("not yet supported")
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			String uuid = schema.getUuid();
 			CyclicBarrier barrier = prepareBarrier(nJobs);
@@ -430,7 +424,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Ignore("not yet supported")
 	public void testDeleteByUUIDMultithreaded() throws Exception {
 		int nJobs = 3;
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			CyclicBarrier barrier = prepareBarrier(nJobs);
 			Set<MeshResponse<Void>> set = new HashSet<>();
@@ -462,7 +456,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			Set<MeshResponse<SchemaResponse>> set = new HashSet<>();
 			for (int i = 0; i < nJobs; i++) {
@@ -479,13 +473,14 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
 		String schemaUuid;
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			role().revokePermissions(schema, UPDATE_PERM);
 			schemaUuid = schema.getUuid();
+			tx.success();
 		}
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaUpdateRequest request = new SchemaUpdateRequest();
 			request.setName("new-name");
 			call(() -> client().updateSchema(schemaUuid, request), FORBIDDEN, "error_missing_perm", schemaUuid);

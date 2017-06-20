@@ -8,7 +8,7 @@ import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -17,7 +17,7 @@ public class NodeIndexHandlerTest extends AbstractMeshTest {
 
 	@Test
 	public void testReindexAll() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			assertThat(meshRoot().getNodeRoot().findAll()).as("Node list").isNotEmpty();
 			searchProvider().reset();
 			assertEquals("Initially no store event should have been recorded.", 0,

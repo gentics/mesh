@@ -6,11 +6,11 @@ import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -33,7 +33,7 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 	@Test
 	public void testPermissionPerformance() {
 		loggingStopWatch(logger, "user.hasPermission", 100000, (step) -> {
-			try (NoTx noTx = db().noTx()) {
+			try (Tx tx = db().tx()) {
 				user().hasPermission(content(), GraphPermission.READ_PERM);
 			}
 		});
@@ -41,10 +41,10 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 
 	@Test
 	public void testPermissionInfoPerformance() {
-		User user = db().noTx(() -> user());
-		Node content = db().noTx(() -> content());
+		User user = db().tx(() -> user());
+		Node content = db().tx(() -> content());
 		loggingStopWatch(logger, "user.getPermissionInfo", 70000, (step) -> {
-			try (NoTx noTx = db().noTx()) {
+			try (Tx tx = db().tx()) {
 				user.getPermissionInfo(content);
 			}
 		});
@@ -55,7 +55,7 @@ public class UserEndpointPerformanceTest extends AbstractMeshTest {
 	public void testPerformance() {
 		addUsers();
 
-		String uuid = db().noTx(() -> user().getUuid());
+		String uuid = db().tx(() -> user().getUuid());
 
 		loggingStopWatch(logger, "user.read-page-100", 200, (step) -> {
 			call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100)));

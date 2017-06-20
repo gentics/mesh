@@ -138,7 +138,7 @@ public class MicroschemaContainerVersionImpl
 
 	@Override
 	public Single<MicroschemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return MeshInternal.get().database().operateNoTx(() -> {
+		return MeshInternal.get().database().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

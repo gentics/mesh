@@ -235,7 +235,7 @@ public class RouterStorage {
 			log.info("Added project router {" + name + "}");
 
 			projectRouter.route().handler(ctx -> {
-				Project project = db.get().noTx(() -> boot.get().projectRoot().findByName(name));
+				Project project = db.get().tx(() -> boot.get().projectRoot().findByName(name));
 				ctx.data().put(PROJECT_CONTEXT_KEY, project);
 				ctx.next();
 			});

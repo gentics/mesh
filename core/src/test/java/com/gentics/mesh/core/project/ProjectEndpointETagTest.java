@@ -1,64 +1,45 @@
 package com.gentics.mesh.core.project;
 
-import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.rest.project.ProjectListResponse;
-import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.client.MeshRequest;
-import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.ETag;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
-public class ProjectEndpointETagTest extends AbstractETagTest {
+public class ProjectEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (NoTx noTx = db().noTx()) {
-			MeshResponse<ProjectListResponse> response = client().findProjects().invoke();
-			latchFor(response);
-			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
-			assertNotNull(etag);
-
-			expect304(client().findProjects(), etag, true);
-			expectNo304(client().findProjects(new PagingParametersImpl().setPage(2)), etag, true);
+		try (Tx tx = tx()) {
+			String etag = callETag(() -> client().findProjects());
+			callETag(() -> client().findProjects(), etag, true, 304);
+			callETag(() -> client().findProjects(new PagingParametersImpl().setPage(2)), etag, true, 200);
 		}
 	}
 
 	@Test
 	public void testReadOne() {
-		try (NoTx noTx = db().noTx()) {
-			Project project = project();
-			MeshResponse<ProjectResponse> response = client().findProjectByUuid(project.getUuid()).invoke();
-			latchFor(response);
-			String etag = project.getETag(mockActionContext());
-			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
+		try (Tx tx = tx()) {
+			String actualETag = callETag(() -> client().findProjectByUuid(projectUuid()));
+			String etag = project().getETag(mockActionContext());
+			assertEquals(etag, actualETag);
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<ProjectResponse> request = client().findProjectByUuid(project.getUuid());
-			assertEquals(etag, expect304(request, etag, true));
+			assertEquals(etag, callETag(() -> client().findProjectByUuid(project().getUuid()), etag, true, 304));
 
-			// The node has no node reference and thus expanding will not affect the etag
-			assertEquals(etag,
-					expect304(client().findProjectByUuid(project.getUuid()),
-							etag, true));
+			// The project has no node reference and thus expanding will not affect the etag
+			assertEquals(etag, callETag(() -> client().findProjectByUuid(project().getUuid()), etag, true, 304));
 
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(client().findProjectByUuid(project.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag,
-					true);
-			expect304(client().findProjectByUuid(project.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag,
-					true);
+			callETag(() -> client().findProjectByUuid(project().getUuid(), new NodeParametersImpl().setExpandAll(false)), etag, true, 304);
+			callETag(() -> client().findProjectByUuid(project().getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true, 304);
 		}
 
 	}

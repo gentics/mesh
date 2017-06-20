@@ -68,7 +68,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			throw error(BAD_REQUEST, "role_permission_path_missing");
 		}
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
@@ -106,7 +106,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	public void handlePermissionUpdate(InternalActionContext ac, String roleUuid, String pathToElement) {
 		//TODO validate uuids
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
 			}
@@ -128,7 +128,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				throw error(NOT_FOUND, "error_element_for_path_not_found", pathToElement);
 			}
 
-			return db.noTx(() -> {
+			return db.tx(() -> {
 				RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 
 				// Prepare the sets for revoke and grant actions

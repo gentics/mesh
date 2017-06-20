@@ -14,6 +14,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -40,7 +41,6 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
@@ -50,7 +50,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Before
 	public void updateSchema() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
 			microschemaFieldSchema.setName(FIELD_NAME);
@@ -58,13 +58,14 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
 			schema.addField(microschemaFieldSchema);
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			tx.success();
 		}
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			MicronodeField field = response.getFields().getMicronodeField(FIELD_NAME);
 			assertNull(field);
@@ -74,7 +75,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 
 			MicronodeResponse field = new MicronodeResponse();
@@ -117,7 +118,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			field.setMicroschema(new MicroschemaReference().setName("vcard"));
 			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
@@ -133,7 +134,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			field.setMicroschema(new MicroschemaReference().setName("vcard"));
 			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
@@ -141,13 +142,14 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, field);
 			String oldNumber = firstResponse.getVersion().getNumber();
 
-			// Assert that a null field value request will delete the micronode 
+			// Assert that a null field value request will delete the micronode
 			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME)).isNull();
 			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldNumber);
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
+			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
 			assertThat(latest.getMicronode(FIELD_NAME)).isNull();
@@ -165,7 +167,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			field.setMicroschema(new MicroschemaReference().setName("vcard"));
 			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
@@ -194,7 +196,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			MicroschemaReference microschema = new MicroschemaReference();
 			microschema.setName("vcard");
@@ -219,7 +221,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testCreateNodeWithInvalidMicroschema() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			MicroschemaReference microschema = new MicroschemaReference();
 			microschema.setName("notexisting");
@@ -231,7 +233,7 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testCreateNodeWithNotAllowedMicroschema() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			MicroschemaReference microschema = new MicroschemaReference();
 			microschema.setName("captionedImage");
@@ -245,23 +247,24 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		Node node = folder("2015");
+		try (Tx tx = tx()) {
 			MicroschemaContainerVersion microschema = microschemaContainers().get("vcard").getLatestVersion();
-			Node node = folder("2015");
-
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-
 			MicronodeGraphField micronodeField = container.createMicronode(FIELD_NAME, microschema);
 			micronodeField.getMicronode().createString("firstName").setString("Max");
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeResponse response = readNode(node);
-
 			MicronodeResponse deserializedMicronodeField = response.getFields().getMicronodeField(FIELD_NAME);
 			assertNotNull("Micronode field must not be null", deserializedMicronodeField);
 			StringField firstNameField = deserializedMicronodeField.getFields().getStringField("firstName");
 			assertNotNull("Micronode must contain firstName field", firstNameField);
 			assertEquals("Check firstName value", "Max", firstNameField.getString());
 		}
+
 	}
 
 	/**
@@ -271,11 +274,11 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	 */
 	@Test
 	public void testExpandAllCyclicMicronodeWithNodeReference() {
-		try (NoTx noTx = db().noTx()) {
-			Node node = folder("2015");
+		Node node = folder("2015");
+		MicroschemaModel nodeMicroschema = new MicroschemaModelImpl();
 
+		try (Tx tx = tx()) {
 			// 1. Create microschema noderef with nodefield
-			MicroschemaModel nodeMicroschema = new MicroschemaModelImpl();
 			nodeMicroschema.setName("noderef");
 			for (int i = 0; i < 10; i++) {
 				nodeMicroschema.addField(new NodeFieldSchemaImpl().setName("nodefield_" + i));
@@ -290,8 +293,11 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "noderef" });
 			schema.addField(microschemaFieldSchema);
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			tx.success();
+		}
 
-			// 3. Update the node 
+		// 3. Update the node
+		try (Tx tx = tx()) {
 			MicronodeResponse field = new MicronodeResponse();
 			field.setMicroschema(new MicroschemaReference().setName("noderef"));
 			for (int i = 0; i < 10; i++) {
@@ -309,21 +315,23 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	 */
 	@Test
 	public void testUpdateFieldTypes() throws IOException {
-		try (NoTx noTx = db().noTx()) {
-			Long date = System.currentTimeMillis();
-			Node newsOverview = content("news overview");
-			Node newsFolder = folder("news");
+		Long date = System.currentTimeMillis();
+		Node newsOverview = content("news overview");
+		Node newsFolder = folder("news");
+		MicroschemaModel fullMicroschema = new MicroschemaModelImpl();
+
+		try (Tx tx = tx()) {
 
 			// 1. Create microschema that includes all field types
-			MicroschemaModel fullMicroschema = new MicroschemaModelImpl();
+
 			fullMicroschema.setName("full");
 			// TODO implement BinaryField in Micronode
-			//		fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
+			// fullMicroschema.addField(new BinaryFieldSchemaImpl().setName("binaryfield").setLabel("Binary Field"));
 			fullMicroschema.addField(new BooleanFieldSchemaImpl().setName("booleanfield").setLabel("Boolean Field"));
 			fullMicroschema.addField(new DateFieldSchemaImpl().setName("datefield").setLabel("Date Field"));
 			fullMicroschema.addField(new HtmlFieldSchemaImpl().setName("htmlfield").setLabel("HTML Field"));
 			// TODO implement BinaryField in Micronode
-			//		fullMicroschema.addField(new ListFieldSchemaImpl().setListType("binary").setName("listfield-binary").setLabel("Binary List Field"));
+			// fullMicroschema.addField(new ListFieldSchemaImpl().setListType("binary").setName("listfield-binary").setLabel("Binary List Field"));
 			fullMicroschema.addField(new ListFieldSchemaImpl().setListType("boolean").setName("listfield-boolean").setLabel("Boolean List Field"));
 			fullMicroschema.addField(new ListFieldSchemaImpl().setListType("date").setName("listfield-date").setLabel("Date List Field"));
 			fullMicroschema.addField(new ListFieldSchemaImpl().setListType("html").setName("listfield-html").setLabel("Html List Field"));
@@ -345,9 +353,12 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "full" });
 			schema.addField(microschemaFieldSchema);
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			tx.success();
+		}
 
-			// 4. Prepare the micronode field for the update request
-			MicronodeResponse field = new MicronodeResponse();
+		// 4. Prepare the micronode field for the update request
+		MicronodeResponse field = new MicronodeResponse();
+		try (Tx tx = tx()) {
 			field.setMicroschema(new MicroschemaReference().setName("full"));
 			field.getFields().put("booleanfield", FieldUtil.createBooleanField(true));
 			field.getFields().put("datefield", FieldUtil.createDateField(toISO8601(date)));
@@ -361,13 +372,16 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			field.getFields().put("nodefield", FieldUtil.createNodeField(newsOverview.getUuid()));
 			field.getFields().put("numberfield", FieldUtil.createNumberField(4711));
 			field.getFields().put("stringfield", FieldUtil.createStringField("String value"));
+		}
 
+		try (Tx tx = tx()) {
 			// 5. Invoke the update request
 			NodeResponse response = updateNode("full", field);
 
 			// 6. Compare the response with the update request
 			assertThat(response.getFields().getMicronodeField("full")).matches(field, fullMicroschema);
 		}
+
 	}
 
 	/**

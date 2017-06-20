@@ -12,6 +12,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -27,7 +28,6 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -38,13 +38,13 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchDraftNodes() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
 		String oldContent = "supersonic";
 		String newContent = "urschnell";
-		String uuid = db().noTx(() -> content("concorde").getUuid());
+		String uuid = db().tx(() -> content("concorde").getUuid());
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 
 		NodeListResponse response = call(
@@ -75,14 +75,14 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 	 */
 	@Test
 	public void testMicronodeMigrationSearch() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
-		String contentUuid = db().noTx(() -> content().getUuid());
-		String folderUuid = db().noTx(() -> folder("2015").getUuid());
-		String schemaUuid = db().noTx(() -> schemaContainer("content").getUuid());
+		String contentUuid = db().tx(() -> content().getUuid());
+		String folderUuid = db().tx(() -> folder("2015").getUuid());
+		String schemaUuid = db().tx(() -> schemaContainer("content").getUuid());
 		SchemaUpdateRequest schemaUpdate = db()
-				.noTx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(), SchemaUpdateRequest.class));
+				.tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(), SchemaUpdateRequest.class));
 
 		// 1. Create the microschema
 		MicroschemaCreateRequest microschemaRequest = new MicroschemaCreateRequest();
@@ -159,11 +159,11 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchPublishedInRelease() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
-		String uuid = db().noTx(() -> content("concorde").getUuid());
+		String uuid = db().tx(() -> content("concorde").getUuid());
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 
@@ -177,13 +177,13 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		assertThat(response.getData()).as("Search result").isEmpty();
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
-				new VersioningParametersImpl().setRelease(db().noTx(() -> project().getInitialRelease().getName()))));
+				new VersioningParametersImpl().setRelease(db().tx(() -> project().getInitialRelease().getName()))));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 
 	@Test
 	public void testSearchTagFamilies() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 

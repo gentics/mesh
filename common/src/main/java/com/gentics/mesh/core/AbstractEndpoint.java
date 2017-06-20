@@ -83,7 +83,7 @@ public abstract class AbstractEndpoint {
 	/**
 	 * Description of the endpoints in a broader scope.
 	 * 
-	 * @return Descripton of the endpoint
+	 * @return Description of the endpoint
 	 */
 	public abstract String getDescription();
 

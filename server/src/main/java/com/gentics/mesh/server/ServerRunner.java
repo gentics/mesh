@@ -28,6 +28,7 @@ public class ServerRunner {
 	public static void main(String[] args) throws Exception {
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		setupKeystore(options);
+		options.setClusterMode(true);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
