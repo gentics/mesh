@@ -770,13 +770,13 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testReadPublishedNodeNoPermission3() {
-		String uuid = db().noTx(() -> content().getUuid());
+		String uuid = db().tx(() -> content().getUuid());
 		NodeResponse draftResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 		NodeResponse publishedResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
 		assertEquals("Draft and publish versions should be the same since mesh automatically creates a new draft based on the published version.", draftResponse.getVersion().getNumber(), publishedResponse.getVersion().getNumber());
 
-		db().noTx(() -> {
+		tx((tx) -> {
 			Node node = content();
 			role().revokePermissions(node, READ_PERM);
 			role().revokePermissions(node, CREATE_PERM);
@@ -784,7 +784,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			role().revokePermissions(node, UPDATE_PERM);
 			role().revokePermissions(node, PUBLISH_PERM);
 			role().grantPermissions(node, READ_PUBLISHED_PERM);
-			return null;
+			tx.success();
 		});
 
 		// version=<default>
