@@ -3,6 +3,7 @@ package com.gentics.mesh.distributed;
 import java.io.File;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.orientechnologies.orient.core.Orient;
@@ -11,6 +12,7 @@ import com.orientechnologies.orient.core.metadata.security.OSecurityNull;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
+@Ignore
 public class ReplicationTest {
 
 	String basePath = "target/nodeC";
