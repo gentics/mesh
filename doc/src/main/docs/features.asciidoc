@@ -588,7 +588,7 @@ NOTE: The current node will not be included in the list, since all the informati
 
 In our demo app example, the ```breadcrumb``` property for node _Ford GT_ will therefore include the node _Automobiles_. 
 
-image::GenticsMesh-Breadcrumb-Example.png[options="img-responsive"]
+image::GenticsMesh-Breadcrumb-Example.png[role="img-responsive"]
 
 The ```breadcrumb``` property will be returned in all API responses containing nodes. Using the ```resolveLink``` query parameter will also the paths of the nodes listed in the array.
 
@@ -790,7 +790,9 @@ In case, the binary data is an image, the WebRoot API allows to directly perform
 
 ==== Crop and resize an image with UUID
 
-> http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?cropx=10&cropy=100&cropw=800&croph=400&width=300
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?cropx=10&cropy=100&cropw=800&croph=400&width=300
 
 ==== Crop and resize an image with WebRoot path
 

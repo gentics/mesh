@@ -1,5 +1,5 @@
 ++++
-<div class="graphql-example">
+<div class="graphql-example" style="height: 39em">
 {
   nodes(perPage: 2, page: 2) {
     elements {

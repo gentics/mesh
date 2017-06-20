@@ -1,5 +1,5 @@
 ++++
-<div class="graphql-example">
+<div class="graphql-example" style="height: 19em">
 {
   node(path: "/yachts/pelorus") {
     availableLanguages

@@ -1,5 +1,5 @@
 ++++
-<div class="graphql-example">
+<div class="graphql-example" style="height: 30em">
 {
   # Search for all nodes which contain the string 'car' in the content
   nodes(query: "{\"query\":{\"query_string\":{\"query\":\"car\"}}}") {
