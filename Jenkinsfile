@@ -24,10 +24,13 @@ def name = "meshpod.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').repla
 podTemplate(label: name,
 
 	containers: [
-		containerTemplate(name: 'jnlp', image: 'registry.cluster.gentics.com/jenkins-slave:kubernetes', alwaysPullImage: true, ttyEnabled: true, command: 'cat', workingDir: '/home/jenkins/workspace',
-			envVars: [
-				containerEnvVar(key: 'HOME', value: '/home/jenkins')
-		]),
+		containerTemplate(name: 'jnlp', image: 'registry.cluster.gentics.com/jenkins-slave:kubernetes', 
+			alwaysPullImage: 	true,
+			ttyEnabled: 		true,
+			args:				'${computer.jnlpmac} ${computer.name}',
+			workingDir:			'/home/jenkins/workspace',
+			envVars: [ containerEnvVar(key: 'HOME', value: '/home/jenkins')]
+			),
 	],
 	volumes: [
 		hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
@@ -58,7 +61,7 @@ podTemplate(label: name,
 		stage("Test") {
 			if (Boolean.valueOf(params.runTests)) {
 				try {
-					sh "mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
+					sh "mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -pl '!demo,!doc,!server,!performance-tests' clean test"
 				} finally {
 					step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 				}
@@ -91,7 +94,7 @@ podTemplate(label: name,
 
 		stage("Performance Tests") {
 			if (Boolean.valueOf(params.runPerformanceTests)) {
-				container('genticsbuild') {
+				container('jnlp') {
 					checkout scm
 					try {
 						sh "mvn -B -U clean package -pl '!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
