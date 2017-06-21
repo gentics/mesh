@@ -8,11 +8,13 @@
 | Component                                                    | Type                 | Version
 | http://orientdb.com/[OrientDB]                               | Graph Database       | 2.2.x
 | https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.2.x
-| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 2.3.x
+| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 2.4.x
 | http://vertx.io/[Vert.x]                                     | Core Framework       | 3.4.x
 | https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.5.x
 | https://google.github.io/dagger/                             | Dependency Injection | 2.6.x
 |======
+
+TIP: You can find the components' current version numbers by querying the API: http://getmesh.io/api/v1/ or http://localhost:8080/api/v1/
 
 == "Installation"
 
@@ -163,9 +165,12 @@ By default all specified directories are relative to the current working directo
 Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying graph and Elasticsearch database cache settings.
 
 ////////
-== Backup
+== Backup & Restore
 TODO
 http://getmesh.io/docs/beta/raml/#admin
+GraphDB
+Binary Files
+Elastic Search Index
 ////////
 
 == link:changelog.html[Changelog]
@@ -173,4 +178,4 @@ http://getmesh.io/docs/beta/raml/#admin
 == License
 
 * Gentics Mesh is published under the https://www.apache.org/licenses/LICENSE-2.0[Apache License, Version 2.0]   
-* https://github.com/graphql/graphiql[GraphiQL] is owned and developed by Facebook Inc.
+* https://github.com/graphql/graphiql[GraphiQL] is owned and developed by Facebook Inc. Usage is subject to the https://github.com/gentics/mesh/blob/d69b94d4b9bd8e3dbbba06dcdf8fac9b09593f13/verticles/graphql/src/main/resources/graphiql/LICENSE[LICENSE AGREEMENT For GraphiQL software].
