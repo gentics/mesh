@@ -2,6 +2,12 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.18 (TBD)
+
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.22
+
+icon:plus[] Core: The Ferma OGM library was updated to version 2.2.2
+
 == 0.9.17 (21.06.2017)
 
 icon:check[] UI: A bug which prevented micronodes which contained empty node field from being saved was fixed.
