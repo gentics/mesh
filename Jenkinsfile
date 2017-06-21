@@ -5,20 +5,23 @@ import com.gentics.*
 // Make the helpers aware of this jobs environment
 JobContext.set(this)
 
-
 properties([
 	parameters([
-		booleanParam(name: 'runTests',   defaultValue: true,  description: "Whether to run the unit tests"),
-		booleanParam(name: 'runDeploy',  defaultValue: false, description: "Whether to run the deploy steps.")
+		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
+		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
+		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
+		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
+		booleanParam(name: 'runReleaseBuild',     defaultValue: false, description: "Whether to run the release steps."),
+		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests.")
 	])
 ])
 
-final def sshAgent             = "601b6ce9-37f7-439a-ac0b-8e368947d98d"
 final def dockerHost           = "tcp://gemini.office:2375"
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 
+def name = "buildpod.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
 
-podTemplate(name: 'kubernetespod', label: 'kubernetespod',
+podTemplate(name: name,
 
 	containers: [
 		containerTemplate(name: 'jnlp', image: 'jenkinsci/jnlp-slave', args: '${computer.jnlpmac} ${computer.name}', workingDir: '/home/jenkins/workspace'),
@@ -28,17 +31,18 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 		]),
 	],
 	volumes: [
+		hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')
 		//persistentVolumeClaim(claimName: 'jenkins-maven-repository', mountPath: '/home/jenkins/.m2/repository')
 	]
 ) {
-	node('kubernetespod') {
+	node(name) {
 		stage("Checkout") {
-			checkout([$class: 'GitSCM', branches: [[name: '*/kubernetes']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'LocalBranch']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git', url: 'git@github.com:gentics/mesh.git']]])
+			checkout scm
 		}
 		def branchName = GitHelper.fetchCurrentBranchName()
 
 		stage("Set Version") {
-			if (Boolean.valueOf(runReleaseBuild)) {
+			if (Boolean.valueOf(params.runReleaseBuild)) {
 				version = MavenHelper.getVersion()
 				if (version) {
 					echo "Building version " + version
@@ -53,7 +57,7 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 		}
 
 		stage("Test") {
-			if (Boolean.valueOf(runTests)) {
+			if (Boolean.valueOf(params.runTests)) {
 				def splits = 25;
 				sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
 				sh "split -a 2 -d -n l/${splits} alltests  includes-"
@@ -64,7 +68,7 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 					branches["split${i}"] = {
 						container('genticsbuild') {
 							echo "Preparing slave environment for ${current}"
-							checkout([$class: 'GitSCM', branches: [[name: '*/kubernetes']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'LocalBranch']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git', url: 'git@github.com:gentics/mesh.git']]])
+							checkout scm
 							unstash 'project'
 							def postfix = current;
 							if (current <= 9) {
@@ -72,7 +76,7 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 							}
 							echo "Setting correct inclusions file ${postfix}"
 							sh "mv includes-${postfix} inclusions.txt"
-							sshagent([sshAgent]) {
+							sshagent(["git"]) {
 								try {
 									sh "mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
 								} finally {
@@ -94,8 +98,8 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 		}
 
 		stage("Release Build") {
-			if (Boolean.valueOf(runReleaseBuild)) {
-				sshagent([sshAgent]) {
+			if (Boolean.valueOf(params.runReleaseBuild)) {
+				sshagent(["git"]) {
 					sh "mvn -B -DskipTests clean package"
 				}
 			} else {
@@ -104,7 +108,7 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 		}
 
 		stage("Docker Build") {
-			if (Boolean.valueOf(runDocker)) {
+			if (Boolean.valueOf(params.runDocker)) {
 				withEnv(["DOCKER_HOST=" + dockerHost ]) {
 					sh "rm demo/target/*sources.jar"
 					sh "rm server/target/*sources.jar"
@@ -116,9 +120,9 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 		}
 
 		stage("Performance Tests") {
-			if (Boolean.valueOf(runPerformanceTests)) {
+			if (Boolean.valueOf(params.runPerformanceTests)) {
 				container('genticsbuild') {
-					checkout([$class: 'GitSCM', branches: [[name: '*/kubernetes']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'LocalBranch']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git', url: 'git@github.com:gentics/mesh.git']]])
+					checkout scm
 					try {
 						sh "mvn -B -U clean package -pl '!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
 					} finally {
@@ -132,7 +136,7 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 		}
 
 		stage("Integration Tests") {
-			if (Boolean.valueOf(runIntegrationTests)) {
+			if (Boolean.valueOf(params.runIntegrationTests)) {
 				withEnv(["DOCKER_HOST=" + dockerHost, "MESH_VERSION=" + version]) {
 					sh "integration-tests/test.sh"
 				}
@@ -142,8 +146,8 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 		}
 
 		stage("Deploy") {
-			if (Boolean.valueOf(runDeploy)) {
-				if (Boolean.valueOf(runDocker)) {
+			if (Boolean.valueOf(params.runDeploy)) {
+				if (Boolean.valueOf(params.runDocker)) {
 					withEnv(["DOCKER_HOST=" + dockerHost]) {
 						withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
 							sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD -e entwicklung@genitcs.com'
@@ -151,7 +155,7 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 						}
 					}
 				}
-				sshagent([sshAgent]) {
+				sshagent(["git"]) {
 					sh "mvn -U -B -DskipTests clean deploy"
 				}
 			} else {
@@ -160,8 +164,8 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 		}
 
 		stage("Git push") {
-			if (Boolean.valueOf(runReleaseBuild)) {
-				sshagent([sshAgent]) {
+			if (Boolean.valueOf(params.runReleaseBuild)) {
+				sshagent(["git"]) {
 					def snapshotVersion = MavenHelper.getNextSnapShotVersion(version)
 					MavenHelper.setVersion(snapshotVersion)
 					GitHelper.addCommit('.', gitCommitTag + ' Prepare for the next development iteration (' + snapshotVersion + ')')
