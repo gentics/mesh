@@ -19,20 +19,19 @@ properties([
 final def dockerHost           = "tcp://gemini.office:2375"
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 
-def name = "buildpod.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
+def name = "meshpod.${env.JOB_NAME}.${env.BUILD_NUMBER}".replace('-', '_').replace('/', '_')
 
-podTemplate(name: name,
+podTemplate(label: name,
 
 	containers: [
-		containerTemplate(name: 'jnlp', image: 'jenkinsci/jnlp-slave', args: '${computer.jnlpmac} ${computer.name}', workingDir: '/home/jenkins/workspace'),
-		containerTemplate(name: 'genticsbuild', image: 'registry.cluster.gentics.com/jenkins-slave:kubernetes', alwaysPullImage: true, ttyEnabled: true, command: 'cat', workingDir: '/home/jenkins/workspace',
+		containerTemplate(name: 'jnlp', image: 'registry.cluster.gentics.com/jenkins-slave:kubernetes', alwaysPullImage: true, ttyEnabled: true, command: 'cat', workingDir: '/home/jenkins/workspace',
 			envVars: [
 				containerEnvVar(key: 'HOME', value: '/home/jenkins')
 		]),
 	],
 	volumes: [
-		hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock')
-		//persistentVolumeClaim(claimName: 'jenkins-maven-repository', mountPath: '/home/jenkins/.m2/repository')
+		hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
+		persistentVolumeClaim(claimName: 'jenkins-maven-repository', mountPath: '/home/jenkins/.m2/repository')
 	]
 ) {
 	node(name) {
@@ -58,39 +57,10 @@ podTemplate(name: name,
 
 		stage("Test") {
 			if (Boolean.valueOf(params.runTests)) {
-				def splits = 25;
-				sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
-				sh "split -a 2 -d -n l/${splits} alltests  includes-"
-				stash includes: '*', name: 'project'
-				def branches = [:]
-				for (int i = 0; i < splits; i++) {
-					def current = i
-					branches["split${i}"] = {
-						container('genticsbuild') {
-							echo "Preparing slave environment for ${current}"
-							checkout scm
-							unstash 'project'
-							def postfix = current;
-							if (current <= 9) {
-								postfix = "0" + current 
-							}
-							echo "Setting correct inclusions file ${postfix}"
-							sh "mv includes-${postfix} inclusions.txt"
-							sshagent(["git"]) {
-								try {
-									sh "mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
-								} finally {
-									step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
-								}
-							}
-						}
-					}
-				}
 				try {
-					parallel branches
-				} catch (err) {
-					echo "Failed " + err.getMessage()
-					error err.getMessage()
+					sh "mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
+				} finally {
+					step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 				}
 			} else {
 				echo "Tests skipped.."
