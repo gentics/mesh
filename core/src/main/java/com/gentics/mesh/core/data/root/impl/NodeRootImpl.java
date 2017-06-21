@@ -136,7 +136,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
 		GraphPermission perm = type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
 		String releaseUuid = release.getUuid();
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = getGraph();
 
 		// Internally we start with page 0 in order to comply with the tinkerpop range traversal values which start with 0.
 		// External (for the enduser) all pages start with 1.
@@ -201,7 +201,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return
 	 */
 	private boolean matchesReleaseAndType(Object nodeId, String releaseUuid, String code) {
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_field",
 				database().createComposedIndexKey(nodeId, releaseUuid, code));
 		return edges.iterator().hasNext();

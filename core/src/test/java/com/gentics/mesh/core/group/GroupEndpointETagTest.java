@@ -1,62 +1,51 @@
 package com.gentics.mesh.core.group;
 
-import static com.gentics.mesh.http.HttpConstants.ETAG;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
-import static org.assertj.core.api.Assertions.assertThat;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.core.rest.group.GroupListResponse;
-import com.gentics.mesh.core.rest.group.GroupResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.client.MeshRequest;
-import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.ETag;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
-public class GroupEndpointETagTest extends AbstractETagTest {
+public class GroupEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (NoTx noTx = db().noTx()) {
-			MeshResponse<GroupListResponse> response = client().findGroups().invoke();
-			latchFor(response);
-			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
+		try (Tx tx = tx()) {
+			String etag = callETag(() -> client().findGroups());
 			assertNotNull(etag);
 
-			expect304(client().findGroups(), etag, true);
-			expectNo304(client().findGroups(new PagingParametersImpl().setPage(2)), etag, true);
+			callETag(() -> client().findGroups(), etag, true, 304);
+			callETag(() -> client().findGroups(new PagingParametersImpl().setPage(2)), etag, true, 200);
 		}
 	}
 
 	@Test
 	public void testReadOne() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Group group = group();
 
-			MeshResponse<GroupResponse> response = client().findGroupByUuid(group.getUuid()).invoke();
-			latchFor(response);
+			String actualEtag = callETag(() -> client().findGroupByUuid(group.getUuid()));
 			String etag = group.getETag(mockActionContext());
-			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
+			assertEquals(etag, actualEtag);
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<GroupResponse> request = client().findGroupByUuid(group.getUuid());
-			assertThat(expect304(request, etag, true)).contains(etag);
+			callETag(() -> client().findGroupByUuid(group.getUuid()), etag, true, 304);
 
 			// The node has no node reference and thus expanding will not affect the etag
-			assertThat(expect304(client().findGroupByUuid(group.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true)).contains(etag);
+			callETag(() -> client().findGroupByUuid(group.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true, 304);
 
 			// Assert that adding bogus query parameters will not affect the etag
-			expect304(client().findGroupByUuid(group.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag, true);
-			expect304(client().findGroupByUuid(group.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true);
+			callETag(() -> client().findGroupByUuid(group.getUuid(), new NodeParametersImpl().setExpandAll(false)), etag, true, 304);
+			callETag(() -> client().findGroupByUuid(group.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true, 304);
 		}
 
 	}

@@ -69,7 +69,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	public Map<String, String> getIndices() {
-		return db.noTx(() -> {
+		return db.tx(() -> {
 			ProjectRoot root = boot.meshRoot()
 					.getProjectRoot();
 			root.reload();
@@ -84,7 +84,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	public Set<String> getSelectedIndices(InternalActionContext ac) {
-		return db.noTx(() -> {
+		return db.tx(() -> {
 			Project project = ac.getProject();
 			if (project != null) {
 				return Collections.singleton(TagFamily.composeIndexName(project.getUuid()));

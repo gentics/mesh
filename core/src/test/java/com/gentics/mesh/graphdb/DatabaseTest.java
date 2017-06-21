@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphdb;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
@@ -15,13 +16,13 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class DatabaseTest extends AbstractMeshTest {
@@ -44,7 +45,7 @@ public class DatabaseTest extends AbstractMeshTest {
 
 	@Test
 	public void testIndex() {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = tx()) {
 			db().addVertexIndex(LanguageImpl.class, true, "languageTag");
 			db().addEdgeIndex(GraphRelationships.ASSIGNED_TO_ROLE, false, false, true);
 		}
@@ -76,23 +77,23 @@ public class DatabaseTest extends AbstractMeshTest {
 	@Ignore
 	public void testRestore() throws IOException {
 		String name = "username";
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			user().setUsername(name);
 			tx.success();
 		}
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertEquals(name, user().getUsername());
 		}
 		db().backupGraph(outputDirectory.getAbsolutePath());
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			user().setUsername("changed");
 			tx.success();
 		}
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertEquals("changed", user().getUsername());
 		}
 		db().restoreGraph(outputDirectory.listFiles()[0].getAbsolutePath());
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertEquals("username", user().getUsername());
 		}
 

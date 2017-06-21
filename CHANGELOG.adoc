@@ -2,6 +2,24 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.17 (21.06.2017)
+
+icon:check[] UI: A bug which prevented micronodes which contained empty node field from being saved was fixed.
+
+icon:check[] Core: Issues within the error reporting mechanism have been fixed.
+
+icon:plus[] Server: The Mesh UI was added to the mesh-server jar.
+
+icon:plus[] Core: The internal transaction handling has been refactored.
+
+icon:plus[] Core: The Vert.x core dependency was updated to version 3.4.2
+
+icon:plus[] API: The version field of node responses and publish status responses are now strings instead of objects containing the version number.
+
+== 0.9.16 (19.06.2017)
+
+icon:plus[] Documentation: Huge documentation update.
+
 == 0.9.15 (19.06.2017)
 
 icon:check[] GraphQL: Fixed loading tags for nodes.

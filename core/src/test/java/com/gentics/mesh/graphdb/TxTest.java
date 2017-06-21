@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -35,11 +36,11 @@ import com.gentics.mesh.test.performance.TestUtils;
 import rx.Single;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
-public class TrxTest extends AbstractMeshTest {
+public class TxTest extends AbstractMeshTest {
 
 	@Test
 	public void testReload() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			user().reload();
 		}
 	}
@@ -49,21 +50,21 @@ public class TrxTest extends AbstractMeshTest {
 		AtomicInteger i = new AtomicInteger(0);
 
 		UserRoot root;
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			root = meshRoot().getUserRoot();
 		}
 		int e = i.incrementAndGet();
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertNotNull(root.create("testuser" + e, user()));
 			assertNotNull(boot().userRoot().findByUsername("testuser" + e));
 			tx.success();
 		}
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertNotNull(boot().userRoot().findByUsername("testuser" + e));
 		}
 		int u = i.incrementAndGet();
 		Runnable task = () -> {
-			try (Tx tx = db().tx()) {
+			try (Tx tx = tx()) {
 				assertNotNull(root.create("testuser" + u, user()));
 				assertNotNull(boot().userRoot().findByUsername("testuser" + u));
 				tx.failure();
@@ -74,7 +75,7 @@ public class TrxTest extends AbstractMeshTest {
 		Thread t = new Thread(task);
 		t.start();
 		t.join();
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertNull(boot().userRoot().findByUsername("testuser" + u));
 			System.out.println("RUN: " + i.get());
 		}
@@ -83,10 +84,10 @@ public class TrxTest extends AbstractMeshTest {
 
 	@Test
 	public void testMultiThreadedModifications() throws InterruptedException {
-		User user = db().noTx(() -> user());
+		User user = db().tx(() -> user());
 
 		Runnable task2 = () -> {
-			try (Tx tx = db().tx()) {
+			try (Tx tx = tx()) {
 				user.setUsername("test2");
 				assertNotNull(boot().userRoot().findByUsername("test2"));
 				tx.success();
@@ -94,7 +95,7 @@ public class TrxTest extends AbstractMeshTest {
 			assertNotNull(boot().userRoot().findByUsername("test2"));
 
 			Runnable task = () -> {
-				try (Tx tx = db().tx()) {
+				try (Tx tx = tx()) {
 					user.setUsername("test3");
 					assertNotNull(boot().userRoot().findByUsername("test3"));
 					tx.failure();
@@ -114,7 +115,7 @@ public class TrxTest extends AbstractMeshTest {
 		Thread t2 = new Thread(task2);
 		t2.start();
 		t2.join();
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			assertNull(boot().userRoot().findByUsername("test3"));
 			assertNotNull("The user with username test2 could not be found.", boot().userRoot().findByUsername("test2"));
 		}
@@ -124,7 +125,7 @@ public class TrxTest extends AbstractMeshTest {
 	@Test(expected = RuntimeException.class)
 	public void testAsyncNoTrxWithError() throws Throwable {
 		CompletableFuture<Throwable> cf = new CompletableFuture<>();
-		db().operateNoTx(() -> {
+		db().operateTx(() -> {
 			throw new RuntimeException("error");
 		}).toBlocking().value();
 		assertEquals("error", cf.get().getMessage());
@@ -133,7 +134,7 @@ public class TrxTest extends AbstractMeshTest {
 
 	@Test
 	public void testAsyncNoTrxNestedAsync() throws InterruptedException, ExecutionException {
-		String result = db().operateNoTx(() -> {
+		String result = db().operateTx(() -> {
 			TestUtils.run(() -> {
 				TestUtils.sleep(1000);
 			});
@@ -144,7 +145,7 @@ public class TrxTest extends AbstractMeshTest {
 
 	@Test
 	public void testAsyncNoTrxSuccess() throws Throwable {
-		String result = db().operateNoTx(() -> {
+		String result = db().operateTx(() -> {
 			return Single.just("OK");
 		}).toBlocking().value();
 		assertEquals("OK", result);
@@ -177,7 +178,7 @@ public class TrxTest extends AbstractMeshTest {
 
 					for (int retry = 0; retry < maxRetry; retry++) {
 						try {
-							try (Tx tx = db().tx()) {
+							try (Tx tx = tx()) {
 
 								if (retry == 0) {
 									try {
@@ -228,7 +229,7 @@ public class TrxTest extends AbstractMeshTest {
 				currentThread.join();
 			}
 			// Thread.sleep(1000);
-			try (Tx tx = db().tx()) {
+			try (Tx tx = tx()) {
 				int expect = nThreads * (r + 1);
 				Node reloadedNode = tx.getGraph().getFramedVertexExplicit(NodeImpl.class, node.getId());
 				// node.reload();

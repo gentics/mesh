@@ -11,17 +11,16 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -32,7 +31,7 @@ public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateNodeAndOmitRequiredField() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			// 1. create required field
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			HtmlFieldSchema htmlFieldSchema = new HtmlFieldSchemaImpl();
@@ -57,7 +56,7 @@ public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 			// 3. Update node
 			NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 			nodeUpdateRequest.setLanguage("en");
-			nodeUpdateRequest.setVersion(new VersionReference().setNumber("0.1"));
+			nodeUpdateRequest.setVersion("0.1");
 
 			MeshResponse<NodeResponse> updateFuture = client()
 					.updateNode(PROJECT_NAME, response.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")).invoke();

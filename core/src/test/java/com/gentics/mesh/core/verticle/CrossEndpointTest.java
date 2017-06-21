@@ -21,11 +21,8 @@ public class CrossEndpointTest extends AbstractMeshTest {
 		request.setName(name);
 
 		call(() -> client().createProject(request));
-
 		call(() -> client().findNodes(name));
-
 		call(() -> client().findTagFamilies(name));
-
 	}
 
 }

@@ -10,8 +10,8 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.rest.error.PermissionException;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
@@ -50,7 +50,7 @@ public class GraphQLHandler {
 	 *            GraphQL query
 	 */
 	public void handleQuery(GraphQLContext gc, String body) {
-		try (NoTx noTx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			JsonObject queryJson = new JsonObject(body);
 			String query = queryJson.getString("query");
 			GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc.getProject())).build();

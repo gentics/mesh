@@ -1,74 +1,59 @@
 package com.gentics.mesh.core.user;
 
-import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.rest.user.UserListResponse;
-import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.client.MeshRequest;
-import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.AbstractETagTest;
+import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.ETag;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
-public class UserEndpointETagTest extends AbstractETagTest {
+public class UserEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadMultiple() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			User user = user();
 			assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
-			MeshResponse<UserListResponse> response = client().findUsers().invoke();
-			latchFor(response);
-			String etag = ETag.extract(response.getResponse().getHeader(ETAG));
-			assertNotNull(etag);
-
-			expect304(client().findUsers(), etag, true);
-			expectNo304(client().findUsers(new PagingParametersImpl().setPage(2)), etag, true);
+			String etag = callETag(() -> client().findUsers());
+			callETag(() -> client().findUsers(), etag, true, 304);
+			callETag(() -> client().findUsers(new PagingParametersImpl().setPage(2)), etag, true, 200);
 
 		}
 	}
 
 	@Test
 	public void testReadOne() {
-		try (NoTx noTx = db().noTx()) {
+		String etag;
+		try (Tx tx = tx()) {
 			User user = user();
-			assertNotNull("The UUID of the user must not be null.", user.getUuid());
 
-			MeshResponse<UserResponse> response = client().findUserByUuid(user.getUuid()).invoke();
-			latchFor(response);
-			String etag = user().getETag(mockActionContext());
-			assertEquals(etag, ETag.extract(response.getResponse().getHeader(ETAG)));
+			etag = user().getETag(mockActionContext());
+			callETag(() -> client().findUserByUuid(user.getUuid()), etag, true, 304);
 
 			// Check whether 304 is returned for correct etag
-			MeshRequest<UserResponse> request = client().findUserByUuid(user.getUuid());
-			assertEquals(etag, expect304(request, etag, true));
+			assertEquals(etag, callETag(() -> client().findUserByUuid(user.getUuid()), etag, true, 304));
 
 			// The node has no node reference and thus expanding will not affect the etag
-			assertEquals(etag, expect304(client().findUserByUuid(user.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true));
+			assertEquals(etag, callETag(() -> client().findUserByUuid(user.getUuid(), new NodeParametersImpl().setExpandAll(true)), etag, true, 304));
 
 			// Add node reference. This should affect the etag
 			user.setReferencedNode(content());
-			request = client().findUserByUuid(user.getUuid());
-			String newETag = expectNo304(request, etag, true);
-			assertNotEquals(etag, newETag);
-
-			// Assert whether expanding the node will also affect the user etag
-			expect304(client().findUserByUuid(user.getUuid(), new NodeParametersImpl().setExpandAll(false)), newETag, true);
-			expectNo304(client().findUserByUuid(user.getUuid(), new NodeParametersImpl().setExpandAll(true)), newETag, true);
+			tx.success();
 		}
+		String newETag = callETag(() -> client().findUserByUuid(userUuid()), etag, true, 200);
+
+		// Assert whether expanding the user will also affect the user etag
+		callETag(() -> client().findUserByUuid(userUuid(), new NodeParametersImpl().setExpandAll(false)), newETag, true, 304);
+		callETag(() -> client().findUserByUuid(userUuid(), new NodeParametersImpl().setExpandAll(true)), newETag, true, 200);
 
 	}
 

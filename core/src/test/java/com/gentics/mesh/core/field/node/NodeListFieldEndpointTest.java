@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
@@ -29,7 +30,6 @@ import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.list.NodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -45,7 +45,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(null, (Field) null);
 			NodeFieldList nodeField = response.getFields().getNodeFieldList(FIELD_NAME);
 			assertNull(nodeField);
@@ -55,7 +55,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnCreate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(null);
 			createNodeAndExpectFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
@@ -65,7 +65,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testNullValueInListOnUpdate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(null);
 			updateNodeFailure(FIELD_NAME, listField, BAD_REQUEST, "field_list_error_null_not_allowed", FIELD_NAME);
@@ -74,7 +74,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testBogusNodeList() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(new NodeFieldListItemImpl("bogus"));
 
@@ -86,7 +86,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testValidNodeList() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			listField.add(new NodeFieldListItemImpl(content().getUuid()));
 			listField.add(new NodeFieldListItemImpl(folder("news").getUuid()));
@@ -103,7 +103,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			Node targetNode = folder("news");
 			Node targetNode2 = folder("deals");
@@ -127,7 +127,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 				container.reload();
 
 				NodeGraphFieldContainer newContainerVersion = container.getNextVersion();
-				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion().getNumber());
+				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getListValues(container, NodeGraphFieldListImpl.class, FIELD_NAME));
 				container = newContainerVersion;
 			}
@@ -137,7 +137,7 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node targetNode = folder("news");
 			Node targetNode2 = folder("deals");
 
@@ -145,17 +145,17 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			list.add(new NodeFieldListItemImpl(targetNode.getUuid()));
 			list.add(new NodeFieldListItemImpl(targetNode2.getUuid()));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-			String oldNumber = firstResponse.getVersion().getNumber();
+			String oldNumber = firstResponse.getVersion();
 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, list);
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
+			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node targetNode = folder("news");
 			Node targetNode2 = folder("deals");
 
@@ -163,16 +163,17 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			list.add(new NodeFieldListItemImpl(targetNode.getUuid()));
 			list.add(new NodeFieldListItemImpl(targetNode2.getUuid()));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 			assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion());
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
+			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNodeList(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNodeList(FIELD_NAME)).isNotNull();
 			List<String> oldValueList = latest.getPreviousVersion().getNodeList(FIELD_NAME).getList().stream().map(item -> item.getNode().getUuid())
@@ -180,15 +181,15 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(oldValueList).containsExactly(targetNode.getUuid(), targetNode2.getUuid());
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node targetNode = folder("news");
 			Node targetNode2 = folder("deals");
 
@@ -196,26 +197,26 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 			list.add(new NodeFieldListItemImpl(targetNode.getUuid()));
 			list.add(new NodeFieldListItemImpl(targetNode2.getUuid()));
 			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			NodeFieldListImpl emptyField = new NodeFieldListImpl();
 			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
 			assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
 			assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number should be generated").isNotEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number should be generated").isNotEqualTo(oldVersion);
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
-			assertThat(secondResponse.getVersion().getNumber()).as("No new version number should be generated")
-					.isEqualTo(secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
+			assertThat(secondResponse.getVersion()).as("No new version number should be generated")
+					.isEqualTo(secondResponse.getVersion());
 		}
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			NodeFieldListImpl listField = new NodeFieldListImpl();
 			NodeFieldListItemImpl item = new NodeFieldListItemImpl().setUuid(folder("news").getUuid());
 			listField.add(item);
@@ -228,12 +229,15 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() {
-		try (NoTx noTx = db().noTx()) {
-			Node node = folder("2015");
-
+		Node node = folder("2015");
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", folder("news"));
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			NodeResponse response = readNode(node);
 			NodeFieldList deserializedListField = response.getFields().getNodeFieldList(FIELD_NAME);
 			assertNotNull(deserializedListField);
@@ -243,16 +247,20 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedListWithNoPermOnItem() {
-		try (NoTx noTx = db().noTx()) {
-			Node referencedNode = folder("news");
+		Node node = folder("2015");
+		Node referencedNode = folder("news");
+
+		try (Tx tx = tx()) {
 			role().revokePermissions(referencedNode, GraphPermission.READ_PERM);
-			Node node = folder("2015");
 
 			// Create node list
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", referencedNode);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			// 1. Read node with collapsed fields and check that the collapsed node list item can be read
 			NodeResponse responseCollapsed = readNode(node);
 			NodeFieldList deserializedNodeListField = responseCollapsed.getFields().getNodeFieldList(FIELD_NAME);
@@ -273,14 +281,18 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeListWithExistingField() throws IOException {
-		try (NoTx noTx = db().noTx()) {
-			Node newsNode = folder("news");
-			Node node = folder("2015");
+		Node newsNode = folder("news");
+		Node node = folder("2015");
 
-			// Create node list
+		// Create node list
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			NodeGraphFieldList nodeList = container.createNodeList(FIELD_NAME);
 			nodeList.createNode("1", newsNode);
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 
 			// 1. Read node with collapsed fields and check that the collapsed node list item can be read
 			NodeResponse responseCollapsed = readNode(node);

@@ -9,8 +9,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.VertexFrame;
@@ -88,7 +88,7 @@ public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 				System.out.println(vertex.toString());
 			}
 		}
-		// try (Trx tx = db.trx()) {
+		// try (Tx tx = db.tx()) {
 		// manipulatePerson(tx.getGraph(), reference.get());
 		// }
 	}

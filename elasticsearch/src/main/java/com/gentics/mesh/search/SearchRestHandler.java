@@ -148,7 +148,7 @@ public class SearchRestHandler {
 
 			@Override
 			public void onResponse(SearchResponse response) {
-				db.noTx(() -> {
+				db.tx(() -> {
 					List<ObservableFuture<Tuple<T, String>>> obs = new ArrayList<>();
 					List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 
@@ -248,14 +248,14 @@ public class SearchRestHandler {
 	}
 
 	public void handleStatus(InternalActionContext ac) {
-		db.noTx(() -> {
+		db.tx(() -> {
 			SearchStatusResponse statusResponse = new SearchStatusResponse();
 			return Observable.just(statusResponse);
 		}).subscribe(message -> ac.send(message, OK), ac::fail);
 	}
 
 	public void handleReindex(InternalActionContext ac) {
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			if (ac.getUser().hasAdminRole()) {
 				searchProvider.clear();
 
@@ -285,7 +285,7 @@ public class SearchRestHandler {
 	}
 
 	public void createMappings(InternalActionContext ac) {
-		utils.operateNoTx(ac, () -> {
+		utils.operateTx(ac, () -> {
 			if (ac.getUser().hasAdminRole()) {
 				for (IndexHandler<?> handler : registry.getHandlers()) {
 					handler.init().await();

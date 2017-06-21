@@ -187,7 +187,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 * @param projectName
 	 */
 	public void setProject(String projectName) {
-		MeshInternal.get().database().noTx(() -> {
+		MeshInternal.get().database().tx(() -> {
 			BootstrapInitializer boot = MeshInternal.get().boot();
 			boot.projectRoot().reload();
 			Project project = boot.projectRoot().findByName(projectName);

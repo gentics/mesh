@@ -65,8 +65,8 @@ public final class OptionsLoader {
 
 			ObjectMapper mapper = getYAMLMapper();
 			try {
-				options = new MeshOptions();
-				options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
+				// Generate default config
+				options = generateDefaultConfig();
 				FileUtils.writeStringToFile(confFile, mapper.writeValueAsString(options));
 				log.info("Saved default configuration to file {" + confFile.getAbsolutePath() + "}.");
 			} catch (IOException e) {
@@ -75,6 +75,17 @@ public final class OptionsLoader {
 		}
 		// 2. No luck - use default config
 		log.info("Loading default configuration.");
+		return options;
+	}
+
+	/**
+	 * Generate a default configuration with meaningful default settings. The keystore password will be randomly generated and set.
+	 * 
+	 * @return
+	 */
+	private static MeshOptions generateDefaultConfig() {
+		MeshOptions options = new MeshOptions();
+		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
 		return options;
 	}
 

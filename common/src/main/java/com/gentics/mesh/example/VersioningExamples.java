@@ -11,7 +11,6 @@ import java.util.Map;
 
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
@@ -29,20 +28,16 @@ public class VersioningExamples extends AbstractExamples {
 	 * @param version
 	 * @return
 	 */
-	public PublishStatusModel createPublishStatusModel(boolean published, UserReference publisher, String publishDate, VersionReference version) {
+	public PublishStatusModel createPublishStatusModel(boolean published, UserReference publisher, String publishDate, String version) {
 		return new PublishStatusModel().setPublished(published).setPublisher(publisher).setPublishDate(publishDate).setVersion(version);
-	}
-
-	public VersionReference getVersionReference(String number) {
-		return new VersionReference(randomUUID(), number);
 	}
 
 	public PublishStatusResponse createPublishStatusResponse() {
 		PublishStatusResponse response = new PublishStatusResponse();
 		Map<String, PublishStatusModel> languages = new HashMap<>();
-		languages.put("en", createPublishStatusModel(true, getUserReference(), getTimestamp(), getVersionReference("3.0")));
-		languages.put("de", createPublishStatusModel(false, null, null, getVersionReference("0.4")));
-		languages.put("fr", createPublishStatusModel(false, null, null, getVersionReference("5.2")));
+		languages.put("en", createPublishStatusModel(true, getUserReference(), getTimestamp(), "3.0"));
+		languages.put("de", createPublishStatusModel(false, null, null, "0.4"));
+		languages.put("fr", createPublishStatusModel(false, null, null, "5.2"));
 		response.setAvailableLanguages(languages);
 		return response;
 	}
@@ -69,7 +64,7 @@ public class VersioningExamples extends AbstractExamples {
 	}
 
 	public PublishStatusModel createPublishStatusModel() {
-		return createPublishStatusModel(true, getUserReference(), getTimestamp(), getVersionReference("3.0"));
+		return createPublishStatusModel(true, getUserReference(), getTimestamp(), "3.0");
 	}
 
 	/**

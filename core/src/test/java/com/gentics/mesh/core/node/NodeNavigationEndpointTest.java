@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.test.TestDataProvider.INITIAL_RELEASE_NAME;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
@@ -17,9 +18,9 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.navigation.NavigationElement;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
@@ -27,7 +28,6 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
@@ -44,7 +44,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadChildrenDepthZero() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -62,7 +62,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadNodeWithNoChildren() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -80,7 +80,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadNavigationWithNoParameters() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = project().getBaseNode();
 			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertThat(response).hasDepth(3).isValid(7);
@@ -92,7 +92,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadNavigationWithNegativeDepth() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationParametersImpl().setMaxDepth(-10),
 					new VersioningParametersImpl().draft()), BAD_REQUEST, "navigation_error_invalid_max_depth");
@@ -104,7 +104,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadNoContainerNode() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = content();
 			assertFalse("The node must not be a container.", node.getSchemaContainer().getLatestVersion().getSchema().isContainer());
 			call(() -> client().loadNavigation(PROJECT_NAME, node.getUuid(), new NavigationParametersImpl().setMaxDepth(1),
@@ -117,7 +117,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadChildrenDepthOne() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -136,7 +136,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadChildrenDepthTwo() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = project().getBaseNode();
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -156,7 +156,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadChildrenDepthTwoIncludeAll() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -191,7 +191,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadChildrenDepthTwoIncludeAllDisabled() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			String uuid = node.getUuid();
 			assertNotNull(node);
@@ -217,7 +217,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testReadChildrenHighDepth() {
-		String uuid = db().noTx(() -> project().getBaseNode().getUuid());
+		String uuid = db().tx(() -> project().getBaseNode().getUuid());
 
 		NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, uuid, new NavigationParametersImpl().setMaxDepth(42)));
 		assertEquals(uuid, response.getUuid());
@@ -226,7 +226,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNavigationLanguageFallback() {
-		String baseNodeUuid = db().noTx(() -> project().getBaseNode().getUuid());
+		String baseNodeUuid = db().tx(() -> project().getBaseNode().getUuid());
 
 		// level 0
 		NodeCreateRequest request = new NodeCreateRequest();
@@ -288,34 +288,34 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNavigationForRelease() {
-		try (NoTx noTx = db().noTx()) {
-			Project project = project();
-			Node baseNode = project.getBaseNode();
-			String baseNodeUuid = baseNode.getUuid();
+		Project project = project();
+		String newReleaseName = "newrelease";
+		String baseNodeUuid = tx(() -> project.getBaseNode().getUuid());
 
-			// latest release
-			NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid,
-					new NavigationParametersImpl().setMaxDepth(1), new VersioningParametersImpl().draft()));
-			assertThat(response).hasDepth(1).isValid(4);
+		// latest release
+		NavigationResponse response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
+				new VersioningParametersImpl().draft()));
+		assertThat(response).hasDepth(1).isValid(4);
 
-			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
-
-			// latest release (again)
-			response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
-					new VersioningParametersImpl().draft()));
-			assertThat(response).hasDepth(0);
-
-			// latest release by name
-			response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
-					new VersioningParametersImpl().draft().setRelease(newRelease.getName())));
-			assertThat(response).hasDepth(0);
-
-			// initial release by name
-			response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
-					new VersioningParametersImpl().draft().setRelease(initialRelease.getName())));
-			assertThat(response).hasDepth(1).isValid(4);
+		try (Tx tx = tx()) {
+			project.getReleaseRoot().create(newReleaseName, user());
+			tx.success();
 		}
+
+		// latest release (again)
+		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
+				new VersioningParametersImpl().draft()));
+		assertThat(response).hasDepth(0);
+
+		// latest release by name
+		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
+				new VersioningParametersImpl().draft().setRelease(newReleaseName)));
+		assertThat(response).hasDepth(0);
+
+		// initial release by name
+		response = call(() -> client().loadNavigation(PROJECT_NAME, baseNodeUuid, new NavigationParametersImpl().setMaxDepth(1),
+				new VersioningParametersImpl().draft().setRelease(INITIAL_RELEASE_NAME)));
+		assertThat(response).hasDepth(1).isValid(4);
 	}
 
 	@Test

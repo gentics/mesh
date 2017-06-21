@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.script.ScriptEngine;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -47,7 +48,6 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
@@ -102,10 +102,10 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 */
 	public Completable migrateNodes(Project project, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
 			NodeMigrationStatus statusMBean) {
-		String releaseUuid = db.noTx(release::getUuid);
+		String releaseUuid = db.tx(release::getUuid);
 
 		// get the nodes, that need to be transformed
-		List<? extends NodeGraphFieldContainer> fieldContainers = db.noTx(() -> fromVersion.getFieldContainers(releaseUuid));
+		List<? extends NodeGraphFieldContainer> fieldContainers = db.tx(() -> fromVersion.getFieldContainers(releaseUuid));
 
 		// no field containers -> no nodes, migration is done
 		if (fieldContainers.isEmpty()) {
@@ -119,7 +119,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		// collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
 		Set<String> touchedFields = new HashSet<>();
-		try (NoTx noTrx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			prepareMigration(fromVersion, migrationScripts, touchedFields);
 		} catch (IOException e) {
 			return Completable.error(e);
@@ -232,10 +232,10 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 */
 	public Completable migrateMicronodes(Project project, Release release, MicroschemaContainerVersion fromVersion,
 			MicroschemaContainerVersion toVersion, NodeMigrationStatus statusMBean) {
-		String releaseUuid = db.noTx(release::getUuid);
+		String releaseUuid = db.tx(release::getUuid);
 
 		// get the containers, that need to be transformed
-		List<? extends NodeGraphFieldContainer> fieldContainers = db.noTx(() -> fromVersion.getFieldContainers(release.getUuid()));
+		List<? extends NodeGraphFieldContainer> fieldContainers = db.tx(() -> fromVersion.getFieldContainers(release.getUuid()));
 
 		// no field containers, migration is done
 		if (fieldContainers.isEmpty()) {
@@ -249,7 +249,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		// collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
 		Set<String> touchedFields = new HashSet<>();
-		try (NoTx noTrx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			prepareMigration(fromVersion, migrationScripts, touchedFields);
 		} catch (IOException e) {
 			return Completable.error(e);
@@ -342,7 +342,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 * @return Completable which will be invoked once the migration has completed
 	 */
 	public Completable migrateNodes(Release newRelease) {
-		Release oldRelease = db.noTx(() -> {
+		Release oldRelease = db.tx(() -> {
 			if (newRelease.isMigrated()) {
 				throw error(BAD_REQUEST, "Release {" + newRelease.getName() + "} is already migrated");
 			}
@@ -360,9 +360,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 			return old;
 		});
 
-		String oldReleaseUuid = db.noTx(() -> oldRelease.getUuid());
-		String newReleaseUuid = db.noTx(() -> newRelease.getUuid());
-		List<? extends Node> nodes = db.noTx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
+		String oldReleaseUuid = db.tx(() -> oldRelease.getUuid());
+		String newReleaseUuid = db.tx(() -> newRelease.getUuid());
+		List<? extends Node> nodes = db.tx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
 		List<Completable> batches = new ArrayList<>();
 		for (Node node : nodes) {
 			SearchQueueBatch sqb = db.tx(() -> {

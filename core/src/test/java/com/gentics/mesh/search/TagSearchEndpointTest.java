@@ -8,8 +8,8 @@ import static org.junit.Assert.assertEquals;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
@@ -22,7 +22,7 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 	@Override
 	public void testDocumentCreation() throws InterruptedException, JSONException {
 		String tagName = "newtag";
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			createTag(PROJECT_NAME, tagFamily("colors").getUuid(), tagName);
 		}
 
@@ -33,14 +33,14 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 	@Test
 	@Override
 	public void testDocumentUpdate() throws InterruptedException, JSONException {
-		String uuid = db().noTx(() -> tag("red").getUuid());
-		String parentTagFamilyUuid = db().noTx(() -> tagFamily("colors").getUuid());
+		String uuid = db().tx(() -> tag("red").getUuid());
+		String parentTagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
 
 		String newName = "redish";
 		updateTag(PROJECT_NAME, parentTagFamilyUuid, uuid, newName);
 		updateTag(PROJECT_NAME, parentTagFamilyUuid, uuid, newName + "2");
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			assertEquals("The tag name was not updated as expected.", newName + "2", tag("red").getName());
 		}
 
@@ -51,13 +51,13 @@ public class TagSearchEndpointTest extends AbstractMeshTest implements BasicSear
 	@Test
 	@Override
 	public void testDocumentDeletion() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
-		String name = db().noTx(() -> tag("red").getName());
-		String uuid = db().noTx(() -> tag("red").getUuid());
-		String parentTagFamilyUuid = db().noTx(() -> tagFamily("colors").getUuid());
+		String name = db().tx(() -> tag("red").getName());
+		String uuid = db().tx(() -> tag("red").getUuid());
+		String parentTagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
 
 		// 1. Verify that the tag is indexed
 		TagListResponse list = call(() -> client().searchTags(getSimpleTermQuery("name.raw", name)));

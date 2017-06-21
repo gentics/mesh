@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -54,7 +55,6 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -113,9 +113,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testNodeQuery() throws JSONException, IOException, ParseException {
 		String staticUuid = "43ee8f9ff71e4016ae8f9ff71e10161c";
-		// String contentUuid = db().noTx(() -> content().getUuid());
-		// String creationDate = db().noTx(() -> content().getCreationDate());
-		// String uuid = db().noTx(() -> folder("2015").getUuid());
+		// String contentUuid = db().tx(() -> content().getUuid());
+		// String creationDate = db().tx(() -> content().getCreationDate());
+		// String uuid = db().tx(() -> folder("2015").getUuid());
 
 		String microschemaUuid = null;
 		if (withMicroschema) {
@@ -137,7 +137,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			}
 		}
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			Node node2 = content();
 			node2.setUuid(staticUuid);
@@ -325,7 +325,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		}
 
 		// Publish all nodes
-		String baseNodeUuid = db().noTx(() -> project().getBaseNode().getUuid());
+		String baseNodeUuid = tx(() -> project().getBaseNode().getUuid());
 		call(() -> client().publishNode(PROJECT_NAME, baseNodeUuid, new PublishParametersImpl().setRecursive(true)));
 
 		// Create a draft node

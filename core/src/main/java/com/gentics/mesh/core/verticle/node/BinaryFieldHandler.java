@@ -86,7 +86,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
 			// Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
@@ -105,13 +105,14 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 			}
 			return Single.just(binaryField);
-		}).subscribe(binaryField -> {
-			db.noTx(() -> {
-				BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
-				handler.handle(binaryField);
-				return null;
-			});
-		}, ac::fail);
+		})
+				.subscribe(binaryField -> {
+					db.tx(() -> {
+						BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
+						handler.handle(binaryField);
+						return null;
+					});
+				}, ac::fail);
 	}
 
 	/**
@@ -164,7 +165,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 		String contentType = ul.contentType();
 		String fileName = ul.fileName();
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -293,7 +294,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			throw error(BAD_REQUEST, "image_error_language_not_set");
 		}
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			// Load needed elements
 			Project project = ac.getProject();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);

@@ -112,7 +112,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		if (!it.hasNext()) {
 			return null;
 		}
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = getGraph();
 		MeshAuthUserImpl user = graph.frameElement(it.next(), MeshAuthUserImpl.class);
 		if (it.hasNext()) {
 			throw new RuntimeException("Found multiple nodes with the same UUID");

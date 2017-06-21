@@ -1,11 +1,14 @@
 package com.gentics.mesh.test.context;
 
+import static com.gentics.mesh.http.HttpConstants.ETAG;
+import static com.gentics.mesh.http.HttpConstants.IF_NONE_MATCH;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -24,8 +27,10 @@ import org.elasticsearch.index.query.RangeQueryBuilder;
 
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.util.ETag;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
@@ -40,9 +45,9 @@ public final class MeshTestHelper {
 	private static final Logger log = LoggerFactory.getLogger(MeshTestHelper.class);
 
 	public static CyclicBarrier prepareBarrier(int nJobs) {
-		//		Trx.enableDebug();
+		// Trx.enableDebug();
 		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-		//		Trx.setBarrier(barrier);
+		// Trx.setBarrier(barrier);
 		return barrier;
 	}
 
@@ -66,8 +71,7 @@ public final class MeshTestHelper {
 			assertEquals("The status code of the nested exception did not match the expected value.", status.code(), exception.getStatusCode());
 			assertEquals(message, exception.getMessage());
 		} else {
-			future.cause()
-					.printStackTrace();
+			future.cause().printStackTrace();
 			fail("Unhandled exception");
 		}
 	}
@@ -91,14 +95,65 @@ public final class MeshTestHelper {
 	public static <T> T call(ClientHandler<T> handler) {
 		MeshResponse<T> future;
 		try {
-			future = handler.handle()
-					.invoke();
+			future = handler.handle().invoke();
 		} catch (Exception e) {
 			future = new MeshResponse<>(Future.failedFuture(e));
 		}
 		latchFor(future);
 		assertSuccess(future);
 		return future.result();
+	}
+
+	/**
+	 * Invokes the request and returns the etag for the response.
+	 * 
+	 * @param handler
+	 * @return
+	 */
+	public static <T> String callETag(ClientHandler<T> handler) {
+		MeshResponse<T> response;
+		try {
+			response = handler.handle().invoke();
+		} catch (Exception e) {
+			response = new MeshResponse<>(Future.failedFuture(e));
+		}
+		latchFor(response);
+		assertSuccess(response);
+		String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));
+		;
+		assertNotNull("The etag of the response should not be null", etag);
+		return etag;
+	}
+
+	/**
+	 * Call the given handler, latch for the future and assert success. Then return the result.
+	 * 
+	 * @param handler
+	 *            handler
+	 * @param etag
+	 * @param <T>
+	 *            type of the returned object
+	 * @return result of the future
+	 */
+	public static <T> String callETag(ClientHandler<T> handler, String etag, boolean isWeak, int statusCode) {
+		MeshResponse<T> response;
+		try {
+			MeshRequest<T> request = handler.handle();
+			request.getRequest().putHeader(IF_NONE_MATCH, ETag.prepareHeader(etag, isWeak));
+			response = request.invoke();
+		} catch (Exception e) {
+			response = new MeshResponse<>(Future.failedFuture(e));
+		}
+		latchFor(response);
+		assertSuccess(response);
+		int actualStatusCode = response.getRawResponse().statusCode();
+		String actualETag = ETag.extract(response.getRawResponse().getHeader(ETAG));
+		assertEquals("The response code did not match.", statusCode, actualStatusCode);
+		if (statusCode == 304) {
+			assertEquals(etag, actualETag);
+			assertNull("The response should be null since we got a 304", response.result());
+		}
+		return actualETag;
 	}
 
 	/**
@@ -138,7 +193,7 @@ public final class MeshTestHelper {
 		}
 		assertTrue("We did not find a single request which succeeded.", foundDelete);
 
-		//		Trx.disableDebug();
+		// Trx.disableDebug();
 		if (barrier != null) {
 			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 		}
@@ -149,7 +204,7 @@ public final class MeshTestHelper {
 			latchFor(future);
 			assertSuccess(future);
 		}
-		//		Trx.disableDebug();
+		// Trx.disableDebug();
 		if (barrier != null) {
 			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 		}
@@ -181,15 +236,13 @@ public final class MeshTestHelper {
 			assertSuccess(future);
 			Object result = future.result();
 			// Rest responses do not share a common class. We just use reflection to extract the uuid from the response pojo
-			Object uuidObject = result.getClass()
-					.getMethod("getUuid")
-					.invoke(result);
+			Object uuidObject = result.getClass().getMethod("getUuid").invoke(result);
 			String currentUuid = uuidObject.toString();
 			assertFalse("The rest api returned a response with a uuid that was returned before. Each create request must always be atomic.",
 					uuids.contains(currentUuid));
 			uuids.add(currentUuid);
 		}
-		//		Trx.disableDebug();
+		// Trx.disableDebug();
 		if (barrier != null) {
 			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 		}
@@ -234,9 +287,7 @@ public final class MeshTestHelper {
 	}
 
 	public static String getRangeQuery(String fieldName, double from, double to) throws JSONException {
-		RangeQueryBuilder range = QueryBuilders.rangeQuery(fieldName)
-				.from(from)
-				.to(to);
+		RangeQueryBuilder range = QueryBuilders.rangeQuery(fieldName).from(from).to(to);
 		return "{ \"query\": " + range.toString() + "}";
 	}
 

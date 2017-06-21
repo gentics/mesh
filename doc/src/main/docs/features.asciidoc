@@ -1,0 +1,1835 @@
+:icons: font
+
+= Features
+
+This section will be about the features of Gentics Mesh. Each will be described in detail including examples and references to relevant parts of the API or related tutorials.
+
+[[contenttree]]
+
+== Content Trees
+
+Gentics Mesh provides the means to organize your contents in terms of a *content tree*, or rather a node tree. Nodes can be hierarchically structured if a container schema is provided.
+For example, a book node can act as a container for chapter nodes. Alternatively, consider the example in our demo app, where vehicles are structured within categories. 
+
+While it is perfectly legitimate to organize your contents in a simple, flat structure with tagging and referencing, content trees come with big a bonus: they inherently allow for <<navigation,automatically generated hierarchical navigation menus>>, <<breadcrumbs,breadcrumbs>> and <<prettyurls,pretty URLs>>. This furthermore means routes are not hard-coded in your app but can be defined dynamically by content editors using the Gentics Mesh user interface. 
+
+TIP: To get you started, Gentics Mesh is shipped with a generic _folder_ schema allowing you to follow the well-known file system paradigm for hierarchically organizing your content in a tree.
+
+There are two properties when defining a link:building-blocks.html#_schemas[schema] for your nodes that are of importance in this respect.
+
+. ```container```: if true, nodes can contain child nodes and build a node tree.
+. ```segmentField```: allows to specify which schema field should be considered the path segment for the current node, i.e., it’s the basis for building URLs.
+
+[[example]]
+Let’s consider the following example on the basis of our demo app to demonstrate how these properties work together to support navigation menus, breadcrumbs and pretty URLs:
+
+image::GenticsMesh-ContentTree-Example.png[role="img-responsive"]
+
+//TODO update (slug, font size)
+
+Within the demo project vehicles are organized in three different categories. The nodes _Automobiles_, _Aircrafts_ and _Yachts_ of type _category_ serve as containers for nodes of type _vehicle_, e.g., the node _Ford GT_ in category _Automobiles_.
+
+The schema _category_ has the ```container``` property set to ```true```, thus allowing nodes of type _category_ to have child nodes. The schema’s ```segmentField``` is specified to be the ```slug``` field. Thus, the resulting value for the ```path``` property of node _Automobiles_ is ```/automobiles```.
+
+The schema _vehicle_ has the ```container``` property set to ```false```. The schema’s ```segmentField``` is again specified to be the ```slug``` field. Thus, the resulting value for the ```path``` property of node _Ford GT_ is ```/automobiles/ford-gt```.
+
+
+
+[[prettyurls]]
+== Pretty URLs
+
+Instead of relying on UUIDs to link your content, you can use pretty URLs like http://yourapp.com/automobiles/ford-gt. For each node, Gentics Mesh will provide you with a human readable path. 
+Likewise, you can query your content using WebRoot paths instead of using UUIDs (see <<webroot,WebRoot API>>).
+
+The ```segmentField``` is used to build the path of a specific node. According to the nodes’ schemas in our <<example,example>>, the path ```/automobiles/ford-gt``` for the node _Ford GT_ is built using the _slug_ field of the _vehicle_ node, i.e. _Ford GT_, and the _slug_ field of the _category_ node, i.e. _Automobiles_.
+
+image::GenticsMesh-PrettyURL-Example.png[role="img-responsive"]
+
+//TODO update (slug, font-size)
+
+The ```path``` property as well as the ```languagesPath``` property (for available language variants) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` end point together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
+For more details see the documentation on link:building-blocks.html#_node[node] and <<webroot,WebRoot API>>, respectively.
+
+==== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Get the node with the given UUID.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid```
+
+|======
+
+==== Response Sample
+
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
+
+[source,json]
+----
+{
+  "uuid" : "fc3c85be82584ae2bc85be82588ae2b0",
+  "creator" : {
+    "uuid" : "a93e95f316114659be95f31611265997"
+  },
+  "created" : "2017-05-29T09:56:16Z",
+  "editor" : {
+    "uuid" : "a93e95f316114659be95f31611265997"
+  },
+  "edited" : "2017-05-29T09:56:22Z",
+  "language" : "en",
+  "availableLanguages" : [ "en" ],
+  "languagePaths" : {
+    "en" : "/automobiles/ford-gt"
+  },
+  "parentNode" : {
+    "projectName" : "demo",
+    "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+    "displayName" : "Automobiles",
+    "path" : "/automobiles",
+    "schema" : {
+      "name" : "category",
+      "uuid" : "2ca2362b041247c4a2362b041227c4da"
+    }
+  },
+  "tags" : [ {
+    "name" : "Gasoline",
+    "uuid" : "1c51487f8e8043c291487f8e8053c2c1",
+    "tagFamily" : "Fuels"
+  }, {
+    "name" : "Blue",
+    "uuid" : "6e6f1d9f055447d2af1d9f055417d289",
+    "tagFamily" : "Colors"
+  }, {
+    "name" : "White",
+    "uuid" : "94fec98d6f114e81bec98d6f118e81cc",
+    "tagFamily" : "Colors"
+  } ],
+  "project" : {
+    "name" : "demo",
+    "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+  },
+  "childrenInfo" : { },
+  "schema" : {
+    "name" : "vehicle",
+    "uuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
+    "version" : 1
+  },
+  "container" : false,
+  "displayField" : "name",
+  "fields" : {
+    "slug" : "ford-gt",
+    "name" : "Ford GT",
+    "weight" : 1520,
+    "SKU" : 1,
+    "price" : 139995,
+    "stocklevel" : 20,
+    "description" : "The Ford GT is an American mid-engine two-seater sports car that was produced by Ford for the 2005 through 2006 model years.",
+    "vehicleImage" : {
+      "uuid" : "df8beb3922c94ea28beb3922c94ea2f6",
+      "path" : "/images/ford-gt.jpg",
+      "languagePaths" : {
+        "en" : "/images/ford-gt.jpg"
+      }
+    }
+  },
+  "path" : "/automobiles/ford-gt",
+  "breadcrumb" : [ {
+    "projectName" : "demo",
+    "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+    "displayName" : "Automobiles",
+    "path" : "/automobiles",
+    "schema" : {
+      "name" : "category",
+      "uuid" : "2ca2362b041247c4a2362b041227c4da"
+    }
+  } ],
+  "version" : {
+    "uuid" : "677bf76c8c624e2fbbf76c8c62be2fa0",
+    "number" : "1.0"
+  },
+  "permissions" : {
+    "create" : false,
+    "read" : true,
+    "update" : false,
+    "delete" : false,
+    "publish" : false,
+    "readPublished" : false
+  }
+}
+----
+
+[[navigation]]
+== Navigation Menus
+When organizing your content in terms of a node tree, Gentics Mesh offers two ways of generating a nested navigation response.
+
+The API end point ```/api/v1/:projectName/nodes/:nodeUuid/navigation``` returns a navigation object for the provided node, while the ```/api/v1/:projectName/navroot/:path``` API end point returns a navigation object for a node which is located using a given path.
+Each endpoint will return a navigation response which contains the nested navigation tree structure. 
+
+By default, only container nodes are included in a navigation response. The `includeAll` query parameter will include all nodes, if set to `true`.
+The `maxDepth` parameter may be used to limit the navigation depth. In order to include the `path` property in the navigation response, the `resolveLinks` query parameter can be used.
+
+image::GenticsMesh-Navigation-Example.png[role="img-responsive"]
+
+//TODO
+
+=== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Returns a navigation object for the provided node.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid/navigation```
+
+| Return a navigation for the node which is located using the given path.
+| ```GET /api/v1/:projectName/navroot/:path```
+
+|======
+
+=== Properties
+[options="header",cols="3*"]
+|======
+
+| Name
+| Type
+| Description
+
+| node
+| object
+| Detailed node information of the given UUID.
+
+| children
+| array
+| List of further child elements of the node.
+
+| uuid
+| string
+| UUID of the node within this navigation element.
+|======
+
+=== Query Parameters
+[options="header",cols="3*"]
+|======
+
+| Name
+| Type
+| Description
+
+| includeAll
+| boolean (default: false)
+| If set to true all nodes will be included in the response. By default only container nodes are included in a navigation response.
+
+| maxDepth
+| number (default: 10)
+| Specifies the maximum depth for the requested navigation tree structure.
+
+| lang
+| string
+| The ISO 639-1 language tag of the language which should be loaded. Fallback handling can be applied by specifying multiple languages in a comma-separated list. The first matching language will be returned. If omitted or the requested language is not available then the ```defaultLanguage``` as configured in ```mesh.yml``` will be returned.
+
+| release
+| string
+| Specifies the release UUID to be used for loading data. The latest project release will be used if this parameter is omitted.
+
+| resolveLinks
+| string
+| The ```resolveLinks``` parameter can be set to either ```short```, ```medium``` or ```full```. Links will automatically be resolved and replaced by the resolved  link:features.html#_link_resolving[WebRoot path]. No resolving occurs if the query parameter is omitted.
+
+| role
+| string
+| The ```role``` query parameter takes a UUID and may be used in order to add permission information to the response which is related to the specified role. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role on this node. E.g., this may be useful when you are logged in as administrator but want to retrieve the editor role permissions on a given node.
+
+| version
+| string
+| Specifies the version of the node’s language variant, e.g.: ```0.1```, ```1.0```, ```draft```, ```published```.
+
+|======
+
+=== Response Sample
+
+Retrieving a navigation object using the projects root node ```/``` including the top level navigation menu items.
+
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/navroot/?resolveLinks=short&maxDepth=1
+
+The same can be achieved using the node specific navigation endpoint. In this case you can specify the root node of your navigation by providing the node uuid.
+
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navigation?resolveLinks=short&maxDepth=1
+
+[source,json]
+----
+{
+  "uuid" : "72dbee3975054fce9bee397505cfcec5",
+  "node" : {
+    "uuid" : "72dbee3975054fce9bee397505cfcec5",
+    "creator" : {
+      "uuid" : "a93e95f316114659be95f31611265997"
+    },
+    "created" : "2017-05-29T09:55:43Z",
+    "editor" : {
+      "uuid" : "a93e95f316114659be95f31611265997"
+    },
+    "edited" : "2017-05-29T09:56:22Z",
+    "language" : "en",
+    "availableLanguages" : [ "en" ],
+    "languagePaths" : {
+      "en" : "/"
+    },
+    "tags" : [ ],
+    "project" : {
+      "name" : "demo",
+      "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+    },
+    "childrenInfo" : {
+      "folder" : {
+        "schemaUuid" : "5cc780af998c4d228780af998ccd2240",
+        "count" : 1
+      },
+      "category" : {
+        "schemaUuid" : "2ca2362b041247c4a2362b041227c4da",
+        "count" : 3
+      }
+    },
+    "schema" : {
+      "name" : "folder",
+      "uuid" : "5cc780af998c4d228780af998ccd2240",
+      "version" : 1
+    },
+    "container" : true,
+    "displayField" : "name",
+    "fields" : { },
+    "path" : "/",
+    "breadcrumb" : [ ],
+    "version" : {
+      "uuid" : "df10370c82be422290370c82be62229f",
+      "number" : "1.0"
+    },
+    "permissions" : {
+      "create" : false,
+      "read" : true,
+      "update" : false,
+      "delete" : false,
+      "publish" : false,
+      "readPublished" : false
+    }
+  },
+  "children" : [ {
+    "uuid" : "15d5ef7a9abf416d95ef7a9abf316d68",
+    "node" : {
+      "uuid" : "15d5ef7a9abf416d95ef7a9abf316d68",
+      "creator" : {
+        "uuid" : "a93e95f316114659be95f31611265997"
+      },
+      "created" : "2017-05-29T09:56:10Z",
+      "editor" : {
+        "uuid" : "a93e95f316114659be95f31611265997"
+      },
+      "edited" : "2017-05-29T09:56:22Z",
+      "language" : "en",
+      "availableLanguages" : [ "en" ],
+      "languagePaths" : {
+        "en" : "/images"
+      },
+      "parentNode" : {
+        "projectName" : "demo",
+        "uuid" : "72dbee3975054fce9bee397505cfcec5",
+        "path" : "/",
+        "schema" : {
+          "name" : "folder",
+          "uuid" : "5cc780af998c4d228780af998ccd2240"
+        }
+      },
+      "tags" : [ ],
+      "project" : {
+        "name" : "demo",
+        "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+      },
+      "childrenInfo" : {
+        "vehicleImage" : {
+          "schemaUuid" : "b12272150db4490ea272150db4190e72",
+          "count" : 10
+        }
+      },
+      "schema" : {
+        "name" : "folder",
+        "uuid" : "5cc780af998c4d228780af998ccd2240",
+        "version" : 1
+      },
+      "container" : true,
+      "displayField" : "name",
+      "fields" : {
+        "slug" : "images",
+        "name" : "Vehicle Images"
+      },
+      "path" : "/images",
+      "breadcrumb" : [ ],
+      "version" : {
+        "uuid" : "b1f2c06e45db4e0db2c06e45dbfe0d25",
+        "number" : "1.0"
+      },
+      "permissions" : {
+        "create" : false,
+        "read" : true,
+        "update" : false,
+        "delete" : false,
+        "publish" : false,
+        "readPublished" : false
+      }
+    }
+  }, {
+    "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+    "node" : {
+      "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+      "creator" : {
+        "uuid" : "a93e95f316114659be95f31611265997"
+      },
+      "created" : "2017-05-29T09:56:16Z",
+      "editor" : {
+        "uuid" : "a93e95f316114659be95f31611265997"
+      },
+      "edited" : "2017-05-29T09:56:22Z",
+      "language" : "en",
+      "availableLanguages" : [ "en" ],
+      "languagePaths" : {
+        "en" : "/automobiles"
+      },
+      "parentNode" : {
+        "projectName" : "demo",
+        "uuid" : "72dbee3975054fce9bee397505cfcec5",
+        "path" : "/",
+        "schema" : {
+          "name" : "folder",
+          "uuid" : "5cc780af998c4d228780af998ccd2240"
+        }
+      },
+      "tags" : [ ],
+      "project" : {
+        "name" : "demo",
+        "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+      },
+      "childrenInfo" : {
+        "vehicle" : {
+          "schemaUuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
+          "count" : 5
+        }
+      },
+      "schema" : {
+        "name" : "category",
+        "uuid" : "2ca2362b041247c4a2362b041227c4da",
+        "version" : 1
+      },
+      "container" : true,
+      "displayField" : "name",
+      "fields" : {
+        "name" : "Automobiles",
+        "slug" : "automobiles"
+      },
+      "path" : "/automobiles",
+      "breadcrumb" : [ ],
+      "version" : {
+        "uuid" : "2cadceaea20343e8adceaea20313e842",
+        "number" : "1.0"
+      },
+      "permissions" : {
+        "create" : false,
+        "read" : true,
+        "update" : false,
+        "delete" : false,
+        "publish" : false,
+        "readPublished" : false
+      }
+    }
+  }, {
+    "uuid" : "21203632520b4d19a03632520b2d19c1",
+    "node" : {
+      "uuid" : "21203632520b4d19a03632520b2d19c1",
+      "creator" : {
+        "uuid" : "a93e95f316114659be95f31611265997"
+      },
+      "created" : "2017-05-29T09:56:19Z",
+      "editor" : {
+        "uuid" : "a93e95f316114659be95f31611265997"
+      },
+      "edited" : "2017-05-29T09:56:22Z",
+      "language" : "en",
+      "availableLanguages" : [ "en" ],
+      "languagePaths" : {
+        "en" : "/aircrafts"
+      },
+      "parentNode" : {
+        "projectName" : "demo",
+        "uuid" : "72dbee3975054fce9bee397505cfcec5",
+        "path" : "/",
+        "schema" : {
+          "name" : "folder",
+          "uuid" : "5cc780af998c4d228780af998ccd2240"
+        }
+      },
+      "tags" : [ ],
+      "project" : {
+        "name" : "demo",
+        "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+      },
+      "childrenInfo" : {
+        "vehicle" : {
+          "schemaUuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
+          "count" : 3
+        }
+      },
+      "schema" : {
+        "name" : "category",
+        "uuid" : "2ca2362b041247c4a2362b041227c4da",
+        "version" : 1
+      },
+      "container" : true,
+      "displayField" : "name",
+      "fields" : {
+        "name" : "Aircraft",
+        "slug" : "aircrafts"
+      },
+      "path" : "/aircrafts",
+      "breadcrumb" : [ ],
+      "version" : {
+        "uuid" : "cb34cedeeb9c4d3db4cedeeb9c0d3d01",
+        "number" : "1.0"
+      },
+      "permissions" : {
+        "create" : false,
+        "read" : true,
+        "update" : false,
+        "delete" : false,
+        "publish" : false,
+        "readPublished" : false
+      }
+    }
+  }, {
+    "uuid" : "eb2ebdcc0e894a9eaebdcc0e896a9e1d",
+    "node" : {
+      "uuid" : "eb2ebdcc0e894a9eaebdcc0e896a9e1d",
+      "creator" : {
+        "uuid" : "a93e95f316114659be95f31611265997"
+      },
+      "created" : "2017-05-29T09:56:21Z",
+      "editor" : {
+        "uuid" : "a93e95f316114659be95f31611265997"
+      },
+      "edited" : "2017-05-29T09:56:22Z",
+      "language" : "en",
+      "availableLanguages" : [ "en" ],
+      "languagePaths" : {
+        "en" : "/yachts"
+      },
+      "parentNode" : {
+        "projectName" : "demo",
+        "uuid" : "72dbee3975054fce9bee397505cfcec5",
+        "path" : "/",
+        "schema" : {
+          "name" : "folder",
+          "uuid" : "5cc780af998c4d228780af998ccd2240"
+        }
+      },
+      "tags" : [ ],
+      "project" : {
+        "name" : "demo",
+        "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+      },
+      "childrenInfo" : {
+        "vehicle" : {
+          "schemaUuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
+          "count" : 2
+        }
+      },
+      "schema" : {
+        "name" : "category",
+        "uuid" : "2ca2362b041247c4a2362b041227c4da",
+        "version" : 1
+      },
+      "container" : true,
+      "displayField" : "name",
+      "fields" : {
+        "name" : "Yachts",
+        "slug" : "yachts"
+      },
+      "path" : "/yachts",
+      "breadcrumb" : [ ],
+      "version" : {
+        "uuid" : "4bc10d889134438e810d889134038ed9",
+        "number" : "1.0"
+      },
+      "permissions" : {
+        "create" : false,
+        "read" : true,
+        "update" : false,
+        "delete" : false,
+        "publish" : false,
+        "readPublished" : false
+      }
+    }
+  } ]
+}
+----
+
+== Breadcrumbs
+
+Each node in Gentics Mesh provides information on where it is located within the node tree in terms of its ```breadcrumb``` property.
+The property provides an array of node references representing the path from the current node up to the project root. For more details see the documentation on link:building-blocks.html#_node[node].
+
+NOTE: The current node will not be included in the list, since all the information is already provided in other properties (i.e., ```displayField```, ```path```) of node object itself. 
+
+In our demo app example, the ```breadcrumb``` property for node _Ford GT_ will therefore include the node _Automobiles_. 
+
+image::GenticsMesh-Breadcrumb-Example.png[role="img-responsive"]
+
+The ```breadcrumb``` property will be returned in all API responses containing nodes. Using the ```resolveLink``` query parameter will also the paths of the nodes listed in the array.
+
+=== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Get all nodes of a project and return a paged list response.
+| ```GET /api/v1/projectName/nodes```
+
+| Get the node with the given UUID.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid```
+
+| Load the node or the node's binary data, which is located using the provided path.
+| ```GET /api/v1/:projectName/webroot/:path```
+
+|======
+
+=== Response Sample
+
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
+
+[source,json]
+----
+{
+  "uuid" : "fc3c85be82584ae2bc85be82588ae2b0",
+  "creator" : {
+    "uuid" : "a93e95f316114659be95f31611265997"
+  },
+  "created" : "2017-05-29T09:56:16Z",
+  "editor" : {
+    "uuid" : "a93e95f316114659be95f31611265997"
+  },
+  "edited" : "2017-05-29T09:56:22Z",
+  "language" : "en",
+  "availableLanguages" : [ "en" ],
+  "languagePaths" : {
+    "en" : "/automobiles/ford-gt"
+  },
+  "parentNode" : {
+    "projectName" : "demo",
+    "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+    "displayName" : "Automobiles",
+    "path" : "/automobiles",
+    "schema" : {
+      "name" : "category",
+      "uuid" : "2ca2362b041247c4a2362b041227c4da"
+    }
+  },
+  "tags" : [ {
+    "name" : "Gasoline",
+    "uuid" : "1c51487f8e8043c291487f8e8053c2c1",
+    "tagFamily" : "Fuels"
+  }, {
+    "name" : "Blue",
+    "uuid" : "6e6f1d9f055447d2af1d9f055417d289",
+    "tagFamily" : "Colors"
+  }, {
+    "name" : "White",
+    "uuid" : "94fec98d6f114e81bec98d6f118e81cc",
+    "tagFamily" : "Colors"
+  } ],
+  "project" : {
+    "name" : "demo",
+    "uuid" : "217f8c981ada4642bf8c981adaa642c3"
+  },
+  "childrenInfo" : { },
+  "schema" : {
+    "name" : "vehicle",
+    "uuid" : "2aa83a2b3cba40a1a83a2b3cba90a1de",
+    "version" : 1
+  },
+  "container" : false,
+  "displayField" : "name",
+  "fields" : {
+    "slug" : "ford-gt",
+    "name" : "Ford GT",
+    "weight" : 1520,
+    "SKU" : 1,
+    "price" : 139995,
+    "stocklevel" : 20,
+    "description" : "The Ford GT is an American mid-engine two-seater sports car that was produced by Ford for the 2005 through 2006 model years.",
+    "vehicleImage" : {
+      "uuid" : "df8beb3922c94ea28beb3922c94ea2f6",
+      "path" : "/images/ford-gt.jpg",
+      "languagePaths" : {
+        "en" : "/images/ford-gt.jpg"
+      }
+    }
+  },
+  "path" : "/automobiles/ford-gt",
+  "breadcrumb" : [ {
+    "projectName" : "demo",
+    "uuid" : "ca6c7df3f45b48d4ac7df3f45ba8d42f",
+    "displayName" : "Automobiles",
+    "path" : "/automobiles",
+    "schema" : {
+      "name" : "category",
+      "uuid" : "2ca2362b041247c4a2362b041227c4da"
+    }
+  } ],
+  "version" : {
+    "uuid" : "677bf76c8c624e2fbbf76c8c62be2fa0",
+    "number" : "1.0"
+  },
+  "permissions" : {
+    "create" : false,
+    "read" : true,
+    "update" : false,
+    "delete" : false,
+    "publish" : false,
+    "readPublished" : false
+  }
+}
+----
+
+[[webroot]]
+== Fetch Content with WebRoot Paths
+
+The WebRoot API is an alternative way for fetching content from Gentics Mesh. Other than accessing nodes with their UUID, one can use the way more intuitive WebRoot paths. 
+
+image::GenticsMesh-WebRootAPI-Example.png[role="img-responsive"]
+
+This functionality builds on top of using the nodes' ```segmentField``` property to build the path of a specific node. 
+WebRoot paths of arbitrary depth can be created, in combination with organizing content hierarchically in terms of a <<contenttree,content tree>> by specifying nodes to be ```containers``` for their child nodes. 
+The WebRoot API end point uses this information to resolve a given path to a node UUID.
+
+Using the WebRoot API it is possible to easily integrate Gentics Mesh with many known routing frameworks.
+
+[options="header"]
+|======
+| Framework                           | Language       | Example
+| http://silex.sensiolabs.org/[Silex] | PHP            | http://getmesh.io/Blog/Building+an+API-first+Web+App+with+Gentics+Mesh+and+the+PHP+Microframework+Silex[Blogpost]
+| http://expressjs.com/[ExpressJS]    | JS             | http://getmesh.io/Blog/Getting+started+with+Express+and+the+API-first+CMS+Gentics+Mesh[Blogpost]
+| http://vertx.io/[Vert.x]            | Java,JS,Ceylon | http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[Blogpost] 
+| http://lotusrb.org/[Lotus]          | Ruby           | -
+|======
+
+//TODO Blogpost on WebRoot API
+
+=== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Load the node or the node's binary data, which is located using the provided path.
+| ```GET /api/v1/:projectName/webroot/:path```
+
+|======
+
+=== Query content by path
+
+A WebRoot path may consist of multiple path segments, each corresponding to a node within the content tree. The ```segmentField``` property from the schema is used to determine the node's relevant field value. 
+
+NOTE: Each segment of the URL must be URL-encoded. A node's language variants must provide different path segment in order to guarantee unique paths.
+
+==== Fetch node with UUID
+
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
+
+Loading the node with the given UUID using API end point ```GET /api/v1/:projectName/nodes/:nodeUuid```.
+
+==== Fetch node with WebRoot path
+
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/webroot/automobiles/ford-gt?resolveLinks=short
+
+=== Query binary content by path
+The WebRoot API, furthermore, directly supports delivering binary content using the ```fileName``` meta-data field of the ```binary``` field . 
+
+==== Fetch an image with UUID
+
+> http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
+
+Downloading a node's binary field with the given name using API end point ```GET /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```.
+
+==== Fetch an image with WebRoot path
+
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg
+
+TIP: When using a routing framework, in order to find out if a requested resource is binary data or JSON data you need to check the HTTP Content-Disposition response header. If it is set, it’s binary data. 
+
+=== Image manipulation by path
+In case, the binary data is an image, the WebRoot API allows to directly perform <<imagemanipulation, image manipulation>> such as cropping and resizing. 
+
+==== Crop and resize an image with UUID
+
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?cropx=10&cropy=100&cropw=800&croph=400&width=300
+
+==== Crop and resize an image with WebRoot path
+
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?cropx=10&cropy=100&cropw=800&croph=400&width=300
+
+Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
+
+=== Properties
+//TODO
+
+=== Query Parameters
+
+==== Paging Parameters
+
+include::examples/tables/PagingParametersImpl.adoc[]
+
+==== Versioning Parameters
+
+include::examples/tables/VersioningParametersImpl.adoc[]
+
+===== Node Parameters
+
+include::examples/tables/NodeParametersImpl.adoc[]
+
+===== Role Permission Parameters
+
+include::examples/tables/RolePermissionParametersImpl.adoc[]
+
+== Link Resolving
+
+Link resolving represents the counterpart of the <<webroot, WebRoot API>> - a node UUID can be resolved into a WebRoot path. 
+
+image::GenticsMesh-LinkResolver-Utility-Example.png[role="img-responsive"]
+
+Typically, editors create content including internal links to other nodes. When fetching content for your apps, however, Gentics Mesh will resolve these internal links for you and return a WebRoot path. 
+
+For example, ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/images/ford-gt.jpg``` when using the ```?resolveLinks=full``` query parameter.
+
+The ```?resolveLinks``` query parameter defines if and how links are resolved:
+
+* `off` -  links will not be resolved. This is the default.
+* `full` - the resolved links will contain the WebRoot prefix and project name (```/api/v1/:projectName/webRoot/:path```).
+* `medium` - the resolved links will contain the project name (```/:projectName/:path```).
+* `short` - will contain neither WebRoot prefix nor project name, just the path (```:path```).
+
+The ```?resolveLinks``` query parameter can be applied to all API end points returning nodes.
+
+=== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Get all nodes of a project and return a paged list response.
+| ```GET /api/v1/projectName/nodes```
+
+| Get the node with the given UUID.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid```
+
+| Load the node or the node's binary data, which is located using the provided path.
+| ```GET /api/v1/:projectName/webroot/:path```
+
+| Get a navigation object for the provided node.
+| ```GET /api/v1/:projectName/nodes/:nodeUuid/navigation```
+
+| Return a navigation for the node which is located using the given path.
+| ```GET /api/v1/:projectName/navroot/:path```
+
+|======
+
+=== Link Resolver Utility
+
+In addition to the above, Gentics Mesh offers the ```/api/v1/utilities/linkResolver``` end point that can be used to resolve Gentics Mesh links within the posted text data. This is useful when resolving links for a preview page.
+
+It’s necessary to send the content in which links should get resolved to the API end point in plain text or JSON. The query parameter ```?resolveLinks``` is used to specify how links shall be resolved.
+
+Valid links:
+
+ * {{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}
+
+* {{mesh.link('2f2de9297c8143e8ade9297c8193e8fc', 'en')}}
+
+* {{mesh.link(\"2f2de9297c8143e8ade9297c8193e8fc\", \"en\")}}
+
+* {{mesh.link("2f2de9297c8143e8ade9297c8193e8fc")}} (link to default language)
+
+
+[[imagemanipulation]]
+== Image Manipulation
+
+Images can be resized and/or cropped by appending the <<imagemanipulationparams,image manipulation query parameters>> on the relevant API end points.
+
+
+=== Fetch and Resize an Image with UUID
+
+End point: ```/api/v1/:projectName/nodes/:uuid/binary/:fieldname?width=220```
+
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=300
+
+=== Fetch and Crop an Image with WebRoot Path
+
+It is also possible to use the image manipulation in combination with the WebRoot end point.
+
+End point: ```/api/v1/:projectName/webroot/:path?cropx=10&cropy=100&cropw=800&croph=400```
+
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?cropx=10&cropy=100&cropw=800&croph=400
+
+NOTE: It is mandatory to specify all four crop parameters when cropping an image.
+
+=== Transform and Update an Image
+
+Gentics Mesh also allows you to transform (i.e, crop and/or resize) and overwrite an image in a single step. The image manipulation parameters then are part of the request body.
+
+End point: ```POST /api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname```
+
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
+
+*Request Body:*
+[source,bash]
+----
+{
+  "version" : {
+    "number" : "1.0"
+  },
+  "language" : "en",
+  "width" : 300
+}
+----
+
+[imagemanipulationparams]
+=== Image Manipulation Query Parameters
+
+include::examples/tables/ImageManipulationParametersImpl.adoc[]
+
+Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
+
+== File Upload
+
+Binary data can be attached to node binary fields. The ```/api/v1/nodes/:uuid/binary/:fieldName``` end point can be used to POST binary data and thus update the stored binary field. 
+
+NOTE: This endpoint is accepting ```multipart/form-data```, only.
+
+It is required to specify the `version` and `language` within the update request. This is similar to regular node update requests in which these information must be added to the JSON object.
+
+```
+----------Geg2Oob
+Content-Disposition: form-data; name="version"
+
+1.0
+
+----------Geg2Oob
+Content-Disposition: form-data; name="language"
+
+en
+
+----------Geg2Oob
+Content-Disposition: form-data; name="shohY6d"; filename="somefile.bin"
+Content-Type: application/octet-stream
+Content-Transfer-Encoding: binary
+
+fileData
+
+----------Geg2Oob--
+```
+
+=== Configuration
+
+Gentics Mesh stores all binary files on the filesystem. The default directory ```data/binaryfiles``` can be changed in the upload section of the main configuration file ```mesh.yml```. 
+
+The upload limit can be configured in bytes using the ```uploadOptions.byteLimit``` setting.
+
+For more information on available settings have a look at the link:administration-guide.html#_settings[administration guide].
+
+[[multilanguage]]
+== Multi-Language
+
+Gentics Mesh comes with multi-language support out of the box. In particular, a node serves as a container for one or more language variants. These language variants will store the actual content fields. 
+
+You can query individual language variants by appending the ```?lang``` query parameter. The ```language``` json property within an update or create request will be used to identify which language variant should be created or updated.
+
+Requests for nodes should contain the requested languages (as comma separated list)as query parameter:
+
+End point: ```/api/v1/:projectName/nodes/:uuid?lang=en,de```
+
+If the requested node is available in any of the languages, the response will contain the fields in that language (first language found).
+
+=== Language Fallback
+
+Gentics Mesh allows to configure a ```defaultLanguage``` in the main configuration file ```mesh.yml```. This default language is used as a fallback in case:
+
+. the ```lang``` query parameter has been omitted, or
+. the requested content is not available in the specified language.
+
+This fallback mechanism works when fetching nodes but also when requesting navigation objects or breadcrumb information. 
+
+NOTE: In order to work properly, the fallback mechanism requires all nodes to have a language variant for the specified ```defaultLanguage```. 
+
+== Permissions
+
+Permissions exist between roles and other elements (including other roles).
+Most responses within Gentics Mesh will contain a list of permissions which may indicate that CRUD operations on the returned element is restricted in a way.
+
+The ```/api/v1/roles/:roleUuid/permissions``` endpoint can be used to assign or revoke permissions to/from a role.
+
+This endpoint can also be used to apply recursive permissions.
+It is important to note that permissions can be applied to individual elements and onto the set of elements which is identified by the endpoint name (e.g: /groups).
+
+
+For newly created objects CRUD permissions are assigned to those roles that would be able to also create the object in the first place. 
+By this we ensure that roles that would also be able to create the object are now able to invoke CRUD on the newly created object.
+
+Example:
+
+* User John is assigned to Role A. Role A grants him to create a new child Node in a parent Node.
+* User Mary is assigned to Role B. Role B grants her to also create a new child Node in the same parent Node.
+* When John creates a new Node the permission system identifies Role B as a role that would also be able to create the object. 
+  Therefore CRUD permissions are assigned in between Role A and B and the newly created object.
+
+=== Users
+
+Recursive permission changes on ```/users``` will also affect all listed users.
+
+[options="header"]
+|======
+| Element             | Permission     | Description
+| ```/api/v1/users``` | Create         | New users can be created.
+| ```/api/v1/users``` | Read           | _Not used_
+| ```/api/v1/users``` | Update         | _Not used_
+| ```/api/v1/users``` | Delete         | _Not used_
+| ```/api/v1/users``` | Read Published | _Not used_
+| ```/api/v1/users``` | Publish        | _Not used_
+|======
+
+Recursive permission changes on ```/users/:uuid``` have no effect on referenced elements such as node references.
+
+[options="header"]
+|======
+| Element                   | Permission     | Description
+| ```/api/v1/users/:uuid``` | Create         | _Not used_
+| ```/api/v1/users/:uuid``` | Read           | User can be read.
+| ```/api/v1/users/:uuid``` | Update         | User can be updated.
+| ```/api/v1/users/:uuid``` | Delete         | User can be deleted.
+| ```/api/v1/users/:uuid``` | Read Published | _Not used_
+| ```/api/v1/users/:uuid``` | Publish        | _Not used_
+|======
+
+=== Groups
+
+Recursive permission changes on ```/groups``` will affect all groups.
+
+[options="header"]
+|======
+| Element              | Permission     | Description
+| ```/api/v1/groups``` | Create         | New roles can be created.
+| ```/api/v1/groups``` | Read           | _Not used_
+| ```/api/v1/groups``` | Update         | _Not used_
+| ```/api/v1/groups``` | Delete         | _Not used_
+| ```/api/v1/groups``` | Read Published | _Not used_
+| ```/api/v1/groups``` | Publish        | _Not used_
+|======
+
+Recursive permission changes on ```/groups/:uuid``` will also affect users of the group but not roles that are linked to the group.
+
+[options="header"]
+|======
+| Element                    | Permission     | Description
+| ```/api/v1/groups/:uuid``` | Create         | _Not used_
+| ```/api/v1/groups/:uuid``` | Read           | Group can be read.
+| ```/api/v1/groups/:uuid``` | Update         | Group can be updated.
+| ```/api/v1/groups/:uuid``` | Delete         | Group can be deleted.
+| ```/api/v1/groups/:uuid``` | Read Published | _Not used_
+| ```/api/v1/groups/:uuid``` | Publish        | _Not used_
+|======
+
+=== Roles
+
+[options="header"]
+|======
+| Element             | Permission     | Description
+| ```/api/v1/roles``` | Create         | New roles can be created.
+| ```/api/v1/roles``` | Read           | _Not used_
+| ```/api/v1/roles``` | Update         | _Not used_
+| ```/api/v1/roles``` | Delete         | _Not used_
+| ```/api/v1/roles``` | Read Published | _Not used_
+| ```/api/v1/roles``` | Publish        | _Not used_
+|======
+
+Recursive permission changes on ```/roles/:uuid``` have no effect.
+
+[options="header"]
+|======
+| Element                   | Permission     | Description
+| ```/api/v1/roles/:uuid``` | Create         | _Not used_
+| ```/api/v1/roles/:uuid``` | Read           | Role can be read.
+| ```/api/v1/roles/:uuid``` | Update         | Role can be updated.
+| ```/api/v1/roles/:uuid``` | Delete         | Role can be deleted.
+| ```/api/v1/roles/:uuid``` | Read Published | _Not used_
+| ```/api/v1/roles/:uuid``` | Publish        | _Not used_
+|======
+
+=== Schemas
+
+Recursive permission changes on ```/schemas``` will also affect schemas.
+
+[options="header"]
+|======
+| Element               | Permission     | Description
+| ```/api/v1/schemas``` | Create         | New schemas can be created.
+| ```/api/v1/schemas``` | Read           | _Not used_
+| ```/api/v1/schemas``` | Update         | _Not used_
+| ```/api/v1/schemas``` | Delete         | _Not used_
+| ```/api/v1/schemas``` | Read Published | _Not used_
+| ```/api/v1/schemas``` | Publish        | _Not used_
+|======
+
+Recursive permission changes on ```/schemas/:uuid``` have no effect on referenced elements.
+
+[options="header"]
+|======
+| Element                     | Permission     | Description
+| ```/api/v1/schemas/:uuid``` | Create         | _Not used_
+| ```/api/v1/schemas/:uuid``` | Read           | The schema can be read. Read permission on the schema is also needed to be able to create new nodes that are based upon the schema.
+| ```/api/v1/schemas/:uuid``` | Update         | The schema can be updated.
+| ```/api/v1/schemas/:uuid``` | Delete         | The schema can be deleted.
+| ```/api/v1/schemas/:uuid``` | Read Published | _Not used_
+| ```/api/v1/schemas/:uuid``` | Publish        | _Not used_
+|======
+
+=== Microschemas
+
+Recursive permission changes on ```/schemas``` will also affect schemas.
+
+[options="header"]
+|======
+| Element                    | Permission     | Description
+| ```/api/v1/microschemas``` | Create         | New microschemas can be created.
+| ```/api/v1/microschemas``` | Read           | _Not used_
+| ```/api/v1/microschemas``` | Update         | _Not used_
+| ```/api/v1/microschemas``` | Delete         | _Not used_
+| ```/api/v1/microschemas``` | Read Published | _Not used_
+| ```/api/v1/microschemas``` | Publish        | _Not used_
+|======
+
+Recursive permission changes on ```/microschemas/:uuid``` have no effect on referenced elements.
+
+[options="header"]
+|======
+| Element                          | Permission     | Description
+| ```/api/v1/microschemas/:uuid``` | Create         | _Not used_
+| ```/api/v1/microschemas/:uuid``` | Read           | The microschema can be read.
+| ```/api/v1/microschemas/:uuid``` | Update         | The microschema can be updated.
+| ```/api/v1/microschemas/:uuid``` | Delete         | The microschema can be deleted.
+| ```/api/v1/microschemas/:uuid``` | Read Published |  _Not used_
+| ```/api/v1/microschemas/:uuid``` | Publish        |  _Not used_
+|======
+
+=== Projects
+
+Recursive permission changes on ```/projects``` will also affect all projects and those elements.
+
+[options="header"]
+|======
+| Element                    | Permission     | Description
+| ```/api/v1/projects```     | Create         | Create new projects.
+| ```/api/v1/projects```     | Read           | _Not used_
+| ```/api/v1/projects```     | Update         | _Not used_
+| ```/api/v1/projects```     | Delete         | _Not used_
+| ```/api/v1/projects```     | Read Published | _Not used_
+| ```/api/v1/projects```     | Publish        | _Not used_
+|======
+
+Recursive permission changes on ```/projects/:uuid``` will also affect schemas, tagfamilies (and tags), nodes and subnodes.
+
+[options="header"]
+|======
+| Element                      | Permission     | Description
+| ```/api/v1/projects/:uuid``` | Create         | _Not used_
+| ```/api/v1/projects/:uuid``` | Read           | Project can be read.
+| ```/api/v1/projects/:uuid``` | Update         | Project can be updated.
+| ```/api/v1/projects/:uuid``` | Delete         | Project can be deleted.
+| ```/api/v1/projects/:uuid``` | Read Published | Affected node publish versions can be read.
+| ```/api/v1/projects/:uuid``` | Publish        | Affected node can be published.
+|======
+
+=== Tag Families
+
+Recursive permission changes on ```/projects/:uuid/tagFamilies``` will also all tagfamiles and those tags.
+
+[options="header"]
+|======
+| Element                                  | Permission     | Description
+| ```/api/v1/projects/:uuid/tagFamilies``` | Create         | Create new tag families.
+| ```/api/v1/projects/:uuid/tagFamilies``` | Read           | _Not used_
+| ```/api/v1/projects/:uuid/tagFamilies``` | Update         | _Not used_
+| ```/api/v1/projects/:uuid/tagFamilies``` | Delete         | _Not used_
+| ```/api/v1/projects/:uuid/tagFamilies``` | Read Published | _Not used_
+| ```/api/v1/projects/:uuid/tagFamilies``` | Publish        | _Not used_
+|======
+
+Recursive permission changes on ```/projects/:uuid/tagFamilies/:uuid``` will also affect tags.
+
+[options="header"]
+|======
+| Element                                       | Permission     | Description
+| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Create         | Tags can be created within the tag family.
+| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Read           | Tag family can be read.
+| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Update         | Tag family can be updated.
+| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Delete         | Tag family can be deleted.
+| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Read Published | _Not used_
+| ```/api/v1/projects/:uuid/tagFamilies/:uuid``` | Publish        | _Not used_
+|======
+
+=== Tags
+
+Recursive permission on ```/api/v1/projects/:uuid/tagFamilies/:uuid/tags``` changes have no effect.
+
+[options="header"]
+|======
+| Element                                           | Permission    | Description
+| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Create         | Create new tags.
+| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Read           | _Not used_
+| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Update         | _Not used_
+| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Delete         | _Not used_
+| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Read Published | _Not used_
+| ```/api/v1/:projectName/tagFamilies/:uuid/tags``` | Publish        | _Not used_
+|======
+
+Recursive permission changes on ```/projects/:uuid/tagFamilies/:uuid/tags/:uuid``` have no effect.
+
+[options="header"]
+|======
+| Element                                | Permission     | Description
+| ```/api/v1/:projectName/tags/:uuid```  | Create         | _Not used_
+| ```/api/v1/:projectName/tags/:uuid```  | Read           | Tag can be read.
+| ```/api/v1/:projectName/tags/:uuid```  | Update         | Tag can be updated.
+| ```/api/v1/:projectName/tags/:uuid```  | Delete         | Tag can be deleted.
+| ```/api/v1/:projectName/tags/:uuid```  | Read Published | _Not used_
+| ```/api/v1/:projectName/tags/:uuid```  | Publish        | _Not used_
+|======
+
+==== Nodes
+
+Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect children of the node.
+
+[options="header"]
+|======
+| Element                           | Permission     | Description
+| ```/api/v1/:projectName/nodes```  | Create         | _Not used_
+| ```/api/v1/:projectName/nodes```  | Read           | _Not used_
+| ```/api/v1/:projectName/nodes```  | Update         | _Not used_
+| ```/api/v1/:projectName/nodes```  | Delete         | _Not used_
+| ```/api/v1/:projectName/nodes```  | Read Published | _Not used_
+| ```/api/v1/:projectName/nodes```  | Publish        | _Not used_
+|======
+
+Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect children of the node.
+
+[options="header"]
+|======
+| Element                                | Permission     | Description
+| ```/api/v1/:projectName/nodes/:uuid``` | Create         | Create new nodes within the node
+| ```/api/v1/:projectName/nodes/:uuid``` | Read           | Node can be read.
+| ```/api/v1/:projectName/nodes/:uuid``` | Update         | Node can be updated.
+| ```/api/v1/:projectName/nodes/:uuid``` | Delete         | Node can be deleted.
+| ```/api/v1/:projectName/nodes/:uuid``` | Read Published | Published version can be read.
+| ```/api/v1/:projectName/nodes/:uuid``` | Publish        | Node can be published.
+|======
+
+=== Releases
+
+[options="header"]
+|======
+| Element                              | Permission     | Description
+| ```/api/v1/:projectName/releases```  | Create         | Releases can be created.
+| ```/api/v1/:projectName/releases```  | Read           | _Not used_
+| ```/api/v1/:projectName/releases```  | Update         | _Not used_
+| ```/api/v1/:projectName/releases```  | Delete         | _Not used_
+| ```/api/v1/:projectName/releases```  | Read Published | _Not used_
+| ```/api/v1/:projectName/releases```  | Publish        | _Not used_
+|======
+
+[options="header"]
+|======
+| Element                                    | Permission     | Description
+| ```/api/v1/:projectName/releases/:uuid```  | Create         | _Nod used_
+| ```/api/v1/:projectName/releases/:uuid```  | Read           | Release can be read.
+| ```/api/v1/:projectName/releases/:uuid```  | Update         | Release can be updated.
+| ```/api/v1/:projectName/releases/:uuid```  | Delete         | Permission does not apply. Releases can't be deleted.
+| ```/api/v1/:projectName/releases/:uuid```  | Read Published | _Not used_
+| ```/api/v1/:projectName/releases/:uuid```  | Publish        | _Not used_
+|======
+
+
+== Versioning
+
+In order to understand the concept of versioning in Gentics Mesh it is important to remember that nodes are containers for language variants (see <<multilanguage, Multi-Language>>). The language variant of a node contains the fields and thus stores all the content.
+ 
+NOTE: Versioning within Gentics Mesh only applies to *language variants* and their referenced fields. Other elements such as users, groups, roles, permissions and even nodes are not versioned.
+ 
+Various content management tasks will have different effects for versioning in Gentics Mesh. Some of them create versions, others don't. Following, we go through all of these actions which involve versioning.
+
+NOTE: At the moment it is not possible to delete older versions.
+
+=== Node Creation
+
+Once a node has been created the initial version 0.1 will be assigned to its language variant.
+
+=== Node Updates
+
+Updating a node's language variant may create a minor version 0.2 of that language variant if changes have been detected within the posted request fields. 
+
+*No Locks:*
+
+It is not required to handle locks in Gentics Mesh. Instead it is required to specify the version in the update request which identifies the version on which the update request was based upon.
+
+*Conflict detection:*
+
+Gentics Mesh will check whether new versions have been created in the meanwhile. Long running edit operations or multiple concurrent editors may create additional versions.
+
+The detected changes will be compared automatically in order to determine whether the current update request causes a conflict with a newer edit request.
+Gentics Mesh will return a response which contains information about the conflict in those cases. Other update operations which do not cause a conflict will be stored and the changed fields will be updated.
+
+The latest version which was created using an update request is called the ```draft``` version. Only a single draft version per language variant exists.
+
+=== Publishing Nodes
+
+Node language variants can be published and taken offline. This is particularly useful if you want to first work on a draft, then review it and publish it at a later point in time.
+
+Publishing requires a ```POST``` request on the ```/api/v1/:projectName/nodes/:uuid/published``` end point, which will publish all language variants of the node. 
+It is also possible to just publish specific language variants with dedicated ```POST``` requests on ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/published```. 
+
+Gentics Mesh will automatically create a new major version when publishing a node language variant (e.g.: 1.0, 2.0). The ```draft``` reference will also be updated to point to the major version, e.g. 1.0.
+
+Furthermore, it is possible to retrieve information about the published status via a ```GET``` request on ```/api/v1/:/nodes/:uuid/published```.
+
+NOTE: Publishing node language variants requires the user to be assigned to a group with a role which provides the ```publish``` permission.
+
+[source,json]
+----
+include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/published/200/example.json[]
+----
+
+NOTE: It is not possible to publish a specific version. Publish always affects the latest draft version of the language variant.
+
+=== Taking Nodes Offline
+
+Similarly to publishing, the language variants of a node can be taken offline via a ```DELETE``` request on ```/api/v1/:projectName/nodes/:uuid/published```. 
+E.g., taking a specific node language variant with version 1.0 offline using ```DELETE /api/v1/:projectName/nodes/:uuid/languages/:languageTag/published``` will just change the node's publish state. Version 1.0 will still be available.
+
+NOTE: Taking node language variants offline requires the user have ```publish``` permissions on the node.
+
+===  Reading Nodes
+
+It is possible to fetch older versions by specifying the ```?version``` query parameter. Similarly, the published version of a node language variant can also be loaded using the parameter ```?version=published``` or the draft version via ```?version=draft```.
+
+NOTE: By default, nodes will be loaded using ```?version=draft```.
+
+NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readPublished``` permission.
+
+== Content Releases
+
+So far we learned that node language variants can be versioned and published. Additionally Mesh versioning provides a powerful concept we call `Releases`. A release is very similar to branches in a versioning control system.
+
+Releases can be used to restructure your nodes and change the contents within a specific release without affecting a different release which provides a different structure/content.
+
+Structural references for nodes always contain release information. This applies to parent/child relationship or taggings, publish states of nodes. This way releases are completely isolated from each other.
+
+NOTE: It is currently not possible to migrate from one release to another. Nodes of releases can't be automatically merged to other releases.
+
+Typical usecases are:
+
+* Updating an existing application installation which uses Gentics Mesh to a new version. The new application version requires new schema versions. 
+  By creating a release and migrating the nodes to the new release (new schema versions), it is possible to serve content for both application versions.
+  Each application versions chooses the correct release for getting nodes.
+
+* Schema versions must be assigned to the release.
+  Each project can have multiple releases.
+  An initial release will automatically be created when creating a project.
+
+All operations to nodes can be scoped to a specific release by adding the ```?release=name``` query parameter. If omitted the latest release will be used to execute the operation.
+
+TIP: Implementations which use mesh should always reference a specific release. Otherwise the document structure could change without the implementation being aware of these changes.
+
+=== Creating a Release
+
+A release requires an unique name. Existing nodes within the project will automatically be migrated into the release.
+Please note the started *node migration* will be processed asynchronously and thus not all nodes may be directly accessible within the scope of the release.
+
+This migration is different from a schema version migration. The release node migration just takes care of making all nodes from the previous release available in the newly created release.
+Unlike the schema migration the node migration will not create new language variant versions.
+
+You can use the eventbus bridge or the dedicated ```/api/v1/admin/status/migrations``` endpoint to query the migration status.
+The ```migrated``` JSON property within the release response also indicates whether the node migration has been completed.
+
+Note: Migrated nodes will still have the same _uuid_ as before.
+
+=== Updating a Release
+
+A release can be _renamed_ and new schema/microschema versions can be _assigned_ to it.
+
+Renaming is useful if you want to change your development release to be the current production release.
+
+Assigning schema versions to the release via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/schemas``` will automatically trigger a schema migration of the affected nodes language variants within the release.
+
+[source,json]
+----
+include::examples/api/request/api/v1/\{project\}/releases/\{releaseUuid\}/schemas/request-body.json[]
+----
+
+It is also possible to assign microschemas via a ```PUT``` request to ```/api/v1/:projectName/releases/:uuid/microschemas``` to the release.
+
+[source,json]
+----
+include::examples/api/request/api/v1/\{project\}/releases/\{releaseUuid\}/microschemas/request-body.json[]
+----
+
+All nodes which reference the release via the updated schema version will automatically be migrated to use the newer schema version.
+Please note the started *schema migration* will be processed asynchronously and thus not all node language variants may be directly accessible within the scope of the release.
+
+The migration will create new versions for the affected node language variants.
+
+NOTE: It is note worthy that updating a schema and thus creating new schema version will not automatically affect the release. Each schema update created a new schema version. This new version must first be assigned to the release.
+
+=== Deleting a Release
+
+At the moment it is not possible to delete a release.
+
+=== Moving Nodes
+
+Releases enable Gentics Mesh to setup multiple content project tree structures. 
+Moving nodes can be scoped to a specific release using the ```?release``` request parameter. 
+The project's initial release will be used to execute the move operation if no release has been selected.
+
+=== Tagging Nodes
+
+The tag operation is also scoped to a specific release. This way new tags can be assigned to your nodes for a specific release without affecting the taggings of nodes within an older release. 
+
+NOTE: Tags and tag families are not versioned. Deleting a tag will remove the tag from all nodes that previously referenced this tag.
+
+NOTE: Taggings to nodes are not versioned.
+
+=== Deleting Nodes
+
+Deleting nodes is also release specific. Deleting a node via ```DELETE``` to ```/api/v1/:projectName/node/:uuid?release=winter2016``` will delete the node and all its sub nodes from the _winter2016_ release.
+The node will be completely removed from the system if no more language variants are referenced within any release.
+
+It is also possible to just delete a specific language variant via ```DELETE``` to ```/api/v1/:projectName/node/:uuid/languages/en?release=winter2016``` from release _winter2016_.
+
+=== Updating Nodes
+
+Releases are completely isolated from each other as explained earlier. This also applies to a node's language variant versions.
+
+Example:
+
+* Create release _summer2016_
+* Create node with language variant _de_ at version _1.0_ in release _summer2016_
+* Create release _winter2016_
+* Update previously created node in release _summer2016_ and thus create version _1.1_
+
+Release _summer2016_ will reference node language variant 1.1 and _winter2016_ will still reference version 1.0 since the _winder2016_ release was created at the specific point of time in which the language variant in release _summer2016_ was still at version _1.0_.
+
+NOTE: It is currently not possible to migrate _1.1_ from _summer2016_ to _winter2016_.
+
+Additionally creating new nodes in _summer2016_ will not be available in release _winter2016_.
+
+=== Permissions
+
+NOTE: Permissions are not release specific.
+
+== Search
+
+Search requests are handled by the ```/api/v1/search``` or ```/api/v1/:projectName/search``` endpoints.
+
+Elasticsearch is used in order to provide the search functionality. This way elasticsearch queries can be posted to the search endpoints.
+
+The JSON format of stored documents within the elasticsearch differ from the JSON format that is returned via regular Gentics Mesh endpoints. Thus it is important to know the elasticsearch document format when building an elasticsearch query. Below is a list of various example documents.
+
+NOTE: It is not possible to search for specific individual versions. Instead only published and draft versions per release are stored in the search index.
+
+=== Users
+
+Endpoint: ```/api/v1/search/users```
+
+[source,json]
+----
+include::examples/search/user.search.json[]
+----
+
+=== Groups
+
+Endpoint: ```/api/v1/search/groups```
+
+[source,json]
+----
+include::examples/search/group.search.json[]
+----
+
+
+=== Roles
+
+Endpoint: ```/api/v1/search/roles```
+
+[source,json]
+----
+include::examples/search/role.search.json[]
+----
+
+=== Nodes
+
+Endpoint: ```/api/v1/search/nodes```
+
+[source,json]
+----
+include::examples/search/node.search.json[]
+----
+
+
+*Search nodes by schema name*
+
+Listed below is an example search query which can be posted to ```/api/v1/search/nodes``` in order to find all nodes across all projects which were created using the content schema.
+The found nodes will be sorted ascending by creator.
+
+[source,json]
+----
+{
+  "sort" : {
+     "created" : { "order" : "asc" }
+  },
+  "query":{
+    "bool" : {
+      "must" : {
+        "term" : { "schema.name" : "content" }
+       }
+    }
+  }
+}
+----
+
+
+
+*Search nodes by micronode field values*
+
+Find all nodes which have a micronode list field (vcardlist) that contain at least one micronode which contains the two string fields (firstName, lastName) with the values ("Joe", "Doe"):
+
+[source,json]
+----
+{
+  "query": {
+    "nested": {
+      "path": "fields.vcardlist",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "match": {
+                "fields.vcardlist.fields.firstName": "Joe"
+              }
+            },
+            {
+              "match": {
+                "fields.vcardlist.fields.lastName": "Doe"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+----
+
+
+=== Projects
+
+Endpoint: ```/api/v1/search/projects```
+
+[source,json]
+----
+include::examples/search/project.search.json[]
+----
+
+=== Tags
+
+Endpoint: ```/api/v1/search/tags```
+
+[source,json]
+----
+include::examples/search/tag.search.json[]
+----
+
+=== Tag Families
+
+Endpoint: ```/api/v1/search/tagFamilies```
+
+[source,json]
+----
+include::examples/search/tagFamily.search.json[]
+----
+
+=== Schemas
+
+Endpoint: ```/api/v1/search/schemas```
+
+[source,json]
+----
+include::examples/search/schema.search.json[]
+----
+
+=== Microschemas
+
+Endpoint: ```/api/v1/search/microschemas```
+
+[source,json]
+----
+include::examples/search/microschema.search.json[]
+----
+
+
+=== Paging
+
+The paging query parameters are `perPage` and `page` . It is important to note that ```page``` is 1-based and ```perPage``` can be set to ```0``` in order to just retrieve a count of elements.
+
+== Preview Handling
+
+The Gentics Mesh User Interface provides a preview button when editing nodes. A post request to a configureable url is being dispatched when the button is triggered.
+The post request will contain the node JSON data of the current editing state. This way a preview page can be easily rendered by custom frontend implementations.
+
+== Password Recovery
+
+A user who lost his password is able to recover it using a reset token. This token, typically, is issued by a user or service having permissions to create new users. 
+The ```/api/v1/users/:userUuid/reset_token``` end point will return a token code which then can be passed along to an email service sending a recovery email to the user including named token. 
+
+NOTE: A token is valid for 30 minutes and will be invalidated once it has been used. 
+
+The user can use this token to update his user record by issuing a POST request to the ```/api/v1/users/:userUuid?token=TOKENCODE``` end point. E.g., this can be done by presenting the user a form for updating his password. This works even if the user is not authenticated. 
+
+== Schema & Microschema Migration
+
+Gentics Mesh provides a changelog like system in order to apply and keep track of schema changes. A schema change may be a single change that adds a new field to the schema or a change which updates the schema properties.
+
+Gentics Mesh supports the following change operations:
+
+=== Operation: addfield
+
+[options="header"]
+|======
+| Properties  | Description
+| after       | Name of the field after which the new field should be inserted
+| field       | Name of the field that should be added
+| type        | Type of the field
+| listType    | Optional list type
+|======
+
+
+[source,json]
+----
+include::examples/models/addfield.json[]
+----
+
+
+=== Operation: removefield
+
+[options="header"]
+|======
+| Properties  | Description
+| field       | Name of the field to be removed
+|======
+
+[source,json]
+----
+include::examples/models/removefield.json[]
+----
+
+
+=== Operation: changefieldtype
+
+[options="header"]
+|======
+| Properties  | Description
+| field       | Name of the field to be modified
+| type        | New field type
+| listType    | (Only applies for lists) New list type
+|======
+
+[source,json]
+----
+include::examples/models/changefieldtype.json[]
+----
+
+=== Operation: updatefield
+
+[options="header"]
+|======
+| Properties       | Description
+| field            | Field to be updated
+| label            | New field label
+|======
+
+[source,json]
+----
+include::examples/models/updatefield.json[]
+----
+
+=== Operation: updateschema
+
+[options="header"]
+|======
+| Properties       | Description
+| description      | New schema description
+| order            | Array of strings that contains the field order
+| displayFieldname | New displayFieldname value of the schema
+| segmentFieldname | New segmentFieldname value of the schema
+| container        | New container flag of the schema
+|======
+
+[source,json]
+----
+include::examples/models/updateschema.json[]
+----
+
+=== Operation: updatemicroschema
+
+[options="header"]
+|======
+| Properties       | Description
+| description      | New microschema description
+|======
+
+[source,json]
+----
+include::examples/models/updatemicroschema.json[]
+----
+
+Each change may also provide a migration script. The migration script can be used to modify nodes that were affected by the migration.
+
+Typical usecases for migration scripts are for example dynamic field removal or even custom reformatting of field data.
+It is also possible to split a single field value into values for two new fields.
+
+The ```/api/v1/schemas/:uuid/diff``` and ```/api/v1/microschemas/:uuid/diff``` endpoints can be used to generate a list of changes by comparing the stored and posted schema.
+
+This list of changes can be modified and posted to ```/api/v1/schemas/:uuid/changes``` for schemas or ```/api/v1/microschemas/:uuid/changes``` for microschemas.
+The posted list of changes will be validated and stored when valid. A schema migration process will be started which runs in the background.
+
+The https://github.com/sockjs[SockJS] compliant ```/api/v1/eventbus``` endpoint can be used to register to migration specific messages.
+
+Additionally to websocket it is possible to query whether a migration is running via the ```/api/v1/admin/status/migrations``` endpoint.
+
+Sending a schema to ```/api/v1/schemas:uuid``` using the ```PUT``` method will conveniently combine the diff generation and invocation of the schema migration.
+
+Please note that by default conflicting data will be *removed* and this action can only be avoided by specifying a custom migration script.
+
+=== Custom Migration Scripts
+
+Sometimes it is desired to overwrite the default migration behaviour. 
+
+The following migration script converts the number value from field ```node.fields[fieldname]``` into a _ISO-8601_ date string which is then stored within the ```node.fields[fieldname]``` field. 
+
+[source,javascript]
+----
+function migrate(node, fieldname, convert) {
+    node.fields[fieldname] = new Date(new Date(node.fields[fieldname]).getTime() + 864000).toISOString(); 
+    return node;
+}
+----
+
+Migration scripts also allow you to split up a field value into two different fields.
+
+[source,javascript]
+----
+function migrate(node, fieldname, convert) {
+    node.fields["fieldA"] = "First field set";
+    node.fields["fieldB"] = "Second field set"; 
+    return node;
+}
+----
+
+The provided converter can be used to convert in between field types. This converter will be used if no custom migration script was specified.
+
+
+[source,javascript]
+----
+function migrate(node, fieldname, convert) {
+    var stringValue = convert.toString(node.fields[fieldname]);
+
+    // It is important to use the Java.from method to convert the java list object into a number array.
+    var numberArray    = Java.from(convert.toNumberList(node.fields[fieldname]));
+    var micronodeArray = Java.from(convert.toMicronodeList(node.fields[fieldname]));
+    var dateArray      = Java.from(convert.toDateList(node.fields[fieldname]));
+    var booleanArray   = Java.from(convert.toBooleanList(node.fields[fieldname]));
+
+    var numberValue    = convert.toNumber(node.fields[fieldname]);
+    var nodeValue      = convert.toNode(node.fields[fieldname]);
+    var micronodeValue = convert.toMicronode(node.fields[fieldname]);
+    var dateValue      = convert.toDate(node.fields[fieldname]);
+    var booleanValue   = convert.toBoolean(node.fields[fieldname]);
+    var binaryValue    = convert.toBinary(node.fields[fieldname]);
+
+    // Delete the field
+    delete node.fields[fieldname];
+    return node;
+}
+----
+
+
+Finally the changes can be applied by sending the request to ```/api/v1/schemas/:uuid/changes```.
+
+[source,json]
+----
+include::examples/api/request/api/v1/schemas/\{schemaUuid\}/changes/request-body.json[]
+----
+
+== Eventbus Bridge & Websocket
+
+The ```/api/v1/eventbus``` endpoint allows clients to access the eventbus. This may be useful if you want to react on specific events.
+Currently only schema migration specific events are handled via this endpoint but more will follow.
+
+The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possible to access the websocket directly via: ```/api/v1/eventbus/websocket```.
+
+[options="header"]
+|======
+| Eventname       | Description
+| mesh.migration  | Receive node and micronode migration specific events
+|======
+
+== Clustering
+
+Clustering support is still in development.
+
+It will be possible to use master/master replication for OrientDB. Clustering for the Elasticsearch nodes and the Vert.x event message bus.
+

@@ -24,6 +24,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
@@ -65,8 +66,6 @@ import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
@@ -131,7 +130,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			String handlerName = handler.getClass().getSimpleName();
 			log.info("Invoking reindex on handler {" + handlerName + "}. This may take some time..");
 			handler.init().await();
-			try (NoTx noTx = db.noTx()) {
+			try (Tx tx = db.tx()) {
 				handler.reindexAll().await();
 			}
 			log.info("Reindex on handler {" + handlerName + "} completed.");
@@ -219,7 +218,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		// Initialise routes for existing projects
-		try (NoTx noTx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			initProjects();
 		}
 
@@ -245,7 +244,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			log.warn("You are running snapshot version {" + currentVersion
 					+ "} of Gentics Mesh. Be aware that this version could potentially alter your instance in unexpected ways.");
 		}
-		try (NoTx noTx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			String graphVersion = meshRoot().getMeshVersion();
 
 			// Check whether the information was already saved once. Otherwise set it.
@@ -295,8 +294,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public boolean isEmptyInstallation() {
-		try (NoTx noTx = db.noTx()) {
-			return !noTx.getGraph().v().hasNext();
+		try (Tx tx = db.tx()) {
+			return !tx.getGraph().v().hasNext();
 		}
 	}
 
@@ -340,7 +339,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 					isInitialSetup = false;
 					meshRoot = it.next();
 				} else {
-					meshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
+					meshRoot = Tx.getActive().getGraph().addFramedVertex(MeshRootImpl.class);
 					if (log.isDebugEnabled()) {
 						log.debug("Created mesh root {" + meshRoot.getUuid() + "}");
 					}

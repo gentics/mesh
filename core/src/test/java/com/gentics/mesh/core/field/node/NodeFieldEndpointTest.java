@@ -18,6 +18,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -34,7 +35,6 @@ import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -49,7 +49,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Before
 	public void updateSchema() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 			nodeFieldSchema.setName(FIELD_NAME);
@@ -57,13 +57,14 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			nodeFieldSchema.setAllowedSchemas("folder");
 			schema.addField(nodeFieldSchema);
 			schemaContainer("folder").getLatestVersion().setSchema(schema);
+			tx.success();
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("2015");
 			List<Node> targetNodes = Arrays.asList(folder("news"), folder("deals"));
 			for (int i = 0; i < 20; i++) {
@@ -79,7 +80,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 				node.reload();
 				container.reload();
 
-				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion().getNumber());
+				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getNodeValue(container, FIELD_NAME));
 			}
 		}
@@ -88,60 +89,68 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node target = folder("news");
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
-			String oldNumber = firstResponse.getVersion().getNumber();
+			String oldNumber = firstResponse.getVersion();
 
 			NodeResponse secondResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldNumber);
+			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db().noTx()) {
-			Node target = folder("news");
+		String oldVersion;
+		Node target = folder("news");
+
+		try (Tx tx = tx()) {
 			NodeResponse firstResponse = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
-			String oldVersion = firstResponse.getVersion().getNumber();
+			oldVersion = firstResponse.getVersion();
+			tx.success();
+		}
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
-			assertThat(secondResponse.getFields().getNodeField(FIELD_NAME)).as("Deleted Field").isNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+		NodeResponse secondResponse = tx(() -> updateNode(FIELD_NAME, null));
+		assertThat(secondResponse.getFields().getNodeField(FIELD_NAME)).as("Deleted Field").isNull();
+		assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 
+		try (Tx tx = tx()) {
 			// Assert that the old version was not modified
 			Node node = folder("2015");
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNode(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getNode(FIELD_NAME)).isNotNull();
 			String oldValue = latest.getPreviousVersion().getNode(FIELD_NAME).getNode().getUuid();
 			assertThat(oldValue).isEqualTo(target.getUuid());
 
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db().noTx()) {
-			Node target = folder("news");
-			updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(target.getUuid()));
+		String uuid = tx(() -> folder("news").getUuid());
+		try (Tx tx = tx()) {
+			updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(uuid));
+			tx.success();
+		}
+		try (Tx tx = tx()) {
 			updateNodeFailure(FIELD_NAME, new NodeFieldImpl(), BAD_REQUEST, "node_error_field_property_missing", "uuid", FIELD_NAME);
 		}
 	}
 
 	@Test
 	public void testUpdateNodeFieldWithNodeResponseJson() {
-		try (NoTx noTx = db().noTx()) {
-			Node node = folder("news");
-			Node node2 = folder("deals");
+		Node node = folder("news");
+		Node node2 = folder("deals");
+		Node updatedNode = folder("2015");
 
-			Node updatedNode = folder("2015");
+		try (Tx tx = tx()) {
 			// Load the node so that we can use it to prepare the update request
 			NodeResponse loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 
@@ -170,7 +179,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Ignore("Field deletion is currently not implemented.")
 	public void testCreateDeleteNodeField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
 			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertEquals(folder("news").getUuid(), field.getUuid());
@@ -192,7 +201,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testCreateNodeWithField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, new NodeFieldImpl().setUuid(folder("news").getUuid()));
 			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertEquals(folder("news").getUuid(), field.getUuid());
@@ -202,12 +211,16 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testReadNodeWithExistingField() throws IOException {
-		try (NoTx noTx = db().noTx()) {
-			Node newsNode = folder("news");
-			Node node = folder("2015");
+		Node newsNode = folder("news");
+		Node node = folder("2015");
 
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(FIELD_NAME, newsNode);
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			NodeResponse response = readNode(node);
 			NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
 			assertNotNull(deserializedNodeField);
@@ -217,18 +230,22 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadNodeWithResolveLinks() {
-		try (NoTx noTx = db().noTx()) {
-			Node newsNode = folder("news");
-			Node node = folder("2015");
+		Node newsNode = folder("news");
+		Node node = folder("2015");
 
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(FIELD_NAME, newsNode);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			// Read the node
 			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en");
 			parameters.setResolveLinks(LinkType.FULL);
-			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParametersImpl().draft()));
+			NodeResponse response = call(
+					() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParametersImpl().draft()));
 
 			// Check whether the field contains the languagePath
 			NodeField deserializedNodeField = response.getFields().getNodeField(FIELD_NAME);
@@ -238,12 +255,13 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertNotNull(deserializedNodeField.getLanguagePaths());
 			assertThat(deserializedNodeField.getLanguagePaths()).containsKeys("en", "de");
 		}
+
 	}
 
 	@Test
 	@Override
 	public void testCreateNodeWithNoField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			NodeResponse response = createNode(FIELD_NAME, (Field) null);
 			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 			assertNull(
@@ -254,14 +272,17 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadNodeExpandAll() throws IOException {
-		try (NoTx noTx = db().noTx()) {
-			Node referencedNode = folder("news");
-			Node node = folder("2015");
+		Node referencedNode = folder("news");
+		Node node = folder("2015");
 
+		try (Tx tx = tx()) {
 			// Create test field
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(FIELD_NAME, referencedNode);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new NodeParametersImpl().setExpandAll(true),
 					new VersioningParametersImpl().draft()));
 
@@ -277,7 +298,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadNodeExpandAllNoPerm() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			// Revoke the permission to the referenced node
 			Node referencedNode = folder("news");
 			role().revokePermissions(referencedNode, GraphPermission.READ_PERM);
@@ -300,14 +321,17 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeWithExistingField() throws IOException {
-		try (NoTx noTx = db().noTx()) {
-			Node newsNode = folder("news");
-			Node node = folder("2015");
+		Node newsNode = folder("news");
+		Node node = folder("2015");
 
-			// Create test field
+		// Create test field
+		try (Tx tx = tx()) {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(FIELD_NAME, newsNode);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			// 1. Read node with collapsed fields and check that the collapsed node field can be read
 			NodeResponse responseCollapsed = readNode(node);
 			NodeField deserializedNodeField = responseCollapsed.getFields().getNodeField(FIELD_NAME);
@@ -337,7 +361,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testReadExpandedNodeWithLanguageFallback() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node folder = folder("2015");
 
 			// add a node in german and english

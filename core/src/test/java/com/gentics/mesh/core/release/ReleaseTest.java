@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -35,7 +36,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -48,7 +48,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Release release = project().getInitialRelease();
 			ReleaseReference reference = release.transformToReference();
 			assertThat(reference).isNotNull();
@@ -60,7 +60,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testFindAllVisible() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			Release initialRelease = releaseRoot.getInitialRelease();
@@ -79,7 +79,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testFindAll() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			Release initialRelease = releaseRoot.getInitialRelease();
@@ -95,7 +95,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testRootNode() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			assertThat(releaseRoot).as("Release Root of Project").isNotNull();
@@ -110,7 +110,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testFindByName() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			Release foundRelease = releaseRoot.findByName(project.getName());
@@ -121,7 +121,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testFindByUUID() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			Release initialRelease = project.getInitialRelease();
@@ -139,7 +139,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			ReleaseRoot releaseRoot = project.getReleaseRoot();
 			Release initialRelease = releaseRoot.getInitialRelease();
@@ -173,7 +173,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			Release initialRelease = project.getInitialRelease();
 			initialRelease.setName("New Release Name");
@@ -187,7 +187,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testReadPermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Release newRelease = project().getReleaseRoot().create("New Release", user());
 			testPermission(GraphPermission.READ_PERM, newRelease);
 		}
@@ -196,7 +196,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testDeletePermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Release newRelease = project().getReleaseRoot().create("New Release", user());
 			testPermission(GraphPermission.DELETE_PERM, newRelease);
 		}
@@ -205,7 +205,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testUpdatePermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Release newRelease = project().getReleaseRoot().create("New Release", user());
 			testPermission(GraphPermission.UPDATE_PERM, newRelease);
 		}
@@ -214,7 +214,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testCreatePermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Release newRelease = project().getReleaseRoot().create("New Release", user());
 			testPermission(GraphPermission.CREATE_PERM, newRelease);
 		}
@@ -223,7 +223,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Release release = project().getInitialRelease();
 
 			RoutingContext rc = mockRoutingContext();
@@ -248,7 +248,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 
 	@Test
 	public void testReadSchemaVersions() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			List<SchemaContainerVersion> versions = project.getSchemaContainerRoot().findAll().stream().map(SchemaContainer::getLatestVersion)
 					.collect(Collectors.toList());
@@ -268,7 +268,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	 */
 	@Test
 	public void testAssignSchema() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer schemaContainer = createSchemaDirect("bla");
 			updateSchema(schemaContainer, "newfield");
 			SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
@@ -306,7 +306,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	 */
 	@Test
 	public void testUnassignSchema() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			List<? extends SchemaContainer> schemas = project.getSchemaContainerRoot().findAll();
 			SchemaContainer schemaContainer = schemas.get(0);
@@ -326,7 +326,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 
 	@Test
 	public void testReleaseSchemaVersion() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 
 			SchemaContainer schemaContainer = createSchemaDirect("bla");
@@ -351,7 +351,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 
 	@Test
 	public void testReadMicroschemaVersions() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			List<MicroschemaContainerVersion> versions = project.getMicroschemaContainerRoot().findAll().stream()
 					.map(MicroschemaContainer::getLatestVersion).collect(Collectors.toList());
@@ -371,7 +371,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	 */
 	@Test
 	public void testAssignMicroschema() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer microschemaContainer = createMicroschemaDirect("bla");
 			updateMicroschema(microschemaContainer, "newfield");
 			MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
@@ -409,7 +409,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	 */
 	@Test
 	public void testUnassignMicroschema() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 			List<? extends MicroschemaContainer> microschemas = project.getMicroschemaContainerRoot().findAll();
 			MicroschemaContainer microschemaContainer = microschemas.get(0);
@@ -430,7 +430,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 
 	@Test
 	public void testReleaseMicroschemaVersion() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Project project = project();
 
 			MicroschemaContainer microschemaContainer = createMicroschemaDirect("bla");

@@ -13,6 +13,8 @@ public class HttpServerConfig {
 
 	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "";
 
+	public static final boolean DEFAULT_CORS_ALLOW_CREDENTIALS = false;
+
 	public static final String HTTP_PORT_KEY = "httpPort";
 
 	public static final int DEFAULT_HTTP_PORT = 8080;
@@ -22,8 +24,12 @@ public class HttpServerConfig {
 	private int port = DEFAULT_HTTP_PORT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configured CORS allowed origin pattern. You can specifiy a regex to include multiple hosts if you want to do so.")
+	@JsonPropertyDescription("Configured CORS allowed origin pattern. You can specify a regex to include multiple hosts if you want to do so.")
 	private String corsAllowedOriginPattern = DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether credentials are allowed to be passed along using CORS requests.")
+	private Boolean corsAllowCredentials = DEFAULT_CORS_ALLOW_CREDENTIALS;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether CORS handling should be enabled.")
@@ -102,6 +108,26 @@ public class HttpServerConfig {
 	 */
 	public HttpServerConfig setCorsAllowedOriginPattern(String corsAllowedOriginPattern) {
 		this.corsAllowedOriginPattern = corsAllowedOriginPattern;
+		return this;
+	}
+
+	/**
+	 * Return the CORS allow credentials flag.
+	 * 
+	 * @return
+	 */
+	public boolean getCorsAllowCredentials() {
+		return corsAllowCredentials;
+	}
+
+	/**
+	 * Set the CORS allow credentials flag.
+	 * 
+	 * @param allowCredentials
+	 * @return Fluent API
+	 */
+	public HttpServerConfig setCorsAllowCredentials(boolean allowCredentials) {
+		this.corsAllowCredentials = allowCredentials;
 		return this;
 	}
 

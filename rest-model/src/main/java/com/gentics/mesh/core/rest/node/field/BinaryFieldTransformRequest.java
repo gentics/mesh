@@ -3,7 +3,6 @@ package com.gentics.mesh.core.rest.node.field;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.node.VersionReference;
 
 /**
  * POJO for a binary field transform request
@@ -11,8 +10,8 @@ import com.gentics.mesh.core.rest.node.VersionReference;
 public class BinaryFieldTransformRequest implements RestModel {
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Version reference which must be provided in order to handle and detect concurrent changes to the node content.")
-	private VersionReference version;
+	@JsonPropertyDescription("Version number which must be provided in order to handle and detect concurrent changes to the node content.")
+	private String version;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("ISO 639-1 language tag of the node which provides the image which should be transformed.")
@@ -187,7 +186,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 	 * 
 	 * @return
 	 */
-	public VersionReference getVersion() {
+	public String getVersion() {
 		return version;
 	}
 
@@ -197,7 +196,7 @@ public class BinaryFieldTransformRequest implements RestModel {
 	 * @param version
 	 * @return Fluent API
 	 */
-	public BinaryFieldTransformRequest setVersion(VersionReference version) {
+	public BinaryFieldTransformRequest setVersion(String version) {
 		this.version = version;
 		return this;
 	}
