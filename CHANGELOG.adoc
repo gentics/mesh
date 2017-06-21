@@ -4,6 +4,8 @@
 
 == 0.9.17 (21.06.2017)
 
+icon:check[] UI: A bug which prevented micronodes which contained empty node field from being saved was fixed.
+
 icon:check[] Core: Issues within the error reporting mechanism have been fixed.
 
 icon:plus[] Server: The Mesh UI was added to the mesh-server jar.
