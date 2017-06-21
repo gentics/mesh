@@ -32,11 +32,8 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 	]
 ) {
 	node('kubernetespod') {
-		def mvnHome = tool 'M3'
 		stage("Checkout") {
-			sh "rm -rf *"
-			sh "rm -rf .git"
-			checkout scm
+			checkout([$class: 'GitSCM', branches: [[name: '*/kubernetes']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'LocalBranch']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git', url: 'git@github.com:gentics/mesh.git']]])
 		}
 		def branchName = GitHelper.fetchCurrentBranchName()
 
@@ -67,8 +64,7 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 					branches["split${i}"] = {
 						container('genticsbuild') {
 							echo "Preparing slave environment for ${current}"
-							sh "rm -rf *"
-							checkout scm
+							checkout([$class: 'GitSCM', branches: [[name: '*/kubernetes']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'LocalBranch']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git', url: 'git@github.com:gentics/mesh.git']]])
 							unstash 'project'
 							def postfix = current;
 							if (current <= 9) {
@@ -78,7 +74,7 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 							sh "mv includes-${postfix} inclusions.txt"
 							sshagent([sshAgent]) {
 								try {
-									sh "${mvnHome}/bin/mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
+									sh "mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
 								} finally {
 									step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 								}
@@ -100,7 +96,7 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 		stage("Release Build") {
 			if (Boolean.valueOf(runReleaseBuild)) {
 				sshagent([sshAgent]) {
-					sh "${mvnHome}/bin/mvn -B -DskipTests clean package"
+					sh "mvn -B -DskipTests clean package"
 				}
 			} else {
 				echo "Release build skipped.."
@@ -122,12 +118,9 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 		stage("Performance Tests") {
 			if (Boolean.valueOf(runPerformanceTests)) {
 				container('genticsbuild') {
-					sh "rm -rf *"
-					sh "rm -rf .git"
-					checkout scm
-					//checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]], extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
+					checkout([$class: 'GitSCM', branches: [[name: '*/kubernetes']], doGenerateSubmoduleConfigurations: false, extensions: [[$class: 'CleanBeforeCheckout'], [$class: 'LocalBranch']], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'git', url: 'git@github.com:gentics/mesh.git']]])
 					try {
-						sh "${mvnHome}/bin/mvn -B -U clean package -pl '!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
+						sh "mvn -B -U clean package -pl '!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
 					} finally {
 						//step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 						step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
@@ -159,7 +152,7 @@ podTemplate(name: 'kubernetespod', label: 'kubernetespod',
 					}
 				}
 				sshagent([sshAgent]) {
-					sh "${mvnHome}/bin/mvn -U -B -DskipTests clean deploy"
+					sh "mvn -U -B -DskipTests clean deploy"
 				}
 			} else {
 				echo "Deploy skipped.."
