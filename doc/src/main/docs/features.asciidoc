@@ -984,13 +984,97 @@ NOTE: In order to work properly, the fallback mechanism requires all nodes to ha
 
 == Permissions
 
-Permissions exist between roles and other elements (including other roles).
-Most responses within Gentics Mesh will contain a list of permissions which may indicate that CRUD operations on the returned element is restricted in a way.
+Permissions exist between roles and other elements (including other roles). By organizing link:building-blocks.html#_user[users] with link:building-blocks.html#_group[groups] and by assigning link:building-blocks.html#_role[roles] to groups, users inherit permissions on elements.
+// TODO image (anonymous, and other roles having different permissions)
 
-The ```/api/v1/roles/:roleUuid/permissions``` endpoint can be used to assign or revoke permissions to/from a role.
+Most responses within Gentics Mesh will contain a list of permissions which may indicate that CRUD operations on the returned element are restricted in a way:
 
-This endpoint can also be used to apply recursive permissions.
-It is important to note that permissions can be applied to individual elements and onto the set of elements which is identified by the endpoint name (e.g: /groups).
+http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?version=published
+
+
+[source,json]
+-----
+...
+  "permissions" : {
+    "create" : false,        //create other nodes
+    "read" : false,          //read all versions of the node 
+    "update" : false,        //update the node
+    "delete" : false,        //delete the node
+    "publish" : false,       //publish or unpublish the node
+    "readPublished" : true   //read the published version of the node
+  }
+...  
+-----
+
+The example above shows that the current user ```anonymous``` has the ```readPublish``` permission on the requested node, only. This means the user is allowed to read a published version of the node but not previous versions or a draft version of the requested element.
+
+Furthermore the user is not allowed to
+
+* ```create``` other nodes
+* ```read``` a draft version of the node
+* ```update``` the requested node
+* ```delete``` the requested node
+* ```publish``` a draft version of the requested node, or ```unpublish``` a node.
+
+IMPORTANT: Gentics Mesh by default returns the ```draft``` version of nodes. This means for supporting the ```anonymous``` user and public content, you need to add the ```?version=published``` query parameter on all requests for nodes to avoid _"Missing permissions on object"_ errors.
+
+NOTE: The ```publish``` and ```readPublish``` permissions are specifically available for node elements.
+
+Following, we will discuss how to query, assign and revoke permissions in Gentics Mesh including the available API end points.
+
+==== API end points
+
+[options="header",cols="2*"]
+|======
+
+| Description
+| API end point
+
+| Read the user permissions on the element that can be located by the specified path.
+| link:raml/#users__userUuid__permissions__path__get[```GET /api/v1/users/:userUuid/permissions/:path```]
+
+| Load the permissions between given role and the targeted element.
+| link:raml/#roles__roleUuid__permissions__pathToElement__get[```GET /api/v1/roles/:roleUuid/permissions/:path```]
+
+| Set the permissions between role and the targeted element.
+| link:raml#roles__roleUuid__permissions__pathToElement__post[```POST /api/v1/roles/:roleUuid/permissions/:path```]
+
+|======
+
+=== Querying Permissions
+
+There are dedicated API end points for querying permissions on elements.
+
+NOTE: The following example links, require prior authentication with user ```admin``` (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication section] to learn about the different authentication mechanisms provided by Gentics Mesh.
+
+The ```/api/v1/roles/:roleUuid/permissions/:path``` end point can be used to query a role's permission on a specific element or set of elements.
+
+For example, the link:references.html#_authentication[authenticated] ```admin``` user is able to find out the configured permissions for role ```anonymous``` on node ```fc3c85be82584ae2bc85be82588ae2b0```:
+
+http://localhost:8080/api/v1/roles/292abe389d434b1eaabe389d430b1ee0/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/fc3c85be82584ae2bc85be82588ae2b0
+
+[source,bash]
+-----
+{
+    "create": false,
+    "read": false,
+    "update": false,
+    "delete": false,
+    "publish": false,
+    "readPublished": true
+} 
+-----
+
+Alternatively, the end point ```/api/v1/users/:userUuid/permissions/:path``` provides a shortcut for querying permissions for specific users directly, e.g., for user ```anonymous```, which is essentially inheriting all permissions from role ```anonymous```.
+
+http://localhost:8080/api/v1/users/7e190e7adbc24eb8990e7adbc22eb8e3/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/fc3c85be82584ae2bc85be82588ae2b0
+
+=== Assigning & Revoking Permissions 
+
+The ```/api/v1/roles/:roleUuid/permissions``` API end point can be used to assign or revoke permissions to/from a role.
+
+Furthermore, this end point can also be used to apply recursive permissions.
+It is important to note that permissions can be applied to individual elements and onto a set of elements which is identified by the end point name (e.g.: ```/group``` and ```/groups```).
 
 
 For newly created objects CRUD permissions are assigned to those roles that would be able to also create the object in the first place. 
@@ -1340,9 +1424,9 @@ NOTE: Taking node language variants offline requires the user have ```publish```
 
 It is possible to fetch older versions by specifying the ```?version``` query parameter. Similarly, the published version of a node language variant can also be loaded using the parameter ```?version=published``` or the draft version via ```?version=draft```.
 
-NOTE: By default, nodes will be loaded using ```?version=published```. A nodes list thus may not contain your previously created node because it was not yet published.
+IMPORTANT: Gentics Mesh by default returns the ```draft``` version of nodes. This means for supporting the ```anonymous``` user and public content, you need to add the ```?version=published``` query parameter on all requests for nodes to avoid _"Missing permissions on object"_ errors.
 
-NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readpublished``` permission.
+NOTE: Reading published nodes requires the user to be assigned to a role which grants the ```readPublished``` permission. The read permission
 
 == Content Releases
 
