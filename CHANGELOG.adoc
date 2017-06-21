@@ -2,7 +2,7 @@
 
 = Gentics Mesh Changelog
 
-== 0.9.17 (TBD)
+== 0.9.17 (21.06.2017)
 
 icon:plus[] Server: The Mesh UI was added to the mesh-server jar.
 
