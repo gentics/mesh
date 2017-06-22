@@ -42,7 +42,7 @@ node("jenkins-slave") {
 
 	stage("Test") {
 		if (Boolean.valueOf(params.runTests)) {
-		def splits = 5;
+		def splits = 25;
 			sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
 			sh "split -a 2 -d -n l/${splits} alltests  includes-"
 			stash includes: '*', name: 'project'
@@ -52,8 +52,8 @@ node("jenkins-slave") {
 				branches["split${i}"] = {
 					node('jenkins-slave') {
 						echo "Preparing slave environment for ${current}"
-						sh "rm -rf *"
-						checkout scm
+						//sh "rm -rf *"
+						//checkout scm
 						unstash 'project'
 						def postfix = current;
 						if (current <= 9) {
