@@ -45,7 +45,7 @@ node("jenkins-slave") {
 		def splits = 25;
 			sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
 			sh "split -a 2 -d -n l/${splits} alltests  includes-"
-			stash includes: '*', name: 'project'
+			stash includes: '**', name: 'project'
 			def branches = [:]
 			for (int i = 0; i < splits; i++) {
 				def current = i
