@@ -19,7 +19,7 @@ properties([
 final def dockerHost           = "tcp://gemini.office:2375"
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 
-node("testpod") {
+node("jenkins-slave") {
 	stage("Checkout") {
 		checkout scm
 	}
@@ -42,10 +42,40 @@ node("testpod") {
 
 	stage("Test") {
 		if (Boolean.valueOf(params.runTests)) {
+		def splits = 5;
+			sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
+			sh "split -a 2 -d -n l/${splits} alltests  includes-"
+			stash includes: '*', name: 'project'
+			def branches = [:]
+			for (int i = 0; i < splits; i++) {
+				def current = i
+				branches["split${i}"] = {
+					node('jenkins-slave') {
+						echo "Preparing slave environment for ${current}"
+						sh "rm -rf *"
+						checkout scm
+						unstash 'project'
+						def postfix = current;
+						if (current <= 9) {
+							postfix = "0" + current
+						}
+						echo "Setting correct inclusions file ${postfix}"
+						sh "mv includes-${postfix} inclusions.txt"
+						sshagent([sshAgent]) {
+							try {
+								sh "${mvnHome}/bin/mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
+							} finally {
+								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+							}
+						}
+					}
+				}
+			}
 			try {
-				sh "mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -pl '!demo,!doc,!server,!performance-tests' clean test"
-			} finally {
-				step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+				parallel branches
+			} catch (err) {
+				echo "Failed " + err.getMessage()
+				error err.getMessage()
 			}
 		} else {
 			echo "Tests skipped.."
