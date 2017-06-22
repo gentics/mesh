@@ -1,0 +1,15 @@
+FROM    java:openjdk-8-jre-alpine
+
+EXPOSE 8080
+
+RUN mkdir /mesh
+WORKDIR /mesh
+ADD bin /mesh/bin
+ADD run.sh /mesh/run.sh
+RUN chmod +x /mesh/run.sh
+
+RUN mkdir /data
+RUN ln -s /data /mesh/data
+VOLUME /data
+
+CMD  ["/mesh/run.sh"]

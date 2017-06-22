@@ -21,7 +21,6 @@ public class TestCluster {
 	};
 
 	PullImageResultCallback pullCallback = new PullImageResultCallback() {
-		
 		@Override
 		public void onNext(com.github.dockerjava.api.model.PullResponseItem item) {
 			System.out.println(item.toString());
