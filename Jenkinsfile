@@ -63,7 +63,7 @@ node("jenkins-slave") {
 						sh "mv includes-${postfix} inclusions.txt"
 						sshagent(["git"]) {
 							try {
-								sh "${mvnHome}/bin/mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
+								sh "mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
 							} finally {
 								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 							}
