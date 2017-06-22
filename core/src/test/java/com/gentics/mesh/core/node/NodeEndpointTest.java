@@ -3,6 +3,7 @@ package com.gentics.mesh.core.node;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
@@ -758,6 +759,39 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
+	public void testReadPublishedNodeNoPermission3() {
+		String uuid = db().noTx(() -> content().getUuid());
+		NodeResponse draftResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
+		call(() -> client().publishNode(PROJECT_NAME, uuid));
+		NodeResponse publishedResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
+		assertEquals("Draft and publish versions should be the same since mesh automatically creates a new draft based on the published version.", draftResponse.getVersion().getNumber(), publishedResponse.getVersion().getNumber());
+
+		db().noTx(() -> {
+			Node node = content();
+			role().revokePermissions(node, READ_PERM);
+			role().revokePermissions(node, CREATE_PERM);
+			role().revokePermissions(node, DELETE_PERM);
+			role().revokePermissions(node, UPDATE_PERM);
+			role().revokePermissions(node, PUBLISH_PERM);
+			role().grantPermissions(node, READ_PUBLISHED_PERM);
+			return null;
+		});
+
+		// version=<default>
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), FORBIDDEN, "error_missing_perm", uuid);
+		// version=draft
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid);
+		// version=published
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
+		// version=<draftversion>
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion(draftResponse.getVersion().getNumber())));
+		// version=<publishedversion>
+		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
+				new VersioningParametersImpl().setVersion(publishedResponse.getVersion().getNumber())));
+
+	}
+
+	@Test
 	@Ignore("Disabled until custom 404 handler has been added")
 	public void testReadNodeWithBogusProject() {
 		MeshResponse<NodeResponse> future = client().findNodeByUuid("BOGUS", "someUuuid").invoke();
@@ -1261,9 +1295,8 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Load the german folder
 		String uuid = response.getUuid();
-		response = call(
-				() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL).setLanguages("de"),
-						new VersioningParametersImpl().setVersion("draft")));
+		response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL).setLanguages("de"),
+				new VersioningParametersImpl().setVersion("draft")));
 
 		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1/german%20folder-2", response.getPath());
 		assertEquals("/api/v1/dummy/webroot/english%20folder-0/english%20folder-1", response.getBreadcrumb().getFirst().getPath());

@@ -1,18 +1,21 @@
 package com.gentics.mesh.core.graphql;
 
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
 
 import org.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -24,9 +27,16 @@ import io.vertx.core.json.JsonObject;
 public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 
 	@Test
-	public void testIntrospection() {
-		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery("introspection-query")));
-		assertNotNull(response);
+	public void testIntrospection() throws IOException {
+		try (NoTx noTx = db().noTx()) {
+			for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
+				microschema.remove();
+			}
+		}
+		String queryName = "introspection-query";
+		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));
+		JsonObject json = new JsonObject(JsonUtil.toJson(response));
+		assertThat(json).compliesToAssertions(queryName);
 	}
 
 	@Test
@@ -39,15 +49,6 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 	public void testEmptyQuery() throws Throwable {
 		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, ""));
 		assertEquals(1, response.getErrors().stream().filter(error -> error.getType().equals("InvalidSyntax")).count());
-	}
-
-	@Test
-	public void testDataFetchingError() throws Throwable {
-		try (NoTx noTx = db().noTx()) {
-			role().revokePermissions(project(), READ_PERM);
-		}
-		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, "{project{name}}"));
-		System.out.println(response.getData().encodePrettily());
 	}
 
 	@Test

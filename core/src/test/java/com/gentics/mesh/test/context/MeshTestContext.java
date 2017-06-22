@@ -73,7 +73,7 @@ public class MeshTestContext extends TestWatcher {
 				initDagger(settings.testSize());
 			} else {
 				if (!settings.inMemoryDB()) {
-					new DatabaseHelper(meshDagger.database()).init();
+					DatabaseHelper.init(meshDagger.database());
 				}
 				setupData();
 				if (settings.useElasticsearch()) {
@@ -347,7 +347,7 @@ public class MeshTestContext extends TestWatcher {
 		// schemaStorage = meshDagger.serverSchemaStorage();
 		// boot = meshDagger.boot();
 		Database db = meshDagger.database();
-		new DatabaseHelper(db).init();
+		DatabaseHelper.init(db);
 	}
 
 	public MeshRestClient getClient() {

@@ -1,11 +1,13 @@
 
 = Building Blocks
 
-This part of the documentation will be about the core concepts of Gentics Mesh. It will describe the building blocks you'll need to setup your project. We will start with an overview and then move on to discuss each concept in detail including examples and references to relevant parts of the API. At the end you should be able to understand the core concepts and be ready to design your content model as well as manage users and their permissions on elements of your project using either the API or the Gentics Mesh user interface.
+This part of the documentation will be about the core concepts of Gentics Mesh. It will describe the building blocks you'll need to setup your project. 
+We will start with an overview and then move on to discuss each concept in detail including examples and references to relevant parts of the API. 
+At the end you should be able to understand the core concepts and be ready to design your content model as well as manage users and their permissions on elements of your project using either the API or the Gentics Mesh user interface.
 
 == The Gentics Mesh building blocks in a nutshell
 
-image:overview.png[Gentics Mesh Overview of Core Concepts]
+image:overview.png[Gentics Mesh Overview of Core Concepts, role="img-responsive"]
 
 * You organize your contents and media assets in *projects*. 
 * A *schema* is used to define the structure of a content type (e.g. product, blogpost). It has a set of standard fields (uuid, name, version etc.) and defines the types of an arbitrary number of custom fields for your content type (i.e. string, number, HTML, date, binary, list, node reference, micronode, boolean).
@@ -75,27 +77,9 @@ include::examples/tables/ProjectUpdateRequest.adoc[]
 
 include::examples/tables/PagingParametersImpl.adoc[]
 
+==== Role Permission Parameters
 
-[options="header",cols="3*"]
-|======
-
-| Name
-| Type
-| Description
-
-| page
-| number (default: 1)
-| Number of page to be loaded. This query parameter is used in queries returning a data set with multiple items.
-
-| perPage
-| number (default: 25)
-| Number of elements per page. This query parameter is used in queries returning a data set with multiple items.
-
-| role
-| string
-| The ```role``` query parameter takes a UUID and may be used in order to add permission information to the response which is related to the specified role. When used, the response will include the ```rolePerms``` property which lists the permissions for the specified role on this node. E.g., this may be useful when you are logged in as administrator but want to retrieve the editor role permissions on a given node.
-
-|======
+include::examples/tables/RolePermissionParametersImpl.adoc[]
 
 === Response Sample
 
@@ -519,7 +503,6 @@ include::examples/tables/TagFamilyResponse.adoc[]
 include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/200/example.json[]
 ----
 
-
 == User
 
 Gentics Mesh *users* can be physical persons or client apps interacting with elements in Gentics Mesh. Both have a user object counterpart in Gentics Mesh. 
@@ -720,5 +703,4 @@ include::examples/tables/RolePermissionParametersImpl.adoc[]
 ----
 include::examples/api/response/api/v1/roles/\{roleUuid\}/200/example.json[]
 ----
-
 

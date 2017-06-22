@@ -22,7 +22,7 @@ public class HttpServerConfig {
 	private int port = DEFAULT_HTTP_PORT;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configured CORS allowed origin pattern. You can specifiy a regex to include multiple hosts if you want to do so.")
+	@JsonPropertyDescription("Configured CORS allowed origin pattern. You can specify a regex to include multiple hosts if you want to do so.")
 	private String corsAllowedOriginPattern = DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN;
 
 	@JsonProperty(required = false)

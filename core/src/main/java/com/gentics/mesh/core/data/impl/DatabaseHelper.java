@@ -48,20 +48,16 @@ import io.vertx.core.logging.LoggerFactory;
 /**
  * Utility class that will handle index creation and database migration.
  */
-public class DatabaseHelper {
+public final class DatabaseHelper {
 
 	private static final Logger log = LoggerFactory.getLogger(DatabaseHelper.class);
 
-	protected Database database;
-
-	public DatabaseHelper(Database database) {
-		this.database = database;
-	}
-
 	/**
 	 * Initialize the database indices and types.
+	 * 
+	 * @param database
 	 */
-	public void init() {
+	public static void init(Database database) {
 
 		log.info("Creating database indices. This may take a few seconds...");
 

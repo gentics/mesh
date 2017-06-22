@@ -1,7 +1,0 @@
-++++
-<div class="graphql-example">
-{
-  me { username, uuid }
-}
-</div>
-++++
