@@ -45,13 +45,10 @@ public class RunnerNodeA {
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getStorageOptions().setDirectory("data-nodeA/graph");
-		options.getSearchOptions().setDirectory("data-nodeB/es");
+		options.getSearchOptions().setDirectory("data-nodeA/es");
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
-		// options.getSearchOptions().setHttpEnabled(true);
-		// options.getStorageOptions().setStartServer(false);
 		options.getSearchOptions().setHttpEnabled(true);
 		options.setClusterMode(true);
-		// options.getStorageOptions().setDirectory(null);
 		setupKeystore(options);
 
 		Mesh mesh = Mesh.mesh(options);

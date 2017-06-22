@@ -32,6 +32,11 @@
 			<version>${orientdb.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>com.orientechnologies</groupId>
+			<artifactId>orientdb-distributed</artifactId>
+			<version>${orientdb.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>2.4</version>

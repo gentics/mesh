@@ -7,6 +7,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.gentics.ferma.Tx;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
@@ -19,7 +20,7 @@ public abstract class AbstractDatabase implements Database {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
 
-	protected GraphStorageOptions options;
+	protected MeshOptions options;
 	protected Vertx vertx;
 	protected String[] basePaths;
 
@@ -29,12 +30,8 @@ public abstract class AbstractDatabase implements Database {
 			log.debug("Clearing graph");
 		}
 		try (Tx tx = tx()) {
-			tx.getGraph()
-					.e()
-					.removeAll();
-			tx.getGraph()
-					.v()
-					.removeAll();
+			tx.getGraph().e().removeAll();
+			tx.getGraph().v().removeAll();
 			tx.success();
 		}
 		if (log.isDebugEnabled()) {
@@ -43,11 +40,20 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception {
+	public void init(MeshOptions options, Vertx vertx, String... basePaths) throws Exception {
 		this.options = options;
 		this.vertx = vertx;
 		this.basePaths = basePaths;
 		start();
+	}
+
+	/**
+	 * Return the graph database storage options.
+	 * 
+	 * @return
+	 */
+	public GraphStorageOptions storageOptions() {
+		return options.getStorageOptions();
 	}
 
 	@Override
@@ -57,8 +63,8 @@ public abstract class AbstractDatabase implements Database {
 		}
 		stop();
 		try {
-			if (options.getDirectory() != null) {
-				File storageDirectory = new File(options.getDirectory());
+			if (options.getStorageOptions().getDirectory() != null) {
+				File storageDirectory = new File(options.getStorageOptions().getDirectory());
 				if (storageDirectory.exists()) {
 					FileUtils.deleteDirectory(storageDirectory);
 				}

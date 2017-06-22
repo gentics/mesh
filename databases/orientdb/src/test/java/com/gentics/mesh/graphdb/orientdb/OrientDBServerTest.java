@@ -10,7 +10,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.ferma.Tx;
-import com.gentics.mesh.etc.config.GraphStorageOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -37,10 +37,9 @@ public class OrientDBServerTest {
 
 	@Test
 	public void testServer() throws Exception {
-		GraphStorageOptions options = new GraphStorageOptions();
-
-		options.setDirectory(dbDirectory.getAbsolutePath());
-		options.setStartServer(true);
+		MeshOptions options = new MeshOptions();
+		options.getStorageOptions().setDirectory(dbDirectory.getAbsolutePath());
+		options.getStorageOptions().setStartServer(true);
 		db.init(options, Vertx.vertx());
 		db.start();
 

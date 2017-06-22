@@ -24,14 +24,15 @@ import com.gentics.ferma.Tx;
 import com.gentics.ferma.TxHandler;
 import com.gentics.ferma.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.ferma.orientdb.OrientDBTx;
+import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
-import com.orientechnologies.orient.core.db.ODatabase;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
@@ -45,7 +46,6 @@ import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.intent.OIntentNoCache;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
-import com.orientechnologies.orient.core.metadata.security.OSecurityNull;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
@@ -75,6 +75,7 @@ import io.vertx.core.logging.LoggerFactory;
 public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
+	private static final String DB_NAME = "storage";
 
 	private OrientGraphFactory factory;
 	private TypeResolver resolver;
@@ -93,37 +94,38 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing graph");
 		}
-		// OrientGraphTx tx1 = factory.getTx();
-		// tx1.declareIntent(new OIntentNoCache());
-		// try {
-		// tx1.command(new OCommandSQL("delete vertex V")).execute();
-		// // tx1.commit();
-		// } finally {
-		// tx1.declareIntent(null);
-		// tx1.shutdown();
-		// }
-		OrientGraphNoTx tx = factory.getNoTx();
-		tx.declareIntent(new OIntentNoCache());
+		/*
+		 * OrientGraph tx = factory.getTx(); // tx.declareIntent(new OIntentNoCache()); try { tx.getVertexBaseType().truncate();
+		 * tx.getEdgeBaseType().truncate(); tx.getVertexType("V").truncate(); tx.command(new OCommandSQL("truncate class " + "E")).execute(); tx.command(new
+		 * OCommandSQL("truncate class " + "V")).execute(); tx.commit(); } catch (IOException e) { // TODO Auto-generated catch block e.printStackTrace(); }
+		 * finally { // tx.declareIntent(null); tx.shutdown(); }
+		 */
+
+		OrientGraphNoTx tx2 = factory.getNoTx();
+		tx2.declareIntent(new OIntentNoCache());
 		try {
-			for (Vertex vertex : tx.getVertices()) {
+			System.out.println("TOTAL:" + tx2.countVertices());
+			for (Vertex vertex : tx2.getVertices()) {
 				vertex.remove();
 			}
 		} finally {
-			tx.declareIntent(null);
-			tx.shutdown();
+			tx2.declareIntent(null);
+			tx2.shutdown();
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("Cleared graph");
 		}
+
 	}
 
 	@Override
-	public void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception {
+	public void init(MeshOptions options, Vertx vertx, String... basePaths) throws Exception {
 		super.init(options, vertx);
 		// resolver = new OrientDBTypeResolver(basePaths);
 		resolver = new MeshTypeResolver(basePaths);
-		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
-			this.maxRetry = Integer.valueOf(options.getParameters().get("maxTransactionRetry"));
+		GraphStorageOptions storageOptions = options.getStorageOptions();
+		if (options != null && storageOptions.getParameters() != null && storageOptions.getParameters().get("maxTransactionRetry") != null) {
+			this.maxRetry = Integer.valueOf(storageOptions.getParameters().get("maxTransactionRetry"));
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
 		}
 	}
@@ -146,17 +148,29 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void start() throws Exception {
 		Orient.instance().startup();
-		if (options == null || options.getDirectory() == null) {
+		GraphStorageOptions storageOptions = options.getStorageOptions();
+		if (storageOptions != null && storageOptions.getStartServer() || options.isClusterMode()) {
+			if (storageOptions.getDirectory() == null) {
+				throw new RuntimeException(
+						"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
+			}
+			startOrientServer();
+			System.in.read();
+		}
+
+		if (storageOptions == null || storageOptions.getDirectory() == null) {
 			log.info("No graph database settings found. Fallback to in memory mode.");
 			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(5, 100);
 		} else {
-			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
+			factory = new OrientGraphFactory("plocal:" + storageOptions.getDirectory() + "/" + DB_NAME).setupPool(5, 100);
 		}
-		factory.setProperty(ODatabase.OPTIONS.SECURITY.toString(), OSecurityNull.class);
-		if (options != null && options.getStartServer()) {
-			startOrientServer();
-		}
+		// factory.setProperty(ODatabase.OPTIONS.SECURITY.toString(), OSecurityNull.class);
+
 		configureGraphDB();
+	}
+
+	private String escapeSafe(String text) {
+		return StringEscapeUtils.escapeJava(StringEscapeUtils.escapeXml11(new File(text).getAbsolutePath()));
 	}
 
 	private InputStream getOrientServerConfig() throws IOException {
@@ -167,14 +181,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", "orient-plugins");
 		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "finest");
 		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "fine");
-		String safePath = StringEscapeUtils.escapeJava(StringEscapeUtils.escapeXml11(new File(options.getDirectory()).getAbsolutePath()));
-		configString = configString.replaceAll("%MESH_DB_PATH%", "plocal:" + safePath);
+		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.isClusterMode()));
+		// TODO check for other invalid characters
+		configString = configString.replaceAll("%NODENAME%", MeshNameProvider.getInstance().getName().replaceAll(" ", "_"));
+		configString = configString.replaceAll("%DB_PARENT_PATH%", escapeSafe(storageOptions().getDirectory()));
 		if (log.isDebugEnabled()) {
 			log.debug("Effective orientdb server configuration:" + configString);
 		}
 
-		String safeParentDirPath = StringEscapeUtils
-				.escapeJava(StringEscapeUtils.escapeXml11(new File(options.getDirectory()).getParentFile().getAbsolutePath()));
+		String safeParentDirPath = escapeSafe(storageOptions().getDirectory());
 		configString = configString.replaceAll("%MESH_DB_PARENT_PATH%", safeParentDirPath);
 		if (log.isDebugEnabled()) {
 			log.debug("OrientDB config");

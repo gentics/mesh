@@ -1,6 +1,5 @@
 package com.gentics.mesh.changelog;
 
-import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -37,8 +36,7 @@ public class ChangelogRunner {
 			throw new RuntimeException(message);
 		}
 		try {
-			GraphStorageOptions graphOptions = options.getStorageOptions();
-			database.init(graphOptions, Vertx.vertx());
+			database.init(options, Vertx.vertx());
 			return database;
 		} catch (Exception e) {
 			throw new RuntimeException(e);

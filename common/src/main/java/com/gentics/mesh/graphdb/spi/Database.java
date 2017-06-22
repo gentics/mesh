@@ -14,7 +14,7 @@ import com.gentics.ferma.TxHandler1;
 import com.gentics.ferma.TxHandler2;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.etc.config.GraphStorageOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
@@ -189,14 +189,14 @@ public interface Database {
 	 * Initialise the database and store the settings.
 	 * 
 	 * @param options
-	 *            Graph database options
+	 *            Mesh options
 	 * @param vertx
-	 *            Vertx instance used to execute blocking code
+	 *            Vert.x instance used to execute blocking code
 	 * @param basePaths
 	 *            Base paths which will be scanned for graph element classes
 	 * @throws Exception
 	 */
-	void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception;
+	void init(MeshOptions options, Vertx vertx, String... basePaths) throws Exception;
 
 	/**
 	 * Reload the given mesh element.

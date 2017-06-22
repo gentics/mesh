@@ -12,7 +12,6 @@ import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
 import com.gentics.mesh.etc.config.ElasticSearchOptions;
-import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -70,8 +69,7 @@ public class MeshModule {
 			throw new RuntimeException(message);
 		}
 		try {
-			GraphStorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
-			database.init(options, Mesh.vertx(), "com.gentics.mesh.core.data");
+			database.init(Mesh.mesh().getOptions(), Mesh.vertx(), "com.gentics.mesh.core.data");
 			return database;
 		} catch (Exception e) {
 			throw new RuntimeException(e);
