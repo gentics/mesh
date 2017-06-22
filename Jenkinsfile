@@ -61,7 +61,7 @@ node("jenkins-slave") {
 						}
 						echo "Setting correct inclusions file ${postfix}"
 						sh "mv includes-${postfix} inclusions.txt"
-						sshagent([sshAgent]) {
+						sshagent(["git"]) {
 							try {
 								sh "${mvnHome}/bin/mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
 							} finally {
