@@ -23,7 +23,7 @@
 		<dagger.version>2.7</dagger.version>
 		<rx.version>1.2.3</rx.version>
 
-		<surefire.forkcount>12</surefire.forkcount>
+		<surefire.forkcount>6</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
 		<skip.unit.tests>false</skip.unit.tests>
 		<mesh.database.provider>mesh-orientdb</mesh.database.provider>
