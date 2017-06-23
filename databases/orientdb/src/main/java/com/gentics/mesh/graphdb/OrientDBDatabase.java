@@ -94,17 +94,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing graph");
 		}
-		/*
-		 * OrientGraph tx = factory.getTx(); // tx.declareIntent(new OIntentNoCache()); try { tx.getVertexBaseType().truncate();
-		 * tx.getEdgeBaseType().truncate(); tx.getVertexType("V").truncate(); tx.command(new OCommandSQL("truncate class " + "E")).execute(); tx.command(new
-		 * OCommandSQL("truncate class " + "V")).execute(); tx.commit(); } catch (IOException e) { // TODO Auto-generated catch block e.printStackTrace(); }
-		 * finally { // tx.declareIntent(null); tx.shutdown(); }
-		 */
 
 		OrientGraphNoTx tx2 = factory.getNoTx();
 		tx2.declareIntent(new OIntentNoCache());
 		try {
-			System.out.println("TOTAL:" + tx2.countVertices());
 			for (Vertex vertex : tx2.getVertices()) {
 				vertex.remove();
 			}
@@ -155,6 +148,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 						"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
 			}
 			startOrientServer();
+			System.out.println("Press any key to continue");
 			System.in.read();
 		}
 
@@ -188,9 +182,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Effective orientdb server configuration:" + configString);
 		}
-
-		String safeParentDirPath = escapeSafe(storageOptions().getDirectory());
-		configString = configString.replaceAll("%MESH_DB_PARENT_PATH%", safeParentDirPath);
 		if (log.isDebugEnabled()) {
 			log.debug("OrientDB config");
 			log.debug(configString);
@@ -207,7 +198,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private void startOrientServer() throws Exception {
 		String orientdbHome = new File("").getAbsolutePath();
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
-		System.out.println(orientdbHome);
 		OServer server = OServerMain.create();
 		log.info("Extracting OrientDB Studio");
 		InputStream ins = getClass().getResourceAsStream("/plugins/studio-2.2.zip");

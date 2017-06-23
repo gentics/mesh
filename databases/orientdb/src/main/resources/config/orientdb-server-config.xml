@@ -62,18 +62,17 @@
 		</cluster>
 	</network>
 	<users>
-		<user resources="*" password="{PBKDF2WithHmacSHA256}4AD6104E8CBC6915C801E67EEF077C41513AE9F9FE1F71D1:9B9BE30927BC50076EDE009DC88459BC5866F615B2D0136C:65536" name="root" />
-		<user resources="connect,server.listDatabases,server.dblist" password="{PBKDF2WithHmacSHA256}2C8629854F3FBB83D8491057E33DC51D00AC0525C15D1344:05B7910C872E2507D4EB392F6FA853CC4494F05F8710F2E3:65536" name="guest" />
-		<!-- <user name="root" password="admin" resources="*"/> <user name="admin" password="admin" resources="*"/> -->
+		<user name="root" password="finger" resources="*" />
+		<user name="admin" password="finger" resources="*" />
 	</users>
 	<properties>
 		<!-- DATABASE POOL: size min/max -->
 		<entry name="db.pool.min" value="1" />
 		<entry name="db.pool.max" value="50" />
-		<entry name="server.database.path" value="%MESH_DB_PARENT_PATH%" />
 		<!-- PROFILER: configures the profiler as <seconds-for-snapshot>,<archive-snapshot-size>,<summary-size> -->
 		<entry name="profiler.enabled" value="false" />
 		<entry name="plugin.directory" value="%PLUGIN_DIRECTORY%" />
+		<entry name="server.database.path" value="%DB_PARENT_PATH%" />
 
 		<!-- LOG: enable/Disable logging. Levels are: finer, fine, finest, info, warning -->
 		<entry name="log.console.level" value="%CONSOLE_LOG_LEVEL%" />
