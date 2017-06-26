@@ -9,9 +9,9 @@ This section will be about the features of Gentics Mesh. Each will be described 
 == Content Trees
 
 Gentics Mesh provides the means to organize your contents in terms of a *content tree*, or rather a node tree. Nodes can be hierarchically structured if a container schema is provided.
-For example, a book node can act as a container for chapter nodes. Alternatively, consider the example in our demo app, where vehicles are structured within categories. 
+For example, a book node can act as a container for chapter nodes. Alternatively, consider the example in our demo app, where vehicles are structured within categories.
 
-While it is perfectly legitimate to organize your contents in a simple, flat structure with tagging and referencing, content trees come with big a bonus: they inherently allow for <<navigation,automatically generated hierarchical navigation menus>>, <<breadcrumbs,breadcrumbs>> and <<prettyurls,pretty URLs>>. This furthermore means routes are not hard-coded in your app but can be defined dynamically by content editors using the Gentics Mesh user interface. 
+While it is perfectly legitimate to organize your contents in a simple, flat structure with tagging and referencing, content trees come with big a bonus: they inherently allow for <<navigation,automatically generated hierarchical navigation menus>>, <<breadcrumbs,breadcrumbs>> and <<prettyurls,pretty URLs>>. This furthermore means routes are not hard-coded in your app but can be defined dynamically by content editors using the Gentics Mesh user interface.
 
 TIP: To get you started, Gentics Mesh is shipped with a generic _folder_ schema allowing you to follow the well-known file system paradigm for hierarchically organizing your content in a tree.
 
@@ -38,7 +38,7 @@ The schema _vehicle_ has the ```container``` property set to ```false```. The sc
 [[prettyurls]]
 == Pretty URLs
 
-Instead of relying on UUIDs to link your content, you can use pretty URLs like http://yourapp.com/automobiles/ford-gt. For each node, Gentics Mesh will provide you with a human readable path. 
+Instead of relying on UUIDs to link your content, you can use pretty URLs like http://yourapp.com/automobiles/ford-gt. For each node, Gentics Mesh will provide you with a human readable path.
 Likewise, you can query your content using WebRoot paths instead of using UUIDs (see <<webroot,WebRoot API>>).
 
 The ```segmentField``` is used to build the path of a specific node. According to the nodes’ schemas in our <<example,example>>, the path ```/automobiles/ford-gt``` for the node _Ford GT_ is built using the _slug_ field of the _vehicle_ node, i.e. _Ford GT_, and the _slug_ field of the _category_ node, i.e. _Automobiles_.
@@ -168,7 +168,7 @@ http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLink
 When organizing your content in terms of a node tree, Gentics Mesh offers two ways of generating a nested navigation response.
 
 The API end point ```/api/v1/:projectName/nodes/:nodeUuid/navigation``` returns a navigation object for the provided node, while the ```/api/v1/:projectName/navroot/:path``` API end point returns a navigation object for a node which is located using a given path.
-Each endpoint will return a navigation response which contains the nested navigation tree structure. 
+Each endpoint will return a navigation response which contains the nested navigation tree structure.
 
 By default, only container nodes are included in a navigation response. The `includeAll` query parameter will include all nodes, if set to `true`.
 The `maxDepth` parameter may be used to limit the navigation depth. In order to include the `path` property in the navigation response, the `resolveLinks` query parameter can be used.
@@ -584,9 +584,9 @@ http://getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navigation?
 Each node in Gentics Mesh provides information on where it is located within the node tree in terms of its ```breadcrumb``` property.
 The property provides an array of node references representing the path from the current node up to the project root. For more details see the documentation on link:building-blocks.html#_node[node].
 
-NOTE: The current node will not be included in the list, since all the information is already provided in other properties (i.e., ```displayField```, ```path```) of node object itself. 
+NOTE: The current node will not be included in the list, since all the information is already provided in other properties (i.e., ```displayField```, ```path```) of node object itself.
 
-In our demo app example, the ```breadcrumb``` property for node _Ford GT_ will therefore include the node _Automobiles_. 
+In our demo app example, the ```breadcrumb``` property for node _Ford GT_ will therefore include the node _Automobiles_.
 
 image::GenticsMesh-Breadcrumb-Example.png[role="img-responsive"]
 
@@ -714,12 +714,12 @@ http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLink
 [[webroot]]
 == Fetch Content with WebRoot Paths
 
-The WebRoot API is an alternative way for fetching content from Gentics Mesh. Other than accessing nodes with their UUID, one can use the way more intuitive WebRoot paths. 
+The WebRoot API is an alternative way for fetching content from Gentics Mesh. Other than accessing nodes with their UUID, one can use the way more intuitive WebRoot paths.
 
 image::GenticsMesh-WebRootAPI-Example.png[role="img-responsive"]
 
-This functionality builds on top of using the nodes' ```segmentField``` property to build the path of a specific node. 
-WebRoot paths of arbitrary depth can be created, in combination with organizing content hierarchically in terms of a <<contenttree,content tree>> by specifying nodes to be ```containers``` for their child nodes. 
+This functionality builds on top of using the nodes' ```segmentField``` property to build the path of a specific node.
+WebRoot paths of arbitrary depth can be created, in combination with organizing content hierarchically in terms of a <<contenttree,content tree>> by specifying nodes to be ```containers``` for their child nodes.
 The WebRoot API end point uses this information to resolve a given path to a node UUID.
 
 Using the WebRoot API it is possible to easily integrate Gentics Mesh with many known routing frameworks.
@@ -729,7 +729,7 @@ Using the WebRoot API it is possible to easily integrate Gentics Mesh with many 
 | Framework                           | Language       | Example
 | http://silex.sensiolabs.org/[Silex] | PHP            | http://getmesh.io/Blog/Building+an+API-first+Web+App+with+Gentics+Mesh+and+the+PHP+Microframework+Silex[Blogpost]
 | http://expressjs.com/[ExpressJS]    | JS             | http://getmesh.io/Blog/Getting+started+with+Express+and+the+API-first+CMS+Gentics+Mesh[Blogpost]
-| http://vertx.io/[Vert.x]            | Java,JS,Ceylon | http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[Blogpost] 
+| http://vertx.io/[Vert.x]            | Java,JS,Ceylon | http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[Blogpost]
 | http://lotusrb.org/[Lotus]          | Ruby           | -
 |======
 
@@ -750,7 +750,7 @@ Using the WebRoot API it is possible to easily integrate Gentics Mesh with many 
 
 === Query content by path
 
-A WebRoot path may consist of multiple path segments, each corresponding to a node within the content tree. The ```segmentField``` property from the schema is used to determine the node's relevant field value. 
+A WebRoot path may consist of multiple path segments, each corresponding to a node within the content tree. The ```segmentField``` property from the schema is used to determine the node's relevant field value.
 
 NOTE: Each segment of the URL must be URL-encoded. A node's language variants must provide different path segment in order to guarantee unique paths.
 
@@ -769,7 +769,7 @@ Loading the node with the given UUID using API end point ```GET /api/v1/:project
 http://getmesh.io/api/v1/demo/webroot/automobiles/ford-gt?resolveLinks=short
 
 === Query binary content by path
-The WebRoot API, furthermore, directly supports delivering binary content using the ```fileName``` meta-data field of the ```binary``` field . 
+The WebRoot API, furthermore, directly supports delivering binary content using the ```fileName``` meta-data field of the ```binary``` field .
 
 ==== Fetch an image with UUID
 
@@ -783,10 +783,10 @@ Downloading a node's binary field with the given name using API end point ```GET
 [TIP]
 http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg
 
-TIP: When using a routing framework, in order to find out if a requested resource is binary data or JSON data you need to check the HTTP Content-Disposition response header. If it is set, it’s binary data. 
+TIP: When using a routing framework, in order to find out if a requested resource is binary data or JSON data you need to check the HTTP Content-Disposition response header. If it is set, it’s binary data.
 
 === Image manipulation by path
-In case, the binary data is an image, the WebRoot API allows to directly perform <<imagemanipulation, image manipulation>> such as cropping and resizing. 
+In case, the binary data is an image, the WebRoot API allows to directly perform <<imagemanipulation, image manipulation>> such as cropping and resizing.
 
 ==== Crop and resize an image with UUID
 
@@ -825,11 +825,11 @@ include::examples/tables/RolePermissionParametersImpl.adoc[]
 
 == Link Resolving
 
-Link resolving represents the counterpart of the <<webroot, WebRoot API>> - a node UUID can be resolved into a WebRoot path. 
+Link resolving represents the counterpart of the <<webroot, WebRoot API>> - a node UUID can be resolved into a WebRoot path.
 
 image::GenticsMesh-LinkResolver-Utility-Example.png[role="img-responsive"]
 
-Typically, editors create content including internal links to other nodes. When fetching content for your apps, however, Gentics Mesh will resolve these internal links for you and return a WebRoot path. 
+Typically, editors create content including internal links to other nodes. When fetching content for your apps, however, Gentics Mesh will resolve these internal links for you and return a WebRoot path.
 
 For example, ```{{mesh.link("2f2de9297c8143e8ade9297c8193e8fc", "en")}}``` will be transformed into ```/api/v1/demo/webroot/images/ford-gt.jpg``` when using the ```?resolveLinks=full``` query parameter.
 
@@ -941,7 +941,7 @@ Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gent
 
 == File Upload
 
-Binary data can be attached to node binary fields. The ```/api/v1/nodes/:uuid/binary/:fieldName``` end point can be used to POST binary data and thus update the stored binary field. 
+Binary data can be attached to node binary fields. The ```/api/v1/nodes/:uuid/binary/:fieldName``` end point can be used to POST binary data and thus update the stored binary field.
 
 NOTE: This endpoint is accepting ```multipart/form-data```, only.
 
@@ -970,7 +970,7 @@ fileData
 
 === Configuration
 
-Gentics Mesh stores all binary files on the filesystem. The default directory ```data/binaryfiles``` can be changed in the upload section of the main configuration file ```mesh.yml```. 
+Gentics Mesh stores all binary files on the filesystem. The default directory ```data/binaryfiles``` can be changed in the upload section of the main configuration file ```mesh.yml```.
 
 The upload limit can be configured in bytes using the ```uploadOptions.byteLimit``` setting.
 
@@ -979,7 +979,7 @@ For more information on available settings have a look at the link:administratio
 [[multilanguage]]
 == Multi-Language
 
-Gentics Mesh comes with multi-language support out of the box. In particular, a node serves as a container for one or more language variants. These language variants will store the actual content fields. 
+Gentics Mesh comes with multi-language support out of the box. In particular, a node serves as a container for one or more language variants. These language variants will store the actual content fields.
 
 You can query individual language variants by appending the ```?lang``` query parameter. The ```language``` json property within an update or create request will be used to identify which language variant should be created or updated.
 
@@ -996,9 +996,9 @@ Gentics Mesh allows to configure a ```defaultLanguage``` in the main configurati
 . the ```lang``` query parameter has been omitted, or
 . the requested content is not available in the specified language.
 
-This fallback mechanism works when fetching nodes but also when requesting navigation objects or breadcrumb information. 
+This fallback mechanism works when fetching nodes but also when requesting navigation objects or breadcrumb information.
 
-NOTE: In order to work properly, the fallback mechanism requires all nodes to have a language variant for the specified ```defaultLanguage```. 
+NOTE: In order to work properly, the fallback mechanism requires all nodes to have a language variant for the specified ```defaultLanguage```.
 
 == Permissions
 
@@ -1011,14 +1011,14 @@ This endpoint can also be used to apply recursive permissions.
 It is important to note that permissions can be applied to individual elements and onto the set of elements which is identified by the endpoint name (e.g: /groups).
 
 
-For newly created objects CRUD permissions are assigned to those roles that would be able to also create the object in the first place. 
+For newly created objects CRUD permissions are assigned to those roles that would be able to also create the object in the first place.
 By this we ensure that roles that would also be able to create the object are now able to invoke CRUD on the newly created object.
 
 Example:
 
 * User John is assigned to Role A. Role A grants him to create a new child Node in a parent Node.
 * User Mary is assigned to Role B. Role B grants her to also create a new child Node in the same parent Node.
-* When John creates a new Node the permission system identifies Role B as a role that would also be able to create the object. 
+* When John creates a new Node the permission system identifies Role B as a role that would also be able to create the object.
   Therefore CRUD permissions are assigned in between Role A and B and the newly created object.
 
 === Users
@@ -1299,9 +1299,9 @@ Recursive permission changes on ```/:projectName/nodes/:uuid``` will also affect
 == Versioning
 
 In order to understand the concept of versioning in Gentics Mesh it is important to remember that nodes are containers for language variants (see <<multilanguage, Multi-Language>>). The language variant of a node contains the fields and thus stores all the content.
- 
+
 NOTE: Versioning within Gentics Mesh only applies to *language variants* and their referenced fields. Other elements such as users, groups, roles, permissions and even nodes are not versioned.
- 
+
 Various content management tasks will have different effects for versioning in Gentics Mesh. Some of them create versions, others don't. Following, we go through all of these actions which involve versioning.
 
 NOTE: At the moment it is not possible to delete older versions.
@@ -1312,7 +1312,7 @@ Once a node has been created the initial version 0.1 will be assigned to its lan
 
 === Node Updates
 
-Updating a node's language variant may create a minor version 0.2 of that language variant if changes have been detected within the posted request fields. 
+Updating a node's language variant may create a minor version 0.2 of that language variant if changes have been detected within the posted request fields.
 
 *No Locks:*
 
@@ -1331,8 +1331,8 @@ The latest version which was created using an update request is called the ```dr
 
 Node language variants can be published and taken offline. This is particularly useful if you want to first work on a draft, then review it and publish it at a later point in time.
 
-Publishing requires a ```POST``` request on the ```/api/v1/:projectName/nodes/:uuid/published``` end point, which will publish all language variants of the node. 
-It is also possible to just publish specific language variants with dedicated ```POST``` requests on ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/published```. 
+Publishing requires a ```POST``` request on the ```/api/v1/:projectName/nodes/:uuid/published``` end point, which will publish all language variants of the node.
+It is also possible to just publish specific language variants with dedicated ```POST``` requests on ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/published```.
 
 Gentics Mesh will automatically create a new major version when publishing a node language variant (e.g.: 1.0, 2.0). The ```draft``` reference will also be updated to point to the major version, e.g. 1.0.
 
@@ -1349,7 +1349,7 @@ NOTE: It is not possible to publish a specific version. Publish always affects t
 
 === Taking Nodes Offline
 
-Similarly to publishing, the language variants of a node can be taken offline via a ```DELETE``` request on ```/api/v1/:projectName/nodes/:uuid/published```. 
+Similarly to publishing, the language variants of a node can be taken offline via a ```DELETE``` request on ```/api/v1/:projectName/nodes/:uuid/published```.
 E.g., taking a specific node language variant with version 1.0 offline using ```DELETE /api/v1/:projectName/nodes/:uuid/languages/:languageTag/published``` will just change the node's publish state. Version 1.0 will still be available.
 
 NOTE: Taking node language variants offline requires the user have ```publish``` permissions on the node.
@@ -1374,7 +1374,7 @@ NOTE: It is currently not possible to migrate from one release to another. Nodes
 
 Typical usecases are:
 
-* Updating an existing application installation which uses Gentics Mesh to a new version. The new application version requires new schema versions. 
+* Updating an existing application installation which uses Gentics Mesh to a new version. The new application version requires new schema versions.
   By creating a release and migrating the nodes to the new release (new schema versions), it is possible to serve content for both application versions.
   Each application versions chooses the correct release for getting nodes.
 
@@ -1432,13 +1432,13 @@ At the moment it is not possible to delete a release.
 
 === Moving Nodes
 
-Releases enable Gentics Mesh to setup multiple content project tree structures. 
-Moving nodes can be scoped to a specific release using the ```?release``` request parameter. 
+Releases enable Gentics Mesh to setup multiple content project tree structures.
+Moving nodes can be scoped to a specific release using the ```?release``` request parameter.
 The project's initial release will be used to execute the move operation if no release has been selected.
 
 === Tagging Nodes
 
-The tag operation is also scoped to a specific release. This way new tags can be assigned to your nodes for a specific release without affecting the taggings of nodes within an older release. 
+The tag operation is also scoped to a specific release. This way new tags can be assigned to your nodes for a specific release without affecting the taggings of nodes within an older release.
 
 NOTE: Tags and tag families are not versioned. Deleting a tag will remove the tag from all nodes that previously referenced this tag.
 
@@ -1462,7 +1462,7 @@ Example:
 * Create release _winter2016_
 * Update previously created node in release _summer2016_ and thus create version _1.1_
 
-Release _summer2016_ will reference node language variant 1.1 and _winter2016_ will still reference version 1.0 since the _winder2016_ release was created at the specific point of time in which the language variant in release _summer2016_ was still at version _1.0_.
+Release _summer2016_ will reference node language variant 1.1 and _winter2016_ will still reference version 1.0 since the _winter2016_ release was created at the specific point of time in which the language variant in release _summer2016_ was still at version _1.0_.
 
 NOTE: It is currently not possible to migrate _1.1_ from _summer2016_ to _winter2016_.
 
@@ -1632,12 +1632,12 @@ The post request will contain the node JSON data of the current editing state. T
 
 == Password Recovery
 
-A user who lost his password is able to recover it using a reset token. This token, typically, is issued by a user or service having permissions to create new users. 
-The ```/api/v1/users/:userUuid/reset_token``` end point will return a token code which then can be passed along to an email service sending a recovery email to the user including named token. 
+A user who lost his password is able to recover it using a reset token. This token, typically, is issued by a user or service having permissions to create new users.
+The ```/api/v1/users/:userUuid/reset_token``` end point will return a token code which then can be passed along to an email service sending a recovery email to the user including named token.
 
-NOTE: A token is valid for 30 minutes and will be invalidated once it has been used. 
+NOTE: A token is valid for 30 minutes and will be invalidated once it has been used.
 
-The user can use this token to update his user record by issuing a POST request to the ```/api/v1/users/:userUuid?token=TOKENCODE``` end point. E.g., this can be done by presenting the user a form for updating his password. This works even if the user is not authenticated. 
+The user can use this token to update his user record by issuing a POST request to the ```/api/v1/users/:userUuid?token=TOKENCODE``` end point. E.g., this can be done by presenting the user a form for updating his password. This works even if the user is not authenticated.
 
 == Schema & Microschema Migration
 
@@ -1756,14 +1756,14 @@ Please note that by default conflicting data will be *removed* and this action c
 
 === Custom Migration Scripts
 
-Sometimes it is desired to overwrite the default migration behaviour. 
+Sometimes it is desired to overwrite the default migration behaviour.
 
-The following migration script converts the number value from field ```node.fields[fieldname]``` into a _ISO-8601_ date string which is then stored within the ```node.fields[fieldname]``` field. 
+The following migration script converts the number value from field ```node.fields[fieldname]``` into a _ISO-8601_ date string which is then stored within the ```node.fields[fieldname]``` field.
 
 [source,javascript]
 ----
 function migrate(node, fieldname, convert) {
-    node.fields[fieldname] = new Date(new Date(node.fields[fieldname]).getTime() + 864000).toISOString(); 
+    node.fields[fieldname] = new Date(new Date(node.fields[fieldname]).getTime() + 864000).toISOString();
     return node;
 }
 ----
@@ -1774,7 +1774,7 @@ Migration scripts also allow you to split up a field value into two different fi
 ----
 function migrate(node, fieldname, convert) {
     node.fields["fieldA"] = "First field set";
-    node.fields["fieldB"] = "Second field set"; 
+    node.fields["fieldB"] = "Second field set";
     return node;
 }
 ----
@@ -1832,4 +1832,3 @@ The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possibl
 Clustering support is still in development.
 
 It will be possible to use master/master replication for OrientDB. Clustering for the Elasticsearch nodes and the Vert.x event message bus.
-
