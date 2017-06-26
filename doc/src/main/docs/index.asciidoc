@@ -23,7 +23,17 @@ ul.doc-toc h2 {
             <div id="preamble">
                 <div class="sectionbody">
                     <div class="paragraph">
-                        <p>This is the right place to getting started using API-first CMS Gentics Mesh. You'll find a short overview of the core concepts, a complete list of all features and references for available APIs. Furthermore, we provide information on how to configure and run Gentics Mesh in your environment.</p>
+                        <p>
+                        Gentics Mesh is a headless or API-first CMS shipped with a single JAR file. <br/>
+                        This is the right place for <a href="getting-started.html">getting started</a> using Gentics Mesh. 
+                            <ul>
+                                <li>The <a href="getting-started.html#_tldr">TL;DR</a> section will briefly explain everything you should know and what makes Gentics Mesh special.</li>
+                                <li>Our <a href="getting-started.html#_quickstart">Quickstart</a> guide will let you play with Gentics Mesh in seconds - No installation is required. Just download a single JAR file!</li>
+                                <li>You will find an overview of the <a href="building-blocks.html">core concepts</a>, a complete list of all <a href="features.html">features</a> and <a href="references.html">references</a> for available APIs, such as REST and GraphQL. </li>
+                                <li>To get you started, we have collected a set of samples for different <a href="platforms.html">platforms</a>, i.e. JavaScript, Java, GO, and PHP .
+                                <li>The <a href="administration-guide.html">administration guide</a>, will provide information on how to configure and run Gentics Mesh in your environment.</li>
+                            </ul>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -36,6 +46,9 @@ ul.doc-toc h2 {
                         <ul>
                             <li>
                                 <a href="getting-started.html#_quickstart">Quickstart</a>
+                            </li>
+                            <li>
+                                <a href="getting-started.html#_tldr">TL;DR</a>
                             </li>
                         </ul>
                     </li>
@@ -192,14 +205,17 @@ ul.doc-toc h2 {
                         <h2><a href="user-interface.html">User Interface</a></h2>
                         <ul>
                             <li>
-                                <a href="user-interface.html">Editors Guide</a>
+                                <a href="user-interface.html#_creating_and_managing_content">Creating and Managing Content</a>
                             </li>
                             <li>
-                                <a href="user-interface.html">Developers Guide</a>
+                                <a href="user-interface.html#_searching">Searching</a>
                             </li>
                             <li>
-                                <a href="user-interface.html#_configuration">Extensions</a>
+                                <a href="user-interface.html#_administrative_functions">Administrative Functions</a>
                             </li>
+                            <li>
+                                <a href="user-interface.html#_configuration">Configuration</a>
+                            </li>                            
                         </ul>
                     </li>
                 </ul>
