@@ -177,5 +177,5 @@ Elastic Search Index
 
 == License
 
-* Gentics Mesh is published under the https://www.apache.org/licenses/LICENSE-2.0[Apache License, Version 2.0]   
+* Gentics Mesh is published under a commercial license. http://getmesh.io/Terms[License Terms]  
 * https://github.com/graphql/graphiql[GraphiQL] is owned and developed by Facebook Inc. Usage is subject to the https://github.com/gentics/mesh/blob/d69b94d4b9bd8e3dbbba06dcdf8fac9b09593f13/verticles/graphql/src/main/resources/graphiql/LICENSE[LICENSE AGREEMENT For GraphiQL software].
