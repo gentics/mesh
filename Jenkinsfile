@@ -83,7 +83,11 @@ node("jenkins-slave") {
 	stage("Maven Build") {
 		if (Boolean.valueOf(params.runMavenBuild)) {
 			sshagent(["git"]) {
-				sh "mvn -B -DskipTests clean package"
+				if (Boolean.valueOf(params.runDeploy)) {
+					sh "mvn -U -B -DskipTests clean deploy"
+				} else {
+					sh "mvn -B -DskipTests clean package"
+				}
 			}
 		} else {
 			echo "Maven build skipped.."
@@ -129,9 +133,6 @@ node("jenkins-slave") {
 					sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD -e entwicklung@genitcs.com'
 					sh "captain push"
 				}
-			}
-			sshagent(["git"]) {
-				sh "mvn -U -B -DskipTests clean deploy"
 			}
 		} else {
 			echo "Deploy skipped.."
