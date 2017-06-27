@@ -1,10 +1,6 @@
 package com.gentics.mesh.demo;
 
-import static com.gentics.mesh.demo.DemoZipHelper.unzip;
-
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
@@ -21,33 +17,30 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
-import net.lingala.zip4j.exception.ZipException;
 
-/**
- * Main runner that is used to deploy a preconfigured set of verticles.
- */
 public class RunnerNodeA {
 
+	private static final String basePath = "data-nodeA";
 	private static final Logger log;
 
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
-		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
+		System.setProperty("vertx.cacheDirBase", basePath + File.separator + "tmp");
 		log = LoggerFactory.getLogger(RunnerNodeA.class);
 	}
 
 	public static void main(String[] args) throws Exception {
-		// Extract dump file on first time startup to speedup startup
-		setupDemo();
-
 		MeshOptions options = OptionsLoader.createOrloadOptions();
+		options.getStorageOptions().setDirectory(basePath + "/graph");
+		options.getSearchOptions().setDirectory(basePath + "/es");
+		options.getUploadOptions().setDirectory(basePath + "/binaryFiles");
+		options.getUploadOptions().setTempDirectory(basePath + "/temp");
+		options.getHttpServerOptions().setPort(8080);
 		options.getHttpServerOptions().setEnableCors(true);
-		options.getStorageOptions().setDirectory("data-nodeA/graph");
-		options.getSearchOptions().setDirectory("data-nodeA/es");
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
-		options.getSearchOptions().setHttpEnabled(true);
+		//options.getSearchOptions().setHttpEnabled(true);
 		options.setClusterMode(true);
 		setupKeystore(options);
 
@@ -74,15 +67,6 @@ public class RunnerNodeA {
 			}
 		});
 		mesh.run();
-	}
-
-	private static void setupDemo() throws FileNotFoundException, IOException, ZipException {
-		File dataDir = new File("data");
-		if (!dataDir.exists()) {
-			log.info("Extracting demo data since this is the first time you start mesh...");
-			unzip("/mesh-dump.zip", "data");
-			log.info("Demo data extracted to {" + dataDir.getAbsolutePath() + "}");
-		}
 	}
 
 	private static void setupKeystore(MeshOptions options) throws Exception {

@@ -12,3 +12,4 @@ restore*.sh
 migrated.sh
 keystore.jceks
 mesh.yml
+data-nodeB
