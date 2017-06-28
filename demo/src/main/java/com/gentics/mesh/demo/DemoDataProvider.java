@@ -143,6 +143,7 @@ public class DemoDataProvider {
 					uuidMapping.remove(mapping);
 				}
 			}
+			tx.success();
 		}
 	}
 

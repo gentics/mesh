@@ -2,7 +2,9 @@
 
 = Gentics Mesh Changelog
 
-== 0.9.18 (TBD)
+== 0.9.18 (28.06.2017)
+
+icon:plus[] Demo: Fixed demo data uuids.
 
 icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.22
 

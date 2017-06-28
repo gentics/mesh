@@ -72,6 +72,9 @@ public class DemoDumpGeneratorTest {
 
 			assertTrue("We expected to find at least 5 nodes.", boot.meshRoot().getNodeRoot().findAll().size() > 5);
 
+			// Verify that the uuids have been updated
+			assertNotNull(boot.meshRoot().getNodeRoot().findByUuid("df8beb3922c94ea28beb3922c94ea2f6"));
+
 			// Verify that all documents are stored in the index
 			for (Node node : boot.meshRoot().getNodeRoot().findAll()) {
 				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(boot.meshRoot().getLanguageRoot().findByLanguageTag("en"));
