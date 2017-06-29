@@ -48,7 +48,9 @@ public class SearchQueueImpl extends ArrayBlockingQueue<SearchQueueBatch> implem
 	public boolean remove(SearchQueueBatch o) {
 		boolean result = super.remove(o);
 		if (isEmpty()) {
-			objectLock.notify();
+			synchronized (objectLock) {
+				objectLock.notify();
+			}
 		}
 		return result;
 	}
