@@ -130,7 +130,7 @@ node("jenkins-slave") {
 		if (Boolean.valueOf(params.runDeploy)) {
 			if (Boolean.valueOf(params.runDocker)) {
 				withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
-					sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD -e entwicklung@genitcs.com'
+					sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD'
 					sh "captain push"
 				}
 			}
@@ -140,7 +140,7 @@ node("jenkins-slave") {
 	}
 
 	stage("Git push") {
-		if (Boolean.valueOf(params.runReleaseBuild)) {
+		if (Boolean.valueOf(params.runDeploy)) {
 			sshagent(["git"]) {
 				def snapshotVersion = MavenHelper.getNextSnapShotVersion(version)
 				MavenHelper.setVersion(snapshotVersion)
