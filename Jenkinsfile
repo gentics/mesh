@@ -27,7 +27,7 @@ node("jenkins-slave") {
 	def version = MavenHelper.getVersion()
 
 	stage("Set Version") {
-		if (Boolean.valueOf(params.runReleaseBuild)) {
+		if (Boolean.valueOf(params.runDeploy)) {
 			if (version) {
 				echo "Building version " + version
 				version = MavenHelper.transformSnapshotToReleaseVersion(version)
