@@ -2,7 +2,7 @@
 
 = Gentics Mesh Changelog
 
-les== 0.9.18 (30.06.2017)
+== 0.9.18 (30.06.2017)
 
 icon:plus[] Demo: Fixed demo data uuids.
 
