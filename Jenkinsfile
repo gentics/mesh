@@ -24,10 +24,10 @@ node("jenkins-slave") {
 		checkout scm
 	}
 	def branchName = GitHelper.fetchCurrentBranchName()
+	def version = MavenHelper.getVersion()
 
 	stage("Set Version") {
 		if (Boolean.valueOf(params.runReleaseBuild)) {
-			version = MavenHelper.getVersion()
 			if (version) {
 				echo "Building version " + version
 				version = MavenHelper.transformSnapshotToReleaseVersion(version)
