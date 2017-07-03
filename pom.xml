@@ -4,7 +4,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.9.18-SNAPSHOT</version>
+	<version>0.9.19-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -17,7 +17,7 @@
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
 		<ferma.version>2.2.2</ferma.version>
-		<ferma.extensions.version>0.1.0</ferma.extensions.version>
+		<ferma.extensions.version>0.1.1</ferma.extensions.version>
 		<elasticsearch.version>2.4.4</elasticsearch.version>
 		<orientdb.version>2.2.22</orientdb.version>
 		<dagger.version>2.7</dagger.version>
@@ -40,7 +40,7 @@
 	<parent>
 		<groupId>com.gentics.vertx</groupId>
 		<artifactId>maven-vertx-parent</artifactId>
-		<version>3.4.2</version>
+		<version>3.4.3</version>
 	</parent>
 
 	<developers>
@@ -288,14 +288,6 @@
 				<enabled>true</enabled>
 			</snapshots>
 		</repository>
-		<repository>
-			<id>spring-snapshots</id>
-			<name>Spring Snapshots</name>
-			<url>http://repo.spring.io/snapshot</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
 	</repositories>
 
 	<pluginRepositories>
@@ -316,12 +308,12 @@
 		<repository>
 			<id>lan.releases</id>
 			<name>Gentics Releases Repository</name>
-			<url>http://artifactory.office/repository/lan.releases.staging.mesh</url>
+			<url>https://repo.gentics.com/artifactory/lan.releases.staging.mesh</url>
 		</repository>
 		<snapshotRepository>
 			<id>lan.snapshots</id>
 			<name>Gentics Snapshots Repository</name>
-			<url>http://artifactory.office/repository/lan.snapshots.mesh</url>
+			<url>https://repo.gentics.com/artifactory/lan.snapshots.mesh</url>
 		</snapshotRepository>
 	</distributionManagement>
 </project>
