@@ -3,6 +3,7 @@
 Here you will find everything to get you started with Gentics Mesh. 
 
 If you don't have much time:
+
 * Try the <<Quickstart>> for playing around with Gentics Mesh and it's user interface.
 * Head over to the <<tldr,TL;DR>> section to find out everything you need to know and what makes Gentics Mesh special.
 
