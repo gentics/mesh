@@ -156,7 +156,17 @@ NOTE: It is important to understand that a node is just a container for language
 
 === Properties
 
+==== Read Properties
+
 include::examples/tables/NodeResponse.adoc[]
+
+==== Create Properties
+
+include::examples/tables/NodeCreateRequest.adoc[]
+
+==== Update Properties
+
+include::examples/tables/NodeUpdateRequest.adoc[]
 
 === Query Parameters
 
@@ -222,7 +232,17 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 
 === Properties
 
+==== Read Properties
+
 include::examples/tables/SchemaResponse.adoc[]
+
+==== Create Properties
+
+include::examples/tables/SchemaCreateRequest.adoc[]
+
+==== Update Properties
+
+include::examples/tables/SchemaUpdateRequest.adoc[]
 
 === Query Parameters
 
@@ -408,7 +428,17 @@ Gentics Mesh allows tagging of nodes. Tags can not be hierarchically structured.
 
 === Properties
 
+==== Read Properties
+
 include::examples/tables/TagResponse.adoc[]
+
+==== Create Properties
+
+include::examples/tables/TagCreateRequest.adoc[]
+
+==== Update Properties
+
+include::examples/tables/TagUpdateRequest.adoc[]
 
 === Response Sample
 
@@ -479,7 +509,17 @@ A tag family is defined as part of a project. Tag families can’t be nested.
 
 === Properties
 
+==== Read Properties
+
 include::examples/tables/TagFamilyResponse.adoc[]
+
+==== Create Properties
+
+include::examples/tables/TagFamilyCreateRequest.adoc[]
+
+==== Update Properties
+
+include::examples/tables/TagFamilyUpdateRequest.adoc[]
 
 === Response Sample
 
@@ -534,7 +574,17 @@ In order to be able to store and retrieve content, a user needs to authenticate 
 
 === Properties
 
+==== Read Properties
+
 include::examples/tables/UserResponse.adoc[]
+
+==== Create Properties
+
+include::examples/tables/UserCreateRequest.adoc[]
+
+==== Update Properties
+
+include::examples/tables/UserUpdateRequest.adoc[]
 
 === Query Parameters
 
@@ -613,7 +663,17 @@ include::examples/api/response/api/v1/users/\{userUuid\}/200/example.json[]
 
 === Properties
 
+==== Read Properties
+
 include::examples/tables/GroupResponse.adoc[]
+
+==== Create Properties
+
+include::examples/tables/GroupCreateRequest.adoc[]
+
+==== Update Properties
+
+include::examples/tables/GroupUpdateRequest.adoc[]
 
 === Query Parameters
 
@@ -670,7 +730,17 @@ include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
 
 === Properties
 
+==== Read Properties
+
 include::examples/tables/RoleResponse.adoc[]
+
+==== Create Properties
+
+include::examples/tables/RoleCreateRequest.adoc[]
+
+==== Update Properties
+
+include::examples/tables/RoleUpdateRequest.adoc[]
 
 === Query Parameters
 
