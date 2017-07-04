@@ -66,14 +66,14 @@ On first startup, Gentics Mesh will create all files and folders.
  mesh-ui-config.js
  mesh.yml
 
-Gentics Mesh ships with two configuration files.
+Gentics Mesh ships with two configuration files:
 
 . The main configuration file ```mesh.yml``` contains all settings for configuring the Gentics Mesh server. All settings are explained in the <<conf,Configuration & Settings>> section.
 . User interface related settings can be changed in  ```mesh-ui-config.js```.
 
 All data of your Gentics Mesh instance can be found in the respective subfolders of ```data```.
 
-```binaryFiles``` contains all media assets of your projects including images and other files. ```binaryImageCache``` keeps resized versions of requested images. The orientDB graph and the Elasticsearch index are stored within the ```graphdb``` and ```searchindex``` folders, respectively. ```tmp``` is used by Vert.x and other components e.g. for fileuploads.
+The folder ```binaryFiles``` contains all media assets of your projects including images and other files. ```binaryImageCache``` keeps resized versions of requested images. The orientDB graph and the Elasticsearch index are stored within the ```graphdb``` and ```searchindex``` folders, respectively. ```tmp``` is used by Vert.x and other components e.g. for file uploads.
 
 NOTE: This folder structure is the default. All paths can be configured in the main configuration file ```mesh.yml```.
 
