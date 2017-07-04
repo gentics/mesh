@@ -101,40 +101,15 @@ ul.doc-toc h2 {
                             </li>                            
                             <li>
                                 <a href="administration-guide.html#_system_requirements">System Requirements</a>
-                                <!--ul>
-                                    <li>
-                                        <a href="administration-guide.html">Gentics Mesh Server</a>
-                                    </li>
-                                    <li>
-                                        <a href="administration-guide.html">Gentics Mesh User Interface</a>
-                                    </li>
-                                </ul-->
                             </li>
                             <li>
                                 <a href="administration-guide.html#_configuration_settings">Configuration & Settings</a>
-                                <!--ul>
-                                    <li>
-                                        <a href="administration-guide.html">HTTP/SSL</a>
-                                    </li>
-                                    <li>
-                                        <a href="administration-guide.html">Server Options</a>
-                                    </li>
-                                    <li>
-                                        <a href="administration-guide.html">Storage Options</a>
-                                    </li>
-                                    <li>
-                                        <a href="administration-guide.html">Upload Options</a>
-                                    </li>
-                                    <li>
-                                        <a href="administration-guide.html">Cache Options</a>
-                                    </li>
-                                </ul-->
-                            </li>
-                            <li>
-                                <a href="changelog.html">Changelog</a>
                             </li>
                             <li>
                                 <a href="administration-guide.html#_backup_recovery">Backup &amp; Recovery</a>
+                            </li>                            
+                            <li>
+                                <a href="changelog.html">Changelog</a>
                             </li>
                             <li>
                                 <a href="administration-guide.html#_license">License</a>

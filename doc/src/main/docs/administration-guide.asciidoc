@@ -53,6 +53,7 @@ or
 docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh
 ----
 
+[[installdir]]
 == Installation Directory 
 On first startup, Gentics Mesh will create all files and folders.  
 
@@ -116,7 +117,7 @@ The Gentics Mesh user interface has been designed mobile-first and does not impo
 All settings can be found in the main ```mesh.yml``` configuration file, that contains various settings for configuring HTTP & SSL, the graph database, and file upload.
 The settings for the Gentics Mesh user interface can be found in ```mesh-ui-config.js```.
 
-Both files are located directly in the <<installation directory>>.
+Both files are located directly in the <<installdir, installation directory>>.
 
 [source,json]
 ----
