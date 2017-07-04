@@ -28,13 +28,8 @@ java -jar mesh-demo-X.X.X.jar
 ----
 
 Gentics Mesh comes with OrientDB, an embedded graph database, and Elasticsearch. There are no external dependencies besides Oracle Java Runtime 1.8.0_40 or newer.
+On first startup, Gentics Mesh will create the data folder and subfolders, set a password for the keystore file and provide the configuration files mesh.yml and mesh-ui-config.js. See <<Installation Directory>> for a detailed discussion on Gentics Mesh files & folders.
 
-On first startup, Gentics Mesh will create initial data, set a password for the keystore file and provide the configuration files mesh.yml and mesh-ui-config.js:
-
- data
- keystore.jceks
- mesh-ui-config.js
- mesh.yml
 
 == Run with Docker
 
@@ -58,6 +53,31 @@ or
 docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh
 ----
 
+== Installation Directory 
+On first startup, Gentics Mesh will create all files and folders.  
+
+ data
+    binaryFiles
+    binaryImageCache
+    graphdb
+    searchindex
+    tmp
+ keystore.jceks
+ mesh-ui-config.js
+ mesh.yml
+
+Gentics Mesh ships with two configuration files.
+
+. The main configuration file ```mesh.yml``` contains all settings for configuring the Gentics Mesh server. All settings are explained in the <<conf,Configuration & Settings>> section.
+. User interface related settings can be changed in  ```mesh-ui-config.js```.
+
+All data of your Gentics Mesh instance can be found in the respective subfolders of ```data```.
+
+```binaryFiles``` contains all media assets of your projects including images and other files. ```binaryImageCache``` keeps resized versions of requested images. The orientDB graph and the Elasticsearch index are stored within the ```graphdb``` and ```searchindex``` folders, respectively. ```tmp``` is used by Vert.x and other components e.g. for fileuploads.
+
+NOTE: This folder structure is the default. All paths can be configured in the main configuration file ```mesh.yml```.
+
+The keystore file, by default, is named ```keystore.jceks```. On first startup, a password for the keystore file is created randomly and stored in ```mesh.yml```.
 
 == System Requirements
 
@@ -90,10 +110,13 @@ NOTE: This change may require a logout and login.
 
 The Gentics Mesh user interface has been designed mobile-first and does not impose any specific requirements other than enabled JavaScript. It can be used with any "modern" browser, i.e. IE11+ and latest versions of Chrome, Firefox, and Safari.
 
-== Settings
+[[conf]]
+== Configuration & Settings
 
 All settings can be found in the main ```mesh.yml``` configuration file, that contains various settings for configuring HTTP & SSL, the graph database, and file upload.
 The settings for the Gentics Mesh user interface can be found in ```mesh-ui-config.js```.
+
+Both files are located directly in the <<installation directory>>.
 
 [source,json]
 ----
@@ -115,7 +138,7 @@ include::examples/models/mesh-config.yml[]
 
 === HTTPS/SSL
 
-To enable https you have to specify the server key and the server certificate within the configuration.
+To enable HTTPS you have to specify the server key and the server certificate within the configuration.
 
 For testing purposes you may want to create a self signed certificate like this:
 
@@ -139,7 +162,7 @@ openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 90 -nodes
 
 === Storage Options
 
-By default all specified directories are relative to the current working directory.
+By default all specified directories are relative to the installation directory.
 
 [options="header"]
 |======
@@ -167,11 +190,10 @@ Gentics Mesh does not manage any cache structure but it is possible to tweak the
 
 == Backup & Recovery
 
-The ```/api/v1/admin/graphdb/backup``` and ```/api/v1/admin/graphdb/restore``` endpoints can be used to create and restore backups. Please note that invoking these endpoints will block all 
-execution and request processing.
+The ```/api/v1/admin/graphdb/backup``` and ```/api/v1/admin/graphdb/restore``` endpoints can be used to create and restore backups. Please note that invoking these endpoints will block all execution and request processing.
 
-The graph database backup process will write a backup file to the configured backup location.
-It is advised to restart mesh once a backup has been restored.
+The graph database backup process will write a backup file to the configured backup location (see <<Storage Location>>).
+It is advised to restart Gentics Mesh once a backup has been restored.
 
 
 == link:changelog.html[Changelog]

@@ -97,6 +97,9 @@ ul.doc-toc h2 {
                                 <a href="administration-guide.html#_run_with_docker">Run with Docker</a>
                             </li>
                             <li>
+                                <a href="administration-guide.html#_installation_directory">Installation Directory</a>
+                            </li>                            
+                            <li>
                                 <a href="administration-guide.html#_system_requirements">System Requirements</a>
                                 <!--ul>
                                     <li>
@@ -108,7 +111,7 @@ ul.doc-toc h2 {
                                 </ul-->
                             </li>
                             <li>
-                                <a href="administration-guide.html">Settings</a>
+                                <a href="administration-guide.html#_configuration_settings">Configuration & Settings</a>
                                 <!--ul>
                                     <li>
                                         <a href="administration-guide.html">HTTP/SSL</a>
