@@ -425,6 +425,7 @@ Gentics Mesh allows tagging of nodes. Tags can not be hierarchically structured.
 
 | Remove a tag from a node
 | link:raml#project__nodes__nodeUuid__tags__tagUuid__delete[```DELETE /api/v1/:projectName/nodes/:nodeUuid/tags/:tagUuid```]
+|======
 
 === Properties
 
