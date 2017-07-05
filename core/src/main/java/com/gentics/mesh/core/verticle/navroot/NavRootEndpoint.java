@@ -17,7 +17,7 @@ import com.gentics.mesh.rest.Endpoint;
 
 /**
  * Endpoint which returns navigation responses for a given webroot path.
- */
+ */	
 @Singleton
 public class NavRootEndpoint extends AbstractProjectEndpoint {
 

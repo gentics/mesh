@@ -1,17 +1,8 @@
 package com.gentics.mesh.rest;
 
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.raml.model.MimeType;
@@ -21,277 +12,123 @@ import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Route;
-import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 /**
  * Simple wrapper for vert.x routes. The wrapper is commonly used to generate RAML descriptions for the route.
  */
-public class Endpoint implements Route, Comparable<Endpoint> {
-
-	private static final Logger log = LoggerFactory.getLogger(Endpoint.class);
-
-	private Route route;
-
-	private String displayName;
-
-	private String description;
+public interface Endpoint extends Comparable<Endpoint> {
 
 	/**
-	 * Uri Parameters which map to the used path segments
-	 */
-	private Map<String, UriParameter> uriParameters = new HashMap<>();
-
-	/**
-	 * Map of example responses for the corresponding status code.
-	 */
-	private Map<Integer, Response> exampleResponses = new HashMap<>();
-
-	private String[] traits = new String[] {};
-
-	private HashMap<String, MimeType> exampleRequestMap = null;
-
-	private String pathRegex;
-
-	private HttpMethod method;
-
-	private String ramlPath;
-
-	private final Set<String> consumes = new LinkedHashSet<>();
-	private final Set<String> produces = new LinkedHashSet<>();
-
-	private Map<String, QueryParameter> parameters = new HashMap<>();
-
-	/**
-	 * Create a new endpoint wrapper using the provided router to create the wrapped route instance.
-	 * 
-	 * @param router
-	 */
-	public Endpoint(Router router) {
-		this.route = router.route();
-	}
-
-	/**
-	 * Set the route path.
+	 * Wrapper for {@link Route#path(String)}.
 	 * 
 	 * @param path
-	 * @return Vert.x route for path
+	 * @return Fluent API
 	 */
-	public Route path(String path) {
-		return route.path(path);
-	}
+	Endpoint path(String path);
 
-	@Override
-	public Route method(HttpMethod method) {
-		if (this.method != null) {
-			throw new RuntimeException(
-					"The method for the endpoint was already set. The endpoint wrapper currently does not support more than one method per route.");
-		}
-		this.method = method;
-		return route.method(method);
-	}
+	/**
+	 * Set the http method of the endpoint.
+	 * 
+	 * @param method
+	 * @return Fluent API
+	 */
+	Endpoint method(HttpMethod method);
 
-	@Override
-	public Route pathRegex(String path) {
-		this.pathRegex = path;
-		return route.pathRegex(path);
-	}
+	/**
+	 * Add a content type consumed by this endpoint. Used for content based routing.
+	 *
+	 * @param contentType
+	 *            the content type
+	 * @return Fluent API
+	 */
+	Endpoint consumes(String contentType);
 
-	@Override
-	public Route produces(String contentType) {
-		produces.add(contentType);
-		return route.produces(contentType);
-	}
+	/**
+	 * Set the request handler for the endpoint.
+	 * 
+	 * @param requestHandler
+	 * @return Fluent API
+	 */
+	Endpoint handler(Handler<RoutingContext> requestHandler);
 
-	@Override
-	public Route consumes(String contentType) {
-		consumes.add(contentType);
-		return route.consumes(contentType);
-	}
+	/**
+	 * Wrapper for {@link Route#last()}
+	 * 
+	 * @return Fluent API
+	 */
+	Endpoint last();
 
-	@Override
-	public Route order(int order) {
-		return route.order(order);
-	}
-
-	@Override
-	public Route last() {
-		return route.last();
-	}
-
-	@Override
-	public Route handler(Handler<RoutingContext> requestHandler) {
-		validate();
-		return route.handler(requestHandler);
-	}
+	/**
+	 * Wrapper for {@link Route#order(int)}
+	 * 
+	 * @param order
+	 * @return Fluent API
+	 */
+	Endpoint order(int order);
 
 	/**
 	 * Validate that all mandatory fields have been set.
-	 */
-	public void validate() {
-		if (!produces.isEmpty() && exampleResponses.isEmpty()) {
-			log.error("Endpoint {" + getRamlPath() + "} has no example response.");
-			throw new RuntimeException("Endpoint {" + getRamlPath() + "} has no example responses.");
-		}
-		if ((consumes.contains(APPLICATION_JSON) || consumes.contains(APPLICATION_JSON_UTF8)) && exampleRequestMap == null) {
-			log.error("Endpoint {" + getPath() + "} has no example request.");
-			throw new RuntimeException("Endpoint has no example request.");
-		}
-		if (isEmpty(description)) {
-			log.error("Endpoint {" + getPath() + "} has no description.");
-			throw new RuntimeException("No description was set");
-		}
-
-		// Check whether all segments have a description.
-		List<String> segments = getNamedSegments();
-		for (String segment : segments) {
-			if (!getUriParameters().containsKey(segment)) {
-				throw new RuntimeException("Missing URI description for path {" + getRamlPath() + "} segment {" + segment + "}");
-			}
-		}
-
-	}
-
-	/**
-	 * Parse the RAML path and return a list of all segment name variables.
 	 * 
-	 * @return List of path segments
-	 */
-	public List<String> getNamedSegments() {
-		List<String> allMatches = new ArrayList<String>();
-		Matcher m = Pattern.compile("\\{[^}]*\\}").matcher(getRamlPath());
-		while (m.find()) {
-			allMatches.add(m.group().substring(1, m.group().length() - 1));
-		}
-		return allMatches;
-	}
-
-	@Override
-	public Route blockingHandler(Handler<RoutingContext> requestHandler) {
-		return route.blockingHandler(requestHandler);
-	}
-
-	@Override
-	public Route blockingHandler(Handler<RoutingContext> requestHandler, boolean ordered) {
-		return route.blockingHandler(requestHandler, ordered);
-	}
-
-	@Override
-	public Route failureHandler(Handler<RoutingContext> failureHandler) {
-		return route.failureHandler(failureHandler);
-	}
-
-	@Override
-	public Route remove() {
-		return route.remove();
-	}
-
-	@Override
-	public Route disable() {
-		return route.disable();
-	}
-
-	@Override
-	public Route enable() {
-		return route.enable();
-	}
-
-	@Override
-	public Route useNormalisedPath(boolean useNormalisedPath) {
-		return route.useNormalisedPath(useNormalisedPath);
-	}
-
-	@Override
-	public String getPath() {
-		return route.getPath();
-	}
-
-	/**
-	 * Return the path used for RAML. If non null the path which was previously set using {@link #setRAMLPath(String)} will be returned. Otherwise the converted
-	 * vert.x route path is returned. A vert.x path /:nodeUuid is converted to a RAML path /{nodeUuid}.
-	 * 
-	 * @return
-	 */
-	public String getRamlPath() {
-		if (ramlPath == null) {
-			return convertPath(route.getPath());
-		}
-		return ramlPath;
-	}
-
-	/**
-	 * Convert the provided vertx path to a RAML path.
-	 * 
-	 * @param path
-	 * @return RAML Path which contains '{}' instead of ':' characters
-	 */
-	private String convertPath(String path) {
-		StringBuilder builder = new StringBuilder();
-		String[] segments = path.split("/");
-		for (int i = 0; i < segments.length; i++) {
-			String segment = segments[i];
-			if (segment.startsWith(":")) {
-				segment = "{" + segment.substring(1) + "}";
-			}
-			builder.append(segment);
-			if (i != segments.length - 1) {
-				builder.append("/");
-			}
-		}
-		if (path.endsWith("/")) {
-			builder.append("/");
-		}
-		return builder.toString();
-	}
-
-	/**
-	 * Set the endpoint display name.
-	 * 
-	 * @param name
 	 * @return Fluent API
 	 */
-	public Endpoint displayName(String name) {
-		this.displayName = name;
-		return this;
-	}
+	Endpoint validate();
 
 	/**
-	 * Set the endpoint description.
+	 * Wrapper for {@link Route#remove()}
 	 * 
-	 * @param description
+	 * @return Fluent API
+	 */
+	Endpoint remove();
+
+	/**
+	 * Wrapper for {@link Route#disable()}
+	 * 
+	 * @return Fluent API
+	 */
+	Endpoint disable();
+
+	/**
+	 * Wrapper for {@link Route#enable()}
+	 * 
+	 * @return Fluent API
+	 */
+	Endpoint enable();
+
+	/**
+	 * Wrapper for {@link Route#useNormalisedPath(boolean)}.
+	 * 
+	 * @param useNormalisedPath
 	 * @return
 	 */
-	public Endpoint description(String description) {
-		this.description = description;
-		return this;
-	}
+	Endpoint useNormalisedPath(boolean useNormalisedPath);
+
+	/**
+	 * Wrapper for {@link Route#getPath()}
+	 * 
+	 * @return the path prefix (if any) for this route
+	 */
+	String getPath();
 
 	/**
 	 * Return the endpoint description.
 	 * 
 	 * @return Endpoint description
 	 */
-	public String getDescription() {
-		return description;
-	}
+	String getDescription();
 
 	/**
 	 * Return the display name for the endpoint.
 	 * 
 	 * @return Endpoint display name
 	 */
-	public String getDisplayName() {
-		return displayName;
-	}
+	String getDisplayName();
 
 	/**
 	 * Add the given response to the example responses.
@@ -300,14 +137,9 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	 *            Status code of the response
 	 * @param description
 	 *            Description of the response
-	 * @return
+	 * @return Fluent API
 	 */
-	public Endpoint exampleResponse(HttpResponseStatus status, String description) {
-		Response response = new Response();
-		response.setDescription(description);
-		exampleResponses.put(status.code(), response);
-		return this;
-	}
+	Endpoint exampleResponse(HttpResponseStatus status, String description);
 
 	/**
 	 * Add the given response to the example responses.
@@ -320,188 +152,80 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	 *            Description of the example response
 	 * @return Fluent API
 	 */
-	public Endpoint exampleResponse(HttpResponseStatus status, Object model, String description) {
-		Response response = new Response();
-		response.setDescription(description);
-
-		HashMap<String, MimeType> map = new HashMap<>();
-		response.setBody(map);
-
-		MimeType mimeType = new MimeType();
-		if (model instanceof RestModel) {
-			String json = JsonUtil.toJson(model);
-			mimeType.setExample(json);
-			mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
-			map.put("application/json", mimeType);
-		} else {
-			mimeType.setExample(model.toString());
-			map.put("text/plain", mimeType);
-		}
-
-		exampleResponses.put(status.code(), response);
-		return this;
-	}
+	Endpoint exampleResponse(HttpResponseStatus status, Object model, String description);
 
 	/**
-	 * Set the endpoint request example via a plain text body.
+	 * Create a blocking handler for the endpoint.
 	 * 
-	 * @param bodyText
+	 * @param requestHandler
 	 * @return Fluent API
 	 */
-	public Endpoint exampleRequest(String bodyText) {
-		HashMap<String, MimeType> bodyMap = new HashMap<>();
-		MimeType mimeType = new MimeType();
-		mimeType.setExample(bodyText);
-		bodyMap.put("text/plain", mimeType);
-		this.exampleRequestMap = bodyMap;
-		return this;
-	}
+	Endpoint blockingHandler(Handler<RoutingContext> requestHandler);
 
 	/**
-	 * Set the endpoint request example via a form parameter list.
+	 * Create a blocking handler for the endpoint.
 	 * 
-	 * @param parameters
+	 * @param requestHandler
+	 * @param ordered
 	 * @return Fluent API
 	 */
-	public Endpoint exampleRequest(Map<String, List<FormParameter>> parameters) {
-		HashMap<String, MimeType> bodyMap = new HashMap<>();
-		MimeType mimeType = new MimeType();
-		mimeType.setFormParameters(parameters);
-		bodyMap.put("multipart/form-data", mimeType);
-		this.exampleRequestMap = bodyMap;
-		return this;
-	}
+	Endpoint blockingHandler(Handler<RoutingContext> requestHandler, boolean ordered);
 
 	/**
-	 * Set the endpoint example request via a JSON example model. The json schema will automatically be generated.
+	 * Create a failure handler for the endpoint.
 	 * 
-	 * @param model Example Rest Model
+	 * @param failureHandler
 	 * @return Fluent API
 	 */
-	public Endpoint exampleRequest(RestModel model) {
-		HashMap<String, MimeType> bodyMap = new HashMap<>();
-		MimeType mimeType = new MimeType();
-		String json = JsonUtil.toJson(model);
-		mimeType.setExample(json);
-		mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
-		bodyMap.put("application/json", mimeType);
-		this.exampleRequestMap = bodyMap;
-		return this;
-	}
+	Endpoint failureHandler(Handler<RoutingContext> failureHandler);
 
 	/**
-	 * Set the endpoint json example request via the provided json object. The JSON schema will not be generated.
+	 * Parse the RAML path and return a list of all segment name variables.
 	 * 
-	 * @param jsonObject
+	 * @return List of path segments
+	 */
+	List<String> getNamedSegments();
+
+	/**
+	 * Set the content type for elements which are returned by the endpoint.
+	 * 
+	 * @param contentType
 	 * @return Fluent API
 	 */
-	public Endpoint exampleRequest(JSONObject jsonObject) {
-		HashMap<String, MimeType> bodyMap = new HashMap<>();
-		MimeType mimeType = new MimeType();
-		String json = jsonObject.toString();
-		mimeType.setExample(json);
-		bodyMap.put("application/json", mimeType);
-		this.exampleRequestMap = bodyMap;
-		return this;
-	}
+	Endpoint produces(String contentType);
 
 	/**
-	 * Set the traits information.
-	 * 
-	 * @param traits Traits which the endpoint should inherit
-	 * @return Fluent API
-	 */
-	public Endpoint traits(String... traits) {
-		this.traits = traits;
-		return this;
-	}
-
-	/**
-	 * Return the traits which were set for this endpoint.
-	 * 
-	 * @return
-	 */
-	public String[] getTraits() {
-		return traits;
-	}
-
-	/**
-	 * Return the map of example responses. The map contains examples per http status code.
-	 * 
-	 * @return
-	 */
-	public Map<Integer, Response> getExampleResponses() {
-		return exampleResponses;
-	}
-
-	/**
-	 * Return the endpoint HTTP example request map.
-	 * 
-	 * @return
-	 */
-	public HashMap<String, MimeType> getExampleRequestMap() {
-		return exampleRequestMap;
-	}
-
-	/**
-	 * Return the vert.x route path regex.
-	 * 
-	 * @return
-	 */
-	public String getPathRegex() {
-		return pathRegex;
-	}
-
-	/**
-	 * Return the method used for the endpoint.
-	 * 
-	 * @return
-	 */
-	public HttpMethod getMethod() {
-		return method;
-	}
-
-	/**
-	 * Return the list of query parameters for the endpoint.
-	 * 
-	 * @return
-	 */
-	public Map<String, QueryParameter> getQueryParameters() {
-		return parameters;
-	}
-
-	/**
-	 * Add a query parameter provider to the endpoint. The query parameter provider will in turn provide examples, descriptions for all query parameters which
-	 * the parameter provider provides.
-	 * 
-	 * @param clazz Class which provides the parameters
-	 */
-	public void addQueryParameters(Class<? extends ParameterProvider> clazz) {
-		try {
-			ParameterProvider provider = clazz.newInstance();
-			parameters.putAll(provider.getRAMLParameters());
-		} catch (InstantiationException | IllegalAccessException e) {
-			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Explicitly set the RAML path. This will override the path which is otherwise transformed using the vertx route path.
+	 * Set the path using a regex.
 	 * 
 	 * @param path
+	 * @return Fluent API
 	 */
-	public void setRAMLPath(String path) {
-		this.ramlPath = path;
-	}
+	Endpoint pathRegex(String path);
 
 	/**
-	 * Return the uri parameters for the endpoint.
+	 * Return the path used for RAML. If non null the path which was previously set using {@link #setRAMLPath(String)} will be returned. Otherwise the converted
+	 * vert.x route path is returned. A vert.x path /:nodeUuid is converted to a RAML path /{nodeUuid}.
 	 * 
-	 * @return Map with uri parameters
+	 * @return RAML path
 	 */
-	public Map<String, UriParameter> getUriParameters() {
-		return uriParameters;
-	}
+	String getRamlPath();
+
+	/**
+	 * Set the endpoint display name.
+	 * 
+	 * @param name
+	 * @return Fluent API
+	 */
+	Endpoint displayName(String name);
+
+	/**
+	 * Set the endpoint description.
+	 * 
+	 * @param description
+	 *            Description of the endpoint.
+	 * @return Fluent API
+	 */
+	Endpoint description(String description);
 
 	/**
 	 * Add an uri parameter with description and example to the endpoint.
@@ -509,18 +233,117 @@ public class Endpoint implements Route, Comparable<Endpoint> {
 	 * @param key
 	 *            Key of the endpoint (e.g.: query, perPage)
 	 * @param description
-	 * @param example Example URI parameter value
+	 * @param example
+	 *            Example URI parameter value
 	 */
-	public void addUriParameter(String key, String description, String example) {
-		UriParameter param = new UriParameter(key);
-		param.setDescription(description);
-		param.setExample(example);
-		uriParameters.put(key, param);
-	}
+	Endpoint addUriParameter(String key, String description, String example);
 
-	@Override
-	public int compareTo(Endpoint o) {
-		return getRamlPath().compareTo(o.getRamlPath());
-	}
+	/**
+	 * Return the uri parameters for the endpoint.
+	 * 
+	 * @return Map with uri parameters
+	 */
+	Map<String, UriParameter> getUriParameters();
+
+	/**
+	 * Explicitly set the RAML path. This will override the path which is otherwise transformed using the vertx route path.
+	 * 
+	 * @param path
+	 */
+	Endpoint setRAMLPath(String path);
+
+	/**
+	 * Add a query parameter provider to the endpoint. The query parameter provider will in turn provide examples, descriptions for all query parameters which
+	 * the parameter provider provides.
+	 * 
+	 * @param clazz
+	 *            Class which provides the parameters
+	 * @return Fluent API
+	 */
+	Endpoint addQueryParameters(Class<? extends ParameterProvider> clazz);
+
+	/**
+	 * Return the list of query parameters for the endpoint.
+	 * 
+	 * @return
+	 */
+	Map<String, QueryParameter> getQueryParameters();
+
+	/**
+	 * Return the Vert.x route path regex.
+	 * 
+	 * @return configured path regex or null if no path regex has been set
+	 */
+	String getPathRegex();
+
+	/**
+	 * Return the endpoint HTTP example request map.
+	 * 
+	 * @return
+	 */
+	HashMap<String, MimeType> getExampleRequestMap();
+
+	/**
+	 * Return the map of example responses. The map contains examples per http status code.
+	 * 
+	 * @return
+	 */
+	Map<Integer, Response> getExampleResponses();
+
+	/**
+	 * Return the method used for the endpoint.
+	 * 
+	 * @return
+	 */
+	HttpMethod getMethod();
+
+	/**
+	 * Return the traits which were set for this endpoint.
+	 * 
+	 * @return
+	 */
+	String[] getTraits();
+
+	/**
+	 * Set the traits information.
+	 * 
+	 * @param traits
+	 *            Traits which the endpoint should inherit
+	 * @return Fluent API
+	 */
+	Endpoint traits(String... traits);
+
+	/**
+	 * Set the endpoint json example request via the provided json object. The JSON schema will not be generated.
+	 * 
+	 * @param jsonObject
+	 * @return Fluent API
+	 */
+	Endpoint exampleRequest(JSONObject jsonObject);
+
+	/**
+	 * Set the endpoint example request via a JSON example model. The json schema will automatically be generated.
+	 * 
+	 * @param model
+	 *            Example Rest Model
+	 * @return Fluent API
+	 */
+	Endpoint exampleRequest(RestModel model);
+
+	/**
+	 * Set the endpoint request example via a form parameter list.
+	 * 
+	 * @param parameters
+	 * @return Fluent API
+	 */
+	Endpoint exampleRequest(Map<String, List<FormParameter>> parameters);
+
+	/**
+	 * Set the endpoint request example via a plain text body.
+	 * 
+	 * @param bodyText
+	 * @return Fluent API
+	 */
+	Endpoint exampleRequest(String bodyText);
 
 }

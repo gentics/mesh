@@ -109,7 +109,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 				roleExamples.getRoleListResponse());
 		registerHandler("nodes", () -> boot.get().meshRoot().getNodeRoot(), NodeListResponse.class, nodeIndexHandler,
 				nodeExamples.getNodeListResponse());
-		registerHandler("tags", () -> boot.get().meshRoot().getTagRoot(), TagListResponse.class, tagIndexHandler, tagExamples.getTagListResponse());
+		registerHandler("tags", () -> boot.get().meshRoot().getTagRoot(), TagListResponse.class, tagIndexHandler, tagExamples.createTagListResponse());
 		registerHandler("tagFamilies", () -> boot.get().meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilyIndexHandler,
 				tagFamilyExamples.getTagFamilyListResponse());
 		registerHandler("projects", () -> boot.get().meshRoot().getProjectRoot(), ProjectListResponse.class, projectIndexHandler,

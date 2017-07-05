@@ -55,7 +55,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
 
 /**
- * Generator for RAML documentation.
+ * Generator for RAML documentation. The generation mocks all endpoint classes and extracts the routes from these endpoints in order to generate the RAML.
  */
 public class RAMLGenerator extends AbstractGenerator {
 
