@@ -153,7 +153,6 @@ public class RAMLGenerator extends AbstractGenerator {
 			// Add request example
 			if (endpoint.getExampleRequestMap() != null) {
 				action.setBody(endpoint.getExampleRequestMap());
-
 				for (String mimeType : endpoint.getExampleRequestMap().keySet()) {
 					MimeType request = endpoint.getExampleRequestMap().get(mimeType);
 					String body = request.getExample();
