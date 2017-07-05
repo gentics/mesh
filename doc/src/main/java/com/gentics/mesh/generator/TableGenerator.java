@@ -60,21 +60,21 @@ public class TableGenerator extends AbstractGenerator {
 
 			// Render mesh options table
 			if (clazz.equals(MeshOptions.class)) {
-				renderFlatTable(clazz);
+				writeFile(clazz.getSimpleName() + ".adoc", renderFlatTable(clazz));
 				continue;
 			}
 
 			// Handle query param tables
 			if (AbstractParameters.class.isAssignableFrom(clazz)) {
-				renderParameterTable(clazz);
+				writeFile(clazz.getSimpleName() + ".adoc", renderParameterTable(clazz));
 			} else {
-				renderModelTableViaSchema(clazz);
+				writeFile(clazz.getSimpleName() + ".adoc", renderModelTableViaSchema(clazz));
 			}
 		}
 
 	}
 
-	private void renderFlatTable(Class<?> clazz) throws Exception {
+	private String renderFlatTable(Class<?> clazz) throws Exception {
 		List<Map<String, String>> rows = new ArrayList<>();
 		getInfoForClass(rows, clazz, null);
 
@@ -82,7 +82,7 @@ public class TableGenerator extends AbstractGenerator {
 		Map<String, Object> context = new HashMap<>();
 		context.put("entries", rows);
 		context.put("name", name);
-		renderTable(name, context, modelTableTemplateSource);
+		return renderTable(context, modelTableTemplateSource);
 	}
 
 	private void getInfoForClass(List<Map<String, String>> rows, Class<?> clazz, String prefix) throws Exception {
@@ -136,7 +136,7 @@ public class TableGenerator extends AbstractGenerator {
 		return annotation.length != 0;
 	}
 
-	private void renderModelTableViaSchema(Class<?> clazz) throws IOException {
+	public String renderModelTableViaSchema(Class<?> clazz) throws IOException {
 		String name = clazz.getSimpleName();
 		String jsonSchema = JsonUtil.getJsonSchema(clazz);
 		JsonObject schema = new JsonObject(jsonSchema);
@@ -153,10 +153,10 @@ public class TableGenerator extends AbstractGenerator {
 		Map<String, Object> context = new HashMap<>();
 		context.put("entries", list);
 		context.put("name", name);
-		renderTable(name, context, modelTableTemplateSource);
+		return renderTable(context, modelTableTemplateSource);
 	}
 
-	private void renderParameterTable(Class<?> clazz) throws Exception {
+	private String renderParameterTable(Class<?> clazz) throws Exception {
 		System.out.println(clazz.getName());
 		AbstractParameters parameterObj = (AbstractParameters) clazz.newInstance();
 		Map<? extends String, ? extends QueryParameter> ramlParameters = parameterObj.getRAMLParameters();
@@ -186,8 +186,7 @@ public class TableGenerator extends AbstractGenerator {
 
 		context.put("entries", list);
 		context.put("name", parameterObj.getName());
-		renderTable(clazz.getSimpleName(), context, paramTableTemplateSource);
-
+		return renderTable(context, paramTableTemplateSource);
 	}
 
 	/**
@@ -202,11 +201,11 @@ public class TableGenerator extends AbstractGenerator {
 		return IOUtils.toString(ins);
 	}
 
-	private void renderTable(String name, Map<String, Object> context, String templateSource) throws IOException {
+	private String renderTable(Map<String, Object> context, String templateSource) throws IOException {
 		Handlebars handlebars = new Handlebars();
 		Template template = handlebars.compileInline(templateSource);
 		String output = template.apply(context);
-		writeFile(name + ".adoc", output);
+		return output;
 	}
 
 	/**

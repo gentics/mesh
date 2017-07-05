@@ -346,4 +346,11 @@ public interface Endpoint extends Comparable<Endpoint> {
 	 */
 	Endpoint exampleRequest(String bodyText);
 
+	/**
+	 * Return map with status code and the response class.
+	 * 
+	 * @return
+	 */
+	Map<Integer, Class<?>> getExampleResponseClasses();
+
 }

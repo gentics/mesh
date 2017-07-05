@@ -1,6 +1,7 @@
 package com.gentics.mesh.generator;
 
 import java.io.File;
+import java.io.IOException;
 
 import com.gentics.mesh.OptionsLoader;
 
@@ -26,7 +27,17 @@ public class ExampleGeneratorRunner {
 		restModelGen.run();
 
 		// Generate RAML
-		RAMLGenerator generator = new RAMLGenerator(OUTPUT_ROOT_FOLDER);
+		RAMLGenerator generator = new RAMLGenerator(OUTPUT_ROOT_FOLDER, "api.raml", null, false);
+		generator.run();
+
+		generator = new RAMLGenerator(OUTPUT_ROOT_FOLDER, "api-docs.raml", (mimeType, clazz) -> {
+			try {
+				mimeType.setSchema(tableGen.renderModelTableViaSchema(clazz));
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new RuntimeException("Could not render table");
+			}
+		}, true);
 		generator.run();
 
 		// Generate elasticsearch flattened models

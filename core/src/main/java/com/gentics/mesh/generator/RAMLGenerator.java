@@ -53,6 +53,7 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
+import rx.functions.Action2;
 
 /**
  * Generator for RAML documentation. The generation mocks all endpoint classes and extracts the routes from these endpoints in order to generate the RAML.
@@ -63,8 +64,29 @@ public class RAMLGenerator extends AbstractGenerator {
 
 	private Raml raml = new Raml();
 
-	public RAMLGenerator(File outputFolder) throws IOException {
-		super(new File(outputFolder, "api"));
+	/**
+	 * Handler which can be invoked to replace the stored schema.
+	 */
+	private Action2<MimeType, Class<?>> schemaHandler;
+
+	private String fileName;
+
+	private boolean writeExtraFiles = true;
+
+	/**
+	 * Create a new generator.
+	 * 
+	 * @param outputFolder
+	 *            Output folder
+	 * @param fileName
+	 *            Output filename
+	 * @throws IOException
+	 */
+	public RAMLGenerator(File outputFolder, String fileName, Action2<MimeType, Class<?>> schemaHandler, boolean writeExtraFiles) throws IOException {
+		super(new File(outputFolder, "api"), false);
+		this.fileName = fileName;
+		this.schemaHandler = schemaHandler;
+		this.writeExtraFiles = writeExtraFiles;
 	}
 
 	public RAMLGenerator() {
@@ -143,8 +165,17 @@ public class RAMLGenerator extends AbstractGenerator {
 
 					// Write JSON schema to dedicated file
 					String schemaFilename = "response/" + fullPath + "/" + key + "/request-schema.json";
+
 					String schema = responseMimeType.getSchema();
 					writeFile(schemaFilename, schema);
+
+					// Check whether a custom schema handler has been set. The schema handler may replace the previously set schema with a different one.
+					if (schemaHandler != null) {
+						Class<?> clazz = endpoint.getExampleResponseClasses().get(entry.getKey());
+						if (clazz != null) {
+							schemaHandler.call(responseMimeType, clazz);
+						}
+					}
 				}
 
 				action.getResponses().put(key, response);
@@ -159,16 +190,22 @@ public class RAMLGenerator extends AbstractGenerator {
 					if (mimeType.equalsIgnoreCase("application/json")) {
 						// Write example request to dedicated file
 						String requestFilename = "request/" + fullPath + "/request-body.json";
-						writeFile(requestFilename, body);
+						if (writeExtraFiles) {
+							writeFile(requestFilename, body);
+						}
 
 						// Write JSON schema to dedicated file
 						String filename = "request/" + fullPath + "/request-schema.json";
 						String schema = request.getSchema();
-						writeFile(filename, schema);
+						if (writeExtraFiles) {
+							writeFile(filename, schema);
+						}
 					} else if (mimeType.equalsIgnoreCase("text/plain")) {
 						// Write example request to dedicated file
 						String filename = "request/" + fullPath + "/request-body.txt";
-						writeFile(filename, body);
+						if (writeExtraFiles) {
+							writeFile(filename, body);
+						}
 					}
 				}
 			}
@@ -339,6 +376,6 @@ public class RAMLGenerator extends AbstractGenerator {
 
 	public void run() throws IOException {
 		String raml = generate();
-		writeFile("api.raml", raml);
+		writeFile(fileName, raml);
 	}
 }

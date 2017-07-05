@@ -57,9 +57,13 @@ public class EndpointImpl implements Endpoint {
 	 */
 	private Map<Integer, Response> exampleResponses = new HashMap<>();
 
+	private Map<Integer, Class<?>> exampleResponseClasses = new HashMap<>();
+
 	private String[] traits = new String[] {};
 
 	private HashMap<String, MimeType> exampleRequestMap = null;
+
+	private Class<? extends RestModel> exampleRequestClass = null;
 
 	private String pathRegex;
 
@@ -278,7 +282,13 @@ public class EndpointImpl implements Endpoint {
 		}
 
 		exampleResponses.put(status.code(), response);
+		exampleResponseClasses.put(status.code(), model.getClass());
 		return this;
+	}
+
+	@Override
+	public Map<Integer, Class<?>> getExampleResponseClasses() {
+		return exampleResponseClasses;
 	}
 
 	@Override
