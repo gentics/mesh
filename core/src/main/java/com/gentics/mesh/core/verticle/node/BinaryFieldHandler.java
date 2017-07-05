@@ -110,7 +110,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 					db.tx(() -> {
 						BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
 						handler.handle(binaryField);
-						return null;
 					});
 				}, ac::fail);
 	}

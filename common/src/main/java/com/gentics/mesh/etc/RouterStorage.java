@@ -63,8 +63,7 @@ public class RouterStorage {
 	private Lazy<Database> db;
 
 	@Inject
-	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, Lazy<BootstrapInitializer> boot,
-			Lazy<Database> db) {
+	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, Lazy<BootstrapInitializer> boot, Lazy<Database> db) {
 		this.vertx = Mesh.vertx();
 		this.boot = boot;
 		this.db = db;
@@ -118,7 +117,8 @@ public class RouterStorage {
 	}
 
 	/**
-	 * Initialise the Root API router and add common handlers to the router. The API router is used to attach subrouters for routes like /api/v1/[groups|users|roles]
+	 * Initialise the Root API router and add common handlers to the router. The API router is used to attach subrouters for routes like
+	 * /api/v1/[groups|users|roles]
 	 */
 	private void initAPIRouter(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler) {
 		Router router = getAPIRouter();
@@ -228,7 +228,7 @@ public class RouterStorage {
 					+ "} is conflicting with a core router. Best guess is that an core verticle is already occupying the name. Please choose a different name or remove the conflicting core verticle.");
 		}
 		Router projectRouter = projectRouters.get(encodedName);
-		// TODO synchronize access to projectRouters
+		// TODO synchronise access to projectRouters
 		if (projectRouter == null) {
 			projectRouter = Router.router(vertx);
 			projectRouters.put(name, projectRouter);
@@ -244,6 +244,15 @@ public class RouterStorage {
 			mountSubRoutersForProjectRouter(projectRouter, encodedName);
 		}
 		return projectRouter;
+	}
+
+	/**
+	 * Returns a map of all registered project routers.
+	 * 
+	 * @return
+	 */
+	public Map<String, Router> getProjectRouters() {
+		return projectRouters;
 	}
 
 	/**
@@ -269,8 +278,7 @@ public class RouterStorage {
 	 */
 	public void mountRouterInProjects(Router localRouter, String mountPoint) {
 		for (Entry<String, Router> projectRouterEntry : projectRouters.entrySet()) {
-			log.info("Mounting router onto project router {" + projectRouterEntry.getKey() + "} with mountpoint {"
-					+ mountPoint + "}");
+			log.info("Mounting router onto project router {" + projectRouterEntry.getKey() + "} with mountpoint {" + mountPoint + "}");
 			projectRouterEntry.getValue().mountSubRouter("/" + mountPoint, localRouter);
 		}
 	}

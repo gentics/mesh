@@ -1,5 +1,8 @@
 package com.gentics.mesh;
 
+import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
+import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -24,8 +27,6 @@ public final class OptionsLoader {
 
 	private static final Logger log = LoggerFactory.getLogger(OptionsLoader.class);
 
-	public static final String MESH_CONF_FILENAME = "mesh.yml";
-
 	private OptionsLoader() {
 
 	}
@@ -34,7 +35,7 @@ public final class OptionsLoader {
 	 * Load the main mesh configuration file.
 	 */
 	public static MeshOptions createOrloadOptions() {
-		File confFile = new File(MESH_CONF_FILENAME);
+		File confFile = new File(CONFIG_FOLDERNAME, MESH_CONF_FILENAME);
 		MeshOptions options = null;
 		InputStream ins = Mesh.class.getResourceAsStream("/" + MESH_CONF_FILENAME);
 		// 1. Try to load from classpath
@@ -61,7 +62,7 @@ public final class OptionsLoader {
 				log.error("Could not load configuration file {" + confFile.getAbsolutePath() + "}.", e);
 			}
 		} else {
-			log.info("Configuration file {" + MESH_CONF_FILENAME + "} was not found within filesystem.");
+			log.info("Configuration file {" + CONFIG_FOLDERNAME + "/" + MESH_CONF_FILENAME + "} was not found within filesystem.");
 
 			ObjectMapper mapper = getYAMLMapper();
 			try {

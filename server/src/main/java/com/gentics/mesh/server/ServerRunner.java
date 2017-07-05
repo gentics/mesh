@@ -1,10 +1,7 @@
 package com.gentics.mesh.server;
 
-import java.io.File;
-
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
-import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.verticle.ElasticsearchHeadVerticle;
@@ -31,7 +28,6 @@ public class ServerRunner {
 
 	public static void main(String[] args) throws Exception {
 		MeshOptions options = OptionsLoader.createOrloadOptions();
-		setupKeystore(options);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
@@ -51,14 +47,4 @@ public class ServerRunner {
 		mesh.run();
 	}
 
-	private static void setupKeystore(MeshOptions options) throws Exception {
-		String keyStorePath = options.getAuthenticationOptions().getKeystorePath();
-		// Copy the demo keystore file to the destination
-		if (!new File(keyStorePath).exists()) {
-			log.info("Could not find keystore {" + keyStorePath + "}. Creating one for you..");
-			KeyStoreHelper.gen(keyStorePath, options.getAuthenticationOptions().getKeystorePassword());
-			log.info("Keystore {" + keyStorePath + "} created. The keystore password is listed in your {" + OptionsLoader.MESH_CONF_FILENAME
-					+ "} file.");
-		}
-	}
 }

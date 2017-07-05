@@ -2,8 +2,8 @@
   "autoDeploy": true,
   "hotAlignment": true,
   "executionMode": "synchronous",
-  "readQuorum": 0,
-  "writeQuorum": 0,
+  "readQuorum": 1,
+  "writeQuorum": 1,
   "failureAvailableNodesLessQuorum": false,
   "readYourWrites": true,
   "servers": {

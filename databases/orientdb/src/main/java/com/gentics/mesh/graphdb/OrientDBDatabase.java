@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphdb;
 
-import java.io.ByteArrayInputStream;
+import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,6 +18,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
@@ -74,12 +76,24 @@ import io.vertx.core.logging.LoggerFactory;
  */
 public class OrientDBDatabase extends AbstractDatabase {
 
+	private static final String ORIENTDB_SERVER_CONFIG = "orientdb-server-config.xml";
+
+	private static final String ORIENTDB_DISTRIBUTED_CONFIG = "default-distributed-db-config.json";
+
+	private static final String ORIENTDB_HAZELCAST_CONFIG = "hazelcast.xml";
+
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
+
 	private static final String DB_NAME = "storage";
 
+	private TopologyEventBridge topologyEventBridge = new TopologyEventBridge();
+
 	private OrientGraphFactory factory;
+
 	private TypeResolver resolver;
+
 	private DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
+
 	private int maxRetry = 25;
 
 	@Override
@@ -147,6 +161,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				throw new RuntimeException(
 						"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
 			}
+			initConfigurationFiles();
 			startOrientServer();
 			System.out.println("Press any key to continue");
 			System.in.read();
@@ -163,18 +178,80 @@ public class OrientDBDatabase extends AbstractDatabase {
 		configureGraphDB();
 	}
 
+	/**
+	 * Create the needed configuration files in the filesystem if they can't be located.
+	 * 
+	 * @throws IOException
+	 */
+	private void initConfigurationFiles() throws IOException {
+
+		File distributedConfigFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_DISTRIBUTED_CONFIG);
+		if (!distributedConfigFile.exists()) {
+			log.info("Creating orientdb distributed server configuration file {" + distributedConfigFile + "}");
+			writeDistributedConfig(distributedConfigFile);
+		}
+
+		File hazelcastConfigFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_HAZELCAST_CONFIG);
+		if (!hazelcastConfigFile.exists()) {
+			log.info("Creating orientdb hazelcast configuration file {" + hazelcastConfigFile + "}");
+			writeHazelcastConfig(hazelcastConfigFile);
+		}
+
+		File serverConfigFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_SERVER_CONFIG);
+		// Check whether the initial configuration needs to be written
+		if (!serverConfigFile.exists()) {
+			log.info("Creating orientdb server configuration file {" + serverConfigFile + "}");
+			writeOrientServerConfig(serverConfigFile);
+		}
+
+	}
+
+	private void writeHazelcastConfig(File hazelcastConfigFile) throws IOException {
+		String resourcePath = "/config/" + ORIENTDB_HAZELCAST_CONFIG;
+		InputStream configIns = getClass().getResourceAsStream(resourcePath);
+		if (configIns == null) {
+			log.error("Could not find default hazelcast configuration file {" + resourcePath + "} within classpath.");
+		}
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
+		String configString = writer.toString();
+		FileUtils.writeStringToFile(hazelcastConfigFile, configString);
+	}
+
+	private void writeDistributedConfig(File distributedConfigFile) throws IOException {
+		String resourcePath = "/config/" + ORIENTDB_DISTRIBUTED_CONFIG;
+		InputStream configIns = getClass().getResourceAsStream(resourcePath);
+		if (configIns == null) {
+			log.error("Could not find default distributed configuration file {" + resourcePath + "} within classpath.");
+		}
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
+		String configString = writer.toString();
+		FileUtils.writeStringToFile(distributedConfigFile, configString);
+	}
+
 	private String escapeSafe(String text) {
 		return StringEscapeUtils.escapeJava(StringEscapeUtils.escapeXml11(new File(text).getAbsolutePath()));
 	}
 
 	private InputStream getOrientServerConfig() throws IOException {
-		InputStream configIns = getClass().getResourceAsStream("/config/orientdb-server-config.xml");
+		File configFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_SERVER_CONFIG);
+		return new FileInputStream(configFile);
+	}
+
+	private void writeOrientServerConfig(File configFile) throws IOException {
+		String resourcePath = "/config/orientdb-server-config.xml";
+		InputStream configIns = getClass().getResourceAsStream(resourcePath);
+		if (configFile == null) {
+			throw new RuntimeException("Could not find default orientdb server configuration template file {" + resourcePath + "} within classpath.");
+		}
 		StringWriter writer = new StringWriter();
 		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
 		String configString = writer.toString();
-		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", "orient-plugins");
+		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", "orientdb-plugins");
 		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "finest");
 		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "fine");
+		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);
 		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.isClusterMode()));
 		// TODO check for other invalid characters
 		configString = configString.replaceAll("%NODENAME%", MeshNameProvider.getInstance().getName().replaceAll(" ", "_"));
@@ -186,8 +263,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			log.debug("OrientDB config");
 			log.debug(configString);
 		}
-		InputStream stream = new ByteArrayInputStream(configString.getBytes(StandardCharsets.UTF_8));
-		return stream;
+		FileUtils.writeStringToFile(configFile, configString);
 	}
 
 	/**
@@ -201,10 +277,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OServer server = OServerMain.create();
 		log.info("Extracting OrientDB Studio");
 		InputStream ins = getClass().getResourceAsStream("/plugins/studio-2.2.zip");
-		File pluginDirectory = new File("orient-plugins");
+		File pluginDirectory = new File("orientdb-plugins");
 		pluginDirectory.mkdirs();
 		IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "studio-2.2.zip")));
-
+		server.getDistributedManager().registerLifecycleListener(topologyEventBridge);
 		server.startup(getOrientServerConfig());
 		OServerPluginManager manager = new OServerPluginManager();
 		manager.config(server);

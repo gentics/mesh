@@ -1,8 +1,9 @@
 package com.gentics.mesh.generator;
 
-import java.io.File;
+import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
+import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
 
-import com.gentics.mesh.OptionsLoader;
+import java.io.File;
 
 public class ExampleGeneratorRunner {
 
@@ -28,7 +29,7 @@ public class ExampleGeneratorRunner {
 	}
 
 	private static void cleanConf() {
-		File conf = new File(OptionsLoader.MESH_CONF_FILENAME);
+		File conf = new File(CONFIG_FOLDERNAME + "/" + MESH_CONF_FILENAME);
 		if (conf.exists()) {
 			conf.delete();
 		}

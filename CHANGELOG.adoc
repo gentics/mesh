@@ -2,6 +2,10 @@
 
 = Gentics Mesh Changelog
 
+== 0.10.0 (TBD)
+
+icon:plus[] Configuration: The configuration files were moved to a dedicated `config` folder.
+
 == 0.9.18 (30.06.2017)
 
 icon:plus[] Demo: Fixed demo data uuids.

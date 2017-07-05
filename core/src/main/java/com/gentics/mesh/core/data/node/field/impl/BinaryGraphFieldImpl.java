@@ -249,6 +249,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	@Override
 	public Future<Buffer> getFileBuffer() {
 		Future<Buffer> future = Future.future();
+		//TODO use only a few chunks of the file in memory 
 		Mesh.vertx().fileSystem().readFile(getFilePath(), rh -> {
 			if (rh.succeeded()) {
 				future.complete(rh.result());

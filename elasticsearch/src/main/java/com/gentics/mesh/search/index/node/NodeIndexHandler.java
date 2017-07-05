@@ -119,7 +119,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			db.tx(() -> {
 				updateNodeIndexMappings();
 				sub.onCompleted();
-				return null;
 			});
 		}));
 	}
@@ -370,28 +369,24 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
 			mappingRequestBuilder.setType(type);
 
-			try {
-				JsonObject mappingJson = transformator.getMapping(schema, type);
-				if (log.isDebugEnabled()) {
-					log.debug(mappingJson.toString());
-				}
-				mappingRequestBuilder.setSource(mappingJson.toString());
-				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
-
-					@Override
-					public void onResponse(PutMappingResponse response) {
-						sub.onCompleted();
-					}
-
-					@Override
-					public void onFailure(Throwable e) {
-						sub.onError(e);
-					}
-				});
-
-			} catch (Exception e) {
-				sub.onError(e);
+			JsonObject mappingJson = transformator.getMapping(schema, type);
+			if (log.isDebugEnabled()) {
+				log.debug(mappingJson.toString());
 			}
+			mappingRequestBuilder.setSource(mappingJson.toString());
+			mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
+
+				@Override
+				public void onResponse(PutMappingResponse response) {
+					sub.onCompleted();
+				}
+
+				@Override
+				public void onFailure(Throwable e) {
+					sub.onError(e);
+				}
+			});
+
 		});
 
 	}

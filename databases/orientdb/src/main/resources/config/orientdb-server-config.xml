@@ -12,8 +12,8 @@
 			<parameters>
 				<parameter name="nodeName" value="%NODENAME%" />
 				<parameter name="enabled" value="%DISTRIBUTED%" />
-				<parameter name="configuration.db.default" value="${ORIENTDB_HOME}/config/default-distributed-db-config.json" />
-				<parameter name="configuration.hazelcast" value="${ORIENTDB_HOME}/config/hazelcast.xml" />
+				<parameter name="configuration.db.default" value="${ORIENTDB_HOME}/%CONFDIR_NAME%/default-distributed-db-config.json" />
+				<parameter name="configuration.hazelcast" value="${ORIENTDB_HOME}/%CONFDIR_NAME%/hazelcast.xml" />
 			</parameters>
 		</handler>
 

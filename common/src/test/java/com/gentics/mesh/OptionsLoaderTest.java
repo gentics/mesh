@@ -1,6 +1,9 @@
 package com.gentics.mesh;
 
-import static org.junit.Assert.*;
+import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
+import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
@@ -12,7 +15,7 @@ public class OptionsLoaderTest {
 
 	@Test
 	public void testOptionsLoader() {
-		File confFile = new File(OptionsLoader.MESH_CONF_FILENAME);
+		File confFile = new File(CONFIG_FOLDERNAME + "/" + MESH_CONF_FILENAME);
 		if (confFile.exists()) {
 			confFile.delete();
 		}

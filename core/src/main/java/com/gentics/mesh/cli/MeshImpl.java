@@ -1,5 +1,6 @@
 package com.gentics.mesh.cli;
 
+import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
@@ -14,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
@@ -62,7 +64,7 @@ public class MeshImpl implements Mesh {
 	public Vertx getVertx() {
 		if (vertx == null) {
 			VertxOptions options = new VertxOptions();
-			//options.setClustered(true);
+			// options.setClustered(true);
 			options.setBlockedThreadCheckInterval(1000 * 60 * 60);
 			// TODO configure worker pool size
 			options.setWorkerPoolSize(12);
@@ -79,6 +81,9 @@ public class MeshImpl implements Mesh {
 	@Override
 	public void run() throws Exception {
 		checkSystemRequirements();
+
+		setupKeystore(options);
+
 		registerShutdownHook();
 
 		boolean hasOldLock = hasLockFile();
@@ -97,6 +102,18 @@ public class MeshImpl implements Mesh {
 		// Create dagger context and invoke bootstrap init in order to startup mesh
 		MeshInternal.create().boot().init(hasOldLock, options, verticleLoader);
 		dontExit();
+	}
+
+	private void setupKeystore(MeshOptions options) throws Exception {
+		String keyStorePath = options.getAuthenticationOptions().getKeystorePath();
+		File keystoreFile = new File(keyStorePath);
+		// Copy the demo keystore file to the destination
+		if (!keystoreFile.exists()) {
+			keystoreFile.getParentFile().mkdirs();
+			log.info("Could not find keystore {" + keyStorePath + "}. Creating one for you..");
+			KeyStoreHelper.gen(keyStorePath, options.getAuthenticationOptions().getKeystorePassword());
+			log.info("Keystore {" + keyStorePath + "} created. The keystore password is listed in your {" + MESH_CONF_FILENAME + "} file.");
+		}
 	}
 
 	/**
@@ -135,7 +152,7 @@ public class MeshImpl implements Mesh {
 
 		HttpClientRequest request = Mesh.vertx().createHttpClient().get("updates.getmesh.io", "/api/updatecheck?v=" + Mesh.getPlainVersion(), rh -> {
 			rh.bodyHandler(bh -> {
-				//JsonObject info = bh.toJsonObject();
+				// JsonObject info = bh.toJsonObject();
 			});
 		});
 
@@ -248,7 +265,7 @@ public class MeshImpl implements Mesh {
 	public void shutdown() throws Exception {
 		log.info("Mesh shutting down...");
 		MeshComponent meshInternal = MeshInternal.get();
-		meshInternal.searchQueue().blockUntilEmpty(120);
+		// meshInternal.searchQueue().blockUntilEmpty(120);
 		meshInternal.database().stop();
 		meshInternal.searchProvider().stop();
 		getVertx().close();

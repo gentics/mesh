@@ -13,3 +13,6 @@ migrated.sh
 keystore.jceks
 mesh.yml
 data-nodeB
+config-nodeA
+config-nodeB
+orientdb-plugins
