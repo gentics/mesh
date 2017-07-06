@@ -92,7 +92,11 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 	}
 
 	private void saveMeshUiConfig() {
-		File outputFile = new File(CONFIG_FOLDERNAME + "/" + CONF_FILE);
+		File parentFolder = new File(CONFIG_FOLDERNAME);
+		if (!parentFolder.mkdirs()) {
+			throw error(INTERNAL_SERVER_ERROR, "Could not create configuration folder {" + parentFolder + "}");
+		}
+		File outputFile = new File(parentFolder, CONF_FILE);
 		if (!outputFile.exists()) {
 			InputStream ins = getClass().getResourceAsStream("/meshui-templates/mesh-ui-config.hbs");
 			if (ins == null) {
