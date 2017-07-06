@@ -3,6 +3,7 @@ package com.gentics.mesh.graphdb.orientdb;
 import static org.junit.Assert.*;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.graphdb.OrientDBDatabase;
@@ -13,6 +14,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
+@Ignore
 public class NestedTransactionTest {
 
 	private Database db = new OrientDBDatabase();

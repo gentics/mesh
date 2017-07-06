@@ -793,7 +793,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// version=published
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().published()));
 		// version=<draftversion>
+
+		// TODO, FIXME Loading a node using the version will return the draft version and thus no permission is granted. Draft and publish versions use the same version number.
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion(draftResponse.getVersion())));
+
 		// version=<publishedversion>
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid,
 				new VersioningParametersImpl().setVersion(publishedResponse.getVersion())));
