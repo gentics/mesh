@@ -8,13 +8,19 @@ import org.apache.commons.io.FileUtils;
 public abstract class AbstractGenerator {
 
 	protected File outputFolder;
-	
+
 	public AbstractGenerator() {
 	}
 
-	public AbstractGenerator(File outputFolder) throws IOException {
+	public AbstractGenerator(File outputFolder, boolean cleanup) throws IOException {
 		this.outputFolder = outputFolder;
-		cleanOutputFolder(outputFolder);
+		if (cleanup) {
+			cleanOutputFolder(outputFolder);
+		}
+	}
+
+	public AbstractGenerator(File outputFolder) throws IOException {
+		this(outputFolder, true);
 	}
 
 	protected static File cleanOutputFolder(File folder) throws IOException {

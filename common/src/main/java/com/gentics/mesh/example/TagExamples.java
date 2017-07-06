@@ -23,7 +23,7 @@ public class TagExamples extends AbstractExamples {
 		return tagFamilyReference;
 	}
 
-	public TagResponse getTagResponse1(String name) {
+	public TagResponse createTagResponse1(String name) {
 		TagResponse tag = new TagResponse();
 		tag.setUuid(randomUUID());
 		tag.setCreated(getTimestamp());
@@ -49,28 +49,28 @@ public class TagExamples extends AbstractExamples {
 		return tag;
 	}
 
-	public TagListResponse getTagListResponse() {
+	public TagListResponse createTagListResponse() {
 		TagListResponse list = new TagListResponse();
-		list.getData().add(getTagResponse1("green"));
+		list.getData().add(createTagResponse1("green"));
 		list.getData().add(getTagResponse2());
 		setPaging(list, 1, 10, 2, 20);
 		return list;
 	}
 
-	public TagUpdateRequest getTagUpdateRequest(String name) {
+	public TagUpdateRequest createTagUpdateRequest(String name) {
 		TagUpdateRequest request = new TagUpdateRequest();
 		request.setName(name);
 		return request;
 	}
 
-	public TagCreateRequest getTagCreateRequest(String name) {
+	public TagCreateRequest createTagCreateRequest(String name) {
 		TagCreateRequest request = new TagCreateRequest();
 		//tagCreate.setTagFamily(tagFamilyReference);
 		request.setName(name);
 		return request;
 	}
 
-	public TagReference getTagReference(String name, String tagFamilyName) {
+	public TagReference createTagReference(String name, String tagFamilyName) {
 		TagReference reference = new TagReference();
 		reference.setName(name);
 		reference.setTagFamily(tagFamilyName);
@@ -80,8 +80,8 @@ public class TagExamples extends AbstractExamples {
 
 	public TagListUpdateRequest getTagListUpdateRequest() {
 		TagListUpdateRequest request = new TagListUpdateRequest();
-		request.getTags().add(getTagReference("green", "colors"));
-		request.getTags().add(getTagReference("yellow", "colors"));
+		request.getTags().add(createTagReference("green", "colors"));
+		request.getTags().add(createTagReference("yellow", "colors"));
 		return request;
 	}
 }

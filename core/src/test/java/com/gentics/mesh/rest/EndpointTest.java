@@ -1,10 +1,13 @@
 package com.gentics.mesh.rest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import org.junit.Test;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.*;
+import com.gentics.mesh.rest.impl.EndpointImpl;
 
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
@@ -16,7 +19,7 @@ public class EndpointTest {
 		Router router = mock(Router.class);
 		Route route = mock(Route.class);
 		when(router.route()).thenReturn(route);
-		Endpoint e = new Endpoint(router);
+		Endpoint e = new EndpointImpl(router);
 
 		when(route.getPath()).thenReturn("/:bla/:blub/:blar");
 		assertEquals("/{bla}/{blub}/{blar}", e.getRamlPath());

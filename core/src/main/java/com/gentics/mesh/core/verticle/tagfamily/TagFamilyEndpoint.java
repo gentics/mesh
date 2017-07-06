@@ -86,8 +86,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Update the specified tag");
-		endpoint.exampleRequest(tagExamples.getTagUpdateRequest("Red"));
-		endpoint.exampleResponse(OK, tagExamples.getTagResponse1("Red"), "Updated tag.");
+		endpoint.exampleRequest(tagExamples.createTagUpdateRequest("Red"));
+		endpoint.exampleResponse(OK, tagExamples.createTagResponse1("Red"), "Updated tag.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
@@ -105,6 +105,8 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		createTag.description("Create a new tag within the tag family.");
 		createTag.path("/:tagFamilyUuid/tags").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		createTag.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
+		createTag.exampleRequest(tagExamples.createTagCreateRequest("red"));
+		createTag.exampleResponse(OK, tagExamples.createTagResponse1("red"), "Created tag");
 		createTag.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String tagFamilyUuid = ac.getParameter("tagFamilyUuid");
@@ -120,7 +122,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readOne.addUriParameter("tagUuid", "Uuid of the tag.", UUIDUtil.randomUUID());
 		readOne.method(GET);
 		readOne.description("Read the specified tag from the tag family.");
-		readOne.exampleResponse(OK, tagExamples.getTagResponse1("red"), "Loaded tag.");
+		readOne.exampleResponse(OK, tagExamples.createTagResponse1("red"), "Loaded tag.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -134,7 +136,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		readAll.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
 		readAll.method(GET);
 		readAll.description("Load tags which were assigned to this tag family and return a paged list response.");
-		readAll.exampleResponse(OK, tagExamples.getTagListResponse(), "List of tags.");
+		readAll.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags.");
 		readAll.produces(APPLICATION_JSON);
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.handler(rc -> {

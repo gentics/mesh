@@ -23,6 +23,8 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
@@ -41,6 +43,24 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(true);
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request));
+			expectResponseMessage(message, "role_updated_permission", role().getName());
+			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
+		}
+	}
+
+	@Test
+	public void testRevokeAllPermissionFromProjectByName() {
+		try (Tx tx = tx()) {
+			// Add permission on own role
+			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
+			RolePermissionRequest request = new RolePermissionRequest();
+			request.setRecursive(true);
+			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "projects/" + PROJECT_NAME, request));
 			expectResponseMessage(message, "role_updated_permission", role().getName());
 			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
 		}

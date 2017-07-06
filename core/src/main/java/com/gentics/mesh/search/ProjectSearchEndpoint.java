@@ -71,7 +71,7 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 	private void addSearchEndpoints() {
 		registerSearchHandler("nodes", () -> boot.meshRoot().getNodeRoot(), NodeListResponse.class, nodeContainerIndexHandler,
 				nodeExamples.getNodeListResponse());
-		registerSearchHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, tagIndexHandler, tagExamples.getTagListResponse());
+		registerSearchHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, tagIndexHandler, tagExamples.createTagListResponse());
 		registerSearchHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilyIndexHandler,
 				tagFamilyExamples.getTagFamilyListResponse());
 	}
