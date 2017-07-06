@@ -50,7 +50,7 @@ node("jenkins-slave") {
 			for (int i = 0; i < splits; i++) {
 				def current = i
 				branches["split${i}"] = {
-					node('jenkins-slave') {
+					node('jenkins-slave-worker') {
 						echo "Preparing slave environment for ${current}"
 						unstash 'project'
 						def postfix = current;
