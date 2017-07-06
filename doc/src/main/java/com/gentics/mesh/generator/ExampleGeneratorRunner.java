@@ -4,6 +4,7 @@ import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Runner for various example generators.
