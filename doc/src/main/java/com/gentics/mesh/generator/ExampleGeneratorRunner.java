@@ -30,9 +30,10 @@ public class ExampleGeneratorRunner {
 		RAMLGenerator generator = new RAMLGenerator(OUTPUT_ROOT_FOLDER, "api.raml", null, false);
 		generator.run();
 
+		// Generate the RAML for the raml2html docs. This raml includes a markdown table
 		generator = new RAMLGenerator(OUTPUT_ROOT_FOLDER, "api-docs.raml", (mimeType, clazz) -> {
 			try {
-				mimeType.setSchema(tableGen.renderModelTableViaSchema(clazz));
+				mimeType.setSchema(tableGen.renderModelTableViaSchema(clazz, tableGen.getTemplate("model-props-markdown-table.hbs")));
 			} catch (IOException e) {
 				e.printStackTrace();
 				throw new RuntimeException("Could not render table");

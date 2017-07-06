@@ -200,6 +200,14 @@ public class RAMLGenerator extends AbstractGenerator {
 						if (writeExtraFiles) {
 							writeFile(filename, schema);
 						}
+
+						if (schemaHandler != null) {
+							Class<?> clazz = endpoint.getExampleRequestClass();
+							if (clazz != null) {
+								schemaHandler.call(request, clazz);
+							}
+						}
+
 					} else if (mimeType.equalsIgnoreCase("text/plain")) {
 						// Write example request to dedicated file
 						String filename = "request/" + fullPath + "/request-body.txt";

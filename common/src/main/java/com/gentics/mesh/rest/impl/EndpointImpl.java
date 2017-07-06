@@ -320,6 +320,7 @@ public class EndpointImpl implements Endpoint {
 		mimeType.setSchema(JsonUtil.getJsonSchema(model.getClass()));
 		bodyMap.put("application/json", mimeType);
 		this.exampleRequestMap = bodyMap;
+		this.exampleRequestClass = model.getClass();
 		return this;
 	}
 
@@ -429,6 +430,11 @@ public class EndpointImpl implements Endpoint {
 			builder.append("/");
 		}
 		return builder.toString();
+	}
+
+	@Override
+	public Class<? extends RestModel> getExampleRequestClass() {
+		return exampleRequestClass;
 	}
 
 }

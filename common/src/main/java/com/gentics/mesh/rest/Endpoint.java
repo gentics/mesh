@@ -353,4 +353,6 @@ public interface Endpoint extends Comparable<Endpoint> {
 	 */
 	Map<Integer, Class<?>> getExampleResponseClasses();
 
+	Class<? extends RestModel> getExampleRequestClass();
+
 }

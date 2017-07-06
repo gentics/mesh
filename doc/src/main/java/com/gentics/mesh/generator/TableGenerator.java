@@ -68,7 +68,7 @@ public class TableGenerator extends AbstractGenerator {
 			if (AbstractParameters.class.isAssignableFrom(clazz)) {
 				writeFile(clazz.getSimpleName() + ".adoc", renderParameterTable(clazz));
 			} else {
-				writeFile(clazz.getSimpleName() + ".adoc", renderModelTableViaSchema(clazz));
+				writeFile(clazz.getSimpleName() + ".adoc", renderModelTableViaSchema(clazz, modelTableTemplateSource));
 			}
 		}
 
@@ -136,7 +136,7 @@ public class TableGenerator extends AbstractGenerator {
 		return annotation.length != 0;
 	}
 
-	public String renderModelTableViaSchema(Class<?> clazz) throws IOException {
+	public String renderModelTableViaSchema(Class<?> clazz, String template) throws IOException {
 		String name = clazz.getSimpleName();
 		String jsonSchema = JsonUtil.getJsonSchema(clazz);
 		JsonObject schema = new JsonObject(jsonSchema);
@@ -153,7 +153,7 @@ public class TableGenerator extends AbstractGenerator {
 		Map<String, Object> context = new HashMap<>();
 		context.put("entries", list);
 		context.put("name", name);
-		return renderTable(context, modelTableTemplateSource);
+		return renderTable(context, template);
 	}
 
 	private String renderParameterTable(Class<?> clazz) throws Exception {
@@ -195,9 +195,9 @@ public class TableGenerator extends AbstractGenerator {
 	 * @return
 	 * @throws IOException
 	 */
-	public String getTemplate(String tableName) throws IOException {
-		InputStream ins = TableGenerator.class.getResourceAsStream("/" + tableName);
-		Objects.requireNonNull(ins, "Could not find template file {" + tableName + "}");
+	public String getTemplate(String templateName) throws IOException {
+		InputStream ins = TableGenerator.class.getResourceAsStream("/" + templateName);
+		Objects.requireNonNull(ins, "Could not find template file {" + templateName + "}");
 		return IOUtils.toString(ins);
 	}
 
