@@ -25,6 +25,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 	@Override
 	public boolean onNodeJoining(String iNode) {
 		eb.send(EVENT_CLUSTER_NODE_JOINING, iNode);
+		//TODO validate that the joining node uses the same mesh version as our node. Otherwise the join should be denied.
 		return true;
 	}
 
