@@ -15,17 +15,6 @@ Possible usecases are:
 * Load tags, tag families, schema and microschema information
 
 
-== Demo
-
-We have integrated the interactive https://github.com/graphql/graphiql[GraphiQL]footnote:[https://github.com/graphql/graphiql[GraphiQL] is owned and developed by Facebook Inc. Usage is subject to the https://github.com/gentics/mesh/blob/dev/verticles/graphql/src/main/resources/graphiql/LICENSE[LICENSE AGREEMENT For GraphiQL software].] browser into Gentics Mesh so you can easily play with the API.
-
-.Try the example
-[TIP]
-http://getmesh.io/api/v1/demo/graphql/browser/[Live Demo]
-
-Alternatively, you can download Gentics Mesh and test the API locally.
-Once authenticated you can access the interactive GraphiQL browser at ```/api/v1/:projectName/graphql/browser/``` .
-
 == Live Examples
 
 If you want to learn more about the http://graphql.org/learn/queries/[GraphQL syntax take a look at the good documentation].
@@ -74,9 +63,14 @@ include::examples/graphql/node-multilang-query[]
 
 == GraphiQL Browser
 
-Once authenticated you can access the interactive GraphiQL browser. ```/api/v1/:projectName/graphql/browser/``` .
+We have integrated the interactive https://github.com/graphql/graphiql[GraphiQL]footnote:[https://github.com/graphql/graphiql[GraphiQL] is owned and developed by Facebook Inc. Usage is subject to the https://github.com/gentics/mesh/blob/dev/verticles/graphql/src/main/resources/graphiql/LICENSE[LICENSE AGREEMENT For GraphiQL software].] browser into Gentics Mesh so you can easily play with the API.
 
-Try our link:/api/v1/demo/graphql/browser/[Live Demo].
+.Try the example
+[TIP]
+http://getmesh.io/api/v1/demo/graphql/browser/[Live Demo]
+
+Alternatively, you can download Gentics Mesh and test the API locally.
+Once authenticated you can access the interactive GraphiQL browser at ```/api/v1/:projectName/graphql/browser/``` .
 
 NOTE: The GraphiQL browser currently does not support the release or version query parameter.
 
@@ -85,4 +79,3 @@ NOTE: The GraphiQL browser currently does not support the release or version que
 * At the moment, the GraphQL API can currently only be used for read-only operations. Modifying data with via mutations is currently not supported.
 * GraphQL queries are restricted to a specific project. It is not possible to query data across multiple projects.
 * GraphQL queries are restricted to a specific release. The scope of the release can be changed by adding the `?release` query parameter.
-

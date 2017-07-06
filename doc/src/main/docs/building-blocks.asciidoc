@@ -57,20 +57,6 @@ A project represents the base element of your content structure, which includes 
 
 |======
 
-=== Properties
-
-==== Read Properties
-
-include::examples/tables/ProjectResponse.adoc[]
-
-==== Create Properties
-
-include::examples/tables/ProjectCreateRequest.adoc[]
-
-==== Update Properties
-
-include::examples/tables/ProjectUpdateRequest.adoc[]
-
 === Query Parameters
 
 ==== Paging Parameters
@@ -167,10 +153,6 @@ NOTE: It is important to understand that a node is just a container for language
 
 |======
 
-=== Properties
-
-include::examples/tables/NodeResponse.adoc[]
-
 === Query Parameters
 
 ==== Versioning Parameters
@@ -232,10 +214,6 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 | ```POST /api/v1/schema/:schemaUuid/diff```
 
 |======
-
-=== Properties
-
-include::examples/tables/SchemaResponse.adoc[]
 
 === Query Parameters
 
@@ -420,10 +398,6 @@ Gentics Mesh allows tagging of nodes. Tags can not be hierarchically structured.
 | ```DELETE /api/v1/:projectName/nodes/:nodeUuid/tags/:tagUuid```
 |======
 
-=== Properties
-
-include::examples/tables/TagResponse.adoc[]
-
 === Response Sample
 
 [source,json]
@@ -492,10 +466,6 @@ A tag family is defined as part of a project. Tag families can’t be nested.
 
 |======
 
-=== Properties
-
-include::examples/tables/TagFamilyResponse.adoc[]
-
 === Response Sample
 
 [source,json]
@@ -546,10 +516,6 @@ In order to be able to store and retrieve content, a user needs to authenticate 
 | ```DELETE /api/v1/users/:userUuid/token```
 
 |======
-
-=== Properties
-
-include::examples/tables/UserResponse.adoc[]
 
 === Query Parameters
 
@@ -626,10 +592,6 @@ include::examples/api/response/api/v1/users/\{userUuid\}/200/example.json[]
 | ```DELETE /api/v1/group/:groupUuid/users/:userUuid```
 |======
 
-=== Properties
-
-include::examples/tables/GroupResponse.adoc[]
-
 === Query Parameters
 
 ==== Paging Parameters
@@ -682,10 +644,6 @@ include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
 | Set the permissions between role and the targeted element.
 | ```POST /api/v1/roles/:roleUuid```
 |======
-
-=== Properties
-
-include::examples/tables/RoleResponse.adoc[]
 
 === Query Parameters
 
