@@ -2,6 +2,12 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.19 (07.07.2017)
+
+icon:check[] UI: Fixed adding node to node list.
+
+icon:check[] Docs: Various endpoints were not included in the generated RAML. This has been fixed now.
+
 == 0.9.18 (30.06.2017)
 
 icon:plus[] Demo: Fixed demo data uuids.
