@@ -18,14 +18,25 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import com.gentics.ferma.Tx;
 import com.gentics.ferma.TxHandler;
 import com.gentics.ferma.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.ferma.orientdb.OrientDBTx;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
@@ -234,9 +245,51 @@ public class OrientDBDatabase extends AbstractDatabase {
 		return StringEscapeUtils.escapeJava(StringEscapeUtils.escapeXml11(new File(text).getAbsolutePath()));
 	}
 
-	private InputStream getOrientServerConfig() throws IOException {
+	private String getOrientServerConfig() throws Exception {
 		File configFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_SERVER_CONFIG);
-		return new FileInputStream(configFile);
+
+		// Load and parse the xml file - We need to update the stored nodeName value
+		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+		Document doc = dBuilder.parse(configFile);
+		NodeList parameters = doc.getElementsByTagName("parameter");
+		boolean found = false;
+
+		// Iterate over all parameters and locate the nodeName parameter
+		for (int i = 0; i < parameters.getLength(); i++) {
+			Node parameter = parameters.item(i);
+			NamedNodeMap attributes = parameter.getAttributes();
+			Node nameAttr = attributes.getNamedItem("name");
+			String name = nameAttr.getNodeValue();
+			if ("nodeName".equals(name)) {
+				Node valueNode = attributes.getNamedItem("value");
+				valueNode.setNodeValue(getNodeName());
+				found = true;
+				break;
+			}
+		}
+		if (!found) {
+			throw new RuntimeException("Could  not find {nodeName} parameter within {" + configFile + "}");
+		}
+		DOMSource source = new DOMSource(doc);
+		TransformerFactory transformerFactory = TransformerFactory.newInstance();
+		Transformer transformer = transformerFactory.newTransformer();
+		StringWriter writer = new StringWriter();
+		transformer.transform(source, new javax.xml.transform.stream.StreamResult(writer));
+		String result = writer.toString();
+
+		return result;
+	}
+
+	/**
+	 * Determine the Orientdb Node name
+	 * 
+	 * @return
+	 */
+	private String getNodeName() {
+		String name = MeshNameProvider.getInstance().getName().replaceAll(" ", "_") + "@" + Mesh.getBuildInfo().getVersion();
+		name = name.replaceAll("\\.", "-");
+		return name;
 	}
 
 	private void writeOrientServerConfig(File configFile) throws IOException {
@@ -254,7 +307,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);
 		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.isClusterMode()));
 		// TODO check for other invalid characters
-		configString = configString.replaceAll("%NODENAME%", MeshNameProvider.getInstance().getName().replaceAll(" ", "_"));
+		configString = configString.replaceAll("%NODENAME%", getNodeName());
 		configString = configString.replaceAll("%DB_PARENT_PATH%", escapeSafe(storageOptions().getDirectory()));
 		if (log.isDebugEnabled()) {
 			log.debug("Effective orientdb server configuration:" + configString);
@@ -280,11 +333,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 		File pluginDirectory = new File("orientdb-plugins");
 		pluginDirectory.mkdirs();
 		IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "studio-2.2.zip")));
-		server.getDistributedManager().registerLifecycleListener(topologyEventBridge);
 		server.startup(getOrientServerConfig());
 		OServerPluginManager manager = new OServerPluginManager();
 		manager.config(server);
 		server.activate();
+		server.getDistributedManager().registerLifecycleListener(topologyEventBridge);
 		manager.startup();
 	}
 
