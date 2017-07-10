@@ -723,10 +723,10 @@ include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
 | link:++raml#roles__roleUuid__delete++[```DELETE /api/v1/roles/:roleUuid```]
 
 | Read role permissions on elements
-| link:++raml#roles__roleUuid__permissions__pathToElement__get++[```GET /api/v1/roles/:roleUuid```]
+| link:++raml#roles__roleUuid__permissions__path__get++[```GET /api/v1/roles/:roleUuid/permissions/:path```]
 
 | Set role permissions on elements
-| link:++raml#roles__roleUuid__permissions__pathToElement__post++[```POST /api/v1/roles/:roleUuid```]
+| link:++raml#roles__roleUuid__permissions__path__post++[```POST /api/v1/roles/:roleUuid/permissions/:path```]
 |======
 
 === Properties
