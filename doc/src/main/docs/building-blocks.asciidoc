@@ -18,14 +18,14 @@ A project represents the base element of your content structure, which includes 
 
 TIP: Gentics Mesh creates a root or base node for each project. As you will learn soon, each node needs to have a schema it follows. Hence, when creating a new project you need to name a schema. You can use the ```folder``` schema which is shipped with Gentics Mesh.
 
-=== API end points
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
 //TODO add links and example columns
 
 | Description
-| API end point
+| API endpoint
 
 | Create a project
 | link:++raml#projects__post++[```POST /api/v1/projects/```]
@@ -85,12 +85,12 @@ Nodes can be hierarchically structured if the schema is allowing this. They can 
 
 NOTE: It is important to understand that a node is just a container for language variants. These language variants will store your fields. You can query individual language variants by appending the ```?lang``` query parameter. The ```language``` json property within an update or create request will be used to identify which language variant should be created or updated.
 
-=== API end points
+=== API endpoints
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Create a new node
 | link:++raml#project__nodes__post++[```POST /api/v1/projectName/nodes```]
@@ -199,13 +199,13 @@ Typically, each project will require a set of different content types. Together 
 
 TIP: Using the ```container``` property, a schema can be configured to allow for hierarchically structuring nodes. Nodes based on a such a schema may contain child nodes. This is the basis for building link:features.html#_contenttrees[content trees] in Gentics Mesh and leveraging the power of automatic link:features.html#_navigation[navigation menus], link:features.html#_breadcrumbs[breadcrumbs] and link:features.html#_prettyurls[pretty URLs].
 
-=== API end points
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Create a schema
 | link:++raml#schemas__post++[```POST /api/v1/schemas/```]
@@ -358,13 +358,13 @@ Typical use cases for micronodes are content items that do not exist on their ow
 
 NOTE: Nodes can contain micronodes. Micronodes, however, can not contain further micronodes, thus limiting the nesting level to one.
 
-=== API end points
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Create a microschema
 | link:++raml#microschemas__post++[```POST /api/v1/microschemas/```]
@@ -406,13 +406,13 @@ Fields of type ```list``` in micronodes can be of type: ```String```, ```Number`
 
 Gentics Mesh allows tagging of nodes. Tags can not be hierarchically structured.
 
-=== API end points
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Get the tag list of a node
 | link:++raml#project__nodes__nodeUuid__tags_get++[```GET /api/v1/:projectName/nodes/:nodeUuid/tags```]
@@ -468,13 +468,13 @@ Example tags and tag families:
 
 A tag family is defined as part of a project. Tag families can’t be nested.
 
-=== API end points
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Get all tag families
 | link:++raml#project__tagFamilies__get++[```GET /api/v1/:projectName/tagFamilies/```]
@@ -536,13 +536,13 @@ This user object has a standard set of properties, e.g.```firstname```, ```lastn
 
 In order to be able to store and retrieve content, a user needs to authenticate using one of the available link:references.html#_authentication[authentication] mechanisms.
 
-=== API end points
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Get all users
 | link:++raml#users__get++[```GET /api/v1/users/```]
@@ -620,13 +620,13 @@ include::examples/api/response/api/v1/users/\{userUuid\}/200/example.json[]
 
 *Groups* are used to organize users and efficiently grant them permissions by assigning relevant roles to groups. Groups ca not be nested. Instead, a user can be part of several groups.
 
-=== API end points
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Get all groups
 | link:++raml#groups__get++[```GET /api/v1/groups/```]
@@ -699,13 +699,13 @@ include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
 
 //TODO picture with example User/Group/Roles that we ship
 
-=== API end points
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Get all roles
 | link:++raml#roles__get++[```GET /api/v1/roles/```]

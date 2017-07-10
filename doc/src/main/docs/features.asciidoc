@@ -43,16 +43,16 @@ The ```segmentField``` is used to build the path of a specific node. According t
 
 image::GenticsMesh-PrettyURL-Example.png[Gentics Mesh Example for Building Pretty URLs,role="img-responsive"]
 
-The ```path``` property as well as the ```languagesPath``` property (for available language variants) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` end point together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
+The ```path``` property as well as the ```languagesPath``` property (for available language variants) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` endpoint together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
 For more details see the documentation on link:building-blocks.html#_node[node] and <<webroot,WebRoot API>>, respectively.
 
-==== API end points
+==== API endpoints
 
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Get the node with the given UUID.
 | ```GET /api/v1/:projectName/nodes/:nodeUuid```
@@ -163,7 +163,7 @@ http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLink
 == Navigation Menus
 When organizing your content in terms of a node tree, Gentics Mesh offers two ways of generating a nested navigation response.
 
-The API end point ```/api/v1/:projectName/nodes/:nodeUuid/navigation``` returns a navigation object for the provided node, while the ```/api/v1/:projectName/navroot/:path``` API end point returns a navigation object for a node which is located using a given path.
+The API endpoint ```/api/v1/:projectName/nodes/:nodeUuid/navigation``` returns a navigation object for the provided node, while the ```/api/v1/:projectName/navroot/:path``` API endpoint returns a navigation object for a node which is located using a given path.
 Each endpoint will return a navigation response which contains the nested navigation tree structure.
 
 By default, only container nodes are included in a navigation response. The `includeAll` query parameter will include all nodes, if set to `true`.
@@ -171,16 +171,16 @@ The `maxDepth` parameter may be used to limit the navigation depth. In order to 
 
 image::GenticsMesh-Navigation-Example.png[Gentics Mesh Example for Building Navigation Menus,role="img-responsive"]
 
-The demo app includes a navigation object showing just the top-level elements _Automobiles_, _Aircraft_, and _Yachts_ as well as the _Home_ link. All the elements can be easily queried using the available navigation end points. In particular, the example uses the ```/api/v1/:projectName/navroot/:path``` API end point, with the URL parameter ```:path``` querying the project root node, i.e., ```/``` together with query parameter ```?maxDepth``` limiting the resulting nested JSON object to the top-level nodes.
+The demo app includes a navigation object showing just the top-level elements _Automobiles_, _Aircraft_, and _Yachts_ as well as the _Home_ link. All the elements can be easily queried using the available navigation endpoints. In particular, the example uses the ```/api/v1/:projectName/navroot/:path``` API endpoint, with the URL parameter ```:path``` querying the project root node, i.e., ```/``` together with query parameter ```?maxDepth``` limiting the resulting nested JSON object to the top-level nodes.
 
 
-=== API end points
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Returns a navigation object for the provided node.
 | ```GET /api/v1/:projectName/nodes/:nodeUuid/navigation```
@@ -589,13 +589,13 @@ image::GenticsMesh-Breadcrumb-Example.png[Gentics Mesh Example for Building Brea
 
 The ```breadcrumb``` property will be returned in all API responses containing nodes. Using the ```resolveLink``` query parameter will also the paths of the nodes listed in the array.
 
-=== API end points
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Get all nodes of a project and return a paged list response.
 | ```GET /api/v1/projectName/nodes```
@@ -717,7 +717,7 @@ image::GenticsMesh-WebRootAPI-Example.png[Gentics Mesh Example for Fetching Cont
 
 This functionality builds on top of using the nodes' ```segmentField``` property to build the path of a specific node.
 WebRoot paths of arbitrary depth can be created, in combination with organizing content hierarchically in terms of a <<contenttree,content tree>> by specifying nodes to be ```containers``` for their child nodes.
-The WebRoot API end point uses this information to resolve a given path to a node UUID.
+The WebRoot API endpoint uses this information to resolve a given path to a node UUID.
 
 Using the WebRoot API it is possible to easily integrate Gentics Mesh with many known routing frameworks.
 
@@ -732,13 +732,13 @@ Using the WebRoot API it is possible to easily integrate Gentics Mesh with many 
 
 //TODO Blogpost on WebRoot API
 
-=== API end points
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Load the node or the node's binary data, which is located using the provided path.
 | ```GET /api/v1/:projectName/webroot/:path```
@@ -757,7 +757,7 @@ NOTE: Each segment of the URL must be URL-encoded. A node's language variants mu
 [TIP]
 http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
-Loading the node with the given UUID using API end point ```GET /api/v1/:projectName/nodes/:nodeUuid```.
+Loading the node with the given UUID using API endpoint ```GET /api/v1/:projectName/nodes/:nodeUuid```.
 
 ==== Fetch node with WebRoot path
 
@@ -772,7 +772,7 @@ The WebRoot API, furthermore, directly supports delivering binary content using 
 
 > http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
 
-Downloading a node's binary field with the given name using API end point ```GET /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```.
+Downloading a node's binary field with the given name using API endpoint ```GET /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```.
 
 ==== Fetch an image with WebRoot path
 
@@ -837,15 +837,15 @@ The ```?resolveLinks``` query parameter defines if and how links are resolved:
 * `medium` - the resolved links will contain the project name (```/:projectName/:path```).
 * `short` - will contain neither WebRoot prefix nor project name, just the path (```:path```).
 
-The ```?resolveLinks``` query parameter can be applied to all API end points returning nodes.
+The ```?resolveLinks``` query parameter can be applied to all API endpoints returning nodes.
 
-=== API end points
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Get all nodes of a project and return a paged list response.
 | ```GET /api/v1/projectName/nodes```
@@ -866,9 +866,9 @@ The ```?resolveLinks``` query parameter can be applied to all API end points ret
 
 === Link Resolver Utility
 
-In addition to the above, Gentics Mesh offers the ```/api/v1/utilities/linkResolver``` end point that can be used to resolve Gentics Mesh links within the posted text data. This is useful when resolving links for a preview page.
+In addition to the above, Gentics Mesh offers the ```/api/v1/utilities/linkResolver``` endpoint that can be used to resolve Gentics Mesh links within the posted text data. This is useful when resolving links for a preview page.
 
-It’s necessary to send the content in which links should get resolved to the API end point in plain text or JSON. The query parameter ```?resolveLinks``` is used to specify how links shall be resolved.
+It’s necessary to send the content in which links should get resolved to the API endpoint in plain text or JSON. The query parameter ```?resolveLinks``` is used to specify how links shall be resolved.
 
 Valid links:
 
@@ -884,12 +884,12 @@ Valid links:
 [[imagemanipulation]]
 == Image Manipulation
 
-Images can be resized and/or cropped by appending the <<imagemanipulationparams,image manipulation query parameters>> on the relevant API end points.
+Images can be resized and/or cropped by appending the <<imagemanipulationparams,image manipulation query parameters>> on the relevant API endpoints.
 
 
 === Fetch and Resize an Image with UUID
 
-End point: ```/api/v1/:projectName/nodes/:uuid/binary/:fieldname?width=220```
+endpoint: ```/api/v1/:projectName/nodes/:uuid/binary/:fieldname?width=220```
 
 .Try the example
 [TIP]
@@ -897,9 +897,9 @@ http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/imag
 
 === Fetch and Crop an Image with WebRoot Path
 
-It is also possible to use the image manipulation in combination with the WebRoot end point.
+It is also possible to use the image manipulation in combination with the WebRoot endpoint.
 
-End point: ```/api/v1/:projectName/webroot/:path?cropx=10&cropy=100&cropw=800&croph=400```
+endpoint: ```/api/v1/:projectName/webroot/:path?cropx=10&cropy=100&cropw=800&croph=400```
 
 .Try the example
 [TIP]
@@ -911,7 +911,7 @@ NOTE: It is mandatory to specify all four crop parameters when cropping an image
 
 Gentics Mesh also allows you to transform (i.e, crop and/or resize) and overwrite an image in a single step. The image manipulation parameters then are part of the request body.
 
-End point: ```POST /api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname```
+endpoint: ```POST /api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname```
 
 .Try the example
 [TIP]
@@ -938,7 +938,7 @@ Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gent
 
 == File Upload
 
-Binary data can be attached to node binary fields. The ```/api/v1/nodes/:uuid/binary/:fieldName``` end point can be used to POST binary data and thus update the stored binary field.
+Binary data can be attached to node binary fields. The ```/api/v1/nodes/:uuid/binary/:fieldName``` endpoint can be used to POST binary data and thus update the stored binary field.
 
 NOTE: This endpoint is accepting ```multipart/form-data```, only.
 
@@ -982,7 +982,7 @@ You can query individual language variants by appending the ```?lang``` query pa
 
 Requests for nodes should contain the requested languages (as comma separated list)as query parameter:
 
-End point: ```/api/v1/:projectName/nodes/:uuid?lang=en,de```
+endpoint: ```/api/v1/:projectName/nodes/:uuid?lang=en,de```
 
 If the requested node is available in any of the languages, the response will contain the fields in that language (first language found).
 
@@ -1035,15 +1035,15 @@ IMPORTANT: Gentics Mesh by default returns the ```draft``` version of nodes. Thi
 
 NOTE: The ```publish``` and ```readPublish``` permissions are specifically available for node elements.
 
-Following, we will discuss how to query, assign and revoke permissions in Gentics Mesh including the available API end points.
+Following, we will discuss how to query, assign and revoke permissions in Gentics Mesh including the available API endpoints.
 
-==== API end points
+==== API endpoints
 
 [options="header",cols="2*"]
 |======
 
 | Description
-| API end point
+| API endpoint
 
 | Read the user permissions on the element that can be located by the specified path.
 | link:raml/#users__userUuid__permissions__path__get[```GET /api/v1/users/:userUuid/permissions/:path```]
@@ -1058,11 +1058,11 @@ Following, we will discuss how to query, assign and revoke permissions in Gentic
 
 === Querying Permissions
 
-There are dedicated API end points for querying permissions on elements.
+There are dedicated API endpoints for querying permissions on elements.
 
 NOTE: The following example links, require prior authentication with user ```admin``` (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication section] to learn about the different authentication mechanisms provided by Gentics Mesh.
 
-The ```/api/v1/roles/:roleUuid/permissions/:path``` end point can be used to query a role's permission on a specific element or set of elements.
+The ```/api/v1/roles/:roleUuid/permissions/:path``` endpoint can be used to query a role's permission on a specific element or set of elements.
 
 For example, the link:references.html#_authentication[authenticated] ```admin``` user is able to find out the configured permissions for role ```anonymous``` on node ```fc3c85be82584ae2bc85be82588ae2b0```:
 
@@ -1080,16 +1080,16 @@ http://localhost:8080/api/v1/roles/292abe389d434b1eaabe389d430b1ee0/permissions/
 } 
 -----
 
-Alternatively, the end point ```/api/v1/users/:userUuid/permissions/:path``` provides a shortcut for querying permissions for specific users directly, e.g., for user ```anonymous```, which is essentially inheriting all permissions from role ```anonymous```.
+Alternatively, the endpoint ```/api/v1/users/:userUuid/permissions/:path``` provides a shortcut for querying permissions for specific users directly, e.g., for user ```anonymous```, which is essentially inheriting all permissions from role ```anonymous```.
 
 http://localhost:8080/api/v1/users/7e190e7adbc24eb8990e7adbc22eb8e3/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/fc3c85be82584ae2bc85be82588ae2b0
 
 === Assigning & Revoking Permissions 
 
-The ```/api/v1/roles/:roleUuid/permissions``` API end point can be used to assign or revoke permissions to/from a role.
+The ```/api/v1/roles/:roleUuid/permissions``` API endpoint can be used to assign or revoke permissions to/from a role.
 
-Furthermore, this end point can also be used to apply recursive permissions.
-It is important to note that permissions can be applied to individual elements and onto a set of elements which is identified by the end point name (e.g.: ```/group``` and ```/groups```).
+Furthermore, this endpoint can also be used to apply recursive permissions.
+It is important to note that permissions can be applied to individual elements and onto a set of elements which is identified by the endpoint name (e.g.: ```/group``` and ```/groups```).
 
 
 For newly created objects CRUD permissions are assigned to those roles that would be able to also create the object in the first place.
@@ -1412,7 +1412,7 @@ The latest version which was created using an update request is called the ```dr
 
 Node language variants can be published and taken offline. This is particularly useful if you want to first work on a draft, then review it and publish it at a later point in time.
 
-Publishing requires a ```POST``` request on the ```/api/v1/:projectName/nodes/:uuid/published``` end point, which will publish all language variants of the node.
+Publishing requires a ```POST``` request on the ```/api/v1/:projectName/nodes/:uuid/published``` endpoint, which will publish all language variants of the node.
 It is also possible to just publish specific language variants with dedicated ```POST``` requests on ```/api/v1/:projectName/nodes/:uuid/languages/:languageTag/published```.
 
 Gentics Mesh will automatically create a new major version when publishing a node language variant (e.g.: 1.0, 2.0). The ```draft``` reference will also be updated to point to the major version, e.g. 1.0.
@@ -1714,11 +1714,11 @@ The post request will contain the node JSON data of the current editing state. T
 == Password Recovery
 
 A user who lost his password is able to recover it using a reset token. This token, typically, is issued by a user or service having permissions to create new users.
-The ```/api/v1/users/:userUuid/reset_token``` end point will return a token code which then can be passed along to an email service sending a recovery email to the user including named token.
+The ```/api/v1/users/:userUuid/reset_token``` endpoint will return a token code which then can be passed along to an email service sending a recovery email to the user including named token.
 
 NOTE: A token is valid for 30 minutes and will be invalidated once it has been used.
 
-The user can use this token to update his user record by issuing a POST request to the ```/api/v1/users/:userUuid?token=TOKENCODE``` end point. E.g., this can be done by presenting the user a form for updating his password. This works even if the user is not authenticated.
+The user can use this token to update his user record by issuing a POST request to the ```/api/v1/users/:userUuid?token=TOKENCODE``` endpoint. E.g., this can be done by presenting the user a form for updating his password. This works even if the user is not authenticated.
 
 == Schema & Microschema Migration
 
