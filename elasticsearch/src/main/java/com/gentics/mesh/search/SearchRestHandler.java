@@ -241,7 +241,7 @@ public class SearchRestHandler {
 			@Override
 			public void onFailure(Throwable e) {
 				log.error("Search query failed", e);
-				throw error(BAD_REQUEST, "search_error_query");
+				ac.fail(error(BAD_REQUEST, "search_error_query"));
 			}
 		});
 

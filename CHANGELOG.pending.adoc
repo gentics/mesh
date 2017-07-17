@@ -1,1 +1,2 @@
 
+icon:check[] Search: The error reporting for failing queries has been improved.

@@ -1574,6 +1574,38 @@ Find all nodes which have a micronode list field (vcardlist) that contain at lea
 }
 ----
 
+*Search nodes which are tagged 'Solar' and 'Blue'*
+
+The tags field is a nested field and thus a nested query must be used to match the two tags. Please note that you need to use `match_phrase` because you want to match the whole tag name. Using `match` would cause elasticsearch to match any of trigram found within the tag name value. 
+
+[source,json]
+----
+{
+  "query": {
+    "nested": {
+      "path": "tags",
+      "query": {
+        "bool": {
+          "must": [
+            {
+              "match_phrase": {
+                "tags.name": "Solar"
+              }
+            },
+            {
+              "match_phrase": {
+                "tags.name": "Blue"
+              }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+----
+
+
 
 === Projects
 
