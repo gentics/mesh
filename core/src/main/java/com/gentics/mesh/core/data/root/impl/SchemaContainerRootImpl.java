@@ -74,7 +74,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		container.setLatestVersion(version);
 
 		// set the initial version
-		schema.setVersion(1);
+		schema.setVersion("1.0");
 		version.setSchema(schema);
 		version.setName(schema.getName());
 		version.setSchemaContainer(container);
@@ -134,7 +134,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		}
 		String schemaName = reference.getName();
 		String schemaUuid = reference.getUuid();
-		Integer schemaVersion = reference.getVersion();
+		String schemaVersion = reference.getVersion();
 
 		// Prefer the name over the uuid
 		SchemaContainer schemaContainer = null;

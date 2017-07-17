@@ -19,6 +19,7 @@ import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -154,6 +155,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		readOne.path("/:schemaUuid");
 		readOne.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		readOne.method(GET);
+		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.description("Load the schema with the given uuid.");
 		readOne.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Loaded schema.");
 		readOne.produces(APPLICATION_JSON);

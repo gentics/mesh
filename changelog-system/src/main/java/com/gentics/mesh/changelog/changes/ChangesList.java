@@ -24,6 +24,7 @@ public final class ChangesList {
 		list.add(new RestructureTags());
 		list.add(new ReindexAllToFixFailedMigrations());
 		list.add(new SanitizeMicroschemaJson());
+		list.add(new ChangeSchemaVersionType());
 		// ADD NEW CHANGES HERE!
 		return list;
 	}

@@ -46,7 +46,7 @@ public class SchemaContainerTest extends AbstractMeshTest implements BasicObject
 			assertNotNull(reference);
 			assertEquals(schema.getUuid(), reference.getUuid());
 			assertEquals(schema.getLatestVersion().getName(), reference.getName());
-			assertEquals(schema.getLatestVersion().getVersion(), reference.getVersion().intValue());
+			assertEquals(schema.getLatestVersion().getVersion(), reference.getVersion());
 		}
 	}
 

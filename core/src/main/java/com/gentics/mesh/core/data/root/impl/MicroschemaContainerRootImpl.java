@@ -64,7 +64,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		MicroschemaContainer container = getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 		MicroschemaContainerVersion version = getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 
-		microschema.setVersion(1);
+		microschema.setVersion("1.0");
 		container.setLatestVersion(version);
 		version.setName(microschema.getName());
 		version.setSchema(microschema);
@@ -105,7 +105,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	public MicroschemaContainerVersion fromReference(MicroschemaReference reference, Release release) {
 		String microschemaName = reference.getName();
 		String microschemaUuid = reference.getUuid();
-		Integer version = release == null ? reference.getVersion() : null;
+		String version = release == null ? reference.getVersion() : null;
 		MicroschemaContainer container = null;
 		if (!isEmpty(microschemaName)) {
 			container = findByName(microschemaName);

@@ -135,7 +135,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			SchemaReference reference = new SchemaReference();
 			reference.setName("test");
-			reference.setVersion(1);
+			reference.setVersion("1.0");
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid, reference));
 
 			// We don't need to wait for a schema migration because there are no nodes which use the schema

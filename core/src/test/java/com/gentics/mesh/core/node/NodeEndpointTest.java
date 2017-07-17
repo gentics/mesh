@@ -112,7 +112,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName("content");
 		schemaReference.setUuid(schemaUuid);
-		schemaReference.setVersion(1);
+		schemaReference.setVersion("1.0");
 		request.setLanguage("BOGUS");
 		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 		request.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
@@ -131,7 +131,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid = db().tx(() -> project().getBaseNode().getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference().setVersion(1).setName("content").setUuid(schemaUuid));
+		request.setSchema(new SchemaReference().setVersion("1.0").setName("content").setUuid(schemaUuid));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
@@ -151,7 +151,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		String folderUuid = db().tx(() -> folder("news").getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference().setName("folder").setVersion(1).setUuid(schemaUuid));
+		request.setSchema(new SchemaReference().setName("folder").setVersion("1.0").setUuid(schemaUuid));
 		request.setLanguage("en");
 		request.getFields().put("slug", FieldUtil.createStringField("some slug"));
 		request.setParentNodeUuid(folderUuid);

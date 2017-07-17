@@ -88,7 +88,7 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		Map<String, String> schemaFields = new HashMap<>();
 		schemaFields.put(NAME_KEY, name);
 		schemaFields.put(UUID_KEY, uuid);
-		schemaFields.put(VERSION_KEY, String.valueOf(schemaContainerVersion.getVersion()));
+		schemaFields.put(VERSION_KEY, schemaContainerVersion.getVersion());
 		document.put("schema", schemaFields);
 	}
 
@@ -576,7 +576,7 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		JsonObject schemaMappingProperties = new JsonObject();
 		schemaMappingProperties.put("uuid", notAnalyzedType(STRING));
 		schemaMappingProperties.put("name", trigramStringType());
-		schemaMappingProperties.put("version", notAnalyzedType(LONG));
+		schemaMappingProperties.put("version", notAnalyzedType(STRING));
 		schemaMapping.put("properties", schemaMappingProperties);
 		typeProperties.put("schema", schemaMapping);
 

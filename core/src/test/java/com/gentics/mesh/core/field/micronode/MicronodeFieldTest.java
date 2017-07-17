@@ -357,7 +357,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			// Create microschema for the micronode
 			MicroschemaContainerVersion containerVersion = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 			MicroschemaModel microschema = new MicroschemaModelImpl();
-			microschema.setVersion(1);
+			microschema.setVersion("1.0");
 			microschema.addField(FieldUtil.createStringFieldSchema("string"));
 			microschema.addField(FieldUtil.createDateFieldSchema("date"));
 

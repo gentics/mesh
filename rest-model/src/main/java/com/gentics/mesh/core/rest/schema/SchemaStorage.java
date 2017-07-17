@@ -23,7 +23,7 @@ public interface SchemaStorage {
 	 * @param version
 	 *            Schema version
 	 */
-	void removeSchema(String name, int version);
+	void removeSchema(String name, String version);
 
 	/**
 	 * Return the schema with the given name in the newest version.
@@ -43,7 +43,7 @@ public interface SchemaStorage {
 	 *            Schema version
 	 * @return Found schema or null when no schema could be found
 	 */
-	SchemaModel getSchema(String name, int version);
+	SchemaModel getSchema(String name, String version);
 
 	/**
 	 * Add the given schema to the storage. Existing schemas will be updated.
@@ -71,7 +71,7 @@ public interface SchemaStorage {
 	 *            Microschema version
 	 * @return Found microschema or null when no microschema could be found
 	 */
-	MicroschemaModel getMicroschema(String name, int version);
+	MicroschemaModel getMicroschema(String name, String version);
 
 	/**
 	 * Add the given microschema to the storage
@@ -97,7 +97,7 @@ public interface SchemaStorage {
 	 * @param version
 	 *            microschema version
 	 */
-	void removeMicroschema(String name, int version);
+	void removeMicroschema(String name, String version);
 
 	/**
 	 * Return the size of the storage (schemas an microschemas)

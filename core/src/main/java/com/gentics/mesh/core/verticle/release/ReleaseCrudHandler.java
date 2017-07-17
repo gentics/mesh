@@ -154,9 +154,9 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					// Invoke schema migration for each found schema version
 
 					SchemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
-					if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
-						throw error(BAD_REQUEST, "release_error_downgrade_schema_version", version.getName(),
-								Integer.toString(assignedVersion.getVersion()), Integer.toString(version.getVersion()));
+					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
+						throw error(BAD_REQUEST, "release_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
+								version.getVersion());
 					}
 					release.assignSchemaVersion(version);
 
@@ -225,9 +225,9 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					MicroschemaContainerVersion version = microschemaContainerRoot.fromReference(reference);
 
 					MicroschemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
-					if (assignedVersion != null && assignedVersion.getVersion() > version.getVersion()) {
-						throw error(BAD_REQUEST, "release_error_downgrade_microschema_version", version.getName(),
-								Integer.toString(assignedVersion.getVersion()), Integer.toString(version.getVersion()));
+					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
+						throw error(BAD_REQUEST, "release_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
+								version.getVersion());
 					}
 					release.assignMicroschemaVersion(version);
 
@@ -314,8 +314,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					MicroschemaContainerVersion version = currentVersion;
 					Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
 						try (Tx tx = db.tx()) {
-							log.info("After migration " + microschemaContainer.getName() + ":" + version.getVersion() + " - "
-									+ version.getUuid() + "=" + version.getFieldContainers(releaseUuid).size());
+							log.info("After migration " + microschemaContainer.getName() + ":" + version.getVersion() + " - " + version.getUuid()
+									+ "=" + version.getFieldContainers(releaseUuid).size());
 						}
 						latch.countDown();
 					});
