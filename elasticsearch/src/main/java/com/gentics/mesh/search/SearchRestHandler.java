@@ -209,7 +209,10 @@ public class SearchRestHandler {
 
 						// Set meta information to the rest response
 						PagingMetaInfo metainfo = new PagingMetaInfo();
-						int totalPages = (int) Math.ceil(list.size() / (double) pagingInfo.getPerPage());
+						int totalPages = 0;
+						if (pagingInfo.getPerPage() != 0) {
+							totalPages = (int) Math.ceil(list.size() / (double) pagingInfo.getPerPage());
+						}
 						// Cap totalpages to 1
 						totalPages = totalPages == 0 ? 1 : totalPages;
 						metainfo.setTotalCount(list.size());

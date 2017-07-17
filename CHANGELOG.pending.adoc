@@ -1,2 +1,4 @@
 
 icon:check[] Search: The error reporting for failing queries has been improved.
+
+icon:check[] Search: The total page count value has been fixed for queries which were using `?perPage=0`.
