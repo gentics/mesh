@@ -18,6 +18,7 @@ import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateSet;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -32,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.stream.Collectors;
 
@@ -64,6 +66,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.test.performance.TestUtils;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -426,21 +429,22 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	@Override
-	@Ignore("not yet supported")
 	public void testUpdateMultithreaded() throws Exception {
-		try (Tx tx = tx()) {
-			SchemaContainer schema = schemaContainer("content");
-			SchemaUpdateRequest request = new SchemaUpdateRequest();
-			request.setName("new-name");
+		String uuid = tx(() -> schemaContainer("content").getUuid());
+		String json = tx(() -> schemaContainer("content").getLatestVersion().getJson());
+		SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
 
-			int nJobs = 5;
-			CyclicBarrier barrier = prepareBarrier(nJobs);
-			Set<MeshResponse<?>> set = new HashSet<>();
-			for (int i = 0; i < nJobs; i++) {
-				set.add(client().updateSchema(schema.getUuid(), request).invoke());
-			}
-			validateSet(set, barrier);
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
+		int nJobs = 20;
+		CyclicBarrier barrier = prepareBarrier(nJobs);
+		Set<MeshResponse<?>> set = new HashSet<>();
+		for (int i = 0; i <= nJobs; i++) {
+			request.setName("newname" + i);
+			set.add(client().updateSchema(uuid, request).invoke());
 		}
+		validateSet(set, barrier);
+		failingLatch(latch);
+		Thread.sleep(5000);
 	}
 
 	@Test
