@@ -93,8 +93,8 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 
 	private void saveMeshUiConfig() {
 		File parentFolder = new File(CONFIG_FOLDERNAME);
-		if (!parentFolder.mkdirs()) {
-			throw error(INTERNAL_SERVER_ERROR, "Could not create configuration folder {" + parentFolder + "}");
+		if (!parentFolder.exists() && !parentFolder.mkdirs()) {
+			throw error(INTERNAL_SERVER_ERROR, "Could not create configuration folder {" + parentFolder.getAbsolutePath() + "}");
 		}
 		File outputFile = new File(parentFolder, CONF_FILE);
 		if (!outputFile.exists()) {
