@@ -18,8 +18,8 @@ public class MicroschemaExamples extends AbstractExamples {
 
 	public MicroschemaReferenceList createMicroschemaReferenceList() {
 		MicroschemaReferenceList microschemas = new MicroschemaReferenceList();
-		microschemas.add(getMicroschemaReference("vcard", 2));
-		microschemas.add(getMicroschemaReference("geolocation", 1));
+		microschemas.add(getMicroschemaReference("vcard", "2.0"));
+		microschemas.add(getMicroschemaReference("geolocation", "1.0"));
 		return microschemas;
 	}
 
@@ -27,7 +27,7 @@ public class MicroschemaExamples extends AbstractExamples {
 		MicroschemaResponse microschema = new MicroschemaResponse();
 		microschema.setName("geolocation");
 		microschema.setDescription("Microschema for Geolocations");
-		microschema.setVersion(1);
+		microschema.setVersion("1.0");
 		microschema.setUuid(UUIDUtil.randomUUID());
 
 		NumberFieldSchema longitudeFieldSchema = new NumberFieldSchemaImpl();

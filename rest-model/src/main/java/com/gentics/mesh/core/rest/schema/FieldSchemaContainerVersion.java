@@ -7,7 +7,7 @@ public interface FieldSchemaContainerVersion extends FieldSchemaContainer {
 	 * 
 	 * @return
 	 */
-	int getVersion();
+	String getVersion();
 
 	/**
 	 * Set the container version.
@@ -15,6 +15,6 @@ public interface FieldSchemaContainerVersion extends FieldSchemaContainer {
 	 * @param version
 	 * @return Fluent API
 	 */
-	FieldSchemaContainerVersion setVersion(int version);
+	FieldSchemaContainerVersion setVersion(String version);
 
 }

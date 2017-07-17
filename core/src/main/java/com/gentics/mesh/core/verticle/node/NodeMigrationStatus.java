@@ -9,7 +9,7 @@ public class NodeMigrationStatus implements NodeMigrationStatusMBean {
 
 	protected String name;
 
-	protected int version;
+	protected String version;
 
 	protected int totalNodes;
 
@@ -21,7 +21,7 @@ public class NodeMigrationStatus implements NodeMigrationStatusMBean {
 	 * @param version schema version
 	 * @param type type
 	 */
-	public NodeMigrationStatus(String name, int version, Type type) {
+	public NodeMigrationStatus(String name, String version, Type type) {
 		this.name = name;
 		this.version = version;
 		this.type = type;
@@ -33,7 +33,7 @@ public class NodeMigrationStatus implements NodeMigrationStatusMBean {
 	}
 
 	@Override
-	public int getVersion() {
+	public String getVersion() {
 		return version;
 	}
 

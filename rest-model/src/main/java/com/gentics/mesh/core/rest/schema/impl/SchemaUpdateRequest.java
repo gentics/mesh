@@ -24,15 +24,15 @@ public class SchemaUpdateRequest implements SchemaModel {
 	private boolean container = false;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Version of the schema")
-	private int version;
+	@JsonPropertyDescription("Version of the schema.")
+	private String version;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Description of the schema")
+	@JsonPropertyDescription("New dscription of the schema.")
 	private String description;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Name of the schema")
+	@JsonPropertyDescription("Name of the schema.")
 	private String name;
 
 	@JsonProperty(required = true)
@@ -95,12 +95,12 @@ public class SchemaUpdateRequest implements SchemaModel {
 	}
 
 	@Override
-	public int getVersion() {
+	public String getVersion() {
 		return version;
 	}
 
 	@Override
-	public SchemaUpdateRequest setVersion(int version) {
+	public SchemaUpdateRequest setVersion(String version) {
 		this.version = version;
 		return this;
 	}

@@ -41,7 +41,7 @@ public class SchemaModelImpl implements SchemaModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Version of the schema")
-	private int version;
+	private String version;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Description of the schema")
@@ -56,12 +56,12 @@ public class SchemaModelImpl implements SchemaModel {
 	private List<FieldSchema> fields = new ArrayList<>();
 
 	@Override
-	public int getVersion() {
+	public String getVersion() {
 		return version;
 	}
 
 	@Override
-	public SchemaModelImpl setVersion(int version) {
+	public SchemaModelImpl setVersion(String version) {
 		this.version = version;
 		return this;
 	}

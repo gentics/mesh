@@ -11,7 +11,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 public class MicroschemaUpdateRequest implements MicroschemaModel {
 
 	@JsonPropertyDescription("Version of the microschema")
-	private int version;
+	private String version;
 
 	@JsonPropertyDescription("Description of the microschema")
 	private String description;
@@ -23,12 +23,12 @@ public class MicroschemaUpdateRequest implements MicroschemaModel {
 	private List<FieldSchema> fields = new ArrayList<>();
 
 	@Override
-	public int getVersion() {
+	public String getVersion() {
 		return version;
 	}
 
 	@Override
-	public MicroschemaUpdateRequest setVersion(int version) {
+	public MicroschemaUpdateRequest setVersion(String version) {
 		this.version = version;
 		return this;
 	}

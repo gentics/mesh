@@ -26,15 +26,15 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	private boolean container = false;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Version of the schema")
-	private int version;
+	@JsonPropertyDescription("Version of the schema.")
+	private String version;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Description of the schema")
+	@JsonPropertyDescription("Description of the schema.")
 	private String description;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Name of the schema")
+	@JsonPropertyDescription("Name of the schema.")
 	private String name;
 
 	@JsonProperty(required = true)
@@ -97,12 +97,12 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public int getVersion() {
+	public String getVersion() {
 		return version;
 	}
 
 	@Override
-	public SchemaResponse setVersion(int version) {
+	public SchemaResponse setVersion(String version) {
 		this.version = version;
 		return this;
 	}

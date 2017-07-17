@@ -48,7 +48,9 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -165,12 +167,52 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testReadByUUID() throws Exception {
 		try (Tx tx = tx()) {
-			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
+			MicroschemaContainer vcardContainer = microschemaContainer("vcard");
 			assertNotNull(vcardContainer);
 			MicroschemaResponse microschemaResponse = call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()));
 			assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getLatestVersion().getSchema(), "name",
 					"description");
 		}
+	}
+
+	@Test
+	public void testReadVersion() {
+		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
+		String latestVersion = tx(() -> microschemaContainer("vcard").getLatestVersion().getVersion());
+		String json = tx(() -> microschemaContainer("vcard").getLatestVersion().getJson());
+
+		// Load the latest version
+		MicroschemaResponse restSchema = call(() -> client().findMicroschemaByUuid(uuid, new VersioningParametersImpl().setVersion(latestVersion)));
+		assertEquals("The loaded version did not match up with the requested version.", latestVersion, restSchema.getVersion());
+
+		// Now update the microschema
+		MicroschemaUpdateRequest request = JsonUtil.readValue(json, MicroschemaUpdateRequest.class);
+		request.setDescription("New description");
+		request.addField(FieldUtil.createHtmlFieldSchema("someHtml"));
+		call(() -> client().updateMicroschema(uuid, request));
+
+		// Load the previous version
+		restSchema = call(() -> client().findMicroschemaByUuid(uuid, new VersioningParametersImpl().setVersion(latestVersion)));
+		assertEquals("The loaded version did not match up with the requested version.", latestVersion, restSchema.getVersion());
+
+		// Load the latest version (2.0)
+		restSchema = call(() -> client().findMicroschemaByUuid(uuid));
+		assertEquals("The loaded version did not match up with the requested version.", "2.0", restSchema.getVersion());
+
+		// Load the expected 2.0 version
+		restSchema = call(() -> client().findMicroschemaByUuid(uuid, new VersioningParametersImpl().setVersion("2.0")));
+		assertEquals("The loaded version did not match up with the requested version.", "2.0", restSchema.getVersion());
+	}
+
+	@Test
+	public void testReadBogusVersion() {
+		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
+
+		call(() -> client().findMicroschemaByUuid(uuid, new VersioningParametersImpl().setVersion("5.0")), NOT_FOUND,
+				"object_not_found_for_uuid_version", uuid, "5.0");
+
+		call(() -> client().findMicroschemaByUuid(uuid, new VersioningParametersImpl().setVersion("sadgsdgasgd")), BAD_REQUEST,
+				"error_illegal_version", "sadgsdgasgd");
 	}
 
 	@Test

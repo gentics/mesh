@@ -32,7 +32,7 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * 
 	 * @return
 	 */
-	int getVersion();
+	String getVersion();
 
 	/**
 	 * Return the schema model that is stored within the container.
