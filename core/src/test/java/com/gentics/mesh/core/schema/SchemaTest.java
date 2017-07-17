@@ -81,7 +81,7 @@ public class SchemaTest {
 			JsonUtil.readValue(json.encodePrettily(), SchemaModelImpl.class);
 			fail("An error should have been thrown");
 		} catch (GenericRestException e) {
-			assertThat(e).matches("error_json_structure_invalid", "9", "4", "fields", "Missing type property for field {Name}");
+			assertThat(e).matches("error_json_structure_invalid", "8", "4", "fields", "Missing type property for field {Name}");
 		}
 	}
 

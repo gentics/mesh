@@ -509,19 +509,19 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	public void testAssignBogusSchemaVersion() throws Exception {
 		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
-				new SchemaReference().setName("content").setVersion("4711.0")), BAD_REQUEST, "error_schema_reference_not_found", "content", "-", "4711");
+				new SchemaReference().setName("content").setVersion("4711.0")), BAD_REQUEST, "error_schema_reference_not_found", "content", "-", "4711.0");
 	}
 
 	@Test
 	public void testAssignBogusSchemaUuid() throws Exception {
 		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), new SchemaReference().setUuid("bogusuuid").setVersion("1.0")),
-				BAD_REQUEST, "error_schema_reference_not_found", "-", "bogusuuid", "1");
+				BAD_REQUEST, "error_schema_reference_not_found", "-", "bogusuuid", "1.0");
 	}
 
 	@Test
 	public void testAssignBogusSchemaName() throws Exception {
 		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), new SchemaReference().setName("bogusname").setVersion("1.0")),
-				BAD_REQUEST, "error_schema_reference_not_found", "bogusname", "-", "1");
+				BAD_REQUEST, "error_schema_reference_not_found", "bogusname", "-", "1.0");
 	}
 
 	@Test
@@ -533,7 +533,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 
 		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), new SchemaReference().setName(schemaName).setVersion("1.0")),
-				BAD_REQUEST, "error_schema_reference_not_found", schemaName, "-", "1");
+				BAD_REQUEST, "error_schema_reference_not_found", schemaName, "-", "1.0");
 	}
 
 	@Test
@@ -552,7 +552,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 		// try to downgrade schema version
 		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), new SchemaReference().setUuid(schemaUuid).setVersion("1.0")),
-				BAD_REQUEST, "release_error_downgrade_schema_version", "schemaname", "2", "1");
+				BAD_REQUEST, "release_error_downgrade_schema_version", "schemaname", "2.0", "1.0");
 
 	}
 
@@ -687,14 +687,14 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testAssignBogusMicroschemaUuid() throws Exception {
 		call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
 				new MicroschemaReference().setUuid("bogusuuid").setVersion("1.0")), BAD_REQUEST, "error_microschema_reference_not_found", "-",
-				"bogusuuid", "1");
+				"bogusuuid", "1.0");
 	}
 
 	@Test
 	public void testAssignBogusMicroschemaName() throws Exception {
 		call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
 				new MicroschemaReference().setName("bogusname").setVersion("1.0")), BAD_REQUEST, "error_microschema_reference_not_found", "bogusname",
-				"-", "1");
+				"-", "1.0");
 	}
 
 	@Test
@@ -723,7 +723,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// try to downgrade microschema version
 			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
 					new MicroschemaReference().setUuid(microschema.getUuid()).setVersion("1.0")), BAD_REQUEST,
-					"release_error_downgrade_microschema_version", "microschemaname", "2", "1");
+					"release_error_downgrade_microschema_version", "microschemaname", "2.0", "1.0");
 		}
 	}
 
