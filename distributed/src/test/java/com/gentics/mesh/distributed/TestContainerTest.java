@@ -19,16 +19,20 @@ public class TestContainerTest {
 
 	private Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log);
 
+	private StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(50);
+
 	@BeforeClass
 	public static void cleanup() throws IOException {
-		File dataFolder = new File("target/local-data");
-		FileUtils.deleteDirectory(dataFolder);
-		dataFolder.mkdirs();
+		setupFolder("target/local-config");
+		setupFolder("target/local-data");
+		setupFolder("target/local2-config");
+		setupFolder("target/local2-data");
+	}
 
-		File configFolder = new File("target/local-config");
-		FileUtils.deleteDirectory(configFolder);
-		configFolder.mkdirs();
-
+	private static void setupFolder(String path) throws IOException {
+		File folder = new File(path);
+		FileUtils.deleteDirectory(folder);
+		folder.mkdirs();
 	}
 
 	@Rule
@@ -38,10 +42,22 @@ public class TestContainerTest {
 
 			.withFileSystemBind("target/local-config", "/config", BindMode.READ_WRITE)
 
-			.withExposedPorts(8080).withLogConsumer(logConsumer);
+			.withExposedPorts(8080).withLogConsumer(logConsumer).withLogConsumer(startupConsumer);
 
 	@Test
-	public void testContainer() throws IOException {
+	public void testContainer() throws IOException, InterruptedException {
+		startupConsumer.await();
+
+		GenericContainer mesh2 = new GenericContainer("mesh-local:latest")
+
+				.withFileSystemBind("target/local2-data", "/data", BindMode.READ_WRITE)
+
+				.withFileSystemBind("target/local2-config", "/config", BindMode.READ_WRITE)
+
+				.withExposedPorts(8080).withLogConsumer(logConsumer);
+
+		mesh2.start();
+
 		System.out.println(mesh.getContainerIpAddress() + ":" + mesh.getMappedPort(8080));
 		System.in.read();
 	}
