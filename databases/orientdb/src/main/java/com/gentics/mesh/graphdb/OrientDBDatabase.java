@@ -37,6 +37,7 @@ import com.gentics.ferma.TxHandler;
 import com.gentics.ferma.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.ferma.orientdb.OrientDBTx;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
@@ -340,8 +341,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		server.activate();
 		server.getDistributedManager().registerLifecycleListener(topologyEventBridge);
 		manager.startup();
-		//TODO maybe we need to check whether the node itself is already online
-		server.getDistributedManager().waitUntilNodeOnline();
 		return server;
 	}
 

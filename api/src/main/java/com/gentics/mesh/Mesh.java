@@ -3,6 +3,8 @@ package com.gentics.mesh;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.cli.CommandLine;
+
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -22,8 +24,10 @@ public interface Mesh {
 
 	/**
 	 * Returns the initialized instance.
-	 * @param args Additional command line arguments
-	 * @param options 
+	 * 
+	 * @param args
+	 *            Additional command line arguments
+	 * @param options
 	 * 
 	 * @return Fluent API
 	 */
@@ -93,6 +97,13 @@ public interface Mesh {
 	 * @return Mesh options
 	 */
 	MeshOptions getOptions();
+
+	/**
+	 * Return configured command line arguments.
+	 * 
+	 * @return
+	 */
+	CommandLine getCommandLine();
 
 	/**
 	 * Start mesh. This will effectively block until {@link #shutdown()} is called from another thread.

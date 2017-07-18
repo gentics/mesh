@@ -172,7 +172,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void init(boolean hasOldLock, MeshOptions configuration, CommandLine command, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+	public void init(boolean hasOldLock, MeshOptions configuration, CommandLine commandLine, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}

@@ -12,10 +12,10 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 public class MeshDevServerTest {
 
 	@Rule
-	public MeshDevServer serverA = new MeshDevServer("localA", true);
+	public MeshDevServer serverA = new MeshDevServer("localA", true, true);
 
 	@Rule
-	public MeshDevServer serverB = new MeshDevServer("localB", true);
+	public MeshDevServer serverB = new MeshDevServer("localB", true, false);
 
 	@Test
 	public void testServer() throws InterruptedException {

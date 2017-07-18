@@ -64,8 +64,8 @@ public class MeshImpl implements Mesh {
 		try {
 			this.commandLine = MeshCLI.parse(args);
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			log.error("Error while parsing arguments", e);
+			throw new RuntimeException("Error while parsing arguments", e);
 		}
 	}
 
@@ -268,6 +268,11 @@ public class MeshImpl implements Mesh {
 	@Override
 	public MeshOptions getOptions() {
 		return options;
+	}
+
+	@Override
+	public CommandLine getCommandLine() {
+		return commandLine;
 	}
 
 	@Override

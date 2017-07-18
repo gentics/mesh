@@ -57,25 +57,22 @@ public class MeshDevServer<SELF extends MeshDevServer<SELF>> extends GenericCont
 	 */
 	private String prefix;
 
-	public MeshDevServer(String prefix, boolean enableClustering) {
-		super(prepareDockerImage(enableClustering));
+	public MeshDevServer(String prefix, boolean enableClustering, boolean initCluster) {
+		super(prepareDockerImage(enableClustering, initCluster));
 		this.prefix = prefix;
 	}
 
 	@Override
 	protected void configure() {
 		String dataPath = "target/" + prefix + "-data";
-		// String confPath = "target/" + prefix + "-config";
 
 		try {
 			prepareFolder(dataPath);
-			// prepareFolder(confPath);
 		} catch (Exception e) {
 			fail("Could not setup bind folders");
 		}
 
 		addFileSystemBind(dataPath, "/data", BindMode.READ_WRITE);
-		// addFileSystemBind(confPath, "/config", BindMode.READ_WRITE);
 		setExposedPorts(Arrays.asList(8080));
 		setLogConsumers(Arrays.asList(logConsumer, startupConsumer));
 		setStartupAttempts(1);
@@ -93,7 +90,7 @@ public class MeshDevServer<SELF extends MeshDevServer<SELF>> extends GenericCont
 		folder.mkdirs();
 	}
 
-	public static ImageFromDockerfile prepareDockerImage(boolean enableClustering) {
+	public static ImageFromDockerfile prepareDockerImage(boolean enableClustering, boolean initCluster) {
 		ImageFromDockerfile dockerImage = new ImageFromDockerfile("mesh-local", true);
 		try {
 			File projectRoot = new File("..");
@@ -130,7 +127,7 @@ public class MeshDevServer<SELF extends MeshDevServer<SELF>> extends GenericCont
 			dockerImage.withFileFromPath("bin/server/target/mavendependencies-sharedlibs", libFolder.toPath());
 
 			// Add run script which executes mesh
-			dockerImage.withFileFromString("run.sh", generateRunScript(classPathArg));
+			dockerImage.withFileFromString("run.sh", generateRunScript(classPathArg, initCluster));
 
 			// Add docker file which contains the build instructions
 			dockerImage.withFileFromClasspath("Dockerfile", "/Dockerfile.local");
@@ -151,10 +148,14 @@ public class MeshDevServer<SELF extends MeshDevServer<SELF>> extends GenericCont
 		return OptionsLoader.getYAMLMapper().writeValueAsString(options);
 	}
 
-	private static String generateRunScript(String classpath) {
+	private static String generateRunScript(String classpath, boolean initCluster) {
 		StringBuilder builder = new StringBuilder();
 		builder.append("#!/bin/sh\n");
-		builder.append("java -cp " + classpath + " com.gentics.mesh.server.ServerRunner\n\n");
+		builder.append("java -cp " + classpath + " com.gentics.mesh.server.ServerRunner");
+		if (initCluster) {
+			builder.append(" -initCluster");
+		}
+		builder.append("\n\n");
 		return builder.toString();
 	}
 
