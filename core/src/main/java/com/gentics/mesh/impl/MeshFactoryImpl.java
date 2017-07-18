@@ -1,5 +1,7 @@
 package com.gentics.mesh.impl;
 
+import org.apache.commons.cli.ParseException;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshFactory;
 import com.gentics.mesh.OptionsLoader;
@@ -22,9 +24,9 @@ public class MeshFactoryImpl implements MeshFactory {
 	}
 
 	@Override
-	public Mesh mesh(MeshOptions options) {
+	public Mesh mesh(MeshOptions options, String... args) {
 		if (instance == null) {
-			instance = new MeshImpl(options);
+			instance = new MeshImpl(options, args);
 			return instance;
 		} else {
 			throw new RuntimeException("Instance is still active. Please shutdown any running instance of mesh first.");

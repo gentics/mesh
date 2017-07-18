@@ -167,6 +167,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void start() throws Exception {
 		Orient.instance().startup();
 		GraphStorageOptions storageOptions = options.getStorageOptions();
+		// 1. Start the Orient Server
 		if (storageOptions != null && storageOptions.getStartServer() || options.isClusterMode()) {
 			if (storageOptions.getDirectory() == null) {
 				throw new RuntimeException(
@@ -174,18 +175,18 @@ public class OrientDBDatabase extends AbstractDatabase {
 			}
 			initConfigurationFiles();
 			startOrientServer();
-			System.out.println("Press any key to continue");
-			System.in.read();
 		}
-
+		
+		
+		
+		
+		// 2. Setup the OrientDB Graph connection
 		if (storageOptions == null || storageOptions.getDirectory() == null) {
 			log.info("No graph database settings found. Fallback to in memory mode.");
 			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(5, 100);
 		} else {
 			factory = new OrientGraphFactory("plocal:" + storageOptions.getDirectory() + "/" + DB_NAME).setupPool(5, 100);
 		}
-		// factory.setProperty(ODatabase.OPTIONS.SECURITY.toString(), OSecurityNull.class);
-
 		configureGraphDB();
 	}
 
@@ -324,7 +325,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * 
 	 * @throws Exception
 	 */
-	private void startOrientServer() throws Exception {
+	private OServer startOrientServer() throws Exception {
 		String orientdbHome = new File("").getAbsolutePath();
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
 		OServer server = OServerMain.create();
@@ -339,6 +340,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 		server.activate();
 		server.getDistributedManager().registerLifecycleListener(topologyEventBridge);
 		manager.startup();
+		//TODO maybe we need to check whether the node itself is already online
+		server.getDistributedManager().waitUntilNodeOnline();
+		return server;
 	}
 
 	private void configureGraphDB() {

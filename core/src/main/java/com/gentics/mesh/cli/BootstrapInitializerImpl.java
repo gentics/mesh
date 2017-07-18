@@ -19,6 +19,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
+import org.apache.commons.cli.CommandLine;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -171,7 +172,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void init(boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+	public void init(boolean hasOldLock, MeshOptions configuration, CommandLine command, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		if (configuration.isClusterMode()) {
 			joinCluster();
 		}

@@ -22,11 +22,13 @@ public interface Mesh {
 
 	/**
 	 * Returns the initialized instance.
+	 * @param args Additional command line arguments
+	 * @param options 
 	 * 
 	 * @return Fluent API
 	 */
-	static Mesh mesh() {
-		return factory.mesh();
+	static Mesh mesh(MeshOptions options, String... args) {
+		return factory.mesh(options, args);
 	}
 
 	/**
@@ -35,8 +37,8 @@ public interface Mesh {
 	 * @param options
 	 * @return Fluent API
 	 */
-	static Mesh mesh(MeshOptions options) {
-		return factory.mesh(options);
+	static Mesh mesh() {
+		return factory.mesh();
 	}
 
 	/**
@@ -116,7 +118,7 @@ public interface Mesh {
 	}
 
 	public static void main(String[] args) throws Exception {
-		Mesh.mesh().run();
+		Mesh.mesh(null, args).run();
 	}
 
 }

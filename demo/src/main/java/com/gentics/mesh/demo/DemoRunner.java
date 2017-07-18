@@ -50,7 +50,7 @@ public class DemoRunner {
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setDirectory(null);
 
-		Mesh mesh = Mesh.mesh(options);
+		Mesh mesh = Mesh.mesh(options, args);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());

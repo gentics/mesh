@@ -11,6 +11,8 @@ import java.text.SimpleDateFormat;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
@@ -48,6 +50,7 @@ public class MeshImpl implements Mesh {
 	private MeshOptions options;
 	private Vertx vertx;
 	private CountDownLatch latch = new CountDownLatch(1);
+	private CommandLine commandLine;
 
 	static {
 		// Use slf4j instead of jul
@@ -55,9 +58,15 @@ public class MeshImpl implements Mesh {
 		log = LoggerFactory.getLogger(MeshImpl.class);
 	}
 
-	public MeshImpl(MeshOptions options) {
+	public MeshImpl(MeshOptions options, String... args) {
 		Objects.requireNonNull(options, "Please specify a valid options object.");
 		this.options = options;
+		try {
+			this.commandLine = MeshCLI.parse(args);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -100,7 +109,7 @@ public class MeshImpl implements Mesh {
 			invokeUpdateCheck();
 		}
 		// Create dagger context and invoke bootstrap init in order to startup mesh
-		MeshInternal.create().boot().init(hasOldLock, options, verticleLoader);
+		MeshInternal.create().boot().init(hasOldLock, options, commandLine, verticleLoader);
 		dontExit();
 	}
 

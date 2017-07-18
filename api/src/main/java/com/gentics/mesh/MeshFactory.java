@@ -11,6 +11,7 @@ public interface MeshFactory {
 	 * Return a new or the current instance of mesh.
 	 * 
 	 * @return Mesh instance
+	 * @throws Exception 
 	 */
 	Mesh mesh();
 
@@ -19,8 +20,11 @@ public interface MeshFactory {
 	 * 
 	 * @param options
 	 *            Mesh options
+	 * @param args
+	 *            Additional command line args
 	 * @return Mesh instance
+	 * @throws Exception 
 	 */
-	Mesh mesh(MeshOptions options);
+	Mesh mesh(MeshOptions options, String... args);
 
 }
