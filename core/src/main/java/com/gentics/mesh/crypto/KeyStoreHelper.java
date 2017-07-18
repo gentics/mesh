@@ -7,6 +7,7 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
+import java.util.Objects;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -28,6 +29,7 @@ public class KeyStoreHelper {
 	 */
 	public static void gen(String keystorePath, String keystorePassword)
 			throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+		Objects.requireNonNull(keystorePassword, "The keystore password must be specified.");
 		File keystoreFile = new File(keystorePath);
 		if (keystoreFile.exists()) {
 			throw new FileExistsException(keystoreFile);

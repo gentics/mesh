@@ -1,4 +1,4 @@
-package com.gentics.mesh.distributed;
+package com.gentics.mesh.distributed.containers;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -8,14 +8,27 @@ import org.testcontainers.containers.output.OutputFrame;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import rx.functions.Action0;
 
+/**
+ * Latching consumer of log messages which will release the latch once the startup completed message has been seen in the log.
+ */
 public class StartupLatchingConsumer implements Consumer<OutputFrame> {
 
 	private static Logger log = LoggerFactory.getLogger(StartupLatchingConsumer.class);
-	private int timeoutInSeconds;
 
-	public StartupLatchingConsumer(int timeoutInSeconds) {
-		this.timeoutInSeconds = timeoutInSeconds;
+	private Action0 startupAction;
+
+	public StartupLatchingConsumer() {
+	}
+
+	/**
+	 * Create a new latching consumer which will invoke the given startup action once it has seen the startup log message.
+	 * 
+	 * @param startupAction
+	 */
+	public StartupLatchingConsumer(Action0 startupAction) {
+		this.startupAction = startupAction;
 	}
 
 	private CountDownLatch latch = new CountDownLatch(1);
@@ -26,6 +39,9 @@ public class StartupLatchingConsumer implements Consumer<OutputFrame> {
 			String utf8String = frame.getUtf8String();
 			if (utf8String.contains("mesh-startup-complete")) {
 				log.info("Startup message seen. Releasing lock");
+				if (startupAction != null) {
+					startupAction.call();
+				}
 				latch.countDown();
 			}
 		}
@@ -34,10 +50,12 @@ public class StartupLatchingConsumer implements Consumer<OutputFrame> {
 	/**
 	 * Wait until the startup event has been received. The method will fail if the startup takes longer then expected.
 	 * 
+	 * @param timeoutValue
+	 * @param unit
 	 * @throws InterruptedException
 	 */
-	public void await() throws InterruptedException {
-		if (!latch.await(timeoutInSeconds, TimeUnit.SECONDS)) {
+	public void await(int timeoutValue, TimeUnit unit) throws InterruptedException {
+		if (!latch.await(timeoutValue, unit)) {
 			throw new RuntimeException("Container did not startup in time.");
 		}
 	}
