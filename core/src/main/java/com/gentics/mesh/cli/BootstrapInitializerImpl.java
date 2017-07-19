@@ -178,6 +178,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			joinCluster();
 		}
 
+		db.init(Mesh.mesh().getOptions(), Mesh.vertx(), "com.gentics.mesh.core.data");
+
 		boolean isEmptyInstallation = isEmptyInstallation();
 		if (!isEmptyInstallation) {
 			handleMeshVersion();
