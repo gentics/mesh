@@ -39,7 +39,7 @@ public class DemoRunner {
 
 	public static void main(String[] args) throws Exception {
 		// Extract dump file on first time startup to speedup startup
-		setupDemo();
+		//setupDemo();
 
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		options.getHttpServerOptions().setEnableCors(true);
@@ -49,6 +49,7 @@ public class DemoRunner {
 		// options.getStorageOptions().setStartServer(false);
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setDirectory(null);
+		options.setClusterMode(true);
 
 		Mesh mesh = Mesh.mesh(options, args);
 		mesh.setCustomLoader((vertx) -> {
@@ -83,6 +84,5 @@ public class DemoRunner {
 			log.info("Demo data extracted to {" + dataDir.getAbsolutePath() + "}");
 		}
 	}
-
 
 }

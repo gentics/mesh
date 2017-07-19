@@ -4,6 +4,7 @@ import java.io.File;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
+import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
@@ -29,6 +30,7 @@ public class RunnerNodeA {
 	}
 
 	public static void main(String[] args) throws Exception {
+
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		options.getStorageOptions().setDirectory(basePath + "/graph");
 		options.getSearchOptions().setDirectory(basePath + "/es");
@@ -41,7 +43,7 @@ public class RunnerNodeA {
 		// options.getSearchOptions().setHttpEnabled(true);
 		options.setClusterMode(true);
 
-		Mesh mesh = Mesh.mesh(options);
+		Mesh mesh = Mesh.mesh(options, "-" + MeshCLI.INIT_CLUSTER);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());

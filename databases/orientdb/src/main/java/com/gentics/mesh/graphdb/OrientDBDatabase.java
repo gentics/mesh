@@ -1,6 +1,7 @@
 package com.gentics.mesh.graphdb;
 
 import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -98,11 +99,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String DB_NAME = "storage";
 
-	private TopologyEventBridge topologyEventBridge = new TopologyEventBridge();
+	private TopologyEventBridge topologyEventBridge = new TopologyEventBridge(this);
 
 	private OrientGraphFactory factory;
 
 	private TypeResolver resolver;
+
+	private OServer server;
 
 	private DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
 
@@ -112,6 +115,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void stop() {
 		factory.close();
 		Orient.instance().shutdown();
+		if (server != null) {
+			server.shutdown();
+		}
 		Tx.setActive(null);
 	}
 
@@ -168,25 +174,65 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void start() throws Exception {
 		Orient.instance().startup();
 		GraphStorageOptions storageOptions = options.getStorageOptions();
-		// 1. Start the Orient Server
-		if (storageOptions != null && storageOptions.getStartServer() || options.isClusterMode()) {
-			if (storageOptions.getDirectory() == null) {
-				throw new RuntimeException(
-						"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
+		boolean isInitMode = Mesh.mesh().getCommandLine().hasOption(MeshCLI.INIT_CLUSTER);
+		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
+		boolean isClusterMode = options.isClusterMode();
+		boolean isInMemory = storageOptions.getDirectory() == null;
+
+		// The clustered mode automatically requires the orient server
+		if (isClusterMode) {
+			startOrientServer = true;
+		}
+
+		if (isInMemory && startOrientServer) {
+			throw new RuntimeException(
+					"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
+		}
+
+		// Handle Cluster mode
+		if (isClusterMode) {
+
+			// Check whether we need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the server.
+			if (isInitMode) {
+				log.info("Init cluster flag was found. Creating initial graph database now.");
+				initGraphDB();
+				// TODO initialize the initial dataset otherwise both instances will try to setup their own data set
 			}
+
 			initConfigurationFiles();
 			startOrientServer();
+
+			// Check whether we need to wait for other nodes if the cluster mode is enabled and init mode is not enabled
+			if (!isInitMode) {
+				// Wait until another node joined the cluster
+				int timeout = 200;
+				log.info("Waiting {" + timeout + "} seconds for other nodes in the cluster.");
+				if (topologyEventBridge.waitForMainGraphDB(timeout, SECONDS)) {
+					throw new RuntimeException("Waiting for cluster database source timed out after {" + timeout + "} seconds.");
+				}
+				initGraphDB();
+			}
+		} else {
+			// No cluster mode - Just init the database and optionally start the server
+			initGraphDB();
+
+			if (startOrientServer) {
+				initConfigurationFiles();
+				startOrientServer();
+			}
 		}
-		
-		
-		
-		
-		// 2. Setup the OrientDB Graph connection
+	}
+
+	/**
+	 * Setup the OrientDB Graph connection
+	 */
+	private void initGraphDB() {
+		GraphStorageOptions storageOptions = options.getStorageOptions();
 		if (storageOptions == null || storageOptions.getDirectory() == null) {
 			log.info("No graph database settings found. Fallback to in memory mode.");
 			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(5, 100);
 		} else {
-			factory = new OrientGraphFactory("plocal:" + storageOptions.getDirectory() + "/" + DB_NAME).setupPool(5, 100);
+			factory = new OrientGraphFactory("plocal:" + new File(storageOptions.getDirectory(), DB_NAME).getAbsolutePath()).setupPool(5, 100);
 		}
 		configureGraphDB();
 	}
@@ -288,7 +334,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * 
 	 * @return
 	 */
-	private String getNodeName() {
+	public String getNodeName() {
 		String name = MeshNameProvider.getInstance().getName().replaceAll(" ", "_") + "@" + Mesh.getBuildInfo().getVersion();
 		name = name.replaceAll("\\.", "-");
 		return name;
@@ -304,8 +350,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
 		String configString = writer.toString();
 		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", "orientdb-plugins");
-		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "finest");
-		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "fine");
+		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "info");
+		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
 		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);
 		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.isClusterMode()));
 		// TODO check for other invalid characters
@@ -326,22 +372,26 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * 
 	 * @throws Exception
 	 */
-	private OServer startOrientServer() throws Exception {
+	private void startOrientServer() throws Exception {
 		String orientdbHome = new File("").getAbsolutePath();
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
-		OServer server = OServerMain.create();
-		log.info("Extracting OrientDB Studio");
-		InputStream ins = getClass().getResourceAsStream("/plugins/studio-2.2.zip");
-		File pluginDirectory = new File("orientdb-plugins");
-		pluginDirectory.mkdirs();
-		IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "studio-2.2.zip")));
+		if (server == null) {
+			server = OServerMain.create();
+			log.info("Extracting OrientDB Studio");
+			InputStream ins = getClass().getResourceAsStream("/plugins/studio-2.2.zip");
+			File pluginDirectory = new File("orientdb-plugins");
+			pluginDirectory.mkdirs();
+			IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "studio-2.2.zip")));
+		}
+		log.info("Starting OrientDB Server");
 		server.startup(getOrientServerConfig());
 		OServerPluginManager manager = new OServerPluginManager();
 		manager.config(server);
 		server.activate();
-		server.getDistributedManager().registerLifecycleListener(topologyEventBridge);
+		if (options.isClusterMode()) {
+			server.getDistributedManager().registerLifecycleListener(topologyEventBridge);
+		}
 		manager.startup();
-		return server;
 	}
 
 	private void configureGraphDB() {

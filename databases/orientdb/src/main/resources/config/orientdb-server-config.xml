@@ -75,7 +75,7 @@
 		<entry name="server.database.path" value="%DB_PARENT_PATH%" />
 
 		<!-- LOG: enable/Disable logging. Levels are: finer, fine, finest, info, warning -->
-		<entry name="log.console.level" value="%CONSOLE_LOG_LEVEL%" />
-		<entry name="log.file.level" value="%FILE_LOG_LEVEL%" />
+		<entry name="log.console.level" value="finest" />
+		<entry name="log.file.level" value="finest" />
 	</properties>
 </orient-server>

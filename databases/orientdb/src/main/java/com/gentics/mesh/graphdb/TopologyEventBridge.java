@@ -5,6 +5,9 @@ import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_JOINED;
 import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_JOINING;
 import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_LEFT;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import com.gentics.mesh.Mesh;
 import com.orientechnologies.orient.server.distributed.ODistributedLifecycleListener;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
@@ -22,12 +25,20 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private EventBus eb;
 
-	public TopologyEventBridge() {
+	private OrientDBDatabase db;
+
+	private CountDownLatch nodeJoinLatch = new CountDownLatch(1);
+
+	public TopologyEventBridge(OrientDBDatabase db) {
 		this.eb = Mesh.mesh().getVertx().eventBus();
+		this.db = db;
 	}
 
 	@Override
 	public boolean onNodeJoining(String nodeName) {
+		if (log.isDebugEnabled()) {
+			log.debug("Node {" + nodeName + "} is joining the cluster.");
+		}
 		eb.send(EVENT_CLUSTER_NODE_JOINING, nodeName);
 		String currentVersion = Mesh.getPlainVersion();
 		if (!nodeName.contains("@")) {
@@ -43,17 +54,42 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	@Override
 	public void onNodeJoined(String iNode) {
+		if (log.isDebugEnabled()) {
+			log.debug("Node {" + iNode + "} joined the cluster.");
+		}
 		eb.send(EVENT_CLUSTER_NODE_JOINED, iNode);
 	}
 
 	@Override
 	public void onNodeLeft(String iNode) {
+		if (log.isDebugEnabled()) {
+			log.debug("Node {" + iNode + "} left the cluster");
+		}
 		eb.send(EVENT_CLUSTER_NODE_LEFT, iNode);
 	}
 
 	@Override
 	public void onDatabaseChangeStatus(String iNode, String iDatabaseName, DB_STATUS iNewStatus) {
+		log.info("Node {" + iNode + "} Database {" + iDatabaseName + "} changed status {" + iNewStatus.name() + "}");
 		eb.send(EVENT_CLUSTER_DATABASE_CHANGE_STATUS, iNode + "." + iDatabaseName + ":" + iNewStatus.name());
+		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && !iNode.equals(db.getNodeName())) {
+			nodeJoinLatch.countDown();
+		}
+	}
+
+	/**
+	 * Block until another node joined the cluster and the database is ready to use.
+	 * 
+	 * @param timeout
+	 *            the maximum time to wait
+	 * @param unit
+	 *            the time unit of the {@code timeout} argument
+	 * @return {@code true} if the count reached zero and {@code false} if the waiting time elapsed before the count reached zero
+	 * @throws InterruptedException
+	 *             if the current thread is interrupted while waiting
+	 */
+	public boolean waitForMainGraphDB(int timeout, TimeUnit unit) throws InterruptedException {
+		return nodeJoinLatch.await(timeout, unit);
 	}
 
 }
