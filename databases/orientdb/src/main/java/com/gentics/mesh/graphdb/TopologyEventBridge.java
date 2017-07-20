@@ -72,7 +72,7 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 	public void onDatabaseChangeStatus(String iNode, String iDatabaseName, DB_STATUS iNewStatus) {
 		log.info("Node {" + iNode + "} Database {" + iDatabaseName + "} changed status {" + iNewStatus.name() + "}");
 		eb.send(EVENT_CLUSTER_DATABASE_CHANGE_STATUS, iNode + "." + iDatabaseName + ":" + iNewStatus.name());
-		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && !iNode.equals(db.getNodeName())) {
+		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && iNode.equals(db.getNodeName())) {
 			nodeJoinLatch.countDown();
 		}
 	}

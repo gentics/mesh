@@ -38,7 +38,6 @@ import com.gentics.ferma.TxHandler;
 import com.gentics.ferma.orientdb.DelegatingFramedOrientGraph;
 import com.gentics.ferma.orientdb.OrientDBTx;
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.MeshCLI;
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
@@ -64,6 +63,7 @@ import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
+import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
@@ -73,7 +73,6 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
@@ -186,7 +185,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		// Wait until another node joined the cluster
 		int timeout = 500;
 		log.info("Waiting {" + timeout + "} seconds for other nodes in the cluster.");
-		if (topologyEventBridge.waitForMainGraphDB(timeout, SECONDS)) {
+		if (!topologyEventBridge.waitForMainGraphDB(timeout, SECONDS)) {
 			throw new RuntimeException("Waiting for cluster database source timed out after {" + timeout + "} seconds.");
 		}
 	}
@@ -370,6 +369,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 			server.getDistributedManager().registerLifecycleListener(topologyEventBridge);
 		}
 		manager.startup();
+		// The registerLifecycleListener may not have been invoked. We need to redirect the online event manually.
+		postStartupDBEventHandling();
+	}
+
+	private void postStartupDBEventHandling() {
+		// Get the database status
+		DB_STATUS status = server.getDistributedManager().getDatabaseStatus(getNodeName(), "storage");
+		// Pass it along to the topology event bridge
+		topologyEventBridge.onDatabaseChangeStatus(getNodeName(), "storage", status);
 	}
 
 	/**
