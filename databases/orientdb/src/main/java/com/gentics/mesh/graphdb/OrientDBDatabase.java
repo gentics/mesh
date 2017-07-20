@@ -146,9 +146,20 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public void init(MeshOptions options, Vertx vertx, String... basePaths) throws Exception {
 		super.init(options, vertx);
+
+		GraphStorageOptions storageOptions = options.getStorageOptions();
+		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
+		boolean isInMemory = storageOptions.getDirectory() == null;
+
+		if (isInMemory && startOrientServer) {
+			throw new RuntimeException(
+					"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
+		}
+
+		initConfigurationFiles();
+
 		// resolver = new OrientDBTypeResolver(basePaths);
 		resolver = new MeshTypeResolver(basePaths);
-		GraphStorageOptions storageOptions = options.getStorageOptions();
 		if (options != null && storageOptions.getParameters() != null && storageOptions.getParameters().get("maxTransactionRetry") != null) {
 			this.maxRetry = Integer.valueOf(storageOptions.getParameters().get("maxTransactionRetry"));
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
@@ -171,56 +182,22 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void start() throws Exception {
+	public void joinCluster() throws InterruptedException {
+		// Wait until another node joined the cluster
+		int timeout = 500;
+		log.info("Waiting {" + timeout + "} seconds for other nodes in the cluster.");
+		if (topologyEventBridge.waitForMainGraphDB(timeout, SECONDS)) {
+			throw new RuntimeException("Waiting for cluster database source timed out after {" + timeout + "} seconds.");
+		}
+	}
+
+	/**
+	 * Start the orientdb related process. This will also setup the graph connection pool and handle clustering.
+	 */
+	@Override
+	public void setupConnectionPool() throws Exception {
 		Orient.instance().startup();
-		GraphStorageOptions storageOptions = options.getStorageOptions();
-		boolean isInitMode = Mesh.mesh().getCommandLine().hasOption(MeshCLI.INIT_CLUSTER);
-		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
-		boolean isClusterMode = options.isClusterMode();
-		boolean isInMemory = storageOptions.getDirectory() == null;
-
-		// The clustered mode automatically requires the orient server
-		if (isClusterMode) {
-			startOrientServer = true;
-		}
-
-		if (isInMemory && startOrientServer) {
-			throw new RuntimeException(
-					"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
-		}
-
-		// Handle Cluster mode
-		if (isClusterMode) {
-
-			// Check whether we need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the server.
-			if (isInitMode) {
-				log.info("Init cluster flag was found. Creating initial graph database now.");
-				initGraphDB();
-				// TODO initialize the initial dataset otherwise both instances will try to setup their own data set
-			}
-
-			initConfigurationFiles();
-			startOrientServer();
-
-			// Check whether we need to wait for other nodes if the cluster mode is enabled and init mode is not enabled
-			if (!isInitMode) {
-				// Wait until another node joined the cluster
-				int timeout = 200;
-				log.info("Waiting {" + timeout + "} seconds for other nodes in the cluster.");
-				if (topologyEventBridge.waitForMainGraphDB(timeout, SECONDS)) {
-					throw new RuntimeException("Waiting for cluster database source timed out after {" + timeout + "} seconds.");
-				}
-				initGraphDB();
-			}
-		} else {
-			// No cluster mode - Just init the database and optionally start the server
-			initGraphDB();
-
-			if (startOrientServer) {
-				initConfigurationFiles();
-				startOrientServer();
-			}
-		}
+		initGraphDB();
 	}
 
 	/**
@@ -330,11 +307,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	/**
-	 * Determine the Orientdb Node name
+	 * Determine the OrientDB Node name.
 	 * 
 	 * @return
 	 */
 	public String getNodeName() {
+		// TODO check for other invalid characters
 		String name = MeshNameProvider.getInstance().getName().replaceAll(" ", "_") + "@" + Mesh.getBuildInfo().getVersion();
 		name = name.replaceAll("\\.", "-");
 		return name;
@@ -354,7 +332,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
 		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);
 		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.isClusterMode()));
-		// TODO check for other invalid characters
 		configString = configString.replaceAll("%NODENAME%", getNodeName());
 		configString = configString.replaceAll("%DB_PARENT_PATH%", escapeSafe(storageOptions().getDirectory()));
 		if (log.isDebugEnabled()) {
@@ -372,7 +349,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * 
 	 * @throws Exception
 	 */
-	private void startOrientServer() throws Exception {
+	@Override
+	public void startServer() throws Exception {
 		String orientdbHome = new File("").getAbsolutePath();
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
 		if (server == null) {
@@ -394,15 +372,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 		manager.startup();
 	}
 
+	/**
+	 * Configures various global settings for the graph database.
+	 */
 	private void configureGraphDB() {
-		log.info("Configuring orientdb...");
-		OrientGraph tx = factory.getTx();
-		try {
-			tx.setUseLightweightEdges(false);
-			tx.setUseVertexFieldsForEdgeLabels(false);
-		} finally {
-			tx.shutdown();
-		}
+		// log.info("Configuring orientdb...");
+		// OrientGraph tx = factory.getTx();
+		// try {
+		// TODO use ALTER DATABASE custom useLightweightEdges=true instead
+		// tx.setUseLightweightEdges(false);
+		// tx.setUseVertexFieldsForEdgeLabels(false);
+		// } finally {
+		// tx.shutdown();
+		// }
 	}
 
 	@Override

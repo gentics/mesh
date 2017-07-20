@@ -44,7 +44,6 @@ public abstract class AbstractDatabase implements Database {
 		this.options = options;
 		this.vertx = vertx;
 		this.basePaths = basePaths;
-		start();
 	}
 
 	/**
@@ -72,7 +71,7 @@ public abstract class AbstractDatabase implements Database {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		start();
+		setupConnectionPool();
 	}
 
 }

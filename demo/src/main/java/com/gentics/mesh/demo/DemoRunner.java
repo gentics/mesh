@@ -49,7 +49,7 @@ public class DemoRunner {
 		// options.getStorageOptions().setStartServer(false);
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setDirectory(null);
-		options.setClusterMode(true);
+//		options.setClusterMode(true);
 
 		Mesh mesh = Mesh.mesh(options, args);
 		mesh.setCustomLoader((vertx) -> {

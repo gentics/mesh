@@ -41,7 +41,7 @@ public class OrientDBServerTest {
 		options.getStorageOptions().setDirectory(dbDirectory.getAbsolutePath());
 		options.getStorageOptions().setStartServer(true);
 		db.init(options, Vertx.vertx());
-		db.start();
+		db.setupConnectionPool();
 
 		for (int i = 0; i < 100; i++) {
 			try (Tx tx = db.tx()) {

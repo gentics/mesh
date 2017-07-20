@@ -43,7 +43,7 @@ public interface Database {
 	 * 
 	 * @throws Exception
 	 */
-	void start() throws Exception;
+	void setupConnectionPool() throws Exception;
 
 	/**
 	 * Shortcut for stop/start. This will also drop the graph database.
@@ -432,5 +432,19 @@ public interface Database {
 	 * @return List of found inbound vertex ids for the found edges
 	 */
 	List<Object> edgeLookup(String edgeLabel, String indexPostfix, Object key);
+
+	/**
+	 * Join the cluster and block until the graph database has been received.
+	 * 
+	 * @throws InterruptedException
+	 */
+	void joinCluster() throws InterruptedException;
+
+	/**
+	 * Start the graph database server which will provide cluster support.
+	 * 
+	 * @throws Exception
+	 */
+	void startServer() throws Exception;
 
 }

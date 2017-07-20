@@ -230,7 +230,7 @@ public class MeshTestContext extends TestWatcher {
 			MeshInternal.get().database().stop();
 			File dbDir = new File(Mesh.mesh().getOptions().getStorageOptions().getDirectory());
 			FileUtils.deleteDirectory(dbDir);
-			MeshInternal.get().database().start();
+			MeshInternal.get().database().setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;
 		log.info("Clearing DB took {" + duration + "} ms.");

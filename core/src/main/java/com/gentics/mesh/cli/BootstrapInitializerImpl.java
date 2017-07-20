@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PE
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static org.apache.commons.lang3.StringUtils.contains;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,6 +67,7 @@ import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
@@ -171,48 +173,88 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		});
 	}
 
+	/**
+	 * Initialize the local data or create the initial dataset if no local data could be found.
+	 * 
+	 * @throws Exception
+	 */
+	private void initLocalData() throws Exception {
+		boolean isEmptyInstallation = isEmptyInstallation();
+		if (isEmptyInstallation) {
+			// Update graph indices and vertex types (This may take some time)
+			DatabaseHelper.init(db);
+			// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
+			initMandatoryData();
+			initOptionalData(isEmptyInstallation);
+			initPermissions();
+			handleMeshVersion();
+
+			// Mark all changelog entries as applied for new installations
+			markChangelogApplied();
+			createSearchIndicesAndMappings();
+		} else {
+			handleMeshVersion();
+			// Only execute the changelog if there are any elements in the graph
+			invokeChangelog();
+			// Update graph indices and vertex types (This may take some time)
+			DatabaseHelper.init(db);
+		}
+	}
+
 	@Override
 	public void init(boolean hasOldLock, MeshOptions configuration, CommandLine commandLine, MeshCustomLoader<Vertx> verticleLoader)
 			throws Exception {
-		if (configuration.isClusterMode()) {
+
+		GraphStorageOptions storageOptions = configuration.getStorageOptions();
+		boolean isClustered = configuration.isClusterMode();
+		boolean isInitMode = commandLine.hasOption(MeshCLI.INIT_CLUSTER);
+		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
+
+		if (isClustered) {
+			if (isInitMode) {
+				log.info("Init cluster flag was found. Creating initial graph database now.");
+				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
+				// handles the clustering.
+				db.setupConnectionPool();
+				initLocalData();
+				db.startServer();
+			} else {
+				// We need to wait for other nodes and receive the graphdb
+				db.startServer();
+				db.joinCluster();
+				isInitialSetup = false;
+				db.setupConnectionPool();
+				initLocalData();
+			}
 			joinCluster();
+		} else {
+			// No cluster mode - Just setup the connection pool and load or setup the local data
+			db.setupConnectionPool();
+			initLocalData();
+			if (startOrientServer) {
+				db.startServer();
+			}
 		}
 
-		db.init(Mesh.mesh().getOptions(), Mesh.vertx(), "com.gentics.mesh.core.data");
+		handleLocalData(hasOldLock, configuration, commandLine, verticleLoader);
+	}
 
-		boolean isEmptyInstallation = isEmptyInstallation();
-		if (!isEmptyInstallation) {
-			handleMeshVersion();
-		}
-
-		// Only execute the changelog if there are any elements in the graph
-		if (!isEmptyInstallation) {
-			invokeChangelog();
-		}
-
-		// Update graph indices and vertex types (This may take some time)
-		DatabaseHelper.init(db);
-
-		// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
-		initMandatoryData();
-		initOptionalData(isEmptyInstallation);
-
-		if (isEmptyInstallation) {
-			handleMeshVersion();
-			initPermissions();
-		}
-
+	/**
+	 * Handle local data and prepare mesh API
+	 * 
+	 * @param hasOldLock
+	 * @param configuration
+	 * @param commandLine
+	 * @param verticleLoader
+	 * @throws Exception
+	 */
+	private void handleLocalData(boolean hasOldLock, MeshOptions configuration, CommandLine commandLine, MeshCustomLoader<Vertx> verticleLoader)
+			throws Exception {
 		// An old lock file has been detected. Normally the lock file should be removed during shutdown.
 		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of
 		// the ES index in those cases in order to ensure consistency.
 		if (hasOldLock) {
 			reindexAll();
-		}
-
-		// Mark all changelog entries as applied for new installations
-		if (isEmptyInstallation) {
-			markChangelogApplied();
-			createSearchIndicesAndMappings();
 		}
 
 		// Load the verticles
@@ -229,6 +271,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// Finally fire the startup event and log that bootstrap has completed
 		log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
+
 	}
 
 	@Override
