@@ -1,3 +1,4 @@
+
 = Administration Guide
 
 == Software Stack
@@ -7,17 +8,19 @@
 | Component                                                    | Type                 | Version
 | http://orientdb.com/[OrientDB]                               | Graph Database       | 2.2.x
 | https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.2.x
-| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 2.3.x
+| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 2.4.x
 | http://vertx.io/[Vert.x]                                     | Core Framework       | 3.4.x
 | https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.5.x
 | https://google.github.io/dagger/                             | Dependency Injection | 2.6.x
 |======
 
-== Installation
+TIP: You can find the components' current version numbers by querying the Gentics Mesh demo instance http://getmesh.io/api/v1/ or your local instance http://localhost:8080/api/v1/.
 
-Good news: there is no dedicated installation procedure for Gentics Mesh! 
+== Run with JAR File
 
-All you need is to http://getmesh.io/Download[download the Gentics Mesh JAR] file and start by executing 
+Good news: there is no dedicated installation procedure for Gentics Mesh!
+
+All you need is to http://getmesh.io/Download[download the Gentics Mesh JAR] file and start by executing
 
 [source,bash]
 ----
@@ -25,15 +28,10 @@ java -jar mesh-demo-X.X.X.jar
 ----
 
 Gentics Mesh comes with OrientDB, an embedded graph database, and Elasticsearch. There are no external dependencies besides Oracle Java Runtime 1.8.0_40 or newer.
+On first startup, Gentics Mesh will create the data folder and subfolders, set a password for the keystore file and provide the configuration files mesh.yml and mesh-ui-config.js. See <<Installation Directory>> for a detailed discussion on Gentics Mesh files & folders.
 
-On first startup, Gentics Mesh will create initial data, set a password for the keystore file and provide the configuration files mesh.yml and mesh-ui-config.js:
 
- data
- keystore.jceks
- mesh-ui-config.js
- mesh.yml
-
-== Docker
+== Run with Docker
 
 Alternatively you can start Gentics Mesh using Docker via:
 
@@ -55,6 +53,32 @@ or
 docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh
 ----
 
+[[installdir]]
+== Installation Directory 
+On first startup, Gentics Mesh will create all files and folders.  
+
+ data
+    binaryFiles
+    binaryImageCache
+    graphdb
+    searchindex
+    tmp
+ keystore.jceks
+ mesh-ui-config.js
+ mesh.yml
+
+Gentics Mesh ships with two configuration files:
+
+. The main configuration file ```mesh.yml``` contains all settings for configuring the Gentics Mesh server. All settings are explained in the <<conf,Configuration & Settings>> section.
+. User interface related settings can be changed in  ```mesh-ui-config.js```.
+
+All data of your Gentics Mesh instance can be found in the respective subfolders of ```data```.
+
+The folder ```binaryFiles``` contains all media assets of your projects including images and other files. ```binaryImageCache``` keeps resized versions of requested images. The orientDB graph and the Elasticsearch index are stored within the ```graphdb``` and ```searchindex``` folders, respectively. ```tmp``` is used by Vert.x and other components e.g. for file uploads.
+
+NOTE: This folder structure is the default. All paths can be configured in the main configuration file ```mesh.yml```.
+
+The keystore file, by default, is named ```keystore.jceks```. On first startup, a password for the keystore file is created randomly and stored in ```mesh.yml```.
 
 == System Requirements
 
@@ -83,21 +107,24 @@ session    required   pam_limits.so
 
 NOTE: This change may require a logout and login.
 
-==== Client Requirements
+=== Client Requirements
 
 The Gentics Mesh user interface has been designed mobile-first and does not impose any specific requirements other than enabled JavaScript. It can be used with any "modern" browser, i.e. IE11+ and latest versions of Chrome, Firefox, and Safari.
 
-== Settings
+[[conf]]
+== Configuration & Settings
 
 All settings can be found in the main ```mesh.yml``` configuration file, that contains various settings for configuring HTTP & SSL, the graph database, and file upload.
 The settings for the Gentics Mesh user interface can be found in ```mesh-ui-config.js```.
+
+Both files are located directly in the <<installdir, installation directory>>.
 
 [source,json]
 ----
 include::examples/models/mesh-config.yml[]
 ----
 
-=== General Settings 
+=== General Settings
 
 [options="header"]
 |======
@@ -112,9 +139,9 @@ include::examples/models/mesh-config.yml[]
 
 === HTTPS/SSL
 
-To enable https you have to specify the server key and the server certificate within the configuration.
+To enable HTTPS you have to specify the server key and the server certificate within the configuration.
 
-You can create a snakeoil certificate for testing purposes this way:
+For testing purposes you may want to create a self signed certificate like this:
 
 [source,bash]
 ----
@@ -136,7 +163,7 @@ openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 90 -nodes
 
 === Storage Options
 
-By default all specified directories are relative to the current working directory.
+By default all specified directories are relative to the installation directory.
 
 [options="header"]
 |======
@@ -166,12 +193,13 @@ Gentics Mesh does not manage any cache structure but it is possible to tweak the
 
 The ```/api/v1/admin/graphdb/backup``` and ```/api/v1/admin/graphdb/restore``` endpoints can be used to create and restore backups. Please note that invoking these endpoints will block all execution and request processing.
 
-The graph database backup process will write a backup file to the configured backup location.
-It is advised to restart mesh once a backup has been restored.
+The graph database backup process will write a backup file to the configured backup location (see <<Storage Location>>).
+It is advised to restart Gentics Mesh once a backup has been restored.
+
 
 == link:changelog.html[Changelog]
 
 == License
 
 * Gentics Mesh is published under a commercial license. http://getmesh.io/Terms[License Terms]
-* https://github.com/graphql/graphiql[GraphiQL] is owned and developed by Facebook Inc.
+* https://github.com/graphql/graphiql[GraphiQL] is owned and developed by Facebook Inc. Usage is subject to the https://github.com/gentics/mesh/blob/d69b94d4b9bd8e3dbbba06dcdf8fac9b09593f13/verticles/graphql/src/main/resources/graphiql/LICENSE[LICENSE AGREEMENT For GraphiQL software].
