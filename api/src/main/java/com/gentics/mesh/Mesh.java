@@ -3,8 +3,6 @@ package com.gentics.mesh;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.cli.CommandLine;
-
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -31,18 +29,26 @@ public interface Mesh {
 	 * 
 	 * @return Fluent API
 	 */
-	static Mesh mesh(MeshOptions options, String... args) {
-		return factory.mesh(options, args);
+	static Mesh mesh(MeshOptions options) {
+		return factory.mesh(options);
 	}
 
 	/**
 	 * Returns the initialized instance of mesh that was created using the given options.
 	 * 
-	 * @param options
 	 * @return Fluent API
 	 */
 	static Mesh mesh() {
 		return factory.mesh();
+	}
+
+	/**
+	 * Check whether Gentics Mesh has already been initialized.
+	 * 
+	 * @return
+	 */
+	static boolean isInitalized() {
+		return factory.isInitalized();
 	}
 
 	/**
@@ -99,13 +105,6 @@ public interface Mesh {
 	MeshOptions getOptions();
 
 	/**
-	 * Return configured command line arguments.
-	 * 
-	 * @return
-	 */
-	CommandLine getCommandLine();
-
-	/**
 	 * Start mesh. This will effectively block until {@link #shutdown()} is called from another thread.
 	 * 
 	 * @throws Exception
@@ -129,7 +128,7 @@ public interface Mesh {
 	}
 
 	public static void main(String[] args) throws Exception {
-		Mesh.mesh(null, args).run();
+		Mesh.mesh().run();
 	}
 
 }

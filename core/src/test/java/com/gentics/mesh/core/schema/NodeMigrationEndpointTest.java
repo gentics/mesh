@@ -3,8 +3,8 @@ package com.gentics.mesh.core.schema;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.concurrent.CompletableFuture;
@@ -46,7 +46,7 @@ import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.performance.TestUtils;
+import com.gentics.mesh.test.util.TestUtils;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;

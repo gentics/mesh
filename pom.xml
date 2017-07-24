@@ -4,7 +4,7 @@
 
 	<groupId>com.gentics.mesh</groupId>
 	<artifactId>mesh</artifactId>
-	<version>0.9.20-SNAPSHOT</version>
+	<version>0.9.21-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Mesh</name>
@@ -19,7 +19,7 @@
 		<ferma.version>2.2.2</ferma.version>
 		<ferma.extensions.version>0.1.1</ferma.extensions.version>
 		<elasticsearch.version>2.4.4</elasticsearch.version>
-		<orientdb.version>2.2.23</orientdb.version>
+		<orientdb.version>2.2.24</orientdb.version>
 		<dagger.version>2.7</dagger.version>
 		<rx.version>1.2.3</rx.version>
 
@@ -69,10 +69,6 @@
 	</organization>
 
 	<licenses>
-		<license>
-			<name>Gentics Software License</name>
-			<url>http://www.gentics.com</url>
-		</license>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>

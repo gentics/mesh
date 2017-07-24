@@ -6,7 +6,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PE
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static org.apache.commons.lang3.StringUtils.contains;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,7 +19,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
-import org.apache.commons.cli.CommandLine;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -202,12 +200,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void init(boolean hasOldLock, MeshOptions configuration, CommandLine commandLine, MeshCustomLoader<Vertx> verticleLoader)
+	public void init(boolean hasOldLock, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader)
 			throws Exception {
 
-		GraphStorageOptions storageOptions = configuration.getStorageOptions();
-		boolean isClustered = configuration.isClusterMode();
-		boolean isInitMode = commandLine.hasOption(MeshCLI.INIT_CLUSTER);
+		GraphStorageOptions storageOptions = options.getStorageOptions();
+		boolean isClustered = options.isClusterMode();
+		boolean isInitMode = options.isInitClusterMode();
 		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
 
 		if (isClustered) {
@@ -236,7 +234,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 		}
 
-		handleLocalData(hasOldLock, configuration, commandLine, verticleLoader);
+		handleLocalData(hasOldLock, options, verticleLoader);
 	}
 
 	/**
@@ -248,7 +246,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-	private void handleLocalData(boolean hasOldLock, MeshOptions configuration, CommandLine commandLine, MeshCustomLoader<Vertx> verticleLoader)
+	private void handleLocalData(boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader)
 			throws Exception {
 		// An old lock file has been detected. Normally the lock file should be removed during shutdown.
 		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of

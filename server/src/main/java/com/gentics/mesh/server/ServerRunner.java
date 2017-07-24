@@ -27,11 +27,8 @@ public class ServerRunner {
 	}
 
 	public static void main(String[] args) throws Exception {
-		
-		
-		MeshOptions options = OptionsLoader.createOrloadOptions();
-
-		Mesh mesh = Mesh.mesh(options, args);
+		MeshOptions options = OptionsLoader.createOrloadOptions(args);
+		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());

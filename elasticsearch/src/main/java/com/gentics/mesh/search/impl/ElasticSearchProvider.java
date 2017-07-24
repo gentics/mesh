@@ -40,6 +40,7 @@ import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.config.ElasticSearchOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
@@ -58,7 +59,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private Node node;
 
-	private ElasticSearchOptions options;
+	private MeshOptions options;
 
 	public static final String DEFAULT_INDEX_SETTINGS_FILENAME = "default-es-index-settings.json";
 
@@ -76,18 +77,20 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Creating elasticsearch node");
 		}
+		
+		ElasticSearchOptions searchOptions = options.getSearchOptions();
 		long start = System.currentTimeMillis();
 		Settings settings = Settings.settingsBuilder()
 
 				.put("threadpool.index.queue_size", -1)
 
-				.put("http.enabled", options.isHttpEnabled())
+				.put("http.enabled", searchOptions.isHttpEnabled())
 
 				.put("http.cors.enabled", "true").put("http.cors.allow-origin", "*")
 
-				.put("path.home", options.getDirectory())
+				.put("path.home", searchOptions.getDirectory())
 
-				.put("node.name", MeshNameProvider.getInstance().getName())
+				.put("node.name", options.getNodeName())
 
 				.put("plugin.types", DeleteByQueryPlugin.class.getName())
 
@@ -115,7 +118,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	 * @param options
 	 * @return Fluent API
 	 */
-	public ElasticSearchProvider init(ElasticSearchOptions options) {
+	public ElasticSearchProvider init(MeshOptions options) {
 		this.options = options;
 		start();
 		return this;
@@ -133,8 +136,9 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 		stop();
 		try {
-			if (options.getDirectory() != null) {
-				File storageDirectory = new File(options.getDirectory());
+			ElasticSearchOptions searchOptions = options.getSearchOptions();
+			if (searchOptions.getDirectory() != null) {
+				File storageDirectory = new File(searchOptions.getDirectory());
 				if (storageDirectory.exists()) {
 					FileUtils.deleteDirectory(storageDirectory);
 				}

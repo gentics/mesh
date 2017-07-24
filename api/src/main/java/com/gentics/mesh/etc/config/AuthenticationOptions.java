@@ -4,7 +4,6 @@ import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.gentics.mesh.MeshEnv;
 import com.gentics.mesh.doc.GenerateDocumentation;
 
 /**

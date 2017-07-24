@@ -22,5 +22,7 @@ public class OptionsLoaderTest {
 		MeshOptions options = OptionsLoader.createOrloadOptions();
 		assertNotNull(options);
 		assertTrue("The file should have been created.", confFile.exists());
+		assertNotNull("A keystore password should have been generated.", options.getAuthenticationOptions().getKeystorePassword());
+		assertNotNull("The node name should have been generated.", options.getNodeName());
 	}
 }

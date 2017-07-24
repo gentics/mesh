@@ -3,9 +3,9 @@ package com.gentics.mesh.search;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CountDownLatch;
@@ -24,8 +24,8 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
-import com.gentics.mesh.test.performance.TestUtils;
-import com.gentics.mesh.util.MeshAssert;
+import com.gentics.mesh.test.util.MeshAssert;
+import com.gentics.mesh.test.util.TestUtils;
 
 import io.vertx.core.DeploymentOptions;
 

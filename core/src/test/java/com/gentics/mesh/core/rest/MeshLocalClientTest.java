@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.rest;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
@@ -13,6 +12,7 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.ClientHelper.call;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MeshLocalClientTest extends AbstractMeshTest {

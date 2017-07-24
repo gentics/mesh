@@ -8,6 +8,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -61,7 +63,7 @@ public class HandlerUtilities {
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, TxHandler1<RootVertex<T>> handler) {
 		operateTx(ac, (tx) -> {
 
-			ResultInfo info = database.tx(() -> {
+			ResultInfo info = database.tx(tx2 -> {
 				SearchQueueBatch batch = searchQueue.create();
 				RootVertex<T> root = handler.handle();
 				T created = root.create(ac, batch);
@@ -69,6 +71,7 @@ public class HandlerUtilities {
 				String path = created.getAPIPath(ac);
 				ResultInfo resultInfo = new ResultInfo(model, batch);
 				resultInfo.setProperty("path", path);
+				tx2.success();
 				return resultInfo;
 			});
 

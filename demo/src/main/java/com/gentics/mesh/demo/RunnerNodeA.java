@@ -31,7 +31,7 @@ public class RunnerNodeA {
 
 	public static void main(String[] args) throws Exception {
 
-		MeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions("-" + MeshCLI.INIT_CLUSTER);
 		options.getStorageOptions().setDirectory(basePath + "/graph");
 		options.getSearchOptions().setDirectory(basePath + "/es");
 		options.getUploadOptions().setDirectory(basePath + "/binaryFiles");
@@ -43,7 +43,7 @@ public class RunnerNodeA {
 		// options.getSearchOptions().setHttpEnabled(true);
 		options.setClusterMode(true);
 
-		Mesh mesh = Mesh.mesh(options, "-" + MeshCLI.INIT_CLUSTER);
+		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());

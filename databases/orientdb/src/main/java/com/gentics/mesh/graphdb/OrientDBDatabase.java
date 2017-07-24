@@ -312,7 +312,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 */
 	public String getNodeName() {
 		// TODO check for other invalid characters
-		String name = MeshNameProvider.getInstance().getName().replaceAll(" ", "_") + "@" + Mesh.getBuildInfo().getVersion();
+		String name = options.getNodeName().replaceAll(" ", "_") + "@" + Mesh.getBuildInfo().getVersion();
 		name = name.replaceAll("\\.", "-");
 		return name;
 	}
@@ -332,7 +332,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);
 		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.isClusterMode()));
 		configString = configString.replaceAll("%NODENAME%", getNodeName());
-		configString = configString.replaceAll("%DB_PARENT_PATH%", escapeSafe(storageOptions().getDirectory()));
+		String dbDir = storageOptions().getDirectory();
+		if (dbDir != null) {
+			configString = configString.replaceAll("%DB_PARENT_PATH%", escapeSafe(storageOptions().getDirectory()));
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Not setting DB_PARENT_PATH because no database dir was configured.");
+			}
+		}
 		if (log.isDebugEnabled()) {
 			log.debug("Effective orientdb server configuration:" + configString);
 		}

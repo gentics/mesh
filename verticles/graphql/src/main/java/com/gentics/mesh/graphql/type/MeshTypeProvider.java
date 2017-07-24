@@ -43,7 +43,7 @@ public class MeshTypeProvider {
 
 		// .meshNodeId
 		root.field(newFieldDefinition().name("meshNodeId").description("Node id of this mesh instance").type(GraphQLString).dataFetcher((env) -> {
-			return MeshNameProvider.getInstance().getName();
+			return Mesh.mesh().getOptions().getNodeName();
 		}));
 
 		// .databaseVendor

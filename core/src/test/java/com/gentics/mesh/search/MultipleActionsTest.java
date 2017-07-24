@@ -1,7 +1,6 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -25,6 +24,7 @@ import rx.Observable;
 import rx.Single;
 import rx.functions.Func1;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {

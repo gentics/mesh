@@ -22,6 +22,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
@@ -38,7 +39,6 @@ public class DemoDumpGenerator {
 		generator.init();
 		generator.dump();
 		generator.shutdown();
-
 	}
 
 	public void init() throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
@@ -82,9 +82,11 @@ public class DemoDumpGenerator {
 	public void dump() throws Exception {
 		// 1. Setup dagger
 		MeshComponent meshDagger = MeshInternal.create();
+		Database db = meshDagger.database();
 
 		// 2. Setup GraphDB
-		DatabaseHelper.init(meshDagger.database());
+		db.setupConnectionPool();
+		DatabaseHelper.init(db);
 
 		// 3. Initialise mesh
 		BootstrapInitializer boot = meshDagger.boot();

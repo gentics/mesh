@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.role;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
+import static com.gentics.mesh.test.ClientHelper.callETag;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 

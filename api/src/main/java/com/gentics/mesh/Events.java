@@ -5,6 +5,8 @@ package com.gentics.mesh;
  */
 public final class Events {
 
+	public static final String MESH_MIGRATION = "mesh.migration";
+
 	/**
 	 * Event which is send once a new node is joining the cluster.
 	 */

@@ -2,6 +2,16 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.20 (21.07.2017)
+
+icon:plus[] License: The license was changed to Apache License 2.0
+
+icon:plus[] Schema Versions: The schema version field type was changed from `number` to `string`. It is now also possible to load schema and microschema versions using the `?version` query parameter.
+
+icon:check[] Search: The error reporting for failing queries has been improved.
+
+icon:check[] Search: The total page count value has been fixed for queries which were using `?perPage=0`.
+
 == 0.9.19 (07.07.2017)
 
 icon:check[] UI: Fixed adding node to node list.

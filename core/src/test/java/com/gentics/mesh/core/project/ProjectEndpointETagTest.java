@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.project;
 
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
+import static com.gentics.mesh.test.ClientHelper.callETag;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;

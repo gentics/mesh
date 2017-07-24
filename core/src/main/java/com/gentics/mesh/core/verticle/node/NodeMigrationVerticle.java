@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.verticle.node;
 
+import static com.gentics.mesh.Events.MESH_MIGRATION;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.lang.management.ManagementFactory;
@@ -275,7 +275,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 				JsonObject msg = new JsonObject();
 				msg.put("type", "completed");
 				// TODO maybe a different address should be used
-				vertx.eventBus().publish(MESH_MIGRATION.toString(), msg);
+				vertx.eventBus().publish(MESH_MIGRATION, msg);
 				message.reply(null);
 			}
 		});

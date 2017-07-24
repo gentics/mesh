@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.field;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.List;

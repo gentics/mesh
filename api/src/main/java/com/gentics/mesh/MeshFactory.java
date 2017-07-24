@@ -8,10 +8,16 @@ import com.gentics.mesh.etc.config.MeshOptions;
 public interface MeshFactory {
 
 	/**
+	 * Check whether the factory has already provided a mesh instance.
+	 * 
+	 * @return
+	 */
+	boolean isInitalized();
+
+	/**
 	 * Return a new or the current instance of mesh.
 	 * 
 	 * @return Mesh instance
-	 * @throws Exception 
 	 */
 	Mesh mesh();
 
@@ -20,11 +26,8 @@ public interface MeshFactory {
 	 * 
 	 * @param options
 	 *            Mesh options
-	 * @param args
-	 *            Additional command line args
 	 * @return Mesh instance
-	 * @throws Exception 
 	 */
-	Mesh mesh(MeshOptions options, String... args);
+	Mesh mesh(MeshOptions options);
 
 }

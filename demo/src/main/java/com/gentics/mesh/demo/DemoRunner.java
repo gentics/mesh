@@ -39,9 +39,9 @@ public class DemoRunner {
 
 	public static void main(String[] args) throws Exception {
 		// Extract dump file on first time startup to speedup startup
-		//setupDemo();
+		setupDemo();
 
-		MeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowCredentials(false);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
@@ -49,9 +49,9 @@ public class DemoRunner {
 		// options.getStorageOptions().setStartServer(false);
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setDirectory(null);
-//		options.setClusterMode(true);
+		// options.setClusterMode(true);
 
-		Mesh mesh = Mesh.mesh(options, args);
+		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());

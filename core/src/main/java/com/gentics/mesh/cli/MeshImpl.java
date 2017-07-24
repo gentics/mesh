@@ -50,7 +50,6 @@ public class MeshImpl implements Mesh {
 	private MeshOptions options;
 	private Vertx vertx;
 	private CountDownLatch latch = new CountDownLatch(1);
-	private CommandLine commandLine;
 
 	static {
 		// Use slf4j instead of jul
@@ -58,15 +57,9 @@ public class MeshImpl implements Mesh {
 		log = LoggerFactory.getLogger(MeshImpl.class);
 	}
 
-	public MeshImpl(MeshOptions options, String... args) {
+	public MeshImpl(MeshOptions options) {
 		Objects.requireNonNull(options, "Please specify a valid options object.");
 		this.options = options;
-		try {
-			this.commandLine = MeshCLI.parse(args);
-		} catch (ParseException e) {
-			log.error("Error while parsing arguments", e);
-			throw new RuntimeException("Error while parsing arguments", e);
-		}
 	}
 
 	@Override
@@ -109,7 +102,7 @@ public class MeshImpl implements Mesh {
 			invokeUpdateCheck();
 		}
 		// Create dagger context and invoke bootstrap init in order to startup mesh
-		MeshInternal.create().boot().init(hasOldLock, options, commandLine, verticleLoader);
+		MeshInternal.create().boot().init(hasOldLock, options, verticleLoader);
 		dontExit();
 	}
 
@@ -220,7 +213,7 @@ public class MeshImpl implements Mesh {
 		log.info("#-------------------------------------------------------------#");
 		// log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
 		log.info(infoLine("Vert.x Version: " + getVertxVersion()));
-		log.info(infoLine("Mesh Node Id: " + MeshNameProvider.getInstance().getName()));
+		log.info(infoLine("Mesh Node Id: " + getOptions().getNodeName()));
 		log.info("###############################################################");
 	}
 
@@ -229,7 +222,7 @@ public class MeshImpl implements Mesh {
 			log.info("###############################################################");
 			log.info(infoLine("Booting Skynet Kernel " + Mesh.getBuildInfo()));
 			Thread.sleep(500);
-			log.info(infoLine("Skynet Node Id: " + MeshNameProvider.getInstance().getName()));
+			log.info(infoLine("Skynet Node Id: " +  getOptions().getNodeName()));
 			Thread.sleep(500);
 			log.info(infoLine("Skynet uses Vert.x Version: " + getVertxVersion()));
 			log.info("///");
@@ -268,11 +261,6 @@ public class MeshImpl implements Mesh {
 	@Override
 	public MeshOptions getOptions() {
 		return options;
-	}
-
-	@Override
-	public CommandLine getCommandLine() {
-		return commandLine;
 	}
 
 	@Override

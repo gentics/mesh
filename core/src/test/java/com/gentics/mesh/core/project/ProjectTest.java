@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DROP_INDEX;
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.util.MeshAssert.assertElement;
+import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;

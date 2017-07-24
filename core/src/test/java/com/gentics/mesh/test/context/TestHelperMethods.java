@@ -3,7 +3,7 @@ package com.gentics.mesh.test.context;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;

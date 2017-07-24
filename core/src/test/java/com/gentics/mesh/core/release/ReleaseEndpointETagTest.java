@@ -2,7 +2,7 @@ package com.gentics.mesh.core.release;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
+import static com.gentics.mesh.test.ClientHelper.callETag;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 

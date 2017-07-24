@@ -1,4 +1,4 @@
-package com.gentics.mesh.util;
+package com.gentics.mesh.test.util;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.test.performance.TestUtils;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;

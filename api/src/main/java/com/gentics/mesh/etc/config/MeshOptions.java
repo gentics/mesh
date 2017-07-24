@@ -2,6 +2,7 @@ package com.gentics.mesh.etc.config;
 
 import java.io.File;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
@@ -60,6 +61,14 @@ public class MeshOptions {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Path to the central tmp directory.")
 	private String tempDirectory = "data" + File.separator + "tmp";
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Name of the cluster node instance. If not specified a name will be generated.")
+	private String nodeName;
+
+	/* EXTRA Command Line Arguments */
+	@JsonIgnore
+	private boolean isInitCluster = false;
 
 	public MeshOptions() {
 	}
@@ -266,6 +275,37 @@ public class MeshOptions {
 	 */
 	public MeshOptions setUpdateCheck(boolean updateCheck) {
 		this.updateCheck = updateCheck;
+		return this;
+	}
+
+	/**
+	 * Set the node name.
+	 * 
+	 * @param nodeName
+	 * @return
+	 */
+	public MeshOptions setNodeName(String nodeName) {
+		this.nodeName = nodeName;
+		return this;
+	}
+
+	/**
+	 * Return the node name.
+	 * 
+	 * @return
+	 */
+	public String getNodeName() {
+		return nodeName;
+	}
+
+	@JsonIgnore
+	public boolean isInitClusterMode() {
+		return isInitCluster;
+	}
+
+	@JsonIgnore
+	public MeshOptions setInitCluster(boolean isInitCluster) {
+		this.isInitCluster = isInitCluster;
 		return this;
 	}
 

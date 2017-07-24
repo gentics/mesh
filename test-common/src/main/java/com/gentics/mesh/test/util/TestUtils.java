@@ -1,7 +1,7 @@
-package com.gentics.mesh.test.performance;
+package com.gentics.mesh.test.util;
 
-import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.Events.MESH_MIGRATION;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -36,7 +36,7 @@ public final class TestUtils {
 		CountDownLatch registerLatch = new CountDownLatch(1);
 		client.eventbus(ws -> {
 			// Register to migration events
-			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION.toString());
+			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION);
 			ws.writeFinalTextFrame(msg.encode());
 
 			// Handle migration events

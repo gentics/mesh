@@ -1,13 +1,13 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.Events.MESH_MIGRATION;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.expectResponseMessage;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.junit.Assert.assertEquals;
@@ -53,7 +53,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.search.AbstractNodeSearchEndpointTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.performance.TestUtils;
+import com.gentics.mesh.test.util.TestUtils;
 
 import io.vertx.core.json.JsonObject;
 
@@ -420,7 +420,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		CountDownLatch latch = new CountDownLatch(1);
 		client.eventbus(ws -> {
 			// Register to migration events
-			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION.toString());
+			JsonObject msg = new JsonObject().put("type", "register").put("address", MESH_MIGRATION);
 			ws.writeFinalTextFrame(msg.encode());
 
 			// Handle migration events

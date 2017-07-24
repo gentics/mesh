@@ -1,6 +1,7 @@
 package com.gentics.mesh.demo;
 
 import static com.gentics.mesh.core.rest.common.Permission.READ;
+import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 
 import java.io.IOException;
@@ -165,6 +166,7 @@ public class DemoDataProvider {
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(true);
 		request.getPermissions().add(READ);
+		request.getPermissions().add(READ_PUBLISHED);
 		call(() -> client.updateRolePermissions(getRole("anonymous").getUuid(), "projects/" + getProject("demo").getUuid(), request));
 		call(() -> client.updateRolePermissions(getRole("anonymous").getUuid(), "users/" + users.get("anonymous").getUuid(), request));
 	}

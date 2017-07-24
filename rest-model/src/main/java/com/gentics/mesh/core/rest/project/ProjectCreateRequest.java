@@ -54,4 +54,16 @@ public class ProjectCreateRequest implements RestModel {
 		this.schema = schemaReference;
 		return this;
 	}
+
+	/**
+	 * Shortcut method to directly set the schema reference with the given name.
+	 * 
+	 * @param schemaName
+	 * @return
+	 */
+	public ProjectCreateRequest setSchemaRef(String schemaName) {
+		setSchema(new SchemaReference().setName(schemaName));
+		return this;
+	}
+
 }

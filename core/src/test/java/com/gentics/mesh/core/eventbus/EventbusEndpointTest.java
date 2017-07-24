@@ -1,7 +1,8 @@
 package com.gentics.mesh.core.eventbus;
 
-import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.Events.MESH_MIGRATION;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.CountDownLatch;
@@ -13,7 +14,6 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import io.vertx.core.json.JsonObject;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class EventbusEndpointTest extends AbstractMeshTest {
@@ -21,7 +21,7 @@ public class EventbusEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testExternalEventbusMessage() throws Exception {
 
-		String allowedAddress = MESH_MIGRATION.toString();
+		String allowedAddress = MESH_MIGRATION;
 		CountDownLatch latch = new CountDownLatch(1);
 		client().eventbus(ws -> {
 			// Register

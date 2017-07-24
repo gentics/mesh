@@ -1,6 +1,6 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +33,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.search.DummySearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.performance.TestUtils;
+import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.DeploymentOptions;
@@ -139,7 +139,7 @@ public class MeshTestContext extends TestWatcher {
 	private void setupRestEndpoints() throws Exception {
 		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
-		port = com.gentics.mesh.test.performance.TestUtils.getRandomPort();
+		port = com.gentics.mesh.test.util.TestUtils.getRandomPort();
 		vertx = Mesh.vertx();
 
 		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);
@@ -333,8 +333,9 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Initialise the mesh dagger context and inject the dependencies within the test.
+	 * @throws Exception 
 	 */
-	public void initDagger(TestSize size) {
+	public void initDagger(TestSize size) throws Exception {
 		log.info("Initializing dagger context");
 		meshDagger = DaggerTestMeshComponent.create();
 		MeshInternal.set(meshDagger);
@@ -347,6 +348,7 @@ public class MeshTestContext extends TestWatcher {
 		// schemaStorage = meshDagger.serverSchemaStorage();
 		// boot = meshDagger.boot();
 		Database db = meshDagger.database();
+		db.setupConnectionPool();
 		DatabaseHelper.init(db);
 	}
 

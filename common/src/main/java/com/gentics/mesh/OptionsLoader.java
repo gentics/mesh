@@ -2,6 +2,7 @@ package com.gentics.mesh;
 
 import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -9,11 +10,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.gentics.mesh.cli.MeshCLI;
+import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -33,8 +38,40 @@ public final class OptionsLoader {
 
 	/**
 	 * Load the main mesh configuration file.
+	 * 
+	 * @param args
 	 */
-	public static MeshOptions createOrloadOptions() {
+	public static MeshOptions createOrloadOptions(String... args) {
+		MeshOptions options = loadMeshOptions();
+		applyCommandLineArgs(options, args);
+		// TODO validate configuration
+		return options;
+	}
+
+	private static void applyCommandLineArgs(MeshOptions options, String... args) {
+		try {
+			CommandLine commandLine = MeshCLI.parse(args);
+			options.setInitCluster(commandLine.hasOption(MeshCLI.INIT_CLUSTER));
+			// Check whether a custom node parameter has been set
+			String cliNodeName = commandLine.getOptionValue(MeshCLI.NODE_NAME);
+			if (!isEmpty(cliNodeName)) {
+				options.setNodeName(cliNodeName);
+			}
+			String httpPort = commandLine.getOptionValue(MeshCLI.HTTP_PORT);
+			if (!isEmpty(httpPort)) {
+				options.getHttpServerOptions().setPort(Integer.valueOf(httpPort));
+			}
+		} catch (ParseException e) {
+			log.error("Error while parsing arguments {" + e.getMessage() + "}");
+			if (log.isDebugEnabled()) {
+				log.debug("Error while parsing argument", e);
+			}
+			throw new RuntimeException("Error while parsing arguments {" + e.getMessage() + "}");
+		}
+	}
+
+	private static MeshOptions loadMeshOptions() {
+
 		File confFile = new File(CONFIG_FOLDERNAME, MESH_CONF_FILENAME);
 		MeshOptions options = null;
 		InputStream ins = Mesh.class.getResourceAsStream("/" + MESH_CONF_FILENAME);
@@ -77,6 +114,7 @@ public final class OptionsLoader {
 		// 2. No luck - use default config
 		log.info("Loading default configuration.");
 		return options;
+
 	}
 
 	/**
@@ -87,6 +125,7 @@ public final class OptionsLoader {
 	private static MeshOptions generateDefaultConfig() {
 		MeshOptions options = new MeshOptions();
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
+		options.setNodeName(MeshNameProvider.getInstance().getRandomName());
 		return options;
 	}
 

@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.admin;
 
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.expectResponseMessage;
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
 
 import java.io.IOException;
 

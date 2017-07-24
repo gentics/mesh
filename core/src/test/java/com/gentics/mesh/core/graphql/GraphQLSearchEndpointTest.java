@@ -2,7 +2,7 @@ package com.gentics.mesh.core.graphql;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.ClientHelper.call;
 
 import java.util.ArrayList;
 import java.util.List;
