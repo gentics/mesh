@@ -1,3 +1,5 @@
 icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.24
 
 icon:check[] Core: Fixed handling of ISO8601 dates which did not contain UTC flag or time offset value. Such dates could previously not be stored.
+
+icon:check[] GraphQL: URL handling of the graphql browser has been improved. Previously very long queries lead to very long query parameters which could not be handled correctly. The query browser will now use the anchor part of the URL to store the query.
