@@ -1,1 +1,3 @@
 icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.24
+
+icon:check[] Core: Fixed handling of ISO8601 dates which did not contain UTC flag or time offset value. Such dates could previously not be stored.

@@ -3,7 +3,8 @@ package com.gentics.mesh.util;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
+
+import org.joda.time.DateTime;
 
 public final class DateUtils {
 
@@ -40,8 +41,7 @@ public final class DateUtils {
 		if (dateString == null) {
 			return null;
 		}
-		Date date = Date.from(Instant.parse(dateString));
-		return date.getTime();
+		return new DateTime(dateString).toDate().getTime();
 	}
 
 }
