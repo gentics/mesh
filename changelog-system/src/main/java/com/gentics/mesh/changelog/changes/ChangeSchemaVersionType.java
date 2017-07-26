@@ -74,9 +74,16 @@ public class ChangeSchemaVersionType extends AbstractChange {
 				// Update the version within the json
 				String json = schemaVersion.getProperty("json");
 				JsonObject schema = new JsonObject(json);
-				int version = schema.getInteger("version");
+
+				Object versionValue = schema.getValue("version");
 				schema.remove("version");
-				schema.put("version", String.valueOf(version) + ".0");
+				if (versionValue instanceof String) {
+					int version = Integer.valueOf((String) versionValue);
+					schema.put("version", String.valueOf(version) + ".0");
+				} else {
+					int version = Integer.valueOf((Integer) versionValue);
+					schema.put("version", String.valueOf(version) + ".0");
+				}
 				schemaVersion.setProperty("json", schema.toString());
 			}
 		}
