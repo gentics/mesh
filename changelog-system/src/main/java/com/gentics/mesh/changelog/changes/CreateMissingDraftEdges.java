@@ -42,8 +42,8 @@ public class CreateMissingDraftEdges extends AbstractChange {
 
 		boolean foundDraft = false;
 		Iterable<Edge> edges = node.getEdges(Direction.OUT, "HAS_FIELD_CONTAINER");
-		Edge publishEdge = null;
-
+		Edge referenceEdge = null;
+		Vertex possibleDraftContainer = null;
 		// Determine whether a draft edge exists and locate the publish edge. The publish edge will be copied to create the missing draft edge.
 		for (Edge edge : edges) {
 			String type = edge.getProperty("edgeType");
@@ -51,17 +51,29 @@ public class CreateMissingDraftEdges extends AbstractChange {
 				foundDraft = true;
 			}
 			if ("P".equals(type)) {
-				publishEdge = edge;
+				referenceEdge = edge;
+			}
+
+			// Only one field container can have the webroot path info set
+			Vertex fieldContainer = edge.getVertex(IN);
+			String pathInfo = fieldContainer.getProperty("webrootPathInfo");
+			if (pathInfo != null) {
+				referenceEdge = edge;
+				possibleDraftContainer = fieldContainer;
 			}
 		}
 
 		if (!foundDraft) {
-			Vertex publishFieldContainer = publishEdge.getVertex(IN);
-			Edge draftEdge = node.addEdge("HAS_FIELD_CONTAINER", publishFieldContainer);
+			// Check which container should become the new draft. We may have found the original draft container. Use it if possible
+			Vertex fieldContainer = possibleDraftContainer;
+			if (fieldContainer == null) {
+				fieldContainer = referenceEdge.getVertex(IN);
+			}
+			Edge draftEdge = node.addEdge("HAS_FIELD_CONTAINER", fieldContainer);
 			draftEdge.setProperty("ferma_type", "GraphFieldContainerEdgeImpl");
-			draftEdge.setProperty("releaseUuid", publishEdge.getProperty("releaseUuid"));
+			draftEdge.setProperty("releaseUuid", referenceEdge.getProperty("releaseUuid"));
 			draftEdge.setProperty("edgeType", "D");
-			draftEdge.setProperty("languageTag", publishEdge.getProperty("languageTag"));
+			draftEdge.setProperty("languageTag", referenceEdge.getProperty("languageTag"));
 		}
 
 		// Now check the children and migrate structure

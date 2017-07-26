@@ -112,7 +112,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 		if (fieldContainers.isEmpty()) {
 			return Completable.complete();
 		} else {
-			log.info("Found {" + fieldContainers.size() + "} which still make use of schema {" + fromVersion.getName() + "@"
+			log.info("Found {" + fieldContainers.size() + "} containers which still make use of schema {" + fromVersion.getName() + "@"
 					+ fromVersion.getVersion() + "}");
 		}
 
@@ -175,7 +175,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	private SearchQueueBatch migrateContainer(NodeMigrationActionContextImpl ac, NodeGraphFieldContainer container, String releaseUuid,
 			SchemaContainerVersion toVersion, List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Release release,
 			SchemaModel newSchema, List<Exception> errorsDetected, Set<String> touchedFields) {
-		SearchQueueBatch batch = db.tx(() -> {
+		SearchQueueBatch batch = db.tx((tx) -> {
 			SearchQueueBatch sqb = searchQueue.create();
 
 			try {
@@ -189,9 +189,13 @@ public class NodeMigrationHandler extends AbstractHandler {
 				if (container.isPublished(releaseUuid)) {
 					publish = true;
 				} else {
-					// Check whether there is another published version for a different language
+					// Check whether there is any other published container
 					NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, PUBLISHED);
-					if (oldPublished != null) {
+
+					// We only need to migrate the container if the container's schema version is also "old"
+					boolean hasSameOldSchemaVersion = oldPublished.getSchemaContainerVersion().getId()
+							.equals(container.getSchemaContainerVersion().getId());
+					if (oldPublished != null && hasSameOldSchemaVersion) {
 						ac.getVersioningParameters().setVersion("published");
 						NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
 						restModel.getSchema().setVersion(newSchema.getVersion());
@@ -229,10 +233,12 @@ public class NodeMigrationHandler extends AbstractHandler {
 				if (publish) {
 					sqb.store(node, releaseUuid, PUBLISHED, false);
 				}
+				tx.success();
 				return sqb;
 			} catch (Exception e1) {
 				log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
 				errorsDetected.add(e1);
+				tx.failure();
 				return null;
 			}
 		});
