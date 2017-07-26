@@ -195,10 +195,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		System.out.println(orientdbHome);
 		OServer server = OServerMain.create();
 		log.info("Extracting OrientDB Studio");
-		InputStream ins = getClass().getResourceAsStream("/plugins/studio-2.2.zip");
+		InputStream ins = getClass().getResourceAsStream("/plugins/orientdb-studio-2.2.24.zip");
 		File pluginDirectory = new File("orient-plugins");
 		pluginDirectory.mkdirs();
-		IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "studio-2.2.zip")));
+		IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "orientdb-studio-2.2.24.zip")));
 
 		server.startup(getOrientServerConfig());
 		OServerPluginManager manager = new OServerPluginManager();

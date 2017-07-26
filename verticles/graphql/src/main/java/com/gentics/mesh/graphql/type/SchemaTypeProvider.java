@@ -8,7 +8,8 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.NamedElement;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
@@ -17,7 +18,7 @@ import graphql.schema.GraphQLObjectType.Builder;
 public class SchemaTypeProvider extends AbstractTypeProvider {
 
 	public static final String SCHEMA_TYPE_NAME = "Schema";
-	
+
 	public static final String SCHEMA_PAGE_TYPE_NAME = "SchemasPage";
 
 	@Inject
@@ -32,8 +33,11 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		interfaceTypeProvider.addCommonFields(schemaType);
 
 		schemaType.field(newFieldDefinition().name("name").type(GraphQLString).dataFetcher((env) -> {
-			SchemaContainer schemaContainer = env.getSource();
-			return schemaContainer.getName();
+			Object source = env.getSource();
+			if (source instanceof NamedElement) {
+				return ((NamedElement) source).getName();
+			}
+			return null;
 		}));
 
 		schemaType.field(newFieldDefinition().name("isContainer").type(GraphQLBoolean));

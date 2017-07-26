@@ -2,6 +2,7 @@ package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
@@ -267,8 +268,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.dataFetcher(this::parentNodeFetcher));
 
 		// .tags
-		nodeType.field(
-				newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((env) -> {
+		nodeType.field(newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME))
+				.dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
 					NodeContent content = env.getSource();
 					if (content == null) {
@@ -326,6 +327,20 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		// .editor
 		nodeType.field(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference(USER_TYPE_NAME))
 				.dataFetcher(this::editorFetcher));
+
+		// .schema
+		nodeType.field(newFieldDefinition().name("schema").description("Schema of the node").type(new GraphQLTypeReference(SCHEMA_TYPE_NAME))
+				.dataFetcher(env -> {
+					NodeContent content = env.getSource();
+					if (content == null) {
+						return null;
+					}
+					NodeGraphFieldContainer container = content.getContainer();
+					if (container == null) {
+						return null;
+					}
+					return container.getSchemaContainerVersion();
+				}));
 
 		// .isPublished
 		nodeType.field(newFieldDefinition().name("isPublished").description("Check whether the content is published.").type(GraphQLBoolean)

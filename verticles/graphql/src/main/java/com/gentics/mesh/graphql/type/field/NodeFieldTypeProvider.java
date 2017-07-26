@@ -21,6 +21,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.graphql.type.AbstractTypeProvider;
 
+import graphql.GraphQLException;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLUnionType;
@@ -51,7 +52,13 @@ public class NodeFieldTypeProvider extends AbstractTypeProvider {
 					Object object = env.getObject();
 					if (object instanceof NodeGraphFieldContainer) {
 						NodeGraphFieldContainer fieldContainer = (NodeGraphFieldContainer) object;
-						return types.get(fieldContainer.getSchemaContainerVersion().getName());
+						String schemaName = fieldContainer.getSchemaContainerVersion().getName();
+						GraphQLObjectType foundType = types.get(schemaName);
+						if (foundType == null) {
+							throw new GraphQLException("The type for the schema with name {" + schemaName
+									+ "} could not be found. Maybe the schema is not linked to the project.");
+						}
+						return foundType;
 					}
 					return null;
 				}).build();
