@@ -193,8 +193,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 					NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, PUBLISHED);
 
 					// We only need to migrate the container if the container's schema version is also "old"
-					boolean hasSameOldSchemaVersion = oldPublished.getSchemaContainerVersion().getId()
-							.equals(container.getSchemaContainerVersion().getId());
+					boolean hasSameOldSchemaVersion = oldPublished != null
+							&& oldPublished.getSchemaContainerVersion().getId().equals(container.getSchemaContainerVersion().getId());
 					if (oldPublished != null && hasSameOldSchemaVersion) {
 						ac.getVersioningParameters().setVersion("published");
 						NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
