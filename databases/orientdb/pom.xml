@@ -42,8 +42,8 @@
 		</dependency>
 		<dependency>
 			<groupId>com.syncleus.ferma</groupId>
-			<artifactId>ferma-extensions-orientdb</artifactId>
-			<version>${ferma.extensions.version}</version>
+			<artifactId>ferma-orientdb</artifactId>
+			<version>${ferma.orientdb.version}</version>
 		</dependency>
 
 		<!-- Common Tools -->
