@@ -21,9 +21,9 @@ import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.AbstractGraphFieldSchemaContainerVersion;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -34,7 +34,7 @@ import com.gentics.mesh.util.ETag;
 import rx.Single;
 
 public class MicroschemaContainerVersionImpl
-		extends AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, Microschema, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
+		extends AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
 		implements MicroschemaContainerVersion {
 
 	public static void init(Database database) {
@@ -81,17 +81,17 @@ public class MicroschemaContainerVersionImpl
 	}
 
 	@Override
-	public Microschema getSchema() {
-		Microschema microschema = MeshInternal.get().serverSchemaStorage().getMicroschema(getName(), getVersion());
+	public MicroschemaModel getSchema() {
+		MicroschemaModel microschema = MeshInternal.get().serverSchemaStorage().getMicroschema(getName(), getVersion());
 		if (microschema == null) {
-			microschema = JsonUtil.readValue(getJson(), MicroschemaModel.class);
+			microschema = JsonUtil.readValue(getJson(), MicroschemaModelImpl.class);
 			MeshInternal.get().serverSchemaStorage().addMicroschema(microschema);
 		}
 		return microschema;
 	}
 
 	@Override
-	public void setSchema(Microschema microschema) {
+	public void setSchema(MicroschemaModel microschema) {
 		MeshInternal.get().serverSchemaStorage().removeMicroschema(microschema.getName(), microschema.getVersion());
 		MeshInternal.get().serverSchemaStorage().addMicroschema(microschema);
 		String json = JsonUtil.toJson(microschema);
@@ -138,7 +138,7 @@ public class MicroschemaContainerVersionImpl
 
 	@Override
 	public Single<MicroschemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return MeshInternal.get().database().operateNoTx(() -> {
+		return MeshInternal.get().database().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

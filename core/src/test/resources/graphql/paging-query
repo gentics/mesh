@@ -1,0 +1,58 @@
+{
+	users(perPage: 1, page: 2) {
+		# [$.data.users.totalCount=4]
+		totalCount
+
+		# [$.data.users.currentPage=2]
+		currentPage
+
+		# [$.data.users.pageCount=4]
+		pageCount
+
+		# [$.data.users.perPage=1]
+		perPage
+
+		# [$.data.users.totalCount=4]
+		totalCount
+
+		# [$.data.users.hasPreviousPage=true]
+		hasPreviousPage
+
+		# [$.data.users.hasNextPage=true]
+		hasNextPage
+
+		# [$.data.users.size=1]
+		size
+
+		# [$.data.users.elements.length()=1]
+		elements {
+			# [$.data.users.elements[0].username=<not-null>] 
+			username
+
+			# [$.data.users.elements[0].uuid=<is-uuid>]
+			uuid 
+		}
+	}
+	roles {
+		# [$.data.roles.currentPage=1]
+		currentPage
+		pageCount
+
+		# [$.data.roles.perPage=25]
+		perPage
+		totalCount
+		size
+		elements {
+			name
+			uuid
+		}
+	}
+	lessStuff: roles {
+		elements {
+			name
+			uuid
+		}
+	}
+
+}
+# [$.errors=<is-undefined>]

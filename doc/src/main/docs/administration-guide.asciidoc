@@ -1,0 +1,205 @@
+
+= Administration Guide
+
+== Software Stack
+
+[options="header"]
+|======
+| Component                                                    | Type                 | Version
+| http://orientdb.com/[OrientDB]                               | Graph Database       | 2.2.x
+| https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.2.x
+| https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 2.4.x
+| http://vertx.io/[Vert.x]                                     | Core Framework       | 3.4.x
+| https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.5.x
+| https://google.github.io/dagger/                             | Dependency Injection | 2.6.x
+|======
+
+TIP: You can find the components' current version numbers by querying the Gentics Mesh demo instance http://getmesh.io/api/v1/ or your local instance http://localhost:8080/api/v1/.
+
+== Run with JAR File
+
+Good news: there is no dedicated installation procedure for Gentics Mesh!
+
+All you need is to http://getmesh.io/Download[download the Gentics Mesh JAR] file and start by executing
+
+[source,bash]
+----
+java -jar mesh-demo-X.X.X.jar
+----
+
+Gentics Mesh comes with OrientDB, an embedded graph database, and Elasticsearch. There are no external dependencies besides Oracle Java Runtime 1.8.0_40 or newer.
+On first startup, Gentics Mesh will create the data folder and subfolders, set a password for the keystore file and provide the configuration files mesh.yml and mesh-ui-config.js. See <<Installation Directory>> for a detailed discussion on Gentics Mesh files & folders.
+
+
+== Run with Docker
+
+Alternatively you can start Gentics Mesh using Docker via:
+
+The https://hub.docker.com/r/gentics/mesh-demo/[mesh-demo] image contains Gentics Mesh together with demo content and our demo application.
+
+[source,bash]
+----
+docker run -p 8080:8080 gentics/mesh-demo
+or
+docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh-demo
+----
+
+The https://hub.docker.com/r/gentics/mesh/[mesh] image contains an empty Gentics Mesh server without any demo content.
+
+[source,bash]
+----
+docker run -p 8080:8080 gentics/mesh
+or
+docker run -v /opt/data/:/mesh/data -p 8080:8080 gentics/mesh
+----
+
+[[installdir]]
+== Installation Directory 
+On first startup, Gentics Mesh will create all files and folders.  
+
+ data
+    binaryFiles
+    binaryImageCache
+    graphdb
+    searchindex
+    tmp
+ keystore.jceks
+ mesh-ui-config.js
+ mesh.yml
+
+Gentics Mesh ships with two configuration files:
+
+. The main configuration file ```mesh.yml``` contains all settings for configuring the Gentics Mesh server. All settings are explained in the <<conf,Configuration & Settings>> section.
+. User interface related settings can be changed in  ```mesh-ui-config.js```.
+
+All data of your Gentics Mesh instance can be found in the respective subfolders of ```data```.
+
+The folder ```binaryFiles``` contains all media assets of your projects including images and other files. ```binaryImageCache``` keeps resized versions of requested images. The orientDB graph and the Elasticsearch index are stored within the ```graphdb``` and ```searchindex``` folders, respectively. ```tmp``` is used by Vert.x and other components e.g. for file uploads.
+
+NOTE: This folder structure is the default. All paths can be configured in the main configuration file ```mesh.yml```.
+
+The keystore file, by default, is named ```keystore.jceks```. On first startup, a password for the keystore file is created randomly and stored in ```mesh.yml```.
+
+== System Requirements
+
+=== Server Requirements
+
+Gentics Mesh comes with OrientDB, an embedded graph database and Elasticsearch. There are no external dependencies besides Oracle Java Runtime 1.8.0_40 or newer.
+
+==== System Configuration
+
+The max open file limit on Linux has to be raised on most Linux systems since the embedded graph database and Elasticsearch server often exceed the amount of concurrent open files.
+
+Edit _/etc/security/limits.conf_ and add these two lines:
+
+[source,bash]
+----
+Mesh   soft    nofile  60000
+Mesh   hard    nofile  60000
+----
+
+Edit _/etc/pam.d/su_ and uncomment or add the following line:
+
+[source,bash]
+----
+session    required   pam_limits.so
+----
+
+NOTE: This change may require a logout and login.
+
+=== Client Requirements
+
+The Gentics Mesh user interface has been designed mobile-first and does not impose any specific requirements other than enabled JavaScript. It can be used with any "modern" browser, i.e. IE11+ and latest versions of Chrome, Firefox, and Safari.
+
+[[conf]]
+== Configuration & Settings
+
+All settings can be found in the main ```mesh.yml``` configuration file, that contains various settings for configuring HTTP & SSL, the graph database, and file upload.
+The settings for the Gentics Mesh user interface can be found in ```mesh-ui-config.js```.
+
+Both files are located directly in the <<installdir, installation directory>>.
+
+[source,json]
+----
+include::examples/models/mesh-config.yml[]
+----
+
+=== General Settings
+
+[options="header"]
+|======
+| Configuration            | Type   | Description
+| ```clusterMode```        | Flag   | The internal hazelcast in-memory data grid will be enabled if this flag is set to true.
+| ```updateCheck```        | Flag   | An update check to the Gentics Mesh update server will be invoked during startup if this flag is set to true.
+| ```defaultPageSize```    | Number | Default page size.
+| ```defaultLanguage```    | String | Default language which serves as a fallback when no language has been specified within a request.
+| ```verticles```          | List   | List of vert.x java verticle classes which will be loaded during startup.
+| ```tempDirectory```      | Path   | Path to the main temporary filesystem directory.
+|======
+
+=== HTTPS/SSL
+
+To enable HTTPS you have to specify the server key and the server certificate within the configuration.
+
+For testing purposes you may want to create a self signed certificate like this:
+
+[source,bash]
+----
+openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 90 -nodes
+----
+
+=== Server Options
+
+[options="header"]
+|======
+| Configuration                                     | Type      | Description
+| ```httpServerOptions.port```                      | Number    | HTTP Port number.
+| ```httpServerOptions.ssl```                       | Boolean   | Enable or disable SSL support.
+| ```httpServerOptions.corsAllowedOriginPattern```  | RegEx     | Regex which will validate the origin CORS header.
+| ```httpServerOptions.enableCors```                | Boolean   | Enable CORS support.
+| ```httpServerOptions.certPath```                  | Path      | SSL certificate path.
+| ```httpServerOptions.keyPath```                   | Path      | SSL key path.
+|======
+
+=== Storage Options
+
+By default all specified directories are relative to the installation directory.
+
+[options="header"]
+|======
+| Configuration                        | Type      | Description
+| ```storageOptions.directory```       | Path      | Path to the graph database storage location.
+| ```storageOptions.backupDirectory``` | Path      | Backup directory.
+| ```storageOptions.exportDirectory``` | Path      | Export directory.
+| ```storageOptions.startServer```     | Boolean   | Flag that indicates whether the graph database server component should be started. By default only an embedded graph database is used which does not start a graph server.
+| ```storageOptions.parameters```      | JSON      | Additional JSON parameters that will be passed on to the used graph database implementation.
+|======
+
+=== Upload Options
+
+[options="header"]
+|======
+| Configuration                       | Type   | Description
+| ```uploadOptions.byteLimit```      | Number | Upload limit in bytes.
+| ```uploadOptions.directory```      | Path   | Filesystem directory for uploaded binary data.
+| ```uploadOptions.tempDirectory```  | Path   | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory.
+|======
+
+=== Cache Options
+
+Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying graph and Elasticsearch database cache settings.
+
+== Backup & Recovery
+
+The ```/api/v1/admin/graphdb/backup``` and ```/api/v1/admin/graphdb/restore``` endpoints can be used to create and restore backups. Please note that invoking these endpoints will block all execution and request processing.
+
+The graph database backup process will write a backup file to the configured backup location (see <<Storage Location>>).
+It is advised to restart Gentics Mesh once a backup has been restored.
+
+
+== link:changelog.html[Changelog]
+
+== License
+
+* Gentics Mesh is published under Apache 2.0 license.
+* https://github.com/graphql/graphiql[GraphiQL] is owned and developed by Facebook Inc. Usage is subject to the https://github.com/gentics/mesh/blob/d69b94d4b9bd8e3dbbba06dcdf8fac9b09593f13/verticles/graphql/src/main/resources/graphiql/LICENSE[LICENSE AGREEMENT For GraphiQL software].

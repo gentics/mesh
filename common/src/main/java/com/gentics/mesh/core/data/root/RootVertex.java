@@ -13,17 +13,17 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.impl.TransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ElementIdComparator;
@@ -62,10 +62,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Paging information object that contains page options.
 	 * 
 	 * @return
-	 * @throws InvalidArgumentException
-	 *             if the paging options are malformed.
 	 */
-	default public Page<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) throws InvalidArgumentException {
+	default public TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 
 		int page = pagingInfo.getPage();
 		int perPage = pagingInfo.getPerPage();
@@ -90,7 +88,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		MeshAuthUser requestUser = ac.getUser();
 
 		// Iterate over all vertices that are managed by this root vertex
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = getGraph();
 		Iterable<Edge> itemEdges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", this.getId());
 
 		AtomicLong counter = new AtomicLong();
@@ -129,7 +127,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 			totalPages = (int) Math.ceil(counter.get() / (double) (perPage));
 		}
 
-		return new PageImpl<T>(elementsOfPage, counter.get(), ++page, totalPages, elementsOfPage.size(), perPage);
+		return new TransformablePageImpl<T>(elementsOfPage, counter.get(), ++page, totalPages, elementsOfPage.size(), perPage);
 	}
 
 	/**
@@ -155,24 +153,19 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	default public T findByName(InternalActionContext ac, String name, GraphPermission perm) {
-		Database db = database();
 		reload();
 		T element = findByName(name);
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_name", name);
 		}
 
-		T result = db.noTx(() -> {
-			MeshAuthUser requestUser = ac.getUser();
-			String elementUuid = element.getUuid();
-			if (requestUser.hasPermission(element, perm)) {
-				return element;
-			} else {
-				throw error(FORBIDDEN, "error_missing_perm", elementUuid);
-			}
-		});
-
-		return result;
+		MeshAuthUser requestUser = ac.getUser();
+		String elementUuid = element.getUuid();
+		if (requestUser.hasPermission(element, perm)) {
+			return element;
+		} else {
+			throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+		}
 	}
 
 	/**
@@ -183,7 +176,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return Found element or null if the element could not be located
 	 */
 	default public T findByUuid(String uuid) {
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = Tx.getActive().getGraph();
 		// 1. Find the element with given uuid within the whole graph
 		Iterator<Vertex> it = database().getVertices(getPersistanceClass(), new String[] { "uuid" }, new String[] { uuid });
 		if (it.hasNext()) {
@@ -238,16 +231,13 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 			}
 		}
 
-		T result = db.noTx(() -> {
-			MeshAuthUser requestUser = ac.getUser();
-			String elementUuid = element.getUuid();
-			if (requestUser.hasPermission(element, perm)) {
-				return element;
-			} else {
-				throw error(FORBIDDEN, "error_missing_perm", elementUuid);
-			}
-		});
-		return result;
+		MeshAuthUser requestUser = ac.getUser();
+		String elementUuid = element.getUuid();
+		if (requestUser.hasPermission(element, perm)) {
+			return element;
+		} else {
+			throw error(FORBIDDEN, "error_missing_perm", elementUuid);
+		}
 	}
 
 	/**
@@ -306,7 +296,12 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @param item
 	 */
 	default public void addItem(T item) {
-		setUniqueLinkOutTo(item, getRootLabel());
+		FramedGraph graph = getGraph();
+		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
+				database().createComposedIndexKey(item.getId(), getId()));
+		if (!edges.iterator().hasNext()) {
+			linkOut(item, getRootLabel());
+		}
 	}
 
 	/**

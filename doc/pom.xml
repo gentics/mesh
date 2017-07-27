@@ -1,11 +1,12 @@
 <?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.8.0-SNAPSHOT</version>
+		<version>0.9.22-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mesh-doc</artifactId>
@@ -15,6 +16,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<projectRoot>${project.basedir}/..</projectRoot>
 	</properties>
 
 	<dependencies>
@@ -28,13 +30,17 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>1.10.19</version>
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-core</artifactId>
 			<version>${project.version}</version>
 			<type>test-jar</type>
+		</dependency>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web-templ-handlebars</artifactId>
+			<version>${vertx.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -56,37 +62,7 @@
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath />
-								<argument>com.gentics.mesh.generator.RAMLGeneratorRunner</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>Generate SearchModel JSON files</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>process-classes</phase>
-						<configuration>
-							<executable>java</executable>
-							<arguments>
-								<argument>-classpath</argument>
-								<classpath />
-								<argument>com.gentics.mesh.generator.SearchModelGenerator</argument>
-							</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>Generate JSON Example files</id>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<phase>process-classes</phase>
-						<configuration>
-							<executable>java</executable>
-							<arguments>
-								<argument>-classpath</argument>
-								<classpath />
-								<argument>com.gentics.mesh.generator.MeshExampleGenerator</argument>
+								<argument>com.gentics.mesh.generator.ExampleGeneratorRunner</argument>
 							</arguments>
 						</configuration>
 					</execution>
@@ -203,6 +179,16 @@
 			<id>mulesoft</id>
 			<name>mulesoft repo</name>
 			<url>https://repository.mulesoft.org/nexus/content/groups/public/</url>
+		</repository>
+		<repository>
+			<id>graphql-snapshot</id>
+			<url>https://dl.bintray.com/andimarek/graphql-java/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
 		</repository>
 	</repositories>
 

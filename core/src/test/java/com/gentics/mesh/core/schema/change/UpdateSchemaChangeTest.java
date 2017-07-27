@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema.change;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -11,18 +12,17 @@ import java.io.IOException;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateSchemaChangeImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 /**
  * Test {@link UpdateSchemaChangeImpl} methods
@@ -33,8 +33,8 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testFields() throws IOException {
-		try (NoTx noTx = db().noTx()) {
-			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+		try (Tx tx = tx()) {
+			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			assertNull("Initially no container flag value should be set.", change.getContainerFlag());
 			change.setContainerFlag(true);
 			assertTrue("The container flag should be set to true.", change.getContainerFlag());
@@ -58,10 +58,10 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testApply() {
-		try (NoTx noTx = db().noTx()) {
-			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
-			Schema schema = new SchemaModel();
-			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+		try (Tx tx = tx()) {
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaModel schema = new SchemaModelImpl();
+			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setName("updated");
 			version.setSchema(schema);
 			version.setNextChange(change);
@@ -69,7 +69,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			Schema updatedSchema = mutator.apply(version);
 			assertEquals("updated", updatedSchema.getName());
 
-			change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setDescription("text");
 			version.setNextChange(change);
 			updatedSchema = mutator.apply(version);
@@ -79,18 +79,18 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testFieldOrderChange() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			// 1. Create the schema container
-			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModelImpl();
 			schema.setSegmentField("someField");
 			schema.addField(FieldUtil.createHtmlFieldSchema("first"));
 			schema.addField(FieldUtil.createHtmlFieldSchema("second"));
 			version.setSchema(schema);
 
 			// 2. Create the schema update change
-			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setOrder("second", "first");
 			version.setNextChange(change);
 
@@ -106,15 +106,15 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testUpdateSchemaSegmentFieldToNull() {
-		try (NoTx noTx = db().noTx()) {
-			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		try (Tx tx = tx()) {
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModelImpl();
 			schema.setSegmentField("someField");
 
 			// 2. Create schema update change
-			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setSegmentField("");
 
 			version.setSchema(schema);
@@ -128,14 +128,14 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 	@Test
 	public void testUpdateSchema() {
-		try (NoTx noTx = db().noTx()) {
-			SchemaContainerVersion version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		try (Tx tx = tx()) {
+			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 
 			// 1. Create schema
-			Schema schema = new SchemaModel();
+			SchemaModel schema = new SchemaModelImpl();
 
 			// 2. Create schema update change
-			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setDisplayField("newDisplayField");
 			change.setContainerFlag(true);
 			change.setSegmentField("newSegmentField");
@@ -154,7 +154,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testUpdateFromRest() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaChangeModel model = new SchemaChangeModel();
 			model.setMigrationScript("custom");
 			model.setProperty(SchemaChangeModel.REQUIRED_KEY, true);
@@ -164,7 +164,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			model.setProperty(SchemaChangeModel.DISPLAY_FIELD_NAME_KEY, "displayField");
 			model.setProperty(SchemaChangeModel.NAME_KEY, "newName");
 			model.setProperty(SchemaChangeModel.FIELD_ORDER_KEY, new String[] { "A", "B", "C" });
-			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.updateFromRest(model);
 			assertEquals("custom", change.getMigrationScript());
 			assertTrue("The required flag should be set to true.", change.getRestProperty(REQUIRED_KEY));
@@ -181,8 +181,8 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testGetMigrationScript() throws IOException {
-		try (NoTx noTx = db().noTx()) {
-			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+		try (Tx tx = tx()) {
+			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			assertNull("Update field changes have no auto migation script.", change.getAutoMigrationScript());
 
 			assertNull("Intitially no migration script should be set.", change.getMigrationScript());
@@ -194,8 +194,8 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 	@Test
 	@Override
 	public void testTransformToRest() throws IOException {
-		try (NoTx noTx = db().noTx()) {
-			UpdateSchemaChange change = Database.getThreadLocalGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+		try (Tx tx = tx()) {
+			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			SchemaChangeModel model = change.transformToRest();
 			assertNotNull(model);
 			assertEquals(UpdateSchemaChange.OPERATION, model.getOperation());

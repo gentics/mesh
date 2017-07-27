@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.LinkType;
 import com.syncleus.ferma.AbstractVertexFrame;
 
 public class StringGraphFieldImpl extends AbstractBasicField<StringField> implements StringGraphField {
@@ -39,7 +39,7 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 				if (project == null) {
 					project = parentNode.getProject();
 				}
-				field.setString(MeshInternal.get().webRootLinkReplacer().replace(ac.getRelease(null).getUuid(),
+				field.setString(MeshInternal.get().webRootLinkReplacer().replace(ac.getRelease().getUuid(),
 						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), field.getString(),
 						ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
 			}

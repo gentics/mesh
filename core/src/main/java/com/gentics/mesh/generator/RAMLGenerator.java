@@ -15,6 +15,7 @@ import org.mockito.Mockito;
 import org.raml.emitter.RamlEmitter;
 import org.raml.model.Action;
 import org.raml.model.ActionType;
+import org.raml.model.MimeType;
 import org.raml.model.Protocol;
 import org.raml.model.Raml;
 import org.raml.model.Resource;
@@ -42,6 +43,7 @@ import com.gentics.mesh.core.verticle.user.UserEndpoint;
 import com.gentics.mesh.core.verticle.utility.UtilityEndpoint;
 import com.gentics.mesh.core.verticle.webroot.WebRootEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.graphql.GraphQLEndpoint;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.ProjectSearchEndpoint;
 import com.gentics.mesh.search.SearchEndpoint;
@@ -51,20 +53,44 @@ import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
+import rx.functions.Action2;
 
 /**
- * Generator for RAML documentation.
+ * Generator for RAML documentation. The generation mocks all endpoint classes and extracts the routes from these endpoints in order to generate the RAML.
  */
-public class RAMLGenerator {
+public class RAMLGenerator extends AbstractGenerator {
 
 	private static final Logger log = LoggerFactory.getLogger(RAMLGenerator.class);
 
 	private Raml raml = new Raml();
 
-	private File outputFolder;
+	/**
+	 * Handler which can be invoked to replace the stored schema.
+	 */
+	private Action2<MimeType, Class<?>> schemaHandler;
 
-	public RAMLGenerator(File outputFolder) {
-		this.outputFolder = outputFolder;
+	private String fileName;
+
+	private boolean writeExtraFiles = true;
+
+	/**
+	 * Create a new generator.
+	 * 
+	 * @param outputFolder
+	 *            Output folder
+	 * @param fileName
+	 *            Output filename
+	 * @throws IOException
+	 */
+	public RAMLGenerator(File outputFolder, String fileName, Action2<MimeType, Class<?>> schemaHandler, boolean writeExtraFiles) throws IOException {
+		super(new File(outputFolder, "api"), false);
+		this.fileName = fileName;
+		this.schemaHandler = schemaHandler;
+		this.writeExtraFiles = writeExtraFiles;
+	}
+
+	public RAMLGenerator() {
+		super();
 	}
 
 	/**
@@ -103,8 +129,7 @@ public class RAMLGenerator {
 	 *            Endpoint which provides endpoints
 	 * @throws IOException
 	 */
-	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractEndpoint verticle)
-			throws IOException {
+	private void addEndpoints(String basePath, Map<String, Resource> resources, AbstractEndpoint verticle) throws IOException {
 
 		String ramlPath = basePath + "/" + verticle.getBasePath();
 		// Check whether the resource was already added. Maybe we just need to extend it
@@ -132,36 +157,71 @@ public class RAMLGenerator {
 				String key = String.valueOf(entry.getKey());
 				Response response = entry.getValue();
 				// write example response to dedicated file
-				String filename = "response/" + fullPath + "/" + key + "/example.json";
 				if (response.getBody() != null && response.getBody().get("application/json") != null) {
-					String json = response.getBody().get("application/json").getExample();
+					String filename = "response/" + fullPath + "/" + key + "/example.json";
+					MimeType responseMimeType = response.getBody().get("application/json");
+					String json = responseMimeType.getExample();
 					writeFile(filename, json);
+
+					// Write JSON schema to dedicated file
+					String schemaFilename = "response/" + fullPath + "/" + key + "/request-schema.json";
+
+					String schema = responseMimeType.getSchema();
+					writeFile(schemaFilename, schema);
+
+					// Check whether a custom schema handler has been set. The schema handler may replace the previously set schema with a different one.
+					if (schemaHandler != null) {
+						Class<?> clazz = endpoint.getExampleResponseClasses().get(entry.getKey());
+						if (clazz != null) {
+							schemaHandler.call(responseMimeType, clazz);
+						}
+					}
 				}
+
 				action.getResponses().put(key, response);
 			}
 
 			// Add request example
 			if (endpoint.getExampleRequestMap() != null) {
 				action.setBody(endpoint.getExampleRequestMap());
-
 				for (String mimeType : endpoint.getExampleRequestMap().keySet()) {
-					String body = endpoint.getExampleRequestMap().get(mimeType).getExample();
+					MimeType request = endpoint.getExampleRequestMap().get(mimeType);
+					String body = request.getExample();
 					if (mimeType.equalsIgnoreCase("application/json")) {
-						// write example request to dedicated file
-						String filename = "request/" + fullPath + "/request-body.json";
-						writeFile(filename, body);
+						// Write example request to dedicated file
+						String requestFilename = "request/" + fullPath + "/request-body.json";
+						if (writeExtraFiles) {
+							writeFile(requestFilename, body);
+						}
+
+						// Write JSON schema to dedicated file
+						String filename = "request/" + fullPath + "/request-schema.json";
+						String schema = request.getSchema();
+						if (writeExtraFiles) {
+							writeFile(filename, schema);
+						}
+
+						if (schemaHandler != null) {
+							Class<?> clazz = endpoint.getExampleRequestClass();
+							if (clazz != null) {
+								schemaHandler.call(request, clazz);
+							}
+						}
+
 					} else if (mimeType.equalsIgnoreCase("text/plain")) {
-						// write example request to dedicated file
+						// Write example request to dedicated file
 						String filename = "request/" + fullPath + "/request-body.txt";
-						writeFile(filename, body);
+						if (writeExtraFiles) {
+							writeFile(filename, body);
+						}
 					}
 				}
 			}
 
 			String path = endpoint.getRamlPath();
 			if (path == null) {
-				throw new RuntimeException("Could not determine path for endpoint of verticle " + verticle.getClass()
-						+ " " + endpoint.getPathRegex());
+				throw new RuntimeException(
+						"Could not determine path for endpoint of verticle " + verticle.getClass() + " " + endpoint.getPathRegex());
 			}
 			Resource pathResource = verticleResource.getResources().get(path);
 			if (pathResource == null) {
@@ -240,6 +300,10 @@ public class RAMLGenerator {
 		initEndpoint(releaseEndpoint);
 		addEndpoints(projectBasePath, resources, releaseEndpoint);
 
+		GraphQLEndpoint graphqlEndpoint = Mockito.spy(new GraphQLEndpoint());
+		initEndpoint(graphqlEndpoint);
+		addEndpoints(projectBasePath, resources, graphqlEndpoint);
+
 		ProjectSearchEndpoint projectSearchEndpoint = Mockito.spy(new ProjectSearchEndpoint());
 		initEndpoint(projectSearchEndpoint);
 		addEndpoints(projectBasePath, resources, projectSearchEndpoint);
@@ -316,5 +380,10 @@ public class RAMLGenerator {
 		initEndpoint(projectInfoEndpoint);
 		addEndpoints(coreBasePath, resources, projectInfoEndpoint);
 
+	}
+
+	public void run() throws IOException {
+		String raml = generate();
+		writeFile(fileName, raml);
 	}
 }

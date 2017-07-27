@@ -21,11 +21,11 @@ public class CreateIndexEntryImpl extends AbstractEntry implements CreateIndexEn
 	private String indexName;
 	private Schema schema;
 	private String indexType;
-	private IndexHandler indexHandler;
+	private IndexHandler<?> indexHandler;
 	private HandleContext context = new HandleContext();
 
 	@Inject
-	public CreateIndexEntryImpl(IndexHandler indexHandler, String indexName, String indexType) {
+	public CreateIndexEntryImpl(IndexHandler<?> indexHandler, String indexName, String indexType) {
 		super(CREATE_INDEX);
 		this.indexName = indexName;
 		this.indexType = indexType;

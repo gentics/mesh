@@ -39,7 +39,7 @@ import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.cli.MeshNameProvider;
-import com.gentics.mesh.etc.ElasticSearchOptions;
+import com.gentics.mesh.etc.config.ElasticSearchOptions;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;

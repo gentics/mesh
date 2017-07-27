@@ -1,0 +1,36 @@
+{
+	role(name: "admin") {
+		name,
+		uuid,
+		groups { 
+			elements {
+				uuid, name
+			}
+		}
+	}
+	group(name: "admin") {
+		name,
+		uuid
+	}
+	groups {
+		elements {
+			name,
+			uuid
+		}
+	}
+	oneUser: user(name: "joe1") { 
+		username,
+		uuid 
+	}
+	users {
+		elements { 
+			username,
+			uuid 
+		}
+	}
+	me {
+		username, 
+		uuid
+	}
+}
+# [$.errors=<is-undefined>]

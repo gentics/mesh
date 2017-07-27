@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
-import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
 /**
@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
  * correctly transform the micronode into its JSON representation.
  */
 public interface MicroschemaContainerVersion
-		extends GraphFieldSchemaContainerVersion<MicroschemaResponse, Microschema, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer> {
+		extends GraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer> {
 
 	static String TYPE = "microschemaVersion";
 

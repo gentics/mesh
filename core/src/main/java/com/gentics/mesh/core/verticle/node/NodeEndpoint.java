@@ -19,15 +19,15 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.parameter.impl.NavigationParameters;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.PublishParameters;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -99,9 +99,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Returns a navigation object for the provided node.");
 		endpoint.displayName("Navigation");
-		endpoint.exampleRequest(new GenericMessageResponse("test"));
 		endpoint.exampleResponse(OK, responseExample, "Loaded navigation.");
-		endpoint.addQueryParameters(NavigationParameters.class);
+		endpoint.addQueryParameters(NavigationParametersImpl.class);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -164,8 +163,9 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldGet.path("/:nodeUuid/binary/:fieldName");
 		fieldGet.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		fieldGet.addUriParameter("fieldName", "Name of the binary field", "image");
+		fieldGet.addQueryParameters(ImageManipulationParametersImpl.class);
 		fieldGet.method(GET);
-		fieldGet.description("Download the binary field with the given name.");
+		fieldGet.description("Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.");
 		fieldGet.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
@@ -183,7 +183,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.description("Move the node into the target node.");
 		endpoint.exampleResponse(NO_CONTENT, "Node was moved.");
-		endpoint.addQueryParameters(VersioningParameters.class);
+		endpoint.addQueryParameters(VersioningParametersImpl.class);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -201,8 +201,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleResponse(OK, nodeExamples.getNodeListResponse(), "List of loaded node children.");
 		endpoint.description("Load all child nodes and return a paged list response.");
 		endpoint.addQueryParameters(PagingParametersImpl.class);
-		endpoint.addQueryParameters(NodeParameters.class);
-		endpoint.addQueryParameters(VersioningParameters.class);
+		endpoint.addQueryParameters(NodeParametersImpl.class);
+		endpoint.addQueryParameters(VersioningParametersImpl.class);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -217,9 +217,9 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getTags.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		getTags.method(GET);
 		getTags.produces(APPLICATION_JSON);
-		getTags.exampleResponse(OK, tagExamples.getTagListResponse(), "List of tags that were used to tag the node.");
+		getTags.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags that were used to tag the node.");
 		getTags.description("Return a list of all tags which tag the node.");
-		getTags.addQueryParameters(VersioningParameters.class);
+		getTags.addQueryParameters(VersioningParametersImpl.class);
 		getTags.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -233,7 +233,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		bulkUpdate.produces(APPLICATION_JSON);
 		bulkUpdate.description("Update the list of assigned tags");
 		bulkUpdate.exampleRequest(tagExamples.getTagListUpdateRequest());
-		bulkUpdate.exampleResponse(OK, tagExamples.getTagListResponse(), "Updated tag list.");
+		bulkUpdate.exampleResponse(OK, tagExamples.createTagListResponse(), "Updated tag list.");
 		bulkUpdate.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String nodeUuid = ac.getParameter("nodeUuid");
@@ -248,7 +248,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		addTag.produces(APPLICATION_JSON);
 		addTag.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
 		addTag.description("Assign the given tag to the node.");
-		addTag.addQueryParameters(VersioningParameters.class);
+		addTag.addQueryParameters(VersioningParametersImpl.class);
 		addTag.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -299,9 +299,9 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readOne.description("Load the node with the given uuid.");
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, nodeExamples.getNodeResponseWithAllFields(), "Loaded node.");
-		readOne.addQueryParameters(VersioningParameters.class);
-		readOne.addQueryParameters(RolePermissionParameters.class);
-		readOne.addQueryParameters(NodeParameters.class);
+		readOne.addQueryParameters(VersioningParametersImpl.class);
+		readOne.addQueryParameters(RolePermissionParametersImpl.class);
+		readOne.addQueryParameters(NodeParametersImpl.class);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("nodeUuid");
 			if (StringUtils.isEmpty(uuid)) {
@@ -318,9 +318,9 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(OK, nodeExamples.getNodeListResponse(), "Loaded list of nodes.");
-		readAll.addQueryParameters(VersioningParameters.class);
-		readAll.addQueryParameters(RolePermissionParameters.class);
-		readAll.addQueryParameters(NodeParameters.class);
+		readAll.addQueryParameters(VersioningParametersImpl.class);
+		readAll.addQueryParameters(RolePermissionParametersImpl.class);
+		readAll.addQueryParameters(NodeParametersImpl.class);
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -354,7 +354,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		Endpoint endpoint = createEndpoint();
 		endpoint.description("Update the node with the given uuid. It is mandatory to specify the version within the update request. "
 				+ "Mesh will automatically check for version conflicts and return a 409 error if a conflict has been detected. "
-				+ "Additional conflict checks for webrootpath conflicts will also be performed.");
+				+ "Additional conflict checks for WebRoot path conflicts will also be performed.");
 		endpoint.path("/:nodeUuid");
 		endpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -393,7 +393,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		putEndpoint.method(POST);
 		putEndpoint.produces(APPLICATION_JSON);
 		putEndpoint.exampleResponse(OK, versioningExamples.createPublishStatusResponse(), "Publish status of the node.");
-		putEndpoint.addQueryParameters(PublishParameters.class);
+		putEndpoint.addQueryParameters(PublishParametersImpl.class);
 		putEndpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			crudHandler.handlePublish(ac, rc.request().getParam("nodeUuid"));
@@ -406,7 +406,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.produces(APPLICATION_JSON);
 		deleteEndpoint.exampleResponse(NO_CONTENT, "Node was unpublished.");
-		deleteEndpoint.addQueryParameters(PublishParameters.class);
+		deleteEndpoint.addQueryParameters(PublishParametersImpl.class);
 		deleteEndpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			crudHandler.handleTakeOffline(ac, rc.request().getParam("nodeUuid"));

@@ -1,0 +1,46 @@
+{
+	tagFamily(name: "colors") { 
+		# [$.data.tagFamily.uuid=<is-uuid>]
+		uuid
+
+		# [$.data.tagFamily.name=colors]
+		name
+
+		creator { 
+			# [$.data.tagFamily.creator.firstname=Joe]
+			firstname
+
+			# [$.data.tagFamily.creator.lastname=Doe]
+			lastname 
+		}
+
+		# [$.data.tagFamily.bogus=<is-null>]
+		bogus: tag(name: "bogus") {
+			name
+		}
+
+		tag(name: "red") {
+			# [$.data.tagFamily.tag.name=red]
+			name
+
+			# [$.data.tagFamily.tag.tagFamily.name=colors]
+			tagFamily {
+				name
+			}
+		}
+
+		tags(page: 1, perPage:25) {
+			elements {
+				name
+				nodes {
+					elements  { 
+						uuid
+						fields { ... on content { slug } }
+					}
+				}
+			}
+		}
+		etag
+	}
+}
+# [$.errors=<is-undefined>]

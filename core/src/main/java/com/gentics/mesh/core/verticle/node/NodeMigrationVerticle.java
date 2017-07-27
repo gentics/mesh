@@ -30,6 +30,7 @@ import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
 
 /**
  * Dedicated worker verticle which will handle schema and microschema migrations.
@@ -118,11 +119,8 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 
 			try {
 				ObjectName statusMBeanName = new ObjectName(JMX_MBEAN_NAME + ",name=" + schemaUuid);
-				if (isRunning(statusMBeanName)) {
-					fail(message, "Migration for schema {" + schemaUuid + "} is already running");
-					return;
-				} else {
-					db.noTx(() -> {
+				db.tx(() -> {
+					try {
 						// Load the identified elements
 						Project project = boot.get().projectRoot().findByUuid(projectUuid);
 						if (project == null) {
@@ -146,17 +144,21 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 						}
 						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.schema);
-						setRunning(statusBean, statusMBeanName);
 
+						if (checkAndLock(statusMBeanName, statusBean)) {
+							fail(message, "Migration for schema {" + schemaUuid + "} is already running");
+							return null;
+						}
 						// Invoke the migration using the located elements
 						nodeMigrationHandler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
-						return null;
-					});
-					setDone(schemaUuid, statusMBeanName);
-					message.reply(null);
-				}
+					} catch (Exception e) {
+						setError(message, schemaUuid, statusMBeanName, e);
+					}
+					return null;
+				});
+				setDone(message, schemaUuid, statusMBeanName);
 			} catch (Exception e) {
-				message.fail(0, "Migration for schema {" + schemaUuid + "} failed: " + e.getLocalizedMessage());
+				log.error("Error while generation jmx bean name", e);
 			}
 		});
 
@@ -191,10 +193,8 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 
 			try {
 				ObjectName statusMBeanName = new ObjectName(JMX_MBEAN_NAME + ",name=" + microschemaUuid);
-				if (isRunning(statusMBeanName)) {
-					message.fail(0, "Migration for microschema " + microschemaUuid + " is already running");
-				} else {
-					db.noTx(() -> {
+				db.tx(() -> {
+					try {
 						Project project = boot.get().projectRoot().findByUuid(projectUuid);
 						if (project == null) {
 							throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
@@ -222,17 +222,22 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 
 						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
 								Type.microschema);
-						setRunning(statusBean, statusMBeanName);
+						if (checkAndLock(statusMBeanName, statusBean)) {
+							fail(message, "Migration for microschema {" + microschemaUuid + "} is already running");
+							return null;
+						}
 						nodeMigrationHandler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
-						return null;
-					});
-					setDone(microschemaUuid, statusMBeanName);
-					message.reply(null);
-				}
+					} catch (Exception e) {
+						setError(message, microschemaUuid, statusMBeanName, e);
+					}
+					return null;
+				});
+				setDone(message, microschemaUuid, statusMBeanName);
 			} catch (Exception e) {
-				message.fail(0, "Migration for microschema " + microschemaUuid + " failed: " + e.getLocalizedMessage());
+				log.error("Error while generation jmx bean name", e);
 			}
 		});
+
 	}
 
 	/**
@@ -246,7 +251,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 				log.debug("Release migration for release {" + releaseUuid + "} was requested");
 			}
 
-			Throwable error = db.noTx(() -> {
+			Throwable error = db.tx(() -> {
 				try {
 					Project project = boot.get().projectRoot().findByUuid(projectUuid);
 					if (project == null) {
@@ -276,12 +281,28 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 		});
 	}
 
-	private boolean isRunning(ObjectName statusMBeanName) {
-		// TODO when mesh is running in a cluster, this check is not enough, since JMX beans are bound to the JVM
-		return mbs.isRegistered(statusMBeanName);
+	/**
+	 * Checks for running migration and locks the execution if no other process is currently running.
+	 * 
+	 * @param statusBean
+	 */
+	private synchronized boolean checkAndLock(ObjectName statusMBeanName, NodeMigrationStatus statusBean) {
+		boolean running = isRunning(statusMBeanName);
+		if (running) {
+			return true;
+		} else {
+			setRunning(statusBean, statusMBeanName);
+			return false;
+		}
 	}
 
-	private void setRunning(NodeMigrationStatus statusBean, ObjectName statusMBeanName) {
+	private synchronized boolean isRunning(ObjectName statusMBeanName) {
+		LocalMap<Object, Object> map = vertx.sharedData().getLocalMap("migrationStatus");
+		boolean isRunningOnCluster = map != null && map.get("status") != null && map.get("status").equals("migration_status_running");
+		return mbs.isRegistered(statusMBeanName) || isRunningOnCluster;
+	}
+
+	private synchronized void setRunning(NodeMigrationStatus statusBean, ObjectName statusMBeanName) {
 		try {
 			mbs.registerMBean(statusBean, statusMBeanName);
 		} catch (Exception e1) {
@@ -305,7 +326,7 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 	 * @param schemaUuid
 	 * @param statusMBeanName
 	 */
-	private void setDone(String schemaUuid, ObjectName statusMBeanName) {
+	private synchronized void setDone(Message<Object> message, String schemaUuid, ObjectName statusMBeanName) {
 		if (log.isDebugEnabled()) {
 			log.debug("Migration for container " + schemaUuid + " completed");
 		}
@@ -317,5 +338,20 @@ public class NodeMigrationVerticle extends AbstractVerticle {
 		msg.put("type", "completed");
 		Mesh.vertx().sharedData().getLocalMap("migrationStatus").put("status", "migration_status_idle");
 		Mesh.vertx().eventBus().publish(MESH_MIGRATION.toString(), msg);
+		message.reply(null);
+	}
+
+	private synchronized void setError(Message<Object> message, String schemaUuid, ObjectName statusMBeanName, Exception e) {
+		log.error("Migration for schema/microschema {" + schemaUuid + "} failed with error.", e);
+		message.fail(0, "Migration for schema/microschema {" + schemaUuid + "} failed: " + e.getLocalizedMessage());
+		try {
+			mbs.unregisterMBean(statusMBeanName);
+		} catch (Exception e1) {
+		}
+		Mesh.vertx().sharedData().getLocalMap("migrationStatus").put("status", "migration_status_failed");
+		/*
+		 * JsonObject msg = new JsonObject(); msg.put("type", "completed"); Mesh.vertx().sharedData().getLocalMap("migrationStatus").put("status",
+		 * "migration_status_idle"); Mesh.vertx().eventBus().publish(MESH_MIGRATION.toString(), msg);
+		 */
 	}
 }

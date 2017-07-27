@@ -1,0 +1,30 @@
+{
+	# [$.data.bogus=<is-null>]
+	bogus: group(name: "bogus") {
+		name
+		uuid
+	}
+
+	group(name: "admin") {
+		uuid
+		name
+		roles {
+			elements {
+				name
+			}
+		}
+		users {
+			elements {
+				username
+			}
+		}
+	}
+
+	groups {
+		elements {
+			name
+			uuid
+		}
+	}
+}
+# [$.errors=<is-undefined>]

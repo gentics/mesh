@@ -1,7 +1,6 @@
 package com.gentics.mesh.rest.client.handler.impl;
 
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
-import com.gentics.mesh.rest.client.handler.AbstractMeshResponseHandler;
 
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpHeaders;
@@ -10,7 +9,7 @@ import io.vertx.core.http.HttpMethod;
 /**
  * Handler which can handle download responses.
  */
-public class MeshBinaryResponseHandler extends AbstractMeshResponseHandler<NodeDownloadResponse> {
+public class MeshBinaryResponseHandler extends ModelResponseHandler<NodeDownloadResponse> {
 
 	/**
 	 * Create a new response handler.
@@ -18,10 +17,10 @@ public class MeshBinaryResponseHandler extends AbstractMeshResponseHandler<NodeD
 	 * @param method
 	 *            Method that was used for the request
 	 * @param uri
-	 *            Uri that was queried
+	 *            URI that was queried
 	 */
 	public MeshBinaryResponseHandler(HttpMethod method, String uri) {
-		super(method, uri);
+		super(NodeDownloadResponse.class, method, uri);
 	}
 
 	@Override

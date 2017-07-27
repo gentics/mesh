@@ -1,0 +1,13 @@
+{
+	node(path:"/Products/Concorde.en.html") {
+		tags {
+			elements {
+				# [$.data.node.tags.elements[0].name=Plane]
+				# [$.data.node.tags.elements[1].name=Twinjet]
+				# [$.data.node.tags.elements[2].name=red]
+				name
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

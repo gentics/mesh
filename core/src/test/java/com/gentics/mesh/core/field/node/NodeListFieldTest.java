@@ -3,7 +3,6 @@ package com.gentics.mesh.core.field.node;
 import static com.gentics.mesh.core.field.node.NodeListFieldTestHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.node.NodeListFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.node.NodeListFieldTestHelper.FILL;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -12,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -28,7 +28,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -50,15 +49,18 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		Node node = folder("2015");
+		try (Tx tx = tx()) {
 			Node newsNode = folder("news");
-			Node node = folder("2015");
 			prepareNode(node, NODE_LIST, "node");
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			NodeGraphFieldList nodeList = container.createNodeList(NODE_LIST);
 			nodeList.createNode("1", newsNode);
 			nodeList.createNode("2", newsNode);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeResponse response = transform(node);
 			assertList(2, NODE_LIST, "node", response);
 		}
@@ -67,10 +69,10 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			// Create node field
-			Node node = noTx.getGraph().addFramedVertex(NodeImpl.class);
-			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
+			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldList list = container.createNodeList("dummyList");
 
 			// Add item
@@ -104,16 +106,16 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (NoTx noTx = db().noTx()) {
-			Node node = noTx.getGraph().addFramedVertex(NodeImpl.class);
+		try (Tx tx = tx()) {
+			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
 
-			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldList testField = container.createNodeList("testField");
 			testField.createNode("1", node);
 			testField.createNode("2", node);
 			testField.createNode("3", node);
 
-			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNodeList("testField")).as("cloned field").isEqualToComparingFieldByField(testField);
@@ -123,8 +125,8 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = tx()) {
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldList fieldA = container.createNodeList("fieldA");
 			NodeGraphFieldList fieldB = container.createNodeList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -141,8 +143,8 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = tx()) {
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphFieldList fieldA = container.createNodeList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
@@ -152,8 +154,8 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = tx()) {
+			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			String dummyKey = "test123";
 
 			// rest null - graph null
@@ -182,7 +184,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			invokeUpdateFromRestTestcase(NODE_LIST, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -190,7 +192,7 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(NODE_LIST, FETCH);
 		}
 	}
@@ -198,8 +200,8 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+		try (Tx tx = tx()) {
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(NODE_LIST, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, NODE_LIST, null);
 			});
@@ -209,8 +211,8 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+		try (Tx tx = tx()) {
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(NODE_LIST, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, NODE_LIST, null);
 			});
@@ -220,8 +222,8 @@ public class NodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+		try (Tx tx = tx()) {
+			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(NODE_LIST, FILL, (container) -> {
 				NodeFieldListImpl field = new NodeFieldListImpl();
 				field.getItems().add(new NodeFieldListItemImpl(content().getUuid()));

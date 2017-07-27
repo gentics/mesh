@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -21,15 +22,15 @@ import com.gentics.mesh.core.rest.schema.BooleanFieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceInfo;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -54,8 +55,8 @@ public class RestModelTest extends AbstractMeshTest {
 		assertNotNull(deserializedResponse);
 	}
 
-	private SchemaModel getDummySchema() {
-		SchemaModel schema = new SchemaModel();
+	private SchemaModelImpl getDummySchema() {
+		SchemaModelImpl schema = new SchemaModelImpl();
 		schema.setName("content");
 		schema.setDisplayField("title");
 		//		schema.setMeshVersion(Mesh.getVersion());
@@ -118,9 +119,9 @@ public class RestModelTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeList() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			Schema folderSchema = schemaContainer("folder").getLatestVersion().getSchema();
-			Schema contentSchema = schemaContainer("content").getLatestVersion().getSchema();
+		try (Tx tx = tx()) {
+			SchemaModel folderSchema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaModel contentSchema = schemaContainer("content").getLatestVersion().getSchema();
 
 			NodeResponse folder = new NodeResponse();
 			folder.setSchema(new SchemaReference().setName(folderSchema.getName()));
@@ -148,7 +149,7 @@ public class RestModelTest extends AbstractMeshTest {
 	@Test
 	public void testSchema() throws JsonParseException, JsonMappingException, IOException {
 
-		Schema schemaCreateRequest = new SchemaModel();
+		Schema schemaCreateRequest = new SchemaModelImpl();
 		schemaCreateRequest.setName("blogpost");
 		schemaCreateRequest.setDisplayField("name");
 
@@ -198,7 +199,7 @@ public class RestModelTest extends AbstractMeshTest {
 		assertNotNull(json);
 
 		// Deserialize the object
-		Schema loadedRequest = JsonUtil.readValue(json, SchemaModel.class);
+		Schema loadedRequest = JsonUtil.readValue(json, SchemaModelImpl.class);
 		assertNotNull(loadedRequest);
 
 		// Serialize the object
@@ -209,7 +210,7 @@ public class RestModelTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeSchema2() {
-		Schema schema = new SchemaModel();
+		Schema schema = new SchemaModelImpl();
 
 		schema.setName("blogpost");
 		schema.setDisplayField("name");

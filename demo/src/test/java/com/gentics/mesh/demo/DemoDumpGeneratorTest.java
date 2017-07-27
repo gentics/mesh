@@ -7,11 +7,15 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
@@ -22,15 +26,12 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
 public class DemoDumpGeneratorTest {
 
 	private BootstrapInitializer boot;
-
-	private DemoDataProvider dataProvider;
 
 	private SearchProvider searchProvider;
 
@@ -39,64 +40,64 @@ public class DemoDumpGeneratorTest {
 	private static DemoDumpGenerator generator = new DemoDumpGenerator();
 
 	@BeforeClass
-	public static void cleanupFolders() throws IOException {
+	public static void cleanupFolders() throws Exception {
 		generator.cleanup();
-
+		generator.init();
 	}
 
 	@Before
-	public void setup() {
-		DemoDumpGenerator.initPaths();
+	public void setup() throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
 		MeshComponent meshDagger = MeshInternal.create();
 		boot = meshDagger.boot();
 		searchProvider = meshDagger.searchProvider();
 		db = meshDagger.database();
-		dataProvider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl());
 	}
 
 	@Test
 	public void testSetup() throws Exception {
-		generator.invokeDump(boot, dataProvider);
-		NoTx tx = db.noTx();
-		assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").getNodeRoot().findAll().size() > 0);
-		User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
-		assertNotNull("The webclient user should have been created but could not be found.", user);
-		assertFalse("The webclient user should also have at least one group assigned to it.", user.getGroups().isEmpty());
-		Group group = user.getGroups().get(0);
-		Role role = group.getRoles().get(0);
-		assertNotNull("The webclient group should also have a role assigned to it", role);
+		generator.dump();
+		try (Tx tx = db.tx()) {
+			assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").getNodeRoot().findAll().size() > 0);
+			User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
+			assertNotNull("The webclient user should have been created but could not be found.", user);
+			assertFalse("The webclient user should also have at least one group assigned to it.", user.getGroups().isEmpty());
+			Group group = user.getGroups().get(0);
+			Role role = group.getRoles().get(0);
+			assertNotNull("The webclient group should also have a role assigned to it", role);
 
-		assertTrue("The webclient role has not read permission on the user.", role.hasPermission(GraphPermission.READ_PERM, user));
-		assertTrue("The webclient user has no permission on itself.", user.hasPermission(user, GraphPermission.READ_PERM));
-		assertTrue("The webclient user has no read permission on the user root node..",
-				user.hasPermission(boot.meshRoot().getUserRoot(), GraphPermission.READ_PERM));
+			assertTrue("The webclient role has not read permission on the user.", role.hasPermission(GraphPermission.READ_PERM, user));
+			assertTrue("The webclient user has no permission on itself.", user.hasPermission(user, GraphPermission.READ_PERM));
+			assertTrue("The webclient user has no read permission on the user root node..",
+					user.hasPermission(boot.meshRoot().getUserRoot(), GraphPermission.READ_PERM));
 
-		assertTrue("We expected to find at least 5 nodes.", boot.meshRoot().getNodeRoot().findAll().size() > 5);
+			assertTrue("We expected to find at least 5 nodes.", boot.meshRoot().getNodeRoot().findAll().size() > 5);
 
-		// Verify that all documents are stored in the index
-		for (Node node : boot.meshRoot().getNodeRoot().findAll()) {
-			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(boot.meshRoot().getLanguageRoot().findByLanguageTag("en"));
-			//			HandleContext context = new HandleContext();
-			//			context.setProjectUuid(node.getProject().getUuid());
-			//			context.setReleaseUuid(node.getProject().getLatestRelease().getUuid());
-			//			context.setContainerType(DRAFT);
-			//			UpdateBatchEntry entry = new UpdateBatchEntryImpl(MeshInternal.get().nodeContainerIndexHandler(), node, context, STORE_ACTION);
+			// Verify that the uuids have been updated
+			assertNotNull(boot.meshRoot().getNodeRoot().findByUuid("df8beb3922c94ea28beb3922c94ea2f6"));
 
-			String languageTag = "en";
-			String projectUuid = node.getProject().getUuid();
-			String releaseUuid = node.getProject().getInitialRelease().getUuid();
-			String schemaContainerVersionUuid = container.getSchemaContainerVersion().getUuid();
-			ContainerType type = PUBLISHED;
-			String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type);
-			String documentType = NodeGraphFieldContainer.composeIndexType();
-			String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), languageTag);
-			if (searchProvider.getDocument(indexName, documentType, documentId).toBlocking().single() == null) {
-				String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag + "} could not be found within index {"
-						+ indexName + "} - {" + documentType + "} - {" + documentId + "}";
-				fail(msg);
+			// Verify that all documents are stored in the index
+			for (Node node : boot.meshRoot().getNodeRoot().findAll()) {
+				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(boot.meshRoot().getLanguageRoot().findByLanguageTag("en"));
+				// HandleContext context = new HandleContext();
+				// context.setProjectUuid(node.getProject().getUuid());
+				// context.setReleaseUuid(node.getProject().getLatestRelease().getUuid());
+				// context.setContainerType(DRAFT);
+				// UpdateBatchEntry entry = new UpdateBatchEntryImpl(MeshInternal.get().nodeContainerIndexHandler(), node, context, STORE_ACTION);
+
+				String languageTag = "en";
+				String projectUuid = node.getProject().getUuid();
+				String releaseUuid = node.getProject().getInitialRelease().getUuid();
+				String schemaContainerVersionUuid = container.getSchemaContainerVersion().getUuid();
+				ContainerType type = PUBLISHED;
+				String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type);
+				String documentType = NodeGraphFieldContainer.composeIndexType();
+				String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), languageTag);
+				if (searchProvider.getDocument(indexName, documentType, documentId).toBlocking().single() == null) {
+					String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag
+							+ "} could not be found within index {" + indexName + "} - {" + documentType + "} - {" + documentId + "}";
+					fail(msg);
+				}
 			}
 		}
-		tx.close();
-
 	}
 }

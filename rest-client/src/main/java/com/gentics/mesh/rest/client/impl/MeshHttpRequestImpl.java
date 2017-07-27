@@ -5,7 +5,7 @@ import org.apache.commons.lang.StringUtils;
 import com.gentics.mesh.rest.MeshRestClientAuthenticationProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.rest.client.handler.MeshResponseHandler;
+import com.gentics.mesh.rest.client.handler.ResponseHandler;
 
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientRequest;
@@ -16,7 +16,7 @@ import rx.Observable;
 import rx.Single;
 
 /**
- * Wrapper for a mesh http request.
+ * Wrapper for a mesh HTTP request.
  *
  * @param <T>
  */
@@ -26,7 +26,7 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 
 	private HttpClientRequest request;
 
-	private MeshResponseHandler<T> handler;
+	private ResponseHandler<T> handler;
 
 	private Buffer bodyData;
 
@@ -36,7 +36,7 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 
 	private MeshRestClientAuthenticationProvider authentication;
 
-	public MeshHttpRequestImpl(HttpClientRequest request, MeshResponseHandler<T> handler, Buffer bodyData, String contentType,
+	public MeshHttpRequestImpl(HttpClientRequest request, ResponseHandler<T> handler, Buffer bodyData, String contentType,
 			MeshRestClientAuthenticationProvider authentication, String accepts) {
 		this.request = request;
 		this.handler = handler;

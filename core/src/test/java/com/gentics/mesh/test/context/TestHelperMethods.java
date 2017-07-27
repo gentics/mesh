@@ -1,5 +1,7 @@
 package com.gentics.mesh.test.context;
 
+import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.junit.Assert.assertNotNull;
@@ -10,9 +12,15 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
+import com.gentics.ferma.Tx;
+import com.gentics.ferma.TxHandler;
+import com.gentics.ferma.TxHandler0;
+import com.gentics.ferma.TxHandler1;
+import com.gentics.ferma.TxHandler2;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -46,6 +54,7 @@ import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -64,10 +73,10 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.SchemaUpdateParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.search.DummySearchProvider;
@@ -79,148 +88,196 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
+import io.vertx.ext.web.RoutingContext;
 import io.vertx.test.core.TestUtils;
 
 public interface TestHelperMethods {
 
 	MeshTestContext getTestContext();
 
-	// MeshRestClient client();
-	//
-	// int port();
-	//
-	// Tag tag(String key);
-	//
-	// Project project();
-	//
-	// Node folder(String key);
-	//
-	// Node content(String key);
-	//
-	// TagFamily tagFamily(String key);
-	//
-	// SchemaContainer schemaContainer(String key);
-	//
-	// Database db();
-	//
-	// TestDataProvider data();
-
-	default public Database db() {
+	default Database db() {
 		return MeshInternal.get().database();
 	}
 
-	default public BootstrapInitializer boot() {
+	default Tx tx() {
+		return db().tx();
+	}
+
+	default void tx(TxHandler0 handler) {
+		db().tx(handler);
+	}
+
+	default <T> T tx(TxHandler1<T> handler) {
+		return db().tx(handler);
+	}
+
+	default void tx(TxHandler2 handler) {
+		db().tx(handler);
+	}
+
+	default <T> T tx(TxHandler<T> handler) {
+		return db().tx(handler);
+	}
+
+	default BootstrapInitializer boot() {
 		return MeshInternal.get().boot();
 	}
 
-	default public TestDataProvider data() {
+	default TestDataProvider data() {
 		return getTestContext().getData();
 	}
 
-	default public Role role() {
+	default Role role() {
 		return data().role();
 	}
 
-	default public MeshAuthUser getRequestUser() {
+	default MeshAuthUser getRequestUser() {
 		return data().getUserInfo().getUser().reframe(MeshAuthUserImpl.class);
 	}
 
-	default public User user() {
-		User user = data().user();
-		//		user.reload();
-		return user;
+	default User user() {
+		return data().user();
 	}
 
-	default public MeshRoot meshRoot() {
+	default Role anonymousRole() {
+		return data().getAnonymousRole();
+	}
+
+	default MeshRoot meshRoot() {
 		return data().getMeshRoot();
 	}
 
-	default public Group group() {
+	default Group group() {
 		Group group = data().getUserInfo().getGroup();
 		group.reload();
 		return group;
 	}
 
-	default public MeshRestClient client() {
+	default String groupUuid() {
+		return data().getUserInfo().getGroupUuid();
+	}
+
+	default String userUuid() {
+		return data().getUserInfo().getUserUuid();
+	}
+
+	/**
+	 * Return the uuid of the initial project release.
+	 * 
+	 * @return
+	 */
+	default String initialReleaseUuid() {
+		return data().releaseUuid();
+	}
+
+	default String roleUuid() {
+		return data().getUserInfo().getRoleUuid();
+	}
+
+	default String projectUuid() {
+		return data().projectUuid();
+	}
+
+	default String contentUuid() {
+		return data().getContentUuid();
+	}
+
+	default MeshRestClient client() {
 		return getTestContext().getClient();
 	}
 
-	default public DummySearchProvider dummySearchProvider() {
+	default DummySearchProvider dummySearchProvider() {
 		return getTestContext().getDummySearchProvider();
 	}
 
-	default public Project project() {
+	default Project project() {
 		return data().getProject();
 	}
 
-	default public int port() {
+	default int port() {
 		return getTestContext().getPort();
 	}
 
 	default public Node folder(String key) {
 		Node node = data().getFolder(key);
-		node.reload();
+		// node.reload();
 		return node;
 	}
 
-	default public Node content(String key) {
+	default Node content(String key) {
 		return data().getContent(key);
 	}
 
-	default public TagFamily tagFamily(String key) {
+	default TagFamily tagFamily(String key) {
 		TagFamily family = data().getTagFamily(key);
-		family.reload();
+		// family.reload();
 		return family;
 	}
 
-	default public Tag tag(String key) {
+	default Tag tag(String key) {
 		Tag tag = data().getTag(key);
-		tag.reload();
+		// tag.reload();
 		return tag;
 	}
 
-	default public SchemaContainer schemaContainer(String key) {
+	default SchemaContainer schemaContainer(String key) {
 		SchemaContainer container = data().getSchemaContainer(key);
-		container.reload();
+		// container.reload();
 		return container;
 	}
 
-	default public Map<String, SchemaContainer> schemaContainers() {
+	default Map<String, SchemaContainer> schemaContainers() {
 		return data().getSchemaContainers();
 	}
 
-	default public Map<String, Role> roles() {
+	default Map<String, Role> roles() {
 		return data().getRoles();
 	}
 
-	default public Map<String, ? extends Tag> tags() {
+	default Map<String, ? extends Tag> tags() {
 		return data().getTags();
 	}
 
-	default public Language english() {
+	default Language english() {
 		Language language = data().getEnglish();
-		language.reload();
+		// language.reload();
 		return language;
 	}
 
-	default public Language german() {
+	default Language german() {
 		Language language = data().getGerman();
-		language.reload();
+		// language.reload();
 		return language;
 	}
 
-	default public Map<String, Group> groups() {
+	default Map<String, Group> groups() {
 		return data().getGroups();
 	}
 
-	default public Map<String, MicroschemaContainer> microschemaContainers() {
+	default Map<String, MicroschemaContainer> microschemaContainers() {
 		return data().getMicroschemaContainers();
 	}
 
-	default public MicroschemaContainer microschemaContainer(String key) {
+	default MicroschemaContainer microschemaContainer(String key) {
 		MicroschemaContainer container = data().getMicroschemaContainers().get(key);
-		container.reload();
+//		container.reload();
 		return container;
+	}
+
+	default RoutingContext mockRoutingContext() {
+		return getMockedRoutingContext("", false, user(), project());
+	}
+
+	default RoutingContext mockRoutingContext(String query) {
+		return getMockedRoutingContext(query, false, user(), project());
+	}
+
+	default InternalActionContext mockActionContext() {
+		return getMockedInternalActionContext("", user(), project());
+	}
+
+	default InternalActionContext mockActionContext(String query) {
+		return getMockedInternalActionContext(query, user(), project());
 	}
 
 	/**
@@ -228,32 +285,41 @@ public interface TestHelperMethods {
 	 * 
 	 * @return
 	 */
-	default public Node content() {
+	default Node content() {
 		Node content = data().getContent("news overview");
-		content.reload();
+		// content.reload();
 		return content;
 	}
 
 	/**
-	 * Return the lastest release of the dummy project
+	 * Return the latest release of the dummy project.
 	 * 
 	 * @return
 	 */
-	default public Release release() {
+	default Release latestRelease() {
 		return project().getLatestRelease();
 	}
 
-	default public UserResponse readUser(String uuid) {
+	/**
+	 * Returns the initial release of the dummy project.
+	 * 
+	 * @return
+	 */
+	default Release initialRelease() {
+		return project().getInitialRelease();
+	}
+
+	default UserResponse readUser(String uuid) {
 		return call(() -> client().findUserByUuid(uuid));
 	}
 
-	default public UserResponse updateUser(String uuid, String newUserName) {
+	default UserResponse updateUser(String uuid, String newUserName) {
 		UserUpdateRequest userUpdateRequest = new UserUpdateRequest();
 		userUpdateRequest.setUsername(newUserName);
 		return call(() -> client().updateUser(uuid, userUpdateRequest));
 	}
 
-	default public void deleteUser(String uuid) {
+	default void deleteUser(String uuid) {
 		call(() -> client().deleteUser(uuid));
 	}
 
@@ -327,7 +393,7 @@ public interface TestHelperMethods {
 		if (fieldKey != null) {
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
-		return client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en"));
+		return client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en"));
 	}
 
 	default public NodeResponse createNode(String fieldKey, Field field) {
@@ -340,7 +406,7 @@ public interface TestHelperMethods {
 	}
 
 	default public NodeResponse readNode(String projectName, String uuid) {
-		return call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParameters().draft()));
+		return call(() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().draft()));
 	}
 
 	default public void deleteNode(String projectName, String uuid) {
@@ -388,7 +454,7 @@ public interface TestHelperMethods {
 	default public NodeResponse migrateNode(String projectName, String uuid, String sourceReleaseName, String targetReleaseName) {
 		// read node from source release
 		NodeResponse nodeResponse = call(
-				() -> client().findNodeByUuid(projectName, uuid, new VersioningParameters().setRelease(sourceReleaseName).draft()));
+				() -> client().findNodeByUuid(projectName, uuid, new VersioningParametersImpl().setRelease(sourceReleaseName).draft()));
 
 		Schema schema = schemaContainer(nodeResponse.getSchema().getName()).getLatestVersion().getSchema();
 
@@ -397,7 +463,7 @@ public interface TestHelperMethods {
 		update.setLanguage(nodeResponse.getLanguage());
 
 		nodeResponse.getFields().keySet().forEach(key -> update.getFields().put(key, nodeResponse.getFields().getField(key, schema.getField(key))));
-		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParameters().setRelease(targetReleaseName)));
+		return call(() -> client().updateNode(projectName, uuid, update, new VersioningParametersImpl().setRelease(targetReleaseName)));
 	}
 
 	default public ProjectResponse createProject(String projectName) {
@@ -463,7 +529,7 @@ public interface TestHelperMethods {
 	 */
 	default public void prepareSchema(Node node, String mimeTypeWhitelist, String binaryFieldName) throws IOException {
 		// Update the schema and enable binary support for folders
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(new BinaryFieldSchemaImpl().setAllowedMimeTypes(mimeTypeWhitelist).setName(binaryFieldName).setLabel("Binary content"));
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
 		MeshInternal.get().serverSchemaStorage().clear();
@@ -478,13 +544,16 @@ public interface TestHelperMethods {
 		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
 		return client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldKey, buffer, fileName, contentType,
-				new NodeParameters().setResolveLinks(LinkType.FULL));
+				new NodeParametersImpl().setResolveLinks(LinkType.FULL));
 	}
 
 	default public NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {
 		String contentType = "image/jpeg";
 		String fileName = "blume.jpg";
-		prepareSchema(node, "image/.*", fieldName);
+		try (Tx tx = tx()) {
+			prepareSchema(node, "image/.*", fieldName);
+			tx.success();
+		}
 
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
@@ -540,6 +609,10 @@ public interface TestHelperMethods {
 
 	default public Map<String, User> users() {
 		return data().getUsers();
+	}
+
+	default void disableAnonymousAccess() {
+		Mesh.mesh().getOptions().getAuthenticationOptions().setEnableAnonymousAccess(false);
 	}
 
 }

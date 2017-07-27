@@ -9,7 +9,6 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.NodeParameters;
 
 import io.vertx.ext.web.RoutingContext;
 import rx.Single;
@@ -36,14 +35,14 @@ public class UtilityHandler extends AbstractHandler {
 	 */
 	public void handleResolveLinks(RoutingContext rc) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			String projectName = ac.getParameter("project");
 			if (projectName == null) {
 				projectName = "project";
 			}
 
 			return Single.just(linkReplacer.replace(null, null, ac.getBodyAsString(), ac.getNodeParameters().getResolveLinks(), projectName,
-					new NodeParameters(ac).getLanguageList()));
+					ac.getNodeParameters().getLanguageList()));
 		}).subscribe(body -> rc.response().putHeader("Content-Type", "text/plain").setStatusCode(OK.code()).end(body), ac::fail);
 	}
 

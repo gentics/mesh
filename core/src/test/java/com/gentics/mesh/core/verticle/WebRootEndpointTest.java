@@ -2,7 +2,7 @@ package com.gentics.mesh.core.verticle;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
@@ -34,17 +35,15 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PublishParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -55,70 +54,76 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadBinaryNode() throws IOException {
-		try (NoTx noTrx = db().noTx()) {
-			Node node = content("news_2015");
-
+		Node node = content("news_2015");
+		try (Tx tx = tx()) {
 			// 1. Transform the node into a binary content
-			SchemaContainer container = schemaContainer("binary-content");
+			SchemaContainer container = schemaContainer("binary_content");
 			node.setSchemaContainer(container);
 			node.getLatestDraftFieldContainer(english()).setSchemaContainerVersion(container.getLatestVersion());
 			prepareSchema(node, "image/*", "binary");
-			String contentType = "application/octet-stream";
-			int binaryLen = 8000;
-			String fileName = "somefile.dat";
+			tx.success();
+		}
 
+		String contentType = "application/octet-stream";
+		int binaryLen = 8000;
+		String fileName = "somefile.dat";
+
+		try (Tx tx = tx()) {
 			// 2. Update the binary data
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
 			// 3. Try to resolve the path
 			String path = "/News/2015/somefile.dat";
-			WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
-					new NodeParameters().setResolveLinks(LinkType.FULL)));
+			WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+					new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
 			NodeDownloadResponse downloadResponse = response.getDownloadResponse();
 			assertTrue(response.isDownload());
 			assertNotNull(downloadResponse);
 		}
-
 	}
 
 	@Test
 	public void testReadFolderByPath() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node folder = folder("2015");
 			String path = "/News/2015";
 
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft()));
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder).hasLanguage("en");
 		}
 	}
 
 	@Test
 	public void testReadFolderByPathAndResolveLinks() {
-		try (NoTx noTrx = db().noTx()) {
-			Node content = content("news_2015");
+		Node content = content("news_2015");
 
+		try (Tx tx = tx()) {
 			content.getLatestDraftFieldContainer(english()).getHtml("content")
 					.setHtml("<a href=\"{{mesh.link('" + content.getUuid() + "', 'en')}}\">somelink</a>");
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			String path = "/News/2015/News_2015.en.html";
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
-					new NodeParameters().setResolveLinks(LinkType.FULL).setLanguages("en")));
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+					new NodeParametersImpl().setResolveLinks(LinkType.FULL).setLanguages("en")));
 			HtmlFieldImpl contentField = restNode.getNodeResponse().getFields().getHtmlField("content");
 			assertNotNull(contentField);
 			assertEquals("Check rendered content", "<a href=\"/api/v1/dummy/webroot/News/2015/News_2015.en.html\">somelink</a>",
 					contentField.getHTML());
 			assertThat(restNode.getNodeResponse()).is(content).hasLanguage("en");
 		}
+
 	}
 
 	@Test
 	public void testReadContentByPath() throws Exception {
 		String path = "/News/2015/News_2015.en.html";
 
-		WebRootResponse restNode = call(
-				() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
+		WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+				new NodeParametersImpl().setLanguages("en", "de")));
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = content("news_2015");
 			assertThat(restNode.getNodeResponse()).is(node).hasLanguage("en");
 		}
@@ -127,11 +132,11 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadContentWithNodeRefByPath() throws Exception {
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node parentNode = folder("2015");
 			// Update content schema and add node field
 			SchemaContainer folderSchema = schemaContainer("folder");
-			Schema schema = folderSchema.getLatestVersion().getSchema();
+			SchemaModel schema = folderSchema.getLatestVersion().getSchema();
 			schema.getFields().add(FieldUtil.createNodeFieldSchema("nodeRef"));
 			folderSchema.getLatestVersion().setSchema(schema);
 			MeshInternal.get().serverSchemaStorage().addSchema(schema);
@@ -143,24 +148,27 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			// Grant permissions to the node otherwise it will not be able to be loaded
 			role().grantPermissions(node, GraphPermission.values());
 			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(german(), project().getLatestRelease(), user());
-			englishContainer.createString("name").setString("german_name");
+			englishContainer.createString("teaser").setString("german teaser");
 			englishContainer.createString("title").setString("german title");
 			englishContainer.createString("displayName").setString("german displayName");
-			englishContainer.createString("filename").setString("test.de.html");
+			englishContainer.createString("slug").setString("test.de.html");
 
 			// Add node reference to node 2015
 			parentNode.getLatestDraftFieldContainer(english()).createNode("nodeRef", node);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			String path = "/News/2015";
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
-					new NodeParameters().setResolveLinks(LinkType.MEDIUM).setLanguages("en", "de")));
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+					new NodeParametersImpl().setResolveLinks(LinkType.MEDIUM).setLanguages("en", "de")));
 			assertEquals("The node reference did not point to the german node.", "/dummy/News/2015/test.de.html",
 					restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
 			assertEquals("The name of the node did not match", "2015", restNode.getNodeResponse().getFields().getStringField("name").getString());
 
 			// Again with no german fallback option (only english)
-			restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
-					new NodeParameters().setResolveLinks(LinkType.MEDIUM).setLanguages("en")));
+			restNode = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+					new NodeParametersImpl().setResolveLinks(LinkType.MEDIUM).setLanguages("en")));
 			assertEquals("The node reference did not point to the 404 path.", "/dummy/error/404",
 					restNode.getNodeResponse().getFields().getNodeField("nodeRef").getPath());
 			assertEquals("The name of the node did not match", "2015", restNode.getNodeResponse().getFields().getStringField("name").getString());
@@ -175,8 +183,8 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		List<MeshResponse<WebRootResponse>> futures = new ArrayList<>();
 		for (int i = 0; i < nJobs; i++) {
-			futures.add(
-					client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")).invoke());
+			futures.add(client()
+					.webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")).invoke());
 		}
 
 		for (MeshResponse<WebRootResponse> fut : futures) {
@@ -188,22 +196,23 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testPathWithSpaces() throws Exception {
 		String[] path = new String[] { "News", "2015", "Special News_2014.en.html" };
-		call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(), new NodeParameters().setLanguages("en", "de")));
+		call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("en", "de")));
 	}
 
 	@Test
 	public void testPathWithPlus() throws Exception {
-		//Test RFC3986 subdelims and an additional space and questionmark
+		// Test RFC3986 sub-delims and an additional space and questionmark
 		String newName = "20!$&'()*+,;=%3F? 15";
-		String uuid = db().noTx(() -> folder("2015").getUuid());
-		try (NoTx noTx = db().noTx()) {
+		String uuid = db().tx(() -> folder("2015").getUuid());
+		try (Tx tx = tx()) {
 			Node folder = folder("2015");
-			folder.getGraphFieldContainer("en").getString("name").setString(newName);
+			folder.getGraphFieldContainer("en").getString("slug").setString(newName);
+			tx.success();
 		}
 
 		String[] path = new String[] { "News", newName };
-		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().draft(),
-				new NodeParameters().setLanguages("en", "de").setResolveLinks(LinkType.SHORT)));
+		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().draft(),
+				new NodeParametersImpl().setLanguages("en", "de").setResolveLinks(LinkType.SHORT)));
 		assertEquals(uuid, response.getNodeResponse().getUuid());
 		assertEquals("/News/" + URIUtils.encodeFragment(newName), response.getNodeResponse().getPath());
 	}
@@ -225,18 +234,18 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadProjectBaseNode() {
-		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, "/", new VersioningParameters().draft()));
+		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, "/", new VersioningParametersImpl().draft()));
 		assertFalse(response.isDownload());
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = tx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 		}
 	}
 
 	@Test
 	public void testReadDoubleSlashes() {
-		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, "//", new VersioningParameters().draft()));
+		WebRootResponse response = call(() -> client().webroot(PROJECT_NAME, "//", new VersioningParametersImpl().draft()));
 		assertFalse(response.isDownload());
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = tx()) {
 			assertEquals("We expected the project basenode.", project().getBaseNode().getUuid(), response.getNodeResponse().getUuid());
 		}
 	}
@@ -250,7 +259,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 				for (String path3 : Arrays.asList("March", "März")) {
 					for (String language : Arrays.asList("en", "de")) {
 						WebRootResponse response = call(() -> client().webroot(PROJECT_NAME,
-								new String[] { path1, path2, path3, name + "." + language + ".html" }, new VersioningParameters().draft()));
+								new String[] { path1, path2, path3, name + "." + language + ".html" }, new VersioningParametersImpl().draft()));
 
 						assertEquals("Check response language", language, response.getNodeResponse().getLanguage());
 					}
@@ -263,13 +272,15 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadFolderByPathWithoutPerm() throws Exception {
 		String englishPath = "/News/2015";
 		String uuid;
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node newsFolder = folder("2015");
 			uuid = newsFolder.getUuid();
 			role().revokePermissions(newsFolder, READ_PERM);
+			role().revokePermissions(newsFolder, READ_PUBLISHED_PERM);
+			tx.success();
 		}
 
-		call(() -> client().webroot(PROJECT_NAME, englishPath, new VersioningParameters().draft()), FORBIDDEN, "error_missing_perm", uuid);
+		call(() -> client().webroot(PROJECT_NAME, englishPath, new VersioningParametersImpl().draft()), FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
@@ -298,11 +309,11 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testRead404Node() {
 		String notFoundPath = "/error/404";
 
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = tx()) {
 			NodeCreateRequest createErrorFolder = new NodeCreateRequest();
 			createErrorFolder.setSchema(new SchemaReference().setName("folder"));
 			createErrorFolder.setParentNodeUuid(project().getBaseNode().getUuid());
-			createErrorFolder.getFields().put("name", FieldUtil.createStringField("error"));
+			createErrorFolder.getFields().put("slug", FieldUtil.createStringField("error"));
 			createErrorFolder.setLanguage("en");
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, createErrorFolder));
 			String errorNodeUuid = response.getUuid();
@@ -310,13 +321,14 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create404Node = new NodeCreateRequest();
 			create404Node.setSchema(new SchemaReference().setName("content"));
 			create404Node.setParentNodeUuid(errorNodeUuid);
-			create404Node.getFields().put("filename", FieldUtil.createStringField("404"));
-			create404Node.getFields().put("name", FieldUtil.createStringField("Error Content"));
+			create404Node.getFields().put("slug", FieldUtil.createStringField("404"));
+			create404Node.getFields().put("teaser", FieldUtil.createStringField("Error Content"));
 			create404Node.getFields().put("content", FieldUtil.createStringField("An error happened"));
 			create404Node.setLanguage("en");
 			call(() -> client().createNode(PROJECT_NAME, create404Node));
 
-			MeshResponse<WebRootResponse> webrootFuture = client().webroot(PROJECT_NAME, notFoundPath, new VersioningParameters().draft()).invoke();
+			MeshResponse<WebRootResponse> webrootFuture = client().webroot(PROJECT_NAME, notFoundPath, new VersioningParametersImpl().draft())
+					.invoke();
 			latchFor(webrootFuture);
 			expectFailureMessage(webrootFuture, NOT_FOUND, null);
 		}
@@ -326,25 +338,50 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	public void testReadPublished() {
 		String path = "/News/2015";
 
-		try (NoTx noTx = db().noTx()) {
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+		try (Tx tx = tx()) {
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 		}
 		// 1. Assert that published path cannot be found
-		try (NoTx noTx = db().noTx()) {
-			call(() -> client().webroot(PROJECT_NAME, path, new VersioningParameters().published()), NOT_FOUND, "node_not_found_for_path", path);
+		try (Tx tx = tx()) {
+			call(() -> client().webroot(PROJECT_NAME, path, new VersioningParametersImpl().published()), NOT_FOUND, "node_not_found_for_path", path);
 		}
 
 		// 2. Publish nodes
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SearchQueueBatch batch = createBatch();
-			folder("news").publish(getMockedInternalActionContext(user()), batch).await();
-			folder("2015").publish(getMockedInternalActionContext(user()), batch).await();
+			folder("news").publish(mockActionContext(), batch);
+			folder("2015").publish(mockActionContext(), batch);
+			tx.success();
 		}
 
 		// 3. Assert that published path can be found
-		try (NoTx noTx = db().noTx()) {
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new NodeParameters()));
+		try (Tx tx = tx()) {
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, path, new NodeParametersImpl()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("2.0").hasLanguage("en");
+		}
+	}
+
+	@Test
+	public void testReadPublishedWithNoReadPerm() {
+		String path = "/News/2015";
+
+		// 1. Publish all nodes
+		try (Tx tx = tx()) {
+			call(() -> client().publishNode(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
+		}
+
+		// 2. Remove read perm and grant only publish perm to node
+		try (Tx tx = tx()) {
+			role().revokePermissions(folder("2015"), READ_PERM);
+			role().grantPermissions(folder("2015"), READ_PUBLISHED_PERM);
+			tx.success();
+		}
+
+		// 3. Assert that published path can be found
+		try (Tx tx = db().tx()) {
+			WebRootResponse restNode = call(
+					() -> client().webroot(PROJECT_NAME, path, new NodeParametersImpl(), new VersioningParametersImpl().published()));
+			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
 		}
 	}
 
@@ -354,46 +391,41 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String draftPath = "/News_draft/2015_draft";
 
 		// 1. Publish nodes
-		db().noTx(() -> {
+		db().tx(() -> {
 			SearchQueueBatch batch = createBatch();
-			folder("news").publish(getMockedInternalActionContext(), batch).await();
-			folder("2015").publish(getMockedInternalActionContext(), batch).await();
+			folder("news").publish(mockActionContext(), batch);
+			folder("2015").publish(mockActionContext(), batch);
 			return null;
 		});
 
 		// 2. Change names
-		db().noTx(() -> {
-			updateName(folder("news"), "en", "News_draft");
-			updateName(folder("2015"), "en", "2015_draft");
-			return null;
+		db().tx(() -> {
+			updateSlug(folder("news"), "en", "News_draft");
+			updateSlug(folder("2015"), "en", "2015_draft");
 		});
 
 		// 3. Assert published path in published
-		db().noTx(() -> {
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParameters().published()));
+		db().tx(() -> {
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParametersImpl().published()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
-			return null;
 		});
 
 		// 4. Assert published path in draft
-		db().noTx(() -> {
-			call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParameters().draft()), NOT_FOUND, "node_not_found_for_path",
+		db().tx(() -> {
+			call(() -> client().webroot(PROJECT_NAME, publishedPath, new VersioningParametersImpl().draft()), NOT_FOUND, "node_not_found_for_path",
 					publishedPath);
-			return null;
 		});
 
 		// 5. Assert draft path in draft
-		db().noTx(() -> {
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParameters().draft()));
+		db().tx(() -> {
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParametersImpl().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.1").hasLanguage("en");
-			return null;
 		});
 
 		// 6. Assert draft path in published
-		db().noTx(() -> {
-			call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParameters().published()), NOT_FOUND, "node_not_found_for_path",
+		db().tx(() -> {
+			call(() -> client().webroot(PROJECT_NAME, draftPath, new VersioningParametersImpl().published()), NOT_FOUND, "node_not_found_for_path",
 					draftPath);
-			return null;
 		});
 	}
 
@@ -404,52 +436,46 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		String newPath = "/News_new/2015_new";
 
 		// 1. create new release and migrate node
-		db().noTx(() -> {
+		db().tx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
 			meshDagger().nodeMigrationHandler().migrateNodes(newRelease).await();
-			return null;
 		});
 
 		// 2. update nodes in new release
-		db().noTx(() -> {
-			updateName(folder("news"), "en", "News_new");
-			updateName(folder("2015"), "en", "2015_new");
-			return null;
+		db().tx(() -> {
+			updateSlug(folder("news"), "en", "News_new");
+			updateSlug(folder("2015"), "en", "2015_new");
 		});
 
 		// 3. Assert new names in new release
-		db().noTx(() -> {
-			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, newPath, new VersioningParameters().draft()));
+		db().tx(() -> {
+			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, newPath, new VersioningParametersImpl().draft()));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.1").hasLanguage("en");
-			return null;
 		});
 
 		// 4. Assert new names in initial release
-		db().noTx(() -> {
+		db().tx(() -> {
 			call(() -> client().webroot(PROJECT_NAME, newPath,
-					new VersioningParameters().draft().setRelease(project().getInitialRelease().getUuid())), NOT_FOUND, "node_not_found_for_path",
+					new VersioningParametersImpl().draft().setRelease(project().getInitialRelease().getUuid())), NOT_FOUND, "node_not_found_for_path",
 					newPath);
-			return null;
 		});
 
 		// 5. Assert old names in initial release
-		db().noTx(() -> {
+		db().tx(() -> {
 			WebRootResponse restNode = call(() -> client().webroot(PROJECT_NAME, initialPath,
-					new VersioningParameters().draft().setRelease(project().getInitialRelease().getUuid())));
+					new VersioningParametersImpl().draft().setRelease(project().getInitialRelease().getUuid())));
 			assertThat(restNode.getNodeResponse()).is(folder("2015")).hasVersion("1.0").hasLanguage("en");
-			return null;
 		});
 
 		// 6. Assert old names in new release
-		db().noTx(() -> {
-			call(() -> client().webroot(PROJECT_NAME, initialPath, new VersioningParameters().draft()), NOT_FOUND, "node_not_found_for_path",
+		db().tx(() -> {
+			call(() -> client().webroot(PROJECT_NAME, initialPath, new VersioningParametersImpl().draft()), NOT_FOUND, "node_not_found_for_path",
 					initialPath);
-			return null;
 		});
 	}
 
 	/**
-	 * Update the node name for the latest release
+	 * Update the node slug field for the latest release.
 	 * 
 	 * @param node
 	 *            node
@@ -458,12 +484,11 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 	 * @param newName
 	 *            new name
 	 */
-	protected void updateName(Node node, String language, String newName) {
+	protected void updateSlug(Node node, String language, String newName) {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(language);
-		update.setVersion(
-				new VersionReference(node.getGraphFieldContainer(language).getUuid(), node.getGraphFieldContainer(language).getVersion().toString()));
-		update.getFields().put("name", FieldUtil.createStringField(newName));
+		update.setVersion(node.getGraphFieldContainer(language).getVersion().toString());
+		update.getFields().put("slug", FieldUtil.createStringField(newName));
 		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update));
 	}
 
@@ -483,6 +508,6 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		NodeUpdateRequest update = new NodeUpdateRequest();
 		update.setLanguage(language);
 		update.getFields().put("name", FieldUtil.createStringField(newName));
-		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update, new VersioningParameters().setRelease(release.getUuid())));
+		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), update, new VersioningParametersImpl().setRelease(release.getUuid())));
 	}
 }

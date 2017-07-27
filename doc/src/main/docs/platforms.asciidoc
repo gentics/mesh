@@ -1,0 +1,69 @@
+= Platforms
+
+== JavaScript
+
+* link:https://github.com/gentics/mesh-angular-example[Mesh Angular Example]
+* link:https://github.com/gentics/mesh-express-example[Mesh Express Example]
+* link:https://github.com/gentics/mesh-js-api[Mesh Javascript API] - An API client for Gentics Mesh written in TypeScript.
+
+== PHP
+
+* link:https://github.com/gentics/mesh-silex-example[Mesh PHP Example] - This example shows how to use Gentics Mesh in combination with the Silex PHP routing framework.
+
+== Go
+
+* link:https://github.com/gentics/mesh-go-example[Mesh Go Example]
+
+== Java
+
+* link:https://github.com/gentics/mesh-vertx-example[Mesh Vert.x Example]
+
+* REST client
+
+You can add the following maven dependency and repository to your project to get the mesh rest client.
+
+[source,xml]
+----
+…
+	<dependency>
+		<artifactId>mesh-rest-client</artifactId>
+		<groupId>com.gentics.mesh</groupId>
+		<version>${mesh.version}</version>
+	</dependency>
+…
+	<repositories>
+		<repository>
+			<id>maven.gentics.com</id>
+			<name>Gentics Maven Repository</name>
+			<url>https://maven.gentics.com/maven2</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+…
+----
+
+Usage:
+
+[source,java]
+----
+	MeshRestClient client = MeshRestClient.create("localhost", 8080, vertx, BASIC_AUTH);
+	client.setLogin("username", "password");
+	client.login().toCompletable().await();
+
+	client.findNodes("demo", new NodeRequestParameter().setExpandAll(true).setLanguages("en")).setHandler(rh -> {
+		if (rh.succeeded()) {
+			NodeListResponse list = rh.result();
+			for(NodeResponse nodeResponse : list.getData()) {
+				System.out.println(nodeResponse.getUuid());
+				System.out.println(nodeResponse.getFields().getStringField("name").getString());
+			}
+		} else {
+			rh.cause().printStackTrace();
+		}
+	});
+----

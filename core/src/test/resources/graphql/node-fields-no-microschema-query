@@ -1,0 +1,83 @@
+
+{
+	node(path:"/Neuigkeiten/2015") {
+		fields {
+		... on content { title },
+		... on folder { 
+				# [$.data.node.fields.name=2015]
+				name
+
+				nodeRef {
+					# [$.data.node.fields.nodeRef.uuid=<is-uuid>]
+					uuid
+
+					# [$.data.node.fields.nodeRef.isContainer=false]
+					isContainer
+
+					# [$.data.node.fields.nodeRef.path=/News/News%20Overview.en.html]
+					path
+
+					node(lang: "en") {
+						# [$.data.node.fields.nodeRef.node.isPublished=true]
+						isPublished
+
+						# [$.data.node.fields.nodeRef.node.isDraft=true]
+						isDraft
+
+						fields {
+						# [$.data.node.fields.nodeRef.node.fields.title=News Overview english title]
+						... on content { title }
+						... on folder { name }
+						}
+					}
+				}
+				deRef: nodeRef(lang: "de") {
+					fields {
+					... on content { title }
+					... on folder { name }
+					}
+				}
+				binary {
+					sha512sum
+					height
+					width
+					mimeType
+					dominantColor
+					fileSize
+				}
+				stringList
+				dateList
+				nodeList { uuid }
+				booleanList
+				numberList
+
+				# [$.data.node.fields.boolean=true]
+				boolean
+
+				# [$.data.node.fields.number=42.1]
+				number
+
+				# [$.data.node.fields.date=2012-07-11T08:55:21Z]
+				date
+				htmlList
+
+				# [$.data.node.fields.html=some html]
+				html
+
+				# [$.data.node.fields.htmlLink=Link: {{mesh.link("43ee8f9ff71e4016ae8f9ff71e10161c", "en")}}]
+				htmlLink
+
+				# [$.data.node.fields.string=some string]
+				string
+
+				# [$.data.node.fields.stringLink=Link: {{mesh.link("43ee8f9ff71e4016ae8f9ff71e10161c", "en")}}]
+				stringLink
+			}
+		}
+		# [$.data.node.uuid=<is-uuid>]
+		uuid
+		# [$.data.node.availableLanguages[0]=en]
+		availableLanguages
+	}
+}
+# [$.errors=<is-undefined>]

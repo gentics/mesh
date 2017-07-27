@@ -9,6 +9,7 @@ import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -21,6 +22,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * @see LanguageRoot
+ */
 public class LanguageRootImpl extends AbstractRootVertex<Language> implements LanguageRoot {
 
 	public static void init(Database database) {
@@ -75,7 +79,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 		if (it.hasNext()) {
 			//TODO check whether the language was assigned to this root node?
 			//return out(HAS_LANGUAGE).has(LanguageImpl.class).has("languageTag", languageTag).nextOrDefaultExplicit(LanguageImpl.class, null);
-			FramedGraph graph = Database.getThreadLocalGraph();
+			FramedGraph graph = Tx.getActive().getGraph();
 			return graph.frameElementExplicit(it.next(), LanguageImpl.class);
 		} else {
 			return null;

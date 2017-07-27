@@ -12,11 +12,10 @@ import com.gentics.mesh.core.data.node.field.list.ListGraphField;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -24,10 +23,10 @@ import io.netty.handler.codec.http.HttpResponseStatus;
 public abstract class AbstractFieldEndpointTest extends AbstractMeshTest implements FieldEndpointTestcases {
 
 	protected NodeResponse readNode(Node node, String... expandedFieldNames) {
-		NodeParameters parameters = new NodeParameters();
+		NodeParametersImpl parameters = new NodeParametersImpl();
 		parameters.setLanguages("en");
 		parameters.setExpandedFieldNames(expandedFieldNames);
-		return call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParameters().draft()));
+		return call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParametersImpl().draft()));
 	}
 
 	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey,
@@ -41,7 +40,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 			nodeCreateRequest.getFields().put(fieldKey, field);
 		}
 
-		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParameters().setLanguages("en")), status, bodyMessageI18nKey,
+		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest, new NodeParametersImpl().setLanguages("en")), status, bodyMessageI18nKey,
 				i18nParams);
 	}
 
@@ -70,10 +69,10 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
 		node.reload();
-		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getLatestDraftFieldContainer(english()).getVersion().toString()));
+		nodeUpdateRequest.setVersion(node.getLatestDraftFieldContainer(english()).getVersion().toString());
 
 		NodeResponse response = call(
-				() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParameters().setLanguages("en")));
+				() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")));
 		assertNotNull("The response could not be found in the result of the future.", response);
 		assertNotNull("The field was not included in the response.", response.getFields().hasField(fieldKey));
 		return response;
@@ -84,9 +83,9 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
-		nodeUpdateRequest.setVersion(new VersionReference().setNumber(node.getLatestDraftFieldContainer(english()).getVersion().toString()));
+		nodeUpdateRequest.setVersion(node.getLatestDraftFieldContainer(english()).getVersion().toString());
 
-		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParameters().setLanguages("en")), status,
+		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")), status,
 				bodyMessageI18nKey, i18nParams);
 	}
 

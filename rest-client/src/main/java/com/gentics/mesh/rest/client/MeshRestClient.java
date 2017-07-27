@@ -1,16 +1,18 @@
 package com.gentics.mesh.rest.client;
 
+import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
 import com.gentics.mesh.rest.client.method.AdminClientMethods;
 import com.gentics.mesh.rest.client.method.ApiInfoClientMethods;
 import com.gentics.mesh.rest.client.method.AuthClientMethods;
 import com.gentics.mesh.rest.client.method.EventbusClientMethods;
+import com.gentics.mesh.rest.client.method.GraphQLClientMethods;
 import com.gentics.mesh.rest.client.method.GroupClientMethods;
 import com.gentics.mesh.rest.client.method.MicroschemaClientMethods;
 import com.gentics.mesh.rest.client.method.NavRootClientMethods;
 import com.gentics.mesh.rest.client.method.NavigationClientMethods;
-import com.gentics.mesh.rest.client.method.NodeClientMethods;
 import com.gentics.mesh.rest.client.method.NodeBinaryFieldClientMethods;
+import com.gentics.mesh.rest.client.method.NodeClientMethods;
 import com.gentics.mesh.rest.client.method.ProjectClientMethods;
 import com.gentics.mesh.rest.client.method.ReleaseClientMethods;
 import com.gentics.mesh.rest.client.method.RoleClientMethods;
@@ -28,7 +30,7 @@ import io.vertx.core.http.HttpClient;
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 		SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
 		MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods,
-		EventbusClientMethods, ReleaseClientMethods, ApiInfoClientMethods {
+		EventbusClientMethods, ReleaseClientMethods, ApiInfoClientMethods, GraphQLClientMethods {
 
 	/**
 	 * Create a new mesh rest client.
@@ -79,5 +81,34 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 */
 	void close();
 
+	/**
+	 * Set the API key. This is an alternative way for authentication. Use {@link #setLogin(String, String)} if you prefer to use regular JWT tokens.
+	 * 
+	 * @param apiKey
+	 * @return Fluent API
+	 */
+	MeshRestClient setAPIKey(String apiKey);
+
+	/**
+	 * Disable the anonymous access handling. Requests will only work if you are logged in.
+	 * 
+	 * @return Fluent API
+	 */
+	MeshRestClient disableAnonymousAccess();
+
+	/**
+	 * Enable the anonymous access handling. Requests will work if anonymous access is enabled on the Gentics Mesh serve.
+	 * 
+	 * @return Fluent API
+	 */
+	MeshRestClient enableAnonymousAccess();
+
+	/**
+	 * Set the authentication provider.
+	 *
+	 * @param authentication
+	 * @return Fluent API
+	 */
+	MeshRestClient setAuthenticationProvider(JWTAuthentication authentication);
 
 }

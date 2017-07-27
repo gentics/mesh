@@ -1,0 +1,17 @@
+{
+	# [$.data.nodes.elements.length()=1]
+	nodes(query: "{\"query\":{\"query_string\":{\"query\":\"supersonic\"}}}") {
+		elements {
+			node {uuid}
+			language
+		}
+	}
+
+	# [$.data.empty.elements.length()=0]
+	empty: nodes(query: "{\"query\":{\"query_string\":{\"query\":\"blaar\"}}}") {
+		elements {
+			uuid
+		}
+	}
+}
+# [$.errors=<is-undefined>]

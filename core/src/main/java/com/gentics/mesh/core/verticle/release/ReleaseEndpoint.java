@@ -49,6 +49,39 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		addCreateHandler();
 		addReadHandler();
 		addUpdateHandler();
+		addNodeMigrationHandler();
+		addMicronodeMigrationHandler();
+	}
+
+	private void addNodeMigrationHandler() {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:releaseUuid/migrateSchemas");
+		endpoint.method(GET);
+		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
+		endpoint.description("Invoked the node migration for not yet migrated nodes of schemas that are assigned to the release.");
+		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "schema_migration_invoked");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String releaseUuid = rc.request().getParam("releaseUuid");
+			crudHandler.handleMigrateRemainingNodes(ac, releaseUuid);
+		});
+	}
+	
+	
+	private void addMicronodeMigrationHandler() {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:releaseUuid/migrateMicroschemas");
+		endpoint.method(GET);
+		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
+		endpoint.description("Invoked the micronode migration for not yet migrated micronodes of microschemas that are assigned to the release.");
+		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "schema_migration_invoked");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String releaseUuid = rc.request().getParam("releaseUuid");
+			crudHandler.handleMigrateRemainingMicronodes(ac, releaseUuid);
+		});
 	}
 
 	private void addCreateHandler() {

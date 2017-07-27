@@ -1,6 +1,7 @@
 package com.gentics.mesh;
 
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -13,7 +14,11 @@ import io.vertx.core.Vertx;
  */
 public interface Mesh {
 
-	public static final String STARTUP_EVENT_ADDRESS = "mesh-startup-complete";
+	static String STARTUP_EVENT_ADDRESS = "mesh-startup-complete";
+
+	static MeshFactory factory = ServiceHelper.loadFactory(MeshFactory.class);
+
+	static AtomicReference<BuildInfo> buildInfo = new AtomicReference<BuildInfo>(null);
 
 	/**
 	 * Returns the initialized instance.
@@ -41,9 +46,13 @@ public interface Mesh {
 	 */
 	static BuildInfo getBuildInfo() {
 		try {
-			Properties buildProperties = new Properties();
-			buildProperties.load(Mesh.class.getResourceAsStream("/mesh.build.properties"));
-			return new BuildInfo(buildProperties);
+			if (buildInfo.get() == null) {
+				Properties buildProperties = new Properties();
+				buildProperties.load(Mesh.class.getResourceAsStream("/mesh.build.properties"));
+				// Cache the build information
+				buildInfo.set(new BuildInfo(buildProperties));
+			}
+			return buildInfo.get();
 		} catch (Exception e) {
 			return new BuildInfo("unknown", "unknown");
 		}
@@ -57,13 +66,7 @@ public interface Mesh {
 	 * @return Mesh version
 	 */
 	static String getPlainVersion() {
-		try {
-			Properties buildProperties = new Properties();
-			buildProperties.load(Mesh.class.getResourceAsStream("/mesh.build.properties"));
-			return buildProperties.get("mesh.version").toString();
-		} catch (Exception e) {
-			return "Unknown";
-		}
+		return getBuildInfo().getVersion();
 	}
 
 	/**
@@ -111,8 +114,6 @@ public interface Mesh {
 	public static Vertx vertx() {
 		return factory.mesh().getVertx();
 	}
-
-	static final MeshFactory factory = ServiceHelper.loadFactory(MeshFactory.class);
 
 	public static void main(String[] args) throws Exception {
 		Mesh.mesh().run();

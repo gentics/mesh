@@ -3,7 +3,6 @@ package com.gentics.mesh.core.field.node;
 import static com.gentics.mesh.core.field.node.NodeFieldTestHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.node.NodeFieldTestHelper.FETCH;
 import static com.gentics.mesh.core.field.node.NodeFieldTestHelper.FILL;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -13,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -27,9 +27,8 @@ import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -50,29 +49,27 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (NoTx noTx = db().noTx()) {
-			Node node = noTx.getGraph().addFramedVertex(NodeImpl.class);
+		try (Tx tx = tx()) {
+			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
 
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField testField = container.createNode("testField", node);
 
-			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph()
-					.addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
 			assertThat(otherContainer.getNode("testField")).as("cloned field").isNotNull();
-			assertThat(otherContainer.getNode("testField").getNode()).as("cloned target node").isNotNull()
-					.isEqualToComparingFieldByField(node);
+			assertThat(otherContainer.getNode("testField").getNode()).as("cloned target node").isNotNull().isEqualToComparingFieldByField(node);
 		}
 	}
 
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			Node node = noTx.getGraph().addFramedVertex(NodeImpl.class);
+		try (Tx tx = tx()) {
+			Node node = tx.getGraph().addFramedVertex(NodeImpl.class);
 
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField field = container.createNode("testNodeField", node);
 			assertNotNull(field);
 			assertEquals("testNodeField", field.getFieldKey());
@@ -90,10 +87,11 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			Node newsNode = folder("news");
-			Node node = folder("2015");
-			Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		Node newsNode = folder("news");
+		Node node = folder("2015");
+
+		try (Tx tx = tx()) {
+			SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 
 			// 1. Create the node field schema and add it to the schema of the node
 			NodeFieldSchema nodeFieldSchema = createFieldSchema(true);
@@ -103,7 +101,10 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			// 2. Add the node reference to the node fields
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			container.createNode(NODE_FIELD, newsNode);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			// 3. Transform the node to json and examine the data
 			String json = getJson(node);
 			assertNotNull(json);
@@ -111,8 +112,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			assertNotNull(response);
 
 			NodeField deserializedNodeField = response.getFields().getNodeField(NODE_FIELD);
-			assertNotNull("The field {" + NODE_FIELD + "} should not be null. Json: {" + json + "}",
-					deserializedNodeField);
+			assertNotNull("The field {" + NODE_FIELD + "} should not be null. Json: {" + json + "}", deserializedNodeField);
 			assertEquals(newsNode.getUuid(), deserializedNodeField.getUuid());
 		}
 	}
@@ -120,8 +120,8 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = tx()) {
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField fieldA = container.createNode("fieldA", folder("2015"));
 			NodeGraphField fieldB = container.createNode("fieldB", folder("2014"));
 			NodeGraphField fieldC = container.createNode("fieldC", folder("2015"));
@@ -136,8 +136,8 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = tx()) {
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField fieldA = container.createNode("field1", content());
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
@@ -147,8 +147,8 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = tx()) {
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			NodeGraphField fieldA = container.createNode("field1", content());
 
 			// graph set - rest set - same value - different type
@@ -167,7 +167,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			invokeUpdateFromRestTestcase(NODE_FIELD, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -175,7 +175,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(NODE_FIELD, FETCH);
 		}
 	}
@@ -183,8 +183,8 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+		try (Tx tx = tx()) {
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(NODE_FIELD, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, NODE_FIELD, null);
 			});
@@ -194,8 +194,8 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+		try (Tx tx = tx()) {
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(NODE_FIELD, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, NODE_FIELD, null);
 			});
@@ -205,8 +205,8 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+		try (Tx tx = tx()) {
+			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(NODE_FIELD, FILL, (container) -> {
 				NodeFieldImpl field = new NodeFieldImpl();
 				field.setUuid(content().getUuid());
@@ -214,8 +214,7 @@ public class NodeFieldTest extends AbstractFieldTest<NodeFieldSchema> {
 			}, (container) -> {
 				NodeGraphField field = container.getNode(NODE_FIELD);
 				assertNotNull("The graph field {" + NODE_FIELD + "} could not be found.", field);
-				assertEquals("The node reference of the field was not updated.", content().getUuid(),
-						field.getNode().getUuid());
+				assertEquals("The node reference of the field was not updated.", content().getUuid(), field.getNode().getUuid());
 			});
 		}
 	}

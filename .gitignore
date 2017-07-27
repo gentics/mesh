@@ -1,3 +1,4 @@
+.DS_Store
 target
 .classpath
 .project
@@ -11,6 +12,8 @@ hs_err_*.log
 dependency-reduced-pom.xml
 .checkstyle
 mesh.json
+mesh-config.yml
+mesh.yml
 .bak
 mesh.lock
 verticles/admin-gui/node_modules
@@ -20,9 +23,12 @@ core/data
 server/data
 examples/demo-java/data
 core/tmp
+orient-plugins
 mesh-searchindex
 mesh-graphdb
+keystore.jceks
 /bower_components/
+mesh.lock
 /build
 /dist
 /node

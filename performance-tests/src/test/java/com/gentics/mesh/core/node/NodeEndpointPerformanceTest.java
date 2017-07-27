@@ -11,9 +11,9 @@ import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NavigationParameters;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -25,7 +25,7 @@ public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 	private StopWatchLogger logger = StopWatchLogger.logger(getClass());
 
 	public void addNodes() {
-		String uuid = db().noTx(() -> folder("news").getUuid());
+		String uuid = db().tx(() -> folder("news").getUuid());
 		for (int i = 0; i < 500; i++) {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setLanguage("en");
@@ -41,10 +41,10 @@ public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 	@Test
 	public void testReadNav() {
 		addNodes();
-		String baseUuid = db().noTx(() -> project().getBaseNode().getUuid());
+		String baseUuid = db().tx(() -> project().getBaseNode().getUuid());
 		loggingStopWatch(logger, "node.read-nav-expanded-full-4", 200, (step) -> {
-			call(() -> client().loadNavigation(PROJECT_NAME, baseUuid, new NodeParameters().setExpandAll(true).setResolveLinks(LinkType.FULL),
-					new NavigationParameters().setMaxDepth(4)));
+			call(() -> client().loadNavigation(PROJECT_NAME, baseUuid, new NodeParametersImpl().setExpandAll(true).setResolveLinks(LinkType.FULL),
+					new NavigationParametersImpl().setMaxDepth(4)));
 		});
 	}
 
@@ -62,26 +62,26 @@ public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadSingle() {
-		String uuid = db().noTx(() -> folder("news").getUuid());
+		String uuid = db().tx(() -> folder("news").getUuid());
 		loggingStopWatch(logger, "node.read-by-uuid", 7000, (step) -> {
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 		});
 
 		loggingStopWatch(logger, "node.read-by-uuid-full", 800, (step) -> {
-			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParameters().setExpandAll(true).setResolveLinks(LinkType.FULL)));
+			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setExpandAll(true).setResolveLinks(LinkType.FULL)));
 		});
 	}
 
 	@Test
 	public void testCreate() {
-		String uuid = db().noTx(() -> folder("news").getUuid());
+		String uuid = db().tx(() -> folder("news").getUuid());
 		loggingStopWatch(logger, "node.create", 200, (step) -> {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setSchema(new SchemaReference().setName("content"));
 			request.setLanguage("en");
 			request.getFields().put("title", FieldUtil.createStringField("some title"));
 			request.getFields().put("name", FieldUtil.createStringField("some name"));
-			request.getFields().put("filename", FieldUtil.createStringField("new-page_" + step + ".html"));
+			request.getFields().put("fileName", FieldUtil.createStringField("new-page_" + step + ".html"));
 			request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
 			request.setParentNodeUuid(uuid);
 			call(() -> client().createNode(PROJECT_NAME, request));

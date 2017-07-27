@@ -35,6 +35,9 @@ import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Vertex;
 
+/**
+ * @see UserRoot
+ */
 public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 
 	/**
@@ -86,6 +89,14 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		return user;
 	}
 
+	/**
+	 * Redirected to {@link #findByUsername(String)}
+	 */
+	@Override
+	public User findByName(String name) {
+		return findByUsername(name);
+	}
+
 	@Override
 	public User findByUsername(String username) {
 		return out(HAS_USER).has(UserImpl.USERNAME_PROPERTY_KEY, username).nextOrDefaultExplicit(UserImpl.class, null);
@@ -104,7 +115,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		if (!it.hasNext()) {
 			return null;
 		}
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = getGraph();
 		MeshAuthUserImpl user = graph.frameElement(it.next(), MeshAuthUserImpl.class);
 		if (it.hasNext()) {
 			throw new RuntimeException("Found multiple nodes with the same UUID");

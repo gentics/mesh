@@ -9,11 +9,12 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.8.0-SNAPSHOT</version>
+		<version>0.9.22-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<projectRoot>${project.basedir}/..</projectRoot>
 	</properties>
 
 	<modules>
@@ -22,8 +23,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
-			<artifactId>mesh-api</artifactId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

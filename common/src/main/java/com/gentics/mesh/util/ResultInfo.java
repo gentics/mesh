@@ -22,7 +22,6 @@ public class ResultInfo {
 	 * 
 	 * @param model
 	 * @param batch
-	 *            Search queue batch which was updated within the handler
 	 */
 	public ResultInfo(RestModel model, SearchQueueBatch batch) {
 		this.model = model;
@@ -30,7 +29,16 @@ public class ResultInfo {
 	}
 
 	/**
-	 * Return the stored rest model for the result
+	 * Create a new result.
+	 * 
+	 * @param model
+	 */
+	public ResultInfo(SearchQueueBatch batch) {
+		this.batch = batch;
+	}
+
+	/**
+	 * Return the stored rest model for the result.
 	 * 
 	 * @return
 	 */
@@ -39,7 +47,7 @@ public class ResultInfo {
 	}
 
 	/**
-	 * Return the batch of this result.
+	 * Return the stored search queue batch.
 	 * 
 	 * @return
 	 */

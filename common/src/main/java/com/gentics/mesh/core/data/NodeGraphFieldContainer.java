@@ -125,7 +125,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	String getDisplayFieldValue();
 
 	/**
-	 * Get the parent node.
+	 * Get the parent node to which this container belongs.
 	 *
 	 * @return
 	 */
@@ -267,5 +267,12 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * Determine the display field value by checking the schema and the referenced field and store it as a property.
 	 */
 	void updateDisplayFieldValue();
+
+	/**
+	 * Returns the segment field value of this container.
+	 * 
+	 * @return Determined segment field value or null if no segment field was specified or yet set
+	 */
+	String getSegmentFieldValue();
 
 }

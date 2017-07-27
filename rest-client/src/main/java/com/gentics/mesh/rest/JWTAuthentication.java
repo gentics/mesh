@@ -8,7 +8,6 @@ import com.gentics.mesh.rest.client.MeshRestRequestUtil;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
-import io.vertx.ext.web.RoutingContext;
 import rx.Completable;
 import rx.Single;
 
@@ -20,14 +19,12 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 	public JWTAuthentication() {
 	}
 
-	public JWTAuthentication(RoutingContext context) {
-		super();
-	}
-
 	@Override
 	public Completable addAuthenticationInformation(HttpClientRequest request) {
 		// TODO: request new Token when old one expires
-		request.headers().add("Cookie", "mesh.token=" + token);
+		if (token != null) {
+			request.headers().add("Cookie", "mesh.token=" + token);
+		}
 		return Completable.complete();
 	}
 
@@ -38,7 +35,7 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 			loginRequest.setUsername(getUsername());
 			loginRequest.setPassword(getPassword());
 
-			MeshRestRequestUtil.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest, client, null).invoke()
+			MeshRestRequestUtil.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest, client, null, false).invoke()
 					.setHandler(rh -> {
 						if (rh.failed()) {
 							sub.onError(rh.cause());
@@ -78,4 +75,5 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 		this.token = token;
 		return this;
 	}
+
 }

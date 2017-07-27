@@ -15,11 +15,11 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -53,9 +53,39 @@ public class UserEndpoint extends AbstractEndpoint {
 		addCreateHandler();
 		addReadHandler();
 		addDeleteHandler();
-		addTokenHandler();
-
+		addResetTokenHandler();
+		addAPITokenHandler();
 		addReadPermissionHandler();
+	}
+
+	private void addAPITokenHandler() {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/:userUuid/token");
+		endpoint.setRAMLPath("/{userUuid}/token");
+		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
+		endpoint.description("Return API token which can be used to authenticate the user. Store the key somewhere save since you won't be able to retrieve it later on.");
+		endpoint.method(POST);
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(OK, userExamples.getAPIKeyResponse(), "The User API token response.");
+		endpoint.blockingHandler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String uuid = ac.getParameter("userUuid");
+			crudHandler.handleIssueAPIToken(ac, uuid);
+		});
+
+		Endpoint deleteEndpoint = createEndpoint();
+		deleteEndpoint.path("/:userUuid/token");
+		deleteEndpoint.setRAMLPath("/{userUuid}/token");
+		deleteEndpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
+		deleteEndpoint.description("Invalidate the issued API token.");
+		deleteEndpoint.method(DELETE);
+		deleteEndpoint.produces(APPLICATION_JSON);
+		deleteEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Message confirming the invalidation of the API token.");
+		deleteEndpoint.blockingHandler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String uuid = ac.getParameter("userUuid");
+			crudHandler.handleDeleteAPIToken(ac, uuid);
+		});
 	}
 
 	private void addReadPermissionHandler() {
@@ -64,7 +94,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		endpoint.setRAMLPath("/{userUuid}/permissions/{path}");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.addUriParameter("path", "Path to the element from which the permissions should be loaded.", "projects/:projectUuid/schemas");
-		endpoint.description("Read the user permissions on the element/s that are located by the specified path.");
+		endpoint.description("Read the user permissions on the element that can be located by the specified path.");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getUserPermissionResponse(), "Response which contains the loaded permissions.");
@@ -76,13 +106,13 @@ public class UserEndpoint extends AbstractEndpoint {
 		});
 	}
 
-	private void addTokenHandler() {
+	private void addResetTokenHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/:userUuid/token");
-		endpoint.setRAMLPath("/{userUuid}/token");
+		endpoint.path("/:userUuid/reset_token");
+		endpoint.setRAMLPath("/{userUuid}/reset_token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.description("Return a one time token which can be used by any user to update a user (e.g.: Reset the password)");
-		endpoint.method(GET);
+		endpoint.method(POST);
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, userExamples.getTokenResponse(), "User token response.");
 		endpoint.blockingHandler(rc -> {
@@ -100,9 +130,9 @@ public class UserEndpoint extends AbstractEndpoint {
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, userExamples.getUserResponse1("jdoe"), "User response which may also contain an expanded node.");
-		readOne.addQueryParameters(NodeParameters.class);
-		readOne.addQueryParameters(VersioningParameters.class);
-		readOne.addQueryParameters(RolePermissionParameters.class);
+		readOne.addQueryParameters(NodeParametersImpl.class);
+		readOne.addQueryParameters(VersioningParametersImpl.class);
+		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.blockingHandler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");
@@ -118,9 +148,9 @@ public class UserEndpoint extends AbstractEndpoint {
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(OK, userExamples.getUserListResponse(), "User list response which may also contain an expanded node references.");
-		readAll.addQueryParameters(NodeParameters.class);
-		readAll.addQueryParameters(VersioningParameters.class);
-		readAll.addQueryParameters(RolePermissionParameters.class);
+		readAll.addQueryParameters(NodeParametersImpl.class);
+		readAll.addQueryParameters(VersioningParametersImpl.class);
+		readAll.addQueryParameters(RolePermissionParametersImpl.class);
 		readAll.addQueryParameters(PagingParametersImpl.class);
 		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);

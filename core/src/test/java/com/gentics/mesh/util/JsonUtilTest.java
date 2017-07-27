@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -15,11 +16,19 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.example.GraphQLExamples;
 import com.gentics.mesh.json.JsonUtil;
+
+import io.vertx.core.json.JsonObject;
 
 public class JsonUtilTest {
 
@@ -38,9 +47,30 @@ public class JsonUtilTest {
 	}
 
 	@Test
+	public void testGraphQLResponse() {
+		GraphQLExamples examples = new GraphQLExamples();
+		GraphQLResponse response = examples.createResponse();
+		String jsonStr = JsonUtil.toJson(response);
+		JsonObject json = new JsonObject(jsonStr);
+		System.out.println(json.encodePrettily());
+		GraphQLResponse response2 = JsonUtil.readValue(jsonStr, GraphQLResponse.class);
+		String username = response2.getData().getJsonObject("me").getString("username");
+		assertEquals("anonymous", username);
+	}
+
+	@Test
 	public void testSchema() throws JsonProcessingException {
 		String json = JsonUtil.getJsonSchema(NodeResponse.class);
 		assertNotNull(json);
+	}
+
+	@Test
+	public void testMicroschemaAllowField() {
+		SchemaUpdateRequest schemaUpdate = new SchemaUpdateRequest();
+		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
+		String json = JsonUtil.toJson(schemaUpdate);
+		SchemaModel model = JsonUtil.readValue(json, SchemaResponse.class);
+		assertThat(model.getField("micro", MicronodeFieldSchemaImpl.class).getAllowedMicroSchemas()).containsExactly("TestMicroschema");
 	}
 
 	@Test
@@ -73,7 +103,7 @@ public class JsonUtilTest {
 			fail("json parsing should fail");
 		} catch (GenericRestException e) {
 			assertEquals("error_json_structure_invalid", e.getI18nKey());
-			assertThat(e.getI18nParameters()).containsExactly("1", "11", "schema");
+			assertThat(e.getI18nParameters()).contains("1", "11", "schema");
 		}
 	}
 

@@ -19,4 +19,32 @@ public interface AdminClientMethods {
 	 */
 	MeshRequest<GenericMessageResponse> schemaMigrationStatus();
 
+	/**
+	 * Invoke a graph database backup.
+	 * 
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> invokeBackup();
+
+	/**
+	 * Invoke a graph database export.
+	 * 
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> invokeExport();
+
+	/**
+	 * Invoke a graph database restore.
+	 * 
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> invokeRestore();
+
+	/**
+	 * Invoke a graph database import.
+	 * 
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> invokeImport();
+
 }

@@ -3,22 +3,33 @@ package com.gentics.mesh.image;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.awt.AlphaComposite;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Transparency;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
+import org.apache.tika.metadata.Metadata;
+import org.apache.tika.parser.AutoDetectParser;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.Parser;
+import org.apache.tika.sax.BodyContentHandler;
 import org.imgscalr.Scalr;
 import org.imgscalr.Scalr.Mode;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.rxjava.core.Vertx;
-import io.vertx.rxjava.core.buffer.Buffer;
 import rx.Single;
 
 /**
@@ -115,33 +126,57 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 
 		// 1. Check the cache file directory
 		if (cacheFile.exists()) {
-			return vertx.fileSystem().rxReadFile(cacheFile.getAbsolutePath());
+			return vertx.fileSystem().rxReadFile(cacheFile.getAbsolutePath()).map(buffer -> buffer.getDelegate());
 		}
 
 		// 2. Read the image
 		BufferedImage bi = null;
 		try {
 			bi = ImageIO.read(ins);
+			if (bi == null) {
+				throw error(BAD_REQUEST, "image_error_reading_failed");
+			}
+			if (bi.getTransparency() == Transparency.TRANSLUCENT) {
+				// NOTE: For BITMASK images, the color model is likely IndexColorModel,
+				// and this model will contain the "real" color of the transparent parts
+				// which is likely a better fit than unconditionally setting it to white.
+
+				// Fill background with white
+				Graphics2D graphics = bi.createGraphics();
+				try {
+					graphics.setComposite(AlphaComposite.DstOver); // Set composite rules to paint "behind"
+					graphics.setPaint(Color.WHITE);
+					graphics.fillRect(0, 0, bi.getWidth(), bi.getHeight());
+				} finally {
+					graphics.dispose();
+				}
+			}
 		} catch (Exception e) {
 			throw error(BAD_REQUEST, "image_error_reading_failed", e);
 		}
-		if (bi == null) {
-			throw error(BAD_REQUEST, "image_error_reading_failed");
+
+		// Convert the image to RGB for images with transparency (gif, png)
+		BufferedImage rgbCopy = bi;
+		if (bi.getTransparency() == Transparency.TRANSLUCENT || bi.getTransparency() == Transparency.BITMASK) {
+			rgbCopy = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+			Graphics2D graphics = rgbCopy.createGraphics();
+			graphics.drawImage(bi, 0, 0, Color.WHITE, null);
+			graphics.dispose();
 		}
 
 		// 3. Manipulate image
-		bi = cropIfRequested(bi, parameters);
-		bi = resizeIfRequested(bi, parameters);
+		rgbCopy = cropIfRequested(rgbCopy, parameters);
+		rgbCopy = resizeIfRequested(rgbCopy, parameters);
 
 		// 4. Write image
 		try {
-			ImageIO.write(bi, "jpg", cacheFile);
+			ImageIO.write(rgbCopy, "jpg", cacheFile);
 		} catch (Exception e) {
 			throw error(BAD_REQUEST, "image_error_writing_failed", e);
 		}
 
 		// 5. Return buffer to written cache file
-		return vertx.fileSystem().rxReadFile(cacheFile.getAbsolutePath());
+		return vertx.fileSystem().rxReadFile(cacheFile.getAbsolutePath()).map(buffer -> buffer.getDelegate());
 	}
 
 	@Override
@@ -151,6 +186,31 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		image.flush();
 		int[] color = pixel.getData().getPixel(0, 0, (int[]) null);
 		return color;
+	}
+
+	@Override
+	public Single<Map<String, String>> getMetadata(InputStream ins) {
+		return Single.create(sub -> {
+			Parser parser = new AutoDetectParser();
+			BodyContentHandler handler = new BodyContentHandler();
+			Metadata metadata = new Metadata();
+			ParseContext context = new ParseContext();
+			try {
+				parser.parse(ins, handler, metadata, context);
+				Map<String, String> map = new HashMap<>();
+				String[] metadataNames = metadata.names();
+
+				for (String name : metadataNames) {
+					map.put(name, metadata.get(name));
+				}
+
+				sub.onSuccess(map);
+
+			} catch (Exception e) {
+				sub.onError(e);
+			}
+			// ins.close();
+		});
 	}
 
 }

@@ -20,6 +20,7 @@ import org.apache.commons.io.IOUtils;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -50,10 +51,11 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.PublishParameters;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.rest.MeshLocalClientImpl;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
+import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.Future;
 import io.vertx.core.buffer.Buffer;
@@ -84,14 +86,19 @@ public class DemoDataProvider {
 	private Map<String, RoleResponse> roles = new HashMap<>();
 	private Map<String, GroupResponse> groups = new HashMap<>();
 
+	private Map<String, String> uuidMapping = new HashMap<>();
+
+	private BootstrapInitializer boot;
+
 	@Inject
-	public DemoDataProvider(Database database, MeshLocalClientImpl client) {
+	public DemoDataProvider(Database database, MeshLocalClientImpl client, BootstrapInitializer boot) {
 		this.db = database;
 		this.client = client;
+		this.boot = boot;
 	}
 
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
-		MeshAuthUser user = db.noTx(() -> {
+		MeshAuthUser user = db.tx(() -> {
 			return MeshInternal.get().boot().meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
 		});
 		client.setUser(user);
@@ -108,11 +115,36 @@ public class DemoDataProvider {
 
 		addSchemaContainers();
 		addNodes();
+		// updatePermissions();
 		publishAllNodes();
 		addWebclientPermissions();
-		// updatePermissions();
-		// invokeFullIndex();
+		addAnonymousPermissions();
+
+		// Update the uuids and index all contents. 
+		updateUuids();
+		invokeFullIndex();
 		log.info("Demo data setup completed");
+	}
+
+	private void invokeFullIndex() {
+		boot.reindexAll();
+	}
+
+	/**
+	 * We currently can't specify the uuid during element creation. Thus we need to update it afterwards.
+	 */
+	private void updateUuids() {
+		try (Tx tx = db.tx()) {
+			for (Vertex v : tx.getGraph().getVertices()) {
+				String uuid = v.getProperty("uuid");
+				String mapping = uuidMapping.get(uuid);
+				if (mapping != null) {
+					v.setProperty("uuid", mapping);
+					uuidMapping.remove(mapping);
+				}
+			}
+			tx.success();
+		}
 	}
 
 	/**
@@ -122,8 +154,19 @@ public class DemoDataProvider {
 	 */
 	private void publishAllNodes() throws InterruptedException {
 		for (ProjectResponse project : projects.values()) {
-			call(() -> client.publishNode(PROJECT_NAME, project.getRootNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client.publishNode(PROJECT_NAME, project.getRootNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 		}
+	}
+
+	/**
+	 * Add the anonymous read permissions
+	 */
+	private void addAnonymousPermissions() {
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(true);
+		request.getPermissions().add(READ);
+		call(() -> client.updateRolePermissions(getRole("anonymous").getUuid(), "projects/" + getProject("demo").getUuid(), request));
+		call(() -> client.updateRolePermissions(getRole("anonymous").getUuid(), "users/" + users.get("anonymous").getUuid(), request));
 	}
 
 	/**
@@ -151,6 +194,7 @@ public class DemoDataProvider {
 		JsonArray dataArray = usersJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject userJson = dataArray.getJsonObject(i);
+			String uuid = userJson.getString("uuid");
 			String email = userJson.getString("email");
 			String username = userJson.getString("username");
 			String firstname = userJson.getString("firstName");
@@ -165,14 +209,14 @@ public class DemoDataProvider {
 			request.setFirstname(firstname);
 			request.setLastname(lastname);
 			request.setPassword(password);
-			MeshResponse<UserResponse> future = client.createUser(request).invoke();
-			latchFor(future);
-			users.put(username, future.result());
+			UserResponse response = call(() -> client.createUser(request));
+			users.put(username, response);
+			uuidMapping.put(response.getUuid(), uuid);
 
 			JsonArray groupArray = userJson.getJsonArray("groups");
 			for (int e = 0; e < groupArray.size(); e++) {
 				String groupUuid = groups.get(groupArray.getString(e)).getUuid();
-				call(() -> client.addUserToGroup(groupUuid, future.result().getUuid()));
+				call(() -> client.addUserToGroup(groupUuid, response.getUuid()));
 			}
 		}
 
@@ -191,6 +235,7 @@ public class DemoDataProvider {
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject groupJson = dataArray.getJsonObject(i);
 			String name = groupJson.getString("name");
+			String uuid = groupJson.getString("uuid");
 
 			log.info("Creating group {" + name + "}");
 			GroupCreateRequest groupCreateRequest = new GroupCreateRequest();
@@ -199,6 +244,7 @@ public class DemoDataProvider {
 			latchFor(groupResponseFuture);
 			GroupResponse group = groupResponseFuture.result();
 			groups.put(name, group);
+			uuidMapping.put(group.getUuid(), uuid);
 
 			JsonArray rolesNode = groupJson.getJsonArray("roles");
 			for (int e = 0; e < rolesNode.size(); e++) {
@@ -214,7 +260,7 @@ public class DemoDataProvider {
 			latch.countDown();
 		});
 		try {
-			if (!latch.await(11135, TimeUnit.SECONDS)) {
+			if (!latch.await(35, TimeUnit.SECONDS)) {
 				throw new RuntimeException("Timeout reached");
 			}
 		} catch (InterruptedException e) {
@@ -238,12 +284,14 @@ public class DemoDataProvider {
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject roleJson = dataArray.getJsonObject(i);
 			String name = roleJson.getString("name");
+			String uuid = roleJson.getString("uuid");
 
 			log.info("Creating role {" + name + "}");
 			RoleCreateRequest request = new RoleCreateRequest();
 			request.setName(name);
 			RoleResponse role = call(() -> client.createRole(request));
 			roles.put(name, role);
+			uuidMapping.put(role.getUuid(), uuid);
 		}
 	}
 
@@ -290,9 +338,11 @@ public class DemoDataProvider {
 		JsonArray dataArray = nodesJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject nodeJson = dataArray.getJsonObject(i);
+			String uuid = nodeJson.getString("uuid");
 			ProjectResponse project = getProject(nodeJson.getString("project"));
 			String schemaName = nodeJson.getString("schema");
 			String parentNodeName = nodeJson.getString("parent");
+			String segmentFieldValue = nodeJson.getString("segmentFieldValue");
 			String name = nodeJson.getString("name");
 			SchemaResponse schema = getSchemaModel(schemaName);
 			NodeResponse parentNode = (nodeJson.getString("project") + ".basenode").equals(parentNodeName) ? null : getNode(parentNodeName);
@@ -307,6 +357,15 @@ public class DemoDataProvider {
 			}
 			nodeCreateRequest.setSchema(new SchemaReference().setUuid(schema.getUuid()));
 			nodeCreateRequest.getFields().put("name", FieldUtil.createStringField(name));
+
+			// Add the segment field value
+			switch (schemaName) {
+			case "category":
+			case "folder":
+			case "vehicle":
+				nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField(segmentFieldValue));
+				break;
+			}
 
 			JsonObject fieldsObject = nodeJson.getJsonObject("fields");
 			if (fieldsObject != null) {
@@ -332,6 +391,7 @@ public class DemoDataProvider {
 			}
 			// englishContainer.updateWebrootPathInfo("node_conflicting_segmentfield_update");
 			NodeResponse createdNode = call(() -> client.createNode(project.getName(), nodeCreateRequest));
+			uuidMapping.put(createdNode.getUuid(), uuid);
 
 			// Upload binary data
 			JsonObject binNode = nodeJson.getJsonObject("bin");
@@ -346,7 +406,8 @@ public class DemoDataProvider {
 				byte[] bytes = IOUtils.toByteArray(ins);
 				Buffer fileData = Buffer.buffer(bytes);
 
-				call(() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", createdNode.getVersion().toString(), "image", fileData, filenName, contentType));
+				call(() -> client.updateNodeBinaryField(PROJECT_NAME, createdNode.getUuid(), "en", createdNode.getVersion().toString(), "image",
+						fileData, filenName, contentType));
 
 			}
 
@@ -374,6 +435,7 @@ public class DemoDataProvider {
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject tagJson = dataArray.getJsonObject(i);
 			String name = tagJson.getString("name");
+			String uuid = tagJson.getString("uuid");
 			String tagFamilyName = tagJson.getString("tagFamily");
 
 			log.info("Creating tag {" + name + "} to family {" + tagFamilyName + "}");
@@ -383,6 +445,7 @@ public class DemoDataProvider {
 			createRequest.setName(name);
 			TagResponse result = call(() -> client.createTag(PROJECT_NAME, tagFamily.getUuid(), createRequest));
 			tags.put(name, result);
+			uuidMapping.put(result.getUuid(), uuid);
 		}
 	}
 
@@ -398,6 +461,7 @@ public class DemoDataProvider {
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject projectJson = dataArray.getJsonObject(i);
 			String name = projectJson.getString("name");
+			String uuid = projectJson.getString("uuid");
 
 			log.info("Creating project {" + name + "}");
 			ProjectCreateRequest request = new ProjectCreateRequest();
@@ -405,6 +469,7 @@ public class DemoDataProvider {
 			request.setName(name);
 			ProjectResponse project = call(() -> client.createProject(request));
 			projects.put(name, project);
+			uuidMapping.put(project.getUuid(), uuid);
 		}
 	}
 
@@ -413,15 +478,16 @@ public class DemoDataProvider {
 		JsonArray dataArray = tagfamilyJson.getJsonArray("data");
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject tagFamilyJson = dataArray.getJsonObject(i);
+			String uuid = tagFamilyJson.getString("uuid");
 			String name = tagFamilyJson.getString("name");
 			String projectName = tagFamilyJson.getString("project");
 
 			log.info("Creating tagfamily {" + name + "} for project {" + projectName + "}");
 			TagFamilyCreateRequest request = new TagFamilyCreateRequest();
 			request.setName(name);
-			// request.setDescription("Description for basic tag family");
 			TagFamilyResponse result = call(() -> client.createTagFamily(PROJECT_NAME, request));
 			tagFamilies.put(name, result);
+			uuidMapping.put(result.getUuid(), uuid);
 		}
 	}
 
@@ -433,6 +499,7 @@ public class DemoDataProvider {
 		for (int i = 0; i < dataArray.size(); i++) {
 			JsonObject schemaJson = dataArray.getJsonObject(i);
 			String schemaName = schemaJson.getString("name");
+			String uuid = schemaJson.getString("uuid");
 			StringWriter writer = new StringWriter();
 			InputStream ins = getClass().getResourceAsStream("/data/schemas/" + schemaName + ".json");
 			if (ins != null) {
@@ -440,6 +507,7 @@ public class DemoDataProvider {
 				SchemaCreateRequest schema = JsonUtil.readValue(writer.toString(), SchemaCreateRequest.class);
 				SchemaResponse schemaResponse = call(() -> client.createSchema(schema));
 				schemas.put(schemaName, schemaResponse);
+				uuidMapping.put(schemaResponse.getUuid(), uuid);
 			}
 
 			// Assign all schemas to all projects

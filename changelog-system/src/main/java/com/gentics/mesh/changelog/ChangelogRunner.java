@@ -1,6 +1,6 @@
 package com.gentics.mesh.changelog;
 
-import com.gentics.mesh.etc.GraphStorageOptions;
+import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;

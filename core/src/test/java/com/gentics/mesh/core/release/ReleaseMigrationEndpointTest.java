@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.release;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -22,6 +23,7 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -29,8 +31,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.PublishParameters;
+import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -38,7 +39,6 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
@@ -52,15 +52,19 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartReleaseMigration() throws Throwable {
-		try (NoTx noTx = db().noTx()) {
+		Release newRelease;
+		List<? extends Node> nodes;
+		List<? extends Node> published;
+
+		try (Tx tx = tx()) {
 			Project project = project();
 			assertThat(project.getInitialRelease().isMigrated()).as("Initial release migration status").isEqualTo(true);
 
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParameters().setRecursive(true)));
+			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 
-			List<? extends Node> published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
-			List<? extends Node> nodes = project.getNodeRoot().findAll().stream()
-					.filter(node -> node.getParentNode(project.getLatestRelease().getUuid()) != null).collect(Collectors.toList());
+			published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
+			nodes = project.getNodeRoot().findAll().stream().filter(node -> node.getParentNode(project.getLatestRelease().getUuid()) != null)
+					.collect(Collectors.toList());
 
 			assertThat(nodes).as("Nodes list").isNotEmpty();
 
@@ -69,8 +73,11 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 				call(() -> client().publishNode(project.getName(), node.getUuid()));
 			});
 
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+			newRelease = project.getReleaseRoot().create("newrelease", user());
 			assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(false);
+			tx.success();
+		}
+		try (Tx tx = tx()) {
 
 			nodes.forEach(node -> {
 				Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
@@ -78,7 +85,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 				});
 			});
 
-			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(), newRelease.getUuid());
+			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(projectUuid(), newRelease.getUuid());
 
 			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
 			if (result.cause() != null) {
@@ -103,7 +110,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 							.isNotNull().isEmpty();
 				}
 
-				Node initialParent = node.getParentNode(project.getInitialRelease().getUuid());
+				Node initialParent = node.getParentNode(initialReleaseUuid());
 				if (initialParent == null) {
 					assertThat(node.getParentNode(newRelease.getUuid())).as("Parent in new release").isNull();
 				} else {
@@ -114,16 +121,13 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 				// TODO assert tags
 			});
 		}
+
 	}
 
 	@Test
 	public void testStartForInitial() throws Throwable {
-		try (NoTx noTx = db().noTx()) {
-			Project project = project();
-			Release initialRelease = project.getInitialRelease();
-
-			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(), initialRelease.getUuid());
-
+		try (Tx tx = tx()) {
+			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(projectUuid(), initialReleaseUuid());
 			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
 			assertThat(result.failed()).isTrue();
 		}
@@ -131,36 +135,46 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testStartAgain() throws Throwable {
-		try (NoTx noTx = db().noTx()) {
-			Project project = project();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+		Release newRelease;
+		try (Tx tx = tx()) {
+			newRelease = project().getReleaseRoot().create("newrelease", user());
+			tx.success();
+		}
 
-			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(), newRelease.getUuid());
+		try (Tx tx = tx()) {
+			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(projectUuid(), newRelease.getUuid());
 			AsyncResult<Message<Object>> result = future.get(20, TimeUnit.SECONDS);
 			assertTrue("The migration did run into a timeout after 20 seconds", result.succeeded());
 
-			future = requestReleaseMigration(project.getUuid(), newRelease.getUuid());
+			future = requestReleaseMigration(projectUuid(), newRelease.getUuid());
 			result = future.get(10, TimeUnit.SECONDS);
 			assertThat(result.failed()).isTrue();
 		}
+
 	}
 
 	@Test
 	public void testStartOrder() throws Throwable {
-		try (NoTx noTx = db().noTx()) {
-			Project project = project();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
-			Release newestRelease = project.getReleaseRoot().create("newestrelease", user());
 
-			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(), newestRelease.getUuid());
+		Release newRelease;
+		Release newestRelease;
+		try (Tx tx = tx()) {
+			Project project = project();
+			newRelease = project.getReleaseRoot().create("newrelease", user());
+			newestRelease = project.getReleaseRoot().create("newestrelease", user());
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
+			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(projectUuid(), newestRelease.getUuid());
 			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
 			assertThat(result.failed()).isTrue();
 
-			future = requestReleaseMigration(project.getUuid(), newRelease.getUuid());
+			future = requestReleaseMigration(projectUuid(), newRelease.getUuid());
 			result = future.get(10, TimeUnit.SECONDS);
 			assertThat(result.succeeded()).isTrue();
 
-			future = requestReleaseMigration(project.getUuid(), newestRelease.getUuid());
+			future = requestReleaseMigration(projectUuid(), newestRelease.getUuid());
 			result = future.get(10, TimeUnit.SECONDS);
 			assertThat(result.succeeded()).isTrue();
 		}
@@ -168,20 +182,21 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testBigData() throws Throwable {
-		try (NoTx noTx = db().noTx()) {
+
+		MetricRegistry metrics = new MetricRegistry();
+		Meter createdNode = metrics.meter("Create Node");
+		Timer migrationTimer = metrics.timer("Migration");
+		Release newRelease;
+		try (Tx tx = tx()) {
 			int numThreads = 1;
 			int numFolders = 1000;
 			Project project = project();
 			String projectName = project.getName();
 			String baseNodeUuid = project.getBaseNode().getUuid();
 
-			MetricRegistry metrics = new MetricRegistry();
 			ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics).convertRatesTo(TimeUnit.SECONDS).convertDurationsTo(TimeUnit.MILLISECONDS)
 					.build();
 			reporter.start(1, TimeUnit.SECONDS);
-
-			Meter createdNode = metrics.meter("Create Node");
-			Timer migrationTimer = metrics.timer("Migration");
 
 			ExecutorService service = Executors.newFixedThreadPool(numThreads);
 
@@ -203,8 +218,12 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 				future.get();
 			}
 
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
-			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(project.getUuid(), newRelease.getUuid());
+			newRelease = project.getReleaseRoot().create("newrelease", user());
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
+			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(projectUuid(), newRelease.getUuid());
 
 			try (Timer.Context ctx = migrationTimer.time()) {
 				AsyncResult<Message<Object>> result = future.get(10, TimeUnit.MINUTES);

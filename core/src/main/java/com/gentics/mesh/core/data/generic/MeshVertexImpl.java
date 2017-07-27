@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.ferma.Tx;
 import com.gentics.ferma.annotation.GraphElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -76,8 +77,8 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	/**
-	 * Add a single link <b>in-bound</b> link to the given vertex. Note that this method will remove all other links to other vertices for the given labels and only create a single
-	 * edge between both vertices per label.
+	 * Add a single link <b>in-bound</b> link to the given vertex. Note that this method will remove all other links to other vertices for the given labels and
+	 * only create a single edge between both vertices per label.
 	 * 
 	 * @param vertex
 	 *            Target vertex
@@ -92,8 +93,8 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	/**
-	 * Add a unique <b>in-bound</b> link to the given vertex for the given set of labels. Note that this method will effectively ensure that only one <b>in-bound</b> link exists
-	 * between the two vertices for each label.
+	 * Add a unique <b>in-bound</b> link to the given vertex for the given set of labels. Note that this method will effectively ensure that only one
+	 * <b>in-bound</b> link exists between the two vertices for each label.
 	 * 
 	 * @param vertex
 	 *            Target vertex
@@ -108,8 +109,8 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	/**
-	 * Remove all out-bound edges with the given label from the current vertex and create a new new <b>out-bound</b> edge between the current and given vertex using the specified
-	 * label. Note that only a single out-bound edge per label will be preserved.
+	 * Remove all out-bound edges with the given label from the current vertex and create a new new <b>out-bound</b> edge between the current and given vertex
+	 * using the specified label. Note that only a single out-bound edge per label will be preserved.
 	 * 
 	 * @param vertex
 	 *            Target vertex
@@ -149,7 +150,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	@Override
 	public FramedGraph getGraph() {
-		return Database.getThreadLocalGraph();
+		return Tx.getActive().getGraph();
 	}
 
 	@Override
@@ -158,8 +159,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	@Override
-	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
-			Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		role.grantPermissions(this, permissionsToGrant.toArray(new GraphPermission[permissionsToGrant.size()]));
 		role.revokePermissions(this, permissionsToRevoke.toArray(new GraphPermission[permissionsToRevoke.size()]));
 	}
@@ -168,7 +168,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	public Vertex getElement() {
 		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
 		// transaction finishes
-		FramedGraph fg = Database.getThreadLocalGraph();
+		FramedGraph fg = Tx.getActive().getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
 					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");

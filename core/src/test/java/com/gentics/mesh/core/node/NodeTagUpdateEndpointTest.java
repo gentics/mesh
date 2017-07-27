@@ -13,10 +13,10 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagReference;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -25,7 +25,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMissingTagFamilyName() {
-		String nodeUuid = db().noTx(() -> content().getUuid());
+		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("green").setTagFamily(""));
 		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), BAD_REQUEST, "tag_error_tagfamily_not_set");
@@ -34,7 +34,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUnknownTagFamilyName() {
-		String nodeUuid = db().noTx(() -> content().getUuid());
+		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("green").setTagFamily("blub123"));
 		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), NOT_FOUND, "object_not_found_for_name", "blub123");
@@ -43,7 +43,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMissingTagName() {
-		String nodeUuid = db().noTx(() -> content().getUuid());
+		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("").setTagFamily("colors"));
 		call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request), BAD_REQUEST, "tag_error_name_or_uuid_missing");
@@ -52,36 +52,36 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testUpdateByTagUuid() {
-		int previousCount = db().noTx(() -> tagFamily("colors").findAll().size());
-		String tagUuid = db().noTx(() -> tag("red").getUuid());
-		String nodeUuid = db().noTx(() -> content().getUuid());
+		int previousCount = db().tx(() -> tagFamily("colors").findAll().size());
+		String tagUuid = db().tx(() -> tag("red").getUuid());
+		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setUuid(tagUuid).setTagFamily("colors"));
 		TagListResponse response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		assertEquals(1, response.getMetainfo().getTotalCount());
-		int afterCount = db().noTx(() -> tagFamily("colors").findAll().size());
+		int afterCount = db().tx(() -> tagFamily("colors").findAll().size());
 		assertEquals("The colors tag family should not have any additional tags.", previousCount, afterCount);
 
-		try (NoTx noTx = db().noTx()) {
-			assertThat(dummySearchProvider()).storedAllContainers(content(), this, "en", "de").hasEvents(4, 0, 0, 0);
+		try (Tx tx = tx()) {
+			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de").hasEvents(4, 0, 0, 0);
 		}
 
 	}
 
 	@Test
 	public void testUpdateByTagName() {
-		int previousCount = db().noTx(() -> tagFamily("colors").findAll().size());
-		String nodeUuid = db().noTx(() -> content().getUuid());
+		int previousCount = db().tx(() -> tagFamily("colors").findAll().size());
+		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("purple").setTagFamily("colors"));
 		request.getTags().add(new TagReference().setName("red").setTagFamily("colors"));
 		TagListResponse response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		assertEquals("The node should have two tags.", 2, response.getMetainfo().getTotalCount());
-		int afterCount = db().noTx(() -> tagFamily("colors").findAll().size());
+		int afterCount = db().tx(() -> tagFamily("colors").findAll().size());
 		assertEquals("The colors tag family should now have one additional color tag.", previousCount + 1, afterCount);
 
-		try (NoTx noTx = db().noTx()) {
-			assertThat(dummySearchProvider()).storedAllContainers(content(), this, "en", "de");
+		try (Tx tx = tx()) {
+			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de");
 			assertThat(dummySearchProvider()).stored(tagFamily("colors"));
 			assertThat(dummySearchProvider()).stored(tagFamily("colors").findByName("purple"));
 			assertThat(dummySearchProvider()).hasEvents(6, 0, 0, 0);
@@ -91,7 +91,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateWithNewTagFamilyAndTag() {
 
-		String nodeUuid = db().noTx(() -> content().getUuid());
+		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("blub1").setTagFamily("colors"));
 		request.getTags().add(new TagReference().setName("bla2").setTagFamily("basic"));
@@ -100,9 +100,9 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 
 		TagListResponse response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		assertEquals(4, response.getMetainfo().getTotalCount());
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			// 4 Node containers need to be updated and two tag families and 4 new tags
-			assertThat(dummySearchProvider()).storedAllContainers(content(), this, "en", "de").hasEvents(4 + 2 + 4, 0, 0, 0);
+			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de").hasEvents(4 + 2 + 4, 0, 0, 0);
 		}
 
 		dummySearchProvider().clear();
@@ -111,9 +111,9 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 		request.getTags().add(new TagReference().setName("blub3").setTagFamily("colors"));
 		response = call(() -> client().updateTagsForNode(PROJECT_NAME, nodeUuid, request));
 		assertEquals(2, response.getMetainfo().getTotalCount());
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			// No tag family is modified - no Tag is created
-			assertThat(dummySearchProvider()).storedAllContainers(content(), this, "en", "de").hasEvents(4, 0, 0, 0);
+			assertThat(dummySearchProvider()).storedAllContainers(content(), project(), latestRelease(), "en", "de").hasEvents(4, 0, 0, 0);
 		}
 
 	}
@@ -121,7 +121,7 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testTagOrder() {
 
-		String nodeUuid = db().noTx(() -> content().getUuid());
+		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("blub1").setTagFamily("colors"));
 		request.getTags().add(new TagReference().setName("bla2").setTagFamily("basic"));
@@ -141,10 +141,11 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateWithNoNodePerm() {
 		// 1. Revoke the update permission
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(content(), UPDATE_PERM);
+			tx.success();
 		}
-		String nodeUuid = db().noTx(() -> content().getUuid());
+		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("blub1").setTagFamily("colors"));
 		// 2. Invoke the tag request
@@ -156,11 +157,12 @@ public class NodeTagUpdateEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testUpdateWithNoTagFamilyCreatePerm() {
 		// 1. Revoke the tag create permission
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(tagFamily("colors"), CREATE_PERM);
+			tx.success();
 		}
-		String tagFamilyUuid = db().noTx(() -> tagFamily("colors").getUuid());
-		String nodeUuid = db().noTx(() -> content().getUuid());
+		String tagFamilyUuid = db().tx(() -> tagFamily("colors").getUuid());
+		String nodeUuid = db().tx(() -> content().getUuid());
 		TagListUpdateRequest request = new TagListUpdateRequest();
 		request.getTags().add(new TagReference().setName("blub1").setTagFamily("colors"));
 		// 2. Invoke the tag request

@@ -71,7 +71,7 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 	private void addSearchEndpoints() {
 		registerSearchHandler("nodes", () -> boot.meshRoot().getNodeRoot(), NodeListResponse.class, nodeContainerIndexHandler,
 				nodeExamples.getNodeListResponse());
-		registerSearchHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, tagIndexHandler, tagExamples.getTagListResponse());
+		registerSearchHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, tagIndexHandler, tagExamples.createTagListResponse());
 		registerSearchHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilyIndexHandler,
 				tagFamilyExamples.getTagFamilyListResponse());
 	}
@@ -91,7 +91,7 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 	 *            Example list response used for RAML generation
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
-			Func0<RootVertex<T>> root, Class<RL> classOfRL, IndexHandler indexHandler, RL exampleResponse) {
+			Func0<RootVertex<T>> root, Class<RL> classOfRL, IndexHandler<T> indexHandler, RL exampleResponse) {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);

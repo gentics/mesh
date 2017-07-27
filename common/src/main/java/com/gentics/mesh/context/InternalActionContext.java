@@ -6,7 +6,6 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.ParameterProviderContext;
 
@@ -37,6 +36,15 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	Project getProject();
 
 	/**
+	 * Return the latest release of the project.
+	 * 
+	 * @return release
+	 */
+	default Release getRelease() {
+		return getRelease(null);
+	}
+
+	/**
 	 * Return the release that may be specified in this action context as query parameter. This method will fail, if no project is set, or if the specified
 	 * release does not exist for the project When no release was specified (but a project was set), this will return the latest release of the project
 	 * 
@@ -60,13 +68,6 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 * @return
 	 */
 	<T> Handler<AsyncResult<T>> errorHandler();
-
-	/**
-	 * Return the currently used database.
-	 * 
-	 * @return
-	 */
-	Database getDatabase();
 
 	/**
 	 * Transform the rest model to JSON and send the JSON as a respond with the given status code.

@@ -25,16 +25,16 @@ The purpose of this agreement is to protect users of this codebase by ensuring t
 ## Submitting the changes
 
 Submit a pull request via the normal GitHub UI.
-* if all the tests pass, then do a **Pull Request** (PR) against **"dev"** branch on GitHub repository and write a comment about the change. Please don't send PR to "master" because we use that branch only for releasing
-* if you want the fix is backported to a previous version, please write it in your comments and if the OrientDB team agree they will do that as soon as the PR is merged
+
+* If all the tests pass, then do a **Pull Request** (PR) against **"dev"** branch on GitHub repository and write a comment about the change. Please don't send PR to "master" because we use that branch only for releasing
 
 ## Documentation
 
-If you want to contribute to the Gentics Mesh documentation, the right place is: https://github.com/gentics/mesh. Every release all the contributions are reviewed and published on the public [documentation](http://getmesh.io/docs/dev/).
+If you want to contribute to the Gentics Mesh documentation, the right place is: https://github.com/gentics/mesh. Every release all the contributions are reviewed and published on the public [documentation](http://getmesh.io/docs/beta/).
 
 ## Code formatting
 
-You can find eclipse java formatter config file here: [_base/ide/eclipse-formatter.xml](https://github.com/gentics/mesh/blob/master/_base/ide/eclipse-formatter.xml).
+You can find eclipse java formatter config file here: [/eclipse_formatter.xml](https://github.com/gentics/mesh/blob/master/eclipse_formatter.xml).
 
 If you use IntelliJ IDEA you can install [this](http://plugins.jetbrains.com/plugin/?id=6546) plugin and use formatter profile mentioned above.
 

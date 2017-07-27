@@ -1,0 +1,40 @@
+{
+	node(path:"/Neuigkeiten/2015") {
+		# 2015 is an english container - thus the path is actually "/News/2015"
+		# [$.data.node.path=/News/2015]
+		path
+
+		# [$.data.node.language=en]
+		language
+
+		ruNode: node(lang: "ru") {
+			version
+			# The ru node can't be found but the english version will be loaded instead
+			# [$.data.node.language=en]
+			language
+		}
+		enNode: node(lang: "en") {
+			# [$.data.node.enNode.version=1.0]
+			version
+
+			# [$.data.node.enNode.isDraft=true]
+			isDraft
+
+			# [$.data.node.enNode.isPublished=true]
+			isPublished
+
+			# [$.data.node.enNode.language=en]
+			language
+
+			# [$.data.node.enNode.editor.username=joe1]
+			editor { username }
+
+			# [$.data.node.enNode.edited=<not-null>]
+			edited
+
+			# [$.data.node.enNode.uuid=<is-uuid>]
+			uuid
+		}
+	}
+}
+# [$.errors=<is-undefined>]

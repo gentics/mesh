@@ -17,7 +17,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
 public interface NodeClientMethods {
 
 	/**
-	 * Find the node with the given uuid in the project with the given name. The query parameters can be utilized to set the desired language and expand field
+	 * Find the node with the given UUID in the project with the given name. The query parameters can be utilized to set the desired language and expand field
 	 * settings.
 	 * 
 	 * @param projectName
@@ -38,7 +38,18 @@ public interface NodeClientMethods {
 	MeshRequest<NodeResponse> createNode(String projectName, NodeCreateRequest nodeCreateRequest, ParameterProvider... parameters);
 
 	/**
-	 * Update the node with the given uuid.
+	 * Create a node within the given project. The query parameters determine which language of the node will be returned. Use the provided uuid for the node.
+	 * 
+	 * @param uuid
+	 * @param projectName
+	 * @param nodeCreateRequest
+	 * @param parameters
+	 * @return
+	 */
+	MeshRequest<NodeResponse> createNode(String uuid, String projectName, NodeCreateRequest nodeCreateRequest, ParameterProvider... parameters);
+
+	/**
+	 * Update the node with the given UUID.
 	 * 
 	 * @param projectName
 	 * @param uuid
@@ -49,7 +60,7 @@ public interface NodeClientMethods {
 	MeshRequest<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest, ParameterProvider... parameters);
 
 	/**
-	 * Delete the node with the given uuid. All languages will be deleted.
+	 * Delete the node with the given UUID. All languages will be deleted.
 	 * 
 	 * @param projectName
 	 * @param uuid
@@ -77,8 +88,6 @@ public interface NodeClientMethods {
 	 * @return
 	 */
 	MeshRequest<NodeListResponse> findNodes(String projectName, ParameterProvider... parameters);
-
-	// Relations
 
 	/**
 	 * Find all child nodes of the given node with the given parentNodeUuid. The query parameters can be used to set paging and language settings.

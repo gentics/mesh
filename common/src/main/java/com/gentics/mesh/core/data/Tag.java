@@ -4,10 +4,9 @@ import java.util.List;
 import java.util.Objects;
 
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -92,10 +91,9 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 * @param type
 	 * @param pagingInfo
 	 * @return
-	 * @throws InvalidArgumentException
 	 */
-	Page<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, ContainerType type,
-			PagingParameters pagingInfo) throws InvalidArgumentException;
+	TransformablePage<? extends Node> findTaggedNodes(MeshAuthUser requestUser, Release release, List<String> languageTags, ContainerType type,
+			PagingParameters pagingInfo);
 
 	/**
 	 * Set the tag family of this tag.

@@ -18,7 +18,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.RolePermissionParameters;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -93,7 +93,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, projectExamples.getProjectResponse("Project name"), "Loaded project.");
-		readOne.addQueryParameters(RolePermissionParameters.class);
+		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.handler(rc -> {
 			String uuid = rc.request().params().get("projectUuid");
 			if (StringUtils.isEmpty(uuid)) {
@@ -111,7 +111,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 		readAll.produces(APPLICATION_JSON);
 		readAll.exampleResponse(OK, projectExamples.getProjectListResponse(), "Loaded project list.");
 		readAll.addQueryParameters(PagingParametersImpl.class);
-		readAll.addQueryParameters(RolePermissionParameters.class);
+		readAll.addQueryParameters(RolePermissionParametersImpl.class);
 		readAll.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			crudHandler.handleReadList(ac);

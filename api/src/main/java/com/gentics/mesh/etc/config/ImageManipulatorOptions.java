@@ -2,14 +2,24 @@ package com.gentics.mesh.etc.config;
 
 import java.io.File;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.doc.GenerateDocumentation;
+
 /**
  * Image manipulation options are used for image resize and image crop actions.
  */
+@GenerateDocumentation
 public class ImageManipulatorOptions {
 
 	private String imageCacheDirectory = "data" + File.separator + "binaryImageCache";
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the maximum allowed image resize width. Resizing is a memory intensive operation and thus this limit can help avoid memory issues.")
 	private Integer maxWidth = 2048;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the maximum allowed image resize height. Resizing is a memory intensive operation and thus this limit can help avoid memory issues.")
 	private Integer maxHeight = 2048;
 
 	/**
@@ -25,9 +35,11 @@ public class ImageManipulatorOptions {
 	 * Set the binary image cache directory.
 	 * 
 	 * @param imageCacheDirectory
+	 * @return Fluent API
 	 */
-	public void setImageCacheDirectory(String imageCacheDirectory) {
+	public ImageManipulatorOptions setImageCacheDirectory(String imageCacheDirectory) {
 		this.imageCacheDirectory = imageCacheDirectory;
+		return this;
 	}
 
 	/**
@@ -43,9 +55,11 @@ public class ImageManipulatorOptions {
 	 * Set the maximum image height.
 	 * 
 	 * @param maxHeight
+	 * @return Fluent API
 	 */
-	public void setMaxHeight(int maxHeight) {
+	public ImageManipulatorOptions setMaxHeight(int maxHeight) {
 		this.maxHeight = maxHeight;
+		return this;
 	}
 
 	/**
@@ -61,8 +75,10 @@ public class ImageManipulatorOptions {
 	 * Set the maximum allowed image width.
 	 * 
 	 * @param maxWidth
+	 * @return Fluent API
 	 */
-	public void setMaxWidth(int maxWidth) {
+	public ImageManipulatorOptions setMaxWidth(int maxWidth) {
 		this.maxWidth = maxWidth;
+		return this;
 	}
 }

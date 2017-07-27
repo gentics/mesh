@@ -15,12 +15,12 @@ import java.util.Date;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
@@ -28,7 +28,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchAndSort() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -46,7 +46,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 		json += "			}";
 
 		String search = json;
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, search, new VersioningParameters().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, search, new VersioningParametersImpl().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 
@@ -65,12 +65,12 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchContent() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("the"),
-				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft()));
+				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
 		assertEquals(1, response.getData().size());
 		assertEquals(1, response.getMetainfo().getTotalCount());
 		for (NodeResponse nodeResponse : response.getData()) {
@@ -88,11 +88,14 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	 */
 	@Test
 	public void testSearchMissingVertex() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		Node node = content("honda nr");
+		try (Tx tx = tx()) {
 			recreateIndices();
-
-			Node node = content("honda nr");
 			node.remove();
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			NodeListResponse response = call(() -> client().searchNodes(getSimpleQuery("the"), new PagingParametersImpl().setPage(1).setPerPage(2)));
 			assertEquals(0, response.getData().size());
 			assertEquals(0, response.getMetainfo().getTotalCount());

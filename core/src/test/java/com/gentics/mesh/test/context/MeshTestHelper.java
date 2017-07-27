@@ -1,11 +1,14 @@
 package com.gentics.mesh.test.context;
 
+import static com.gentics.mesh.http.HttpConstants.ETAG;
+import static com.gentics.mesh.http.HttpConstants.IF_NONE_MATCH;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -24,8 +27,10 @@ import org.elasticsearch.index.query.RangeQueryBuilder;
 
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.rest.client.MeshRestClientHttpException;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
+import com.gentics.mesh.util.ETag;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
@@ -40,9 +45,9 @@ public final class MeshTestHelper {
 	private static final Logger log = LoggerFactory.getLogger(MeshTestHelper.class);
 
 	public static CyclicBarrier prepareBarrier(int nJobs) {
-		//		Trx.enableDebug();
+		// Trx.enableDebug();
 		CyclicBarrier barrier = new CyclicBarrier(nJobs);
-		//		Trx.setBarrier(barrier);
+		// Trx.setBarrier(barrier);
 		return barrier;
 	}
 
@@ -61,8 +66,8 @@ public final class MeshTestHelper {
 		assertTrue("We expected the future to have failed but it succeeded.", future.failed());
 		assertNotNull(future.cause());
 
-		if (future.cause() instanceof MeshRestClientHttpException) {
-			MeshRestClientHttpException exception = ((MeshRestClientHttpException) future.cause());
+		if (future.cause() instanceof MeshRestClientMessageException) {
+			MeshRestClientMessageException exception = ((MeshRestClientMessageException) future.cause());
 			assertEquals("The status code of the nested exception did not match the expected value.", status.code(), exception.getStatusCode());
 			assertEquals(message, exception.getMessage());
 		} else {
@@ -100,7 +105,59 @@ public final class MeshTestHelper {
 	}
 
 	/**
-	 * Call the given handler, latch for the future and expect the given failure in the future
+	 * Invokes the request and returns the etag for the response.
+	 * 
+	 * @param handler
+	 * @return
+	 */
+	public static <T> String callETag(ClientHandler<T> handler) {
+		MeshResponse<T> response;
+		try {
+			response = handler.handle().invoke();
+		} catch (Exception e) {
+			response = new MeshResponse<>(Future.failedFuture(e));
+		}
+		latchFor(response);
+		assertSuccess(response);
+		String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));
+		;
+		assertNotNull("The etag of the response should not be null", etag);
+		return etag;
+	}
+
+	/**
+	 * Call the given handler, latch for the future and assert success. Then return the result.
+	 * 
+	 * @param handler
+	 *            handler
+	 * @param etag
+	 * @param <T>
+	 *            type of the returned object
+	 * @return result of the future
+	 */
+	public static <T> String callETag(ClientHandler<T> handler, String etag, boolean isWeak, int statusCode) {
+		MeshResponse<T> response;
+		try {
+			MeshRequest<T> request = handler.handle();
+			request.getRequest().putHeader(IF_NONE_MATCH, ETag.prepareHeader(etag, isWeak));
+			response = request.invoke();
+		} catch (Exception e) {
+			response = new MeshResponse<>(Future.failedFuture(e));
+		}
+		latchFor(response);
+		assertSuccess(response);
+		int actualStatusCode = response.getRawResponse().statusCode();
+		String actualETag = ETag.extract(response.getRawResponse().getHeader(ETAG));
+		assertEquals("The response code did not match.", statusCode, actualStatusCode);
+		if (statusCode == 304) {
+			assertEquals(etag, actualETag);
+			assertNull("The response should be null since we got a 304", response.result());
+		}
+		return actualETag;
+	}
+
+	/**
+	 * Call the given handler, latch for the future and expect the given failure in the future.
 	 *
 	 * @param handler
 	 *            handler
@@ -136,7 +193,7 @@ public final class MeshTestHelper {
 		}
 		assertTrue("We did not find a single request which succeeded.", foundDelete);
 
-		//		Trx.disableDebug();
+		// Trx.disableDebug();
 		if (barrier != null) {
 			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 		}
@@ -147,7 +204,7 @@ public final class MeshTestHelper {
 			latchFor(future);
 			assertSuccess(future);
 		}
-		//		Trx.disableDebug();
+		// Trx.disableDebug();
 		if (barrier != null) {
 			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 		}
@@ -160,6 +217,17 @@ public final class MeshTestHelper {
 		}
 	}
 
+	/**
+	 * Wait for all responses and assert that the requests did not fail.
+	 * 
+	 * @param set
+	 * @param barrier
+	 * @throws IllegalAccessException
+	 * @throws IllegalArgumentException
+	 * @throws InvocationTargetException
+	 * @throws NoSuchMethodException
+	 * @throws SecurityException
+	 */
 	public static void validateCreation(Set<MeshResponse<?>> set, CyclicBarrier barrier)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
 		Set<String> uuids = new HashSet<>();
@@ -174,7 +242,7 @@ public final class MeshTestHelper {
 					uuids.contains(currentUuid));
 			uuids.add(currentUuid);
 		}
-		//		Trx.disableDebug();
+		// Trx.disableDebug();
 		if (barrier != null) {
 			assertFalse("The barrier should not break. Somehow not all threads reached the barrier point.", barrier.isBroken());
 		}
@@ -194,11 +262,9 @@ public final class MeshTestHelper {
 
 	public static String getSimpleTermQuery(String key, String value) throws JSONException {
 		QueryBuilder qb = QueryBuilders.termQuery(key, value);
-		BoolQueryBuilder bqb = QueryBuilders.boolQuery();
-		bqb.must(qb);
 
 		JSONObject request = new JSONObject();
-		request.put("query", new JSONObject(bqb.toString()));
+		request.put("query", new JSONObject(qb.toString()));
 		String query = request.toString();
 		if (log.isDebugEnabled()) {
 			log.debug(query);

@@ -9,51 +9,35 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.8.0-SNAPSHOT</version>
+		<version>0.9.22-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<projectRoot>${project.basedir}/..</projectRoot>
 		<mesh.version>${project.version}</mesh.version>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 	</properties>
 
-	<profiles>
-		<profile>
-			<!-- if ./inclusions.txt is present, use that as the inclusion list. Useful when skipping tests. -->
-			<id>inclusions</id>
-			<activation>
-				<file>
-					<exists>../inclusions.txt</exists>
-				</file>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<includesFile>../inclusions.txt</includesFile>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
-
 	<dependencies>
 		<!-- Internal dependencies -->
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-elasticsearch</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>${project.groupId}</groupId>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-graphql</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-rest-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -66,11 +50,6 @@
 		</dependency>
 
 		<!-- Common Tools -->
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>18.0</version>
-		</dependency>
 		<dependency>
 			<groupId>commons-cli</groupId>
 			<artifactId>commons-cli</artifactId>
@@ -88,6 +67,8 @@
 			<artifactId>${mesh.image.provider}</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+		<!-- Changelog system -->
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-changelog-system</artifactId>
@@ -114,14 +95,6 @@
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
-			<artifactId>vertx-auth-common</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-auth-jwt</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.vertx</groupId>
 			<artifactId>vertx-mail-client</artifactId>
 		</dependency>
 		<dependency>
@@ -134,19 +107,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<dependency>
-			<groupId>org.raml</groupId>
-			<artifactId>raml-parser</artifactId>
-			<version>0.8.14</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-log4j12</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-
-		<!-- <dependency> <groupId>com.kjetland</groupId> <artifactId>mbknor-jackson-jsonschema_2.12</artifactId> <version>1.0.16</version> </dependency> -->
 
 		<!-- Caching -->
 		<dependency>
@@ -158,7 +118,7 @@
 		<!-- Dagger -->
 		<dependency>
 			<groupId>com.google.dagger</groupId>
-			<artifactId>dagger-compiler</artifactId>
+			<artifactId>dagger</artifactId>
 		</dependency>
 
 		<!-- Metrics -->
@@ -174,37 +134,6 @@
 			<version>${ferma.extensions.version}</version>
 		</dependency>
 
-		<!-- Bcrypt -->
-		<dependency>
-			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-core</artifactId>
-			<exclusions>
-				<exclusion>
-					<artifactId>spring-aop</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-beans</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-context</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-expression</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>aopalliance</artifactId>
-					<groupId>aopalliance</groupId>
-				</exclusion>
-				<exclusion>
-					<artifactId>spring-core</artifactId>
-					<groupId>org.springframework</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
@@ -212,6 +141,19 @@
 		</dependency>
 
 		<!-- Test dependencies -->
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>mesh-common</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>mesh-test-common</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>${mesh.database.provider}</artifactId>
@@ -221,25 +163,12 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>1.10.19</version>
 		</dependency>
+
 		<dependency>
-			<groupId>io.vertx</groupId>
-			<artifactId>vertx-unit</artifactId>
-			<version>${vertx.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<version>3.4.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.simpleframework</groupId>
-			<artifactId>simple-xml</artifactId>
-			<version>2.7.1</version>
-			<scope>test</scope>
+			<groupId>com.google.dagger</groupId>
+			<artifactId>dagger-compiler</artifactId>
+			<optional>true</optional>
 		</dependency>
 	</dependencies>
 
@@ -263,7 +192,6 @@
 		</resources>
 
 		<plugins>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jar-plugin</artifactId>
@@ -293,26 +221,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<!-- <argLine>${surefireArgLine}</argLine> -->
-					<skip>${skip.unit.tests}</skip>
-					<forkCount>${surefire.forkcount}</forkCount>
-					<argLine>-Xmx256m -XX:MaxDirectMemorySize=1524m</argLine>
-					<reuseForks>false</reuseForks>
-					<!-- Don't execute more than one test per jvm fork! -->
-					<threadCount>1</threadCount>
-					<threadCountClasses>1</threadCountClasses>
-					<!-- <rerunFailingTestsCount>2</rerunFailingTestsCount> -->
-					<trimStackTrace>false</trimStackTrace>
-					<forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
-					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
-					<!-- <includes> <include>**/*Test.java</include> <include>**/*TestSuite.java</include> </includes> -->
-					<excludes>
-						<exclude>**/*AbstractTest.java</exclude>
-						<exclude>**/*Abstract*.java</exclude>
-						<exclude>**/Abstract*.java</exclude>
-					</excludes>
-				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -332,6 +240,7 @@
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
+					<forceJavacCompilerUse>true</forceJavacCompilerUse>
 				</configuration>
 				<dependencies>
 					<dependency>

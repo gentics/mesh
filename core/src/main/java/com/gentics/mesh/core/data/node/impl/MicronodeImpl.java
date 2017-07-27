@@ -41,7 +41,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.util.CompareUtils;
 import com.gentics.mesh.util.ETag;
 
@@ -59,7 +59,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	@Override
 	public MicronodeResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
 
-		NodeParameters parameters = new NodeParameters(ac);
+		NodeParametersImpl parameters = new NodeParametersImpl(ac);
 		MicronodeResponse restMicronode = new MicronodeResponse();
 		MicroschemaContainerVersion microschemaContainer = getSchemaContainerVersion();
 		if (microschemaContainer == null) {
@@ -260,7 +260,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 
 	@Override
 	public Single<MicronodeResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return MeshInternal.get().database().operateNoTx(() -> {
+		return MeshInternal.get().database().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.field;
 
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -9,6 +8,7 @@ import static org.junit.Assert.fail;
 
 import org.elasticsearch.common.collect.Tuple;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
@@ -27,9 +27,9 @@ import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
-import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 
@@ -40,11 +40,11 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	abstract protected FS createFieldSchema(boolean isRequired);
 
 	protected Tuple<Node, NodeGraphFieldContainer> createNode(boolean isRequiredField, String segmentField) {
-		SchemaContainer container = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerImpl.class);
-		SchemaContainerVersionImpl version = Database.getThreadLocalGraph().addFramedVertex(SchemaContainerVersionImpl.class);
+		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
+		SchemaContainerVersionImpl version = Tx.getActive().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		version.setSchemaContainer(container);
 		container.setLatestVersion(version);
-		Schema schema = new SchemaModel();
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("dummySchema");
 		schema.addField(createFieldSchema(isRequiredField));
 		if (segmentField != null) {
@@ -52,7 +52,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		}
 		version.setSchema(schema);
 		Node node = meshRoot().getNodeRoot().create(user(), version, project());
-		Release release = Database.getThreadLocalGraph().addFramedVertex(ReleaseImpl.class);
+		Release release = Tx.getActive().getGraph().addFramedVertex(ReleaseImpl.class);
 		release.assignSchemaVersion(version);
 		project().getReleaseRoot().addItem(release);
 		NodeGraphFieldContainer nodeContainer = node.createGraphFieldContainer(english(), release, user());
@@ -69,7 +69,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	}
 
 	protected Schema prepareNode(Node node, String listName, String listType) {
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		ListFieldSchema nodeListFieldSchema = new ListFieldSchemaImpl();
 		nodeListFieldSchema.setName(listName);
 		nodeListFieldSchema.setListType(listType);
@@ -95,7 +95,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	}
 
 	protected void invokeUpdateFromRestTestcase(String fieldName, FieldFetcher fetcher, DataProvider createEmpty) {
-		InternalActionContext ac = getMockedInternalActionContext();
+		InternalActionContext ac = mockActionContext();
 		NodeGraphFieldContainer container = createNode(false, null).v2();
 		updateContainer(ac, container, fieldName, null);
 		container.reload();
@@ -146,7 +146,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	protected void invokeUpdateFromRestNullOnCreateRequiredTestcase(String fieldName, FieldFetcher fetcher, boolean expectError) {
 		NodeGraphFieldContainer container = createNode(true, null).v2();
 		try {
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			updateContainer(ac, container, fieldName, null);
 			if (expectError) {
 				fail("The update should have failed but it did not.");

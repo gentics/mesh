@@ -14,6 +14,7 @@ import java.util.Map.Entry;
 
 import org.mockito.Mockito;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
@@ -74,9 +75,9 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
-import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
@@ -84,11 +85,9 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.HttpQueryUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -135,7 +134,7 @@ public final class Mocks {
 		MicroschemaContainer microschemaContainer = mockMicroschemaContainer(microschemaName, user);
 		MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
 		when(micronode.getSchemaContainerVersion()).thenReturn(latestVersion);
-		Microschema microschema = microschemaContainer.getLatestVersion().getSchema();
+		MicroschemaModel microschema = microschemaContainer.getLatestVersion().getSchema();
 		when(micronode.getSchemaContainerVersion().getSchema()).thenReturn(microschema);
 
 		// longitude field
@@ -258,8 +257,8 @@ public final class Mocks {
 		return container;
 	}
 
-	public static Schema mockContentSchema() {
-		Schema schema = new SchemaModel();
+	public static SchemaModel mockContentSchema() {
+		SchemaModel schema = new SchemaModelImpl();
 		schema.setName("content");
 		schema.setDescription("Content schema");
 		schema.setDisplayField("string");
@@ -284,8 +283,8 @@ public final class Mocks {
 		return schema;
 	}
 
-	public static Microschema mockGeolocationMicroschema() {
-		Microschema microschema = new MicroschemaModel();
+	public static MicroschemaModel mockGeolocationMicroschema() {
+		MicroschemaModel microschema = new MicroschemaModelImpl();
 		microschema.setName("geolocation");
 		microschema.setDescription("Microschema for Geolocations");
 
@@ -407,50 +406,12 @@ public final class Mocks {
 		return container;
 	}
 
-	public static InternalActionContext getMockedVoidInternalActionContext(User user) {
-		return getMockedVoidInternalActionContext(null, user);
-	}
-
-	public static InternalActionContext getMockedVoidInternalActionContext(String query, User user) {
-		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, true, user, null));
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
-		return ac;
-	}
-
-	public static InternalActionContext getMockedInternalActionContext() {
-		return getMockedInternalActionContext("", null);
-	}
-
-	public static InternalActionContext getMockedInternalActionContext(String query) {
-		return getMockedInternalActionContext(query, null);
-	}
-
-	public static InternalActionContext getMockedInternalActionContext(User user) {
-		return getMockedInternalActionContext("", user);
-	}
-
-	public static InternalActionContext getMockedInternalActionContext(String query, User user) {
+	public static InternalActionContext getMockedInternalActionContext(String query, User user, Project project) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(getMockedRoutingContext(query, false, user, null));
-		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
+		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, project);
 		return ac;
 	}
-
-	public static RoutingContext getMockedRoutingContext() {
-		return getMockedRoutingContext("", null);
-	}
-
-	public static RoutingContext getMockedRoutingContext(User user) {
-		return getMockedRoutingContext("", user);
-	}
-
-	public static RoutingContext getMockedRoutingContext(String query) {
-		return getMockedRoutingContext(query, null);
-	}
-
-	public static RoutingContext getMockedRoutingContext(String query, User user) {
-		return getMockedRoutingContext(query, false, user, null);
-	}
-
+	
 	public static RoutingContext getMockedRoutingContext(String query, boolean noInternalMap, User user, Project project) {
 		Map<String, Object> map = new HashMap<>();
 		if (noInternalMap) {
@@ -472,7 +433,7 @@ public final class Mocks {
 		});
 		paramMap.entrySet().stream().forEach(entry -> when(request.getParam(entry.getKey())).thenReturn(entry.getValue()));
 		if (user != null) {
-			MeshAuthUserImpl requestUser = Database.getThreadLocalGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
+			MeshAuthUserImpl requestUser = Tx.getActive().getGraph().frameElement(user.getElement(), MeshAuthUserImpl.class);
 			when(rc.user()).thenReturn(requestUser);
 			// JsonObject principal = new JsonObject();
 			// principal.put("uuid", user.getUuid());
@@ -485,7 +446,7 @@ public final class Mocks {
 		when(rc.session()).thenReturn(session);
 
 		if (project != null) {
-			when(rc.get(RouterStorage.PROJECT_CONTEXT_KEY)).thenReturn(project.getName());
+			when(rc.get(RouterStorage.PROJECT_CONTEXT_KEY)).thenReturn(project);
 		}
 		return rc;
 

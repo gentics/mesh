@@ -19,6 +19,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -107,6 +108,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		Endpoint readOne = createEndpoint();
 		readOne.path("/:microschemaUuid");
 		readOne.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
+		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.method(GET);
 		readOne.produces(APPLICATION_JSON);
 		readOne.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Loaded microschema.");
@@ -157,7 +159,8 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaUpdateRequest());
-		endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
+		// endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
+		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Migration message.");
 		endpoint.description("Update the microschema with the given uuid.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);

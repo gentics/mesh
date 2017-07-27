@@ -1,0 +1,50 @@
+{
+	microschema(name: "vcard") {
+		name
+		uuid
+	}
+	role(name: "admin") {
+		name
+		uuid
+	}
+	tagFamily(name: "colors") { 
+		uuid, 
+		name, 
+		creator { firstname, lastname }
+		tags(page: 1, perPage: 1) {
+			elements {
+				name
+			}
+		}
+	}
+	schema(name: "content") { 
+		uuid
+		name
+	}
+	node(path:"/Neuigkeiten/News Overview.de.html") {
+		# [ $.data.node.uuid=<is-uuid>]
+		uuid
+		node(lang: "en") {
+			# [ $.data.node.node.language=en]
+			language
+		}
+		availableLanguages
+		project { 
+			name 
+			rootNode { uuid }
+		}
+		created
+		creator {
+			username
+			groups(page:1, perPage:1) {
+				elements { 
+					name
+					roles { 
+						elements { name } 
+					}
+				}
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

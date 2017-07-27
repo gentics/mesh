@@ -14,6 +14,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
+import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -65,11 +67,12 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.tag.TagListUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.rest.tag.TagUpdateRequest;
+import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
+import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.rest.user.UserTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.core.verticle.admin.AdminHandler;
 import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
@@ -86,9 +89,9 @@ import com.gentics.mesh.core.verticle.tagfamily.TagFamilyCrudHandler;
 import com.gentics.mesh.core.verticle.user.UserCrudHandler;
 import com.gentics.mesh.core.verticle.utility.UtilityHandler;
 import com.gentics.mesh.core.verticle.webroot.WebRootHandler;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.impl.MeshLocalRequestImpl;
@@ -193,6 +196,13 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<NodeResponse> createNode(String uuid, String projectName, NodeCreateRequest nodeCreateRequest,
+			ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public MeshRequest<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest,
 			ParameterProvider... parameters) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
@@ -274,7 +284,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		ac.setProject(projectName);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
-	
+
 	@Override
 	public MeshRequest<TagListResponse> updateTagsForNode(String projectName, String nodeUuid, TagListUpdateRequest request,
 			ParameterProvider... parameters) {
@@ -366,6 +376,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		ac.setPayloadObject(request);
 		projectCrudHandler.handleCreate(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> createProject(String uuid, ProjectCreateRequest request) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -573,6 +589,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<GroupResponse> createGroup(String uuid, GroupCreateRequest createRequest) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest request) {
 		LocalActionContextImpl<GroupResponse> ac = createContext(GroupResponse.class);
 		ac.setPayloadObject(request);
@@ -644,6 +666,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<UserResponse> createUser(String uuid, UserCreateRequest request, ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public MeshRequest<UserResponse> updateUser(String uuid, UserUpdateRequest request, ParameterProvider... parameters) {
 		LocalActionContextImpl<UserResponse> ac = createContext(UserResponse.class, parameters);
 		ac.setPayloadObject(request);
@@ -692,6 +720,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		ac.setPayloadObject(request);
 		roleCrudHandler.handleCreate(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<RoleResponse> createRole(String uuid, RoleCreateRequest request) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -973,7 +1007,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public void eventbus(Handler<WebSocket> wsConnect) {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
@@ -984,6 +1017,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRestClient setAPIKey(String apiKey) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1151,7 +1190,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<UserTokenResponse> getUserToken(String userUuid) {
+	public MeshRequest<UserResetTokenResponse> getUserResetToken(String userUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -1160,6 +1199,66 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<String> getRAML() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public MeshRequest<GraphQLResponse> graphql(String projectName, GraphQLRequest request, ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeBackup() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeExport() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeRestore() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeImport() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRestClient enableAnonymousAccess() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	@Override
+	public MeshRestClient disableAnonymousAccess() {
+		// TODO Auto-generated method stub
+		return this;
+	}
+
+	@Override
+	public MeshRestClient setAuthenticationProvider(JWTAuthentication authentication) {
+		// TODO Auto-generated method stub
+		return this;
 	}
 
 }

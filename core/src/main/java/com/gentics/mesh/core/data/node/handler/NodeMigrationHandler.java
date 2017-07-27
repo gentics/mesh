@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.script.ScriptEngine;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -43,25 +44,29 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.core.verticle.node.NodeMigrationStatus;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
 
-import io.vertx.rxjava.core.buffer.Buffer;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import jdk.nashorn.api.scripting.ClassFilter;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 import rx.Completable;
+import rx.exceptions.CompositeException;
 
 /**
  * Handler for node migrations after schema updates
  */
 @SuppressWarnings("restriction")
 public class NodeMigrationHandler extends AbstractHandler {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeMigrationHandler.class);
 
 	private BinaryFieldHandler nodeFieldAPIHandler;
 
@@ -77,12 +82,12 @@ public class NodeMigrationHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Script engine factory
+	 * Script engine factory.
 	 */
 	private NashornScriptEngineFactory factory = new NashornScriptEngineFactory();
 
 	/**
-	 * Migrate all nodes of a release referencing the given schema container to the latest version of the schema
+	 * Migrate all nodes of a release referencing the given schema container to the latest version of the schema.
 	 *
 	 * @param project
 	 *            Specific project to handle
@@ -95,101 +100,49 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 * @param statusMBean
 	 *            status MBean
 	 */
-	public Completable migrateNodes(Project project, Release release, SchemaContainerVersion fromVersion,
-			SchemaContainerVersion toVersion, NodeMigrationStatus statusMBean) {
-		String releaseUuid = db.noTx(release::getUuid);
+	public Completable migrateNodes(Project project, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
+			NodeMigrationStatus statusMBean) {
+		String releaseUuid = db.tx(release::getUuid);
 
-		// get the nodes, that need to be transformed
-		List<? extends NodeGraphFieldContainer> fieldContainers = db
-				.noTx(() -> fromVersion.getFieldContainers(releaseUuid));
+		// Get the containers of nodes, that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
+		// versions.
+		List<? extends NodeGraphFieldContainer> fieldContainers = db.tx(() -> fromVersion.getFieldContainers(releaseUuid));
 
-		// no field containers -> no nodes, migration is done
+		// No field containers -> no nodes, migration is done
 		if (fieldContainers.isEmpty()) {
 			return Completable.complete();
+		} else {
+			log.info("Found {" + fieldContainers.size() + "} containers which still make use of schema {" + fromVersion.getName() + "@"
+					+ fromVersion.getVersion() + "}");
 		}
 
 		if (statusMBean != null) {
 			statusMBean.setTotalNodes(fieldContainers.size());
 		}
 
-		// collect the migration scripts
+		// Prepare the migration - Collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
 		Set<String> touchedFields = new HashSet<>();
-		try (NoTx noTrx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			prepareMigration(fromVersion, migrationScripts, touchedFields);
 		} catch (IOException e) {
 			return Completable.error(e);
 		}
-		SearchQueueBatch batch = searchQueue.create();
-
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
 		ac.setRelease(release);
 
-		Schema newSchema = toVersion.getSchema();
+		SchemaModel newSchema = toVersion.getSchema();
+		List<Completable> batches = new ArrayList<>();
+		List<Exception> errorsDetected = new ArrayList<>();
 
 		// Iterate over all containers and invoke a migration for each one
 		for (NodeGraphFieldContainer container : fieldContainers) {
-			Exception e = db.tx(() -> {
-				try {
-					Node node = container.getParentNode();
-					String languageTag = container.getLanguage().getLanguageTag();
-					ac.getNodeParameters().setLanguages(languageTag);
-					ac.getVersioningParameters().setVersion("draft");
-
-					boolean publish = false;
-					if (container.isPublished(releaseUuid)) {
-						publish = true;
-					} else {
-						// check whether there is another published version
-						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid,
-								PUBLISHED);
-						if (oldPublished != null) {
-							ac.getVersioningParameters().setVersion("published");
-							NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
-							restModel.getSchema().setVersion(newSchema.getVersion());
-
-							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(
-									oldPublished.getLanguage(), release, oldPublished.getEditor(), oldPublished);
-							migrated.setVersion(oldPublished.getVersion().nextPublished());
-							node.setPublished(migrated, releaseUuid);
-							migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts,
-									NodeUpdateRequest.class);
-
-							batch.store(migrated, releaseUuid, PUBLISHED, false);
-
-							ac.getVersioningParameters().setVersion("draft");
-						}
-					}
-
-					NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
-
-					// Update the schema version. Otherwise deserialisation of the JSON will fail later on.
-					restModel.getSchema().setVersion(newSchema.getVersion());
-
-					// Invoke the migration
-					NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release,
-							container.getEditor(), container);
-					if (publish) {
-						migrated.setVersion(container.getVersion().nextPublished());
-						node.setPublished(migrated, releaseUuid);
-					}
-					migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts,
-							NodeUpdateRequest.class);
-
-					batch.store(node, releaseUuid, DRAFT, false);
-					if (publish) {
-						batch.store(node, releaseUuid, PUBLISHED, false);
-					}
-
-					return null;
-				} catch (Exception e1) {
-					return e1;
-				}
-			});
-
-			if (e != null) {
-				return Completable.error(e);
+			SearchQueueBatch batch = migrateContainer(ac, container, releaseUuid, toVersion, migrationScripts, release, newSchema, errorsDetected,
+					touchedFields);
+			// Process the search queue batch in order to update the search index
+			if (batch != null) {
+				batches.add(batch.processAsync());
 			}
 
 			if (statusMBean != null) {
@@ -197,8 +150,100 @@ public class NodeMigrationHandler extends AbstractHandler {
 			}
 		}
 
-		// Process the search queue batch in order to update the search index
-		return batch.processAsync();
+		Completable result = Completable.complete();
+		if (!errorsDetected.isEmpty()) {
+			result = Completable.error(new CompositeException(errorsDetected));
+		}
+
+		return Completable.merge(batches).andThen(result);
+	}
+
+	/**
+	 * Migrates the given container.
+	 * 
+	 * @param ac
+	 * @param container
+	 * @param releaseUuid
+	 * @param toVersion
+	 * @param migrationScripts
+	 * @param release
+	 * @param newSchema
+	 * @param errorsDetected
+	 * @param touchedFields
+	 * @return
+	 */
+	private SearchQueueBatch migrateContainer(NodeMigrationActionContextImpl ac, NodeGraphFieldContainer container, String releaseUuid,
+			SchemaContainerVersion toVersion, List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Release release,
+			SchemaModel newSchema, List<Exception> errorsDetected, Set<String> touchedFields) {
+		SearchQueueBatch batch = db.tx((tx) -> {
+			SearchQueueBatch sqb = searchQueue.create();
+
+			try {
+				Node node = container.getParentNode();
+				String languageTag = container.getLanguage().getLanguageTag();
+				ac.getNodeParameters().setLanguages(languageTag);
+				ac.getVersioningParameters().setVersion("draft");
+
+				// Check whether the container is published in the given release. A migration is always scoped to a specific release.
+				boolean publish = false;
+				if (container.isPublished(releaseUuid)) {
+					publish = true;
+				} else {
+					// Check whether there is any other published container
+					NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, PUBLISHED);
+
+					// We only need to migrate the container if the container's schema version is also "old"
+					boolean hasSameOldSchemaVersion = oldPublished != null
+							&& oldPublished.getSchemaContainerVersion().getId().equals(container.getSchemaContainerVersion().getId());
+					if (oldPublished != null && hasSameOldSchemaVersion) {
+						ac.getVersioningParameters().setVersion("published");
+						NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
+						restModel.getSchema().setVersion(newSchema.getVersion());
+
+						NodeGraphFieldContainer migrated = node.createGraphFieldContainer(oldPublished.getLanguage(), release,
+								oldPublished.getEditor(), oldPublished);
+						migrated.setVersion(oldPublished.getVersion().nextPublished());
+						node.setPublished(migrated, releaseUuid);
+						migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
+						sqb.store(migrated, releaseUuid, PUBLISHED, false);
+
+						ac.getVersioningParameters().setVersion("draft");
+					}
+				}
+
+				NodeResponse restModel = node.transformToRestSync(ac, 0, languageTag);
+
+				// Update the schema version. Otherwise deserialisation of the JSON will fail later on.
+				restModel.getSchema().setVersion(newSchema.getVersion());
+
+				// Actual migration - Create the new version
+				NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release, container.getEditor(), container);
+
+				// Ensure that the migrated version is also published since the old version was
+				if (publish) {
+					migrated.setVersion(container.getVersion().nextPublished());
+					node.setPublished(migrated, releaseUuid);
+				}
+
+				// Pass the new version through the migration scripts and update the version
+				migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
+
+				// Ensure the search index is updated accordingly
+				sqb.store(node, releaseUuid, DRAFT, false);
+				if (publish) {
+					sqb.store(node, releaseUuid, PUBLISHED, false);
+				}
+				tx.success();
+				return sqb;
+			} catch (Exception e1) {
+				log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
+				errorsDetected.add(e1);
+				tx.failure();
+				return null;
+			}
+		});
+		return batch;
+
 	}
 
 	/**
@@ -218,11 +263,10 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 */
 	public Completable migrateMicronodes(Project project, Release release, MicroschemaContainerVersion fromVersion,
 			MicroschemaContainerVersion toVersion, NodeMigrationStatus statusMBean) {
-		String releaseUuid = db.noTx(release::getUuid);
+		String releaseUuid = db.tx(release::getUuid);
 
 		// get the containers, that need to be transformed
-		List<? extends NodeGraphFieldContainer> fieldContainers = db
-				.noTx(() -> fromVersion.getFieldContainers(release.getUuid()));
+		List<? extends NodeGraphFieldContainer> fieldContainers = db.tx(() -> fromVersion.getFieldContainers(release.getUuid()));
 
 		// no field containers, migration is done
 		if (fieldContainers.isEmpty()) {
@@ -236,20 +280,22 @@ public class NodeMigrationHandler extends AbstractHandler {
 		// collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
 		Set<String> touchedFields = new HashSet<>();
-		try (NoTx noTrx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			prepareMigration(fromVersion, migrationScripts, touchedFields);
 		} catch (IOException e) {
 			return Completable.error(e);
 		}
 
-		SearchQueueBatch batch = searchQueue.create();
-
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
 		ac.setRelease(release);
 
+		List<Completable> batches = new ArrayList<>();
+		List<Exception> errorsDetected = new ArrayList<>();
+
 		for (NodeGraphFieldContainer container : fieldContainers) {
-			Exception e = db.tx(() -> {
+			SearchQueueBatch batch = db.tx(() -> {
+				SearchQueueBatch sqb = searchQueue.create();
 				try {
 					Node node = container.getParentNode();
 					String languageTag = container.getLanguage().getLanguageTag();
@@ -261,30 +307,26 @@ public class NodeMigrationHandler extends AbstractHandler {
 						publish = true;
 					} else {
 						// check whether there is another published version
-						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid,
-								PUBLISHED);
+						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, PUBLISHED);
 						if (oldPublished != null) {
 							ac.getVersioningParameters().setVersion("published");
 
 							// clone the field container
-							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(
-									oldPublished.getLanguage(), release, oldPublished.getEditor(), oldPublished);
+							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(oldPublished.getLanguage(), release,
+									oldPublished.getEditor(), oldPublished);
 
 							migrated.setVersion(oldPublished.getVersion().nextPublished());
 							node.setPublished(migrated, releaseUuid);
 
 							// migrate
-							migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields,
-									migrationScripts);
-
-							batch.store(migrated, releaseUuid, PUBLISHED, false);
-
+							migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
+							sqb.store(migrated, releaseUuid, PUBLISHED, false);
 							ac.getVersioningParameters().setVersion("draft");
 						}
 					}
 
-					NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release,
-							container.getEditor(), container);
+					NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release, container.getEditor(),
+							container);
 					if (publish) {
 						migrated.setVersion(container.getVersion().nextPublished());
 						node.setPublished(migrated, releaseUuid);
@@ -293,19 +335,21 @@ public class NodeMigrationHandler extends AbstractHandler {
 					// migrate
 					migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
 
-					batch.store(node, releaseUuid, DRAFT, false);
+					sqb.store(node, releaseUuid, DRAFT, false);
 					if (publish) {
-						batch.store(node, releaseUuid, PUBLISHED, false);
+						sqb.store(node, releaseUuid, PUBLISHED, false);
 					}
-
-					return null;
+					return sqb;
 				} catch (Exception e1) {
-					return e1;
+					log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
+					errorsDetected.add(e1);
+					return null;
 				}
 			});
 
-			if (e != null) {
-				return Completable.error(e);
+			// Process the search queue batch in order to update the search index
+			if (batch != null) {
+				batches.add(batch.processAsync());
 			}
 
 			if (statusMBean != null) {
@@ -313,7 +357,12 @@ public class NodeMigrationHandler extends AbstractHandler {
 			}
 		}
 
-		return Completable.complete();
+		Completable result = Completable.complete();
+		if (!errorsDetected.isEmpty()) {
+			result = Completable.error(new CompositeException(errorsDetected));
+		}
+
+		return Completable.merge(batches).andThen(result);
 	}
 
 	/**
@@ -324,7 +373,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 * @return Completable which will be invoked once the migration has completed
 	 */
 	public Completable migrateNodes(Release newRelease) {
-		Release oldRelease = db.noTx(() -> {
+		Release oldRelease = db.tx(() -> {
 			if (newRelease.isMigrated()) {
 				throw error(BAD_REQUEST, "Release {" + newRelease.getName() + "} is already migrated");
 			}
@@ -335,41 +384,38 @@ public class NodeMigrationHandler extends AbstractHandler {
 			}
 
 			if (!old.isMigrated()) {
-				throw error(BAD_REQUEST, "Cannot migrate nodes to release {" + newRelease.getName()
-						+ "}, because previous release {" + old.getName() + "} is not fully migrated yet.");
+				throw error(BAD_REQUEST, "Cannot migrate nodes to release {" + newRelease.getName() + "}, because previous release {" + old.getName()
+						+ "} is not fully migrated yet.");
 			}
 
 			return old;
 		});
 
-		String oldReleaseUuid = db.noTx(() -> oldRelease.getUuid());
-		String newReleaseUuid = db.noTx(() -> newRelease.getUuid());
-		List<? extends Node> nodes = db.noTx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
-
-		SearchQueueBatch batch = searchQueue.create();
+		String oldReleaseUuid = db.tx(() -> oldRelease.getUuid());
+		String newReleaseUuid = db.tx(() -> newRelease.getUuid());
+		List<? extends Node> nodes = db.tx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
+		List<Completable> batches = new ArrayList<>();
 		for (Node node : nodes) {
-			db.tx(() -> {
+			SearchQueueBatch sqb = db.tx(() -> {
 				if (!node.getGraphFieldContainers(newRelease, INITIAL).isEmpty()) {
 					return null;
 				}
 				node.getGraphFieldContainers(oldRelease, DRAFT).stream().forEach(container -> {
-					GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
-							GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
 					initialEdge.setType(INITIAL);
 					initialEdge.setReleaseUuid(newReleaseUuid);
 
-					GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
-							GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
 					draftEdge.setType(DRAFT);
 					draftEdge.setReleaseUuid(newReleaseUuid);
 				});
+				SearchQueueBatch batch = searchQueue.create();
 				batch.store(node, newReleaseUuid, DRAFT, false);
 
 				node.getGraphFieldContainers(oldRelease, PUBLISHED).stream().forEach(container -> {
-					GraphFieldContainerEdgeImpl edge = node.addFramedEdge(HAS_FIELD_CONTAINER, container,
-							GraphFieldContainerEdgeImpl.class);
+					GraphFieldContainerEdgeImpl edge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
 					edge.setLanguageTag(container.getLanguage().getLanguageTag());
 					edge.setType(PUBLISHED);
 					edge.setReleaseUuid(newReleaseUuid);
@@ -383,8 +429,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 				// migrate tags
 				node.getTags(oldRelease).forEach(tag -> node.addTag(tag, newRelease));
-				return null;
+				return batch;
 			});
+			batches.add(sqb.processAsync());
 		}
 
 		db.tx(() -> {
@@ -392,8 +439,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 			return null;
 		});
 
-		// Process the search queue batch in order to update the search index
-		return batch.processAsync();
+		return Completable.merge(batches);
 	}
 
 	/**
@@ -414,18 +460,16 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 * @param clazz
 	 * @throws Exception
 	 */
-	protected <T extends FieldContainer> void migrate(NodeMigrationActionContextImpl ac, GraphFieldContainer container,
-			RestModel restModel, GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> newVersion, Set<String> touchedFields,
+	protected <T extends FieldContainer> void migrate(NodeMigrationActionContextImpl ac, GraphFieldContainer container, RestModel restModel,
+			GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> newVersion, Set<String> touchedFields,
 			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Class<T> clazz) throws Exception {
 		// collect the files for all binary fields (keys are the sha512sums,
 		// values are filepaths to the binary files)
-		Map<String, String> filePaths = container.getFields().stream().filter(f -> f instanceof BinaryGraphField)
-				.map(f -> (BinaryGraphField) f).collect(Collectors.toMap(BinaryGraphField::getSHA512Sum,
-						BinaryGraphField::getFilePath, (existingPath, newPath) -> existingPath));
+		Map<String, String> filePaths = container.getFields().stream().filter(f -> f instanceof BinaryGraphField).map(f -> (BinaryGraphField) f)
+				.collect(Collectors.toMap(BinaryGraphField::getSHA512Sum, BinaryGraphField::getFilePath, (existingPath, newPath) -> existingPath));
 
 		// remove all touched fields (if necessary, they will be readded later)
-		container.getFields().stream().filter(f -> touchedFields.contains(f.getFieldKey()))
-				.forEach(f -> f.removeField(container));
+		container.getFields().stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(f -> f.removeField(container));
 
 		String nodeJson = JsonUtil.toJson(restModel);
 
@@ -460,11 +504,9 @@ public class NodeMigrationHandler extends AbstractHandler {
 		// create a map containing fieldnames (as keys) and
 		// sha512sums of the supposedly stored binary contents
 		// of all binary fields
-		Map<String, String> existingBinaryFields = newVersion.getSchema().getFields().stream()
-				.filter(f -> "binary".equals(f.getType()))
-				.map(f -> Tuple.tuple(f.getName(), transformedRestModel.getFields().getBinaryField(f.getName())))
-				.filter(t -> t.v2() != null).filter(t -> t.v2().getSha512sum() != null)
-				.collect(Collectors.toMap(t -> t.v1(), t -> t.v2().getSha512sum()));
+		Map<String, String> existingBinaryFields = newVersion.getSchema().getFields().stream().filter(f -> "binary".equals(f.getType()))
+				.map(f -> Tuple.tuple(f.getName(), transformedRestModel.getFields().getBinaryField(f.getName()))).filter(t -> t.v2() != null)
+				.filter(t -> t.v2().getSha512sum() != null).collect(Collectors.toMap(t -> t.v1(), t -> t.v2().getSha512sum()));
 
 		// check for every binary field in the migrated node,
 		// whether the binary file is present, if not, copy it
@@ -475,11 +517,8 @@ public class NodeMigrationHandler extends AbstractHandler {
 
 			BinaryGraphField binaryField = container.getBinary(fieldName);
 			if (binaryField != null && !binaryField.getFile().exists() && filePaths.containsKey(sha512Sum)) {
-				Buffer buffer = Buffer
-						.newInstance(Mesh.vertx().fileSystem().readFileBlocking(filePaths.get(sha512Sum)));
-				nodeFieldAPIHandler
-						.hashAndStoreBinaryFile(buffer, binaryField.getUuid(), binaryField.getSegmentedPath())
-						.toBlocking().value();
+				Buffer buffer = Mesh.vertx().fileSystem().readFileBlocking(filePaths.get(sha512Sum));
+				nodeFieldAPIHandler.hashAndStoreBinaryFile(buffer, binaryField.getUuid(), binaryField.getSegmentedPath());
 				binaryField.setSHA512Sum(sha512Sum);
 			}
 		});
@@ -533,8 +572,7 @@ public class NodeMigrationHandler extends AbstractHandler {
 				if (newMicronode.getSchemaContainerVersion().equals(fromVersion)) {
 					// transform to rest and migrate
 					MicronodeResponse restModel = newMicronode.transformToRestSync(ac, 0);
-					migrate(ac, newMicronode, restModel, toVersion, touchedFields, migrationScripts,
-							MicronodeResponse.class);
+					migrate(ac, newMicronode, restModel, toVersion, touchedFields, migrationScripts, MicronodeResponse.class);
 				}
 			}
 		}
@@ -552,14 +590,12 @@ public class NodeMigrationHandler extends AbstractHandler {
 	 * @throws IOException
 	 */
 	protected void prepareMigration(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> fromVersion,
-			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Set<String> touchedFields)
-			throws IOException {
+			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Set<String> touchedFields) throws IOException {
 		SchemaChange<?> change = fromVersion.getNextChange();
 		while (change != null) {
 			String migrationScript = change.getMigrationScript();
 			if (migrationScript != null) {
-				migrationScript = migrationScript
-						+ "\nnode = JSON.stringify(migrate(JSON.parse(node), fieldname, convert));";
+				migrationScript = migrationScript + "\nnode = JSON.stringify(migrate(JSON.parse(node), fieldname, convert));";
 				migrationScripts.add(Tuple.tuple(migrationScript, change.getMigrationScriptContext()));
 			}
 

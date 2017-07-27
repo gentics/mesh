@@ -1,21 +1,38 @@
 package com.gentics.mesh.etc.config;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.doc.GenerateDocumentation;
 
 /**
  * Mesh Http Server configuration POJO.
  */
+@GenerateDocumentation
 public class HttpServerConfig {
 
 	public static final String DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN = "";
 
+	public static final boolean DEFAULT_CORS_ALLOW_CREDENTIALS = false;
+
 	public static final String HTTP_PORT_KEY = "httpPort";
+
 	public static final int DEFAULT_HTTP_PORT = 8080;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server port.")
 	private int port = DEFAULT_HTTP_PORT;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configured CORS allowed origin pattern. You can specify a regex to include multiple hosts if you want to do so.")
 	private String corsAllowedOriginPattern = DEFAULT_CORS_ALLOWED_ORIGIN_PATTERN;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether credentials are allowed to be passed along using CORS requests.")
+	private Boolean corsAllowCredentials = DEFAULT_CORS_ALLOW_CREDENTIALS;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether CORS handling should be enabled.")
 	private Boolean enableCors = false;
 
 	public HttpServerConfig() {
@@ -35,9 +52,11 @@ public class HttpServerConfig {
 	 * 
 	 * @param port
 	 *            Http server port
+	 * @return Fluent API
 	 */
-	public void setPort(int port) {
+	public HttpServerConfig setPort(int port) {
 		this.port = port;
+		return this;
 	}
 
 	/**
@@ -50,13 +69,15 @@ public class HttpServerConfig {
 	}
 
 	/**
-	 * Set the flag which will enable cors.
+	 * Set the flag which will enable CORS.
 	 * 
 	 * @param enableCors
 	 *            CORS enabled flag
+	 * @return Fluent API
 	 */
-	public void setEnableCors(Boolean enableCors) {
+	public HttpServerConfig setEnableCors(Boolean enableCors) {
 		this.enableCors = enableCors;
+		return this;
 	}
 
 	/**
@@ -83,9 +104,31 @@ public class HttpServerConfig {
 	 * 
 	 * @param corsAllowedOriginPattern
 	 *            CORS allowed pattern
+	 * @return Fluent API
 	 */
-	public void setCorsAllowedOriginPattern(String corsAllowedOriginPattern) {
+	public HttpServerConfig setCorsAllowedOriginPattern(String corsAllowedOriginPattern) {
 		this.corsAllowedOriginPattern = corsAllowedOriginPattern;
+		return this;
+	}
+
+	/**
+	 * Return the CORS allow credentials flag.
+	 * 
+	 * @return
+	 */
+	public boolean getCorsAllowCredentials() {
+		return corsAllowCredentials;
+	}
+
+	/**
+	 * Set the CORS allow credentials flag.
+	 * 
+	 * @param allowCredentials
+	 * @return Fluent API
+	 */
+	public HttpServerConfig setCorsAllowCredentials(boolean allowCredentials) {
+		this.corsAllowCredentials = allowCredentials;
+		return this;
 	}
 
 }

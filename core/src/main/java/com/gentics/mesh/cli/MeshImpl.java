@@ -227,7 +227,7 @@ public class MeshImpl implements Mesh {
 	 * @return
 	 */
 	private String getVertxVersion() {
-		return new VersionCommand().getVersion();
+		return VersionCommand.getVersion();
 	}
 
 	private static String infoLine(String text) {

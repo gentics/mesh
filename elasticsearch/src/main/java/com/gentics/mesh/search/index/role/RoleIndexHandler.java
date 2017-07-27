@@ -68,7 +68,8 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	@Override
 	protected RootVertex<Role> getRootVertex() {
-		return boot.meshRoot().getRoleRoot();
+		return boot.meshRoot()
+				.getRoleRoot();
 	}
 
 }

@@ -4,9 +4,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
+import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * Graph domain model interface for a role.
@@ -82,6 +84,15 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	 * @return
 	 */
 	List<? extends Group> getGroups();
+
+	/**
+	 * Return a page of groups to which this role was assigned.
+	 * 
+	 * @param user
+	 * @param params
+	 * @return
+	 */
+	Page<? extends Group> getGroups(User user, PagingParameters params);
 
 	/**
 	 * Check whether the role grants the given permission on the given element.

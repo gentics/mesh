@@ -238,10 +238,10 @@ public class SchemaComparatorSchemaTest extends AbstractMeshTest {
 		Schema schemaA = FieldUtil.createMinimalValidSchema();
 		Schema schemaB = FieldUtil.createMinimalValidSchema();
 		schemaA.setName("test123");
-		schemaB.setName("test123-changed");
+		schemaB.setName("test123_changed");
 		List<SchemaChangeModel> changes = comparator.diff(schemaA, schemaB);
 		assertThat(changes).hasSize(1);
-		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(NAME_KEY, "test123-changed");
+		assertThat(changes.get(0)).is(UPDATESCHEMA).hasProperty(NAME_KEY, "test123_changed");
 	}
 
 }

@@ -9,69 +9,66 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh-services</artifactId>
-		<version>0.8.0-SNAPSHOT</version>
+		<version>0.9.22-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<projectRoot>${project.basedir}/../..</projectRoot>
+		<imgscalr-lib.version>4.2</imgscalr-lib.version>
+		<tika.version>0.6</tika.version>
+		<twelvemonkeys.version>3.3.2</twelvemonkeys.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-common</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.imgscalr</groupId>
 			<artifactId>imgscalr-lib</artifactId>
-			<version>4.2</version>
+			<version>${imgscalr-lib.version}</version>
 			<type>jar</type>
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.apache.tika</groupId>
+			<artifactId>tika-parsers</artifactId>
+			<version>${tika.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-jpeg</artifactId>
-			<version>3.2</version>
+			<version>${twelvemonkeys.version}</version>
 		</dependency>
-		<!-- <dependency> <groupId>com.twelvemonkeys.imageio</groupId> <artifactId>imageio-bmp</artifactId> <version>3.2</version> </dependency> -->
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-tiff</artifactId>
-			<version>3.2</version>
+			<version>${twelvemonkeys.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-icns</artifactId>
-			<version>3.2</version>
+			<version>${twelvemonkeys.version}</version>
+		</dependency>
+
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-test-common</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
-
-	<profiles>
-		<profile>
-			<!-- if ./inclusions.txt is present, use that as the inclusion list. Useful when skipping tests. -->
-			<id>inclusions</id>
-			<activation>
-				<file>
-					<exists>../../inclusions.txt</exists>
-				</file>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<includesFile>../../inclusions.txt</includesFile>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 
 	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<skip>${skip.unit.tests}</skip>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

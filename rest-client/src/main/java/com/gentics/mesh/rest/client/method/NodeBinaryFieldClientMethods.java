@@ -2,8 +2,8 @@ package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
 import com.gentics.mesh.rest.client.MeshRequest;
 
 import io.vertx.core.buffer.Buffer;
@@ -54,7 +54,7 @@ public interface NodeBinaryFieldClientMethods {
 	 * @param projectName
 	 *            project name
 	 * @param nodeUuid
-	 *            uuid of hte node
+	 *            UUID of the node
 	 * @param languageTag
 	 *            language tag
 	 * @param version

@@ -1,30 +1,291 @@
+:icons: font
+
 = Gentics Mesh Changelog
 
-== 0.8.0 (Pending)
+== 0.9.21 (26.07.2017)
 
-* __[Enhancement]__ Node Tag Endpoint
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.24
+
+icon:check[] Core: Fixed handling of ISO8601 dates which did not contain UTC flag or time offset value. Such dates could previously not be stored. Note that ISO8601 UTC dates will always be returned.
+
+icon:check[] GraphQL: URL handling of the GraphQL browser has been improved. Previously very long queries lead to very long query parameters which could not be handled correctly. The query browser will now use the anchor part of the URL to store the query.
+
+icon:check[] Migration: The error handling within the schema migration code has been improved.
+
+icon:plus[] GraphQL: It is now possible to load the schema version of a node using the ```schema``` field.
+
+icon:check[] Versioning: Older Gentics Mesh instances (>0.8.x) were lacking some draft information. This information has been added now.
+
+== 0.9.20 (21.07.2017)
+
+icon:plus[] License: The license was changed to Apache License 2.0
+
+icon:plus[] Schema Versions: The schema version field type was changed from `number` to `string`. It is now also possible to load schema and microschema versions using the `?version` query parameter.
+
+icon:check[] Search: The error reporting for failing queries has been improved.
+
+icon:check[] Search: The total page count value has been fixed for queries which were using `?perPage=0`.
+
+== 0.9.19 (07.07.2017)
+
+icon:check[] UI: Fixed adding node to node list.
+
+icon:check[] Docs: Various endpoints were not included in the generated RAML. This has been fixed now.
+
+== 0.9.18 (30.06.2017)
+
+icon:plus[] Demo: Fixed demo data uuids.
+
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.22
+
+icon:plus[] Core: The Ferma OGM library was updated to version 2.2.2
+
+== 0.9.17 (21.06.2017)
+
+icon:check[] UI: A bug which prevented micronodes which contained empty node field from being saved was fixed.
+
+icon:check[] Core: Issues within the error reporting mechanism have been fixed.
+
+icon:plus[] Server: The Mesh UI was added to the mesh-server jar.
+
+icon:plus[] Core: The internal transaction handling has been refactored.
+
+icon:plus[] Core: The Vert.x core dependency was updated to version 3.4.2
+
+icon:plus[] API: The version field of node responses and publish status responses are now strings instead of objects containing the version number.
+
+== 0.9.16 (19.06.2017)
+
+icon:plus[] Documentation: Huge documentation update.
+
+== 0.9.15 (19.06.2017)
+
+icon:check[] GraphQL: Fixed loading tags for nodes.
+
+== 0.9.14 (09.06.2017)
+
+icon:check[] WebRoot: Bugs within the permission handling have been fixed. It is now possible to load nodes using only the *read_published* permission. This permission was previously ignored.
+
+icon:check[] GraphQL: An introspection bug which prevented graphiql browser autocompletion from working correctly has been fixed. The bug did not occur on systems which already used microschemas. 
+
+== 0.9.13 (08.06.2017)
+
+icon:check[] UI: The UI was updated. An file upload related bug was fixed.
+
+icon:check[] UI: Schema & Microschema description is no longer a required field.
+
+== 0.9.12 (08.06.2017)
+
+icon:check[] GraphQL: Fixed handling of node lists within micronodes.
+
+icon:check[] GraphQL: Fixed Micronode type not found error.
+
+icon:check[] GraphQL: Fixed GraphQL API for system which do not contain any microschemas.
+
+icon:check[] GraphQL: Fixed permission handling and filtering when dealing with node children.
+
+== 0.9.11 (07.06.2017)
+
+icon:plus[] GraphQL: The GraphQL library was updated. Various GraphQL related issues have been fixed.
+
+== 0.9.10 (29.05.2017)
+
+icon:plus[] Schemas: The default content and folder schemas have been updated. The `fileName` and `folderName` fields have been renamed to `slug`. The `name` field was removed from the content schema and a `teaser` field has been added.
+These changes are optional and thus not automatically applied to existing installations.
+
+icon:plus[] Demo: The `folderName` and `fileName` fields have been renamed to `slug`. This change only affects new demo installations.
+
+
+icon:check[] GraphQL: The language fallback handling was overhauled. The default language will no longer be automatically be append to the list of fallback languages. This means that loading nodes will only return nodes in those languages which have been specified by the `lang` argument.
+
+icon:check[] GraphQL: The `path` handling for nodes within node lists has been fixed. Previously it was not possible to retrieve the `path` and various other fields for those nodes.
+
+== 0.9.9 (19.05.2017)
+
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.20.
+
+icon:plus[] API: The following endpoints were moved:
+
+ * `/api/v1/admin/backup`  ⟶  `/api/v1/admin/graphdb/backup`
+ * `/api/v1/admin/export`  ⟶  `/api/v1/admin/graphdb/export`
+ * `/api/v1/admin/import`  ⟶  `/api/v1/admin/graphdb/import`
+ * `/api/v1/admin/restore` ⟶  `/api/v1/admin/graphdb/restore`
+
+icon:plus[] Core: Added `/api/v1/:projectName/releases/:releaseUuid/migrateMicroschemas` endpoint which can be used to resume previously unfinished micronode migrations.
+
+icon:plus[] Performance: The startup performance has been increased when dealing with huge datasets.
+
+icon:plus[] Auth: The anonymous authentication mechanism can now also be disabled by setting the `Anonymous-Authentication: disable` header. This is useful for client applications which don't need or want anonymous authentication. The Gentics Mesh REST client has been enhanced accordingly.
+
+icon:plus[] Core: The read performance of node lists has been improved.
+
+icon:plus[] Core: The write performance of nodes has been improved.
+
+icon:plus[] Demo: The demo data have been updated. The a folderName and fileName field has been added to the demo schemas.
+
+icon:plus[] GraphQL: Added micronode list handling. Previously it was not possible to handle micronode list fields.
+
+icon:check[] Core: Fixed NPE that was thrown when loading releases on older systems.
+
+icon:check[] Core: An upgrade error has been fixed which was caused by an invalid microschema JSON format error.
+
+icon:check[] UI: You will no longer be automatically logged in as anonymous user once your session expires.
+
+icon:check[] Core: The language fallback handling for node breadcrumbs has been fixed. Previously the default language was not automatically added to the handled languages.
+
+== 0.9.8 (08.05.2017)
+
+icon:plus[] UI: Microschemas can now be assigned to projects.
+
+icon:plus[] UI: Descriptions can now be assigned to schemas & microschemas.
+
+icon:plus[] Core: A bug was fixed which prevented the node response `project` property to be populated.
+
+icon:plus[] Core: The redundant `isContainer` field was removed from the node response.
+
+icon:plus[] Core: Various bugs for node migrations have been fixed.
+
+icon:plus[] Core: The allow property for micronode schema fields will now correctly be handled.
+
+icon:plus[] Core: Microschemas will now be assigned to projects during a schema update. This only applies for microschemas which are referenced by the schema (e.g.: via a micronode field).
+
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.19.
+
+== 0.9.7 (28.04.2017)
+
+icon:plus[] GraphQL: The nested `content` and `contents` fields have been removed. The properties of those fields have been merged with the `node` / `nodes` field.
+
+icon:plus[] GraphQL: The field names for paged resultset meta data have been updated to better match up with the REST API fields.
+
+icon:plus[] GraphQL: A language can now be specified when loading node reference fields using the `lang` argument.
+
+icon:plus[] GraphQL: It is now possible to resolve links within loaded fields using the `linkType` field argument.
+
+icon:plus[] Auth: Support for anonymous access has been added to mesh. Requests which do not provide a `mesh.token` will automatically try to use the `anonymous` user. This user is identified by `username` and the thus no anonymous access support is provided if the user can't be located.
+
+icon:plus[] GraphQL: It is now possible to retrieve the path for a content using the `path` field. The `Node.languagePaths` has been removed in favour of this new field.
+
+icon:plus[] Auth: It is now possible to issue API tokens via the `GET /api/v1/users/:userUuid/token` endpoint. API tokens do not expire and work in conjunction with the regular JWT authentication mechanism. These tokens should only be used when SSL is enabled. The `DELETE /api/v1/users/:userUuid/token` endpoint can be used to revoke the issued API token. Only one API token is supported for one user. Generating a new API token will invalidate the previously issued token.
+
+icon:check[] GraphQL: An error was fixed which occurred when loading a node using a bogus uuid.
+
+icon:check[] Auth: An error which caused the keystore loading process to fail was fixed. 
+
+== 0.9.6 (14.04.2017)
+
+icon:plus[] It is now possible to resume previously aborted schema migrations via the `/api/v1/:projectName/releases/:releaseUuid/migrateSchemas` endpoint.
+
+icon:plus[] Auth: The Java keystore file will now automatically be created if none could be found. The keystore password will be taken from the `mesh.yml` file or randomly generated and stored in the config.
+
+icon:check[] Core: Migration errors will no longer cause a migration to be aborted. The migration will continue and log the errors. An incomplete migration can be resumed later on.
+
+icon:check[] Core: Fix node migration search index handling. Previous migrations did not correctly update the index. A automatic reindex will be invoked during startup.
+
+== 0.9.5 (13.04.2017)
+
+icon:check[] Core: The schema check for duplicate field labels has been removed. The check previously caused schema updates to fail.
+
+== 0.9.4 (13.04.2017)
+
+icon:check[] UI: Fix project creation.
+
+icon:check[] UI: Fix error when attempting to translate a node.
+
+icon:check[] UI: Fix incorrect search query.
+
+icon:check[] UI: Display error when attempting to publish a node with an unpublished ancestor
+
+icon:check[] JWT: The `signatureSecret` property within the Gentics Mesh configuration has been renamed to `keystorePassword`.
+
+icon:plus[] JWT: It is now possible to configure the algorithm which is used to sign the JWT tokens.
+
+icon:plus[] Java: The Java model classes have been updated to provide fluent API's.
+
+icon:plus[] Demo: It is now possible to access elasticsearch head UI directly from mesh via http://localhost:8080/elastichead - The UI will only be provided if the elasticsearch http ports are enabled. Only enable this for development since mesh will not protect the Elasticsearch HTTP server.
+
+icon:plus[] Core: Downgrade and upgrade checks have been added. It is no longer possible to run Gentics Mesh using a dump which contains data which was touched by a newer mesh version. Upgrading a snapshot version of Gentics Mesh to a release version can be performed under advisement.
+
+== 0.9.3 (10.04.2017)
+
+icon:check[] UI: A bug which prevented assigning created schemas to projects was fixed.
+
+icon:check[] A bug which could lead to concurrent request failing was fixed.
+
+icon:check[] Error handling: A much more verbose error will be returned when creating a schema which lacks the type field for certain schema fields.
+
+icon:check[] GraphQL: A bug which lead to incorrect column values for graphql errors was fixed.
+
+icon:plus[] The OrientDB dependency was updated to version 2.2.18.
+
+icon:plus[] GraphQL: The container/s field was renamed to content/s to ease usage.
+
+icon:plus[] GraphQL: It is no longer possible to resolve nodes using the provided webroot path. The path argument and the resolving was moved to the `content` field.
+
+== 0.9.2 (04.04.2017)
+
+icon:plus[] The `/api/v1/admin/backup`, `/api/v1/admin/restore`, `/api/v1/admin/import`, `/api/v1/admin/export` endpoints were added to the REST API. These endpoint allow the creation of backup dumps.
+
+icon:plus[] GraphQL: It is now possible to execute elasticsearch queries. within the graphql query.
+
+icon:plus[]  GraphQL: It is now possible to resolve a partial web root path using the `child` field of a node.
+
+icon:plus[]  GraphQL: It is now possible to resolve information about the running mesh instance via graphql.
+
+icon:check[] Various issues with the linkType argument within the GraphQL API have been fixed.
+
+icon:check[] Fix NPE that occurred when loading a container for a language which did not exist.
+
+== 0.9.1 (28.03.2017)
+
+icon:check[] The `Access-Control-Allow-Credentials: true` Header will now be returned when CORS support is enabled.
+
+icon:check[] A NullPointerException within the Java Rest Client was fixed.
+
+icon:check[] The AngularJS Demo was updated.
+
+== 0.9.0 (27.03.2017)
+
+icon:plus[] Gentics Mesh now supports GraphQL.
+
+icon:important[] The `expandAll` and `expand` parameters will be removed within an upcoming release of Gentics Mesh. We highly recommend to use the GraphQL endpoint instead if you want to fetch deeply nested data.
+
+icon:plus[] Schema name validation - Schema and microschema names must only contain letter, number or underscore characters.
+
+icon:plus[] Node Tag Endpoint
 
 The endpoint `/api/v1/:projectName/nodes/:nodeUuid/tags` was enhanced. It is now possible to post a list of tag references which will be applied to the node. Tags which are not part of the list will removed from the node. Tags which do not exist will be created. Please note that tag families will not automatically be created.
 
 The `tags` field within the node response was updated accordingly.
 
-* __[Enhancement]__ Names, string fields and html field values will now be indexed using the https://www.elastic.co/guide/en/elasticsearch/guide/current/ngrams-compound-words.html[trigram analyzer].
+== 0.8.3 (24.02.2017)
 
-* __[Enhancement]__ Tags are now also indexed in the node document in the field `tagFamilies`, grouped by tag families.
+icon:plus[] Tags are now also indexed in the node document in the field `tagFamilies`, grouped by tag families.
 
-* __[Enhancement]__ Binary Endpoint Overhaul
+== 0.8.2 (23.02.2017)
+
+icon:check[] The trigram filter configuration was updated so that all characters will be used to tokenize the content.
+
+== 0.8.1 (21.02.2017)
+
+icon:check[] A bug which prevented index creation in certain cases was fixed.
+
+== 0.8.0 (10.02.2017)
+
+icon:plus[] Names, string fields and html field values will now be indexed using the https://www.elastic.co/guide/en/elasticsearch/guide/current/ngrams-compound-words.html[trigram analyzer].
+
+icon:plus[] Binary Endpoint Overhaul
 
 The field API endpoint `/api/v1/:projectName/nodes/:nodeUuid/languages/:language/fields/:field` was removed and replaced by the binary `/api/v1/:projectName/nodes/:nodeUuid/binary` endpoint.
 The binary endpoints are now also versioning aware and handle conflict detection. It is thus required to add the `language` and `version` form data parameters to the upload request. 
 
-* __[Enhancement]__ Transform Endpoint Overhaul
+icon:plus[] Transform Endpoint Overhaul
 
 The endpoint `/api/v1/:projectName/nodes/:nodeUuid/languages/:language/fields/:field/transform` was renamed to `/api/v1/:projectName/nodes/:nodeUuid/binaryTransform`.
 The transform endpoint will now return the updated node.  
 
-* __[Enhancement]__ The no longer needed schemaReference property was removed from node update requests.
+icon:plus[] The no longer needed schemaReference property was removed from node update requests.
 
-* __[Enhancement]__ The rootNodeUuid property within node project response was changed. 
+icon:plus[] The rootNodeUuid property within node project response was changed. 
 
 [quote, Example]
 ____
@@ -51,7 +312,7 @@ New structure:
 ----
 ____
 
-* __[Enhancement]__ The parentNodeUuid property within node create requests was changed. 
+icon:plus[] The parentNodeUuid property within node create requests was changed. 
 
 [quote, Example]
 ____
@@ -78,9 +339,9 @@ New structure:
 ----
 ____
 
-* __[Enhancement]__ JSON Schema information have been added to the RAML API documentation 
+icon:plus[] JSON Schema information have been added to the RAML API documentation. This information can now be used to generate REST model types for various programming languages.
 
-* __[Enhancement]__ The navigation response JSON was restructured. The root element was removed. 
+icon:plus[] The navigation response JSON was restructured. The root element was removed. 
 
 [quote, Example]
 ____
@@ -107,20 +368,22 @@ New structure:
 ----
 ____
 
-== 0.7.0 (SNAPSHOT)
 
-* __[Feature]__ Content releases support
 
-[quote]
-____
-This version of Gentics Mesh introduces _Content Releases_. A detailed description of this feature can be found in our [Documentation](http://getmesh.io/docs/beta/index.html).
-____
+== 0.7.0 (19.01.2017)
 
-* __[Feature]__ Versioning support
+icon:bullhorn[] Content releases support
 
 [quote]
 ____
-This version of Gentics Mesh introduces versioning of contents. A detailed description of the versioning feature can be found in our [Documentation](http://getmesh.io/docs/beta/index.html).
+This version of Gentics Mesh introduces _Content Releases_. A detailed description of this feature can be found in our http://getmesh.io/docs/beta/index.html[Documentation].
+____
+
+icon:bullhorn[] Versioning support
+
+[quote]
+____
+This version of Gentics Mesh introduces versioning of contents. A detailed description of the versioning feature can be found in our http://getmesh.io/docs/beta/index.html[Documentation].
 
 Important changes summary:
 
@@ -131,183 +394,217 @@ Important changes summary:
 Existing databases will automatically be migrated during the first setup.
 ____
 
-* __[Enhancement]__ The missing *availableLanguages* and *defaultLanguage* parameters have been added to the *mesh-ui-config.js* file. Previously no language was configured which removed the option to translate contents.
+icon:plus[] The missing *availableLanguages* and *defaultLanguage* parameters have been added to the *mesh-ui-config.js* file. Previously no language was configured which removed the option to translate contents.
 
-* __[Enhancement]__ Image Property Support - The binary field will not automatically contain properties for image *width*, image *height* and the main *dominant color* in the image.
+icon:plus[] Image Property Support - The binary field will not automatically contain properties for image *width*, image *height* and the main *dominant color* in the image.
 
-* __[Enhancement]__ API Version endpoint -  It is now possible to load the mesh version information via a `GET` request to `/api/v1/`.
+icon:plus[] API Version endpoint -  It is now possible to load the mesh version information via a `GET` request to `/api/v1/`.
 
-* __[Enhancement]__ Project endpoint - The current project information can now be loaded via a `GET` request to `/api/v1/:projectName`.
+icon:plus[] Project endpoint - The current project information can now be loaded via a `GET` request to `/api/v1/:projectName`.
 
-* __[Bugfix]__ When the search indices where recreated with the reindex endpoint, the mapping for the raw fields was not added. This has been fixed now.
+icon:check[] When the search indices where recreated with the reindex endpoint, the mapping for the raw fields was not added. This has been fixed now.
 
-* __[Bugfix]__ The search index mapping of fields of type "list" were incorrect and have been fixed now.
+icon:check[] The search index mapping of fields of type "list" were incorrect and have been fixed now.
 
-* __[Bugfix]__ Various issues with the schema node migration process have been fixed.
+icon:check[] Various issues with the schema node migration process have been fixed.
+
+== 0.6.29 (07.03.2017)
+
+icon:plus[] The documentation has been enhanced.
+
+icon:check[] Missing fields could cause error responses. Instead the missing fields will now be set to null instead.
+
+== 0.6.28 (21.10.2016)
+
+icon:check[] Missing fields could cause error responses. Instead the missing fields will now be set to null instead.
+
+== 0.6.27 (07.10.2016)
+
+icon:check[] Various issues with the schema node migration process have been fixed.
 
 == 0.6.26 (05.10.2016)
 
-* __[Enhancement]__ The maximum transformation depth limit was raised from 2 to 3.
+icon:plus[] The maximum transformation depth limit was raised from 2 to 3.
 
 == 0.6.25 (20.09.2016)
 
-* __[Enhancement]__ The used Vert.x version was bumped to 3.3.3.
+icon:plus[] The used Vert.x version was bumped to 3.3.3.
 
 == 0.6.24 (19.09.2016)
 
-* __[Enhancement]__ The Gentics Mesh admin ui has been updated. The UI will no longer send basic auth information for succeeding requests which were invoked after the login action had been invoked. Instead the basic auth login information will only be send directly during login.
+icon:plus[] The Gentics Mesh admin ui has been updated. The UI will no longer send basic auth information for succeeding requests which were invoked after the login action had been invoked. Instead the basic auth login information will only be send directly during login.
 
-* __[Bugfix]__ A bug within the breadcrumb resolver has been fixed. Previouly breadcrumbs did not account for language fallback options and thus returned a 404 path for nodes which used a different language compared to the language of the retrieved node. This has been fixed.
+icon:check[] A bug within the breadcrumb resolver has been fixed. Previouly breadcrumbs did not account for language fallback options and thus returned a 404 path for nodes which used a different language compared to the language of the retrieved node. This has been fixed.
 
 == 0.6.23 (14.09.2016)
 
-* __[Bugfix]__ The missing availableLanguages and defaultLanguage parameters have been added to the mesh-ui-config.js file. Previously no language was configured which removed the option to translate contents.
+icon:check[] The missing availableLanguages and defaultLanguage parameters have been added to the mesh-ui-config.js file. Previously no language was configured which removed the option to translate contents.
 
 == 0.6.22 (24.08.2016)
 
-* __[Enhancement]__ It is now possible to publish language variants. Previously it was only possible to publish nodes. This affected all language variants of the node.
+icon:plus[] It is now possible to publish language variants. Previously it was only possible to publish nodes. This affected all language variants of the node.
 
 == 0.6.21 (17.08.2016)
 
-* __[Enhancement]__ The debug output in case of errors has been enhanced.
+icon:plus[] The debug output in case of errors has been enhanced.
 
 == 0.6.20 (03.08.2016)
 
-* __[Bugfix]__ The changelog processing action for existing installations was fixed.
+icon:check[] The changelog processing action for existing installations was fixed.
 
 == 0.6.19 (02.08.2016)
 
-* __[Bugfix]__ Mesh-Admin-UI was updated to version 0.6.13
+icon:check[] Mesh-Admin-UI was updated to version 0.6.13
 
 == 0.6.18 (24.06.2016)
 
-* __[Bugfix]__ Previously a search request which queried a lot of nodes could result in a StackOverflow exception. The cause for this exception was fixed.
+icon:check[] Previously a search request which queried a lot of nodes could result in a StackOverflow exception. The cause for this exception was fixed.
 
-* __[Enhancement]__ The gentics/mesh and gentics/mesh-demo images now use the alpine flavour base image and thus the size of the image stack has been reduced.
+icon:plus[] The gentics/mesh and gentics/mesh-demo images now use the alpine flavour base image and thus the size of the image stack has been reduced.
 
-* __[Enhancement]__ The performance of the search endpoints have been improved.
+icon:plus[] The performance of the search endpoints have been improved.
 
 == 0.6.17 (22.06.2016)
 
-* __[Bugfix]__ The path property within the node response breadcrumb was not set. The property will contain the resolved webroot path for the breadcrumb element. No value will be set if the resolveLinks query parameter was configured or set to OFF. CL-459
+icon:check[] The path property within the node response breadcrumb was not set. The property will contain the resolved webroot path for the breadcrumb element. No value will be set if the resolveLinks query parameter was configured or set to OFF. CL-459
 
 == 0.6.16 (21.06.2016)
 
-* __[Enhancement]__ Gzip compression support was added. JSON responses are now pretty printed by default.
+icon:plus[] Gzip compression support was added. JSON responses are now pretty printed by default.
 
 == 0.6.15 (20.06.2016)
 
-* __[Enhancement]__ Mesh-Admin-UI was updated to version 0.6.12
+icon:plus[] Mesh-Admin-UI was updated to version 0.6.12
 
 == 0.6.13 (17.06.2016)
 
-* __[Enhancement]__ Mesh-Admin-UI was updated to version 0.6.10
+icon:plus[] Mesh-Admin-UI was updated to version 0.6.10
 
 == 0.6.12 (02.06.2016)
 
-* __[Bugfix]__ A bug within the schema migration process was fixed. The label field was previously not correctly handled for newly added fields.
-* __[Bugfix]__ A bug within the schema migration process was fixed. The segmentfield value was reset to null when updating a schema. This has been fixed now.
-* __[Bugfix]__ The "AllChangeProperties" field was removed from the JSON response of schema fields.
+icon:check[] A bug within the schema migration process was fixed. The label field was previously not correctly handled for newly added fields.
+
+icon:check[] A bug within the schema migration process was fixed. The segmentfield value was reset to null when updating a schema. This has been fixed now.
+
+icon:check[] The "AllChangeProperties" field was removed from the JSON response of schema fields.
 
 == 0.6.11 (31.05.2016)
 
-* __[Bugfix]__ A bug which prevented node reference deletion was fixed. It is now possible to delete node references using a json null value in update requests.
-* __[Enhancement]__ OrientDB was updated to version 2.1.18
+icon:check[] A bug which prevented node reference deletion was fixed. It is now possible to delete node references using a json null value in update requests.
+
+icon:plus[] OrientDB was updated to version 2.1.18
 
 == 0.6.10 (25.05.2016)
 
-* __[Bugfix]__ It is now possible to grant and revoke permissions to microschemas using the roles/:uuid/permissions endpoint.
+icon:check[] It is now possible to grant and revoke permissions to microschemas using the roles/:uuid/permissions endpoint.
 
 == 0.6.9 (04.05.2016)
 
-* __[Enhancement]__ The mesh-ui was updated.
-* __[Enhancement]__ It is now possible to also include non-container nodes in a navigation response using the includeAll parameter. By default only container nodes will be included in the response.
-* __[Bugfix]__ A minor issue within the webroot path handling of node references was fixed. CL-425
-* __[Bugfix]__ Fix label and allow field property handling when updating schema fields. CL-357
-* __[Bugfix]__ Various concurrency issues have been addressed.
+icon:plus[] The mesh-ui was updated.
+
+icon:plus[] It is now possible to also include non-container nodes in a navigation response using the includeAll parameter. By default only container nodes will be included in the response.
+
+icon:check[] A minor issue within the webroot path handling of node references was fixed. CL-425
+
+icon:check[] Fix label and allow field property handling when updating schema fields. CL-357
+
+icon:check[] Various concurrency issues have been addressed.
 
 == 0.6.8 (26.04.2016)
 
-* __[Enhancement]__ The mesh-ui was updated.
-* __[Enhancement]__ OrientDB was updated to version 2.1.16
+icon:plus[] The mesh-ui was updated.
+
+icon:plus[] OrientDB was updated to version 2.1.16
 
 == 0.6.7 (25.04.2016)
 
-* __[Bugfix]__ Update checker. A bug that prevented the update checker from working correctly was fixed.
+icon:check[] Update checker. A bug that prevented the update checker from working correctly was fixed.
 
 == 0.6.6 (06.04.2016)
 
-* Public open beta release
-* __[Bugfix]__ A bug within the reindex changelog entry was fixed. The bug prevented the node index to be recreated.
-* __[Bugfix]__ The mesh-ui-config.js default apiUrl parameter was changed to /api/v1 in order to allow access from hosts other than localhost.
+icon:bullhorn[] Public open beta release
+
+icon:check[] A bug within the reindex changelog entry was fixed. The bug prevented the node index to be recreated.
+
+icon:check[] The mesh-ui-config.js default apiUrl parameter was changed to /api/v1 in order to allow access from hosts other than localhost.
 
 == 0.6.5 (05.04.2016)
 
-* __[Bugfix]__ The displayField value was missing within the node search document. The value was added.
-* __[Bugfix]__ The changelog execution information was added to the demo data dump and thus no further changelog execution will happen during mesh demo startup.
-* __[Bugfix]__ An edge case that could cause multiple stack overflow exception was fixed.
-* __[Enhancement]__ A Cache-Control: no-cache header has been set to mesh responses.
-* __[Enhancement]__ The mesh-ui was updated.
-* __[Bugfix]__ Various search index related bugs have been fixed.
-* __[Enhancement]__ The mesh-ui configuration file was renamed to mesh-ui.config.js 
+icon:check[] The displayField value was missing within the node search document. The value was added.
+
+icon:check[] The changelog execution information was added to the demo data dump and thus no further changelog execution will happen during mesh demo startup.
+
+icon:check[] An edge case that could cause multiple stack overflow exception was fixed.
+
+icon:plus[] A Cache-Control: no-cache header has been set to mesh responses.
+
+icon:plus[] The mesh-ui was updated.
+
+icon:check[] Various search index related bugs have been fixed.
+
+icon:plus[] The mesh-ui configuration file was renamed to mesh-ui.config.js 
 
 == 0.6.4 (24.03.2016)
 
-* __[Enhancement]__ The mesh ui was updated.
+icon:plus[] The mesh ui was updated.
 
 == 0.6.3 (22.03.2016)
 
-* __[Enhancement]__ Database migration/changelog system.
+icon:plus[] Database migration/changelog system.
        A changelog system was added to mesh. The system is used to upgrade mesh data from one mesh version to another.
-* __[Enhancement]__ The *published* flag can now be referenced within an elasticsearch query.
-* __[Bugfix]__ It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now.
-* __[Bugfix]__ The schema migration process did not update the node search index correctly. 
+
+icon:plus[] The *published* flag can now be referenced within an elasticsearch query.
+
+icon:check[] It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now.
+
+icon:check[] The schema migration process did not update the node search index correctly. 
        In some cases duplicate nodes would be returned (the old node and the migrated one).
        This has been fixed. Only the latest version of nodes will be returned now.
-* __[Bugfix]__ It was not possible to update the *allow* flag for schema lists (e.g.: micronode lists). This has been fixed now.
-* __[Bugfix]__ A NPE was fixed which occurred when updating or creating a node list which included elements which could not be found. (CL-358)
-* __[Bugfix]__ A typo within the search model document for users was fixed.
+
+icon:check[] A NPE was fixed which occurred when updating or creating a node list which included elements which could not be found. (CL-358)
+
+icon:check[] A typo within the search model document for users was fixed.
        The property emailadress was renamed to emailaddress. 
 
 == 0.6.2 (15.03.2016)
 
-* __[Bugfix]__ The microschema and schema permission field was always empty for newly created elements.
+icon:check[] The microschema and schema permission field was always empty for newly created elements.
 
 == 0.6.1 (14.03.2016)
 
-* __[Enhancement]__ Add mesh-ui to gentics/mesh docker image
+icon:plus[] Add mesh-ui to gentics/mesh docker image
 
 == 0.6.0 (14.03.2016)
 
-* __[Enhancement]__ Added image API endpoint
+icon:plus[] Added image API endpoint
   Images can now be resized and cropped using the image endpoint.
 
-* __[Enhancement]__ Added schema versioning
+icon:plus[] Added schema versioning
 
-* __[Enhancement]__ Added schema migration process
+icon:plus[] Added schema migration process
   It is now possible to update schemas. Custom migration 
   handlers can be defined in order to modify the node data.
 
-* __[Enhancement]__ Added Micronodes/Microschemas
+icon:plus[] Added Micronodes/Microschemas
   A new field type has been added which allows creation of micronodes.
 
-* __[Enhancement]__ Webroot API
+icon:plus[] Webroot API
   The webroot REST endpoint was added which allows easy retrieval of nodes by its web path.
 
-* __[Enhancement]__ JWT Authentication support has been added
+icon:plus[] JWT Authentication support has been added
   It is now possible to select JWT in order to authenticate the user.
   
-* __[Enhancement]__ Navigation Endpoint
+icon:plus[] Navigation Endpoint
   The navigation REST endpoint was added which allows retrieval of navigation tree data which can be used to render navigations.
 
-* __[Enhancement]__ Added docker support
+icon:plus[] Added docker support
   It is now possible to start mesh using the gentics/mesh or gentics/mesh-demo docker image.
 
-* __[Bugfix]__ Fixed paging issue for nested tags
-
-* __[Enhancement]__ Vertx update
+icon:plus[] Vertx update
   The Vertx dependency was updated to version 3.2.1
+
+icon:check[] Fixed paging issue for nested tags
 
 == 0.5.0 (17.11.2015)
 
-* Closed beta release
+icon:important[] Closed beta release

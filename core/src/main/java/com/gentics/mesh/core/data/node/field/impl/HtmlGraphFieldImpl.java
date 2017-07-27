@@ -15,7 +15,7 @@ import com.gentics.mesh.core.rest.node.field.HtmlField;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.handler.ActionContext;
-import com.gentics.mesh.parameter.impl.LinkType;
+import com.gentics.mesh.parameter.LinkType;
 import com.syncleus.ferma.AbstractVertexFrame;
 
 public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements HtmlGraphField {
@@ -32,7 +32,7 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 				if (project == null) {
 					project = parentNode.getProject();
 				}
-				field.setHTML(MeshInternal.get().webRootLinkReplacer().replace(ac.getRelease(null).getUuid(),
+				field.setHTML(MeshInternal.get().webRootLinkReplacer().replace(ac.getRelease().getUuid(),
 						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), field.getHTML(),
 						ac.getNodeParameters().getResolveLinks(), project.getName(), languageTags));
 			}

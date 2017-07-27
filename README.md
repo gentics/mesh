@@ -1,9 +1,5 @@
-[![Build Status](https://travis-ci.org/gentics/mesh.svg)](https://travis-ci.org/gentics/mesh)
-[![Coverage Status](https://img.shields.io/coveralls/gentics/mesh.svg)](https://coveralls.io/r/gentics/mesh?branch=master)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gentics.mesh/mesh/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gentics.mesh/mesh)
-[![JavaDoc](https://javadoc-emblem.rhcloud.com/doc/com.gentics.mesh/mesh/badge.svg)](http://www.javadoc.io/doc/com.gentics.mesh/mesh)
 [![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
-[![Stack Overflow](http://img.shields.io/:stack%20overflow-genticsmesh-brightgreen.svg)](http://stackoverflow.com/questions/tagged/genticsmesh)
+[![Stack Overflow](http://img.shields.io/:stack%20overflow-genticsmesh-brightgreen.svg)](http://stackoverflow.com/questions/tagged/mesh-cms)
 
 # Gentics Mesh
 
@@ -15,6 +11,7 @@ Gentics Mesh is an Open Source API-first CMS for developers. All contents can be
 * Versioned content
 * Webroot API for easy integration with modern routing frameworks
 * Search API powered by elasticsearch
+* GraphQL API
 * Image API
 * Tagging API
 * Graph database at its core
@@ -22,21 +19,60 @@ Gentics Mesh is an Open Source API-first CMS for developers. All contents can be
 
 ![alt tag](http://getmesh.io/assets/mesh-heroimg.png)
 
-### Download
+### Getting Started
+
+You need to have at least JRE 8 of Java installed. See the [Getting Started page](http://getmesh.io/docs/beta/getting-started.html) for more information.
+
+You can either download the all-in-one jar or fire-up one of the Docker images.
 
 * [Download from getmesh.io](http://getmesh.io/Download)
 * [Docker Hub](https://hub.docker.com/r/gentics/mesh-demo/)
-* [Maven Central](http://mvnrepository.com/artifact/com.gentics.mesh)
+* [Maven](https://maven.gentics.com/maven2/com/gentics/mesh)
 
-### Changelog
-
-http://getmesh.io/docs/beta/changelog.html
+### [Changelog](http://getmesh.io/docs/beta/changelog.html)
 
 ### Documentation
 
 * http://getmesh.io/docs/beta/
 * http://getmesh.io/docs/beta/raml/
 
+### UI
+
+Gentics Mesh automatically ships with a UI which allows you to brows your contents.
+
+The UI is can be accessed via http://localhost:8080/mesh-ui
+
+### Typical usage
+
+You can retrieved stored contents via the REST or GraphQL API.
+
+First things first - You need to authenticate. Otherwise you will not be able to access your data.
+
+* http://localhost:8080/api/v1/auth/login
+
+You can post your credentials via JSON, use basic auth or send a JWT header - The choice is yours. If you open that URL in a browser you will most likly authenticate using basic auth.
+
+#### REST API
+
+Now that your are authenticated you can load content via the REST API.
+
+Load a list of projects:
+
+* http://localhost:8080/api/v1/projects
+
+Or a list of contents
+
+* http://localhost:8080/api/v1/demo/nodes
+
+#### GraphQL
+
+If you want to retieve deeply nested data you may use the GraphiQL browser
+
+* http://localhost:8080/api/v1/demo/graphql/browser/
+
+Or try our [live demo](http://getmesh.io/api/v1/demo/graphql/browser/).
+
+### Example JSON
 
 Typical Request/Response:
 
@@ -54,114 +90,68 @@ Content-Encoding: gzip
 Transfer-Encoding: chunked
 
 {
-  "uuid" : "1f91269a4e6042c391269a4e6052c3e4",
+  "uuid" : "c7f284b8db9740fab284b8db97b0fa72",
   "creator" : {
-    "name" : "admin",
-    "uuid" : "2ac51bffa0b74843851bffa0b7784356"
+    "uuid" : "344278e8bec74f6a8278e8bec76f6a87"
   },
-  "created" : 1473857597199,
+  "created" : "2017-03-27T11:22:27Z",
   "editor" : {
-    "name" : "admin",
-    "uuid" : "2ac51bffa0b74843851bffa0b7784356"
+    "uuid" : "344278e8bec74f6a8278e8bec76f6a87"
   },
-  "edited" : 1473857597200,
-  "permissions" : [ "create", "read", "update", "delete" ],
+  "edited" : "2017-03-27T11:22:35Z",
   "language" : "en",
   "availableLanguages" : [ "en" ],
   "parentNode" : {
-    "uuid" : "b253cd24d8b04b4993cd24d8b01b4927",
-    "displayName" : "Automobiles",
+    "projectName" : "demo",
+    "uuid" : "3d77fe558cf743d3b7fe558cf783d343",
+    "displayName" : "Vehicle Images",
     "schema" : {
-      "name" : "category",
-      "uuid" : "deae278d0c3a4303ae278d0c3a9303b6"
+      "name" : "folder",
+      "uuid" : "35de83ec7df048d59e83ec7df028d50f"
     }
   },
-  "tags" : {
-    "Colors" : {
-      "uuid" : "ec9bd1d8fab044da9bd1d8fab0c4da51",
-      "items" : [ {
-        "name" : "Orange",
-        "uuid" : "cbd9ced021d346a499ced021d306a4b0"
-      } ]
-    },
-    "Fuels" : {
-      "uuid" : "80904d30810b4f83904d30810b2f8336",
-      "items" : [ {
-        "name" : "Electricity",
-        "uuid" : "8fcf087b56da49638f087b56da9963f9"
-      } ]
-    }
-  },
+  "tags" : [ ],
   "childrenInfo" : { },
   "schema" : {
-    "name" : "vehicle",
-    "uuid" : "4fb140359c8c45f8b140359c8c35f88a",
+    "name" : "vehicleImage",
+    "uuid" : "4bae3a3ec02043abae3a3ec020d3ab42",
     "version" : 1
   },
-  "published" : false,
   "displayField" : "name",
   "fields" : {
-    "price" : 101500,
-    "stocklevel" : 20,
-    "vehicleImage" : {
-      "uuid" : "ecb339ba241d4f6fb339ba241dbf6f29",
-      "creator" : {
-        "name" : "admin",
-        "uuid" : "2ac51bffa0b74843851bffa0b7784356"
-      },
-      "created" : 1473857596822,
-      "editor" : {
-        "name" : "admin",
-        "uuid" : "2ac51bffa0b74843851bffa0b7784356"
-      },
-      "edited" : 1473857596822,
-      "permissions" : [ "create", "read", "update", "delete" ],
-      "language" : "en",
-      "availableLanguages" : [ "en" ],
-      "parentNode" : {
-        "uuid" : "883abbd203374ccebabbd20337acce75",
-        "displayName" : "Vehicle Images",
-        "schema" : {
-          "name" : "folder",
-          "uuid" : "afefc9a0e2174396afc9a0e2175396e2"
-        }
-      },
-      "tags" : { },
-      "childrenInfo" : { },
-      "schema" : {
-        "name" : "vehicleImage",
-        "uuid" : "3502fb222e77431882fb222e777318c3",
-        "version" : 1
-      },
-      "published" : false,
-      "displayField" : "name",
-      "fields" : {
-        "altText" : null,
-        "image" : {
-          "fileName" : "tesla-roadster.jpg",
-          "sha512sum" : "2a56c85df60ab753f77fe75a63910b7e3f9ae89cd90e1906ad6210ee408ce07d5d95f269a21217ee045af8ac7d6c934324e49908d463971e31498b994b757d03",
-          "fileSize" : 607113,
-          "mimeType" : "image/jpeg",
-          "type" : "binary"
-        },
-        "name" : "Tesla Roadster Image"
-      },
-      "breadcrumb" : [ {
-        "uuid" : "883abbd203374ccebabbd20337acce75",
-        "displayName" : "Vehicle Images"
-      } ],
-      "container" : false
-    },
-    "name" : "Tesla Roadster",
-    "description" : "The Tesla Roadster is a battery electric vehicle (BEV) sports car produced by the electric car firm Tesla Motors in California between 2008 and 2012.",
-    "weight" : 1305,
-    "SKU" : 2
+    "name" : "Tesla Roadster Image",
+    "image" : {
+      "fileName" : "tesla-roadster.jpg",
+      "width" : 1024,
+      "height" : 670,
+      "sha512sum" : "2a56c85df60ab753f77fe75a63910b7e3f9ae89cd90e1906ad6210ee408ce07d5d95f269a21217ee045af8ac7d6c934324e49908d463971e31498b994b757d03",
+      "fileSize" : 607113,
+      "mimeType" : "image/jpeg",
+      "dominantColor" : "#90786b"
+    }
   },
   "breadcrumb" : [ {
-    "uuid" : "b253cd24d8b04b4993cd24d8b01b4927",
-    "displayName" : "Automobiles"
+    "projectName" : "demo",
+    "uuid" : "3d77fe558cf743d3b7fe558cf783d343",
+    "displayName" : "Vehicle Images",
+    "schema" : {
+      "name" : "folder",
+      "uuid" : "35de83ec7df048d59e83ec7df028d50f"
+    }
   } ],
-  "container" : false
+  "version" : {
+    "uuid" : "54d70c2d951d4188970c2d951d218875",
+    "number" : "1.0"
+  },
+  "container" : false,
+  "permissions" : {
+    "create" : true,
+    "read" : true,
+    "update" : true,
+    "delete" : true,
+    "publish" : true,
+    "readPublished" : true
+  }
 }
 ```
 

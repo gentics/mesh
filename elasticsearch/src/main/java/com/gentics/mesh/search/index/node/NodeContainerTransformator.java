@@ -88,7 +88,7 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		Map<String, String> schemaFields = new HashMap<>();
 		schemaFields.put(NAME_KEY, name);
 		schemaFields.put(UUID_KEY, uuid);
-		schemaFields.put(VERSION_KEY, String.valueOf(schemaContainerVersion.getVersion()));
+		schemaFields.put(VERSION_KEY, schemaContainerVersion.getVersion());
 		document.put("schema", schemaFields);
 	}
 
@@ -535,15 +535,37 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 
 		// tags
 		JsonObject tagsMapping = new JsonObject();
-		tagsMapping.put("type", "nested");
-		tagsMapping.put("dynamic", true);
+		tagsMapping.put("type", NESTED);
+		JsonObject tagsMappingProps = new JsonObject();
+		tagsMappingProps.put("name", trigramStringType());
+		tagsMappingProps.put("uuid", notAnalyzedType(STRING));
+		tagsMapping.put("properties", tagsMappingProps);
 		typeProperties.put("tags", tagsMapping);
 
 		// tagFamilies
-		JsonObject tagFamiliesMapping = new JsonObject();
-		tagFamiliesMapping.put("type", "nested");
-		tagFamiliesMapping.put("dynamic", true);
-		typeProperties.put("tagFamilies", tagFamiliesMapping);
+		typeProperties.put("tagFamilies", new JsonObject()
+			.put("type", "object")
+			.put("dynamic", true)
+		);
+
+		typeMapping.put("dynamic_templates", new JsonArray()
+			.add(new JsonObject().put("tagFamilyUuid", new JsonObject()
+				.put("path_match", "tagFamilies.*.uuid")
+				.put("match_mapping_type", "*")
+				.put("mapping", notAnalyzedType(STRING))
+			))
+			.add(new JsonObject().put("tagFamilyTags", new JsonObject()
+				.put("path_match", "tagFamilies.*.tags")
+				.put("match_mapping_type", "*")
+				.put("mapping", new JsonObject()
+					.put("type", "nested")
+					.put("properties", new JsonObject()
+						.put("name", trigramStringType())
+						.put("uuid", notAnalyzedType(STRING))
+					)
+				)
+			))
+		);
 
 		// language
 		typeProperties.put("language", notAnalyzedType(STRING));
@@ -554,7 +576,7 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		JsonObject schemaMappingProperties = new JsonObject();
 		schemaMappingProperties.put("uuid", notAnalyzedType(STRING));
 		schemaMappingProperties.put("name", trigramStringType());
-		schemaMappingProperties.put("version", notAnalyzedType(LONG));
+		schemaMappingProperties.put("version", notAnalyzedType(STRING));
 		schemaMapping.put("properties", schemaMappingProperties);
 		typeProperties.put("schema", schemaMapping);
 
@@ -562,8 +584,8 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		JsonObject displayFieldMapping = new JsonObject();
 		displayFieldMapping.put("type", OBJECT);
 		JsonObject displayFieldMappingProperties = new JsonObject();
-		displayFieldMappingProperties.put("key", notAnalyzedType(STRING));
-		displayFieldMappingProperties.put("value", notAnalyzedType(STRING));
+		displayFieldMappingProperties.put("key", trigramStringType());
+		displayFieldMappingProperties.put("value", trigramStringType());
 		displayFieldMapping.put("properties", displayFieldMappingProperties);
 		typeProperties.put("displayField", displayFieldMapping);
 

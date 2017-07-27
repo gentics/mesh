@@ -13,10 +13,6 @@
 	<properties>
 		<dockerHostname>satan3.office</dockerHostname>
 		<dockerHostProtocol>tcp</dockerHostProtocol>
+		<projectRoot>${project.basedir}/..</projectRoot>
 	</properties>
-
-	<build>
-		<plugins>
-		</plugins>
-	</build>
 </project>

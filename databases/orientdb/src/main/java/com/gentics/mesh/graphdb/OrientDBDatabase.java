@@ -14,29 +14,36 @@ import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import com.gentics.mesh.etc.GraphStorageOptions;
-import com.gentics.mesh.graphdb.ferma.AbstractDelegatingFramedOrientGraph;
+import com.gentics.ferma.Tx;
+import com.gentics.ferma.TxHandler;
+import com.gentics.ferma.orientdb.DelegatingFramedOrientGraph;
+import com.gentics.ferma.orientdb.OrientDBTx;
+import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
-import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.graphdb.spi.TxHandler;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
 import com.orientechnologies.orient.core.db.ODatabase;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
+import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
+import com.orientechnologies.orient.core.index.OIndexCursor;
 import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.intent.OIntentNoCache;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
@@ -55,6 +62,7 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
+import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
@@ -81,7 +89,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void stop() {
 		factory.close();
 		Orient.instance().shutdown();
-		Database.setThreadLocalGraph(null);
+		Tx.setActive(null);
 	}
 
 	@Override
@@ -89,15 +97,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing graph");
 		}
-		//		OrientGraphNoTx tx1 = factory.getNoTx();
-		//		tx1.declareIntent(new OIntentNoCache());
-		//		try {
-		//			tx1.command(new OCommandSQL("delete vertex V")).execute();
-		//			//		tx1.commit();
-		//		} finally {
-		//			tx1.declareIntent(null);
-		//			tx1.shutdown();
-		//		}
+		// OrientGraphTx tx1 = factory.getTx();
+		// tx1.declareIntent(new OIntentNoCache());
+		// try {
+		// tx1.command(new OCommandSQL("delete vertex V")).execute();
+		// // tx1.commit();
+		// } finally {
+		// tx1.declareIntent(null);
+		// tx1.shutdown();
+		// }
 		OrientGraphNoTx tx = factory.getNoTx();
 		tx.declareIntent(new OIntentNoCache());
 		try {
@@ -172,7 +180,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		String safeParentDirPath = StringEscapeUtils
 				.escapeJava(StringEscapeUtils.escapeXml11(new File(options.getDirectory()).getParentFile().getAbsolutePath()));
 		configString = configString.replaceAll("%MESH_DB_PARENT_PATH%", safeParentDirPath);
-		System.out.println(configString);
+		if (log.isDebugEnabled()) {
+			log.debug("OrientDB config");
+			log.debug(configString);
+		}
 		InputStream stream = new ByteArrayInputStream(configString.getBytes(StandardCharsets.UTF_8));
 		return stream;
 	}
@@ -188,10 +199,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		System.out.println(orientdbHome);
 		OServer server = OServerMain.create();
 		log.info("Extracting OrientDB Studio");
-		InputStream ins = getClass().getResourceAsStream("/plugins/studio-2.2.zip");
+		InputStream ins = getClass().getResourceAsStream("/plugins/orientdb-studio-2.2.24.zip");
 		File pluginDirectory = new File("orient-plugins");
 		pluginDirectory.mkdirs();
-		IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "studio-2.2.zip")));
+		IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "orientdb-studio-2.2.24.zip")));
 
 		server.startup(getOrientServerConfig());
 		OServerPluginManager manager = new OServerPluginManager();
@@ -202,7 +213,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private void configureGraphDB() {
 		log.info("Configuring orientdb...");
-		OrientGraphNoTx tx = factory.getNoTx();
+		OrientGraph tx = factory.getTx();
 		try {
 			tx.setUseLightweightEdges(false);
 			tx.setUseVertexFieldsForEdgeLabels(false);
@@ -213,9 +224,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void addCustomEdgeIndex(String label, String indexPostfix, String... fields) {
-		OrientGraphNoTx tx = factory.getNoTx();
+		OrientGraphNoTx noTx = factory.getNoTx();
 		try {
-			OrientEdgeType e = tx.getEdgeType(label);
+			OrientEdgeType e = noTx.getEdgeType(label);
 			if (e == null) {
 				throw new RuntimeException("Could not find edge type {" + label + "}. Create edge type before creating indices.");
 			}
@@ -236,17 +247,17 @@ public class OrientDBDatabase extends AbstractDatabase {
 			}
 
 		} finally {
-			tx.shutdown();
+			noTx.shutdown();
 		}
 	}
 
 	@Override
 	public void addEdgeIndex(String label, boolean includeInOut, boolean includeIn, boolean includeOut, String... extraFields) {
-		OrientGraphNoTx tx = factory.getNoTx();
+		OrientGraphNoTx noTx = factory.getNoTx();
 		try {
-			OrientEdgeType e = tx.getEdgeType(label);
+			OrientEdgeType e = noTx.getEdgeType(label);
 			if (e == null) {
-				e = tx.createEdgeType(label);
+				e = noTx.createEdgeType(label);
 			}
 			if ((includeIn || includeInOut) && e.getProperty("in") == null) {
 				e.createProperty("in", OType.LINK);
@@ -260,10 +271,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 			}
 			String indexName = "e." + label.toLowerCase();
-
 			String name = indexName + "_inout";
 			if (includeInOut && e.getClassIndex(name) == null) {
-				e.createIndex(name, OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX, new String[] { "in", "out" });
+				e.createIndex(name, OClass.INDEX_TYPE.NOTUNIQUE, new String[] { "in", "out" });
 			}
 			name = indexName + "_out";
 			if (includeOut && e.getClassIndex(name) == null) {
@@ -279,16 +289,54 @@ public class OrientDBDatabase extends AbstractDatabase {
 			}
 
 		} finally {
-			tx.shutdown();
+			noTx.shutdown();
 		}
 	}
 
 	@Override
+	public List<Object> edgeLookup(String edgeLabel, String indexPostfix, Object key) {
+		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
+		List<Object> ids = new ArrayList<>();
+
+		// Load the edge type in order to access the indices of the edge
+		OrientEdgeType edgeType = orientBaseGraph.getEdgeType(edgeLabel);
+		if (edgeType != null) {
+			// Fetch the required index
+			OIndex<?> index = edgeType.getClassIndex("e." + edgeLabel.toLowerCase() + "_" + indexPostfix);
+			if (index != null) {
+				// Iterate over the sb-tree index entries
+				OIndexCursor cursor = index.iterateEntriesMajor(new OCompositeKey(key), true, false);
+				while (cursor.hasNext()) {
+					Entry<Object, OIdentifiable> entry = cursor.nextEntry();
+					if (entry != null) {
+						OCompositeKey entryKey = (OCompositeKey) entry.getKey();
+						// The index returns all entries. We thus need to filter it manually
+						if (entryKey.getKeys().get(1).equals(key)) {
+							Object inId = entryKey.getKeys().get(0);
+							// Only add the inbound vertex id to the list of ids
+							ids.add(inId);
+						}
+					} else {
+						break;
+					}
+				}
+			}
+		}
+		return ids;
+	}
+
+	@Override
 	public Iterator<Vertex> getVertices(Class<?> classOfVertex, String[] fieldNames, Object[] fieldValues) {
-		FramedGraph graph = Database.getThreadLocalGraph();
-		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph) graph).getBaseGraph();
-		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
+		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 		return orientBaseGraph.getVertices(classOfVertex.getSimpleName(), fieldNames, fieldValues).iterator();
+	}
+
+	@Override
+	public <T extends MeshVertex> Iterator<? extends T> getVerticesForType(Class<T> classOfVertex) {
+		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
+		FramedGraph fermaGraph = Tx.getActive().getGraph();
+		Iterator<Vertex> rawIt = orientBaseGraph.getVertices("@class", classOfVertex.getSimpleName()).iterator();
+		return fermaGraph.frameExplicit(rawIt, classOfVertex);
 	}
 
 	/**
@@ -297,8 +345,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * @return
 	 */
 	private OrientBaseGraph unwrapCurrentGraph() {
-		FramedGraph graph = Database.getThreadLocalGraph();
-		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph) graph).getBaseGraph();
+		FramedGraph graph = Tx.getActive().getGraph();
+		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph tx = ((OrientBaseGraph) baseGraph);
 		return tx;
 	}
@@ -320,19 +368,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding edge type for label {" + label + "}");
 		}
-		OrientGraphNoTx tx = factory.getNoTx();
+		OrientGraphNoTx noTx = factory.getNoTx();
 		try {
-			OrientEdgeType e = tx.getEdgeType(label);
+			OrientEdgeType e = noTx.getEdgeType(label);
 			if (e == null) {
 				String superClazz = "E";
 				if (superClazzOfEdge != null) {
 					superClazz = superClazzOfEdge.getSimpleName();
 				}
-				e = tx.createEdgeType(label, superClazz);
+				e = noTx.createEdgeType(label, superClazz);
 			} else {
 				// Update the existing edge type and set the super class
 				if (superClazzOfEdge != null) {
-					OrientEdgeType superType = tx.getEdgeType(superClazzOfEdge.getSimpleName());
+					OrientEdgeType superType = noTx.getEdgeType(superClazzOfEdge.getSimpleName());
 					if (superType == null) {
 						throw new RuntimeException("The supertype for edges with label {" + label + "} can't be set since the supertype {"
 								+ superClazzOfEdge.getSimpleName() + "} was not yet added to orientdb.");
@@ -347,7 +395,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 			}
 		} finally {
-			tx.shutdown();
+			noTx.shutdown();
 		}
 	}
 
@@ -356,19 +404,19 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex type for class {" + clazzOfVertex.getName() + "}");
 		}
-		OrientGraphNoTx tx = factory.getNoTx();
+		OrientGraphNoTx noTx = factory.getNoTx();
 		try {
-			OrientVertexType vertexType = tx.getVertexType(clazzOfVertex.getSimpleName());
+			OrientVertexType vertexType = noTx.getVertexType(clazzOfVertex.getSimpleName());
 			if (vertexType == null) {
 				String superClazz = "V";
 				if (superClazzOfVertex != null) {
 					superClazz = superClazzOfVertex.getSimpleName();
 				}
-				vertexType = tx.createVertexType(clazzOfVertex.getSimpleName(), superClazz);
+				vertexType = noTx.createVertexType(clazzOfVertex.getSimpleName(), superClazz);
 			} else {
 				// Update the existing vertex type and set the super class
 				if (superClazzOfVertex != null) {
-					OrientVertexType superType = tx.getVertexType(superClazzOfVertex.getSimpleName());
+					OrientVertexType superType = noTx.getVertexType(superClazzOfVertex.getSimpleName());
 					if (superType == null) {
 						throw new RuntimeException("The supertype for vertices of type {" + clazzOfVertex + "} can't be set since the supertype {"
 								+ superClazzOfVertex.getSimpleName() + "} was not yet added to orientdb.");
@@ -377,7 +425,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				}
 			}
 		} finally {
-			tx.shutdown();
+			noTx.shutdown();
 		}
 	}
 
@@ -386,10 +434,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex index  for class {" + clazzOfVertices.getName() + "}");
 		}
-		OrientGraphNoTx tx = factory.getNoTx();
+		OrientGraphNoTx noTx = factory.getNoTx();
 		try {
 			String name = clazzOfVertices.getSimpleName();
-			OrientVertexType v = tx.getVertexType(name);
+			OrientVertexType v = noTx.getVertexType(name);
 			if (v == null) {
 				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't create index {" + indexName + "}");
 			}
@@ -403,14 +451,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 						null, new ODocument().fields("ignoreNullValues", true), fields);
 			}
 		} finally {
-			tx.shutdown();
+			noTx.shutdown();
 		}
 
 	}
 
 	@Override
 	public <T extends MeshElement> T checkIndexUniqueness(String indexName, T element, Object key) {
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = Tx.getActive().getGraph();
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
 
 		OrientVertexType vertexType = orientBaseGraph.getVertexType(element.getClass().getSimpleName());
@@ -432,8 +480,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public <T extends MeshElement> T checkIndexUniqueness(String indexName, Class<T> classOfT, Object key) {
-		FramedGraph graph = Database.getThreadLocalGraph();
-		Graph baseGraph = ((AbstractDelegatingFramedOrientGraph<?>) graph).getBaseGraph();
+		FramedGraph graph = Tx.getActive().getGraph();
+		Graph baseGraph = ((DelegatingFramedOrientGraph) graph).getBaseGraph();
 		OrientBaseGraph orientBaseGraph = ((OrientBaseGraph) baseGraph);
 
 		OrientVertexType vertexType = orientBaseGraph.getVertexType(classOfT.getSimpleName());
@@ -470,7 +518,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		for (int retry = 0; retry < maxRetry; retry++) {
 
 			try (Tx tx = tx()) {
-				handlerResult = txHandler.call();
+				handlerResult = txHandler.handle(tx);
 				handlerFinished = true;
 				tx.success();
 			} catch (OSchemaException e) {
@@ -512,12 +560,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public NoTx noTx() {
-		return new OrientDBNoTx(factory, resolver);
-	}
-
-	@Override
 	public void backupGraph(String backupDirectory) throws IOException {
+		if (log.isDebugEnabled()) {
+			log.debug("Running backup to backup directory {" + backupDirectory + "}.");
+		}
 		ODatabaseDocumentTx db = factory.getDatabase();
 		try {
 			OCommandOutputListener listener = new OCommandOutputListener() {
@@ -528,6 +574,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			};
 			String dateString = formatter.format(new Date());
 			String backupFile = "backup_" + dateString + ".zip";
+			new File(backupDirectory).mkdirs();
 			OutputStream out = new FileOutputStream(new File(backupDirectory, backupFile).getAbsolutePath());
 			db.backup(out, null, null, listener, 9, 2048);
 		} finally {
@@ -537,6 +584,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void restoreGraph(String backupFile) throws IOException {
+		if (log.isDebugEnabled()) {
+			log.debug("Running restore using {" + backupFile + "} backup file.");
+		}
 		ODatabaseDocumentTx db = factory.getDatabase();
 		try {
 			OCommandOutputListener listener = new OCommandOutputListener() {
@@ -550,11 +600,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} finally {
 			db.close();
 		}
-
 	}
 
 	@Override
 	public void exportGraph(String outputDirectory) throws IOException {
+		if (log.isDebugEnabled()) {
+			log.debug("Running export to {" + outputDirectory + "} directory.");
+		}
 		ODatabaseDocumentTx db = factory.getDatabase();
 		try {
 			OCommandOutputListener listener = new OCommandOutputListener() {
@@ -566,7 +618,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 			String dateString = formatter.format(new Date());
 			String exportFile = "export_" + dateString;
-
+			new File(outputDirectory).mkdirs();
 			ODatabaseExport export = new ODatabaseExport(db, new File(outputDirectory, exportFile).getAbsolutePath(), listener);
 			export.exportDatabase();
 			export.close();

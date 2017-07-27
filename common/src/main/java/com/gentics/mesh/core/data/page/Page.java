@@ -1,44 +1,37 @@
 package com.gentics.mesh.core.data.page;
 
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.TransformableElement;
-import com.gentics.mesh.core.rest.common.ListResponse;
-import com.gentics.mesh.core.rest.common.RestModel;
+import java.util.ArrayList;
+import java.util.List;
 
-import rx.Single;
+import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.parameter.PagingParameters;
 
 /**
  * A page is the result of a query which returns paged data. Each page may contain multiple items. A page can be transformed into a rest response.
  */
-public interface Page<T extends TransformableElement<? extends RestModel>> extends Iterable<T> {
+public interface Page<T> extends Iterable<T> {
 
 	/**
 	 * Return the per page parameter value.
 	 * 
 	 * @return
 	 */
-	long getPerPage();
-
-	/**
-	 * Return the number of element which this page is currently providing.
-	 * 
-	 * @return
-	 */
-	int getNumberOfElements();
+	int getPerPage();
 
 	/**
 	 * Return the total amount of pages which the resources that provided this page could return.
 	 * 
 	 * @return
 	 */
-	int getTotalPages();
+	long getPageCount();
 
 	/**
 	 * Return the current page number.
 	 * 
 	 * @return
 	 */
-	int getNumber();
+	long getNumber();
 
 	/**
 	 * Return the total item count which the resource that provided this page could return.
@@ -48,20 +41,11 @@ public interface Page<T extends TransformableElement<? extends RestModel>> exten
 	long getTotalElements();
 
 	/**
-	 * Return the page size.
+	 * Return the number of elements which are currently contained within the page.
 	 * 
 	 * @return
 	 */
 	int getSize();
-
-	/**
-	 * Transform the page into a list response.
-	 * 
-	 * @param ac
-	 * @param level
-	 *            Level of transformation
-	 */
-	Single<? extends ListResponse<RestModel>> transformToRest(InternalActionContext ac, int level);
 
 	/**
 	 * Set the paging parameters into the given list response by examining the given page.
@@ -72,16 +56,43 @@ public interface Page<T extends TransformableElement<? extends RestModel>> exten
 	void setPaging(ListResponse<?> response);
 
 	/**
-	 * Return the eTag of the page. The etag is calculated using the following information:
-	 * <ul>
-	 * <li>Number of total elements (all pages)</li>
-	 * <li>All etags for all found elements</li>
-	 * <li>Number of the current page</li>
-	 * </ul>
+	 * Apply paging to the list of elements.
 	 * 
-	 * @param ac
+	 * @param elementList
+	 * @param pagingInfo
 	 * @return
 	 */
-	String getETag(InternalActionContext ac);
+	public static <R> Page<? extends R> applyPaging(List<R> elementList, PagingParameters pagingInfo) {
+		// Internally we start with page 0
+		int page = pagingInfo.getPage() - 1;
+
+		int low = page * pagingInfo.getPerPage();
+		int upper = low + pagingInfo.getPerPage() - 1;
+
+		int n = 0;
+
+		List<R> pagedList = new ArrayList<>();
+		for (R element : elementList) {
+
+			// Only add elements that are within the page
+			if (n >= low && n <= upper) {
+				pagedList.add(element);
+			}
+			n++;
+		}
+
+		// Set meta information to the rest response
+		int totalPages = (int) Math.ceil(elementList.size() / (double) pagingInfo.getPerPage());
+		// Cap totalpages to 1
+		totalPages = totalPages == 0 ? 1 : totalPages;
+
+		return new PageImpl<>(pagedList, n, pagingInfo.getPage(), totalPages, pagingInfo.getPerPage());
+	}
+
+	/**
+	 * Returns the wrapped list which contains the results.
+	 * @return
+	 */
+	List<? extends T> getWrappedList();
 
 }

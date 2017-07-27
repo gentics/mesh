@@ -1,7 +1,7 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -39,7 +39,7 @@ import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.util.Tuple;
 
@@ -101,7 +101,7 @@ public class SearchRestHandler {
 			Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
 			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException {
 
-		PagingParametersImpl pagingInfo = ac.getPagingParameters();
+		PagingParameters pagingInfo = ac.getPagingParameters();
 		if (pagingInfo.getPage() < 1) {
 			throw new InvalidArgumentException("The page must always be positive");
 		}
@@ -148,7 +148,7 @@ public class SearchRestHandler {
 
 			@Override
 			public void onResponse(SearchResponse response) {
-				db.noTx(() -> {
+				db.tx(() -> {
 					List<ObservableFuture<Tuple<T, String>>> obs = new ArrayList<>();
 					List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 
@@ -209,7 +209,10 @@ public class SearchRestHandler {
 
 						// Set meta information to the rest response
 						PagingMetaInfo metainfo = new PagingMetaInfo();
-						int totalPages = (int) Math.ceil(list.size() / (double) pagingInfo.getPerPage());
+						int totalPages = 0;
+						if (pagingInfo.getPerPage() != 0) {
+							totalPages = (int) Math.ceil(list.size() / (double) pagingInfo.getPerPage());
+						}
 						// Cap totalpages to 1
 						totalPages = totalPages == 0 ? 1 : totalPages;
 						metainfo.setTotalCount(list.size());
@@ -241,26 +244,26 @@ public class SearchRestHandler {
 			@Override
 			public void onFailure(Throwable e) {
 				log.error("Search query failed", e);
-				throw error(BAD_REQUEST, "search_error_query");
+				ac.fail(error(BAD_REQUEST, "search_error_query"));
 			}
 		});
 
 	}
 
 	public void handleStatus(InternalActionContext ac) {
-		db.noTx(() -> {
+		db.tx(() -> {
 			SearchStatusResponse statusResponse = new SearchStatusResponse();
 			return Observable.just(statusResponse);
 		}).subscribe(message -> ac.send(message, OK), ac::fail);
 	}
 
 	public void handleReindex(InternalActionContext ac) {
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			if (ac.getUser().hasAdminRole()) {
 				searchProvider.clear();
 
 				// Iterate over all index handlers update the index
-				for (IndexHandler handler : registry.getHandlers()) {
+				for (IndexHandler<?> handler : registry.getHandlers()) {
 					// Create all indices.
 					handler.init().await();
 
@@ -285,9 +288,9 @@ public class SearchRestHandler {
 	}
 
 	public void createMappings(InternalActionContext ac) {
-		utils.operateNoTx(ac, () -> {
+		utils.operateTx(ac, () -> {
 			if (ac.getUser().hasAdminRole()) {
-				for (IndexHandler handler : registry.getHandlers()) {
+				for (IndexHandler<?> handler : registry.getHandlers()) {
 					handler.init().await();
 				}
 				nodeIndexHandler.updateNodeIndexMappings();

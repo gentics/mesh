@@ -43,7 +43,7 @@ public interface GraphFieldSchemaContainer<R extends FieldSchemaContainer, RE ex
 	 * @param version
 	 * @return
 	 */
-	VV findVersionByRev(Integer version);
+	VV findVersionByRev(String version);
 
 	/**
 	 * Return a list with all found schema versions.

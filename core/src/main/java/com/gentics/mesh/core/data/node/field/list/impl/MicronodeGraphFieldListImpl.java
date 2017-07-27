@@ -23,6 +23,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
@@ -134,7 +135,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 					return Observable.error(error(INTERNAL_SERVER_ERROR, "Found micronode without microschema reference"));
 				}
 
-				return Observable.just(ac.getProject().getMicroschemaContainerRoot().fromReference(microschemaReference, ac.getRelease(null)));
+				return Observable.just(ac.getProject().getMicroschemaContainerRoot().fromReference(microschemaReference, ac.getRelease()));
 				// TODO add onError in order to return nice exceptions if the schema / version could not be found
 			}, (node, microschemaContainerVersion) -> {
 				// Load the micronode for the current field
@@ -160,6 +161,8 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				// Update the micronode since it could be found
 				try {
 					micronode.updateFieldsFromRest(ac, node.getFields());
+				} catch (GenericRestException e) {
+					throw e;
 				} catch (Exception e) {
 					throw error(INTERNAL_SERVER_ERROR, "Unknown error while updating micronode list.", e);
 				}

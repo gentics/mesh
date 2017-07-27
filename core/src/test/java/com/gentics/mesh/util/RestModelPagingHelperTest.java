@@ -20,17 +20,15 @@ public class RestModelPagingHelperTest {
 		ListResponse<?> response = new ListResponse<>();
 		Page<?> page = mock(PageImpl.class);
 
-		int nPages = 3;
-		int nCurrentPage = 0;
+		long nPages = 3;
+		long nCurrentPage = 0;
 		long nTotalElements = 1000;
-		int nElements = 200;
-		long nPageSize = 21;
+		int nPageSize = 21;
 
-		PagingParametersImpl info = new PagingParametersImpl(nCurrentPage + 1, (int) nPageSize);
+		PagingParametersImpl info = new PagingParametersImpl((int) (nCurrentPage + 1), (int) nPageSize);
 
 		when(page.getNumber()).thenReturn(nCurrentPage);
-		when(page.getTotalPages()).thenReturn(nPages);
-		when(page.getNumberOfElements()).thenReturn(nElements);
+		when(page.getPageCount()).thenReturn(nPages);
 		when(page.getTotalElements()).thenReturn(nTotalElements);
 		when(page.getPerPage()).thenReturn(nPageSize);
 		Mockito.doCallRealMethod().when(page).setPaging(response);

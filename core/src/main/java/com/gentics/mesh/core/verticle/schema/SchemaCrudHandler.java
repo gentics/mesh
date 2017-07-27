@@ -4,8 +4,9 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.common.GenericMessageResponse.message;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.rest.Messages.message;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -13,7 +14,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
 
@@ -24,12 +24,17 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -37,17 +42,21 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
+import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import rx.Completable;
 import rx.Single;
 
 public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
+
+	private static final Logger log = LoggerFactory.getLogger(SchemaCrudHandler.class);
 
 	private SchemaComparator comparator;
 
@@ -72,12 +81,13 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	@Override
 	public void handleUpdate(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
-		utils.operateNoTx(ac, () -> {
+		utils.operateTx(ac, () -> {
 
 			// 1. Load the schema container with update permissions
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
 			SchemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
+			requestModel.validate();
 
 			// 2. Diff the schema with the latest version
 			SchemaChangesListModel model = new SchemaChangesListModel();
@@ -90,8 +100,41 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			}
 
 			List<DeliveryOptions> events = new ArrayList<>();
-			SearchQueueBatch batch = searchQueue.create();
-			db.tx(() -> {
+			Completable searchBatchCompletable = db.tx(() -> {
+
+				// Check whether there are any microschemas which are referenced by the schema
+				for (FieldSchema field : requestModel.getFields()) {
+					if (field instanceof MicronodeFieldSchema) {
+						MicronodeFieldSchema microschemaField = (MicronodeFieldSchema) field;
+
+						// Check each allowed microschema individually
+						for (String microschemaName : microschemaField.getAllowedMicroSchemas()) {
+
+							// schema_error_microschema_reference_no_perm
+							MicroschemaContainer microschema = boot.get().microschemaContainerRoot().findByName(microschemaName);
+							if (microschema == null) {
+								throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
+							}
+							if (!ac.getUser().hasPermission(microschema, READ_PERM)) {
+								throw error(BAD_REQUEST, "schema_error_microschema_reference_no_perm", microschemaName, field.getName());
+							}
+
+							// Locate the projects to which the schema was linked - We need to ensure that the microschema is also linked to those projects
+							for (SchemaContainerRoot roots : schemaContainer.getRoots()) {
+								Project project = roots.getProject();
+								if (project != null) {
+									project.getMicroschemaContainerRoot().addMicroschema(microschema);
+								}
+							}
+						}
+					}
+				}
+
+				events.clear();
+				List<Completable> completables = new ArrayList<>();
+				SearchQueueBatch batch = searchQueue.create();
+				completables.add(batch.processAsync());
+
 				// 3. Apply the found changes to the schema
 				SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
@@ -116,22 +159,42 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						// Assign the new version to the release
 						release.assignSchemaVersion(createdVersion);
 
-						// Invoke the node release migration
+						if (log.isDebugEnabled()) {
+							log.debug("Preparing node migration for release {" + releaseEntry.getKey().getUuid() + "}");
+						}
+						String projectUuid = release.getRoot().getProject().getUuid();
+						String fromVersion = previouslyReferencedVersion.getUuid();
+						String toVersion = createdVersion.getUuid();
+						String releaseUuid = release.getUuid();
+						SchemaModel newSchema = createdVersion.getSchema();
+						String schemaUuid = createdVersion.getSchemaContainer().getUuid();
+						if (log.isDebugEnabled()) {
+							log.debug("Migrating nodes from schema version {" + fromVersion + "} to {" + toVersion + "} for schema with uuid {"
+									+ schemaUuid + "}");
+						}
+
+						// The node migration needs to write into a new index. Lets prepare the creation of that index
+						SearchQueueBatch indexCreatingBatch = searchQueue.create();
+						indexCreatingBatch.createNodeIndex(projectUuid, releaseUuid, toVersion, DRAFT, newSchema);
+						indexCreatingBatch.createNodeIndex(projectUuid, releaseUuid, toVersion, PUBLISHED, newSchema);
+						completables.add(indexCreatingBatch.processAsync());
+
+						// Lets also prepare the invocation of the migration. The migration is delegated to a worker verticle.
 						DeliveryOptions options = new DeliveryOptions();
-						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, release.getRoot().getProject().getUuid());
-						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
-						options.addHeader(NodeMigrationVerticle.UUID_HEADER, createdVersion.getSchemaContainer().getUuid());
-						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, previouslyReferencedVersion.getUuid());
-						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, createdVersion.getUuid());
+						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
+						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, releaseUuid);
+						options.addHeader(NodeMigrationVerticle.UUID_HEADER, schemaUuid);
+						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, fromVersion);
+						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, toVersion);
 						events.add(options);
-
 					}
-
 				}
+				return Completable.merge(completables);
+			});
 
-				return batch;
-			}).processSync();
+			searchBatchCompletable.await();
 
+			// Invoke the node release migration
 			for (DeliveryOptions option : events) {
 				Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, option);
 			}
@@ -152,9 +215,10 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleDiff(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 
-		utils.operateNoTx(ac, () -> {
+		utils.operateTx(ac, () -> {
 			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
 			Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
+			requestModel.validate();
 			return schema.getLatestVersion().diff(ac, comparator, requestModel);
 		}, model -> ac.send(model, OK));
 	}
@@ -179,14 +243,34 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleAddSchemaToProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
 				SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
 				Tuple<SearchQueueBatch, Single<SchemaResponse>> tuple = db.tx(() -> {
 
+					// Assign the schema to the project
 					project.getSchemaContainerRoot().addSchemaContainer(schema);
+
+//					// Check whether there are any microschemas which are referenced by the schema
+//					for (FieldSchema field : schema.getLatestVersion().getSchema().getFields()) {
+//						if (field instanceof MicronodeFieldSchema) {
+//							MicronodeFieldSchema microschemaField = (MicronodeFieldSchema) field;
+//							for (String microschemaName : microschemaField.getAllowedMicroSchemas()) {
+//								// schema_error_microschema_reference_no_perm
+//								MicroschemaContainer microschema = ac.getProject().getMicroschemaContainerRoot().findByName(microschemaName);
+//								if (microschema == null) {
+//									throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
+//								}
+//								if (ac.getUser().hasPermission(microschema, READ_PERM)) {
+//									throw error(BAD_REQUEST, "schema_error_microschema_reference_no_perm", microschemaName, field.getName());
+//								}
+//								project.getMicroschemaContainerRoot().addMicroschema(microschema);
+//							}
+//						}
+//					}
+
 					SearchQueueBatch batch = searchQueue.create();
 
 					String releaseUuid = project.getLatestRelease().getUuid();
@@ -215,7 +299,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleRemoveSchemaFromProject(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
 			if (ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
@@ -235,7 +319,6 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 	public void handleGetSchemaChanges(InternalActionContext ac) {
 		// TODO Auto-generated method stub
-
 	}
 
 	/**
@@ -249,7 +332,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 	public void handleApplySchemaChanges(InternalActionContext ac, String schemaUuid) {
 		validateParameter(schemaUuid, "schemaUuid");
 
-		utils.operateNoTx(ac, () -> {
+		utils.operateTx(ac, () -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
 			db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
@@ -259,53 +342,6 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			return message(ac, "migration_invoked", schema.getName());
 		}, model -> ac.send(model, OK));
 
-	}
-
-	/**
-	 * Helper handler which will handle requests for processing remaining not yet migrated nodes.
-	 * 
-	 * @param ac
-	 */
-	public void handleMigrateRemaining(InternalActionContext ac) {
-		utils.operateNoTx(ac, () -> {
-			for (SchemaContainer schemaContainer : boot.get().schemaContainerRoot().findAll()) {
-				SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
-				SchemaContainerVersion currentVersion = latestVersion;
-				while (true) {
-					currentVersion = currentVersion.getPreviousVersion();
-					if (currentVersion == null) {
-						break;
-					}
-					//TODO determine the releaseUuid
-					String releaseUuid = null;
-					//					System.out.println("Before migration " + schemaContainer.getName() + " - " + currentVersion.getUuid() + "="
-					//							+ currentVersion.getFieldContainers(releaseUuid).size());
-					//					if (!getLatestVersion().getUuid().equals(version.getUuid())) {
-					//						for (GraphFieldContainer container : version.getFieldContainers()) {
-					//							NodeImpl node = container.in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null);
-					//							System.out.println(
-					//									"Node: " + node.getUuid() + "ne: " + node.getLastEditedTimestamp() + "nc: " + node.getCreationTimestamp());
-					//						}
-					//					}
-					CountDownLatch latch = new CountDownLatch(1);
-					DeliveryOptions options = new DeliveryOptions();
-					options.addHeader(NodeMigrationVerticle.UUID_HEADER, schemaContainer.getUuid());
-					options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, currentVersion.getUuid());
-					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, latestVersion.getUuid());
-					SchemaContainerVersion version = currentVersion;
-					Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
-						try (NoTx noTrx = db.noTx()) {
-							System.out.println("After migration " + schemaContainer.getName() + " - " + version.getUuid() + "="
-									+ version.getFieldContainers(releaseUuid).size());
-						}
-						latch.countDown();
-					});
-					latch.await();
-				}
-
-			}
-			return message(ac, "schema_migration_invoked");
-		}, model -> ac.send(model, OK));
 	}
 
 }

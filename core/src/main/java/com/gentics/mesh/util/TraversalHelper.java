@@ -6,16 +6,17 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import com.gentics.mesh.api.common.SortOrder;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.impl.TransformablePageImpl;
+import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.error.InvalidArgumentException;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
@@ -45,11 +46,36 @@ public final class TraversalHelper {
 	 * @param classOfT
 	 *            Class that used to map the ferma objects that were found for the page query
 	 * @return
-	 * @throws InvalidArgumentException
 	 */
-	private static <T extends TransformableElement<? extends RestModel>> Page<T> getPagedResult(VertexTraversal<?, ?, ?> traversal, String sortBy,
-			SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) throws InvalidArgumentException {
+	private static <T extends TransformableElement<? extends RestModel>> TransformablePage<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
+			String sortBy, SortOrder order, int page, int pageSize, int perPage, Class<T> classOfT) {
 
+		Page<T> resultPage = getPagedResult2(traversal, sortBy, order, page, pageSize, perPage, classOfT);
+
+		return new TransformablePageImpl<T>(resultPage);
+	}
+
+	/**
+	 * Create a page result for the given traversal and the specified paging parameters. Due to Tinkerpop Gremlin limitation it is needed to manually duplicate
+	 * the traversals. TP 3.x will be able to reuse existing traversals.
+	 * 
+	 * @param traversal
+	 *            Base traversal that is used to find the affected elements
+	 * @param sortBy
+	 *            Order by element property (eg. name, creator..). When null no extra sorting will be applied.
+	 * @param order
+	 *            Sortorder
+	 * @param page
+	 *            Page that is currently selected
+	 * @param pageSize
+	 *            Page size that is used to calculate the skip item amount
+	 * @param perPage
+	 *            Per page parameter
+	 * @param classOfT
+	 *            Class that used to map the ferma objects that were found for the page query
+	 */
+	public static <T> Page<T> getPagedResult2(VertexTraversal<?, ?, ?> traversal, String sortBy, SortOrder order, int page, int pageSize, int perPage,
+			Class<T> classOfT) {
 		if (page < 1) {
 			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(page));
 		}
@@ -61,8 +87,8 @@ public final class TraversalHelper {
 		// External (for the enduser) all pages start with 1.
 		page = page - 1;
 
-		int low = page * pageSize - 1;
-		int upper = low + pageSize;
+		long low = page * pageSize - 1;
+		long upper = low + pageSize;
 
 		if (pageSize == 0) {
 			low = 0;
@@ -70,7 +96,8 @@ public final class TraversalHelper {
 		}
 
 		Iterator<VertexFrame> iterator = traversal.iterator();
-		int count = 0;
+		long count = 0;
+		// Iterate over all found elements and frame them
 		List<T> elementsOfPage = new ArrayList<>();
 		while (iterator.hasNext()) {
 			VertexFrame element = iterator.next();
@@ -82,28 +109,45 @@ public final class TraversalHelper {
 		}
 
 		// The totalPages of the list response must be zero if the perPage parameter is also zero.
-		int totalPages = 0;
+		long totalPages = 0;
 		if (perPage != 0) {
-			totalPages = (int) Math.ceil(count / (double) (perPage));
+			totalPages = (long) Math.ceil(count / (double) (perPage));
 		}
-
 		// Internally the page size was reduced. We need to increment it now that we are finished.
-		return new PageImpl<T>(elementsOfPage, count, ++page, totalPages, elementsOfPage.size(), perPage);
-
+		return new PageImpl<T>(elementsOfPage, count, ++page, totalPages, perPage);
 	}
 
 	/**
 	 * Return a paged result for the given traversal and paging parameters.
 	 * 
 	 * @param traversal
+	 *            Traversal to be used to load the vertices for the page
 	 * @param pagingInfo
+	 *            Paging information to be used to apply paging
 	 * @param classOfT
-	 * @return
-	 * @throws InvalidArgumentException
+	 *            Type of the elements within the page
+	 * @return Page with the result information
 	 */
-	public static <T extends TransformableElement<? extends RestModel>> Page<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
-			PagingParameters pagingInfo, Class<T> classOfT) throws InvalidArgumentException {
+	public static <T extends TransformableElement<? extends RestModel>> TransformablePage<T> getPagedResult(VertexTraversal<?, ?, ?> traversal,
+			PagingParameters pagingInfo, Class<T> classOfT) {
 		return getPagedResult(traversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
+				pagingInfo.getPerPage(), classOfT);
+	}
+	
+	/**
+	 * Return a paged result for the given traversal and paging parameters.
+	 * 
+	 * @param traversal
+	 *            Traversal to be used to load the vertices for the page
+	 * @param pagingInfo
+	 *            Paging information to be used to apply paging
+	 * @param classOfT
+	 *            Type of the elements within the page
+	 * @return Page with the result information
+	 */
+	public static <T> Page<T> getPagedResult2(VertexTraversal<?, ?, ?> traversal,
+			PagingParameters pagingInfo, Class<T> classOfT) {
+		return getPagedResult2(traversal, pagingInfo.getSortBy(), pagingInfo.getOrder(), pagingInfo.getPage(), pagingInfo.getPerPage(),
 				pagingInfo.getPerPage(), classOfT);
 	}
 
@@ -111,6 +155,7 @@ public final class TraversalHelper {
 	 * Simple debug method for a vertex traversal. All vertices will be printed out. Don't use this code for production.
 	 * 
 	 * @param traversal
+	 *            Traversal to be debugged
 	 */
 	public static void debug(VertexTraversal<?, ?, ?> traversal) {
 		for (MeshVertexImpl v : traversal.toListExplicit(MeshVertexImpl.class)) {
@@ -135,7 +180,7 @@ public final class TraversalHelper {
 	 * Simple debug method for printing all existing vertices.
 	 */
 	public static void printDebugVertices() {
-		for (VertexFrame frame : Database.getThreadLocalGraph().v()) {
+		for (VertexFrame frame : Tx.getActive().getGraph().v()) {
 			System.out.println(
 					frame.getId() + " " + frame.getProperty("ferma_type") + " " + frame.getProperty("name") + " " + frame.getProperty("uuid"));
 		}

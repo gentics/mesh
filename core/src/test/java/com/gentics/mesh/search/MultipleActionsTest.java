@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -16,8 +17,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import rx.Completable;
@@ -32,7 +32,7 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testActions() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 		final int nodeCount = 1;
@@ -55,7 +55,7 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	private Observable<NodeResponse> getNodesBySchema(String schemaName) throws JSONException {
-		return client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name.raw", SCHEMA_NAME), new VersioningParameters().draft())
+		return client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name.raw", SCHEMA_NAME), new VersioningParametersImpl().draft())
 				.toObservable().flatMapIterable(it -> it.getData());
 	}
 

@@ -18,11 +18,10 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.SchemaUpdateParameters;
+import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.util.UUIDUtil;
-
-import io.vertx.ext.web.Route;
 
 /**
  * Verticle for /api/v1/schemas endpoint
@@ -57,16 +56,6 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		addCreateHandler();
 		addUpdateHandler();
 		addDeleteHandler();
-	}
-
-	private void addNodeMigrationHandler() {
-
-		Route route = route("/:schemaUuid/migrate").method(GET).produces(APPLICATION_JSON);
-		route.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			crudHandler.handleMigrateRemaining(ac);
-		});
-
 	}
 
 	private void addChangesHandler() {
@@ -136,7 +125,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.description("Update the schema.");
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.addQueryParameters(SchemaUpdateParameters.class);
+		endpoint.addQueryParameters(SchemaUpdateParametersImpl.class);
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Updated schema.");
 		endpoint.handler(rc -> {
@@ -166,6 +155,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		readOne.path("/:schemaUuid");
 		readOne.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		readOne.method(GET);
+		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.description("Load the schema with the given uuid.");
 		readOne.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Loaded schema.");
 		readOne.produces(APPLICATION_JSON);

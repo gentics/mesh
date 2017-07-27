@@ -21,12 +21,15 @@ import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 
+/**
+ * @see MicroschemaContainerRoot
+ */
 public class MicroschemaContainerRootImpl extends AbstractRootVertex<MicroschemaContainer> implements MicroschemaContainerRoot {
 
 	public static void init(Database database) {
@@ -56,7 +59,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public MicroschemaContainer create(Microschema microschema, User user, String uuid) {
+	public MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid) {
 		microschema.validate();
 		MicroschemaContainer container = getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 		if (uuid != null) {
@@ -64,7 +67,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		}
 		MicroschemaContainerVersion version = getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 
-		microschema.setVersion(1);
+		microschema.setVersion("1.0");
 		container.setLatestVersion(version);
 		version.setName(microschema.getName());
 		version.setSchema(microschema);
@@ -84,7 +87,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	@Override
 	public MicroschemaContainer create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
-		Microschema microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModel.class);
+		MicroschemaModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 		microschema.validate();
 		if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid());
@@ -105,7 +108,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	public MicroschemaContainerVersion fromReference(MicroschemaReference reference, Release release) {
 		String microschemaName = reference.getName();
 		String microschemaUuid = reference.getUuid();
-		Integer version = release == null ? reference.getVersion() : null;
+		String version = release == null ? reference.getVersion() : null;
 		MicroschemaContainer container = null;
 		if (!isEmpty(microschemaName)) {
 			container = findByName(microschemaName);

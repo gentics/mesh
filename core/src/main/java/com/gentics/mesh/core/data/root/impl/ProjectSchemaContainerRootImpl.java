@@ -1,13 +1,9 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
-
 import java.util.List;
 
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -18,15 +14,6 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 
 	public static void init(Database database) {
 		database.addVertexType(ProjectSchemaContainerRootImpl.class, MeshVertexImpl.class);
-	}
-
-	/**
-	 * Get the project
-	 * 
-	 * @return project
-	 */
-	protected Project getProject() {
-		return in(HAS_SCHEMA_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 
 	@Override

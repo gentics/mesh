@@ -3,12 +3,13 @@ package com.gentics.mesh.etc.config;
 import java.io.File;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.gentics.mesh.etc.ElasticSearchOptions;
-import com.gentics.mesh.etc.GraphStorageOptions;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.doc.GenerateDocumentation;
 
 /**
  * Main mesh configuration POJO.
  */
+@GenerateDocumentation
 public class MeshOptions {
 
 	public static final boolean ENABLED = true;
@@ -18,26 +19,46 @@ public class MeshOptions {
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final int DEFAULT_MAX_DEPTH = 10;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag to enable or disable the cluster mode. (Not yet fully implemented)")
 	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
 
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure system wide default language. This language is automatically used if no language has been specified within the REST query parameters or GraphQL query arguments.")
 	private String defaultLanguage = DEFAULT_LANGUAGE;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Turn on or off the update checker.")
 	private boolean updateCheck = ENABLED;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Http server options.")
 	private HttpServerConfig httpServerOptions = new HttpServerConfig();
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Graph database options.")
 	private GraphStorageOptions storageOptions = new GraphStorageOptions();
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Search engine options.")
 	private ElasticSearchOptions searchOptions = new ElasticSearchOptions();
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("File upload options.")
 	private MeshUploadOptions uploadOptions = new MeshUploadOptions();
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Authentication options.")
 	private AuthenticationOptions authenticationOptions = new AuthenticationOptions();
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Image handling options.")
 	private ImageManipulatorOptions imageOptions = new ImageManipulatorOptions();
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Path to the central tmp directory.")
 	private String tempDirectory = "data" + File.separator + "tmp";
 
 	public MeshOptions() {
@@ -57,9 +78,11 @@ public class MeshOptions {
 	 * 
 	 * @param clusterMode
 	 *            Flag value
+	 * @return Fluent API
 	 */
-	public void setClusterMode(boolean clusterMode) {
+	public MeshOptions setClusterMode(boolean clusterMode) {
 		this.clusterMode = clusterMode;
+		return this;
 	}
 
 	/**
@@ -84,9 +107,11 @@ public class MeshOptions {
 	 * Set the default max depth for navigations.
 	 * 
 	 * @param defaultMaxDepth
+	 * @return Fluent API
 	 */
-	public void setDefaultMaxDepth(int defaultMaxDepth) {
+	public MeshOptions setDefaultMaxDepth(int defaultMaxDepth) {
 		this.defaultMaxDepth = defaultMaxDepth;
+		return this;
 	}
 
 	/**
@@ -154,9 +179,11 @@ public class MeshOptions {
 	 * 
 	 * @param searchOptions
 	 *            Search options
+	 * @return Fluent API
 	 */
-	public void setSearchOptions(ElasticSearchOptions searchOptions) {
+	public MeshOptions setSearchOptions(ElasticSearchOptions searchOptions) {
 		this.searchOptions = searchOptions;
+		return this;
 	}
 
 	/**
@@ -174,9 +201,11 @@ public class MeshOptions {
 	 * 
 	 * @param authenticationOptions
 	 *            Authentication options
+	 * @return Fluent API
 	 */
-	public void setAuthenticationOptions(AuthenticationOptions authenticationOptions) {
+	public MeshOptions setAuthenticationOptions(AuthenticationOptions authenticationOptions) {
 		this.authenticationOptions = authenticationOptions;
+		return this;
 	}
 
 	/**
@@ -212,9 +241,11 @@ public class MeshOptions {
 	 * Set the image manipulation options.
 	 * 
 	 * @param imageOptions
+	 * @return Fluent API
 	 */
-	public void setImageOptions(ImageManipulatorOptions imageOptions) {
+	public MeshOptions setImageOptions(ImageManipulatorOptions imageOptions) {
 		this.imageOptions = imageOptions;
+		return this;
 	}
 
 	/**
@@ -231,9 +262,11 @@ public class MeshOptions {
 	 * Set the update checker flag. If set to true a update check will be invoked during mesh server startup.
 	 * 
 	 * @param updateCheck
+	 * @return Fluent API
 	 */
-	public void setUpdateCheck(boolean updateCheck) {
+	public MeshOptions setUpdateCheck(boolean updateCheck) {
 		this.updateCheck = updateCheck;
+		return this;
 	}
 
 }

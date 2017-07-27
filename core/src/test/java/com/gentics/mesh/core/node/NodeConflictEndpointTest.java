@@ -19,6 +19,7 @@ import java.util.Locale;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -27,17 +28,15 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.Tx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
-import com.gentics.mesh.rest.client.MeshRestClientHttpException;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.Tuple;
@@ -54,21 +53,19 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		NodeUpdateRequest request = new NodeUpdateRequest();
 		request.setLanguage("en");
 		// Only update the name field
-		request.getFields().put("name", FieldUtil.createStringField(nameFieldValue));
-		VersionReference reference = new VersionReference();
-		reference.setNumber(baseVersion);
-		request.setVersion(reference);
+		request.getFields().put("teaser", FieldUtil.createStringField(nameFieldValue));
+		request.setVersion(baseVersion);
 		return request;
 	}
 
 	@Test
 	public void testNoConflictUpdate() {
 
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 
 			Node node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.0");
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 
 			// Invoke an initial update on the node
@@ -91,12 +88,12 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testConflictDetection() {
 
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 
-			// Invoke an initial update on the node - Update Version 1.0 Name -> 1.1
+			// Invoke an initial update on the node - Update Version 1.0 teaser -> 1.1
 			Node node = getTestNode();
 			NodeUpdateRequest request1 = prepareNameFieldUpdateRequest("1234", "1.0");
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request1, parameters));
 			assertThat(restNode).hasVersion("1.1");
@@ -109,15 +106,15 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 			// Update the node and change the name field. Base the update on 1.0 thus a conflict check must be performed. A conflict should be detected.
 			NodeUpdateRequest request3 = prepareNameFieldUpdateRequest("1234", "1.0");
-			request3.getFields().put("name", FieldUtil.createStringField("updatedField"));
+			request3.getFields().put("teaser", FieldUtil.createStringField("updatedField"));
 			MeshResponse<NodeResponse> future = client().updateNode(PROJECT_NAME, node.getUuid(), request3, parameters).invoke();
 			latchFor(future);
 			assertTrue("The node update should fail with a conflict error", future.failed());
 			Throwable error = future.cause();
-			assertThat(error).isNotNull().isInstanceOf(MeshRestClientHttpException.class);
-			MeshRestClientHttpException conflictException = ((MeshRestClientHttpException) error);
+			assertThat(error).isNotNull().isInstanceOf(MeshRestClientMessageException.class);
+			MeshRestClientMessageException conflictException = ((MeshRestClientMessageException) error);
 
-			assertThat((List) conflictException.getResponseMessage().getProperty("conflicts")).hasSize(1).containsExactly("name");
+			assertThat((List) conflictException.getResponseMessage().getProperty("conflicts")).hasSize(1).containsExactly("teaser");
 			assertThat(conflictException.getStatusCode()).isEqualTo(CONFLICT.code());
 			assertThat(conflictException.getMessage()).isEqualTo(I18NUtil.get(Locale.ENGLISH, "node_error_conflict_detected"));
 			assertThat(conflictException.getResponseMessage().getProperty("oldVersion")).isEqualTo("1.0");
@@ -131,10 +128,10 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testDeduplicationDuringUpdate() {
 
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			updateSchema();
 			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
-			assertEquals("Concorde_english_name", origContainer.getString("name").getString());
+			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());
 			assertEquals("Concorde english title", origContainer.getString("title").getString());
 			trx.success();
 		}
@@ -154,7 +151,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 	private void initialRequest() {
 
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer oldContainer = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.0");
@@ -167,7 +164,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 					FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test-firstname")),
 							Tuple.tuple("lastName", FieldUtil.createStringField("test-lastname"))));
 
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeResponse restNode = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters));
 			assertThat(restNode).hasVersion("1.1");
@@ -178,9 +175,9 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			NodeGraphFieldContainer newContainer = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.1");
 			assertEquals("The name field value of the old container version should not have been changed.", "Concorde_english_name",
-					oldContainer.getString("name").getString());
+					oldContainer.getString("teaser").getString());
 			assertEquals("The name field value of the new container version should contain the expected value.", "1234",
-					newContainer.getString("name").getString());
+					newContainer.getString("teaser").getString());
 			assertNotNull("The new container should also contain the title since basic field types are not deduplicated",
 					newContainer.getString("title"));
 			assertNotNull("The container for version 0.1 should contain the title value.", oldContainer.getString("title"));
@@ -189,9 +186,9 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	}
 
 	private NodeUpdateRequest modifingRequest() {
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.1");
 
@@ -220,9 +217,9 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	 * @param request
 	 */
 	private void repeatRequest(NodeUpdateRequest request) {
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			// Add another field to the request in order to invoke an update. Otherwise no update would occure and no 1.3 would be created.
 			request.getFields().put("content", FieldUtil.createHtmlField("changed"));
@@ -230,7 +227,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			assertThat(restNode).hasVersion("1.3");
 		}
 
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer createdVersion = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.3");
@@ -259,9 +256,9 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	}
 
 	private void deletingRequest() {
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request4 = prepareNameFieldUpdateRequest("1234", "1.2");
 			request4.getFields().put("micronode", null);
@@ -269,7 +266,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			NodeResponse restNode4 = call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request4, parameters));
 			assertThat(restNode4).hasVersion("1.4");
 		}
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
 			NodeGraphFieldContainer createdVersion = node.findNextMatchingFieldContainer(Arrays.asList("en"), project().getLatestRelease().getUuid(),
 					"1.4");
@@ -291,7 +288,7 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		micronodeFieldSchema.setAllowedMicroSchemas("vcard");
 
 		// Add the field schemas to the schema
-		Schema schema = node.getSchemaContainer().getLatestVersion().getSchema();
+		SchemaModel schema = node.getSchemaContainer().getLatestVersion().getSchema();
 		schema.addField(stringListFieldSchema);
 		schema.addField(micronodeFieldSchema);
 		node.getSchemaContainer().getLatestVersion().setSchema(schema);
@@ -303,10 +300,10 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testConflictInMicronode() {
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			updateSchema();
 			NodeGraphFieldContainer origContainer = getTestNode().getLatestDraftFieldContainer(english());
-			assertEquals("Concorde_english_name", origContainer.getString("name").getString());
+			assertEquals("Concorde_english_name", origContainer.getString("teaser").getString());
 			assertEquals("Concorde english title", origContainer.getString("title").getString());
 			trx.success();
 		}
@@ -315,9 +312,9 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		initialRequest();
 
 		// Modify 1.1 and update micronode
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.1");
 
@@ -337,9 +334,9 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 		}
 
 		// Another update request based on 1.1 which also updates the micronode - A conflict should be detected
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 			Node node = getTestNode();
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "1.1");
 
@@ -353,8 +350,8 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 			latchFor(future);
 			assertTrue("The node update should fail with a conflict error", future.failed());
 			Throwable error = future.cause();
-			assertThat(error).isNotNull().isInstanceOf(MeshRestClientHttpException.class);
-			MeshRestClientHttpException conflictException = ((MeshRestClientHttpException) error);
+			assertThat(error).isNotNull().isInstanceOf(MeshRestClientMessageException.class);
+			MeshRestClientMessageException conflictException = ((MeshRestClientMessageException) error);
 			assertThat(((List) conflictException.getResponseMessage().getProperty("conflicts"))).hasSize(2).containsExactly("micronode.firstName",
 					"micronode.lastName");
 			assertThat(conflictException.getStatusCode()).isEqualTo(CONFLICT.code());
@@ -367,11 +364,11 @@ public class NodeConflictEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testBogusVersionNumber() {
-		try (Tx trx = db().tx()) {
+		try (Tx trx = tx()) {
 
 			Node node = getTestNode();
 			NodeUpdateRequest request = prepareNameFieldUpdateRequest("1234", "42.1");
-			NodeParameters parameters = new NodeParameters();
+			NodeParametersImpl parameters = new NodeParametersImpl();
 			parameters.setLanguages("en", "de");
 
 			call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), request, parameters), BAD_REQUEST, "node_error_draft_not_found", "42.1",

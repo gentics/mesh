@@ -23,6 +23,9 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
+/**
+ * @see GroupRoot
+ */
 public class GroupRootImpl extends AbstractRootVertex<Group> implements GroupRoot {
 
 	public static void init(Database database) {

@@ -34,6 +34,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
@@ -61,10 +62,15 @@ import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * @see NodeGraphFieldContainer
  */
 public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl implements NodeGraphFieldContainer {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
 
 	public static final String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
 
@@ -161,7 +167,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
 		if (restFields.hasField(segmentFieldName)) {
-			updateWebrootPathInfo(ac.getRelease(null).getUuid(), "node_conflicting_segmentfield_update");
+			updateWebrootPathInfo(ac.getRelease().getUuid(), "node_conflicting_segmentfield_update");
 		}
 		updateDisplayFieldValue();
 	}
@@ -200,7 +206,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// Determine the webroot path of the container parent node
 		String segment = node.getPathSegment(releaseUuid, type, getLanguage().getLanguageTag());
 
-		// The webroot uniqueness will be checked by validating that the string [segmentValue-releaseUuid-parentNodeUuid] is only listed once within the given specific index for (drafts or published nodes) 
+		// The webroot uniqueness will be checked by validating that the string [segmentValue-releaseUuid-parentNodeUuid] is only listed once within the given
+		// specific index for (drafts or published nodes)
 		if (segment != null) {
 			StringBuilder webRootInfo = new StringBuilder(segment);
 			webRootInfo.append("-").append(releaseUuid);
@@ -213,6 +220,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			NodeGraphFieldContainerImpl conflictingContainer = MeshInternal.get().database().checkIndexUniqueness(indexName, this,
 					webRootInfo.toString());
 			if (conflictingContainer != null) {
+				if (log.isDebugEnabled()) {
+					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} using index {" + indexName + "}");
+				}
 				Node conflictingNode = conflictingContainer.getParentNode();
 				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(),
 						conflictingContainer.getLanguage().getLanguageTag(), conflictI18n, segmentFieldName, segment);
@@ -329,18 +339,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			}
 		});
 	}
-
-	//	@Override
-	//	public void handleRelatedEntries(Action2<IndexableElement, Boolean> action) {
-	//
-	//		Node node = getParentNode();
-	//		SearchQueueEntry entry = batch.addEntry(node.getUuid(), node.getType(), action);
-	//		entry.set(NodeIndexHandler.CUSTOM_LANGUAGE_TAG, getLanguage().getLanguageTag());
-	//		entry.set(NodeIndexHandler.CUSTOM_RELEASE_UUID, releaseUuid);
-	//		entry.set(NodeIndexHandler.CUSTOM_VERSION, type.toString().toLowerCase());
-	//		entry.set(NodeIndexHandler.CUSTOM_PROJECT_UUID, node.getProject().getUuid());
-	//		entry.set(NodeIndexHandler.CUSTOM_SCHEMAVERSION_UUID, getSchemaContainerVersion().getUuid());
-	//	}
 
 	@Override
 	public List<FieldContainerChange> compareTo(FieldMap fieldMap) {
@@ -459,6 +457,30 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public User getEditor() {
 		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+	}
+
+	@Override
+	public String getSegmentFieldValue() {
+		String segmentFieldKey = getSchemaContainerVersion().getSchema().getSegmentField();
+		// 1. The container may reference a schema which has no segment field set thus no path segment can be determined
+		if (segmentFieldKey == null) {
+			return null;
+		}
+
+		// 2. Try to load the path segment using the string field
+		StringGraphField stringField = getString(segmentFieldKey);
+		if (stringField != null) {
+			return stringField.getString();
+		}
+
+		// 3. Try to load the path segment using the binary field since the string field could not be found
+		if (stringField == null) {
+			BinaryGraphField binaryField = getBinary(segmentFieldKey);
+			if (binaryField != null) {
+				return binaryField.getFileName();
+			}
+		}
+		return null;
 	}
 
 }

@@ -3,55 +3,54 @@ package com.gentics.mesh.core.node;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
-import com.gentics.mesh.rest.client.MeshResponse;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadChildrenOfBaseNode() {
-		try (NoTx noTx = db().noTx()) {
-			MeshResponse<NodeListResponse> future = client().findNodeChildren(PROJECT_NAME, project().getBaseNode().getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
+		try (Tx tx = tx()) {
+			call(() -> client().findNodeChildren(PROJECT_NAME, project().getBaseNode().getUuid()));
 		}
 	}
 
 	@Test
 	public void testNodeHierarchy() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node baseNode = project().getBaseNode();
 			String parentNodeUuid = baseNode.getUuid();
-			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParameters().draft()));
+			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().draft()));
 			assertEquals(3, nodeList.getData().size());
 
 			NodeCreateRequest create1 = new NodeCreateRequest();
@@ -63,7 +62,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			NodeResponse createdNode = call(() -> client().createNode(PROJECT_NAME, create1));
 
 			String uuid = createdNode.getUuid();
-			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, uuid, new VersioningParameters().draft()));
+			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 			assertEquals(0, nodeList.getData().size());
 
 			NodeCreateRequest create2 = new NodeCreateRequest();
@@ -72,21 +71,21 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			create2.setParentNodeUuid(uuid);
 			createdNode = call(() -> client().createNode(PROJECT_NAME, create2));
 
-			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, uuid, new VersioningParameters().draft()));
+			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 			assertEquals("The subnode did not contain the created node", 1, nodeList.getData().size());
 
-			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParameters().draft()));
+			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, parentNodeUuid, new VersioningParametersImpl().draft()));
 			assertEquals("The basenode should still contain four nodes.", 4, nodeList.getData().size());
 		}
 	}
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
-			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertThat(node).matches(restNode);
 			assertTrue(restNode.isContainer());
 
@@ -101,14 +100,17 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildrenPermissions() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			Node node = folder("news");
+		Node node = folder("news");
+		try (Tx tx = tx()) {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
 			role().revokePermissions(folder("2015"), READ_PERM);
+			tx.success();
+		}
 
-			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+		try (Tx tx = tx()) {
+			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertThat(node).matches(restNode);
 			assertTrue(restNode.isContainer());
 
@@ -123,12 +125,12 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeByUUIDAndCheckChildren2() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = content("concorde");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParameters().draft()));
+			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertThat(node).matches(restNode);
 			assertFalse("The node should not be a container", restNode.isContainer());
 			assertNull(restNode.getChildrenInfo().get("folder"));
@@ -137,15 +139,15 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeChildren() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
 			int expectedItemsInPage = node.getChildren().size() > 25 ? 25 : node.getChildren().size();
 
-			NodeListResponse nodeList = call(
-					() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(), new VersioningParameters().draft()));
+			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
+					new VersioningParametersImpl().draft()));
 
 			assertEquals(node.getChildren().size(), nodeList.getMetainfo().getTotalCount());
 			assertEquals(expectedItemsInPage, nodeList.getData().size());
@@ -154,15 +156,18 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeChildrenWithoutChildPermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			Node node = folder("news");
+		Node node = folder("news");
+		Node nodeWithNoPerm = folder("2015");
+		try (Tx tx = tx()) {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
-			Node nodeWithNoPerm = folder("2015");
 			role().revokePermissions(nodeWithNoPerm, READ_PERM);
+			tx.success();
+		}
 
+		try (Tx tx = tx()) {
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(),
-					new PagingParametersImpl().setPerPage(20000), new VersioningParameters().draft()));
+					new PagingParametersImpl().setPerPage(20000), new VersioningParametersImpl().draft()));
 
 			assertEquals(node.getChildren().size() - 1, nodeList.getMetainfo().getTotalCount());
 			assertEquals(0, nodeList.getData().stream().filter(p -> nodeWithNoPerm.getUuid().equals(p.getUuid())).count());
@@ -172,39 +177,46 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadNodeChildrenWithNoPermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			Node node = folder("news");
+		Node node = folder("news");
+		try (Tx tx = tx()) {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
-
 			role().revokePermissions(node, READ_PERM);
-
-			MeshResponse<NodeListResponse> future = client()
-					.findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(), new NodeParameters()).invoke();
-			latchFor(future);
-			expectException(future, FORBIDDEN, "error_missing_perm", node.getUuid());
+			tx.success();
 		}
+
+		try (Tx tx = tx()) {
+			call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(), new NodeParametersImpl()), FORBIDDEN,
+					"error_missing_perm", node.getUuid());
+		}
+
 	}
 
 	@Test
 	public void testReadReleaseChildren() {
-		try (NoTx noTx = db().noTx()) {
-			Node node = folder("news");
-			Node firstChild = node.getChildren().get(0);
-			int childrenSize = node.getChildren().size();
-			int expectedItemsInPage = childrenSize > 25 ? 25 : childrenSize;
+		Node node = folder("news");
+		int childrenSize;
+		int expectedItemsInPage;
+		Release newRelease;
+		Node firstChild;
 
-			Project project = project();
-			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+		try (Tx tx = tx()) {
+			firstChild = node.getChildren().get(0);
+			childrenSize = node.getChildren().size();
+			expectedItemsInPage = childrenSize > 25 ? 25 : childrenSize;
 
+			newRelease = project().getReleaseRoot().create("newrelease", user());
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
-					new VersioningParameters().setRelease(initialRelease.getName()).draft()));
+					new VersioningParametersImpl().setRelease(initialRelease().getName()).draft()));
 			assertEquals("Total children in initial release", childrenSize, nodeList.getMetainfo().getTotalCount());
 			assertEquals("Returned children in initial release", expectedItemsInPage, nodeList.getData().size());
 
 			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
-					new VersioningParameters().setRelease(newRelease.getName()).draft()));
+					new VersioningParametersImpl().setRelease(newRelease.getName()).draft()));
 			assertEquals("Total children in initial release", 0, nodeList.getMetainfo().getTotalCount());
 			assertEquals("Returned children in initial release", 0, nodeList.getData().size());
 
@@ -214,10 +226,27 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			call(() -> client().updateNode(PROJECT_NAME, firstChild.getUuid(), update));
 
 			nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
-					new VersioningParameters().setRelease(newRelease.getName()).draft()));
+					new VersioningParametersImpl().setRelease(newRelease.getName()).draft()));
 			assertEquals("Total children in new release", 1, nodeList.getMetainfo().getTotalCount());
 			assertEquals("Returned children in new release", 1, nodeList.getData().size());
 		}
+	}
+
+	@Test
+	public void testFilterByLanguage() {
+		String uuid = db().tx(() -> folder("2015").getUuid());
+
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("de");
+		nodeCreateRequest.setParentNode(new NodeReference().setUuid(uuid));
+		nodeCreateRequest.setSchema(new SchemaReference().setName("content"));
+		nodeCreateRequest.getFields().put("teaser", new StringFieldImpl().setString("Only German Teaser"));
+		nodeCreateRequest.getFields().put("slug", new StringFieldImpl().setString("Only German Slug"));
+
+		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+		NodeListResponse listResponse = call(() -> client().findNodeChildren(PROJECT_NAME, uuid, new NodeParametersImpl().setLanguages("en")));
+		List<String> langList = listResponse.getData().stream().map(node -> node.getLanguage()).collect(Collectors.toList());
+		assertThat(langList).doesNotContain(null, "de");
 	}
 
 	@Test

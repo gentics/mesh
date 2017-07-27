@@ -59,7 +59,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 		endpoint.exampleResponse(OK, "123");
 		endpoint.produces("text/vnd.yaml");
 		endpoint.handler(rc -> {
-			RAMLGenerator generator = new RAMLGenerator(null);
+			RAMLGenerator generator = new RAMLGenerator();
 			String raml = generator.generate();
 			rc.response().end(raml);
 		});
@@ -80,7 +80,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 			info.setSearchVersion(searchProvider.getVersion());
 			info.setMeshVersion(Mesh.getPlainVersion());
 			info.setMeshNodeId(MeshNameProvider.getInstance().getName());
-			info.setVertxVersion(new VersionCommand().getVersion());
+			info.setVertxVersion(VersionCommand.getVersion());
 			ac.send(info, OK);
 		});
 	}

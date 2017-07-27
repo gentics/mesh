@@ -23,7 +23,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
@@ -113,11 +112,18 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		if (stack.isEmpty()) {
 			return this;
 		} else {
-			String uuidSegment = stack.pop();
-			Project project = findByUuid(uuidSegment);
+			String uuidOrNameSegment = stack.pop();
+
+			// Try to locate the project by name first.
+			Project project = findByUuid(uuidOrNameSegment);
+			if (project == null) {
+				// Fallback to locate the project by name instead
+				project = findByName(uuidOrNameSegment);
+			}
 			if (project == null) {
 				return null;
 			}
+
 			if (stack.isEmpty()) {
 				return project;
 			} else {
@@ -193,7 +199,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		creator.addPermissionsOnRole(this, CREATE_PERM, project.getBaseNode(), READ_PUBLISHED_PERM, PUBLISH_PERM);
 		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getTagFamilyRoot());
 		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getSchemaContainerRoot());
-		// TODO add microschema root crud perms
+		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getMicroschemaContainerRoot());
 		creator.addCRUDPermissionOnRole(this, CREATE_PERM, project.getNodeRoot());
 		creator.addPermissionsOnRole(this, CREATE_PERM, initialRelease);
 
@@ -210,7 +216,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		batch.createTagFamilyIndex(projectUuid);
 
 		// 3. Add created basenode to SQB
-		NodeGraphFieldContainer baseNodeFieldContainer = project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
+		// NodeGraphFieldContainer baseNodeFieldContainer = project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
 		batch.store(project.getBaseNode(), releaseUuid, ContainerType.DRAFT, false);
 
 		try {

@@ -26,7 +26,7 @@ public class RestInfoEndpointTest extends AbstractMeshTest {
 		assertEquals(Mesh.getPlainVersion(), info.getMeshVersion());
 		assertEquals("orientdb", info.getDatabaseVendor());
 		assertEquals("dummy", info.getSearchVendor());
-		assertEquals(new VersionCommand().getVersion(), info.getVertxVersion());
+		assertEquals(VersionCommand.getVersion(), info.getVertxVersion());
 		assertEquals(MeshNameProvider.getInstance().getName(), info.getMeshNodeId());
 		assertEquals("The database version did not match.", OConstants.getVersion(), info.getDatabaseVersion());
 		assertEquals("1.0", info.getSearchVersion());

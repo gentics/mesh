@@ -12,40 +12,18 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.8.0-SNAPSHOT</version>
+		<version>0.9.22-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<projectRoot>${project.basedir}/..</projectRoot>
 	</properties>
-
-	<profiles>
-		<profile>
-			<!-- if ./inclusions.txt is present, use that as the inclusion list. Useful 
-				when skipping tests. -->
-			<id>inclusions</id>
-			<activation>
-				<file>
-					<exists>../inclusions.txt</exists>
-				</file>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>maven-surefire-plugin</artifactId>
-						<configuration>
-							<includesFile>../inclusions.txt</includesFile>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
-			<artifactId>mesh-api</artifactId>
+			<artifactId>mesh-common</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -78,9 +56,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<skip>${skip.unit.tests}</skip>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

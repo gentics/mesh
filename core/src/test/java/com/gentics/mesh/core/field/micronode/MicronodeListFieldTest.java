@@ -3,7 +3,6 @@ package com.gentics.mesh.core.field.micronode;
 import static com.gentics.mesh.core.field.micronode.MicronodeListFieldHelper.CREATE_EMPTY;
 import static com.gentics.mesh.core.field.micronode.MicronodeListFieldHelper.FETCH;
 import static com.gentics.mesh.core.field.micronode.MicronodeListFieldHelper.FILL;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -12,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -31,7 +31,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
 
@@ -52,10 +51,11 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldTransformation() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			Node node = folder("2015");
+		Node node = folder("2015");
+		
+		try (Tx tx = tx()) {
 			prepareNode(node, MICRONODE_LIST, "micronode");
-			InternalActionContext ac = getMockedInternalActionContext("");
+			InternalActionContext ac = mockActionContext("");
 
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 
@@ -73,7 +73,10 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			field.getItems().add(micronodeB);
 
 			updateContainer(ac, container, MICRONODE_LIST, field);
-
+			tx.success();
+		}
+		
+		try (Tx tx = tx()) {
 			NodeResponse response = transform(node);
 			assertList(2, "micronodeList", "micronode", response);
 			MicronodeFieldList micronodeRestList = response.getFields().getMicronodeFieldList(MICRONODE_LIST);
@@ -105,8 +108,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testFieldUpdate() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = tx()) {
+			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			MicronodeGraphFieldList list = container.createMicronodeFieldList("dummyList");
 			assertNotNull(list);
 		}
@@ -115,8 +118,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testClone() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = tx()) {
+			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			MicronodeGraphFieldList testField = container.createMicronodeFieldList("testField");
 
 			Micronode micronode = testField.createMicronode();
@@ -129,7 +132,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			micronode.createString("firstName").setString("Mickey");
 			micronode.createString("lastName").setString("Mouse");
 
-			NodeGraphFieldContainerImpl otherContainer = noTx.getGraph()
+			NodeGraphFieldContainerImpl otherContainer = tx.getGraph()
 					.addFramedVertex(NodeGraphFieldContainerImpl.class);
 			testField.cloneTo(otherContainer);
 
@@ -141,8 +144,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEquals() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = tx()) {
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			MicronodeGraphFieldList fieldA = container.createMicronodeFieldList("fieldA");
 			MicronodeGraphFieldList fieldB = container.createMicronodeFieldList("fieldB");
 			assertTrue("The field should  be equal to itself", fieldA.equals(fieldA));
@@ -177,8 +180,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsNull() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainerImpl container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = tx()) {
+			NodeGraphFieldContainerImpl container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 			MicronodeGraphFieldList fieldA = container.createMicronodeFieldList("fieldA");
 			assertFalse(fieldA.equals((Field) null));
 			assertFalse(fieldA.equals((GraphField) null));
@@ -188,8 +191,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testEqualsRestField() {
-		try (NoTx noTx = db().noTx()) {
-			NodeGraphFieldContainer container = noTx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
+		try (Tx tx = tx()) {
+			NodeGraphFieldContainer container = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 
 			// rest null - graph null
 			MicronodeGraphFieldList fieldA = container.createMicronodeFieldList(MICRONODE_LIST);
@@ -223,7 +226,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			invokeUpdateFromRestTestcase(MICRONODE_LIST, FETCH, CREATE_EMPTY);
 		}
 	}
@@ -231,7 +234,7 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestNullOnCreateRequired() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			invokeUpdateFromRestNullOnCreateRequiredTestcase(MICRONODE_LIST, FETCH);
 		}
 	}
@@ -239,8 +242,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveFieldViaNull() {
-		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+		try (Tx tx = tx()) {
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveFieldViaNullTestcase(MICRONODE_LIST, FETCH, FILL, (node) -> {
 				updateContainer(ac, node, MICRONODE_LIST, null);
 			});
@@ -250,8 +253,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testRemoveRequiredFieldViaNull() {
-		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+		try (Tx tx = tx()) {
+			InternalActionContext ac = mockActionContext();
 			invokeRemoveRequiredFieldViaNullTestcase(MICRONODE_LIST, FETCH, FILL, (container) -> {
 				updateContainer(ac, container, MICRONODE_LIST, null);
 			});
@@ -261,8 +264,8 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 	@Test
 	@Override
 	public void testUpdateFromRestValidSimpleValue() {
-		try (NoTx noTx = db().noTx()) {
-			InternalActionContext ac = getMockedInternalActionContext();
+		try (Tx tx = tx()) {
+			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(MICRONODE_LIST, FILL, (container) -> {
 				MicronodeFieldListImpl field = new MicronodeFieldListImpl();
 				MicronodeResponse micronodeA = new MicronodeResponse();

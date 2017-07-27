@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
-import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 
 public class NestedOrientDBTransactionTest {
 
@@ -26,12 +25,12 @@ public class NestedOrientDBTransactionTest {
 				CountDownLatch latch = new CountDownLatch(1);
 
 				new Thread(() -> {
-					OrientGraphNoTx noTx = factory.getNoTx();
+					OrientGraph tx2 = factory.getTx();
 					try {
-						long count = noTx.countVertices();
+						long count = tx.countVertices();
 						System.out.println("Inner " + count);
 					} finally {
-						noTx.shutdown();
+						tx2.shutdown();
 					}
 					latch.countDown();
 				}).start();
@@ -47,12 +46,12 @@ public class NestedOrientDBTransactionTest {
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 		}
-		OrientGraphNoTx noTx = factory.getNoTx();
+		OrientGraph tx = factory.getTx();
 		try {
-			long count = noTx.countVertices();
+			long count = tx.countVertices();
 			assertEquals("A runtime exception occured in the tx transaction. Nothing should have been comitted", 0, count);
 		} finally {
-			noTx.shutdown();
+			tx.shutdown();
 		}
 
 	}
@@ -65,15 +64,17 @@ public class NestedOrientDBTransactionTest {
 		try {
 			OrientGraph tx = factory.getTx();
 			try {
+				
+				// 1. Add a vertex in the inner transaction
 				tx.addVertex(null);
 
 				OrientGraph tx2 = factory.getTx();
 				try {
-					//tx2.addVertex(null);
+					// Verify that the inner count is 1
 					long count = tx2.countVertices();
 					System.out.println("Inner " + count);
 				} finally {
-					//tx2.rollback();
+					tx2.rollback();
 					tx2.shutdown();
 				}
 				throw new RuntimeException();
@@ -84,12 +85,12 @@ public class NestedOrientDBTransactionTest {
 		} catch (RuntimeException e) {
 			e.printStackTrace();
 		}
-		OrientGraphNoTx noTx = factory.getNoTx();
+		OrientGraph tx = factory.getTx();
 		try {
-			long count = noTx.countVertices();
+			long count = tx.countVertices();
 			assertEquals("A runtime exception occured in the tx transaction. Nothing should have been comitted", 0, count);
 		} finally {
-			noTx.shutdown();
+			tx.shutdown();
 		}
 
 	}

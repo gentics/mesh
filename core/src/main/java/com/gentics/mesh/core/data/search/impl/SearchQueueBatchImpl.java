@@ -97,7 +97,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 		HandleContext context = new HandleContext();
 		context.setContainerType(type);
 		context.setReleaseUuid(releaseUuid);
-		//		context.setLanguageTag(node.getLanguage().getLanguageTag());
+		// context.setLanguageTag(node.getLanguage().getLanguageTag());
 		context.setProjectUuid(node.getProject().getUuid());
 		store((IndexableElement) node, context, addRelatedElements);
 		return this;
@@ -118,7 +118,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public SearchQueueBatch delete(Tag tag, boolean addRelatedEntries) {
-		// We need to add the project uuid to the context because the index handler for tags will not be able to 
+		// We need to add the project uuid to the context because the index handler for tags will not be able to
 		// determine the project uuid once the tag has been removed from the graph.
 		HandleContext context = new HandleContext();
 		context.setProjectUuid(tag.getProject().getUuid());
@@ -128,7 +128,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public SearchQueueBatch delete(TagFamily tagFymily, boolean addRelatedEntries) {
-		// We need to add the project uuid to the context because the index handler for tagfamilies will not be able to 
+		// We need to add the project uuid to the context because the index handler for tagfamilies will not be able to
 		// determine the project uuid once the tagfamily has been removed from the graph.
 		HandleContext context = new HandleContext();
 		context.setProjectUuid(tagFymily.getProject().getUuid());
@@ -200,11 +200,6 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public void setBatchId(String batchId) {
-		this.batchId = batchId;
-	}
-
-	@Override
 	public void printDebug() {
 		for (SearchQueueEntry entry : getEntries()) {
 			log.debug("Entry {" + entry.toString() + "} in batch {" + getBatchId() + "}");
@@ -213,31 +208,32 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public Completable processAsync() {
-		// Process the batch
-		Completable obs = Completable.complete();
-		List<Completable> entryList = getEntries().stream().map(entry -> entry.process()).collect(Collectors.toList());
-		if (!entryList.isEmpty()) {
-			obs = Completable.concat(entryList);
-		}
-
-		return obs.doOnCompleted(() -> {
-			if (log.isDebugEnabled()) {
-				log.debug("Handled all search queue items.");
+		return Completable.defer(() -> {
+			// Process the batch
+			Completable obs = Completable.complete();
+			List<Completable> entryList = getEntries().stream().map(entry -> entry.process()).collect(Collectors.toList());
+			if (!entryList.isEmpty()) {
+				obs = Completable.concat(entryList);
 			}
-			// Clear the batch entries so that the GC can claim the memory
-			clear();
 
-			// Remove the batch from the queue
-			MeshInternal.get().searchQueue().remove(this);
-		}).doOnError(error -> {
-			log.error("Error while processing batch {" + batchId + "}");
-			if (log.isDebugEnabled()) {
-				printDebug();
-			}
-			clear();
-			MeshInternal.get().searchQueue().remove(this);
+			return obs.doOnCompleted(() -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Handled all search queue items.");
+				}
+				// Clear the batch entries so that the GC can claim the memory
+				clear();
+
+				// Remove the batch from the queue
+				MeshInternal.get().searchQueue().remove(this);
+			}).doOnError(error -> {
+				log.error("Error while processing batch {" + batchId + "}");
+				if (log.isDebugEnabled()) {
+					printDebug();
+				}
+				clear();
+				MeshInternal.get().searchQueue().remove(this);
+			});
 		});
-
 	}
 
 	@Override

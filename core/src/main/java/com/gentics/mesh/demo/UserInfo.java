@@ -10,14 +10,23 @@ import com.gentics.mesh.core.data.Role;
 public class UserInfo {
 
 	private User user;
+	private String userUuid;
+
 	private Group group;
+	private String groupUuid;
+
 	private Role role;
+	private String roleUuid;
+
 	private String password;
 
 	public UserInfo(User user, Group group, Role role, String password) {
 		this.user = user;
+		this.userUuid = user.getUuid();
 		this.group = group;
+		this.groupUuid = group.getUuid();
 		this.role = role;
+		this.roleUuid = role.getUuid();
 		this.password = password;
 	}
 
@@ -37,12 +46,24 @@ public class UserInfo {
 		return group;
 	}
 
+	public String getGroupUuid() {
+		return groupUuid;
+	}
+
 	public Role getRole() {
 		return role;
 	}
 
+	public String getRoleUuid() {
+		return roleUuid;
+	}
+
 	public User getUser() {
 		return user;
+	}
+
+	public String getUserUuid() {
+		return userUuid;
 	}
 
 	public String getPassword() {

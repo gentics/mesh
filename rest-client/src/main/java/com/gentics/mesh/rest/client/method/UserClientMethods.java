@@ -1,10 +1,12 @@
 package com.gentics.mesh.rest.client.method;
 
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
-import com.gentics.mesh.core.rest.user.UserTokenResponse;
+import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -45,6 +47,16 @@ public interface UserClientMethods {
 	 * @return
 	 */
 	MeshRequest<UserResponse> createUser(UserCreateRequest request, ParameterProvider... parameters);
+
+	/**
+	 * Create a new user using the provided uuid.
+	 * 
+	 * @param uuid
+	 * @param request
+	 * @param parameters
+	 * @return
+	 */
+	MeshRequest<UserResponse> createUser(String uuid, UserCreateRequest request, ParameterProvider... parameters);
 
 	/**
 	 * Update the user.
@@ -91,7 +103,26 @@ public interface UserClientMethods {
 	 * action.
 	 * 
 	 * @param userUuid
+	 *            User uuid
 	 * @return
 	 */
-	MeshRequest<UserTokenResponse> getUserToken(String userUuid);
+	MeshRequest<UserResetTokenResponse> getUserResetToken(String userUuid);
+
+	/**
+	 * Generate a new API token for the user. The token is valid until a new token is generated. Generating a new token will invalidate the previously generated
+	 * one.
+	 * 
+	 * @param userUuid
+	 *            User uuid
+	 * @return
+	 */
+	MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid);
+
+	/**
+	 * Invalidate the currently active API token.
+	 * 
+	 * @param userUuid
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> invalidateAPIToken(String userUuid);
 }

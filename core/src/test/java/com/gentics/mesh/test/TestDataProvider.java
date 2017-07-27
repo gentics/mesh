@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -37,15 +38,14 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModel;
-import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.error.MeshSchemaException;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
 
@@ -57,6 +57,7 @@ public class TestDataProvider {
 	private static final Logger log = LoggerFactory.getLogger(TestDataProvider.class);
 
 	public static final String PROJECT_NAME = "dummy";
+	public static final String INITIAL_RELEASE_NAME = "dummy";
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
@@ -77,6 +78,8 @@ public class TestDataProvider {
 	private Language german;
 
 	private Project project;
+	private String projectUuid;
+	private String releaseUuid;
 
 	private UserInfo userInfo;
 
@@ -94,6 +97,8 @@ public class TestDataProvider {
 	private Map<String, Role> roles = new HashMap<>();
 	private Map<String, Group> groups = new HashMap<>();
 
+	private String contentUuid;
+
 	public TestDataProvider(TestSize size, BootstrapInitializer boot, Database database) {
 		this.size = size;
 		this.boot = boot;
@@ -109,6 +114,7 @@ public class TestDataProvider {
 
 		try (Tx tx = db.tx()) {
 			boot.initMandatoryData();
+			boot.initOptionalData(true);
 			tx.getGraph().commit();
 			schemaContainers.clear();
 			microschemaContainers.clear();
@@ -181,11 +187,9 @@ public class TestDataProvider {
 		Role role = userInfo.getRole();
 		for (MeshVertex meshVertex : elements) {
 			if (log.isTraceEnabled()) {
-				log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {"
-						+ role.getElement().getId() + "}");
+				log.trace("Granting CRUD permissions on {" + meshVertex.getElement().getId() + "} with role {" + role.getElement().getId() + "}");
 			}
-			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM,
-					PUBLISH_PERM);
+			role.grantPermissions(meshVertex, READ_PERM, CREATE_PERM, DELETE_PERM, UPDATE_PERM, READ_PUBLISHED_PERM, PUBLISH_PERM);
 		}
 	}
 
@@ -209,15 +213,13 @@ public class TestDataProvider {
 		SchemaContainer contentSchema = schemaContainers.get("content");
 
 		addContent(folders.get("2014"), "News_2014", "News!", "Neuigkeiten!", contentSchema);
-		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014",
-				contentSchema);
+		addContent(folders.get("march"), "New_in_March_2014", "This is new in march 2014.", "Das ist neu im März 2014", contentSchema);
 
-		addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht", contentSchema);
+		Node content = addContent(folders.get("news"), "News Overview", "News Overview", "News Übersicht", contentSchema);
+		contentUuid = content.getUuid();
 
-		addContent(folders.get("deals"), "Super Special Deal 2015", "Buy two get nine!", "Kauf zwei und nimm neun mit!",
-				contentSchema);
-		addContent(folders.get("deals"), "Special Deal June 2015", "Buy two get three!", "Kauf zwei und nimm drei mit!",
-				contentSchema);
+		addContent(folders.get("deals"), "Super Special Deal 2015", "Buy two get nine!", "Kauf zwei und nimm neun mit!", contentSchema);
+		addContent(folders.get("deals"), "Special Deal June 2015", "Buy two get three!", "Kauf zwei und nimm drei mit!", contentSchema);
 
 		addContent(folders.get("2015"), "Special News_2014", "News!", "Neuigkeiten!", contentSchema);
 		addContent(folders.get("2015"), "News_2015", "News!", "Neuigkeiten!", contentSchema);
@@ -328,13 +330,14 @@ public class TestDataProvider {
 		GroupRoot groupRoot = getMeshRoot().getGroupRoot();
 		RoleRoot roleRoot = getMeshRoot().getRoleRoot();
 
-		project = root.getProjectRoot().create(PROJECT_NAME, userInfo.getUser(),
-				getSchemaContainer("folder").getLatestVersion());
+		project = root.getProjectRoot().create(PROJECT_NAME, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion());
 		project.addLanguage(getEnglish());
 		project.addLanguage(getGerman());
 		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("folder"));
 		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("content"));
-		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("binary-content"));
+		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("binary_content"));
+		projectUuid = project.getUuid();
+		releaseUuid = project.getInitialRelease().getUuid();
 
 		if (getSize() == FULL) {
 			// Guest Group / Role
@@ -388,9 +391,9 @@ public class TestDataProvider {
 		SchemaContainer contentSchemaContainer = boot.schemaContainerRoot().findByName("content");
 		schemaContainers.put("content", contentSchemaContainer);
 
-		// binary-content
-		SchemaContainer binaryContentSchemaContainer = boot.schemaContainerRoot().findByName("binary-content");
-		schemaContainers.put("binary-content", binaryContentSchemaContainer);
+		// binary_content
+		SchemaContainer binaryContentSchemaContainer = boot.schemaContainerRoot().findByName("binary_content");
+		schemaContainers.put("binary_content", binaryContentSchemaContainer);
 
 	}
 
@@ -410,7 +413,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addVCardMicroschema() throws MeshJsonException {
-		Microschema vcardMicroschema = new MicroschemaModel();
+		MicroschemaModel vcardMicroschema = new MicroschemaModelImpl();
 		vcardMicroschema.setName("vcard");
 		vcardMicroschema.setDescription("Microschema for a vcard");
 
@@ -440,8 +443,7 @@ public class TestDataProvider {
 		postcodeFieldSchema.setLabel("Post Code");
 		vcardMicroschema.addField(postcodeFieldSchema);
 
-		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema,
-				userInfo.getUser());
+		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
 		project.getMicroschemaContainerRoot().addMicroschema(vcardMicroschemaContainer);
 	}
@@ -452,7 +454,7 @@ public class TestDataProvider {
 	 * @throws MeshJsonException
 	 */
 	private void addCaptionedImageMicroschema() throws MeshJsonException {
-		Microschema captionedImageMicroschema = new MicroschemaModel();
+		MicroschemaModel captionedImageMicroschema = new MicroschemaModelImpl();
 		captionedImageMicroschema.setName("captionedImage");
 		captionedImageMicroschema.setDescription("Microschema for a captioned image");
 
@@ -469,8 +471,7 @@ public class TestDataProvider {
 		captionFieldSchema.setLabel("Caption");
 		captionedImageMicroschema.addField(captionFieldSchema);
 
-		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema,
-				userInfo.getUser());
+		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
 		project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
 	}
@@ -480,18 +481,18 @@ public class TestDataProvider {
 		Node folderNode = rootNode.create(userInfo.getUser(), schemaVersion, project);
 
 		if (germanName != null) {
-			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german,
-					project.getLatestRelease(), userInfo.getUser());
+			NodeGraphFieldContainer germanContainer = folderNode.createGraphFieldContainer(german, project.getLatestRelease(), userInfo.getUser());
 			// germanContainer.createString("displayName").setString(germanName);
-			germanContainer.createString("name").setString(germanName);
+			germanContainer.createString("teaser").setString(germanName);
+			germanContainer.createString("slug").setString(germanName);
 			germanContainer.updateDisplayFieldValue();
 			folderNode.publish(getGerman(), getProject().getLatestRelease(), getUserInfo().getUser());
 		}
 		if (englishName != null) {
-			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english,
-					project.getLatestRelease(), userInfo.getUser());
+			NodeGraphFieldContainer englishContainer = folderNode.createGraphFieldContainer(english, project.getLatestRelease(), userInfo.getUser());
 			// englishContainer.createString("displayName").setString(englishName);
 			englishContainer.createString("name").setString(englishName);
+			englishContainer.createString("slug").setString(englishName);
 			englishContainer.updateDisplayFieldValue();
 			folderNode.publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
 		}
@@ -520,28 +521,25 @@ public class TestDataProvider {
 		return tag;
 	}
 
-	private Node addContent(Node parentNode, String name, String englishContent, String germanContent,
-			SchemaContainer schema) {
+	private Node addContent(Node parentNode, String name, String englishContent, String germanContent, SchemaContainer schema) {
 		Node node = parentNode.create(userInfo.getUser(), schemaContainers.get("content").getLatestVersion(), project);
 		if (englishContent != null) {
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english,
-					project.getLatestRelease(), userInfo.getUser());
-			englishContainer.createString("name").setString(name + "_english_name");
+			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english, project.getLatestRelease(), userInfo.getUser());
+			englishContainer.createString("teaser").setString(name + "_english_name");
 			englishContainer.createString("title").setString(name + " english title");
 			englishContainer.createString("displayName").setString(name + " english displayName");
-			englishContainer.createString("filename").setString(name + ".en.html");
+			englishContainer.createString("slug").setString(name + ".en.html");
 			englishContainer.createHTML("content").setHtml(englishContent);
 			englishContainer.updateDisplayFieldValue();
 			node.publish(getEnglish(), getProject().getLatestRelease(), getUserInfo().getUser());
 		}
 
 		if (germanContent != null) {
-			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, project.getLatestRelease(),
-					userInfo.getUser());
-			germanContainer.createString("name").setString(name + " german");
+			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, project.getLatestRelease(), userInfo.getUser());
+			germanContainer.createString("teaser").setString(name + " german");
 			germanContainer.createString("title").setString(name + " german title");
 			germanContainer.createString("displayName").setString(name + " german");
-			germanContainer.createString("filename").setString(name + ".de.html");
+			germanContainer.createString("slug").setString(name + ".de.html");
 			germanContainer.createHTML("content").setHtml(germanContent);
 			germanContainer.updateDisplayFieldValue();
 			node.publish(getGerman(), getProject().getLatestRelease(), getUserInfo().getUser());
@@ -657,4 +655,21 @@ public class TestDataProvider {
 	public Group group() {
 		return getUserInfo().getGroup();
 	}
+
+	public Role getAnonymousRole() {
+		return roles.get("anonymous");
+	}
+
+	public String projectUuid() {
+		return projectUuid;
+	}
+
+	public String getContentUuid() {
+		return contentUuid;
+	}
+
+	public String releaseUuid() {
+		return releaseUuid;
+	}
+
 }

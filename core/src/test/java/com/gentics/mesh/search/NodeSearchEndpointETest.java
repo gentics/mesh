@@ -12,13 +12,13 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
@@ -26,17 +26,17 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentDeletion() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"),
-				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft()));
+				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
 		assertEquals(1, response.getData().size());
-		deleteNode(PROJECT_NAME, db().noTx(() -> content("concorde").getUuid()));
+		deleteNode(PROJECT_NAME, db().tx(() -> content("concorde").getUuid()));
 
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Concorde"), new PagingParametersImpl().setPage(1).setPerPage(2),
-				new VersioningParameters().draft()));
+				new VersioningParametersImpl().draft()));
 		assertEquals("We added the delete action and therefore the document should no longer be part of the index.", 0, response.getData().size());
 
 	}
@@ -48,12 +48,12 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testCustomQuery() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
 		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name.raw", "content"), new VersioningParameters().draft()));
+				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name.raw", "content"), new VersioningParametersImpl().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 
@@ -61,14 +61,14 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchForChildNodes() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
-		String parentNodeUuid = db().noTx(() -> folder("news").getUuid());
+		String parentNodeUuid = db().tx(() -> folder("news").getUuid());
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("parentNode.uuid", parentNodeUuid),
-				new VersioningParameters().draft()));
+				new VersioningParametersImpl().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 		// TODO verify the found nodes are correct
@@ -80,7 +80,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testDocumentCreation() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -100,21 +100,21 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 		String search = json;
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, search, new PagingParametersImpl().setPage(1).setPerPage(2),
-				new VersioningParameters().draft()));
+				new VersioningParametersImpl().draft()));
 		assertEquals(0, response.getData().size());
 
 		// create a new folder named "bla"
 		NodeCreateRequest create = new NodeCreateRequest();
-		create.setSchema(new SchemaReference().setName("folder").setUuid(db().noTx(() -> schemaContainer("folder").getUuid())));
+		create.setSchema(new SchemaReference().setName("folder").setUuid(db().tx(() -> schemaContainer("folder").getUuid())));
 		create.setLanguage("en");
 		create.getFields().put("name", FieldUtil.createStringField("bla"));
-		create.setParentNodeUuid(db().noTx(() -> folder("2015").getUuid()));
+		create.setParentNodeUuid(db().tx(() -> folder("2015").getUuid()));
 
 		call(() -> client().createNode(PROJECT_NAME, create));
 
 		// Search again and make sure we found our document
 		response = call(() -> client().searchNodes(PROJECT_NAME, search, new PagingParametersImpl().setPage(1).setPerPage(2),
-				new VersioningParameters().draft()));
+				new VersioningParametersImpl().draft()));
 		assertEquals("Check search result after document creation", 1, response.getData().size());
 	}
 }

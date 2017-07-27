@@ -15,14 +15,14 @@ import java.util.concurrent.CountDownLatch;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.parameter.impl.VersioningParameters;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.performance.TestUtils;
 
@@ -65,19 +65,19 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchMicronodeResolveLinks() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			addMicronodeField();
 			recreateIndices();
 		}
 
 		NodeListResponse response = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"), new PagingParametersImpl().setPage(1).setPerPage(2),
-						new NodeParameters().setResolveLinks(LinkType.FULL), new VersioningParameters().draft()));
+						new NodeParametersImpl().setResolveLinks(LinkType.FULL), new VersioningParametersImpl().draft()));
 
 		assertEquals("Check returned search results", 1, response.getData().size());
 		assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			for (NodeResponse nodeResponse : response.getData()) {
 				assertNotNull("Returned node must not be null", nodeResponse);
 				assertEquals("Check result uuid", content("concorde").getUuid(), nodeResponse.getUuid());
@@ -87,7 +87,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfMicronodes() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			addMicronodeListField();
 			recreateIndices();
 		}
@@ -98,14 +98,14 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 				boolean expectResult = firstName.substring(0, 1).equals(lastName.substring(0, 1));
 
 				NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getNestedVCardListSearch(firstName, lastName),
-						new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParameters().draft()));
+						new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
 
 				if (expectResult) {
 					assertEquals("Check returned search results", 1, response.getData().size());
 					assertEquals("Check total search results", 1, response.getMetainfo().getTotalCount());
 					for (NodeResponse nodeResponse : response.getData()) {
 						assertNotNull("Returned node must not be null", nodeResponse);
-						assertEquals("Check result uuid", db().noTx(() -> content("concorde").getUuid()), nodeResponse.getUuid());
+						assertEquals("Check result uuid", db().tx(() -> content("concorde").getUuid()), nodeResponse.getUuid());
 					}
 				} else {
 					assertEquals("Check returned search results", 0, response.getData().size());
@@ -117,7 +117,7 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchListOfNodes() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			addNodeListField();
 			recreateIndices();
 		}
@@ -127,12 +127,12 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchDraftInRelease() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
 		NodeResponse concorde = call(
-				() -> client().findNodeByUuid(PROJECT_NAME, db().noTx(() -> content("concorde").getUuid()), new VersioningParameters().draft()));
+				() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> content("concorde").getUuid()), new VersioningParametersImpl().draft()));
 
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
@@ -141,12 +141,12 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		failingLatch(latch);
 
 		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParameters().draft()));
+				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
 		assertThat(response.getData()).as("Search result").isEmpty();
 
-		String releaseName = db().noTx(() -> project().getInitialRelease().getName());
+		String releaseName = db().tx(() -> project().getInitialRelease().getName());
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
-				new VersioningParameters().setRelease(releaseName).draft()));
+				new VersioningParametersImpl().setRelease(releaseName).draft()));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 

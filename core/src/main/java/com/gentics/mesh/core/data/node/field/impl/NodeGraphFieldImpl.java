@@ -30,8 +30,8 @@ import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.parameter.impl.LinkType;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.util.CompareUtils;
 
 public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
@@ -41,6 +41,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		if (graphNodeField == null) {
 			return null;
 		} else {
+			//TODO check permissions
 			return graphNodeField.transformToRest(ac, fieldKey, languageTags, level);
 		}
 	};
@@ -136,7 +137,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 			if (type != LinkType.OFF) {
 
 				WebRootLinkReplacer linkReplacer = MeshInternal.get().webRootLinkReplacer();
-				Release release = ac.getRelease(null);
+				Release release = ac.getRelease();
 				ContainerType containerType = forVersion(ac.getVersioningParameters().getVersion());
 
 				// Set the webroot path for the currently active language

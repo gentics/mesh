@@ -16,9 +16,9 @@ import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -32,7 +32,7 @@ import rx.Single;
  * @see SchemaContainerVersion
  */
 public class SchemaContainerVersionImpl extends
-		AbstractGraphFieldSchemaContainerVersion<SchemaResponse, Schema, SchemaReference, SchemaContainerVersion, SchemaContainer> implements SchemaContainerVersion {
+		AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer> implements SchemaContainerVersion {
 
 	public static void init(Database database) {
 		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
@@ -66,10 +66,10 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Schema getSchema() {
-		Schema schema = MeshInternal.get().serverSchemaStorage().getSchema(getName(), getVersion());
+	public SchemaModel getSchema() {
+		SchemaModel schema = MeshInternal.get().serverSchemaStorage().getSchema(getName(), getVersion());
 		if (schema == null) {
-			schema = JsonUtil.readValue(getJson(), SchemaModel.class);
+			schema = JsonUtil.readValue(getJson(), SchemaModelImpl.class);
 			MeshInternal.get().serverSchemaStorage().addSchema(schema);
 		}
 		return schema;
@@ -107,7 +107,7 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public void setSchema(Schema schema) {
+	public void setSchema(SchemaModel schema) {
 		MeshInternal.get().serverSchemaStorage().removeSchema(schema.getName(), schema.getVersion());
 		MeshInternal.get().serverSchemaStorage().addSchema(schema);
 		String json = JsonUtil.toJson(schema);
@@ -141,7 +141,7 @@ public class SchemaContainerVersionImpl extends
 
 	@Override
 	public Single<SchemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return MeshInternal.get().database().operateNoTx(() -> {
+		return MeshInternal.get().database().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

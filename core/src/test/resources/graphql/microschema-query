@@ -1,0 +1,8 @@
+{
+	microschemas {
+		elements {
+			uuid
+		}
+	}
+}
+# [$.errors=<is-undefined>]

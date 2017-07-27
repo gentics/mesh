@@ -1,12 +1,14 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -19,52 +21,57 @@ import javax.imageio.ImageIO;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.parameter.impl.ImageManipulationParameters;
+import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.VersionNumber;
 
 import io.vertx.core.buffer.Buffer;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testImageResize() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		String uuid = db().tx(() -> folder("news").getUuid());
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 
 			// 1. Upload image
 			uploadImage(node, "en", "image");
+		}
 
-			// 2. Resize image
-			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100).setHeight(102);
-			NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params));
+		// 2. Resize image
+		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
+		NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image", params));
 
-			// 3. Validate resize
+		// 3. Validate resize
+		try (Tx tx = tx()) {
+			Node node = folder("news");
 			node.reload();
 			validateResizeImage(download, node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 100, 102);
 		}
+
 	}
 
 	@Test
 	public void testImageResizeOverLimit() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
 			// 1. Upload image
 			uploadImage(node, "en", "image");
 
 			// 2. Resize image
-			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth() + 1).setHeight(102);
+			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(options.getMaxWidth() + 1).setHeight(102);
 			call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params), BAD_REQUEST,
 					"image_error_width_limit_exceeded", String.valueOf(options.getMaxWidth()), String.valueOf(options.getMaxWidth() + 1));
 		}
@@ -72,14 +79,14 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testImageExactLimit() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			ImageManipulatorOptions options = Mesh.mesh().getOptions().getImageOptions();
 			// 1. Upload image
 			uploadImage(node, "en", "image");
 
 			// 2. Resize image
-			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(options.getMaxWidth()).setHeight(102);
+			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(options.getMaxWidth()).setHeight(102);
 			NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params));
 
 			node.reload();
@@ -90,83 +97,95 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testTransformImage() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		String uuid = db().tx(() -> folder("news").getUuid());
+		String version = db().tx(() -> {
 			Node node = folder("news");
 			// 1. Upload image
-			NodeResponse response = uploadImage(node, "en", "image");
+			return uploadImage(node, "en", "image").getVersion();
+		});
 
-			// 2. Transform the image
-			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-			NodeResponse transformResponse = call(
-					() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", response.getVersion().getNumber(), "image", params));
-			assertEquals("The image should have been resized", 100, transformResponse.getFields().getBinaryField("image").getWidth().intValue());
+		// 2. Transform the image
+		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
+		NodeResponse transformResponse = call(
+				() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "image", params));
+		assertEquals("The image should have been resized", 100, transformResponse.getFields().getBinaryField("image").getWidth().intValue());
 
-			// 3. Download the image
-			NodeDownloadResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image"));
+		// 3. Validate that a new version was created
+		String newNumber = transformResponse.getVersion();
+		assertNotEquals("The version number should have changed.", version, newNumber);
 
-			// 4. Validate the resized image
-			validateResizeImage(result, null, params, 100, 118);
-		}
+		// 4. Download the image
+		NodeDownloadResponse result = call(() -> client().downloadBinaryField(PROJECT_NAME, uuid, "en", "image"));
+
+		// 5. Validate the resized image
+		validateResizeImage(result, null, params, 100, 118);
+
 	}
 
 	@Test
 	public void testTransformImageNoParameters() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Node node = folder("news");
 			// 1. Upload image
 			NodeResponse response = uploadImage(node, "en", "image");
 
 			// 2. Transform the image
-			ImageManipulationParameters params = new ImageManipulationParameters();
-			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", response.getVersion().getNumber(), "image", params),
+			ImageManipulationParametersImpl params = new ImageManipulationParametersImpl();
+			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", response.getVersion(), "image", params),
 					BAD_REQUEST, "error_no_image_transformation", "image");
 		}
 	}
 
 	@Test
 	public void testTransformNonBinary() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		String uuid = db().tx(() -> folder("news").getUuid());
+		String version = db().tx(() -> {
 			Node node = folder("news");
-			String version = node.getGraphFieldContainer("en").getVersion().toString();
+			return node.getGraphFieldContainer("en").getVersion().toString();
+		});
 
-			// try to transform the "name"
-			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", version, "name", params), BAD_REQUEST,
-					"error_found_field_is_not_binary", "name");
-		}
+		// try to transform the "name"
+		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
+
+		call(() -> client().transformNodeBinaryField(PROJECT_NAME, uuid, "en", version, "name", params), BAD_REQUEST,
+				"error_found_field_is_not_binary", "name");
 	}
 
 	@Test
 	public void testTransformNonImage() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		VersionNumber version;
+		String nodeUuid;
+		try (Tx tx = tx()) {
 			Node node = folder("news");
-
+			nodeUuid = node.getUuid();
 			prepareSchema(node, "*/*", "image");
-
-			VersionNumber version = node.getGraphFieldContainer("en").getVersion();
-			NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", version.toString(), "image",
-					Buffer.buffer("I am not an image"), "test.txt", "text/plain"));
-
-			ImageManipulationParameters params = new ImageManipulationParameters().setWidth(100);
-			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", response.getVersion().getNumber(), "image", params),
-					BAD_REQUEST, "error_transformation_non_image", "image");
+			version = node.getGraphFieldContainer("en").getVersion();
+			tx.success();
 		}
+		NodeResponse response = call(() -> client().updateNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version.toString(), "image",
+				Buffer.buffer("I am not an image"), "test.txt", "text/plain"));
+
+		ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100);
+		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", response.getVersion(), "image", params), BAD_REQUEST,
+				"error_transformation_non_image", "image");
 	}
 
 	@Test
 	public void testTransformEmptyField() throws Exception {
-		try (NoTx noTrx = db().noTx()) {
+		String nodeUuid;
+		String version;
+		try (Tx tx = tx()) {
 			Node node = folder("news");
-
+			nodeUuid = node.getUuid();
 			prepareSchema(node, "image/.*", "image");
-
-			String version = node.getGraphFieldContainer("en").getVersion().toString();
-
-			// 2. Transform the image
-			ImageManipulationParameters params = new ImageManipulationParameters();
-			call(() -> client().transformNodeBinaryField(PROJECT_NAME, node.getUuid(), "en", version, "image", params), NOT_FOUND,
-					"error_binaryfield_not_found_with_name", "image");
+			version = node.getGraphFieldContainer("en").getVersion().toString();
+			tx.success();
 		}
+		// 2. Transform the image
+		ImageManipulationParameters params = new ImageManipulationParametersImpl();
+		call(() -> client().transformNodeBinaryField(PROJECT_NAME, nodeUuid, "en", version, "image", params), NOT_FOUND,
+				"error_binaryfield_not_found_with_name", "image");
+
 	}
 
 	private void validateResizeImage(NodeDownloadResponse download, BinaryGraphField binaryField, ImageManipulationParameters params,

@@ -6,31 +6,34 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaStorage;
-
 
 public class ClientSchemaStorage implements SchemaStorage {
 
-	private Map<String, Map<Integer, Schema>> schemaMap = new HashMap<>();
+	private Map<String, Map<String, SchemaModel>> schemaMap = new HashMap<>();
 
-	private Map<String, Map<Integer, Microschema>> microschemaMap = new HashMap<>();
+	private Map<String, Map<String, MicroschemaModel>> microschemaMap = new HashMap<>();
 
 	@Override
-	public void addSchema(Schema schema) {
+	public void addSchema(SchemaModel schema) {
 		schemaMap.computeIfAbsent(schema.getName(), k -> new HashMap<>()).put(schema.getVersion(), schema);
 	}
 
 	@Override
-	public Schema getSchema(String name) {
-		Optional<Entry<Integer, Schema>> maxVersion = schemaMap.getOrDefault(name, Collections.emptyMap()).entrySet().stream()
-				.max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
+	public SchemaModel getSchema(String name) {
+		Optional<Entry<String, SchemaModel>> maxVersion = schemaMap.getOrDefault(name, Collections.emptyMap()).entrySet().stream()
+				.max((entry1, entry2) -> {
+					Double v1 = Double.valueOf(entry1.getKey());
+					Double v2 = Double.valueOf(entry2.getKey());
+					return Double.compare(v1, v2);
+				});
 		return maxVersion.isPresent() ? maxVersion.get().getValue() : null;
 	}
 
 	@Override
-	public Schema getSchema(String name, int version) {
+	public SchemaModel getSchema(String name, String version) {
 		return schemaMap.getOrDefault(name, Collections.emptyMap()).get(version);
 	}
 
@@ -40,26 +43,30 @@ public class ClientSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public void removeSchema(String name, int version) {
+	public void removeSchema(String name, String version) {
 		if (schemaMap.containsKey(name)) {
 			schemaMap.get(name).remove(version);
 		}
 	}
 
 	@Override
-	public Microschema getMicroschema(String name) {
-		Optional<Entry<Integer, Microschema>> maxVersion = microschemaMap.getOrDefault(name, Collections.emptyMap()).entrySet().stream()
-				.max((entry1, entry2) -> Integer.compare(entry1.getKey(), entry2.getKey()));
+	public MicroschemaModel getMicroschema(String name) {
+		Optional<Entry<String, MicroschemaModel>> maxVersion = microschemaMap.getOrDefault(name, Collections.emptyMap()).entrySet().stream()
+				.max((entry1, entry2) -> {
+					Double v1 = Double.valueOf(entry1.getKey());
+					Double v2 = Double.valueOf(entry2.getKey());
+					return Double.compare(v1, v2);
+				});
 		return maxVersion.isPresent() ? maxVersion.get().getValue() : null;
 	}
 
 	@Override
-	public Microschema getMicroschema(String name, int version) {
+	public MicroschemaModel getMicroschema(String name, String version) {
 		return microschemaMap.getOrDefault(name, Collections.emptyMap()).get(version);
 	}
 
 	@Override
-	public void addMicroschema(Microschema microschema) {
+	public void addMicroschema(MicroschemaModel microschema) {
 		microschemaMap.computeIfAbsent(microschema.getName(), k -> new HashMap<>()).put(microschema.getVersion(), microschema);
 	}
 
@@ -69,7 +76,7 @@ public class ClientSchemaStorage implements SchemaStorage {
 	}
 
 	@Override
-	public void removeMicroschema(String name, int version) {
+	public void removeMicroschema(String name, String version) {
 		if (microschemaMap.containsKey(name)) {
 			microschemaMap.get(name).remove(version);
 		}

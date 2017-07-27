@@ -34,6 +34,9 @@ import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 
+/**
+ * @see ReleaseRoot
+ */
 public class ReleaseRootImpl extends AbstractRootVertex<Release> implements ReleaseRoot {
 
 	public static void init(Database database) {

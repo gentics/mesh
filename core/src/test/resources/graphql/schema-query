@@ -1,0 +1,19 @@
+{
+	# [$.data.bogus=<is-null>]
+	bogus: schema(name:"bogus") {
+		name
+	}
+
+	schemas {
+		elements {
+			name
+		}
+	}
+
+	schema(name:"content") {
+		name
+		uuid,
+		isContainer
+	}
+}
+# [$.errors=<is-undefined>]

@@ -66,4 +66,10 @@ public interface AddFieldChange extends SchemaFieldChange {
 	 */
 	void setLabel(String label);
 
+	/**
+	 * Return the allow rest property value.
+	 * @return
+	 */
+	String[] getAllowProp();
+
 }

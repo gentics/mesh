@@ -11,9 +11,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -21,9 +24,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
+import com.gentics.mesh.core.console.ConsoleProvider;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -49,11 +54,11 @@ import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.LanguageEntry;
@@ -61,11 +66,10 @@ import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.MavenVersionNumber;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -78,23 +82,34 @@ import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 /**
  * @see BootstrapInitializer
  */
+@Singleton
 public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	private static Logger log = LoggerFactory.getLogger(BootstrapInitializer.class);
 
-	private ServerSchemaStorage schemaStorage;
+	@Inject
+	public ServerSchemaStorage schemaStorage;
 
-	private Database db;
+	@Inject
+	public Database db;
 
-	private SearchProvider searchProvider;
+	@Inject
+	public SearchProvider searchProvider;
 
-	private BCryptPasswordEncoder encoder;
+	@Inject
+	public BCryptPasswordEncoder encoder;
 
-	private RouterStorage routerStorage;
+	@Inject
+	public RouterStorage routerStorage;
 
-	private Lazy<IndexHandlerRegistry> indexHandlerRegistry;
+	@Inject
+	public Lazy<IndexHandlerRegistry> indexHandlerRegistry;
 
-	private Lazy<CoreVerticleLoader> loader;
+	@Inject
+	public Lazy<CoreVerticleLoader> loader;
+
+	@Inject
+	public ConsoleProvider console;
 
 	private static MeshRoot meshRoot;
 
@@ -111,30 +126,20 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		// 2. Recreate indices + mappings and reindex the documents
 		IndexHandlerRegistry registry = indexHandlerRegistry.get();
-		for (IndexHandler handler : registry.getHandlers()) {
+		for (IndexHandler<?> handler : registry.getHandlers()) {
 			String handlerName = handler.getClass().getSimpleName();
 			log.info("Invoking reindex on handler {" + handlerName + "}. This may take some time..");
 			handler.init().await();
-			try (NoTx noTx = db.noTx()) {
+			try (Tx tx = db.tx()) {
 				handler.reindexAll().await();
 			}
 			log.info("Reindex on handler {" + handlerName + "} completed.");
 		}
 	});
 
-	public BootstrapInitializerImpl(Database db, SearchProvider searchProvider, Lazy<IndexHandlerRegistry> indexHandlerRegistry,
-			BCryptPasswordEncoder encoder, RouterStorage routerStorage, Lazy<CoreVerticleLoader> loader) {
-
+	@Inject
+	public BootstrapInitializerImpl() {
 		clearReferences();
-
-		this.db = db;
-		this.searchProvider = searchProvider;
-		this.indexHandlerRegistry = indexHandlerRegistry;
-		this.schemaStorage = new ServerSchemaStorage(this);
-		this.encoder = encoder;
-		this.routerStorage = routerStorage;
-		this.loader = loader;
-
 	}
 
 	/**
@@ -172,6 +177,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		boolean isEmptyInstallation = isEmptyInstallation();
+		if (!isEmptyInstallation) {
+			handleMeshVersion();
+		}
 
 		// Only execute the changelog if there are any elements in the graph
 		if (!isEmptyInstallation) {
@@ -179,20 +187,22 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		// Update graph indices and vertex types (This may take some time)
-		new DatabaseHelper(db).init();
+		DatabaseHelper.init(db);
 
 		// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
 		initMandatoryData();
+		initOptionalData(isEmptyInstallation);
 
 		if (isEmptyInstallation) {
+			handleMeshVersion();
 			initPermissions();
 		}
 
-		// An old lock file has been detected. Normally the lock file should be removed during shutdown. 
-		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of 
+		// An old lock file has been detected. Normally the lock file should be removed during shutdown.
+		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of
 		// the ES index in those cases in order to ensure consistency.
 		if (hasOldLock) {
-			REINDEX_ACTION.invoke();
+			reindexAll();
 		}
 
 		// Mark all changelog entries as applied for new installations
@@ -208,24 +218,84 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		// Initialise routes for existing projects
-		try (NoTx noTx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			initProjects();
 		}
 
 		// Finally fire the startup event and log that bootstrap has completed
 		log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
-
 	}
 
-	/**
-	 * Check whether there are any vertices in the graph.
-	 * 
-	 * @return
-	 */
-	private boolean isEmptyInstallation() {
-		try (NoTx noTx = db.noTx()) {
-			return noTx.getGraph().v().count() == 0;
+	@Override
+	public void reindexAll() {
+		REINDEX_ACTION.invoke();
+	}
+
+	@Override
+	public void handleMeshVersion() {
+		String currentVersion = Mesh.getPlainVersion();
+		if (currentVersion.equals("Unknown")) {
+			throw new RuntimeException("Current version could not be determined!");
+		}
+
+		MavenVersionNumber current = MavenVersionNumber.parse(currentVersion);
+		if (current.isSnapshot()) {
+			log.warn("You are running snapshot version {" + currentVersion
+					+ "} of Gentics Mesh. Be aware that this version could potentially alter your instance in unexpected ways.");
+		}
+		try (Tx tx = db.tx()) {
+			String graphVersion = meshRoot().getMeshVersion();
+
+			// Check whether the information was already saved once. Otherwise set it.
+			if (graphVersion == null) {
+				if (log.isDebugEnabled()) {
+					log.debug("Mesh version was not yet stored. Saving current version {" + currentVersion + "}");
+				}
+				meshRoot().setMeshVersion(currentVersion);
+				graphVersion = currentVersion;
+			}
+
+			// Check whether the graph version is newer compared to the current runtime version
+			MavenVersionNumber graph = MavenVersionNumber.parse(graphVersion);
+			int diff = graph.compareTo(current);
+			// SNAPSHOT -> RELEASE
+			boolean isSnapshotUpgrade = diff == -1 && graph.compareTo(current, false) == 0 && graph.isSnapshot() && !current.isSnapshot();
+
+			boolean ignoreSnapshotUpgrade = System.getProperty("ignoreSnapshotUpgradeCheck") != null;
+			if (ignoreSnapshotUpgrade) {
+				log.warn(
+						"You disabled the upgrade check for snapshot upgrades. Please note that upgrading a snapshot version to a release version could create unforseen errors since the snapshot may have altered your data in a way which was not anticipated by the release.");
+				log.warn("Press any key to continue. This warning will only be shown once.");
+				try {
+					console.read();
+				} catch (IOException e) {
+					throw new RuntimeException("Startup aborted", e);
+				}
+			}
+			if (isSnapshotUpgrade && !ignoreSnapshotUpgrade) {
+				log.error("You are currently trying to run release version {" + currentVersion
+						+ "} but your instance was last run using a snapshot version. {" + graphVersion
+						+ "}. Running this version could cause unforseen errors.");
+				throw new RuntimeException("Downgrade not allowed");
+			}
+
+			boolean isVersionDowngrade = diff >= 1;
+			if (isVersionDowngrade) {
+				log.error("You are currently trying to run version {" + currentVersion + "} on a dump which was last used by version {" + graphVersion
+						+ "}. This is not supported. You can't downgrade your mesh instance. Doing so would cause unforseen errors. Aborting startup.");
+				throw new RuntimeException("Downgrade not allowed");
+			}
+
+			// Version is okay. So lets store it.
+			meshRoot().setMeshVersion(currentVersion);
+		}
+	}
+
+	@Override
+	public boolean isEmptyInstallation() {
+		try (Tx tx = db.tx()) {
+			return !tx.getGraph().v().hasNext();
 		}
 	}
 
@@ -249,7 +319,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public void createSearchIndicesAndMappings() {
 		IndexHandlerRegistry registry = indexHandlerRegistry.get();
-		for (IndexHandler handler : registry.getHandlers()) {
+		for (IndexHandler<?> handler : registry.getHandlers()) {
 			handler.init().await();
 		}
 	}
@@ -264,16 +334,15 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		if (meshRoot == null) {
 			synchronized (BootstrapInitializer.class) {
 				// Check reference graph and finally create the node when it can't be found.
-				MeshRoot foundMeshRoot = Database.getThreadLocalGraph().v().has(MeshRootImpl.class).nextOrDefault(MeshRootImpl.class, null);
-				if (foundMeshRoot == null) {
-
-					meshRoot = Database.getThreadLocalGraph().addFramedVertex(MeshRootImpl.class);
+				Iterator<? extends MeshRootImpl> it = db.getVerticesForType(MeshRootImpl.class);
+				if (it.hasNext()) {
+					isInitialSetup = false;
+					meshRoot = it.next();
+				} else {
+					meshRoot = Tx.getActive().getGraph().addFramedVertex(MeshRootImpl.class);
 					if (log.isDebugEnabled()) {
 						log.debug("Created mesh root {" + meshRoot.getUuid() + "}");
 					}
-				} else {
-					isInitialSetup = false;
-					meshRoot = foundMeshRoot;
 				}
 			}
 		}
@@ -381,26 +450,28 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			// Content
 			SchemaContainer contentSchemaContainer = schemaContainerRoot.findByName("content");
 			if (contentSchemaContainer == null) {
-				Schema schema = new SchemaModel();
+				SchemaModel schema = new SchemaModelImpl();
 				schema.setName("content");
+				schema.setDescription("Content schema for blogposts");
 				schema.setDisplayField("title");
-				schema.setSegmentField("filename");
+				schema.setSegmentField("slug");
 
-				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
-				nameFieldSchema.setName("name");
-				nameFieldSchema.setLabel("Name");
-				nameFieldSchema.setRequired(true);
-				schema.addField(nameFieldSchema);
-
-				StringFieldSchema filenameFieldSchema = new StringFieldSchemaImpl();
-				filenameFieldSchema.setName("filename");
-				filenameFieldSchema.setLabel("Filename");
-				schema.addField(filenameFieldSchema);
+				StringFieldSchema slugFieldSchema = new StringFieldSchemaImpl();
+				slugFieldSchema.setName("slug");
+				slugFieldSchema.setLabel("Slug");
+				slugFieldSchema.setRequired(true);
+				schema.addField(slugFieldSchema);
 
 				StringFieldSchema titleFieldSchema = new StringFieldSchemaImpl();
 				titleFieldSchema.setName("title");
 				titleFieldSchema.setLabel("Title");
 				schema.addField(titleFieldSchema);
+
+				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
+				nameFieldSchema.setName("teaser");
+				nameFieldSchema.setLabel("Teaser");
+				nameFieldSchema.setRequired(true);
+				schema.addField(nameFieldSchema);
 
 				HtmlFieldSchema contentFieldSchema = new HtmlFieldSchemaImpl();
 				contentFieldSchema.setName("content");
@@ -415,10 +486,16 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			// Folder
 			SchemaContainer folderSchemaContainer = schemaContainerRoot.findByName("folder");
 			if (folderSchemaContainer == null) {
-				Schema schema = new SchemaModel();
+				SchemaModel schema = new SchemaModelImpl();
 				schema.setName("folder");
+				schema.setDescription("Folder schema to create containers for other nodes.");
 				schema.setDisplayField("name");
-				schema.setSegmentField("name");
+				schema.setSegmentField("slug");
+
+				StringFieldSchema folderNameFieldSchema = new StringFieldSchemaImpl();
+				folderNameFieldSchema.setName("slug");
+				folderNameFieldSchema.setLabel("Slug");
+				schema.addField(folderNameFieldSchema);
 
 				StringFieldSchema nameFieldSchema = new StringFieldSchemaImpl();
 				nameFieldSchema.setName("name");
@@ -431,11 +508,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 
 			// Binary content for images and other downloads
-			SchemaContainer binarySchemaContainer = schemaContainerRoot.findByName("binary-content");
+			SchemaContainer binarySchemaContainer = schemaContainerRoot.findByName("binary_content");
 			if (binarySchemaContainer == null) {
 
-				Schema schema = new SchemaModel();
-				schema.setName("binary-content");
+				SchemaModel schema = new SchemaModelImpl();
+				schema.setDescription("Binary content schema used to store images and other binary data.");
+				schema.setName("binary_content");
 				schema.setDisplayField("name");
 				schema.setSegmentField("binary");
 
@@ -475,6 +553,48 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			tx.success();
 		}
 
+	}
+
+	@Override
+	public void initOptionalData(boolean isEmptyInstallation) {
+
+		// Only setup optional data for empty installations
+		if (isEmptyInstallation) {
+			try (Tx tx = db.tx()) {
+				meshRoot = meshRoot();
+
+				UserRoot userRoot = meshRoot().getUserRoot();
+				// Verify that an anonymous user exists
+				User anonymousUser = userRoot.findByUsername("anonymous");
+				if (anonymousUser == null) {
+					anonymousUser = userRoot.create("anonymous", anonymousUser);
+					anonymousUser.setCreator(anonymousUser);
+					anonymousUser.setCreationTimestamp();
+					anonymousUser.setEditor(anonymousUser);
+					anonymousUser.setLastEditedTimestamp();
+					anonymousUser.setPasswordHash(null);
+					log.debug("Created anonymous user {" + anonymousUser.getUuid() + "}");
+				}
+
+				GroupRoot groupRoot = meshRoot.getGroupRoot();
+				Group anonymousGroup = groupRoot.findByName("anonymous");
+				if (anonymousGroup == null) {
+					anonymousGroup = groupRoot.create("anonymous", anonymousUser);
+					anonymousGroup.addUser(anonymousUser);
+					log.debug("Created anonymous group {" + anonymousGroup.getUuid() + "}");
+				}
+
+				RoleRoot roleRoot = meshRoot.getRoleRoot();
+				Role anonymousRole = roleRoot.findByName("anonymous");
+				if (anonymousRole == null) {
+					anonymousRole = roleRoot.create("anonymous", anonymousUser);
+					anonymousGroup.addRole(anonymousRole);
+					log.debug("Created anonymous role {" + anonymousRole.getUuid() + "}");
+				}
+
+				tx.success();
+			}
+		}
 	}
 
 	@Override

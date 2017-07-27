@@ -4,8 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
@@ -20,6 +18,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -38,8 +37,6 @@ import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.role.RoleReference;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -54,7 +51,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			RoleReference reference = role().transformToReference();
 			assertNotNull(reference);
 			assertEquals(role().getUuid(), reference.getUuid());
@@ -65,7 +62,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testCreate() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			String roleName = "test";
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role createdRole = root.create(roleName, user());
@@ -79,7 +76,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testGrantPermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Role role = role();
 			Node node = folder("news");
 			role.grantPermissions(node, CREATE_PERM, READ_PERM, UPDATE_PERM, DELETE_PERM);
@@ -104,10 +101,10 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testGrantDuplicates() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Role role = meshRoot().getRoleRoot().create("testRole", user());
 			group().addRole(role);
-			NodeImpl extraNode = noTx.getGraph().addFramedVertex(NodeImpl.class);
+			NodeImpl extraNode = tx.getGraph().addFramedVertex(NodeImpl.class);
 			assertEquals(0, countEdges(role, READ_PERM.label(), Direction.OUT));
 			role.grantPermissions(extraNode, READ_PERM);
 			assertEquals(1, countEdges(role, READ_PERM.label(), Direction.OUT));
@@ -129,7 +126,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testIsPermitted() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			User user = user();
 			int nRuns = 2000;
 			for (int i = 0; i < nRuns; i++) {
@@ -140,7 +137,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testGrantPermissionTwice() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Role role = role();
 			Node node = folder("news");
 
@@ -158,7 +155,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testGetPermissions() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Role role = role();
 			Node node = folder("news");
 			assertEquals(6, role.getPermissions(node).size());
@@ -167,7 +164,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testRevokePermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Role role = role();
 			Node node = folder("news");
 			role.revokePermissions(node, CREATE_PERM);
@@ -183,7 +180,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testRevokePermissionOnGroupRoot() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			role().revokePermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 			User user = user();
 			assertFalse("The create permission to the groups root node should have been revoked.",
@@ -194,7 +191,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testRootNode() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			int nRolesBefore = root.findAll().size();
 
@@ -208,7 +205,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	@Test
 	public void testRoleAddCrudPermissions() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MeshAuthUser requestUser = user().reframe(MeshAuthUserImpl.class);
 			// userRoot.findMeshAuthUserByUsername(requestUser.getUsername())
 			Node parentNode = folder("news");
@@ -223,7 +220,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 				}
 			}
 
-			RoutingContext rc = getMockedRoutingContext();
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Node node = parentNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 			assertEquals(0, requestUser.getPermissions(node).size());
@@ -231,7 +228,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			ac.data().clear();
 			assertEquals(6, requestUser.getPermissions(node).size());
 
-			try (Tx tx = db().tx()) {
+			try (Tx tx2 = tx()) {
 				for (Role role : roles().values()) {
 					for (GraphPermission permission : GraphPermission.values()) {
 						assertTrue(
@@ -248,7 +245,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	public void testRolesOfGroup() throws InvalidArgumentException {
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
 			Role extraRole = root.create("extraRole", user());
 			group().addRole(extraRole);
@@ -260,7 +257,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			group().addRole(extraRole);
 
 			role().grantPermissions(extraRole, READ_PERM);
-			RoutingContext rc = getMockedRoutingContext();
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			MeshAuthUser requestUser = ac.getUser();
 			Page<? extends Role> roles = group().getRoles(requestUser, new PagingParametersImpl(1, 10));
@@ -274,23 +271,24 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (NoTx noTx = db().noTx()) {
-			RoutingContext rc = getMockedRoutingContext(user());
+		int roleCount = roles().size();
+		try (Tx tx = tx()) {
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Page<? extends Role> page = boot().roleRoot().findAll(ac, new PagingParametersImpl(1, 5));
-			assertEquals(roles().size(), page.getTotalElements());
-			assertEquals(2, page.getSize());
+			assertEquals(roleCount, page.getTotalElements());
+			assertEquals(roleCount, page.getSize());
 
 			page = boot().roleRoot().findAll(ac, new PagingParametersImpl(1, 15));
-			assertEquals(roles().size(), page.getTotalElements());
-			assertEquals(2, page.getSize());
+			assertEquals(roleCount, page.getTotalElements());
+			assertEquals(roleCount, page.getSize());
 		}
 	}
 
 	@Test
 	@Override
 	public void testFindByName() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			assertNotNull(boot().roleRoot().findByName(role().getName()));
 			assertNull(boot().roleRoot().findByName("bogus"));
 		}
@@ -299,7 +297,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindByUUID() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Role role = boot().roleRoot().findByUuid(role().getUuid());
 			assertNotNull(role);
 			role = boot().roleRoot().findByUuid("bogus");
@@ -310,9 +308,9 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Role role = role();
-			RoutingContext rc = getMockedRoutingContext(user());
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			RoleResponse restModel = role.transformToRest(ac, 0).toBlocking().value();
 
@@ -326,7 +324,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			String roleName = "test";
 			RoleRoot root = meshRoot().getRoleRoot();
 
@@ -345,9 +343,9 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MeshRoot root = meshRoot();
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			Role role = root.getRoleRoot().create("SuperUser", user());
 			assertFalse(user().hasPermission(role, GraphPermission.CREATE_PERM));
 			user().addCRUDPermissionOnRole(root.getUserRoot(), GraphPermission.CREATE_PERM, role);
@@ -359,7 +357,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			List<? extends Role> roles = boot().roleRoot().findAll();
 			assertNotNull(roles);
 			assertEquals(roles().size(), roles.size());
@@ -369,7 +367,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testRead() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Role role = role();
 			assertEquals("joe1_role", role.getName());
 			assertNotNull(role.getUuid());
@@ -385,14 +383,14 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			String uuid;
 			SearchQueueBatch batch = createBatch();
-			try (Tx tx = db().tx()) {
+			try (Tx tx2 = tx()) {
 				Role role = role();
 				uuid = role.getUuid();
 				role.delete(batch);
-				tx.success();
+				tx2.success();
 			}
 			assertElement(boot().roleRoot(), uuid, false);
 
@@ -412,7 +410,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testUpdate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Role role = role();
 			role.setName("newName");
 			assertEquals("newName", role.getName());
@@ -424,7 +422,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			testPermission(GraphPermission.READ_PERM, role());
 		}
 	}
@@ -432,7 +430,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			testPermission(GraphPermission.DELETE_PERM, role());
 		}
 	}
@@ -440,7 +438,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			testPermission(GraphPermission.UPDATE_PERM, role());
 		}
 	}
@@ -448,7 +446,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			testPermission(GraphPermission.CREATE_PERM, role());
 		}
 	}

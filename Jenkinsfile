@@ -1,69 +1,67 @@
-properties([disableConcurrentBuilds(),[$class: 'ParametersDefinitionProperty', parameterDefinitions: [
-[$class: 'BooleanParameterDefinition', name: 'runTests', defaultValue: true],
-[$class: 'BooleanParameterDefinition', name: 'runPerformanceTests', defaultValue: true],
-[$class: 'BooleanParameterDefinition', name: 'runDocker', defaultValue: false],
-[$class: 'BooleanParameterDefinition', name: 'runIntegrationTests', defaultValue: false],
-[$class: 'BooleanParameterDefinition', name: 'runReleaseBuild', defaultValue: false],
-[$class: 'BooleanParameterDefinition', name: 'runDeploy', defaultValue: false]
-]],
- pipelineTriggers([[$class: 'GitHubPushTrigger'], pollSCM('H/5 * * * *')])
+// The GIT repository for this pipeline lib is defined in the global Jenkins setting
+@Library('jenkins-pipeline-library')
+import com.gentics.*
+
+// Make the helpers aware of this jobs environment
+JobContext.set(this)
+
+properties([
+	parameters([
+		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
+		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
+		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
+		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
+		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
+		booleanParam(name: 'runIntegrationTests', defaultValue: false, description: "Whether to run integration tests.")
+	])
 ])
 
-node('dockerRoot') {
+final def dockerHost           = "tcp://gemini.office:2375"
+final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 
-	def mvnHome = tool 'M3'
+node("jenkins-slave") {
 	stage("Checkout") {
-		sh "rm -rf *"
-		sh "rm -rf .git"
 		checkout scm
-		//checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]], extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
 	}
+	def branchName = GitHelper.fetchCurrentBranchName()
+	def version = MavenHelper.getVersion()
 
 	stage("Set Version") {
-		if (Boolean.valueOf(runReleaseBuild)) {
-			def originalV = version();
-			def major = originalV[1];
-			def minor = originalV[2];
-			def patch  = Integer.parseInt(originalV[3]) + 1;
-			def v = "${major}.${minor}.${patch}"
-			if (v) {
-				echo "Building version ${v}"
+		if (Boolean.valueOf(params.runDeploy)) {
+			if (version) {
+				echo "Building version " + version
+				version = MavenHelper.transformSnapshotToReleaseVersion(version)
+				MavenHelper.setVersion(version)
 			}
-			sh "${mvnHome}/bin/mvn -B -U versions:set -DgenerateBackupPoms=false -DnewVersion=${v}"
 			//TODO only add pom.xml files
 			sh 'git add .'
 			sh "git commit -m 'Raise version'"
-			sh "git tag ${v}"
+			GitHelper.addTag(version, 'Release of version ' + version)
 		}
 	}
 
 	stage("Test") {
-		if (Boolean.valueOf(runTests)) {
-			def splits = 25;
+		if (Boolean.valueOf(params.runTests)) {
+		def splits = 4;
 			sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
 			sh "split -a 2 -d -n l/${splits} alltests  includes-"
-			stash includes: '*', name: 'project'
+			stash includes: '**', name: 'project'
 			def branches = [:]
 			for (int i = 0; i < splits; i++) {
 				def current = i
 				branches["split${i}"] = {
-					node('mesh') {
+					node('jenkins-slave') {
 						echo "Preparing slave environment for ${current}"
-						//sh "ls -la"
-						sh "rm -rf *"
-						checkout scm
-						//checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]],extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
 						unstash 'project'
-						sh "ls -la"
 						def postfix = current;
 						if (current <= 9) {
-							postfix = "0" + current 
+							postfix = "0" + current
 						}
 						echo "Setting correct inclusions file ${postfix}"
 						sh "mv includes-${postfix} inclusions.txt"
-						sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
+						sshagent(["git"]) {
 							try {
-								sh "${mvnHome}/bin/mvn -B -U -e -pl '!demo,!doc,!server,!performance-tests' clean test"
+								sh "mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
 							} finally {
 								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 							}
@@ -82,39 +80,36 @@ node('dockerRoot') {
 		}
 	}
 
-	stage("Release Build") {
-		if (Boolean.valueOf(runReleaseBuild)) {
-			sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
-				sh "${mvnHome}/bin/mvn -B -DskipTests clean package"
+	stage("Maven Build") {
+		if (Boolean.valueOf(params.runMavenBuild)) {
+			sshagent(["git"]) {
+				if (Boolean.valueOf(params.runDeploy)) {
+					sh "mvn -U -B -DskipTests clean deploy"
+				} else {
+					sh "mvn -B -DskipTests clean package"
+				}
 			}
 		} else {
-			echo "Release build skipped.."
+			echo "Maven build skipped.."
 		}
 	}
 
 	stage("Docker Build") {
-		if (Boolean.valueOf(runDocker)) {
-			withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
-				sh "captain build"
-			}
+		if (Boolean.valueOf(params.runDocker)) {
+			sh "rm demo/target/*sources.jar"
+			sh "rm server/target/*sources.jar"
+			sh "captain build"
 		} else {
 			echo "Docker build skipped.."
 		}
 	}
 
 	stage("Performance Tests") {
-		if (Boolean.valueOf(runPerformanceTests)) {
-			node('cetus') {
-				sh "rm -rf *"
-				sh "rm -rf .git"
-				checkout scm
-				//checkout([$class: 'GitSCM', branches: [[name: '*/' + env.BRANCH_NAME]], extensions: [[$class: 'CleanCheckout'],[$class: 'LocalBranch', localBranch: env.BRANCH_NAME]]])
-				try {
-					sh "${mvnHome}/bin/mvn -B -U clean package -pl '!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false"
-				} finally {
-					//step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
-					step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
-				}
+		if (Boolean.valueOf(params.runPerformanceTests)) {
+			try {
+				sh "mvn -B -U clean package -pl '!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
+			} finally {
+				step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
 			}
 		} else {
 			echo "Performance tests skipped.."
@@ -122,8 +117,8 @@ node('dockerRoot') {
 	}
 
 	stage("Integration Tests") {
-		if (Boolean.valueOf(runIntegrationTests)) {
-			withEnv(['DOCKER_HOST=tcp://gemini.office:2375', "MESH_VERSION=${v}"]) {
+		if (Boolean.valueOf(params.runIntegrationTests)) {
+			withEnv(["MESH_VERSION=" + version]) {
 				sh "integration-tests/test.sh"
 			}
 		} else {
@@ -131,32 +126,31 @@ node('dockerRoot') {
 		}
 	}
 
-	stage("Deploy/Push") {
-		if (Boolean.valueOf(runDeploy)) {
-			if (Boolean.valueOf(runDocker)) {
-				withEnv(['DOCKER_HOST=tcp://gemini.office:2375']) {
-					withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
-						sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD -e entwicklung@genitcs.com'
-						sh "captain push"
-					}
-				}
-			}
-			sshagent(['601b6ce9-37f7-439a-ac0b-8e368947d98d']) {
-				sh "${mvnHome}/bin/mvn -B -DskipTests clean deploy"
-				if (Boolean.valueOf(runReleaseBuild)) {
-					def gitCommit = sh(returnStdout: true, script: 'git rev-parse --abbrev-ref HEAD').trim()
-					sh "git push origin " + gitCommit
-					sh "git push origin ${v}"
+	stage("Deploy") {
+		if (Boolean.valueOf(params.runDeploy)) {
+			if (Boolean.valueOf(params.runDocker)) {
+				withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
+					sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD'
+					sh "captain push"
 				}
 			}
 		} else {
-			echo "Deploy/Push skipped.."
+			echo "Deploy skipped.."
 		}
 	}
 
+	stage("Git push") {
+		if (Boolean.valueOf(params.runDeploy)) {
+			sshagent(["git"]) {
+				def snapshotVersion = MavenHelper.getNextSnapShotVersion(version)
+				MavenHelper.setVersion(snapshotVersion)
+				GitHelper.addCommit('.', gitCommitTag + ' Prepare for the next development iteration (' + snapshotVersion + ')')
+				GitHelper.pushBranch(branchName)
+				GitHelper.pushTag(version)
+			}
+		} else {
+			echo "Push skipped.."
+		}
+	}
 }
 
-def version() {
-	def matcher = readFile('pom.xml') =~ '<version>(\\d*)\\.(\\d*)\\.(\\d*)(-SNAPSHOT)*</version>'
-	matcher ? matcher[0] : null
-}

@@ -9,46 +9,34 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.8.0-SNAPSHOT</version>
+		<version>0.9.22-SNAPSHOT</version>
 	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<mesh.version>${project.version}</mesh.version>
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
+		<projectRoot>${project.basedir}/..</projectRoot>
 	</properties>
 
 	<dependencies>
 		<dependency>
-			<artifactId>mesh-core</artifactId>
 			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-test-common</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<artifactId>mesh-core</artifactId>
 			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-core</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-core</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
 			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.assertj</groupId>
-			<artifactId>assertj-core</artifactId>
-			<version>3.2.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.simpleframework</groupId>
-			<artifactId>simple-xml</artifactId>
-			<version>2.7.1</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-all</artifactId>
-			<version>1.10.19</version>
-			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -60,20 +48,6 @@
 				<configuration>
 					<skip>${skip.performance.tests}</skip>
 					<forkCount>1</forkCount>
-					<reuseForks>false</reuseForks>
-					<!-- Don't execute more than one test per jvm fork! -->
-					<threadCount>1</threadCount>
-					<threadCountClasses>1</threadCountClasses>
-					<trimStackTrace>false</trimStackTrace>
-					<!-- // Kill the forked test if it takes more than 3h for execution. Nope, currently disabled -->
-					<forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
-					<jvm>${JAVA_1_8_HOME}/bin/java</jvm>
-					<!-- <includes> <include>**/*Test.java</include> <include>**/*TestSuite.java</include> </includes> -->
-					<excludes>
-						<exclude>**/*AbstractTest.java</exclude>
-						<exclude>**/*Abstract*.java</exclude>
-						<exclude>**/Abstract*.java</exclude>
-					</excludes>
 				</configuration>
 			</plugin>
 		</plugins>

@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.group;
 
-import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
-import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 import static com.gentics.mesh.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
@@ -14,6 +12,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
@@ -28,7 +27,6 @@ import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.error.InvalidArgumentException;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -41,7 +39,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testTransformToReference() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			GroupReference reference = group().transformToReference();
 			assertNotNull(reference);
 			assertEquals(group().getUuid(), reference.getUuid());
@@ -51,7 +49,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 
 	@Test
 	public void testUserGroup() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			UserRoot userRoot = meshRoot().getUserRoot();
 			GroupRoot groupRoot = meshRoot().getGroupRoot();
 
@@ -71,24 +69,25 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
-		try (NoTx noTx = db().noTx()) {
-			RoutingContext rc = getMockedRoutingContext(user());
+		int groupCount = groups().size();
+		try (Tx tx = tx()) {
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			Page<? extends Group> page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 19));
 
-			assertEquals(groups().size(), page.getTotalElements());
-			assertEquals(groups().size(), page.getSize());
+			assertEquals(groupCount, page.getTotalElements());
+			assertEquals(groupCount, page.getSize());
 
 			page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 3));
-			assertEquals(groups().size(), page.getTotalElements());
-			assertEquals(2, page.getSize());
+			assertEquals(groupCount, page.getTotalElements());
+			assertEquals("We expected one page per group.",groupCount, page.getSize());
 		}
 	}
 
 	@Test
 	@Override
 	public void testFindAll() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			List<? extends Group> groups = boot().groupRoot().findAll();
 			assertEquals(groups().size(), groups.size());
 		}
@@ -97,7 +96,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testRootNode() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			GroupRoot root = meshRoot().getGroupRoot();
 			int nGroupsBefore = root.findAll().size();
 			GroupRoot groupRoot = meshRoot().getGroupRoot();
@@ -111,7 +110,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testFindByName() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			assertNotNull(boot().groupRoot().findByName(group().getName()));
 		}
 	}
@@ -119,7 +118,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testFindByUUID() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Group group = boot().groupRoot().findByUuid(group().getUuid());
 			assertNotNull(group);
 		}
@@ -128,8 +127,8 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testTransformation() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			RoutingContext rc = getMockedRoutingContext(user());
+		try (Tx tx = tx()) {
+			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
 			GroupResponse response = group().transformToRest(ac, 0).toBlocking().value();
@@ -143,7 +142,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testCreateDelete() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Group group = meshRoot().getGroupRoot().create("newGroup", user());
 			SearchQueueBatch batch = createBatch();
 			assertNotNull(group);
@@ -157,10 +156,10 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testCRUDPermissions() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MeshRoot root = meshRoot();
 			User user = user();
-			InternalActionContext ac = getMockedInternalActionContext();
+			InternalActionContext ac = mockActionContext();
 			Group group = root.getGroupRoot().create("newGroup", user);
 			assertFalse(user.hasPermission(group, GraphPermission.CREATE_PERM));
 			user.addCRUDPermissionOnRole(root.getGroupRoot(), GraphPermission.CREATE_PERM, group);
@@ -172,7 +171,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testRead() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Group group = group();
 			assertEquals("joe1_group", group.getName());
 			assertNotNull(group.getUsers());
@@ -184,7 +183,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testCreate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Group group = meshRoot().getGroupRoot().create("newGroup", user());
 			assertNotNull(group);
 			assertEquals("newGroup", group.getName());
@@ -194,7 +193,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testDelete() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			Group group = meshRoot().getGroupRoot().create("newGroup", user());
 
 			assertNotNull(group);
@@ -216,7 +215,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testUpdate() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			group().setName("changed");
 			assertEquals("changed", group().getName());
 		}
@@ -225,7 +224,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			testPermission(GraphPermission.READ_PERM, group());
 		}
 	}
@@ -233,7 +232,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			testPermission(GraphPermission.DELETE_PERM, group());
 		}
 	}
@@ -241,7 +240,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			testPermission(GraphPermission.UPDATE_PERM, group());
 		}
 	}
@@ -249,7 +248,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			testPermission(GraphPermission.CREATE_PERM, group());
 		}
 	}

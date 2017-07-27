@@ -2,8 +2,13 @@
   "name" : "vehicle",
   "container" : false,
   "displayField": "name",
-  "segmentField": "name",
+  "segmentField": "slug",
   "fields" : [ {
+    "name" : "slug",
+    "label" : "Slug",
+    "required" : true,
+    "type" : "string"
+  }, {
     "name" : "name",
     "label" : "Name",
     "required" : true,

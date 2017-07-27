@@ -25,4 +25,9 @@ public interface SearchQueue extends BlockingQueue<SearchQueueBatch> {
 	 */
 	SearchQueue blockUntilEmpty(int timeoutInSeconds) throws InterruptedException;
 
+	/**
+	 * Remove the batch from the queue.
+	 */
+	boolean remove(SearchQueueBatch batch);
+
 }

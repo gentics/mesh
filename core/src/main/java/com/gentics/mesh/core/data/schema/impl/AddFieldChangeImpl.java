@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ADD_FIELD_AFTER_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LIST_TYPE_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TYPE_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ALLOW_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -11,6 +12,7 @@ import com.gentics.mesh.core.data.schema.AddFieldChange;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
@@ -55,6 +57,11 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 	}
 
 	@Override
+	public String[] getAllowProp() {
+		return getRestProperty(ALLOW_KEY);
+	}
+	
+	@Override
 	public void setListType(String type) {
 		setRestProperty(LIST_TYPE_KEY, type);
 	}
@@ -79,13 +86,12 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 		setRestProperty(SchemaChangeModel.LABEL_KEY, label);
 	}
 
-
 	@Override
 	public FieldSchemaContainer apply(FieldSchemaContainer container) {
 
 		String position = getInsertAfterPosition();
 		FieldSchema field = null;
-		//TODO avoid case switches like this. We need a central delegator implementation which will be used in multiple places
+		// TODO avoid case switches like this. We need a central delegator implementation which will be used in multiple places
 		switch (getType()) {
 		case "html":
 			field = new HtmlFieldSchemaImpl();
@@ -103,17 +109,18 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 			field = new NodeFieldSchemaImpl();
 			break;
 		case "micronode":
-		field = 	new MicronodeFieldSchemaImpl();
+			MicronodeFieldSchema micronodeFieldSchema = new MicronodeFieldSchemaImpl();
+			micronodeFieldSchema.setAllowedMicroSchemas(getAllowProp());
+			field = micronodeFieldSchema;
 			break;
 		case "date":
 			field = new DateFieldSchemaImpl();
 			break;
 		case "boolean":
-			field = new BooleanFieldSchemaImpl().setName(getFieldName());
+			field = new BooleanFieldSchemaImpl();
 			break;
 		case "list":
 			ListFieldSchema listField = new ListFieldSchemaImpl();
-			listField.setName(getFieldName());
 			listField.setListType(getListType());
 			field = listField;
 			break;

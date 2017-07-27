@@ -1,0 +1,33 @@
+++++
+<div class="graphql-example" style="height: 46em">
+{
+  node(path: "/yachts/pelorus") {
+    fields {
+      ... on vehicle {
+        name
+        description
+        # The vehicleImage field is a node field
+        # which points to a vehicle image node
+        vehicleImage {
+          path
+          # We need to specify what kind of node we expect.
+          # Otherwise we can't retrieve the image
+          # binary field information.
+          fields {
+            ... on vehicleImage {
+              image {
+                width
+                height
+                fileSize
+                mimeType
+                dominantColor
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+</div>
+++++

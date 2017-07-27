@@ -2,14 +2,23 @@ package com.gentics.mesh.etc.config;
 
 import java.io.File;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.doc.GenerateDocumentation;
+
+@GenerateDocumentation
 public class MeshUploadOptions {
 
 	public static final long DEFAULT_FILEUPLOAD_BYTE_LIMIT = 1024 * 1024 * 250; // 250 MiB
 
 	private long byteLimit = DEFAULT_FILEUPLOAD_BYTE_LIMIT;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Path binary data storage directory. Fileuploads will be placed here.")
 	private String directory = "data" + File.separator + "binaryFiles";
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Path to the file upload temporary directory. Inbound file uploads will be placed here before they are processed.")
 	private String tempDirectory = "data" + File.separator + "tmp" + File.separator + "file-uploads";
 
 	/**
@@ -26,9 +35,11 @@ public class MeshUploadOptions {
 	 * 
 	 * @param byteLimit
 	 *            Limit in bytes
+	 * @return Fluent API
 	 */
-	public void setByteLimit(long byteLimit) {
+	public MeshUploadOptions setByteLimit(long byteLimit) {
 		this.byteLimit = byteLimit;
+		return this;
 	}
 
 	/**
@@ -45,9 +56,11 @@ public class MeshUploadOptions {
 	 * 
 	 * @param directory
 	 *            Binary storage filesystem directory
+	 * @return Fluent API
 	 */
-	public void setDirectory(String directory) {
+	public MeshUploadOptions setDirectory(String directory) {
 		this.directory = directory;
+		return this;
 	}
 
 	/**
@@ -64,9 +77,11 @@ public class MeshUploadOptions {
 	 * 
 	 * @param tempDirectory
 	 *            Temporary filesystem directory
+	 * @return Fluent API
 	 */
-	public void setTempDirectory(String tempDirectory) {
+	public MeshUploadOptions setTempDirectory(String tempDirectory) {
 		this.tempDirectory = tempDirectory;
+		return this;
 	}
 
 }

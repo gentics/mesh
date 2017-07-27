@@ -1,19 +1,40 @@
 package com.gentics.mesh.etc.config;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.doc.GenerateDocumentation;
+
 /**
  * Authentication options POJO.
  */
+@GenerateDocumentation
 public class AuthenticationOptions {
 
-	public static final long DEFAULT_TOKEN_EXPIRATION_TIME = 60 * 60; //1 hour
+	public static final String DEFAULT_ALGORITHM = "HS256";
+
+	public static final long DEFAULT_TOKEN_EXPIRATION_TIME = 60 * 60; // 1 hour
 
 	public static final String DEFAULT_KEYSTORE_PATH = "keystore.jceks";
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Time in minutes which an issued token stays valid.")
 	private long tokenExpirationTime = DEFAULT_TOKEN_EXPIRATION_TIME;
 
-	private String signatureSecret = "secret";
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("The Java keystore password for the keystore file.")
+	private String keystorePassword = null;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Path to the java keystore file which will be used to store cryptographic keys.")
 	private String keystorePath = DEFAULT_KEYSTORE_PATH;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Algorithm which is used to verify and sign JWT.")
+	private String algorithm = DEFAULT_ALGORITHM;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Flag which indicates whether anonymous access should be enabled.")
+	private boolean enableAnonymousAccess = true;
 
 	/**
 	 * Gets the time after which an authentication token should expire.
@@ -29,33 +50,38 @@ public class AuthenticationOptions {
 	 * 
 	 * @param tokenExpirationTime
 	 *            The expiration time in seconds
+	 * @return Fluent API
 	 */
-	public void setTokenExpirationTime(long tokenExpirationTime) {
+	public AuthenticationOptions setTokenExpirationTime(long tokenExpirationTime) {
 		this.tokenExpirationTime = tokenExpirationTime;
+		return this;
 	}
 
 	/**
-	 * Gets the secret passphrase which is used when singing the authentication token.
+	 * Gets the password which is used to open the java key store.
 	 * 
-	 * @return
+	 * @return Keystore password
 	 */
-	public String getSignatureSecret() {
-		return signatureSecret;
+	public String getKeystorePassword() {
+		return keystorePassword;
 	}
 
 	/**
-	 * Sets the secret passphrase which is used when singing the authentication token.
+	 * Sets the password which is used to open the java key store.
 	 * 
-	 * @param signatureSecret
+	 * @param password
+	 * @return Fluent API
+	 * 
 	 */
-	public void setSignatureSecret(String signatureSecret) {
-		this.signatureSecret = signatureSecret;
+	public AuthenticationOptions setKeystorePassword(String password) {
+		this.keystorePassword = password;
+		return this;
 	}
 
 	/**
 	 * Gets the path to the keystore file.
 	 * 
-	 * @return
+	 * @return Path to keystore
 	 */
 	public String getKeystorePath() {
 		return keystorePath;
@@ -65,8 +91,40 @@ public class AuthenticationOptions {
 	 * Sets the path to the keystore file.
 	 * 
 	 * @param keystorePath
+	 * @return Fluent API
+	 * 
 	 */
-	public void setKeystorePath(String keystorePath) {
+	public AuthenticationOptions setKeystorePath(String keystorePath) {
 		this.keystorePath = keystorePath;
+		return this;
+	}
+
+	/**
+	 * Return the algorithm which is used to sign the JWT tokens. By default {@value #DEFAULT_ALGORITHM} is used.
+	 * 
+	 * @return Configured algorithm
+	 */
+	public String getAlgorithm() {
+		return algorithm;
+	}
+
+	/**
+	 * Set the algorithm which is used to sign the JWT tokens.
+	 * 
+	 * @param algorithm
+	 * @return Fluent API
+	 */
+	public AuthenticationOptions setAlgorithm(String algorithm) {
+		this.algorithm = algorithm;
+		return this;
+	}
+
+	public boolean isEnableAnonymousAccess() {
+		return enableAnonymousAccess;
+	}
+
+	public AuthenticationOptions setEnableAnonymousAccess(boolean enableAnonymousAccess) {
+		this.enableAnonymousAccess = enableAnonymousAccess;
+		return this;
 	}
 }

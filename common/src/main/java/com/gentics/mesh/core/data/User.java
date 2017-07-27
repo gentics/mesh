@@ -6,10 +6,13 @@ import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.util.DateUtils;
 
 /**
  * The User Domain Model interface.
@@ -31,7 +34,17 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	static final String TYPE = "user";
+	static String TYPE = "user";
+
+	/**
+	 * API token id property name {@value #API_TOKEN_ID}
+	 */
+	static String API_TOKEN_ID = "APITokenId";
+
+	/**
+	 * API token timestamp property name {@value #API_TOKEN_ISSUE_TIMESTAMP}
+	 */
+	static String API_TOKEN_ISSUE_TIMESTAMP = "APITokenTimestamp";
 
 	@Override
 	default String getType() {
@@ -227,6 +240,15 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode);
 
 	/**
+	 * Return a page of groups which the user was assigned to.
+	 * 
+	 * @param user
+	 * @param params
+	 * @return
+	 */
+	Page<? extends Group> getGroups(User user, PagingParameters params);
+
+	/**
 	 * Return a list of groups to which the user was assigned.
 	 * 
 	 * @return
@@ -293,6 +315,15 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * @return
 	 */
 	boolean hasPermissionForId(Object elementId, GraphPermission permission);
+
+	/**
+	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the user
+	 * has READ permission or READ_PUBLISH permission on a published node.
+	 * 
+	 * @param container
+	 * @param releaseUuid
+	 */
+	void failOnNoReadPermission(NodeGraphFieldContainer container, String releaseUuid);
 
 	/**
 	 * Check whether the admin role was assigned to the user.
@@ -375,6 +406,77 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 			return false;
 		}
 		return isTokenMatch && !isExpired;
+	}
+
+	/**
+	 * Return the currently stored API token id.
+	 * 
+	 * @return API token id or null if no token has yet been generated.
+	 */
+	default String getAPIKeyTokenCode() {
+		return getProperty(API_TOKEN_ID);
+	}
+
+	/**
+	 * Set the user API token id.
+	 * 
+	 * @param code
+	 * @return Fluent API
+	 */
+	default User setAPITokenId(String code) {
+		setProperty(API_TOKEN_ID, code);
+		return this;
+	}
+
+	/**
+	 * Return the timestamp when the api key token code was last issued.
+	 * 
+	 * @return
+	 */
+	default Long getAPITokenIssueTimestamp() {
+		return getProperty(API_TOKEN_ISSUE_TIMESTAMP);
+	}
+
+	/**
+	 * Set the API token issue timestamp to the current time.
+	 * 
+	 * @return Fluent API
+	 */
+	default User setAPITokenIssueTimestamp() {
+		setAPITokenIssueTimestamp(System.currentTimeMillis());
+		return this;
+	}
+
+	/**
+	 * Set the API token issue timestamp.
+	 * 
+	 * @param timestamp
+	 * @return Fluent API
+	 */
+	default User setAPITokenIssueTimestamp(Long timestamp) {
+		setProperty(API_TOKEN_ISSUE_TIMESTAMP, timestamp);
+		return this;
+	}
+
+	/**
+	 * Return the API token issue date.
+	 * 
+	 * @return ISO8601 formatted date or null if the date has not yet been set
+	 */
+	default String getAPITokenIssueDate() {
+		Long timestamp = getAPITokenIssueTimestamp();
+		if (timestamp == null) {
+			return null;
+		}
+		return DateUtils.toISO8601(timestamp, System.currentTimeMillis());
+	}
+
+	/**
+	 * Reset the API token id and issue timestamp and thus invalidating the token.
+	 */
+	default void resetAPIToken() {
+		setProperty(API_TOKEN_ID, null);
+		setProperty(API_TOKEN_ISSUE_TIMESTAMP, null);
 	}
 
 }

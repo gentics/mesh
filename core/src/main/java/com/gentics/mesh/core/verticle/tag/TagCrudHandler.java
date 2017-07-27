@@ -11,17 +11,16 @@ import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.tag.TagResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.impl.NodeParameters;
-import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.parameter.NodeParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
 
 /**
@@ -52,6 +51,7 @@ public class TagCrudHandler extends AbstractHandler {
 	 * Add the handler that returns a node list for a specified tag.
 	 * 
 	 * @param ac
+	 *            Action Context
 	 * @param tagFamilyUuid
 	 *            Uuid of the tag's parent tag family
 	 * @param tagUuid
@@ -61,17 +61,13 @@ public class TagCrudHandler extends AbstractHandler {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 		validateParameter(tagUuid, "tagUuid");
 
-		db.operateNoTx(() -> {
-			PagingParametersImpl pagingParams = ac.getPagingParameters();
+		db.operateTx(() -> {
+			PagingParameters pagingParams = ac.getPagingParameters();
 			NodeParameters nodeParams = ac.getNodeParameters();
 			Tag tag = getTagFamily(ac, tagFamilyUuid).loadObjectByUuid(ac, tagUuid, READ_PERM);
-			// try {
-			Page<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(null), nodeParams.getLanguageList(),
+			TransformablePage<? extends Node> page = tag.findTaggedNodes(ac.getUser(), ac.getRelease(), nodeParams.getLanguageList(),
 					ContainerType.forVersion(ac.getVersioningParameters().getVersion()), pagingParams);
 			return page.transformToRest(ac, 0);
-			// } catch (Exception e) {
-			// return Single.error(e);
-			// }
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -79,6 +75,7 @@ public class TagCrudHandler extends AbstractHandler {
 	 * Read paged list of tags.
 	 * 
 	 * @param ac
+	 *            Action Context
 	 * @param tagFamilyUuid
 	 */
 	public void handleReadTagList(InternalActionContext ac, String tagFamilyUuid) {
@@ -93,17 +90,17 @@ public class TagCrudHandler extends AbstractHandler {
 	 * Handle a tag create request.
 	 * 
 	 * @param ac
+	 *            Action Context
 	 * @param tagFamilyUuid
 	 *            Uuid of the tagfamily in which the tag should be created
 	 */
 	public void handleCreate(InternalActionContext ac, String tagFamilyUuid) {
 		validateParameter(tagFamilyUuid, "tagFamilyUuid");
 
-		utils.operateNoTx(ac, () -> {
+		utils.operateTx(ac, () -> {
 			Database db = MeshInternal.get().database();
 			ResultInfo info = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-
 				Tag tag = getTagFamily(ac, tagFamilyUuid).create(ac, batch);
 				TagResponse model = tag.transformToRestSync(ac, 0);
 				String path = tag.getAPIPath(ac);
@@ -112,13 +109,11 @@ public class TagCrudHandler extends AbstractHandler {
 				return resultInfo;
 			});
 
-			RestModel model = info.getModel();
 			String path = info.getProperty("path");
-			SearchQueueBatch batch = info.getBatch();
 			ac.setLocation(path);
 			// TODO don't wait forever in order to prevent locking the thread
-			batch.processSync();
-			return model;
+			info.getBatch().processSync();
+			return info.getModel();
 		}, model -> ac.send(model, CREATED));
 
 	}
@@ -127,6 +122,7 @@ public class TagCrudHandler extends AbstractHandler {
 	 * Handle a tag delete request.
 	 * 
 	 * @param ac
+	 *            Action Context
 	 * @param tagFamilyUuid
 	 *            The tags tagfamily uuid
 	 * @param tagUuid
@@ -146,6 +142,7 @@ public class TagCrudHandler extends AbstractHandler {
 	 * Handle a tag read request.
 	 * 
 	 * @param ac
+	 *            Action Context
 	 * @param tagFamilyUuid
 	 *            Uuid of the tagfamily to which the tag belongs
 	 * @param tagUuid
@@ -157,7 +154,7 @@ public class TagCrudHandler extends AbstractHandler {
 
 		utils.readElement(ac, tagUuid, () -> {
 			return getTagFamily(ac, tagFamilyUuid);
-		});
+		}, READ_PERM);
 
 	}
 
@@ -165,6 +162,7 @@ public class TagCrudHandler extends AbstractHandler {
 	 * Handle a tag delete request.
 	 * 
 	 * @param ac
+	 *            Action Context
 	 * @param tagFamilyUuid
 	 *            Uuid of the tagfamily to which the tag belongs
 	 * @param tagUuid

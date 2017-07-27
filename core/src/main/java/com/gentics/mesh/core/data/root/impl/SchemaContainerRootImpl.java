@@ -12,17 +12,19 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -30,6 +32,9 @@ import com.gentics.mesh.json.JsonUtil;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+/**
+ * @see SchemaContainerRoot
+ */
 public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer> implements SchemaContainerRoot {
 
 	private static final Logger log = LoggerFactory.getLogger(SchemaContainerRootImpl.class);
@@ -62,7 +67,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public SchemaContainer create(Schema schema, User creator, String uuid) {
+	public SchemaContainer create(SchemaModel schema, User creator, String uuid) {
 		schema.validate();
 		SchemaContainerImpl container = getGraph().addFramedVertex(SchemaContainerImpl.class);
 		if (uuid != null) {
@@ -72,7 +77,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		container.setLatestVersion(version);
 
 		// set the initial version
-		schema.setVersion(1);
+		schema.setVersion("1.0");
 		version.setSchema(schema);
 		version.setName(schema.getName());
 		version.setSchemaContainer(container);
@@ -106,7 +111,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	@Override
 	public SchemaContainer create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
-		Schema requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModel.class);
+		SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
 		if (!requestUser.hasPermission(this, CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid());
@@ -132,7 +137,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		}
 		String schemaName = reference.getName();
 		String schemaUuid = reference.getUuid();
-		Integer schemaVersion = reference.getVersion();
+		String schemaVersion = reference.getVersion();
 
 		// Prefer the name over the uuid
 		SchemaContainer schemaContainer = null;
@@ -158,5 +163,15 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 				return foundVersion;
 			}
 		}
+	}
+
+	/**
+	 * Get the project
+	 * 
+	 * @return project
+	 */
+	@Override
+	public Project getProject() {
+		return in(HAS_SCHEMA_ROOT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 }

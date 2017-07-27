@@ -62,7 +62,7 @@ public class ChangelogSystemTest {
 	public static Collection<Object[]> data() throws Exception {
 
 		MavenMetadata metadata = MavenUtilities
-				.getMavenMetadata(new URL("http://artifactory.office/repository/lan.releases/com/gentics/mesh/mesh-demo/maven-metadata.xml"));
+				.getMavenMetadata(new URL("https://repo.gentics.com/artifactory/lan.releases/com/gentics/mesh/mesh-demo/maven-metadata.xml"));
 
 		Collection<Object[]> data = new ArrayList<Object[]>();
 		for (String version : metadata.getVersions()) {
@@ -77,7 +77,7 @@ public class ChangelogSystemTest {
 	@Before
 	public void downloadDump() throws IOException, ZipException {
 		// TODO use released version of demo dump
-		URL website = new URL("http://artifactory.office/repository/lan.releases/com/gentics/mesh/mesh-demo/0.6.18/mesh-demo-0.6.18-dump.zip");
+		URL website = new URL("https://repo.gentics.com/artifactory/lan.releases/com/gentics/mesh/mesh-demo/0.6.18/mesh-demo-0.6.18-dump.zip");
 
 		FileUtils.deleteDirectory(targetDir);
 

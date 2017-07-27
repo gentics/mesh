@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.schema.handler.FieldSchemaContainerMutator;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
+import com.gentics.mesh.core.rest.schema.FieldSchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.json.JsonUtil;
@@ -36,7 +37,7 @@ import com.gentics.mesh.json.JsonUtil;
  * @param <SC>
  *            Schema container type
  */
-public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
+public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
 		extends AbstractMeshCoreVertex<R, SCV> implements GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC> {
 
 	public static final String VERSION_PROPERTY_KEY = "version";
@@ -73,7 +74,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	protected abstract String getMigrationAddress();
 
 	@Override
-	public int getVersion() {
+	public String getVersion() {
 		return getProperty(VERSION_PROPERTY_KEY);
 	}
 
@@ -191,7 +192,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		resultingSchema.validate();
 
 		// Increment version of the schema
-		resultingSchema.setVersion(resultingSchema.getVersion() + 1);
+		resultingSchema.setVersion(String.valueOf(Double.valueOf(resultingSchema.getVersion()) + 1));
 
 		// Create and set the next version of the schema
 		SCV nextVersion = getGraph().addFramedVertex(getContainerVersionClass());

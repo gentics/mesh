@@ -1,0 +1,37 @@
+{
+	# [$.data.bogus=<is-null>]
+	bogus: node(uuid: "bogus") {
+		uuid
+	}
+	node(path:"/Neuigkeiten/2015/News_2015.en.html") {
+		fields {
+			# [$.data.node.fields.teaser=News_2015_english_name]
+			... on content { teaser }
+		}
+		# [$.data.node.language=en]
+		language
+
+		version
+		editor {username}
+		edited
+		# [$.data.node.uuid=<is-uuid>]
+		uuid
+
+		# [$.data.node.availableLanguages[0]=en]
+		# [$.data.node.availableLanguages[1]=de]
+		availableLanguages
+
+		node(lang: "de") {
+			fields {
+				# [$.data.node.node.fields.teaser=News_2015 german]
+				... on content { teaser }
+			}
+			# [$.data.node.node.language=de]
+			language
+			version
+			editor {username}
+			edited
+		}
+	}
+}
+# [$.errors=<is-undefined>]

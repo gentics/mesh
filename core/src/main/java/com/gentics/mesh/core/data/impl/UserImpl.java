@@ -16,6 +16,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USE
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.HashSet;
@@ -30,6 +31,7 @@ import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
@@ -37,6 +39,7 @@ import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -51,9 +54,12 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
-import com.gentics.mesh.parameter.impl.NodeParameters;
+import com.gentics.mesh.parameter.NodeParameters;
+import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -192,6 +198,13 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
+	public Page<? extends Group> getGroups(User user, PagingParameters params) {
+		// TODO add permissions
+		VertexTraversal<?, ?, ?> traversal = out(HAS_USER);
+		return TraversalHelper.getPagedResult(traversal, params, GroupImpl.class);
+	}
+
+	@Override
 	public List<? extends Group> getGroups() {
 		return out(HAS_USER).toListExplicit(GroupImpl.class);
 	}
@@ -256,7 +269,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		if (PermissionStore.hasPermission(getId(), permission, elementId)) {
 			return true;
 		} else {
-			FramedGraph graph = Database.getThreadLocalGraph();
+			FramedGraph graph = getGraph();
 			// Find all roles that are assigned to the user by checking the
 			// shortcut edge from the index
 			Iterable<Edge> roleEdges = graph.getEdges("e." + ASSIGNED_TO_ROLE + "_out", this.getId());
@@ -290,6 +303,18 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
+	public void failOnNoReadPermission(NodeGraphFieldContainer container, String releaseUuid) {
+		Node node = container.getParentNode();
+		if (hasPermission(node, READ_PERM)) {
+			return;
+		}
+		if (container.isPublished(releaseUuid) && hasPermission(node, READ_PUBLISHED_PERM)) {
+			return;
+		}
+		throw error(FORBIDDEN, "error_missing_perm", node.getUuid());
+	}
+
+	@Override
 	public UserReference transformToReference() {
 		return new UserReference().setFirstName(getFirstname()).setLastName(getLastname()).setUuid(getUuid());
 	}
@@ -319,6 +344,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 * @param restUser
 	 */
 	private void setGroups(InternalActionContext ac, UserResponse restUser) {
+		// TODO filter by permissions
 		for (Group group : getGroups()) {
 			GroupReference reference = group.transformToReference();
 			restUser.getGroups().add(reference);
@@ -334,7 +360,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	 *            Current depth level of transformation
 	 */
 	private void setNodeReference(InternalActionContext ac, UserResponse restUser, int level) {
-		NodeParameters parameters = new NodeParameters(ac);
+		NodeParameters parameters = ac.getNodeParameters();
 
 		// Check whether a node reference was set.
 		Node node = getReferencedNode();
@@ -426,7 +452,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	/**
 	 * Encode the given password and set the generated hash.
 	 * 
-	 * @param password Plain password to be hashed and set
+	 * @param password
+	 *            Plain password to be hashed and set
 	 * @return Fluent API
 	 */
 	@Override
@@ -547,7 +574,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 
 	@Override
 	public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db.operateNoTx(() -> {
+		return db.operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

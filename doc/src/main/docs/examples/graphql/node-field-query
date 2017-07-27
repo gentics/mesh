@@ -1,0 +1,14 @@
+++++
+<div class="graphql-example" style="height: 22em">
+{
+  node(path: "/yachts/pelorus") {
+    fields {
+      ... on vehicle {
+        name
+        description
+      }
+    }
+  }
+}
+</div>
+++++

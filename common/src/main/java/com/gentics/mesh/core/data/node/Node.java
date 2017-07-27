@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.data.node;
 
+import java.util.Deque;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -15,7 +17,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
@@ -25,13 +27,12 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.error.InvalidArgumentException;
+import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.parameter.impl.PublishParameters;
+import com.gentics.mesh.parameter.PublishParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 
-import rx.Completable;
 import rx.Single;
 
 /**
@@ -82,7 +83,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void removeAllTags(Release release);
 
 	/**
-	 * Return a list of tags that were assigned to this node in the given release
+	 * Return a list of all tags that were assigned to this node in the given release.
 	 *
 	 * @param release
 	 * @return
@@ -90,7 +91,17 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends Tag> getTags(Release release);
 
 	/**
-	 * Return the draft field container for the given language in the latest release
+	 * Return a page of all visible tags that are assigned to the node.
+	 * 
+	 * @param user
+	 * @param params
+	 * @param release
+	 * @return Page which contains the result
+	 */
+	TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Release release);
+
+	/**
+	 * Return the draft field container for the given language in the latest release.
 	 * 
 	 * @param language
 	 * @return
@@ -98,7 +109,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer getLatestDraftFieldContainer(Language language);
 
 	/**
-	 * Return the field container for the given language, type and release
+	 * Return the field container for the given language, type and release.
 	 * 
 	 * @param language
 	 * @param release
@@ -109,7 +120,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer getGraphFieldContainer(Language language, Release release, ContainerType type);
 
 	/**
-	 * Return the draft field container for the given language in the latest release
+	 * Return the draft field container for the given language in the latest release.
 	 * 
 	 * @param languageTag
 	 * @return
@@ -117,7 +128,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer getGraphFieldContainer(String languageTag);
 
 	/**
-	 * Return the field container for the given language, type and release Uuid
+	 * Return the field container for the given language, type and release Uuid.
 	 * 
 	 * @param languageTag
 	 * @param releaseUuid
@@ -129,7 +140,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Create a new graph field container for the given language and assign the schema version of the release to the container. The graph field container will
 	 * be the (only) DRAFT version for the language/release. If this is the first container for the language, it will also be the INITIAL version. Otherwise the
-	 * container will be a clone of the last draft and will have the next version number
+	 * container will be a clone of the last draft and will have the next version number.
 	 * 
 	 * @param language
 	 * @param release
@@ -141,7 +152,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user);
 
 	/**
-	 * Like {@link #createGraphFieldContainer(Language, Release, User)}, but let the new graph field container be a clone of the given original (if not null)
+	 * Like {@link #createGraphFieldContainer(Language, Release, User)}, but let the new graph field container be a clone of the given original (if not null).
 	 * 
 	 * @param language
 	 * @param release
@@ -152,21 +163,21 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user, NodeGraphFieldContainer original);
 
 	/**
-	 * Return a list of draft graph field containers for the node in the latest release
+	 * Return a list of draft graph field containers for the node in the latest release.
 	 * 
 	 * @return
 	 */
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
 
 	/**
-	 * Return a list of all initial graph field containers for the node (in any release)
+	 * Return a list of all initial graph field containers for the node (in any release).
 	 *
 	 * @return
 	 */
 	List<? extends NodeGraphFieldContainer> getAllInitialGraphFieldContainers();
 
 	/**
-	 * Return a list of graph field containers of given type for the node in the given release
+	 * Return a list of graph field containers of given type for the node in the given release.
 	 *
 	 * @param release
 	 * @param type
@@ -175,7 +186,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(Release release, ContainerType type);
 
 	/**
-	 * Return a list of graph field containers of given type for the node in the given release
+	 * Return a list of graph field containers of given type for the node in the given release.
 	 *
 	 * @param releaseUuid
 	 * @param type
@@ -184,23 +195,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, ContainerType type);
 
 	/**
-	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any release
+	 * Return the number of field containers of the node of type DRAFT or PUBLISHED in any release.
 	 *
 	 * @return
 	 */
 	long getGraphFieldContainerCount();
-
-	/**
-	 * Return a page of tags that are assigned to the node.
-	 * 
-	 * @param release
-	 *            release
-	 * @param params
-	 * 
-	 * @return
-	 * @throws InvalidArgumentException
-	 */
-	Page<? extends Tag> getTags(Release release, PagingParameters params) throws InvalidArgumentException;
 
 	/**
 	 * Return a list of language names for draft versions in the latest release
@@ -210,7 +209,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<String> getAvailableLanguageNames();
 
 	/**
-	 * Return a list of language names for versions of given type in the given release
+	 * Return a list of language names for versions of given type in the given release.
 	 * 
 	 * @param release
 	 *            release
@@ -235,14 +234,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void setProject(Project project);
 
 	/**
-	 * Return the list of children for this node for all releases
+	 * Return the list of children for this node for all releases.
 	 * 
 	 * @return
 	 */
 	List<? extends Node> getChildren();
 
 	/**
-	 * Return the list of children for this node in the given release
+	 * Return the list of children for this node in the given release.
 	 * 
 	 * @param releaseUuid
 	 * @return
@@ -250,17 +249,18 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends Node> getChildren(String releaseUuid);
 
 	/**
-	 * Return the list of children for this node, that the given user has read permission for
+	 * Return the list of children for this node, that the given user has read permission for. Filter by the provides information.
 	 *
 	 * @param requestUser
 	 *            user
 	 * @param releaseUuid
 	 *            release Uuid
+	 * @param languageTags
 	 * @param type
 	 *            edge type
 	 * @return
 	 */
-	List<? extends Node> getChildren(MeshAuthUser requestUser, String releaseUuid, ContainerType type);
+	List<? extends Node> getChildren(MeshAuthUser requestUser, String releaseUuid, List<String> languageTags, ContainerType type);
 
 	/**
 	 * Returns the parent node of this node.
@@ -295,7 +295,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param creator
 	 * @param schemaVersion
 	 * @param project
-	 *            qparam release
+	 * @param release
 	 * @return
 	 */
 	default Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Release release) {
@@ -325,10 +325,9 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 *            edge type
 	 * @param pagingParameter
 	 * @return
-	 * @throws InvalidArgumentException
 	 */
-	Page<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
-			PagingParameters pagingParameter) throws InvalidArgumentException;
+	TransformablePage<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
+			PagingParameters pagingParameter);
 
 	/**
 	 * Returns the i18n display name for the node. The display name will be determined by loading the i18n field value for the display field parameter of the
@@ -340,17 +339,28 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	String getDisplayName(InternalActionContext ac);
 
 	/**
-	 * Find a node field container that matches the nearest possible value for the ?lang= request parameter. When a user requests a node using ?lang=de,en and
-	 * there is no de version the en version will be selected and returned.
+	 * Find a node field container that matches the nearest possible value for the language parameter. When a user requests a node using ?lang=de,en and there
+	 * is no de version the en version will be selected and returned.
 	 * 
 	 * @param languageTags
 	 * @param releaseUuid
 	 *            release Uuid
 	 * @param version
 	 *            requested version. This must either be "draft" or "published" or a version number with pattern [major.minor]
-	 * @return Next matching field container or null when no language matched
+	 * @return Next matching field container or null when no language matches
 	 */
 	NodeGraphFieldContainer findNextMatchingFieldContainer(List<String> languageTags, String releaseUuid, String version);
+
+	/**
+	 * Find a node field container that matches the nearest possible value for the language parameter.
+	 * 
+	 * @param ac
+	 * @param languageTags
+	 * @return Next matching field container or null when no language matches
+	 */
+	default NodeGraphFieldContainer findNextMatchingFieldContainer(InternalActionContext ac, List<String> languageTags) {
+		return findNextMatchingFieldContainer(languageTags, ac.getRelease().getUuid(), ac.getVersioningParameters().getVersion());
+	}
 
 	/**
 	 * Move this node into the target node.
@@ -391,17 +401,27 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param batch
 	 * @return
 	 */
-	Completable publish(InternalActionContext ac, SearchQueueBatch batch);
+	void publish(InternalActionContext ac, SearchQueueBatch batch);
 
 	/**
 	 * Take the node offline (all languages)
 	 *
 	 * @param ac
+	 * @param batch
 	 * @return
 	 */
-	Completable takeOffline(InternalActionContext ac);
+	void takeOffline(InternalActionContext ac, SearchQueueBatch batch);
 
-	SearchQueueBatch takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParameters parameters);
+	/**
+	 * Take the node offline.
+	 * 
+	 * @param ac
+	 * @param batch
+	 * @param release
+	 * @param parameters
+	 * @return
+	 */
+	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, PublishParameters parameters);
 
 	/**
 	 * Transform the node language into a publish status response rest model.
@@ -416,10 +436,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Publish a language of the node
 	 *
 	 * @param ac
+	 * @param batch
 	 * @param languageTag
 	 * @return
 	 */
-	Completable publish(InternalActionContext ac, String languageTag);
+	void publish(InternalActionContext ac, SearchQueueBatch batch, String languageTag);
 
 	/**
 	 * Set the graph field container to be the (only) published for the given release
@@ -433,10 +454,11 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Take a language of the node offline
 	 *
 	 * @param ac
+	 * @param batch
 	 * @param languageTag
 	 * @return
 	 */
-	Completable takeOffline(InternalActionContext ac, String languageTag);
+	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, String languageTag);
 
 	/**
 	 * Delete the language container for the given language from the release This will not actually delete the container, but will remove the DRAFT and
@@ -555,13 +577,14 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	NodeGraphFieldContainer publish(Language language, Release release, User user);
 
 	/**
-	 * Publish the node for the specified create.
+	 * Publish the node for the specified release.
 	 * 
 	 * @param ac
 	 * @param release
+	 * @param batch
 	 * @return
 	 */
-	List<Completable> publish(InternalActionContext ac, Release release);
+	void publish(InternalActionContext ac, Release release, SearchQueueBatch batch);
 
 	/**
 	 * Transform the node into a node list item.
@@ -587,6 +610,24 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param batch
 	 * @return Page which includes the new set of tags
 	 */
-	Page<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch);
+	TransformablePage<? extends Tag> updateTags(InternalActionContext ac, SearchQueueBatch batch);
+
+	/**
+	 * Return a map with language tags and resolved link types
+	 * 
+	 * @param ac
+	 * @param linkType
+	 * @param release
+	 * @return
+	 */
+	Map<String, String> getLanguagePaths(InternalActionContext ac, LinkType linkType, Release release);
+
+	/**
+	 * Return the breadcrumb nodes.
+	 * 
+	 * @param ac
+	 * @return Deque with breadcrumb nodes
+	 */
+	Deque<Node> getBreadcrumbNodes(InternalActionContext ac);
 
 }
