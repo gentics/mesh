@@ -70,7 +70,7 @@ public class DemoDumpGenerator {
 		if (!keyStoreFile.exists()) {
 			KeyStoreHelper.gen(keyStoreFile.getAbsolutePath(), keyStorePass);
 		}
-
+		options.setNodeName("dumpGenerator");
 		Mesh.mesh(options);
 	}
 
