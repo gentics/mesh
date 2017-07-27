@@ -1,11 +1,26 @@
 package com.gentics.mesh.util;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
+import java.time.format.DateTimeParseException;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public final class DateUtils {
+
+	private static final Logger log = LoggerFactory.getLogger(DateUtils.class);
+
+	static ZoneOffset zoneOffset;
+
+	static {
+		OffsetDateTime odt = OffsetDateTime.now(ZoneId.systemDefault());
+		zoneOffset = odt.getOffset();
+	}
 
 	/**
 	 * Convert the provided unixtimestamp (miliseconds since midnight, January 1, 1970 UTC) to an ISO8601 string. Use the fallback timestamp if the provided
@@ -27,7 +42,7 @@ public final class DateUtils {
 	 * @return
 	 */
 	public static String toISO8601(long timeInMs) {
-		return Instant.ofEpochSecond(timeInMs / 1000).atZone(ZoneId.systemDefault()).format(DateTimeFormatter.ISO_INSTANT);
+		return Instant.ofEpochSecond(timeInMs / 1000).atZone(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
 	}
 
 	/**
@@ -40,8 +55,25 @@ public final class DateUtils {
 		if (dateString == null) {
 			return null;
 		}
-		Date date = Date.from(Instant.parse(dateString));
-		return date.getTime();
+		try {
+			OffsetDateTime odt = OffsetDateTime.parse(dateString);
+			return odt.toInstant().toEpochMilli();
+		} catch (DateTimeParseException e) {
+			if (log.isDebugEnabled()) {
+				log.debug("Error while parsing date {" + dateString + "}. Using fallback.", e);
+			}
+			try {
+				// We also support date strings which do not include an offset. We apply the system offset in those cases.
+				Long date = LocalDateTime.parse(dateString).toInstant(zoneOffset).toEpochMilli();
+				return date;
+			} catch (DateTimeParseException e2) {
+				if (log.isDebugEnabled()) {
+					log.debug("Fallback failed with exception", e);
+				}
+			}
+		}
+		return null;
+
 	}
 
 }

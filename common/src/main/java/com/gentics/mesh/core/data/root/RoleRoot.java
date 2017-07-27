@@ -19,7 +19,22 @@ public interface RoleRoot extends RootVertex<Role> {
 	 *            User that is being used to set the reference fields
 	 * @return Created role
 	 */
-	Role create(String name, User creator);
+	default Role create(String name, User creator) {
+		return create(name, creator, null);
+	}
+
+	/**
+	 * Create a new role with the given name.
+	 * 
+	 * @param name
+	 *            Name of the new role.
+	 * @param creator
+	 *            User that is being used to set the reference fields
+	 * @param uuid
+	 *            Optional uuid
+	 * @return Created role
+	 */
+	Role create(String name, User creator, String uuid);
 
 	/**
 	 * Add the given role to this aggregation vertex.

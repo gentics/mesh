@@ -107,6 +107,18 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 	@Test
 	@Override
+	@Ignore("Not yet implemented")
+	public void testCreateWithUuid() throws Exception {
+	}
+
+	@Test
+	@Override
+	@Ignore("Not yet implemented")
+	public void testCreateWithDuplicateUuid() throws Exception {
+	}
+
+	@Test
+	@Override
 	public void testCreateReadDelete() throws GenericRestException, Exception {
 
 		try (Tx tx = tx()) {

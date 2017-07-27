@@ -15,6 +15,7 @@ import com.gentics.mesh.rest.client.MeshRequest;
  * Interface for Release specific rest API methods
  */
 public interface ReleaseClientMethods {
+
 	/**
 	 * Create a release for the given project.
 	 * 
@@ -24,6 +25,18 @@ public interface ReleaseClientMethods {
 	 * @return
 	 */
 	MeshRequest<ReleaseResponse> createRelease(String projectName, ReleaseCreateRequest releaseCreateRequest, ParameterProvider... parameters);
+
+	/**
+	 * Create a release for the given project using the provided uuid.
+	 * 
+	 * @param projectName
+	 * @param uuid
+	 * @param releaseCreateRequest
+	 * @param parameters
+	 * @return
+	 */
+	MeshRequest<ReleaseResponse> createRelease(String projectName, String uuid, ReleaseCreateRequest releaseCreateRequest,
+			ParameterProvider... parameters);
 
 	/**
 	 * Find the release with the given uuid in the project with the given name.

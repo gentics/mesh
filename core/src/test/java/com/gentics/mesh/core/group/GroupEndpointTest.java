@@ -23,6 +23,7 @@ import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -55,6 +56,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -95,6 +97,36 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		}
 
 		call(() -> client().createGroup(request), FORBIDDEN, "error_missing_perm", groupRootUuid);
+	}
+
+	@Test
+	@Override
+	public void testCreateWithUuid() throws Exception {
+		final String name = "New Name";
+		String uuid = UUIDUtil.randomUUID();
+
+		GroupUpdateRequest request = new GroupUpdateRequest();
+		request.setName(name);
+		GroupResponse restGroup = call(() -> client().updateGroup(uuid, request));
+		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), uuid);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+
+		try (Tx tx = db().tx()) {
+			assertThat(restGroup).matches(request);
+			Group reloadedGroup = boot().groupRoot().findByUuid(uuid);
+			assertEquals("The group should have been updated", name, reloadedGroup.getName());
+		}
+	}
+
+	@Test
+	@Override
+	public void testCreateWithDuplicateUuid() throws Exception {
+		final String name = "New Name";
+		String uuid = projectUuid();
+
+		GroupUpdateRequest request = new GroupUpdateRequest();
+		request.setName(name);
+		call(() -> client().updateGroup(uuid, request), INTERNAL_SERVER_ERROR, "error_internal");
 	}
 
 	@Test
@@ -405,7 +437,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		final String name = "New Name";
 		GroupUpdateRequest request = new GroupUpdateRequest();
 		request.setName(name);
-		call(() -> client().updateGroup("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		call(() -> client().updateGroup("bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
 	}
 
 	@Test

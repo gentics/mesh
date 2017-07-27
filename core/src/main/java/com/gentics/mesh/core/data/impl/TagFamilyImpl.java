@@ -125,6 +125,11 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Tag create(InternalActionContext ac, SearchQueueBatch batch) {
+		return create(ac, batch, null);
+	}
+
+	@Override
+	public Tag create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		Project project = ac.getProject();
 		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
 		String tagName = requestModel.getName();
@@ -142,9 +147,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, getName());
 		}
 
-		Tag newTag = create(requestModel.getName(), project, requestUser);
-		ac.getUser()
-				.addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
+		Tag newTag = create(requestModel.getName(), project, requestUser, uuid);
+		ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
 		addTag(newTag);
 
 		batch.store(newTag, true);
@@ -292,8 +296,11 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Tag create(String name, Project project, User creator) {
+	public Tag create(String name, Project project, User creator, String uuid) {
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
+		if (uuid != null) {
+			tag.setUuid(uuid);
+		}
 		tag.setName(name);
 		tag.setCreated(creator);
 		tag.setProject(project);

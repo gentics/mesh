@@ -14,7 +14,19 @@ public interface LanguageRoot extends RootVertex<Language> {
 	 * @param languageTag
 	 * @return Created language
 	 */
-	Language create(String languageName, String languageTag);
+	default Language create(String languageName, String languageTag) {
+		return create(languageName, languageTag, null);
+	}
+
+	/**
+	 * Create a new language.
+	 * 
+	 * @param languageName
+	 * @param languageTag
+	 * @param uuid optional uuid
+	 * @return Created language
+	 */
+	Language create(String languageName, String languageTag, String uuid);
 
 	/**
 	 * Add the given language to the aggregation node.

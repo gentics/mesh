@@ -63,6 +63,15 @@ public interface ProjectClientMethods {
 	MeshRequest<ProjectResponse> createProject(ProjectCreateRequest request);
 
 	/**
+	 * Create a new project using the provided uuid.
+	 * 
+	 * @param uuid
+	 * @param request
+	 * @return
+	 */
+	MeshRequest<ProjectResponse> createProject(String uuid, ProjectCreateRequest request);
+
+	/**
 	 * Update the project.
 	 * 
 	 * @param uuid

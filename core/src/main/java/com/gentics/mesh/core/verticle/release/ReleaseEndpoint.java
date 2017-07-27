@@ -67,8 +67,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handleMigrateRemainingNodes(ac, releaseUuid);
 		});
 	}
-	
-	
+
 	private void addMicronodeMigrationHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:releaseUuid/migrateMicroschemas");
@@ -191,7 +190,8 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		Endpoint updateRelease = createEndpoint();
 		updateRelease.path("/:releaseUuid");
 		updateRelease.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
-		updateRelease.description("Update the release with the given uuid.");
+		updateRelease
+				.description("Update the release with the given uuid. The release is created if no release with the specified uuid could be found.");
 		updateRelease.method(POST);
 		updateRelease.consumes(APPLICATION_JSON);
 		updateRelease.produces(APPLICATION_JSON);

@@ -24,6 +24,7 @@ core/data
 server/data
 examples/demo-java/data
 core/tmp
+orient-plugins
 mesh-searchindex
 mesh-graphdb
 keystore.jceks

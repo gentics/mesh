@@ -1,5 +1,6 @@
 package com.gentics.mesh.assertj.impl;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -30,4 +31,13 @@ public class RoleResponseAssert extends AbstractMeshAssert<RoleResponseAssert, R
 		return this;
 	}
 
+	public RoleResponseAssert hasName(String name) {
+		assertThat(actual.getName()).as("Role name").isEqualTo(name);
+		return this;
+	}
+
+	public RoleResponseAssert hasUuid(String uuid) {
+		assertThat(actual.getUuid()).as("Role uuid").isEqualTo(uuid);
+		return this;
+	}
 }

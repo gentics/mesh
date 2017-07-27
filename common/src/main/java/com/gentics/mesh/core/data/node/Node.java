@@ -298,7 +298,21 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param release
 	 * @return
 	 */
-	Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Release release);
+	default Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Release release) {
+		return create(creator, schemaVersion, project, release, null);
+	}
+
+	/**
+	 * Create a child node in this node in the given release
+	 * 
+	 * @param creator
+	 * @param schemaVersion
+	 * @param project
+	 * @param release
+	 * @param uuid
+	 * @return
+	 */
+	Node create(User creator, SchemaContainerVersion schemaVersion, Project project, Release release, String uuid);
 
 	/**
 	 * Return a page with child nodes that are visible to the given user.

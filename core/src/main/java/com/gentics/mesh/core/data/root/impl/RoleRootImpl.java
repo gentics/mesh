@@ -62,15 +62,18 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 	}
 
 	@Override
-	public Role create(String name, User creator) {
+	public Role create(String name, User creator, String uuid) {
 		Role role = getGraph().addFramedVertex(RoleImpl.class);
+		if (uuid != null) {
+			role.setUuid(uuid);
+		}
 		role.setName(name);
 		role.setCreated(creator);
 		addRole(role);
 		return role;
 	}
 
-	public Role create(InternalActionContext ac, SearchQueueBatch batch) {
+	public Role create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		RoleCreateRequest requestModel = ac.fromJson(RoleCreateRequest.class);
 		String roleName = requestModel.getName();
 
@@ -90,7 +93,7 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 		}
 
 		requestUser.reload();
-		Role role = create(requestModel.getName(), requestUser);
+		Role role = create(requestModel.getName(), requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, role);
 		batch.store(role, true);
 		return role;

@@ -1,6 +1,8 @@
 package com.gentics.mesh.graphdb;
 
 import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.File;
@@ -61,6 +63,7 @@ import com.orientechnologies.orient.core.intent.OIntentNoCache;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
+import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
@@ -362,10 +365,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (server == null) {
 			server = OServerMain.create();
 			log.info("Extracting OrientDB Studio");
-			InputStream ins = getClass().getResourceAsStream("/plugins/studio-2.2.zip");
+			InputStream ins = getClass().getResourceAsStream("/plugins/orientdb-studio-2.2.24.zip");
 			File pluginDirectory = new File("orientdb-plugins");
 			pluginDirectory.mkdirs();
-			IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "studio-2.2.zip")));
+			IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "orientdb-studio-2.2.24.zip")));
 		}
 		log.info("Starting OrientDB Server");
 		server.startup(getOrientServerConfig());
@@ -719,6 +722,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// Reset previous result
 				handlerFinished = false;
 				handlerResult = null;
+			} catch (ORecordDuplicatedException e) {
+				log.error(e);
+				throw error(INTERNAL_SERVER_ERROR, "error_internal");
 			} catch (RuntimeException e) {
 				log.error("Error handling transaction", e);
 				throw e;

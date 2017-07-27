@@ -3,12 +3,13 @@ package com.gentics.mesh.core.verticle.handler;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
@@ -61,28 +63,7 @@ public class HandlerUtilities {
 	 * @param handler
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, TxHandler1<RootVertex<T>> handler) {
-		operateTx(ac, (tx) -> {
-
-			ResultInfo info = database.tx(tx2 -> {
-				SearchQueueBatch batch = searchQueue.create();
-				RootVertex<T> root = handler.handle();
-				T created = root.create(ac, batch);
-				RM model = created.transformToRestSync(ac, 0);
-				String path = created.getAPIPath(ac);
-				ResultInfo resultInfo = new ResultInfo(model, batch);
-				resultInfo.setProperty("path", path);
-				tx2.success();
-				return resultInfo;
-			});
-
-			RestModel model = info.getModel();
-			String path = info.getProperty("path");
-
-			ac.setLocation(path);
-			info.getBatch().processSync();
-			return model;
-		}, model -> ac.send(model, CREATED));
-
+		createOrUpdateElement(ac, null, handler);
 	}
 
 	/**
@@ -116,7 +97,7 @@ public class HandlerUtilities {
 	}
 
 	/**
-	 * Locate and update the element using the action context data.
+	 * Locate and update or create the element using the action context data.
 	 * 
 	 * @param ac
 	 * @param uuid
@@ -127,23 +108,66 @@ public class HandlerUtilities {
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
 			TxHandler1<RootVertex<T>> handler) {
+		createOrUpdateElement(ac, uuid, handler);
+	}
+
+	/**
+	 * Either create or update an element with the given uuid.
+	 * 
+	 * @param ac
+	 * @param uuid
+	 *            Uuid of the element to create or update. If null, an element will be created with random Uuid
+	 * @param handler
+	 *            Handler which provides the root vertex which should be used when loading the element
+	 */
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
+			TxHandler1<RootVertex<T>> handler) {
+		AtomicBoolean created = new AtomicBoolean(false);
 		operateTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
 
-			// 1. Load the element from the root element using the given uuid
-			T element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
+			// 1. Load the element from the root element using the given uuid (if not null)
+			T element = null;
+			if (uuid != null) {
+				if (!UUIDUtil.isUUID(uuid)) {
+					throw error(BAD_REQUEST, "error_illegal_uuid", uuid);
+				}
+				element = root.loadObjectByUuid(ac, uuid, UPDATE_PERM, false);
+			}
 
-			// 2. Create a batch before starting the update to prevent creation of duplicate batches due to trx retry actions
-			ResultInfo info = database.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				T updatedElement = element.update(ac, batch);
-				return new ResultInfo(updatedElement.transformToRestSync(ac, 0), batch);
-			});
+			ResultInfo info = null;
+
+			// Check whether we need to update a found element or whether we need to create a new one.
+			if (element != null) {
+				final T updateElement = element;
+				info = database.tx(() -> {
+					SearchQueueBatch batch = searchQueue.create();
+					T updatedElement = updateElement.update(ac, batch);
+					RestModel model = updatedElement.transformToRestSync(ac, 0);
+					return new ResultInfo(model, batch);
+				});
+			} else {
+				info = database.tx(() -> {
+					SearchQueueBatch batch = searchQueue.create();
+					created.set(true);
+					T createdElement = root.create(ac, batch, uuid);
+					RM model = createdElement.transformToRestSync(ac, 0);
+					String path = createdElement.getAPIPath(ac);
+					ResultInfo resultInfo = new ResultInfo(model, batch);
+					resultInfo.setProperty("path", path);
+					return resultInfo;
+				});
+				String path = info.getProperty("path");
+				ac.setLocation(path);
+			}
 
 			// 3. The updating transaction has succeeded. Now lets store it in the index
-			info.getBatch().processSync();
-			return info.getModel();
-		}, model -> ac.send(model, OK));
+			final ResultInfo info2 = info;
+			return database.tx(() -> {
+				info2.getBatch().processSync();
+				return info2.getModel();
+			});
+		}, model -> ac.send(model, created.get() ? CREATED : OK));
 	}
 
 	/**

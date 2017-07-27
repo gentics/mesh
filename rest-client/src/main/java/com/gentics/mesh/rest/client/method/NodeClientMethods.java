@@ -38,6 +38,17 @@ public interface NodeClientMethods {
 	MeshRequest<NodeResponse> createNode(String projectName, NodeCreateRequest nodeCreateRequest, ParameterProvider... parameters);
 
 	/**
+	 * Create a node within the given project. The query parameters determine which language of the node will be returned. Use the provided uuid for the node.
+	 * 
+	 * @param uuid
+	 * @param projectName
+	 * @param nodeCreateRequest
+	 * @param parameters
+	 * @return
+	 */
+	MeshRequest<NodeResponse> createNode(String uuid, String projectName, NodeCreateRequest nodeCreateRequest, ParameterProvider... parameters);
+
+	/**
 	 * Update the node with the given UUID.
 	 * 
 	 * @param projectName

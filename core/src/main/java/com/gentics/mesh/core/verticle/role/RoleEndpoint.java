@@ -105,7 +105,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:roleUuid");
 		endpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
-		endpoint.description("Update the role with the given uuid.");
+		endpoint.description("Update the role with the given uuid. The role is created if no role with the specified uuid could be found.");
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));

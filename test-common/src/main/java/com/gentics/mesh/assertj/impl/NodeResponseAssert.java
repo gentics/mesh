@@ -93,6 +93,18 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 		return this;
 	}
 
+	/**
+	 * Assert that the response has the given uuid
+	 * 
+	 * @param uuid
+	 *            uuid
+	 * @return fluent API
+	 */
+	public NodeResponseAssert hasUuid(String uuid) {
+		assertThat(actual.getUuid()).as("Uuid").isEqualTo(uuid);
+		return this;
+	}
+
 	public NodeResponseAssert matches(NodeCreateRequest request) {
 
 		// for (Map.Entry<String, String> entry : request.getProperties().entrySet()) {

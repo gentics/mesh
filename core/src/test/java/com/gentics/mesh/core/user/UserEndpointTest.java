@@ -25,6 +25,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.UNAUTHORIZED;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -76,6 +77,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.http.HttpHeaders;
 
@@ -559,7 +561,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		UserUpdateRequest request = new UserUpdateRequest();
 		request.setUsername("New Name");
-		call(() -> client().updateUser("bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		call(() -> client().updateUser("bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
 	}
 
 	@Test
@@ -1067,6 +1069,39 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		String userRootUuid = tx(() -> meshRoot().getUserRoot().getUuid());
 		call(() -> client().createUser(request), FORBIDDEN, "error_missing_perm", userRootUuid);
+	}
+
+	@Test
+	@Override
+	public void testCreateWithUuid() throws Exception {
+		String groupUuid = groupUuid();
+		UserCreateRequest request = new UserCreateRequest();
+		request.setEmailAddress("n.user@spam.gentics.com");
+		request.setFirstname("Joe");
+		request.setLastname("Doe");
+		request.setUsername("new_user");
+		request.setPassword("test123456");
+		request.setGroupUuid(groupUuid);
+		String uuid = UUIDUtil.randomUUID();
+
+		UserResponse restUser = call(() -> client().createUser(uuid, request));
+		assertThat(restUser).matches(request).hasUuid(uuid);
+	}
+
+	@Test
+	@Override
+	public void testCreateWithDuplicateUuid() throws Exception {
+		String groupUuid = groupUuid();
+		UserCreateRequest request = new UserCreateRequest();
+		request.setEmailAddress("n.user@spam.gentics.com");
+		request.setFirstname("Joe");
+		request.setLastname("Doe");
+		request.setUsername("new_user");
+		request.setPassword("test123456");
+		request.setGroupUuid(groupUuid);
+		String uuid = projectUuid();
+
+		call(() -> client().createUser(uuid, request), INTERNAL_SERVER_ERROR, "error_internal");
 	}
 
 	@Test

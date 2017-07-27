@@ -49,6 +49,16 @@ public interface UserClientMethods {
 	MeshRequest<UserResponse> createUser(UserCreateRequest request, ParameterProvider... parameters);
 
 	/**
+	 * Create a new user using the provided uuid.
+	 * 
+	 * @param uuid
+	 * @param request
+	 * @param parameters
+	 * @return
+	 */
+	MeshRequest<UserResponse> createUser(String uuid, UserCreateRequest request, ParameterProvider... parameters);
+
+	/**
 	 * Update the user.
 	 * 
 	 * @param uuid
@@ -92,15 +102,18 @@ public interface UserClientMethods {
 	 * Fetch a new user token for the user with the given uuid. Note that any previously fetched token for that particular user will be invalidated by this
 	 * action.
 	 * 
-	 * @param userUuid User uuid
+	 * @param userUuid
+	 *            User uuid
 	 * @return
 	 */
 	MeshRequest<UserResetTokenResponse> getUserResetToken(String userUuid);
 
 	/**
-	 * Generate a new API token for the user. The token is valid until a new token is generated. Generating a new token will invalidate the previously generated one.
+	 * Generate a new API token for the user. The token is valid until a new token is generated. Generating a new token will invalidate the previously generated
+	 * one.
 	 * 
-	 * @param userUuid User uuid
+	 * @param userUuid
+	 *            User uuid
 	 * @return
 	 */
 	MeshRequest<UserAPITokenResponse> issueAPIToken(String userUuid);

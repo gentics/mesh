@@ -39,6 +39,15 @@ public interface RoleClientMethods {
 	MeshRequest<RoleResponse> createRole(RoleCreateRequest request);
 
 	/**
+	 * Create a new role using the provided uuid.
+	 * 
+	 * @param request
+	 * @param uuid
+	 * @return
+	 */
+	MeshRequest<RoleResponse> createRole(String uuid, RoleCreateRequest request);
+
+	/**
 	 * Delete the role.
 	 * 
 	 * @param uuid

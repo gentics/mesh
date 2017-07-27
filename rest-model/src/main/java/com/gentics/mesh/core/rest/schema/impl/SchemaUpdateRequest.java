@@ -28,7 +28,7 @@ public class SchemaUpdateRequest implements SchemaModel {
 	private String version;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("New dscription of the schema.")
+	@JsonPropertyDescription("New description of the schema.")
 	private String description;
 
 	@JsonProperty(required = true)

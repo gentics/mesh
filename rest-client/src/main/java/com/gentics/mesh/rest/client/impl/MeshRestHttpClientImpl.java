@@ -138,6 +138,16 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<NodeResponse> createNode(String uuid, String projectName, NodeCreateRequest nodeCreateRequest,
+			ParameterProvider... parameters) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeCreateRequest, "nodeCreateRequest must not be null");
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + uuid + getQuery(parameters), NodeResponse.class,
+				nodeCreateRequest);
+	}
+
+	@Override
 	public MeshRequest<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest,
 			ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
@@ -311,6 +321,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<ProjectResponse> createProject(String uuid, ProjectCreateRequest projectCreateRequest) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(projectCreateRequest, "projectCreateRequest must not be null");
+		return prepareRequest(POST, "/projects/" + uuid, ProjectResponse.class, projectCreateRequest);
+	}
+
+	@Override
 	public MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest projectUpdateRequest) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(projectUpdateRequest, "projectUpdateRequest must not be null");
@@ -415,6 +432,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<GroupResponse> createGroup(String uuid, GroupCreateRequest groupCreateRequest) {
+		Objects.requireNonNull(uuid, "The group uuid must not be null");
+		Objects.requireNonNull(groupCreateRequest, "groupCreateRequest must not be null");
+		return prepareRequest(POST, "/groups/" + uuid, GroupResponse.class, groupCreateRequest);
+	}
+
+	@Override
 	public MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest groupUpdateRequest) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(groupUpdateRequest, "groupUpdateRequest must not be null");
@@ -447,6 +471,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	public MeshRequest<UserResponse> createUser(UserCreateRequest userCreateRequest, ParameterProvider... parameters) {
 		Objects.requireNonNull(userCreateRequest, "userCreateRequest must not be null");
 		return prepareRequest(POST, "/users" + getQuery(parameters), UserResponse.class, userCreateRequest);
+	}
+
+	@Override
+	public MeshRequest<UserResponse> createUser(String uuid, UserCreateRequest userCreateRequest, ParameterProvider... parameters) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(userCreateRequest, "userCreateRequest must not be null");
+		return prepareRequest(POST, "/users/" + uuid + getQuery(parameters), UserResponse.class, userCreateRequest);
 	}
 
 	@Override
@@ -498,8 +529,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<RoleResponse> createRole(RoleCreateRequest roleCreateRequest) {
-		return prepareRequest(POST, "/roles", RoleResponse.class, roleCreateRequest);
+	public MeshRequest<RoleResponse> createRole(RoleCreateRequest createRequest) {
+		return prepareRequest(POST, "/roles", RoleResponse.class, createRequest);
+	}
+
+	@Override
+	public MeshRequest<RoleResponse> createRole(String uuid, RoleCreateRequest createRequest) {
+		return prepareRequest(POST, "/roles/" + uuid, RoleResponse.class, createRequest);
 	}
 
 	@Override
@@ -974,6 +1010,17 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(releaseCreateRequest, "releaseCreateRequest must not be null");
 
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/releases" + getQuery(parameters), ReleaseResponse.class,
+				releaseCreateRequest);
+	}
+
+	@Override
+	public MeshRequest<ReleaseResponse> createRelease(String projectName, String uuid, ReleaseCreateRequest releaseCreateRequest,
+			ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(releaseCreateRequest, "releaseCreateRequest must not be null");
+
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/releases/" + uuid + getQuery(parameters), ReleaseResponse.class,
 				releaseCreateRequest);
 	}
 

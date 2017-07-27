@@ -2,6 +2,20 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.21 (26.07.2017)
+
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.24
+
+icon:check[] Core: Fixed handling of ISO8601 dates which did not contain UTC flag or time offset value. Such dates could previously not be stored. Note that ISO8601 UTC dates will always be returned.
+
+icon:check[] GraphQL: URL handling of the GraphQL browser has been improved. Previously very long queries lead to very long query parameters which could not be handled correctly. The query browser will now use the anchor part of the URL to store the query.
+
+icon:check[] Migration: The error handling within the schema migration code has been improved.
+
+icon:plus[] GraphQL: It is now possible to load the schema version of a node using the ```schema``` field.
+
+icon:check[] Versioning: Older Gentics Mesh instances (>0.8.x) were lacking some draft information. This information has been added now.
+
 == 0.9.20 (21.07.2017)
 
 icon:plus[] License: The license was changed to Apache License 2.0
