@@ -1,0 +1,2 @@
+
+icon:plus[] REST API: It is now possible to create nodes, users, groups, roles, releases and projects using a provided uuid.
