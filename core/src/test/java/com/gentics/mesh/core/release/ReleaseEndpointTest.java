@@ -7,8 +7,8 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestDataProvider.INITIAL_RELEASE_NAME;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.util.MeshAssert.assertSuccess;
@@ -54,7 +54,6 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -426,7 +425,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
 		ReleaseUpdateRequest request = new ReleaseUpdateRequest();
 		// request.setActive(false);
-		call(() -> client().updateRelease(PROJECT_NAME, "bogus", request), NOT_FOUND, "object_not_found_for_uuid", "bogus");
+		call(() -> client().createRelease(PROJECT_NAME, "bogus", request), BAD_REQUEST, "error_illegal_uuid", "bogus");
 	}
 
 	@Override

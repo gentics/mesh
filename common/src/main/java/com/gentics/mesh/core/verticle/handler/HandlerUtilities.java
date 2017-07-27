@@ -97,7 +97,7 @@ public class HandlerUtilities {
 	}
 
 	/**
-	 * Locate and update the element using the action context data.
+	 * Locate and update or create the element using the action context data.
 	 * 
 	 * @param ac
 	 * @param uuid
@@ -109,7 +109,6 @@ public class HandlerUtilities {
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
 			TxHandler1<RootVertex<T>> handler) {
 		createOrUpdateElement(ac, uuid, handler);
-
 	}
 
 	/**

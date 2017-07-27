@@ -54,7 +54,8 @@ public class ProjectEndpoint extends AbstractEndpoint {
 	private void addUpdateHandler() {
 		Endpoint updateEndpoint = createEndpoint();
 		updateEndpoint.path("/:projectUuid");
-		updateEndpoint.description("Update the project with the given uuid.");
+		updateEndpoint
+				.description("Update the project with the given uuid. The project is created if no project with the specified uuid could be found.");
 		updateEndpoint.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
 		updateEndpoint.method(POST);
 		updateEndpoint.consumes(APPLICATION_JSON);

@@ -1109,6 +1109,13 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<ReleaseResponse> createRelease(String projectName, String uuid, ReleaseCreateRequest releaseCreateRequest,
+			ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public MeshRequest<ReleaseResponse> findReleaseByUuid(String projectName, String releaseUuid, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;

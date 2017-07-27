@@ -184,7 +184,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:userUuid");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
-		endpoint.description("Update the user with the given uuid.");
+		endpoint.description("Update the user with the given uuid. The user is created if no user with the specified uuid could be found.");
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);
