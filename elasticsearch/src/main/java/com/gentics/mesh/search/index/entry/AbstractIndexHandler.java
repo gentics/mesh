@@ -24,7 +24,7 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;

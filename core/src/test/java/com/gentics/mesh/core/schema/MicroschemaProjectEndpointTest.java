@@ -12,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;

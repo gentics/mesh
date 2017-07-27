@@ -9,7 +9,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;

@@ -12,7 +12,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.core.rest.user.UserResponse;

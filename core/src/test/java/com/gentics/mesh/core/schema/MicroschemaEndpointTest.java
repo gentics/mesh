@@ -33,7 +33,7 @@ import java.util.concurrent.CyclicBarrier;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.Permission;

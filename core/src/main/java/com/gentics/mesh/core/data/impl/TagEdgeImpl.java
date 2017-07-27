@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
 
-import com.gentics.ferma.annotation.GraphElement;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagEdge;
@@ -12,6 +11,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.VertexFrame;
+import com.syncleus.ferma.annotations.GraphElement;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 /**

@@ -6,7 +6,7 @@ import static com.gentics.mesh.test.ClientHelper.callETag;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;

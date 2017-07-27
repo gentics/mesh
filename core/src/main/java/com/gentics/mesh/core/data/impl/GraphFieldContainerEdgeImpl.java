@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIE
 
 import java.util.List;
 
-import com.gentics.ferma.annotation.GraphElement;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.container.impl.AbstractBasicGraphFieldContainerImpl;
@@ -12,6 +11,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.EdgeFrame;
+import com.syncleus.ferma.annotations.GraphElement;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.Traversal;
 import com.syncleus.ferma.traversals.TraversalFunction;

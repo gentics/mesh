@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.script.ScriptEngine;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.GraphFieldContainer;

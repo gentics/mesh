@@ -12,11 +12,11 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
-import com.gentics.ferma.Tx;
-import com.gentics.ferma.TxHandler;
-import com.gentics.ferma.TxHandler0;
-import com.gentics.ferma.TxHandler1;
-import com.gentics.ferma.TxHandler2;
+import com.syncleus.ferma.tx.Tx;
+import com.syncleus.ferma.tx.TxHandler;
+import com.syncleus.ferma.tx.TxHandler0;
+import com.syncleus.ferma.tx.TxHandler1;
+import com.syncleus.ferma.tx.TxHandler2;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;

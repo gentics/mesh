@@ -27,11 +27,6 @@
 			<artifactId>guava</artifactId>
 		</dependency>
 		<dependency>
-			<artifactId>ferma-extensions-api</artifactId>
-			<groupId>com.gentics.ferma</groupId>
-			<version>${ferma.extensions.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>com.syncleus.ferma</groupId>
 			<artifactId>ferma</artifactId>
 			<exclusions>

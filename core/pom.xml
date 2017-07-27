@@ -129,12 +129,6 @@
 		</dependency>
 
 		<dependency>
-			<groupId>com.gentics.ferma</groupId>
-			<artifactId>ferma-extensions-api</artifactId>
-			<version>${ferma.extensions.version}</version>
-		</dependency>
-
-		<dependency>
 			<groupId>joda-time</groupId>
 			<artifactId>joda-time</artifactId>
 			<version>2.9.6</version>

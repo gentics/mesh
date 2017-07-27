@@ -10,7 +10,7 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.context.GraphQLContext;

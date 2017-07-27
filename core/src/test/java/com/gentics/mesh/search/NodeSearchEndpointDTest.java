@@ -17,7 +17,7 @@ import java.util.concurrent.CountDownLatch;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;

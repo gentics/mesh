@@ -19,7 +19,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.elasticsearch.common.collect.Tuple;
 
-import com.gentics.ferma.TxHandler1;
+import com.syncleus.ferma.tx.TxHandler1;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;

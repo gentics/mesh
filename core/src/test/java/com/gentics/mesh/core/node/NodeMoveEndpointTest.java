@@ -11,7 +11,7 @@ import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;

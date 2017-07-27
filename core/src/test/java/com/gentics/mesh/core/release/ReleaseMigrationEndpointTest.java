@@ -23,7 +23,7 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;

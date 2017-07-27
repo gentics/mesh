@@ -49,7 +49,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;

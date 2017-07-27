@@ -8,7 +8,7 @@ import static org.junit.Assert.fail;
 
 import org.elasticsearch.common.collect.Tuple;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;

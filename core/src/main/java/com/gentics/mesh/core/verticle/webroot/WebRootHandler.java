@@ -12,7 +12,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;

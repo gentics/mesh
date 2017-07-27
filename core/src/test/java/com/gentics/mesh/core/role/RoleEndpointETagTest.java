@@ -9,7 +9,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;

@@ -37,7 +37,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;

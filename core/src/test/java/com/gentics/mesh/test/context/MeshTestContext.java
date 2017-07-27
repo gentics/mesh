@@ -12,7 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -276,6 +276,7 @@ public class MeshTestContext extends TestWatcher {
 		}
 		options.getAuthenticationOptions().setKeystorePassword(keystorePassword);
 		options.getAuthenticationOptions().setKeystorePath(keystoreFile.getAbsolutePath());
+		options.setNodeName("testNode");
 
 		String uploads = newFolder("testuploads");
 		options.getUploadOptions().setDirectory(uploads);
@@ -333,7 +334,8 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Initialise the mesh dagger context and inject the dependencies within the test.
-	 * @throws Exception 
+	 * 
+	 * @throws Exception
 	 */
 	public void initDagger(TestSize size) throws Exception {
 		log.info("Initializing dagger context");

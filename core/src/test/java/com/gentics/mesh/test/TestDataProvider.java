@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;

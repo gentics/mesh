@@ -10,7 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;

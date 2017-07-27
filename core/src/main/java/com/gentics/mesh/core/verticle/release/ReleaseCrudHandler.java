@@ -18,7 +18,7 @@ import javax.inject.Inject;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;

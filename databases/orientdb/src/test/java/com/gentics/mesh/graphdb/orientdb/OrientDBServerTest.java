@@ -9,7 +9,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;

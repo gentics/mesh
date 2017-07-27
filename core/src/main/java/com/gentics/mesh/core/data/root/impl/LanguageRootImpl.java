@@ -9,7 +9,7 @@ import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;

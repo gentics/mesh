@@ -16,7 +16,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;

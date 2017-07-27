@@ -8,8 +8,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
-import com.gentics.ferma.orientdb.DelegatingFramedOrientGraph;
+import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Group;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;

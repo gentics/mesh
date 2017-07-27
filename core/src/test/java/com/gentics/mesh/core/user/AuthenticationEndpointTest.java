@@ -12,7 +12,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;

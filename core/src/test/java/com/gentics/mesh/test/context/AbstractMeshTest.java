@@ -9,7 +9,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;

@@ -6,8 +6,6 @@ import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.ferma.Tx;
-import com.gentics.ferma.annotation.GraphElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -18,6 +16,8 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.VertexFrame;
+import com.syncleus.ferma.annotations.GraphElement;
+import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Vertex;

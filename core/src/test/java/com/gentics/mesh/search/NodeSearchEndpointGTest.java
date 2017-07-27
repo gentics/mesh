@@ -12,7 +12,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;

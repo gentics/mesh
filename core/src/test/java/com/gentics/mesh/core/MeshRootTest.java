@@ -10,7 +10,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.BuildInfo;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;

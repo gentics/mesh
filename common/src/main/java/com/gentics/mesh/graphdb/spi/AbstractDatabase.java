@@ -5,9 +5,9 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
