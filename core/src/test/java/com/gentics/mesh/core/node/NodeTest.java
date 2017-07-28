@@ -211,7 +211,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node subNode = folder.create(user(), getSchemaContainer().getLatestVersion(), project());
 			assertNotNull(subNode.getUuid());
 			SearchQueueBatch batch = createBatch();
-			subNode.deleteFromRelease(project().getLatestRelease(), batch, false);
+			InternalActionContext ac = mockActionContext("");
+			subNode.deleteFromRelease(ac, project().getLatestRelease(), batch, false);
 		}
 	}
 
@@ -306,8 +307,9 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			uuid = node.getUuid();
 			MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, true);
 			SearchQueueBatch batch = createBatch();
+			InternalActionContext ac = mockActionContext("");
 			try (Tx tx2 = tx()) {
-				node.deleteFromRelease(project().getLatestRelease(), batch, false);
+				node.deleteFromRelease(ac, project().getLatestRelease(), batch, false);
 				tx2.success();
 			}
 
@@ -387,7 +389,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 2. delete folder for initial release
 			SearchQueueBatch batch = createBatch();
-			subFolder.deleteFromRelease(initialRelease, batch, false);
+			InternalActionContext ac = mockActionContext("");
+			subFolder.deleteFromRelease(ac, initialRelease, batch, false);
 			folder.reload();
 
 			// 3. assert for new release
@@ -462,7 +465,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 8. delete folder for initial release
 			batch = createBatch();
-			subFolder.deleteFromRelease(initialRelease, batch, false);
+			InternalActionContext ac = mockActionContext("");
+			subFolder.deleteFromRelease(ac, initialRelease, batch, false);
 			folder.reload();
 			subFolder.reload();
 			subSubFolder.reload();
@@ -521,9 +525,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 			// 3. delete
+			InternalActionContext ac = mockActionContext("");
 			SearchQueueBatch batch = db().tx(() -> {
 				SearchQueueBatch innerBatch = createBatch();
-				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(initialRelease, innerBatch, false);
+				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(ac, initialRelease, innerBatch, false);
 				return innerBatch;
 			});
 
@@ -581,9 +586,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			});
 
 			// 3. delete from initial release
+			InternalActionContext ac = mockActionContext("");
 			SearchQueueBatch batch = db().tx(() -> {
 				SearchQueueBatch innerBatch = createBatch();
-				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(initialRelease, innerBatch, false);
+				meshRoot().getNodeRoot().findByUuid(folderUuid).deleteFromRelease(ac, initialRelease, innerBatch, false);
 				return innerBatch;
 			});
 

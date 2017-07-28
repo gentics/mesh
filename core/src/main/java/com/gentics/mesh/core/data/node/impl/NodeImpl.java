@@ -1003,15 +1003,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			String date = DateUtils.toISO8601(c.getLastEditedTimestamp(), 0);
 
-			PublishStatusModel status = new PublishStatusModel().setPublished(true)
-					.setVersion(c.getVersion().toString()).setPublisher(c.getEditor().transformToReference())
-					.setPublishDate(date);
+			PublishStatusModel status = new PublishStatusModel().setPublished(true).setVersion(c.getVersion().toString())
+					.setPublisher(c.getEditor().transformToReference()).setPublishDate(date);
 			languages.put(c.getLanguage().getLanguageTag(), status);
 		});
 
 		getGraphFieldContainers(release, DRAFT).stream().filter(c -> !languages.containsKey(c.getLanguage().getLanguageTag())).forEach(c -> {
-			PublishStatusModel status = new PublishStatusModel().setPublished(false)
-					.setVersion(c.getVersion().toString());
+			PublishStatusModel status = new PublishStatusModel().setPublished(false).setVersion(c.getVersion().toString());
 			languages.put(c.getLanguage().getLanguageTag(), status);
 		});
 
@@ -1102,16 +1100,14 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		NodeGraphFieldContainer container = getGraphFieldContainer(languageTag, release.getUuid(), PUBLISHED);
 		if (container != null) {
 			String date = container.getLastEditedDate();
-			return new PublishStatusModel().setPublished(true)
-					.setVersion(container.getVersion().toString())
+			return new PublishStatusModel().setPublished(true).setVersion(container.getVersion().toString())
 					.setPublisher(container.getEditor().transformToReference()).setPublishDate(date);
 		} else {
 			container = getGraphFieldContainer(languageTag, release.getUuid(), DRAFT);
 			if (container == null) {
 				throw error(NOT_FOUND, "error_language_not_found", languageTag);
 			}
-			return new PublishStatusModel().setPublished(false)
-					.setVersion(container.getVersion().toString());
+			return new PublishStatusModel().setPublished(false).setVersion(container.getVersion().toString());
 		}
 	}
 
@@ -1145,17 +1141,18 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Release release = ac.getRelease(getProject());
 		String releaseUuid = release.getUuid();
 
+		// 1. Locate the published container
 		NodeGraphFieldContainer published = getGraphFieldContainer(languageTag, releaseUuid, PUBLISHED);
 		if (published == null) {
 			throw error(NOT_FOUND, "error_language_not_found", languageTag);
 		}
-		// Remove the "published" edge
+		// 2. Remove the "published" edge
 		getGraphFieldContainerEdge(languageTag, releaseUuid, PUBLISHED).remove();
 		published.setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 
 		assertPublishConsistency(ac);
 
-		// Invoke a delete on the document since it must be removed from the published index
+		// 3. Invoke a delete on the document since it must be removed from the published index
 		batch.delete(published, releaseUuid, PUBLISHED, false);
 	}
 
@@ -1267,17 +1264,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void deleteFromRelease(Release release, SearchQueueBatch batch, boolean ignoreChecks) {
+	public void deleteFromRelease(InternalActionContext ac, Release release, SearchQueueBatch batch, boolean ignoreChecks) {
 
 		// 1. Remove subfolders from release
 		String releaseUuid = release.getUuid();
 		for (Node child : getChildren(releaseUuid)) {
-			child.deleteFromRelease(release, batch, ignoreChecks);
+			child.deleteFromRelease(ac, release, batch, ignoreChecks);
 		}
 
 		// 2. Delete all language containers
 		for (NodeGraphFieldContainer container : getGraphFieldContainers(release, DRAFT)) {
-			deleteLanguageContainer(release, container.getLanguage(), batch);
+			deleteLanguageContainer(ac, release, container.getLanguage(), batch);
 		}
 
 		// 3. Now check if the node has no more field containers in any release. We can delete it in those cases
@@ -1613,21 +1610,22 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void deleteLanguageContainer(Release release, Language language, SearchQueueBatch batch) {
+	public void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, SearchQueueBatch batch) {
 
-		// 1. Load the draft container and remove it from the release
-		NodeGraphFieldContainer container = getGraphFieldContainer(language, release, DRAFT);
+		// 1. Check whether the container has also a published variant. We need to take it offline in those cases
+		NodeGraphFieldContainer container = getGraphFieldContainer(language, release, PUBLISHED);
+		if (container != null) {
+			takeOffline(ac, batch, language.getLanguageTag());
+		}
+
+		// 2. Load the draft container and remove it from the release
+		container = getGraphFieldContainer(language, release, DRAFT);
 		if (container == null) {
 			throw error(NOT_FOUND, "node_no_language_found", language.getLanguageTag());
 		}
 		container.deleteFromRelease(release, batch);
 
-		// 2. Check whether the container has also a published variant. We need
-		// to ensure that this version is also removed.
-		container = getGraphFieldContainer(language, release, PUBLISHED);
-		if (container != null) {
-			container.deleteFromRelease(release, batch);
-		}
+		// No need to delete the published variant because if the container was published the take offline call handled it
 	}
 
 	@Override

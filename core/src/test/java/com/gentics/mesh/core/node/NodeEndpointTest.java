@@ -209,7 +209,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		request.setParentNodeUuid(parentNodeUuid);
 
 		try (Tx tx = tx()) {
-
 			assertThat(dummySearchProvider()).recordedStoreEvents(0);
 			NodeResponse restNode = call(() -> client().createNode(PROJECT_NAME, request));
 			assertThat(restNode).matches(request);
@@ -442,9 +441,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 					new VersioningParametersImpl().draft()));
 
 			// Delete the node
-			MeshResponse<Void> deleteFut = client().deleteNode(PROJECT_NAME, restNode2.getUuid()).invoke();
-			latchFor(deleteFut);
-			assertSuccess(deleteFut);
+			call(() ->  client().deleteNode(PROJECT_NAME, restNode2.getUuid()));
 
 			meshRoot().getNodeRoot().reload();
 			Node deletedNode = meshRoot().getNodeRoot().findByUuid(restNode2.getUuid());

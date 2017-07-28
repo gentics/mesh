@@ -152,7 +152,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		batch.delete(this, releaseUuid, DRAFT, false);
 		if (isPublished(releaseUuid)) {
 			batch.delete(this, releaseUuid, PUBLISHED, false);
+			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 		}
+		// Remove the edge between the node and the container that matches the release
 		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 				.or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()),
 						e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode()))
