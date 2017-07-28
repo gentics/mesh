@@ -23,8 +23,6 @@ public interface Mesh {
 	/**
 	 * Returns the initialized instance.
 	 * 
-	 * @param args
-	 *            Additional command line arguments
 	 * @param options
 	 * 
 	 * @return Fluent API

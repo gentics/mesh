@@ -92,6 +92,7 @@ public class SearchModelGenerator extends AbstractGenerator {
 		// The database provider will switch to in memory mode when no directory has been specified.
 		options.getStorageOptions().setDirectory(null);
 		options.getSearchOptions().setDirectory(null);
+		options.setNodeName("exampleGenerator");
 		Mesh.mesh(options);
 	}
 
