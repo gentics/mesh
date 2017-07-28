@@ -192,11 +192,13 @@ public interface Database {
 	 *            Mesh options
 	 * @param vertx
 	 *            Vert.x instance used to execute blocking code
+	 * @param meshVersion
+	 *            Version of mesh
 	 * @param basePaths
 	 *            Base paths which will be scanned for graph element classes
 	 * @throws Exception
 	 */
-	void init(MeshOptions options, Vertx vertx, String... basePaths) throws Exception;
+	void init(MeshOptions options, Vertx vertx, String meshVersion, String... basePaths) throws Exception;
 
 	/**
 	 * Reload the given mesh element.

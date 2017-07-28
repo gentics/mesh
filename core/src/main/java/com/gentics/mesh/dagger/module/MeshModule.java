@@ -69,7 +69,7 @@ public class MeshModule {
 			throw new RuntimeException(message);
 		}
 		try {
-			database.init(Mesh.mesh().getOptions(), Mesh.vertx(), "com.gentics.mesh.core.data");
+			database.init(Mesh.mesh().getOptions(), Mesh.vertx(), Mesh.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 			return database;
 		} catch (Exception e) {
 			throw new RuntimeException(e);

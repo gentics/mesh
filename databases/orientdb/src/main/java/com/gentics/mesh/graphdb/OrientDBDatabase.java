@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -35,7 +36,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -100,7 +100,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String DB_NAME = "storage";
 
-	private TopologyEventBridge topologyEventBridge = new TopologyEventBridge(this);
+	private TopologyEventBridge topologyEventBridge;
 
 	private OrientGraphFactory factory;
 
@@ -145,8 +145,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void init(MeshOptions options, Vertx vertx, String... basePaths) throws Exception {
-		super.init(options, vertx);
+	public void init(MeshOptions options, Vertx vertx, String meshVersion, String... basePaths) throws Exception {
+		super.init(options, vertx, meshVersion);
+		topologyEventBridge = new TopologyEventBridge(this, vertx);
 
 		GraphStorageOptions storageOptions = options.getStorageOptions();
 		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
@@ -314,7 +315,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 */
 	public String getNodeName() {
 		// TODO check for other invalid characters
-		String name = options.getNodeName().replaceAll(" ", "_") + "@" + Mesh.getBuildInfo().getVersion();
+		String name = options.getNodeName();
+		Objects.requireNonNull(name, "No nodeName was specified within mesh options.");
+		name = name.replaceAll(" ", "_") + "@" + meshVersion;
 		name = name.replaceAll("\\.", "-");
 		return name;
 	}

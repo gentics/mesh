@@ -21,6 +21,7 @@ public abstract class AbstractDatabase implements Database {
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
 
 	protected MeshOptions options;
+	protected String meshVersion;
 	protected Vertx vertx;
 	protected String[] basePaths;
 
@@ -40,9 +41,10 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public void init(MeshOptions options, Vertx vertx, String... basePaths) throws Exception {
+	public void init(MeshOptions options, Vertx vertx, String meshVersion, String... basePaths) throws Exception {
 		this.options = options;
 		this.vertx = vertx;
+		this.meshVersion = meshVersion;
 		this.basePaths = basePaths;
 	}
 

@@ -12,6 +12,7 @@ import com.gentics.mesh.Mesh;
 import com.orientechnologies.orient.server.distributed.ODistributedLifecycleListener;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -29,8 +30,8 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private CountDownLatch nodeJoinLatch = new CountDownLatch(1);
 
-	public TopologyEventBridge(OrientDBDatabase db) {
-		this.eb = Mesh.mesh().getVertx().eventBus();
+	public TopologyEventBridge(OrientDBDatabase db, Vertx vertx) {
+		this.eb = vertx.eventBus();
 		this.db = db;
 	}
 

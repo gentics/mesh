@@ -28,9 +28,11 @@ import com.gentics.mesh.changelog.changes.ChangeDummy2;
 import com.gentics.mesh.changelog.changes.ChangeDummyFailing;
 import com.gentics.mesh.changelog.changes.ChangesList;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Vertex;
 
+import io.vertx.core.Vertx;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
@@ -95,12 +97,14 @@ public class ChangelogSystemTest {
 	}
 
 	@Test
-	public void testChangelogSystem() {
+	public void testChangelogSystem() throws Exception {
 		MeshOptions options = new MeshOptions();
 		options.getStorageOptions().setDirectory("target/dump/graphdb");
 		options.getSearchOptions().setDirectory(null);
+		options.setNodeName("dummyNode");
 
-		Database db = ChangelogRunner.getDatabase(options);
+		Database db = getDatabase(options);
+		db.setupConnectionPool();
 		ChangelogSystem cls = new ChangelogSystem(db);
 		List<Change> testChanges = new ArrayList<>();
 		testChanges.add(new ChangeDummy2());
@@ -115,18 +119,39 @@ public class ChangelogSystemTest {
 		assertFalse("The change should only be applied once but we found another moped vertex", it.hasNext());
 	}
 
+	/**
+	 * Load the graph database which was configured in the mesh storage options.
+	 * 
+	 * @param options
+	 * @return
+	 */
+	public static Database getDatabase(MeshOptions options) {
+		DatabaseService databaseService = DatabaseService.getInstance();
+		Database database = databaseService.getDatabase();
+		if (database == null) {
+			String message = "No database provider could be found.";
+			throw new RuntimeException(message);
+		}
+		try {
+			database.init(options, Vertx.vertx(), null);
+			return database;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	@Test
 	public void testFailingChange() {
 		List<Change> listWithFailingChange = new ArrayList<>();
 		listWithFailingChange.add(new ChangeDummyFailing());
-		//		new DaggerChangelogSpringConfiguration().build();
-		//		try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(ChangelogSpringConfiguration.class)) {
-		//			ctx.start();
-		//			MeshOptions options = new MeshOptions();
-		//			options.getStorageOptions().setDirectory("target/dump/graphdb");
-		//			Database db = ChangelogRunner.getDatabase(options);
-		//			ChangelogSystem cls = new ChangelogSystem(db);
-		//			assertFalse("The changelog should fail", cls.applyChanges(listWithFailingChange));
-		//		}
+		// new DaggerChangelogSpringConfiguration().build();
+		// try (AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext(ChangelogSpringConfiguration.class)) {
+		// ctx.start();
+		// MeshOptions options = new MeshOptions();
+		// options.getStorageOptions().setDirectory("target/dump/graphdb");
+		// Database db = ChangelogRunner.getDatabase(options);
+		// ChangelogSystem cls = new ChangelogSystem(db);
+		// assertFalse("The changelog should fail", cls.applyChanges(listWithFailingChange));
+		// }
 	}
 }

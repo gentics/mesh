@@ -40,7 +40,7 @@ public class OrientDBServerTest {
 		MeshOptions options = new MeshOptions();
 		options.getStorageOptions().setDirectory(dbDirectory.getAbsolutePath());
 		options.getStorageOptions().setStartServer(true);
-		db.init(options, Vertx.vertx());
+		db.init(options, Vertx.vertx(), null);
 		db.setupConnectionPool();
 
 		for (int i = 0; i < 100; i++) {

@@ -27,7 +27,7 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 
 	@Before
 	public void setup() throws Exception {
-		db.init(null, Vertx.vertx());
+		db.init(null, Vertx.vertx(), null);
 	}
 
 	//	@Test

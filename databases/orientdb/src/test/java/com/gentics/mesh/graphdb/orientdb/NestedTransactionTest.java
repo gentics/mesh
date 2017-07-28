@@ -27,7 +27,7 @@ public class NestedTransactionTest {
 
 	@Before
 	public void setup() throws Exception {
-		db.init(null, Vertx.vertx());
+		db.init(null, Vertx.vertx(), null);
 	}
 
 	/**
