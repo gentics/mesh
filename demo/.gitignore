@@ -1,5 +1,7 @@
 /data
 /demo
+/demo*
+/config*
 *.tgz 
 src/main/resources/mesh-demo.zip
 /target/
