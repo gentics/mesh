@@ -2,6 +2,12 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.22 (28.07.2017)
+
+icon:plus[] REST API: It is now possible to create nodes, users, groups, roles, releases and projects using a provided uuid.
+
+icon:check[] Versioning: A publish error which was caused due to a bug in the node language deletion code has been fixed.
+
 == 0.9.21 (26.07.2017)
 
 icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.24
