@@ -1,6 +1,3 @@
-
-icon:plus[] REST API: It is now possible to create nodes, users, groups, roles, releases and projects using a provided uuid.
-
 icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.24
 
 icon:plus[] Configuration: The configuration files were moved to a dedicated `config` folder.

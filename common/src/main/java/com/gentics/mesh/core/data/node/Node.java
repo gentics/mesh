@@ -451,25 +451,26 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void setPublished(NodeGraphFieldContainer container, String releaseUuid);
 
 	/**
-	 * Take a language of the node offline
+	 * Take a language of the node offline.
 	 *
 	 * @param ac
 	 * @param batch
+	 * @param release
 	 * @param languageTag
-	 * @return
 	 */
-	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, String languageTag);
+	void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, String languageTag);
 
 	/**
 	 * Delete the language container for the given language from the release This will not actually delete the container, but will remove the DRAFT and
-	 * PUBLISHED edge to the container for the release
+	 * PUBLISHED edge to the container for the release.
 	 * 
+	 * @param ac
 	 * @param release
 	 * @param language
 	 *            Language which will be used to find the field container which should be deleted
 	 * @param batch
 	 */
-	void deleteLanguageContainer(Release release, Language language, SearchQueueBatch batch);
+	void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, SearchQueueBatch batch);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
@@ -529,11 +530,12 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * If the node is deleted from its last release, it is (permanently) deleted from the db
 	 *
+	 * @param ac
 	 * @param release
 	 * @param batch
 	 * @param ignoreChecks
 	 */
-	void deleteFromRelease(Release release, SearchQueueBatch batch, boolean ignoreChecks);
+	void deleteFromRelease(InternalActionContext ac, Release release, SearchQueueBatch batch, boolean ignoreChecks);
 
 	/**
 	 * Return the schema container for the node.
@@ -560,8 +562,10 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param ac
 	 *            Current action context
+	 * @param release
+	 *            Release to be used to check the consistency state
 	 */
-	void assertPublishConsistency(InternalActionContext ac);
+	void assertPublishConsistency(InternalActionContext ac, Release release);
 
 	/**
 	 * Create a new published version of the given language in the release.

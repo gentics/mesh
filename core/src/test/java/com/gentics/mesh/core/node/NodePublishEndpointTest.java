@@ -4,7 +4,9 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -15,7 +17,6 @@ import java.util.Map.Entry;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -34,8 +35,7 @@ import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.ClientHelper.call;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodePublishEndpointTest extends AbstractMeshTest {
@@ -93,6 +93,48 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 			Node node = folder("products");
 			call(() -> client().getNodeLanguagePublishStatus(PROJECT_NAME, node.getUuid(), "fr"), NOT_FOUND, "error_language_not_found", "fr");
 		}
+	}
+
+	@Test
+	public void testPublishDeleteCase() {
+
+		String parentNodeUuid = tx(() -> folder("news").getUuid());
+
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setSchema(new SchemaReference().setName("content"));
+		request.setLanguage("en");
+		request.getFields().put("title", FieldUtil.createStringField("some title"));
+		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("new-page.en.html"));
+		request.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		request.setParentNodeUuid(parentNodeUuid);
+
+		// Create a new node (en)
+		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
+		String nodeUuid = response.getUuid();
+		call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en"));
+
+		// Create a new language for the node (de)
+		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
+		updateRequest.getFields().put("title", FieldUtil.createStringField("some title"));
+		updateRequest.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		updateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.en.html"));
+		updateRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		updateRequest.setLanguage("de");
+		updateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.de.html"));
+		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, updateRequest));
+
+		// Publish the language de
+		call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
+
+		// Delete the language de
+		call(() -> client().deleteNode(PROJECT_NAME, nodeUuid, "de"));
+
+		// Create a new language de
+		call(() -> client().updateNode(PROJECT_NAME, nodeUuid, updateRequest));
+
+		// Publish the language de
+		call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
 	}
 
 	@Test

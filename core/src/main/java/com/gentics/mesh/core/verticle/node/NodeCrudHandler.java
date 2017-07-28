@@ -81,7 +81,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				node.deleteFromRelease(ac.getRelease(), batch, false);
+				node.deleteFromRelease(ac, ac.getRelease(), batch, false);
 				return batch;
 			}).processSync();
 			return null;
@@ -111,7 +111,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				node.deleteLanguageContainer(ac.getRelease(), language, batch);
+				node.deleteLanguageContainer(ac, ac.getRelease(), language, batch);
 				return batch;
 			}).processSync();
 			return null;
@@ -415,7 +415,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			return db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				node.takeOffline(ac, batch, languageTag);
+				Release release = ac.getRelease(ac.getProject());
+				node.takeOffline(ac, batch, release, languageTag);
 				return batch;
 			}).processAsync().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
