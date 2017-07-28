@@ -415,7 +415,8 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, PUBLISH_PERM);
 			return db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				node.takeOffline(ac, batch, languageTag);
+				Release release = ac.getRelease(ac.getProject());
+				node.takeOffline(ac, batch, release, languageTag);
 				return batch;
 			}).processAsync().andThen(Single.just(null));
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);

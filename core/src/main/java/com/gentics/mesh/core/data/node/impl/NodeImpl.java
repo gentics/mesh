@@ -206,11 +206,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void assertPublishConsistency(InternalActionContext ac) {
+	public void assertPublishConsistency(InternalActionContext ac, Release release) {
 
 		NodeParameters parameters = ac.getNodeParameters();
 
-		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		String releaseUuid = release.getUuid();
 		// Check whether the node got a published version and thus is published
 		boolean isPublished = findNextMatchingFieldContainer(parameters.getLanguageList(), releaseUuid, "published") != null;
 
@@ -1029,7 +1029,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				child.publish(ac, release, batch);
 			}
 		}
-		assertPublishConsistency(ac);
+		assertPublishConsistency(ac, release);
 	}
 
 	@Override
@@ -1051,7 +1051,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 
-		assertPublishConsistency(ac);
+		assertPublishConsistency(ac, release);
 		batch.store(this, releaseUuid, PUBLISHED, false);
 	}
 
@@ -1074,7 +1074,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			}
 		}
 
-		assertPublishConsistency(ac);
+		assertPublishConsistency(ac, release);
 
 		// Remove the published node from the index
 		for (NodeGraphFieldContainer container : publishedContainers) {
@@ -1137,8 +1137,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void takeOffline(InternalActionContext ac, SearchQueueBatch batch, String languageTag) {
-		Release release = ac.getRelease(getProject());
+	public void takeOffline(InternalActionContext ac, SearchQueueBatch batch, Release release, String languageTag) {
 		String releaseUuid = release.getUuid();
 
 		// 1. Locate the published container
@@ -1150,7 +1149,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		getGraphFieldContainerEdge(languageTag, releaseUuid, PUBLISHED).remove();
 		published.setProperty(NodeGraphFieldContainerImpl.PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 
-		assertPublishConsistency(ac);
+		assertPublishConsistency(ac, release);
 
 		// 3. Invoke a delete on the document since it must be removed from the published index
 		batch.delete(published, releaseUuid, PUBLISHED, false);
@@ -1575,7 +1574,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// node.
 		// We must detect and prevent such actions because those would
 		// invalidate the tree structure
-		String releaseUuid = ac.getRelease(getProject()).getUuid();
+		Release release = ac.getRelease(getProject());
+		String releaseUuid = release.getUuid();
 		Node parent = targetNode.getParentNode(releaseUuid);
 		while (parent != null) {
 			if (parent.getUuid().equals(getUuid())) {
@@ -1606,7 +1606,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		});
 		batch.store(this, releaseUuid, DRAFT, false);
 
-		assertPublishConsistency(ac);
+		assertPublishConsistency(ac, release);
 	}
 
 	@Override
@@ -1615,7 +1615,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// 1. Check whether the container has also a published variant. We need to take it offline in those cases
 		NodeGraphFieldContainer container = getGraphFieldContainer(language, release, PUBLISHED);
 		if (container != null) {
-			takeOffline(ac, batch, language.getLanguageTag());
+			takeOffline(ac, batch, release, language.getLanguageTag());
 		}
 
 		// 2. Load the draft container and remove it from the release
