@@ -43,7 +43,9 @@ node("jenkins-slave") {
 	stage("Test") {
 		if (Boolean.valueOf(params.runTests)) {
 		def splits = 20;
+			sh "ls -la"
 			sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
+			sh "cat alltests | wc -l"
 			sh "split -a 2 -d -n l/${splits} alltests  includes-"
 			stash includes: '**', name: 'project'
 			def branches = [:]
