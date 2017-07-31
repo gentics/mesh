@@ -52,7 +52,7 @@ public class WebRootEndpointETagTest extends AbstractMeshTest {
 			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(100).setHeight(102);
 			MeshResponse<WebRootResponse> response = client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft"))
 					.invoke();
-			latchFor(response);
+			latchFor(response); 
 			assertSuccess(response);
 			String etag = ETag.extract(response.getRawResponse().getHeader(ETAG));
 			callETag(() -> client().webroot(PROJECT_NAME, path, params, new VersioningParametersImpl().setVersion("draft")), etag, false, 304);

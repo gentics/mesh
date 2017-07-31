@@ -33,8 +33,8 @@ import com.gentics.mesh.util.ETag;
 
 import rx.Single;
 
-public class MicroschemaContainerVersionImpl
-		extends AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
+public class MicroschemaContainerVersionImpl extends
+		AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>
 		implements MicroschemaContainerVersion {
 
 	public static void init(Database database) {
@@ -142,4 +142,15 @@ public class MicroschemaContainerVersionImpl
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
+
+	@Override
+	public void onCreated() {
+		getSchemaContainer().onCreated();
+	}
+
+	@Override
+	public void onUpdated() {
+		getSchemaContainer().onUpdated();
+	}
+
 }

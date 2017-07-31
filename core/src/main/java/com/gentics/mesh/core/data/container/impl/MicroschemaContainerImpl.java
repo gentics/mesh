@@ -1,10 +1,13 @@
 package com.gentics.mesh.core.data.container.impl;
 
+import static com.gentics.mesh.Events.EVENT_MICROSCHEMA_CREATED;
+import static com.gentics.mesh.Events.EVENT_MICROSCHEMA_UPDATED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -23,8 +26,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 /**
  * See {@link MicroschemaContainer}
  */
-public class MicroschemaContainerImpl
-		extends AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
+public class MicroschemaContainerImpl extends
+		AbstractGraphFieldSchemaContainer<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainer, MicroschemaContainerVersion>
 		implements MicroschemaContainer {
 
 	@Override
@@ -74,6 +77,16 @@ public class MicroschemaContainerImpl
 	@Override
 	public User getEditor() {
 		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
+	}
+
+	@Override
+	public void onUpdated() {
+		Mesh.vertx().eventBus().publish(EVENT_MICROSCHEMA_UPDATED, getUuid());
+	}
+
+	@Override
+	public void onCreated() {
+		Mesh.vertx().eventBus().publish(EVENT_MICROSCHEMA_CREATED, getUuid());
 	}
 
 }

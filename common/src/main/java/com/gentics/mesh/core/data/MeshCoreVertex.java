@@ -47,4 +47,14 @@ public interface MeshCoreVertex<R extends RestModel, V extends MeshCoreVertex<R,
 	 * @param model
 	 */
 	void setRolePermissions(InternalActionContext ac, GenericRestResponse model);
+
+	/**
+	 * Method which is being invoked once the element has been created.
+	 */
+	void onCreated();
+
+	/**
+	 * Method which is being invoked once the element has been updated.
+	 */
+	void onUpdated();
 }

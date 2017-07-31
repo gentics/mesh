@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_CREATED;
+import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_UPDATED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
@@ -16,6 +18,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.HandleElementAction;
@@ -317,6 +320,17 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		// Set the tag family for the tag
 		tag.setTagFamily(this);
 		return tag;
+	}
+	
+	
+	@Override
+	public void onUpdated() {
+		Mesh.vertx().eventBus().publish(EVENT_TAG_FAMILY_UPDATED, getUuid());
+	}
+
+	@Override
+	public void onCreated() {
+		Mesh.vertx().eventBus().publish(EVENT_TAG_FAMILY_CREATED, getUuid());
 	}
 
 }

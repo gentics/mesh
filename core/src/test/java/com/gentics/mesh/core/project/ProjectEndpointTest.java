@@ -137,6 +137,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 		ProjectResponse restProject = call(() -> client().createProject(request));
 
+		// Verify that the new routes have been created
 		NodeResponse response = call(
 				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());

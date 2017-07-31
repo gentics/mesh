@@ -25,7 +25,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
@@ -68,10 +67,12 @@ import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.event.MeshEventHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.MavenVersionNumber;
+import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
@@ -112,6 +113,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public ConsoleProvider console;
+
+	@Inject
+	public MeshEventHandler eventHandler;
 
 	private static MeshRoot meshRoot;
 
@@ -201,8 +205,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void init(boolean hasOldLock, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader)
-			throws Exception {
+	public void init(boolean hasOldLock, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 
 		GraphStorageOptions storageOptions = options.getStorageOptions();
 		boolean isClustered = options.isClusterMode();
@@ -247,8 +250,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-	private void handleLocalData(boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader)
-			throws Exception {
+	private void handleLocalData(boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		// An old lock file has been detected. Normally the lock file should be removed during shutdown.
 		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of
 		// the ES index in those cases in order to ensure consistency.
@@ -271,6 +273,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		log.info("Sending startup completed event to {" + STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(STARTUP_EVENT_ADDRESS, true);
 
+		registerEventHandlers();
+
+	}
+
+	@Override
+	public void registerEventHandlers() {
+		eventHandler.registerHandlers();
 	}
 
 	@Override

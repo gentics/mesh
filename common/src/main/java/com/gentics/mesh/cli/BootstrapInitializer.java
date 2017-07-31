@@ -200,4 +200,9 @@ public interface BootstrapInitializer {
 	 */
 	void reindexAll();
 
+	/**
+	 * Register the eventbus event handlers.
+	 */
+	void registerEventHandlers();
+
 }

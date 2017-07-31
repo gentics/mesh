@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.Events.EVENT_RELEASE_CREATED;
+import static com.gentics.mesh.Events.EVENT_RELEASE_UPDATED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
@@ -13,6 +15,7 @@ import static com.gentics.mesh.util.URIUtils.encodeFragment;
 
 import java.util.List;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -334,5 +337,15 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 		return db.operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	@Override
+	public void onUpdated() {
+		Mesh.vertx().eventBus().publish(EVENT_RELEASE_UPDATED, getUuid());
+	}
+
+	@Override
+	public void onCreated() {
+		Mesh.vertx().eventBus().publish(EVENT_RELEASE_CREATED, getUuid());
 	}
 }

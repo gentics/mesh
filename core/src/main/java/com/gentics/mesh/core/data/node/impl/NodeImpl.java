@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.node.impl;
 
+import static com.gentics.mesh.Events.EVENT_NODE_CREATED;
+import static com.gentics.mesh.Events.EVENT_NODE_UPDATED;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.INITIAL;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
@@ -37,7 +39,7 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -111,6 +113,7 @@ import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -1872,6 +1875,17 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return MeshInternal.get().database().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+	
+	
+	@Override
+	public void onUpdated() {
+		Mesh.vertx().eventBus().publish(EVENT_NODE_UPDATED, getUuid());
+	}
+
+	@Override
+	public void onCreated() {
+		Mesh.vertx().eventBus().publish(EVENT_NODE_CREATED, getUuid());
 	}
 
 }

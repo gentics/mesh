@@ -31,8 +31,9 @@ import rx.Single;
 /**
  * @see SchemaContainerVersion
  */
-public class SchemaContainerVersionImpl extends
-		AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer> implements SchemaContainerVersion {
+public class SchemaContainerVersionImpl
+		extends AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer>
+		implements SchemaContainerVersion {
 
 	public static void init(Database database) {
 		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
@@ -144,6 +145,16 @@ public class SchemaContainerVersionImpl extends
 		return MeshInternal.get().database().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	@Override
+	public void onCreated() {
+		getSchemaContainer().onCreated();
+	}
+
+	@Override
+	public void onUpdated() {
+		getSchemaContainer().onUpdated();
 	}
 
 }

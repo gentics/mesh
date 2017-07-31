@@ -100,4 +100,14 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 		});
 	}
 
+	@Override
+	public void onCreated() {
+		// TODO Auto-generated method stub
+	}
+	
+	@Override
+	public void onUpdated() {
+		// TODO Auto-generated method stub
+	}
+	
 }

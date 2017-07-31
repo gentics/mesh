@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.Events.EVENT_GROUP_CREATED;
+import static com.gentics.mesh.Events.EVENT_GROUP_UPDATED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
@@ -13,6 +15,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.List;
 import java.util.Set;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -50,8 +53,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public GroupReference transformToReference() {
-		return new GroupReference().setName(getName())
-				.setUuid(getUuid());
+		return new GroupReference().setName(getName()).setUuid(getUuid());
 	}
 
 	@Override
@@ -119,31 +121,24 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public boolean hasRole(Role role) {
-		return in(HAS_ROLE).retain(role)
-				.hasNext();
+		return in(HAS_ROLE).retain(role).hasNext();
 	}
 
 	@Override
 	public boolean hasUser(User user) {
-		return in(HAS_USER).retain(user)
-				.hasNext();
+		return in(HAS_USER).retain(user).hasNext();
 	}
 
 	@Override
 	public TransformablePage<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) {
-		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark()
-				.in(GraphPermission.READ_PERM.label())
-				.out(HAS_ROLE)
-				.in(HAS_USER)
-				.retain(requestUser)
-				.back()
-				.has(UserImpl.class);
+		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser)
+				.back().has(UserImpl.class);
 		return TraversalHelper.getPagedResult(traversal, pagingInfo, UserImpl.class);
 	}
 
 	@Override
 	public TransformablePage<? extends Role> getRoles(User user, PagingParameters pagingInfo) {
-		//TODO handle request user / handle perms
+		// TODO handle request user / handle perms
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
 		TransformablePage<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, RoleImpl.class);
 		return page;
@@ -171,8 +166,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		for (Role role : getRoles()) {
 			String name = role.getName();
 			if (name != null) {
-				restGroup.getRoles()
-						.add(role.transformToReference());
+				restGroup.getRoles().add(role.transformToReference());
 			}
 		}
 	}
@@ -187,8 +181,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	@Override
 	public Group update(InternalActionContext ac, SearchQueueBatch batch) {
-		BootstrapInitializer boot = MeshInternal.get()
-				.boot();
+		BootstrapInitializer boot = MeshInternal.get().boot();
 		GroupUpdateRequest requestModel = ac.fromJson(GroupUpdateRequest.class);
 
 		if (isEmpty(requestModel.getName())) {
@@ -196,10 +189,8 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		}
 
 		if (shouldUpdate(requestModel.getName(), getName())) {
-			Group groupWithSameName = boot.groupRoot()
-					.findByName(requestModel.getName());
-			if (groupWithSameName != null && !groupWithSameName.getUuid()
-					.equals(getUuid())) {
+			Group groupWithSameName = boot.groupRoot().findByName(requestModel.getName());
+			if (groupWithSameName != null && !groupWithSameName.getUuid().equals(getUuid())) {
 				throw conflict(groupWithSameName.getUuid(), requestModel.getName(), "group_conflicting_name", requestModel.getName());
 			}
 
@@ -255,4 +246,13 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		});
 	}
 
+	@Override
+	public void onCreated() {
+		Mesh.vertx().eventBus().publish(EVENT_GROUP_CREATED, getUuid());
+	}
+
+	@Override
+	public void onUpdated() {
+		Mesh.vertx().eventBus().publish(EVENT_GROUP_UPDATED, getUuid());
+	}
 }

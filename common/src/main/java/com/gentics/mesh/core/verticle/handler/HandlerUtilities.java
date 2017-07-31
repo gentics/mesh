@@ -28,6 +28,7 @@ import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
+import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.TxHandler;
 import com.syncleus.ferma.tx.TxHandler0;
@@ -140,27 +141,33 @@ public class HandlerUtilities {
 			// Check whether we need to update a found element or whether we need to create a new one.
 			if (element != null) {
 				final T updateElement = element;
-				info = database.tx(() -> {
+				Tuple<T, SearchQueueBatch>  tuple = database.tx(() -> {
 					SearchQueueBatch batch = searchQueue.create();
 					T updatedElement = updateElement.update(ac, batch);
-					RestModel model = updatedElement.transformToRestSync(ac, 0);
-					return new ResultInfo(model, batch);
+					return Tuple.tuple(updatedElement, batch);
 				});
+				SearchQueueBatch b = tuple.v2();
+				T updatedElement = tuple.v1();
+				RestModel model = updatedElement.transformToRestSync(ac, 0);
+				info = new ResultInfo(model, b);
+				updatedElement.onUpdated();
 			} else {
-				info = database.tx(() -> {
+				Tuple<T, SearchQueueBatch>  tuple = database.tx(() -> {
 					SearchQueueBatch batch = searchQueue.create();
 					created.set(true);
-					T createdElement = root.create(ac, batch, uuid);
-					RM model = createdElement.transformToRestSync(ac, 0);
-					String path = createdElement.getAPIPath(ac);
-					ResultInfo resultInfo = new ResultInfo(model, batch);
-					resultInfo.setProperty("path", path);
-					return resultInfo;
+					return Tuple.tuple(root.create(ac, batch, uuid), batch);
 				});
-				String path = info.getProperty("path");
+				SearchQueueBatch b = tuple.v2();
+				T createdElement = tuple.v1();
+				RM model = createdElement.transformToRestSync(ac, 0);
+				String path = createdElement.getAPIPath(ac);
+				info = new ResultInfo(model, b);
+				info.setProperty("path", path);
+				//String path = info.getProperty("path");
 				ac.setLocation(path);
+				createdElement.onCreated();
 			}
-
+		
 			// 3. The updating transaction has succeeded. Now lets store it in the index
 			final ResultInfo info2 = info;
 			return database.tx(() -> {

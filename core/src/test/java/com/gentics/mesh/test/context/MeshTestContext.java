@@ -71,6 +71,7 @@ public class MeshTestContext extends TestWatcher {
 				removeDataDirectory();
 				init(settings);
 				initDagger(settings.testSize());
+				meshDagger.boot().registerEventHandlers();
 			} else {
 				if (!settings.inMemoryDB()) {
 					DatabaseHelper.init(meshDagger.database());

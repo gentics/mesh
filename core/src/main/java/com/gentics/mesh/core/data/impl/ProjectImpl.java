@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
+import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
@@ -62,6 +64,7 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
@@ -216,7 +219,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			}
 		}
 
-		// Create a dummy batch which we will use to handle deletion for elements which must not update the batch since the documents are deleted by dedicated index deletion entries.
+		// Create a dummy batch which we will use to handle deletion for elements which must not update the batch since the documents are deleted by dedicated
+		// index deletion entries.
 		DummySearchQueueBatch dummyBatch = new DummySearchQueueBatch();
 
 		// Remove the tagfamilies from the index
@@ -266,7 +270,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 				try {
 					routerStorage.addProjectRouter(oldName);
 				} catch (InvalidNameException e1) {
-					//TODO i18n
+					// TODO i18n
 					throw error(INTERNAL_SERVER_ERROR, "Error while restoring project router for name {" + oldName + "} during rollback", e);
 				}
 				// TODO i18n
@@ -278,12 +282,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			// Update the project and its nodes in the index
 			batch.store(this, true);
 			// Store all nodes in all releases
-			//			for (Node node : getNodeRoot().findAll()) {
-			//				batch.store(node, false);
-			//			}
-			//			for(Tag tag : getTagRoot().findAll()) {
-			//				
-			//			}
+			// for (Node node : getNodeRoot().findAll()) {
+			// batch.store(node, false);
+			// }
+			// for(Tag tag : getTagRoot().findAll()) {
+			//
+			// }
 		}
 		return this;
 	}
@@ -304,7 +308,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		if (getBaseNode() == null) {
 			return;
 		}
-		// All nodes of all releases are related to this project. All nodes/containers must be updated if the project name changes. 
+		// All nodes of all releases are related to this project. All nodes/containers must be updated if the project name changes.
 		for (Node node : getNodeRoot().findAll()) {
 			action.call(node, new HandleContext());
 		}
@@ -365,5 +369,21 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		return db.operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	@Override
+	public void onUpdated() {
+		JsonObject json = new JsonObject();
+		json.put("name", getName());
+		json.put("uuid", getUuid());
+		Mesh.vertx().eventBus().publish(EVENT_PROJECT_UPDATED, json);
+	}
+
+	@Override
+	public void onCreated() {
+		JsonObject json = new JsonObject();
+		json.put("name", getName());
+		json.put("uuid", getUuid());
+		Mesh.vertx().eventBus().publish(EVENT_PROJECT_CREATED, json);
 	}
 }

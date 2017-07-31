@@ -13,8 +13,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.Stack;
 
-import javax.naming.InvalidNameException;
-
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -218,18 +216,6 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		// 3. Add created basenode to SQB
 		// NodeGraphFieldContainer baseNodeFieldContainer = project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
 		batch.store(project.getBaseNode(), releaseUuid, ContainerType.DRAFT, false);
-
-		try {
-			// TODO BUG project should only be added to router when tx and ES
-			// finished successfully
-			routerStorage.addProjectRouter(projectName);
-			if (log.isInfoEnabled()) {
-				log.info("Registered project {" + projectName + "}");
-			}
-		} catch (InvalidNameException e) {
-			// TODO should we really fail here?
-			throw error(BAD_REQUEST, "Error while adding project to router storage", e);
-		}
 
 		return project;
 
