@@ -35,9 +35,9 @@ import rx.functions.Action0;
  * 
  * @param <SELF>
  */
-public class MeshDevServer<SELF extends MeshDevServer<SELF>> extends GenericContainer<SELF> {
+public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends GenericContainer<SELF> {
 
-	private static final Logger log = LoggerFactory.getLogger(MeshDevServer.class);
+	private static final Logger log = LoggerFactory.getLogger(MeshDockerServer.class);
 
 	private Slf4jLogConsumer logConsumer = new Slf4jLogConsumer(log);
 
@@ -64,11 +64,11 @@ public class MeshDevServer<SELF extends MeshDevServer<SELF>> extends GenericCont
 
 	private boolean waitForStartup;
 
-	public MeshDevServer(String prefix) {
+	public MeshDockerServer(String prefix) {
 		this(prefix, false, true);
 	}
 
-	public MeshDevServer(String nodeName, boolean initCluster, boolean waitForStartup) {
+	public MeshDockerServer(String nodeName, boolean initCluster, boolean waitForStartup) {
 		super(image);
 		this.initCluster = initCluster;
 		this.nodeName = nodeName;
@@ -89,6 +89,7 @@ public class MeshDevServer<SELF extends MeshDevServer<SELF>> extends GenericCont
 		if (initCluster) {
 			addEnv("MESHARGS", "-initCluster");
 		}
+		//setNetworkMode("host");
 		addEnv("NODENAME", nodeName);
 		setExposedPorts(Arrays.asList(8080));
 		setLogConsumers(Arrays.asList(logConsumer, startupConsumer));

@@ -17,14 +17,16 @@ import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
-import com.gentics.mesh.distributed.containers.MeshDevServer;
+import com.gentics.mesh.distributed.containers.MeshDockerServer;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 public class MeshDevServerTest {
 
-	public static MeshDevServer serverA = new MeshDevServer("nodeA", true, true);
+	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDevServer serverB = new MeshDevServer("nodeB", false, false);
+	public static MeshDockerServer serverA = new MeshDockerServer("nodeA", true, true);
+
+	public static MeshDockerServer serverB = new MeshDockerServer("nodeB", false, false);
 
 	public static MeshRestClient clientA;
 	public static MeshRestClient clientB;
@@ -128,8 +130,13 @@ public class MeshDevServerTest {
 		request.setSchemaRef("folder");
 		call(() -> clientA.createProject(request));
 
+		// Node A: List nodes of created project - We expect the REST route should work.
+		NodeListResponse response = call(() -> clientA.findNodes(newProjectName));
+		assertEquals(1, response.getData().size());
+
 		// Node B: List nodes of created project - We expect the REST route should work.
-		NodeListResponse response = call(() -> clientB.findNodes(newProjectName));
-		assertTrue(response.getData().isEmpty());
+		response = call(() -> clientB.findNodes(newProjectName));
+		assertEquals(1, response.getData().size());
+
 	}
 }

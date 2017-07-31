@@ -14,11 +14,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.syncleus.ferma.tx.Tx;
-import com.syncleus.ferma.tx.TxHandler;
-import com.syncleus.ferma.tx.TxHandler0;
-import com.syncleus.ferma.tx.TxHandler1;
-import com.syncleus.ferma.tx.TxHandler2;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
@@ -34,6 +29,10 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.tx.TxHandler;
+import com.syncleus.ferma.tx.TxHandler0;
+import com.syncleus.ferma.tx.TxHandler1;
+import com.syncleus.ferma.tx.TxHandler2;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;

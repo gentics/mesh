@@ -27,6 +27,7 @@ core/tmp
 orient-plugins
 mesh-searchindex
 mesh-graphdb
+orientdb-plugins
 keystore.jceks
 /bower_components/
 mesh.lock

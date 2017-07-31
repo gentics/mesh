@@ -8,6 +8,11 @@ public final class Events {
 	public static final String MESH_MIGRATION = "mesh.migration";
 
 	/**
+	 * Event which is send once the mesh instance is fully started and ready to accept requests.
+	 */
+	public static final String STARTUP_EVENT_ADDRESS = "mesh-startup-complete";
+
+	/**
 	 * Event which is send once a new node is joining the cluster.
 	 */
 	public static final String EVENT_CLUSTER_NODE_JOINING = "mesh.cluster.node.joining";

@@ -14,8 +14,6 @@ import io.vertx.core.Vertx;
  */
 public interface Mesh {
 
-	static String STARTUP_EVENT_ADDRESS = "mesh-startup-complete";
-
 	static MeshFactory factory = ServiceHelper.loadFactory(MeshFactory.class);
 
 	static AtomicReference<BuildInfo> buildInfo = new AtomicReference<BuildInfo>(null);
@@ -103,11 +101,21 @@ public interface Mesh {
 	MeshOptions getOptions();
 
 	/**
-	 * Start mesh. This will effectively block until {@link #shutdown()} is called from another thread.
+	 * Start mesh. This will effectively block until {@link #shutdown()} is called from another thread. This method will initialise the dagger context and
+	 * deploy mandatory verticles and extensions.
 	 * 
 	 * @throws Exception
 	 */
 	void run() throws Exception;
+
+	/**
+	 * Start mesh
+	 * 
+	 * @param block
+	 *            Whether or not to block the further execution. This is useful if you want to run mesh from a main method
+	 * @throws Exception
+	 */
+	void run(boolean block) throws Exception;
 
 	/**
 	 * Return the vertx instance for mesh.

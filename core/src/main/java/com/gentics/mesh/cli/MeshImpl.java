@@ -11,8 +11,6 @@ import java.text.SimpleDateFormat;
 import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
@@ -75,13 +73,13 @@ public class MeshImpl implements Mesh {
 		return vertx;
 	}
 
-	/**
-	 * Main entry point for mesh. This method will initialise the dagger context and deploy mandatory verticles and extensions.
-	 * 
-	 * @throws Exception
-	 */
 	@Override
 	public void run() throws Exception {
+		run(true);
+	}
+
+	@Override
+	public void run(boolean block) throws Exception {
 		checkSystemRequirements();
 
 		setupKeystore(options);
@@ -222,7 +220,7 @@ public class MeshImpl implements Mesh {
 			log.info("###############################################################");
 			log.info(infoLine("Booting Skynet Kernel " + Mesh.getBuildInfo()));
 			Thread.sleep(500);
-			log.info(infoLine("Skynet Node Id: " +  getOptions().getNodeName()));
+			log.info(infoLine("Skynet Node Id: " + getOptions().getNodeName()));
 			Thread.sleep(500);
 			log.info(infoLine("Skynet uses Vert.x Version: " + getVertxVersion()));
 			log.info("///");
