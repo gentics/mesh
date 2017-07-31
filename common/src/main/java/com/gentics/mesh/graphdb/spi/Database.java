@@ -12,10 +12,9 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.tx.Tx;
+import com.syncleus.ferma.tx.TxFactory;
 import com.syncleus.ferma.tx.TxHandler;
-import com.syncleus.ferma.tx.TxHandler0;
 import com.syncleus.ferma.tx.TxHandler1;
-import com.syncleus.ferma.tx.TxHandler2;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -29,7 +28,7 @@ import rx.Single;
 /**
  * Main description of a graph database.
  */
-public interface Database {
+public interface Database extends TxFactory {
 
 	static final Logger log = LoggerFactory.getLogger(Database.class);
 
@@ -56,50 +55,6 @@ public interface Database {
 	 * Remove all edges and all vertices from the graph.
 	 */
 	void clear();
-
-	/**
-	 * Return a new autocloseable transaction handler. This object should be used within a try-with-resource block.
-	 * 
-	 * <pre>
-	 * {
-	 * 	&#64;code
-	 * 	try(Tx tx = db.tx()) {
-	 * 	  // interact with graph db here
-	 *  }
-	 * }
-	 * </pre>
-	 * 
-	 * @return
-	 */
-	Tx tx();
-
-	/**
-	 * Execute the txHandler within the scope of the no transaction and call the result handler once the transaction handler code has finished.
-	 * 
-	 * @param txHandler
-	 *            Handler that will be executed within the scope of the transaction.
-	 * @return Object which was returned by the handler
-	 */
-	<T> T tx(TxHandler<T> txHandler);
-
-	default void tx(TxHandler0 txHandler) {
-		tx((tx) -> {
-			txHandler.handle();
-		});
-	}
-
-	default <T> T tx(TxHandler1<T> txHandler) {
-		return tx((tx) -> {
-			return txHandler.handle();
-		});
-	}
-
-	default void tx(TxHandler2 txHandler) {
-		tx((tx) -> {
-			txHandler.handle(tx);
-			return null;
-		});
-	}
 
 	default <T> Single<T> operateTx(TxHandler1<Single<T>> trxHandler) {
 		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors

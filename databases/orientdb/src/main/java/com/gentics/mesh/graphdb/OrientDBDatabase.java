@@ -213,7 +213,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} else {
 			factory = new OrientGraphFactory("plocal:" + new File(storageOptions.getDirectory(), DB_NAME).getAbsolutePath()).setupPool(5, 100);
 		}
-		configureGraphDB();
 	}
 
 	/**
@@ -390,21 +389,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		DB_STATUS status = server.getDistributedManager().getDatabaseStatus(getNodeName(), "storage");
 		// Pass it along to the topology event bridge
 		topologyEventBridge.onDatabaseChangeStatus(getNodeName(), "storage", status);
-	}
-
-	/**
-	 * Configures various global settings for the graph database.
-	 */
-	private void configureGraphDB() {
-		// log.info("Configuring orientdb...");
-		// OrientGraph tx = factory.getTx();
-		// try {
-		// TODO use ALTER DATABASE custom useLightweightEdges=true instead
-		// tx.setUseLightweightEdges(false);
-		// tx.setUseVertexFieldsForEdgeLabels(false);
-		// } finally {
-		// tx.shutdown();
-		// }
 	}
 
 	@Override
