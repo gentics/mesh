@@ -11,8 +11,10 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 
+import com.gentics.mesh.graphql.context.GraphQLContext;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
 
@@ -45,10 +47,12 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 		}));
 
 		schemaType.field(newPagingFieldWithFetcher("projects", "Projects that this schema is assigned to", (env) -> {
+			GraphQLContext gc = env.getContext();
 			SchemaContainer schema = env.getSource();
 			return schema.findReferencedReleases().keySet().stream()
 				.map(Release::getProject)
 				.distinct()
+				.filter(it -> gc.getUser().hasPermission(it, GraphPermission.READ_PERM))
 				.collect(Collectors.toList());
 		}, PROJECT_REFERENCE_PAGE_TYPE_NAME));
 
