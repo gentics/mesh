@@ -23,7 +23,6 @@ import io.vertx.core.logging.LoggerFactory;
 public final class MeshRestRequestUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(MeshRestRequestUtil.class);
-	public static final String BASEURI = "/api/v1";
 
 	/**
 	 * Prepare the request by adding the response handlers, auth info, payload etc.
@@ -38,7 +37,7 @@ public final class MeshRestRequestUtil {
 	 *            Body data to post
 	 * @param contentType
 	 *            Content type of the posted data
-	 * @param client
+	 * @param meshRestClient
 	 *            Client to use
 	 * @param authentication
 	 *            Authentication provider to use
@@ -48,11 +47,11 @@ public final class MeshRestRequestUtil {
 	 * @return
 	 */
 	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType,
-			HttpClient client, MeshRestClientAuthenticationProvider authentication, boolean disableAnonymousAccess, String accepts) {
-		String uri = BASEURI + path;
+			MeshRestClient meshRestClient, MeshRestClientAuthenticationProvider authentication, boolean disableAnonymousAccess, String accepts) {
+		String uri = meshRestClient.getBaseUri() + path;
 		ResponseHandler<T> handler = new ModelResponseHandler<T>(classOfT, method, uri);
 
-		HttpClientRequest request = client.request(method, uri, handler);
+		HttpClientRequest request = meshRestClient.getClient().request(method, uri, handler);
 
 		// Instruct the mesh auth handler to disable anonymous access handling even if it is enabled on the server
 		if (disableAnonymousAccess) {
@@ -80,22 +79,22 @@ public final class MeshRestRequestUtil {
 	 *            Expected response object class
 	 * @param restModel
 	 *            Model to be converted to JSON and send to the path
-	 * @param client
-	 *            Http client to be used
+	 * @param meshRestClient
+	 *            Http meshRestClient to be used
 	 * @param authentication
 	 *            Authentication provider to use
 	 * @param disableAnonymousAccess
 	 * @return
 	 */
 	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel,
-			HttpClient client, MeshRestClientAuthenticationProvider authentication, boolean disableAnonymousAccess) {
+			MeshRestClient meshRestClient, MeshRestClientAuthenticationProvider authentication, boolean disableAnonymousAccess) {
 		Buffer buffer = Buffer.buffer();
 		String json = JsonUtil.toJson(restModel);
 		if (log.isDebugEnabled()) {
 			log.debug(json);
 		}
 		buffer.appendString(json);
-		return prepareRequest(method, path, classOfT, buffer, "application/json", client, authentication, disableAnonymousAccess, "application/json");
+		return prepareRequest(method, path, classOfT, buffer, "application/json", meshRestClient, authentication, disableAnonymousAccess, "application/json");
 	}
 
 	/**
@@ -109,15 +108,15 @@ public final class MeshRestRequestUtil {
 	 *            Expected response object class
 	 * @param jsonBodyData
 	 *            JSON Data to post
-	 * @param client
-	 *            Http client to be used
+	 * @param meshRestClient
+	 *            Http meshRestClient to be used
 	 * @param authentication
 	 *            Authentication provider to use
 	 * @param disableAnonymousAccess
 	 * @return
 	 */
 	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData,
-			HttpClient client, MeshRestClientAuthenticationProvider authentication, boolean disableAnonymousAccess) {
+			MeshRestClient meshRestClient, MeshRestClientAuthenticationProvider authentication, boolean disableAnonymousAccess) {
 
 		if (log.isDebugEnabled()) {
 			log.debug("Posting json {" + jsonBodyData + "}");
@@ -127,7 +126,7 @@ public final class MeshRestRequestUtil {
 			buffer.appendString(jsonBodyData);
 		}
 
-		return prepareRequest(method, path, classOfT, buffer, "application/json", client, authentication, disableAnonymousAccess, "application/json");
+		return prepareRequest(method, path, classOfT, buffer, "application/json", meshRestClient, authentication, disableAnonymousAccess, "application/json");
 	}
 
 	/**
@@ -139,16 +138,16 @@ public final class MeshRestRequestUtil {
 	 *            Request path
 	 * @param classOfT
 	 *            Expected response object class
-	 * @param client
-	 *            Http client to be used
+	 * @param meshRestClient
+	 *            Http meshRestClient to be used
 	 * @param authentication
 	 *            Authentication provider to use
 	 * @param disableAnonymousAccess
 	 *            Flag which is used to disable the anonymous access handling
 	 * @return
 	 */
-	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, HttpClient client,
+	public static <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, MeshRestClient meshRestClient,
 			MeshRestClientAuthenticationProvider authentication, boolean disableAnonymousAccess) {
-		return prepareRequest(method, path, classOfT, Buffer.buffer(), null, client, authentication, disableAnonymousAccess, "application/json");
+		return prepareRequest(method, path, classOfT, Buffer.buffer(), null, meshRestClient, authentication, disableAnonymousAccess, "application/json");
 	}
 }

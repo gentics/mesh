@@ -1,1 +1,3 @@
 icon:plus[] GraphQL: It is now possible to get the reference of all projects from a schema.
+
+icon:plus[] Rest-Client: It is now possible to configure the base uri for the rest client.

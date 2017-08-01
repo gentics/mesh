@@ -2,6 +2,7 @@ package com.gentics.mesh.rest;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 
+import com.gentics.mesh.rest.client.MeshRestClient;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import rx.Completable;
@@ -27,11 +28,11 @@ public interface MeshRestClientAuthenticationProvider {
 	 * Logs the user in with the credentials that were set with {@link setLogin}
 	 * @return A future that completes when the login has completed.
 	 */
-	public Single<GenericMessageResponse> login(HttpClient client);
+	public Single<GenericMessageResponse> login(MeshRestClient client);
 
 	/**
 	 * Logs out the user.
 	 * @return A future that completes when the logout has completed.
 	 */
-	public Single<GenericMessageResponse> logout(HttpClient client);
+	public Single<GenericMessageResponse> logout(MeshRestClient client);
 }
