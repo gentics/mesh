@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_PAGE_TYPE_NAME;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -9,10 +10,15 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.NamedElement;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 
+import com.gentics.mesh.graphql.context.GraphQLContext;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
+
+import java.util.stream.Collectors;
 
 @Singleton
 public class SchemaTypeProvider extends AbstractTypeProvider {
@@ -40,6 +46,16 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 			return null;
 		}));
 
+		schemaType.field(newPagingFieldWithFetcher("projects", "Projects that this schema is assigned to", (env) -> {
+			GraphQLContext gc = env.getContext();
+			SchemaContainer schema = env.getSource();
+			return schema.findReferencedReleases().keySet().stream()
+				.map(Release::getProject)
+				.distinct()
+				.filter(it -> gc.getUser().hasPermission(it, GraphPermission.READ_PERM))
+				.collect(Collectors.toList());
+		}, PROJECT_REFERENCE_PAGE_TYPE_NAME));
+
 		schemaType.field(newFieldDefinition().name("isContainer").type(GraphQLBoolean));
 
 		schemaType.field(newFieldDefinition().name("displayField").type(GraphQLString));
@@ -50,5 +66,4 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 		return schemaType.build();
 	}
-
 }

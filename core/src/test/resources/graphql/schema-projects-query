@@ -1,0 +1,16 @@
+{
+	schema(name:"content") {
+		projects {
+		    # [$.data.schema.projects.elements.size()=1]
+		    elements {
+		        # [$.data.schema.projects.elements[0].name=dummy]
+                name
+                uuid
+                etag
+                created
+                edited
+            }
+		}
+	}
+}
+# [$.errors=<is-undefined>]

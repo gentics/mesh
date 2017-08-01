@@ -82,7 +82,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 
 	@Parameters(name = "query={0},version={2}")
 	public static Collection<Object[]> paramData() {
-		Collection<Object[]> testData = new Vector<Object[]>();
+		Collection<Object[]> testData = new Vector<>();
 		testData.add(new Object[] { "full-query", true, "draft" });
 		testData.add(new Object[] { "role-user-group-query", true, "draft" });
 		testData.add(new Object[] { "group-query", true, "draft" });
@@ -106,6 +106,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testData.add(new Object[] { "release-query", true, "draft" });
 		testData.add(new Object[] { "user-query", true, "draft" });
 		testData.add(new Object[] { "mesh-query", true, "draft" });
+		testData.add(new Object[] { "schema-projects-query", true, "draft" });
 		testData.add(new Object[] { "node-version-published-query", true, "published" });
 		return testData;
 	}
