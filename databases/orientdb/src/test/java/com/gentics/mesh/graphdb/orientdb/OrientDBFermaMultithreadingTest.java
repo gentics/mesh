@@ -9,14 +9,12 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.VertexFrame;
-
-import io.vertx.core.Vertx;
+import com.syncleus.ferma.tx.Tx;
 
 public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 
@@ -26,7 +24,7 @@ public class OrientDBFermaMultithreadingTest extends AbstractOrientDBTest {
 	public void setup() throws Exception {
 		MeshOptions options = new MeshOptions();
 		options.setNodeName("dummy");
-		db.init(options, Vertx.vertx(), null,"com.gentics.mesh.graphdb.orientdb.graph");
+		db.init(options, null,"com.gentics.mesh.graphdb.orientdb.graph");
 		db.setupConnectionPool();
 	}
 

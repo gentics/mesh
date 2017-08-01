@@ -1,5 +1,6 @@
 package com.gentics.mesh.event;
 
+import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -7,7 +8,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 
-import com.gentics.mesh.Events;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.RouterStorage;
 
@@ -33,7 +33,7 @@ public class MeshEventHandler {
 	}
 
 	private void addProjectHandlers() {
-		Mesh.vertx().eventBus().consumer(Events.EVENT_PROJECT_CREATED, (Message<JsonObject> rh) -> {
+		Mesh.vertx().eventBus().consumer(EVENT_PROJECT_CREATED, (Message<JsonObject> rh) -> {
 			JsonObject json = rh.body();
 			String name = json.getString("name");
 			try {

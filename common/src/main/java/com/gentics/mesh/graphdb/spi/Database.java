@@ -20,7 +20,6 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
@@ -145,15 +144,13 @@ public interface Database extends TxFactory {
 	 * 
 	 * @param options
 	 *            Mesh options
-	 * @param vertx
-	 *            Vert.x instance used to execute blocking code
 	 * @param meshVersion
 	 *            Version of mesh
 	 * @param basePaths
 	 *            Base paths which will be scanned for graph element classes
 	 * @throws Exception
 	 */
-	void init(MeshOptions options, Vertx vertx, String meshVersion, String... basePaths) throws Exception;
+	void init(MeshOptions options, String meshVersion, String... basePaths) throws Exception;
 
 	/**
 	 * Reload the given mesh element.
@@ -403,5 +400,7 @@ public interface Database extends TxFactory {
 	 * @throws Exception
 	 */
 	void startServer() throws Exception;
+
+	Object getHazelcast();
 
 }

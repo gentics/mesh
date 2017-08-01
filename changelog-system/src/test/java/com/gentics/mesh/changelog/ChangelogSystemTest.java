@@ -32,7 +32,6 @@ import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.Vertx;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
@@ -133,7 +132,7 @@ public class ChangelogSystemTest {
 			throw new RuntimeException(message);
 		}
 		try {
-			database.init(options, Vertx.vertx(), null);
+			database.init(options, null);
 			return database;
 		} catch (Exception e) {
 			throw new RuntimeException(e);

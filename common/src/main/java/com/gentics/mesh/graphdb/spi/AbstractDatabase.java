@@ -9,7 +9,6 @@ import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.syncleus.ferma.tx.Tx;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -22,7 +21,6 @@ public abstract class AbstractDatabase implements Database {
 
 	protected MeshOptions options;
 	protected String meshVersion;
-	protected Vertx vertx;
 	protected String[] basePaths;
 
 	@Override
@@ -41,9 +39,8 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public void init(MeshOptions options, Vertx vertx, String meshVersion, String... basePaths) throws Exception {
+	public void init(MeshOptions options, String meshVersion, String... basePaths) throws Exception {
 		this.options = options;
-		this.vertx = vertx;
 		this.meshVersion = meshVersion;
 		this.basePaths = basePaths;
 	}

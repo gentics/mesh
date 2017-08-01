@@ -12,7 +12,6 @@ import com.gentics.mesh.Mesh;
 import com.orientechnologies.orient.server.distributed.ODistributedLifecycleListener;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -24,15 +23,20 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 
 	private static final Logger log = LoggerFactory.getLogger(TopologyEventBridge.class);
 
-	private EventBus eb;
-
 	private OrientDBDatabase db;
 
 	private CountDownLatch nodeJoinLatch = new CountDownLatch(1);
 
-	public TopologyEventBridge(OrientDBDatabase db, Vertx vertx) {
-		this.eb = vertx.eventBus();
+	public TopologyEventBridge(OrientDBDatabase db) {
 		this.db = db;
+	}
+
+	EventBus getEventBus() {
+		return Mesh.vertx().eventBus();
+	}
+
+	boolean isVertxReady() {
+		return Mesh.vertx() != null;
 	}
 
 	@Override
@@ -40,7 +44,9 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		if (log.isDebugEnabled()) {
 			log.debug("Node {" + nodeName + "} is joining the cluster.");
 		}
-		eb.send(EVENT_CLUSTER_NODE_JOINING, nodeName);
+		if (isVertxReady()) {
+			getEventBus().send(EVENT_CLUSTER_NODE_JOINING, nodeName);
+		}
 		String currentVersion = Mesh.getPlainVersion();
 		if (!nodeName.contains("@")) {
 			log.error("Node with name {" + nodeName + "} does not contain version information in the name. Rejecting request to join for that node.");
@@ -58,7 +64,9 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		if (log.isDebugEnabled()) {
 			log.debug("Node {" + iNode + "} joined the cluster.");
 		}
-		eb.send(EVENT_CLUSTER_NODE_JOINED, iNode);
+		if (isVertxReady()) {
+			getEventBus().send(EVENT_CLUSTER_NODE_JOINED, iNode);
+		}
 	}
 
 	@Override
@@ -66,13 +74,17 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 		if (log.isDebugEnabled()) {
 			log.debug("Node {" + iNode + "} left the cluster");
 		}
-		eb.send(EVENT_CLUSTER_NODE_LEFT, iNode);
+		if (isVertxReady()) {
+			getEventBus().send(EVENT_CLUSTER_NODE_LEFT, iNode);
+		}
 	}
 
 	@Override
 	public void onDatabaseChangeStatus(String iNode, String iDatabaseName, DB_STATUS iNewStatus) {
 		log.info("Node {" + iNode + "} Database {" + iDatabaseName + "} changed status {" + iNewStatus.name() + "}");
-		eb.send(EVENT_CLUSTER_DATABASE_CHANGE_STATUS, iNode + "." + iDatabaseName + ":" + iNewStatus.name());
+		if (isVertxReady()) {
+			getEventBus().send(EVENT_CLUSTER_DATABASE_CHANGE_STATUS, iNode + "." + iDatabaseName + ":" + iNewStatus.name());
+		}
 		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && iNode.equals(db.getNodeName())) {
 			nodeJoinLatch.countDown();
 		}

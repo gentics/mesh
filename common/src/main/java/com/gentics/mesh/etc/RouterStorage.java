@@ -17,7 +17,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import dagger.Lazy;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
@@ -47,7 +46,6 @@ public class RouterStorage {
 
 	private static final Logger log = LoggerFactory.getLogger(RouterStorage.class);
 
-	private Vertx vertx;
 	private static final String ROOT_ROUTER_KEY = "ROOT_ROUTER";
 	private static final String API_ROUTER_KEY = "API_ROUTER";
 	private static final String CUSTOM_ROUTER_KEY = "CUSTOM_ROUTER";
@@ -62,17 +60,27 @@ public class RouterStorage {
 
 	private Lazy<Database> db;
 
+	private CorsHandler corsHandler;
+	private Handler<RoutingContext> bodyHandler;
+
 	@Inject
 	public RouterStorage(CorsHandler corsHandler, Handler<RoutingContext> bodyHandler, Lazy<BootstrapInitializer> boot, Lazy<Database> db) {
-		this.vertx = Mesh.vertx();
 		this.boot = boot;
 		this.db = db;
+		this.corsHandler = corsHandler;
+		this.bodyHandler = bodyHandler;
 		RouterStorage.instance = this;
-		initAPIRouter(corsHandler, bodyHandler);
 	}
 
 	public static RouterStorage getIntance() {
 		return instance;
+	}
+
+	/**
+	 * Initialize the router storage. This will setup the basic route handlers for /api/v1 and cookie/cors handling.
+	 */
+	public void init() {
+		initAPIRouter(corsHandler, bodyHandler);
 	}
 
 	/**
@@ -103,7 +111,7 @@ public class RouterStorage {
 	public Router getRootRouter() {
 		Router rootRouter = coreRouters.get(ROOT_ROUTER_KEY);
 		if (rootRouter == null) {
-			rootRouter = Router.router(vertx);
+			rootRouter = Router.router(Mesh.vertx());
 
 			// Root handlers
 			rootRouter.route().handler(LoggerHandler.create());
@@ -137,7 +145,7 @@ public class RouterStorage {
 	public Router getCustomRouter() {
 		Router customRouter = coreRouters.get(CUSTOM_ROUTER_KEY);
 		if (customRouter == null) {
-			customRouter = Router.router(vertx);
+			customRouter = Router.router(Mesh.vertx());
 
 			coreRouters.put(CUSTOM_ROUTER_KEY, customRouter);
 			getRootRouter().mountSubRouter(DEFAULT_CUSTOM_MOUNTPOINT, customRouter);
@@ -154,7 +162,7 @@ public class RouterStorage {
 	public Router getAPIRouter() {
 		Router apiRouter = coreRouters.get(API_ROUTER_KEY);
 		if (apiRouter == null) {
-			apiRouter = Router.router(vertx);
+			apiRouter = Router.router(Mesh.vertx());
 			coreRouters.put(API_ROUTER_KEY, apiRouter);
 			getRootRouter().mountSubRouter(DEFAULT_API_MOUNTPOINT, apiRouter);
 		}
@@ -182,7 +190,7 @@ public class RouterStorage {
 		// TODO check for conflicting project routers
 		Router apiSubRouter = coreRouters.get(mountPoint);
 		if (apiSubRouter == null) {
-			apiSubRouter = Router.router(vertx);
+			apiSubRouter = Router.router(Mesh.vertx());
 			if (log.isDebugEnabled()) {
 				log.debug("Creating subrouter for {" + mountPoint + "}");
 			}
@@ -230,12 +238,17 @@ public class RouterStorage {
 		Router projectRouter = projectRouters.get(encodedName);
 		// TODO synchronise access to projectRouters
 		if (projectRouter == null) {
-			projectRouter = Router.router(vertx);
+			projectRouter = Router.router(Mesh.vertx());
 			projectRouters.put(name, projectRouter);
 			log.info("Added project router {" + name + "}");
 
 			projectRouter.route().handler(ctx -> {
 				Project project = db.get().tx(() -> boot.get().projectRoot().findByName(name));
+				if (log.isDebugEnabled()) {
+					if (project == null) {
+						log.debug("Project for name {" + name + "} could not be found.");
+					}
+				}
 				ctx.data().put(PROJECT_CONTEXT_KEY, project);
 				ctx.next();
 			});
@@ -291,7 +304,7 @@ public class RouterStorage {
 	public Router getProjectSubRouter(String name) {
 		Router router = projectSubRouters.get(name);
 		if (router == null) {
-			router = Router.router(vertx);
+			router = Router.router(Mesh.vertx());
 			log.info("Added project subrouter {" + name + "}");
 			projectSubRouters.put(name, router);
 		}
@@ -309,7 +322,7 @@ public class RouterStorage {
 	public Router getCustomSubRouter(String name) {
 		Router router = customRouters.get(name);
 		if (router == null) {
-			router = Router.router(vertx);
+			router = Router.router(Mesh.vertx());
 			log.info("Added custom subrouter {" + name + "}");
 			customRouters.put(name, router);
 		}

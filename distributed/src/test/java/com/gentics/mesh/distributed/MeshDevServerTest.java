@@ -4,7 +4,6 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -20,13 +19,16 @@ import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.distributed.containers.MeshDockerServer;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
+import io.vertx.core.Vertx;
+
 public class MeshDevServerTest {
 
+	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer("nodeA", true, true);
+	public static MeshDockerServer serverA = new MeshDockerServer("nodeA", true, true, vertx);
 
-	public static MeshDockerServer serverB = new MeshDockerServer("nodeB", false, false);
+	public static MeshDockerServer serverB = new MeshDockerServer("nodeB", false, false, vertx);
 
 	public static MeshRestClient clientA;
 	public static MeshRestClient clientB;
@@ -122,7 +124,7 @@ public class MeshDevServerTest {
 	}
 
 	@Test
-	public void testCreateProject() {
+	public void testCreateProject() throws InterruptedException {
 		String newProjectName = "clusteredProject";
 		// Node A: Create Project
 		ProjectCreateRequest request = new ProjectCreateRequest();
@@ -130,10 +132,13 @@ public class MeshDevServerTest {
 		request.setSchemaRef("folder");
 		call(() -> clientA.createProject(request));
 
+		Thread.sleep(5000);
+		
 		// Node A: List nodes of created project - We expect the REST route should work.
 		NodeListResponse response = call(() -> clientA.findNodes(newProjectName));
 		assertEquals(1, response.getData().size());
 
+		Thread.sleep(5000);
 		// Node B: List nodes of created project - We expect the REST route should work.
 		response = call(() -> clientB.findNodes(newProjectName));
 		assertEquals(1, response.getData().size());

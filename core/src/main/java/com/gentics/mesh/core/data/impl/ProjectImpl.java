@@ -381,9 +381,23 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 	@Override
 	public void onCreated() {
+		String name = getName();
+//		try {
+//			RouterStorage.getIntance().addProjectRouter(name);
+//			if (log.isInfoEnabled()) {
+//				log.info("Registered project {" + name + "}");
+//			}
+//		} catch (InvalidNameException e) {
+//			// TODO should we really fail here?
+//			throw error(BAD_REQUEST, "Error while adding project to router storage", e);
+//		}
+
 		JsonObject json = new JsonObject();
-		json.put("name", getName());
+		json.put("name", name);
 		json.put("uuid", getUuid());
 		Mesh.vertx().eventBus().publish(EVENT_PROJECT_CREATED, json);
+		if (log.isDebugEnabled()) {
+			log.debug("");
+		}
 	}
 }

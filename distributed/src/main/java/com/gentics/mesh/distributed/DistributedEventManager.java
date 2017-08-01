@@ -52,15 +52,15 @@ public class DistributedEventManager {
 			handleClusterTopologyUpdate(handler);
 		});
 
-		// Register for events which are send whenever a project is created or deleted somewhere in the cluster.
-		eb.consumer(EVENT_CLUSTER_UPDATE_PROJECTS, handler -> {
-			try {
-				synchronizeProjectRoutes();
-			} catch (Exception e) {
-				log.error("Error while handling event {" + EVENT_CLUSTER_UPDATE_PROJECTS + "}");
-				handler.fail(400, "Could not initialize prjects.");
-			}
-		});
+//		// Register for events which are send whenever a project is created or deleted somewhere in the cluster.
+//		eb.consumer(EVENT_CLUSTER_UPDATE_PROJECTS, handler -> {
+//			try {
+//				synchronizeProjectRoutes();
+//			} catch (Exception e) {
+//				log.error("Error while handling event {" + EVENT_CLUSTER_UPDATE_PROJECTS + "}");
+//				handler.fail(400, "Could not initialize prjects.");
+//			}
+//		});
 
 		// Register for events which are send whenever the permission store must be invalidated.
 		eb.consumer(EVENT_CLUSTER_CLEAR_PERMISSIONS, handler -> {

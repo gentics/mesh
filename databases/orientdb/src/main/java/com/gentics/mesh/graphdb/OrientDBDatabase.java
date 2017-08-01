@@ -41,6 +41,7 @@ import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
+import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
@@ -61,7 +62,9 @@ import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
+import com.orientechnologies.orient.server.distributed.ODistributedServerManager;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
+import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
 import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
@@ -81,7 +84,6 @@ import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -103,6 +105,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private TopologyEventBridge topologyEventBridge;
 
 	private OrientGraphFactory factory;
+
+	private HazelcastInstance hazelcast;
 
 	private TypeResolver resolver;
 
@@ -145,9 +149,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void init(MeshOptions options, Vertx vertx, String meshVersion, String... basePaths) throws Exception {
-		super.init(options, vertx, meshVersion);
-		topologyEventBridge = new TopologyEventBridge(this, vertx);
+	public void init(MeshOptions options, String meshVersion, String... basePaths) throws Exception {
+		super.init(options, meshVersion);
 
 		GraphStorageOptions storageOptions = options.getStorageOptions();
 		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
@@ -377,7 +380,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 		manager.config(server);
 		server.activate();
 		if (options.isClusterMode()) {
-			server.getDistributedManager().registerLifecycleListener(topologyEventBridge);
+			ODistributedServerManager distributedManager = server.getDistributedManager();
+			topologyEventBridge = new TopologyEventBridge(this);
+			distributedManager.registerLifecycleListener(topologyEventBridge);
+			if (server.getDistributedManager() instanceof OHazelcastPlugin) {
+				OHazelcastPlugin plugin = (OHazelcastPlugin) distributedManager;
+				hazelcast = plugin.getHazelcastInstance();
+			}
 		}
 		manager.startup();
 		// The registerLifecycleListener may not have been invoked. We need to redirect the online event manually.
@@ -836,5 +845,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public String getVersion() {
 		return OConstants.getVersion();
+	}
+
+	@Override
+	public HazelcastInstance getHazelcast() {
+		return hazelcast;
 	}
 }

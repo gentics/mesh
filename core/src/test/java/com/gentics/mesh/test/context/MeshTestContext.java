@@ -69,8 +69,8 @@ public class MeshTestContext extends TestWatcher {
 			// Setup the dagger context and orientdb,es once
 			if (description.isSuite()) {
 				removeDataDirectory();
-				init(settings);
-				initDagger(settings.testSize());
+				MeshOptions options = init(settings);
+				initDagger(options, settings.testSize());
 				meshDagger.boot().registerEventHandlers();
 			} else {
 				if (!settings.inMemoryDB()) {
@@ -264,7 +264,7 @@ public class MeshTestContext extends TestWatcher {
 	 * @param settings
 	 * @throws Exception
 	 */
-	public void init(MeshTestSetting settings) throws Exception {
+	public MeshOptions init(MeshTestSetting settings) throws Exception {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 
@@ -314,6 +314,7 @@ public class MeshTestContext extends TestWatcher {
 		searchOptions.setHttpEnabled(settings.startESServer());
 		options.setSearchOptions(searchOptions);
 		Mesh.mesh(options);
+		return options;
 	}
 
 	/**
@@ -335,10 +336,11 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Initialise the mesh dagger context and inject the dependencies within the test.
+	 * @param options 
 	 * 
 	 * @throws Exception
 	 */
-	public void initDagger(TestSize size) throws Exception {
+	public void initDagger(MeshOptions options, TestSize size) throws Exception {
 		log.info("Initializing dagger context");
 		meshDagger = DaggerTestMeshComponent.create();
 		MeshInternal.set(meshDagger);
@@ -347,12 +349,7 @@ public class MeshTestContext extends TestWatcher {
 		if (meshDagger.searchProvider() instanceof DummySearchProvider) {
 			dummySearchProvider = meshDagger.dummySearchProvider();
 		}
-		// searchProvider = meshDagger.searchProvider();
-		// schemaStorage = meshDagger.serverSchemaStorage();
-		// boot = meshDagger.boot();
-		Database db = meshDagger.database();
-		db.setupConnectionPool();
-		DatabaseHelper.init(db);
+		meshDagger.boot().init(Mesh.mesh(), false, options, null);
 	}
 
 	public MeshRestClient getClient() {

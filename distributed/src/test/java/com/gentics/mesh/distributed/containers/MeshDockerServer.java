@@ -22,12 +22,12 @@ import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.core.Vertx;
 import rx.functions.Action0;
 
 /**
@@ -43,13 +43,15 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 	private MeshRestClient client;
 
+	private Vertx vertx;
+
 	private static ImageFromDockerfile image = prepareDockerImage(true);
 
 	/**
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
 	private Action0 startupAction = () -> {
-		client = MeshRestClient.create("localhost", getMappedPort(8080), Mesh.vertx());
+		client = MeshRestClient.create("localhost", getMappedPort(8080), vertx);
 		client.setLogin("admin", "admin");
 		client.login().toBlocking().value();
 	};
@@ -65,11 +67,21 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	private boolean waitForStartup;
 
 	public MeshDockerServer(String prefix) {
-		this(prefix, false, true);
+		this(prefix, false, true, Vertx.vertx());
 	}
 
-	public MeshDockerServer(String nodeName, boolean initCluster, boolean waitForStartup) {
+	/**
+	 * Create a new docker server
+	 * 
+	 * @param nodeName
+	 * @param initCluster
+	 * @param waitForStartup
+	 * @param vertx
+	 *            Vertx instances used to create the rest client
+	 */
+	public MeshDockerServer(String nodeName, boolean initCluster, boolean waitForStartup, Vertx vertx) {
 		super(image);
+		this.vertx = vertx;
 		this.initCluster = initCluster;
 		this.nodeName = nodeName;
 		this.waitForStartup = waitForStartup;
@@ -89,7 +101,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		if (initCluster) {
 			addEnv("MESHARGS", "-initCluster");
 		}
-		//setNetworkMode("host");
+		// setNetworkMode("host");
 		addEnv("NODENAME", nodeName);
 		setExposedPorts(Arrays.asList(8080));
 		setLogConsumers(Arrays.asList(logConsumer, startupConsumer));

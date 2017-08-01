@@ -1,6 +1,7 @@
 package com.gentics.mesh.cli;
 
 import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
@@ -21,6 +22,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
+import com.hazelcast.core.HazelcastInstance;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
@@ -30,6 +32,8 @@ import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
+import io.vertx.core.spi.cluster.ClusterManager;
+import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
  * @see Mesh
@@ -62,15 +66,12 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public Vertx getVertx() {
-		if (vertx == null) {
-			VertxOptions options = new VertxOptions();
-			// options.setClustered(true);
-			options.setBlockedThreadCheckInterval(1000 * 60 * 60);
-			// TODO configure worker pool size
-			options.setWorkerPoolSize(12);
-			vertx = Vertx.vertx(options);
-		}
+		//Objects.requireNonNull(vertx, "Vert.x has not yet been initalized");
 		return vertx;
+	}
+
+	public void setVertx(Vertx vertx) {
+		this.vertx = vertx;
 	}
 
 	@Override
@@ -96,11 +97,12 @@ public class MeshImpl implements Mesh {
 		} else {
 			printProductInformation();
 		}
+		// Create dagger context and invoke bootstrap init in order to startup mesh
+		MeshInternal.create().boot().init(this, hasOldLock, options, verticleLoader);
+
 		if (options.isUpdateCheckEnabled()) {
 			invokeUpdateCheck();
 		}
-		// Create dagger context and invoke bootstrap init in order to startup mesh
-		MeshInternal.create().boot().init(hasOldLock, options, verticleLoader);
 		dontExit();
 	}
 

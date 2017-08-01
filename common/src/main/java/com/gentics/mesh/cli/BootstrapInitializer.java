@@ -5,6 +5,7 @@ import java.util.Collection;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -148,12 +149,13 @@ public interface BootstrapInitializer {
 	 * <li>Load verticles and setup routes / endpoints
 	 * </ul>
 	 * 
+	 * @param mesh
 	 * @param hasOldLock
 	 * @param configuration
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-	void init(boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception;
+	void init(Mesh mesh, boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception;
 
 	/**
 	 * Initialize the languages by loading the JSON file and creating the language graph elements.

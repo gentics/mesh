@@ -6,12 +6,10 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
-
-import io.vertx.core.Vertx;
+import com.syncleus.ferma.tx.Tx;
 
 public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest {
 
@@ -21,7 +19,7 @@ public class OrientDBFermaMultithreadingReducedTest extends AbstractOrientDBTest
 	@Before
 	public void setup() throws Exception {
 		db = new OrientDBDatabase();
-		db.init(null, Vertx.vertx(), "com.gentics.mesh.graphdb.orientdb.graph");
+		db.init(null, "com.gentics.mesh.graphdb.orientdb.graph");
 		db.setupConnectionPool();
 		setupData();
 	}

@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PE
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +16,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -72,12 +76,14 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.MavenVersionNumber;
+import com.hazelcast.core.HazelcastInstance;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
@@ -118,6 +124,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public MeshEventHandler eventHandler;
 
 	private static MeshRoot meshRoot;
+
+	private MeshImpl mesh;
+
+	private HazelcastClusterManager manager;
 
 	public static boolean isInitialSetup = true;
 
@@ -167,13 +177,21 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 */
 	private void joinCluster() {
 		log.info("Joining cluster...");
-		HazelcastClusterManager manager = new HazelcastClusterManager();
-		manager.setVertx(Mesh.vertx());
+		CountDownLatch latch = new CountDownLatch(1);
 		manager.join(rh -> {
 			if (!rh.succeeded()) {
 				log.error("Error while joining mesh cluster.", rh.cause());
+			} else {
+				log.info("Joined the hazelcast vert.x cluster");
 			}
+			latch.countDown();
 		});
+		try {
+			latch.await(60, SECONDS);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -205,12 +223,18 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
-	public void init(boolean hasOldLock, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
-
+	public void init(Mesh mesh, boolean hasOldLock, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+		this.mesh = (MeshImpl) mesh;
 		GraphStorageOptions storageOptions = options.getStorageOptions();
 		boolean isClustered = options.isClusterMode();
 		boolean isInitMode = options.isInitClusterMode();
 		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
+
+		try {
+			db.init(Mesh.mesh().getOptions(), Mesh.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 
 		if (isClustered) {
 			if (isInitMode) {
@@ -220,16 +244,18 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.setupConnectionPool();
 				initLocalData();
 				db.startServer();
+				initVertx(options, isClustered);
 			} else {
 				// We need to wait for other nodes and receive the graphdb
 				db.startServer();
+				initVertx(options, isClustered);
 				db.joinCluster();
 				isInitialSetup = false;
 				db.setupConnectionPool();
 				initLocalData();
 			}
-			joinCluster();
 		} else {
+			initVertx(options, isClustered);
 			// No cluster mode - Just setup the connection pool and load or setup the local data
 			db.setupConnectionPool();
 			initLocalData();
@@ -237,12 +263,62 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.startServer();
 			}
 		}
+		joinCluster();
 
+		routerStorage.init();
 		handleLocalData(hasOldLock, options, verticleLoader);
 	}
 
+	public void initVertx(MeshOptions options, boolean isClustered) {
+		VertxOptions vertxOptions = new VertxOptions();
+		vertxOptions.setClustered(options.isClusterMode());
+		// options.setClustered(true);
+		vertxOptions.setBlockedThreadCheckInterval(1000 * 60 * 60);
+		// TODO configure worker pool size
+		vertxOptions.setWorkerPoolSize(12);
+		if (vertxOptions.isClustered()) {
+			log.info("Creating clustered vertx instance");
+			mesh.setVertx(createClusteredVertx(vertxOptions, (HazelcastInstance) db.getHazelcast()));
+		} else {
+			log.info("Creating non-clustered vertx instance");
+			mesh.setVertx(Vertx.vertx(vertxOptions));
+		}
+	}
+
 	/**
-	 * Handle local data and prepare mesh API
+	 * Create a clustered vert.x instance and block until the instance has been created.
+	 * 
+	 * @param vertxOptions
+	 * @param hazelcast
+	 */
+	private Vertx createClusteredVertx(VertxOptions vertxOptions, HazelcastInstance hazelcast) {
+		Objects.requireNonNull(hazelcast, "The hazelcast instance was not yet initialized.");
+		manager = new HazelcastClusterManager(hazelcast);
+		VertxOptions options = new VertxOptions();
+		options.setClusterManager(manager);
+		CompletableFuture<Vertx> fut = new CompletableFuture<>();
+		Vertx.clusteredVertx(vertxOptions, rh -> {
+			log.info("Created clustered vert.x instance");
+			if (rh.failed()) {
+				Throwable cause = rh.cause();
+				log.error("Failed to create clustered vert.x instance", cause);
+				throw new RuntimeException("Error while creating clusterd vert.x instance", cause);
+			}
+			Vertx vertx = rh.result();
+			manager.setVertx(vertx);
+			fut.complete(vertx);
+		});
+		try {
+			Vertx vertx = fut.get(100, SECONDS);
+			return vertx;
+		} catch (Exception e) {
+			throw new RuntimeException("Error while creating clusterd vert.x instance");
+		}
+
+	}
+
+	/**
+	 * Handle local data and prepare mesh API.
 	 * 
 	 * @param hasOldLock
 	 * @param configuration
@@ -268,12 +344,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		try (Tx tx = db.tx()) {
 			initProjects();
 		}
+		registerEventHandlers();
 
 		// Finally fire the startup event and log that bootstrap has completed
 		log.info("Sending startup completed event to {" + STARTUP_EVENT_ADDRESS + "}");
 		Mesh.vertx().eventBus().publish(STARTUP_EVENT_ADDRESS, true);
-
-		registerEventHandlers();
 
 	}
 

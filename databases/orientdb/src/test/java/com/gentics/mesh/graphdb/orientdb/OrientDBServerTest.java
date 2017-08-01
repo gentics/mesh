@@ -9,13 +9,11 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
-
-import io.vertx.core.Vertx;
+import com.syncleus.ferma.tx.Tx;
 
 @Ignore
 public class OrientDBServerTest {
@@ -40,7 +38,7 @@ public class OrientDBServerTest {
 		MeshOptions options = new MeshOptions();
 		options.getStorageOptions().setDirectory(dbDirectory.getAbsolutePath());
 		options.getStorageOptions().setStartServer(true);
-		db.init(options, Vertx.vertx(), null);
+		db.init(options, null);
 		db.setupConnectionPool();
 
 		for (int i = 0; i < 100; i++) {
