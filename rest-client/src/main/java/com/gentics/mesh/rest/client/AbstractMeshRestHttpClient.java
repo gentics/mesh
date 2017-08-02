@@ -27,7 +27,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	protected boolean disableAnonymousAccess = false;
 
-	private String baseUri;
+	private String baseUri = DEFAULT_BASEURI;
 
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
@@ -180,9 +180,6 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	@Override
 	public String getBaseUri() {
-		if (baseUri == null) {
-			return DEFAULT_BASEURI;
-		}
 		return baseUri;
 	}
 
