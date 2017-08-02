@@ -26,7 +26,7 @@ You need to have at least JRE 8 of Java installed. See the [Getting Started page
 You can either download the all-in-one jar or fire-up one of the Docker images.
 
 * [Download from getmesh.io](http://getmesh.io/Download)
-* [Docker Hub](https://hub.docker.com/r/gentics/mesh-demo/)
+* [Docker Hub](https://hub.docker.com/r/gentics/mesh/)
 * [Maven](https://maven.gentics.com/maven2/com/gentics/mesh)
 
 ### [Changelog](http://getmesh.io/docs/beta/changelog.html)
