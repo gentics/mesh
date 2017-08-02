@@ -145,10 +145,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	public Map<Release, SCV> findReferencedReleases() {
 		Map<Release, SCV> references = new HashMap<>();
 		for (SCV version : findAll()) {
-			Release release = version.getRelease();
-			if (release != null) {
-				references.put(release, version);
-			}
+			version.getReleases().forEach(release -> references.put(release, version));
 		}
 		return references;
 	}

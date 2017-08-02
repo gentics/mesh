@@ -10,6 +10,8 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 
+import java.util.List;
+
 /**
  * A {@link GraphFieldSchemaContainerVersion} stores the versioned data for a {@link GraphFieldSchemaContainer} element.
  * 
@@ -152,11 +154,11 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	void setSchemaContainer(SC container);
 
 	/**
-	 * Get the release to which the container was assigned.
+	 * Get the releases to which the container was assigned.
 	 * 
-	 * @return Found release or null of this version was not assigned to any release
+	 * @return Found releases of this version
 	 */
-	Release getRelease();
+	List<? extends Release> getReleases();
 
 	/**
 	 * Load the stored schema JSON data.
