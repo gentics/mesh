@@ -89,7 +89,6 @@ public class ProjectSchemaEndpoint extends AbstractProjectEndpoint {
 		endpoint.description(
 				"Assign the schema to the project. This will automatically assign the latest schema version to all releases of the project.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
 		endpoint.exampleResponse(OK, schemaExamples.getSchemaResponse(), "Assigned schema.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
