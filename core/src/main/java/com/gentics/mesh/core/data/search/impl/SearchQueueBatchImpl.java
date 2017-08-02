@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -23,6 +24,7 @@ import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.DropIndexEntry;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -38,6 +40,7 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
+import rx.Observable;
 
 /**
  * @see SearchQueueBatch
@@ -211,9 +214,27 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 		return Completable.defer(() -> {
 			// Process the batch
 			Completable obs = Completable.complete();
-			List<Completable> entryList = getEntries().stream().map(entry -> entry.process()).collect(Collectors.toList());
-			if (!entryList.isEmpty()) {
-				obs = Completable.concat(entryList);
+			List<? extends SearchQueueEntry> nonStoreEntries = getEntries().stream().filter(i -> i.getElementAction() != STORE_ACTION)
+					.collect(Collectors.toList());
+
+			List<? extends SearchQueueEntry> storeEntries = getEntries().stream().filter(i -> i.getElementAction() == STORE_ACTION)
+					.collect(Collectors.toList());
+
+			if (!nonStoreEntries.isEmpty()) {
+				obs = Completable.concat(nonStoreEntries.stream().map(entry -> entry.process()).collect(Collectors.toList()));
+			}
+			AtomicLong counter = new AtomicLong();
+			if (!storeEntries.isEmpty()) {
+				List<Completable> entryList = storeEntries.stream().map(entry -> entry.process()).collect(Collectors.toList());
+				// Handle all entries sequentially since some entries create entries and those need to be executed first
+				int batchSize = 8;
+				long totalBatchCount = entryList.size() / batchSize;
+				Observable<Completable> obs2 = Observable.from(entryList);
+				Observable<List<Completable>> buffers = obs2.buffer(batchSize);
+				// First ensure that the non-store events are processed before handling the store batches
+				obs = obs.andThen(Completable.concat(buffers.map(i -> Completable.merge(i).doOnCompleted(() -> {
+					log.info("Search queue entry batch completed {" + counter.incrementAndGet() + "/" + totalBatchCount + "}");
+				}))));
 			}
 
 			return obs.doOnCompleted(() -> {
