@@ -1,1 +1,0 @@
-icon:plus[] GraphQL: It is now possible to get the reference of all projects from a schema.

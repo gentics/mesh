@@ -4,7 +4,7 @@
 
 == REST API
 
-The link:raml[Gentics Mesh REST API] provides end points enabling you to invoke CRUD operations on just ANY Gentics Mesh element. 
+The link:raml[Gentics Mesh REST API] provides endpoints enabling you to invoke CRUD operations on just ANY Gentics Mesh element. 
 There are many things you can do with the REST API. To name a few:
 
 * Obviously you can create, update & fetch multilingual content items as well as tag them.
@@ -160,7 +160,7 @@ In basic authentication, when a client requests a URL that requires authenticati
 authorization: Basic {base64_encode(username:password)}
 ----
 
-In Gentics Mesh, a user can be authenticated by invoking a regular ```GET``` request to the ```/api/v1/auth/login``` end point including a basic authentication HTTP header.
+In Gentics Mesh, a user can be authenticated by invoking a regular ```GET``` request to the ```/api/v1/auth/login``` endpoint including a basic authentication HTTP header.
 
 Example:
 
@@ -179,7 +179,7 @@ The response will be a valid JWT as well as set a cookie with the token.
 ----
 
 ==== POST JSON Data
-Alternatively, the user can ```POST``` his or her credentials to the ```/api/v1/auth/login``` end point in order to retrieve a token.
+Alternatively, the user can ```POST``` his or her credentials to the ```/api/v1/auth/login``` endpoint in order to retrieve a token.
 The JSON object must contain the following fields:
 
 * ```username```: The username of the user
@@ -272,7 +272,7 @@ Gentics Mesh first and foremost keeps your content safe - all data including med
 That is why Gentics Mesh instances ship with an included ```anonymous``` user/role/group set. 
 If no authentication details are provided Gentics Mesh will automatically try to authenticate with the user ```anonymous```.
 
-TIP: Try our Gentics Mesh demo instance without authenticating yourself: ```http://getmesh.io/api/v1/auth/me```. This link:raml/#auth[API end point] shows the currently authenticated user - which is ```anonymous```.
+TIP: Try our Gentics Mesh demo instance without authenticating yourself: ```http://getmesh.io/api/v1/auth/me```. This link:raml/#auth[API endpoint] shows the currently authenticated user - which is ```anonymous```.
 
 You can assign ```readPublished``` permissions to the ```anonymous``` role for all elements you want to be publicly available.
 
