@@ -1,0 +1,1 @@
+icon:plus[] Rest-Client: It is now possible to configure the base uri for the rest client.

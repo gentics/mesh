@@ -33,6 +33,11 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 		EventbusClientMethods, ReleaseClientMethods, ApiInfoClientMethods, GraphQLClientMethods {
 
 	/**
+	 * The default base URI path to the Mesh-API.
+	 */
+	String DEFAULT_BASEURI = "/api/v1";
+
+	/**
 	 * Create a new mesh rest client.
 	 * 
 	 * @param host
@@ -111,4 +116,12 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 */
 	MeshRestClient setAuthenticationProvider(JWTAuthentication authentication);
 
+
+	/**
+	 * Get the base URI path to the Mesh-API.
+	 * If the base URI is not set, the DEFAULT_BASE_URI is returned.
+	 *
+	 * @return the base URI
+	 */
+	String getBaseUri();
 }
