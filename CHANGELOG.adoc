@@ -2,6 +2,20 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.23 (02.08.2017)
+
+icon:plus[] Rest-Client: It is now possible to configure the base uri for the rest client.
+
+icon:plus[] GraphQL: It is now possible to get the reference of all projects from schemas and microschemas.
+
+icon:check[] UI: Date fields now work with ISO 8601 strings rather than unix timestamps.
+
+icon:check[] UI: Fix bugs with lists of microschemas. (SUP-4712)
+
+icon:check[] UI: Fix mouse clicks not working in lists in FF and (partially) in IE/Edge. (SUP-4717)
+
+icon:check[] Core: The reindex performance has been increased and additional log output will be provided during operations actions.
+
 == 0.9.22 (28.07.2017)
 
 icon:plus[] REST API: It is now possible to create nodes, users, groups, roles, releases and projects using a provided uuid.

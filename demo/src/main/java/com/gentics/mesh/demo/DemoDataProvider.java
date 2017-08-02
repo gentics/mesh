@@ -74,6 +74,8 @@ public class DemoDataProvider {
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
+	private static final String ANONYMOUS_UUID = "5fb9654c0b734e87b9654c0b736e8701";
+
 	private Database db;
 
 	private MeshLocalClientImpl client;
@@ -121,7 +123,7 @@ public class DemoDataProvider {
 		addWebclientPermissions();
 		addAnonymousPermissions();
 
-		// Update the uuids and index all contents. 
+		// Update the uuids and index all contents.
 		updateUuids();
 		invokeFullIndex();
 		log.info("Demo data setup completed");
@@ -313,6 +315,9 @@ public class DemoDataProvider {
 		MeshResponse<UserListResponse> usersFuture = client.findUsers().invoke();
 		latchFor(usersFuture);
 		for (UserResponse user : usersFuture.result().getData()) {
+			if (user.getUsername().equals("anonymous")) {
+				uuidMapping.put(user.getUuid(), ANONYMOUS_UUID);
+			}
 			users.put(user.getUsername(), user);
 		}
 

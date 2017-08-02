@@ -136,8 +136,8 @@ public class SchemaContainerVersionImpl
 	}
 
 	@Override
-	public Release getRelease() {
-		return in(HAS_SCHEMA_VERSION).nextOrDefaultExplicit(ReleaseImpl.class, null);
+	public List<? extends Release> getReleases() {
+		return in(HAS_SCHEMA_VERSION).toListExplicit(ReleaseImpl.class);
 	}
 
 	@Override

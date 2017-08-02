@@ -1268,4 +1268,8 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		return this;
 	}
 
+	@Override
+	public String getBaseUri() {
+		return DEFAULT_BASEURI;
+	}
 }

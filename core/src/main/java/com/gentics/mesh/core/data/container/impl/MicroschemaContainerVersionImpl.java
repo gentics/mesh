@@ -132,8 +132,8 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Release getRelease() {
-		return in(HAS_MICROSCHEMA_VERSION).nextOrDefaultExplicit(ReleaseImpl.class, null);
+	public List<? extends Release> getReleases() {
+		return in(HAS_MICROSCHEMA_VERSION).toListExplicit(ReleaseImpl.class);
 	}
 
 	@Override

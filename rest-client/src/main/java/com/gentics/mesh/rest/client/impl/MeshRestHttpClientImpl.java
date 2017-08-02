@@ -112,6 +112,16 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		setAuthenticationProvider(new JWTAuthentication());
 	}
 
+	public MeshRestHttpClientImpl(String host, int port, Vertx vertx, boolean useSsl) {
+		HttpClientOptions options = new HttpClientOptions();
+		options.setDefaultHost(host);
+		options.setTryUseCompression(true);
+		options.setDefaultPort(port);
+		options.setSsl(useSsl);
+		this.client = vertx.createHttpClient(options);
+		setAuthenticationProvider(new JWTAuthentication());
+	}
+
 	@Override
 	public MeshRestClient enableAnonymousAccess() {
 		disableAnonymousAccess = false;
@@ -701,7 +711,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 			throw new RuntimeException("The path {" + path + "} must start with a slash");
 		}
 		// TODO encode path?
-		String requestUri = BASEURI + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
+		String requestUri = getBaseUri() + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
 		ResponseHandler<WebRootResponse> handler = new WebRootResponseHandler(HttpMethod.GET, requestUri);
 		HttpClientRequest request = client.request(GET, requestUri, handler);
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
@@ -862,7 +872,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<GenericMessageResponse> meshStatus() {
-		return prepareRequest(GET, BASEURI + "/admin/status", GenericMessageResponse.class);
+		return prepareRequest(GET, getBaseUri() + "/admin/status", GenericMessageResponse.class);
 	}
 
 	@Override
@@ -909,7 +919,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 
 		String path = "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters);
-		String uri = BASEURI + path;
+		String uri = getBaseUri() + path;
 
 		MeshBinaryResponseHandler handler = new MeshBinaryResponseHandler(GET, uri);
 		HttpClientRequest request = client.request(GET, uri, handler);
@@ -1000,7 +1010,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public void eventbus(Handler<WebSocket> wsConnect) {
-		client.websocket(BASEURI + "/eventbus/websocket", wsConnect);
+		client.websocket(getBaseUri() + "/eventbus/websocket", wsConnect);
 	}
 
 	@Override
@@ -1054,7 +1064,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<String> getRAML() {
-		return MeshRestRequestUtil.prepareRequest(GET, "/raml", String.class, null, null, client, authentication, disableAnonymousAccess,
+		return MeshRestRequestUtil.prepareRequest(GET, "/raml", String.class, null, null, this, authentication, disableAnonymousAccess,
 				"text/vnd.yaml");
 	}
 

@@ -3,6 +3,7 @@ package com.gentics.mesh.rest;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.rest.client.MeshRestRequestUtil;
 
 import io.vertx.core.http.HttpClient;
@@ -29,13 +30,13 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 	}
 
 	@Override
-	public Single<GenericMessageResponse> login(HttpClient client) {
+	public Single<GenericMessageResponse> login(MeshRestClient meshRestClient) {
 		this.loginRequest = Single.create(sub -> {
 			LoginRequest loginRequest = new LoginRequest();
 			loginRequest.setUsername(getUsername());
 			loginRequest.setPassword(getPassword());
 
-			MeshRestRequestUtil.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest, client, null, false).invoke()
+			MeshRestRequestUtil.prepareRequest(HttpMethod.POST, "/auth/login", TokenResponse.class, loginRequest, meshRestClient, null, false).invoke()
 					.setHandler(rh -> {
 						if (rh.failed()) {
 							sub.onError(rh.cause());
@@ -49,7 +50,7 @@ public class JWTAuthentication extends AbstractAuthenticationProvider {
 	}
 
 	@Override
-	public Single<GenericMessageResponse> logout(HttpClient client) {
+	public Single<GenericMessageResponse> logout(MeshRestClient meshRestClient) {
 		token = null;
 		loginRequest = null;
 		// No need call any endpoint in JWT

@@ -8,6 +8,8 @@ import static com.gentics.mesh.graphql.type.MicroschemaTypeProvider.MICROSCHEMA_
 import static com.gentics.mesh.graphql.type.MicroschemaTypeProvider.MICROSCHEMA_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.NodeTypeProvider.NODE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_PAGE_TYPE_NAME;
+import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ReleaseTypeProvider.RELEASE_PAGE_TYPE_NAME;
@@ -100,6 +102,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 	@Inject
 	public ProjectTypeProvider projectTypeProvider;
+
+	@Inject
+	public ProjectReferenceTypeProvider projectReferenceTypeProvider;
 
 	@Inject
 	public UserTypeProvider userTypeProvider;
@@ -425,6 +430,9 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 
 		additionalTypes.add(projectTypeProvider.createType(project));
 		additionalTypes.add(newPageType(PROJECT_PAGE_TYPE_NAME, PROJECT_TYPE_NAME));
+
+		additionalTypes.add(projectReferenceTypeProvider.createType());
+		additionalTypes.add(newPageType(PROJECT_REFERENCE_PAGE_TYPE_NAME, PROJECT_REFERENCE_TYPE_NAME));
 
 		additionalTypes.add(tagTypeProvider.createType());
 		additionalTypes.add(newPageType(TAG_PAGE_TYPE_NAME, TAG_TYPE_NAME));

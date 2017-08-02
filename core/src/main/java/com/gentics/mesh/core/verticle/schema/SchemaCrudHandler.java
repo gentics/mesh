@@ -107,8 +107,13 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 					if (field instanceof MicronodeFieldSchema) {
 						MicronodeFieldSchema microschemaField = (MicronodeFieldSchema) field;
 
+						String[] allowedSchemas = microschemaField.getAllowedMicroSchemas();
+						if (allowedSchemas == null) {
+							throw error(BAD_REQUEST, "schema_error_allowed_list_empty", microschemaField.getName());
+						}
+
 						// Check each allowed microschema individually
-						for (String microschemaName : microschemaField.getAllowedMicroSchemas()) {
+						for (String microschemaName : allowedSchemas) {
 
 							// schema_error_microschema_reference_no_perm
 							MicroschemaContainer microschema = boot.get().microschemaContainerRoot().findByName(microschemaName);
@@ -253,23 +258,23 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 					// Assign the schema to the project
 					project.getSchemaContainerRoot().addSchemaContainer(schema);
 
-//					// Check whether there are any microschemas which are referenced by the schema
-//					for (FieldSchema field : schema.getLatestVersion().getSchema().getFields()) {
-//						if (field instanceof MicronodeFieldSchema) {
-//							MicronodeFieldSchema microschemaField = (MicronodeFieldSchema) field;
-//							for (String microschemaName : microschemaField.getAllowedMicroSchemas()) {
-//								// schema_error_microschema_reference_no_perm
-//								MicroschemaContainer microschema = ac.getProject().getMicroschemaContainerRoot().findByName(microschemaName);
-//								if (microschema == null) {
-//									throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
-//								}
-//								if (ac.getUser().hasPermission(microschema, READ_PERM)) {
-//									throw error(BAD_REQUEST, "schema_error_microschema_reference_no_perm", microschemaName, field.getName());
-//								}
-//								project.getMicroschemaContainerRoot().addMicroschema(microschema);
-//							}
-//						}
-//					}
+					// // Check whether there are any microschemas which are referenced by the schema
+					// for (FieldSchema field : schema.getLatestVersion().getSchema().getFields()) {
+					// if (field instanceof MicronodeFieldSchema) {
+					// MicronodeFieldSchema microschemaField = (MicronodeFieldSchema) field;
+					// for (String microschemaName : microschemaField.getAllowedMicroSchemas()) {
+					// // schema_error_microschema_reference_no_perm
+					// MicroschemaContainer microschema = ac.getProject().getMicroschemaContainerRoot().findByName(microschemaName);
+					// if (microschema == null) {
+					// throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
+					// }
+					// if (ac.getUser().hasPermission(microschema, READ_PERM)) {
+					// throw error(BAD_REQUEST, "schema_error_microschema_reference_no_perm", microschemaName, field.getName());
+					// }
+					// project.getMicroschemaContainerRoot().addMicroschema(microschema);
+					// }
+					// }
+					// }
 
 					SearchQueueBatch batch = searchQueue.create();
 

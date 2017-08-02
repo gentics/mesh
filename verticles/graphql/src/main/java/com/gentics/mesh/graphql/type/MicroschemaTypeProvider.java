@@ -1,5 +1,6 @@
 package com.gentics.mesh.graphql.type;
 
+import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_PAGE_TYPE_NAME;
 import static graphql.Scalars.GraphQLInt;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
@@ -8,8 +9,14 @@ import static graphql.schema.GraphQLObjectType.newObject;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.graphql.context.GraphQLContext;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLObjectType.Builder;
+
+import java.util.stream.Collectors;
 
 @Singleton
 public class MicroschemaTypeProvider extends AbstractTypeProvider {
@@ -37,6 +44,16 @@ public class MicroschemaTypeProvider extends AbstractTypeProvider {
 
 		// .description
 		schemaType.field(newFieldDefinition().name("description").description("Description of the microschema.").type(GraphQLString));
+
+		schemaType.field(newPagingFieldWithFetcher("projects", "Projects that this schema is assigned to", (env) -> {
+			GraphQLContext gc = env.getContext();
+			MicroschemaContainer microschema = env.getSource();
+			return microschema.findReferencedReleases().keySet().stream()
+				.map(Release::getProject)
+				.distinct()
+				.filter(it -> gc.getUser().hasPermission(it, GraphPermission.READ_PERM))
+				.collect(Collectors.toList());
+		}, PROJECT_REFERENCE_PAGE_TYPE_NAME));
 
 		// .fields
 
