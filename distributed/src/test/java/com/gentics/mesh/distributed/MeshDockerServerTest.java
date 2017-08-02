@@ -21,14 +21,14 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.vertx.core.Vertx;
 
-public class MeshDevServerTest {
+public class MeshDockerServerTest {
 
 	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer("nodeA", true, true, vertx);
+	public static MeshDockerServer serverA = new MeshDockerServer("nodeA", true, true, vertx, 8000);
 
-	public static MeshDockerServer serverB = new MeshDockerServer("nodeB", false, false, vertx);
+	public static MeshDockerServer serverB = new MeshDockerServer("nodeB", false, false, vertx, null);
 
 	public static MeshRestClient clientA;
 	public static MeshRestClient clientB;
@@ -132,13 +132,13 @@ public class MeshDevServerTest {
 		request.setSchemaRef("folder");
 		call(() -> clientA.createProject(request));
 
-		Thread.sleep(5000);
-		
+		Thread.sleep(2000);
+
 		// Node A: List nodes of created project - We expect the REST route should work.
 		NodeListResponse response = call(() -> clientA.findNodes(newProjectName));
 		assertEquals(1, response.getData().size());
 
-		Thread.sleep(5000);
+		Thread.sleep(2000);
 		// Node B: List nodes of created project - We expect the REST route should work.
 		response = call(() -> clientB.findNodes(newProjectName));
 		assertEquals(1, response.getData().size());

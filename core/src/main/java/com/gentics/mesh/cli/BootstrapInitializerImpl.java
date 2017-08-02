@@ -11,6 +11,10 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -269,6 +273,31 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		handleLocalData(hasOldLock, options, verticleLoader);
 	}
 
+	/**
+	 * Returns the IP of the network interface that is used to communicate with the given remote host/IP. Let's say we want to reach 8.8.8.8, it would return
+	 * the IP of the local network adapter that is routed into the Internet.
+	 * 
+	 * @param destination
+	 *            The remote host name or IP
+	 * @return An IP of a local network adapter
+	 * @throws UnknownHostException
+	 * @throws SocketException
+	 */
+	protected String getLocalIpForRoutedRemoteIP(String destination) {
+		try {
+			byte[] ipBytes = InetAddress.getByName(destination).getAddress();
+
+			try (DatagramSocket datagramSocket = new DatagramSocket()) {
+				datagramSocket.connect(InetAddress.getByAddress(ipBytes), 0);
+
+				return datagramSocket.getLocalAddress().getHostAddress();
+			}
+		} catch (Exception e) {
+			log.error("Could not determine local ip ", e);
+			return null;
+		}
+	}
+
 	public void initVertx(MeshOptions options, boolean isClustered) {
 		VertxOptions vertxOptions = new VertxOptions();
 		vertxOptions.setClustered(options.isClusterMode());
@@ -294,8 +323,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	private Vertx createClusteredVertx(VertxOptions vertxOptions, HazelcastInstance hazelcast) {
 		Objects.requireNonNull(hazelcast, "The hazelcast instance was not yet initialized.");
 		manager = new HazelcastClusterManager(hazelcast);
-		VertxOptions options = new VertxOptions();
-		options.setClusterManager(manager);
+		vertxOptions.setClusterManager(manager);
+		String localIp = getLocalIpForRoutedRemoteIP("8.8.8.8");
+		vertxOptions.getEventBusOptions().setHost(localIp);
+		vertxOptions.getEventBusOptions().setClusterPublicHost(localIp);
+		vertxOptions.setClusterHost(localIp);
+		vertxOptions.setClusterPublicHost(localIp);
 		CompletableFuture<Vertx> fut = new CompletableFuture<>();
 		Vertx.clusteredVertx(vertxOptions, rh -> {
 			log.info("Created clustered vert.x instance");
