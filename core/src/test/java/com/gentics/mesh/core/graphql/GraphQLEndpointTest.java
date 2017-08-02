@@ -107,6 +107,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testData.add(new Object[] { "user-query", true, "draft" });
 		testData.add(new Object[] { "mesh-query", true, "draft" });
 		testData.add(new Object[] { "schema-projects-query", true, "draft" });
+		testData.add(new Object[] { "microschema-projects-query", true, "draft" });
 		testData.add(new Object[] { "node-version-published-query", true, "published" });
 		return testData;
 	}
