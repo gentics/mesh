@@ -47,7 +47,7 @@ public class DemoRunner {
 		options.getHttpServerOptions().setCorsAllowCredentials(false);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
 		// options.getSearchOptions().setHttpEnabled(true);
-		// options.getStorageOptions().setStartServer(false);
+		// options.getStorageOptions().setStartServer(true);
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setDirectory(null);
 		setupKeystore(options);
