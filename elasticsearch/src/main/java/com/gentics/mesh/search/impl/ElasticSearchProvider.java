@@ -16,6 +16,8 @@ import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryAction;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
@@ -47,7 +49,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
-import rx.Observable;
 import rx.Single;
 
 /**
@@ -96,7 +97,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				.put("node.local", true)
 
-				//				.put("index.store.type", "mmapfs")
+				// .put("index.store.type", "mmapfs")
 
 				.put("index.max_result_window", Integer.MAX_VALUE)
 
@@ -217,8 +218,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Map<String, Object>> getDocument(String index, String type, String uuid) {
-		return Observable.create(sub -> {
+	public Single<Map<String, Object>> getDocument(String index, String type, String uuid) {
+		return Single.create(sub -> {
 			getSearchClient().prepareGet(index, type, uuid).execute().addListener(new ActionListener<GetResponse>() {
 
 				@Override
@@ -226,8 +227,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (log.isDebugEnabled()) {
 						log.debug("Get object {" + uuid + ":" + type + "} from index {" + index + "}");
 					}
-					sub.onNext(response.getSourceAsMap());
-					sub.onCompleted();
+					sub.onSuccess(response.getSourceAsMap());
 				}
 
 				@Override
@@ -289,6 +289,46 @@ public class ElasticSearchProvider implements SearchProvider {
 							e);
 					sub.onError(e);
 				}
+			});
+		});
+	}
+
+	@Override
+	public Completable storeDocumentBatch(String index, String type, Map<String, JsonObject> documents) {
+		if (documents.isEmpty()) {
+			return Completable.complete();
+		}
+		return Completable.create(sub -> {
+			long start = System.currentTimeMillis();
+
+			BulkRequestBuilder bulk = getSearchClient().prepareBulk();
+
+			// Add index requests for each document to the bulk request
+			for (Map.Entry<String, JsonObject> entry : documents.entrySet()) {
+				String documentId = entry.getKey();
+				JsonObject document = entry.getValue();
+				IndexRequestBuilder indexRequestBuilder = getSearchClient().prepareIndex(index, type, documentId);
+				indexRequestBuilder.setSource(document.toString());
+				bulk.add(indexRequestBuilder);
+			}
+
+			bulk.execute().addListener(new ActionListener<BulkResponse>() {
+				@Override
+				public void onResponse(BulkResponse response) {
+					if (log.isDebugEnabled()) {
+						log.debug("Finished bulk  store request on index {" + index + ":" + type + "}. Duration "
+								+ (System.currentTimeMillis() - start) + "[ms]");
+					}
+					sub.onCompleted();
+				}
+
+				@Override
+				public void onFailure(Throwable e) {
+					log.error("Bulk store on index {" + index + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start)
+							+ "[ms]", e);
+					sub.onError(e);
+				}
+
 			});
 		});
 	}

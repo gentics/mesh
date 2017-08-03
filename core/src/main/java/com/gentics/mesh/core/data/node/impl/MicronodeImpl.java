@@ -115,8 +115,7 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		// TODO this only returns ONE container, but with versioning, the micronode may have multiple containers
 
 		// first try to get the container in case for normal fields
-		NodeGraphFieldContainerImpl container = in(HAS_FIELD)
-				.nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
+		NodeGraphFieldContainerImpl container = in(HAS_FIELD).nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 
 		if (container == null) {
 			// the micronode may be part of a list field
@@ -130,6 +129,9 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	@Override
 	public Node getParentNode() {
 		NodeGraphFieldContainer container = getContainer();
+		while (container.getNextVersion() != null) {
+			container = container.getNextVersion();
+		}
 
 		if (container == null) {
 			throw error(BAD_REQUEST, "error_field_container_without_node");
@@ -139,8 +141,8 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 	}
 
 	@Override
-	public Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
-			java.util.List<String> languageTags, int level) {
+	public Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, java.util.List<String> languageTags,
+			int level) {
 
 		// Filter out unsupported field types
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
