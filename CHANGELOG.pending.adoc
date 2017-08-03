@@ -1,4 +1,4 @@
-icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.24
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.25
 
 icon:plus[] Configuration: The configuration files were moved to a dedicated `config` folder.
 
