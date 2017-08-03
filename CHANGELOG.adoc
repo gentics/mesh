@@ -4,7 +4,7 @@
 
 == 0.9.24 (03.08.2017)
 
-icon:plus[] REST API: Added idempotency checks for various endpoints to prevent execution of superfluous operations.
+icon:plus[] REST API: Added idempotency checks for various endpoints to prevent execution of superfluous operations. (E.g: Assign role to group, Assign schema to project)
 
 icon:check[] Core: Fixed a bug which prevented micronodes from being transformed. SUP-4751
 

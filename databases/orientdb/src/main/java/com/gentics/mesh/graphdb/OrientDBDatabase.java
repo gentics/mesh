@@ -130,7 +130,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 			this.maxRetry = Integer.valueOf(options.getParameters().get("maxTransactionRetry"));
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
 		}
-
 	}
 
 	@Override
@@ -150,6 +149,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public void start() throws Exception {
+		Orient.instance().startup();
 		if (options == null || options.getDirectory() == null) {
 			log.info("No graph database settings found. Fallback to in memory mode.");
 			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(5, 100);
