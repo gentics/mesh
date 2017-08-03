@@ -26,12 +26,16 @@ import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
 /**
  * Handler for group specific request methods.
  */
 public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> {
+
+	private static final Logger log = LoggerFactory.getLogger(GroupCrudHandler.class);
 
 	private Lazy<BootstrapInitializer> boot;
 
@@ -79,16 +83,24 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		db.operateTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
-
-			Tuple<Group, SearchQueueBatch> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				group.addRole(role);
-				group.setEditor(ac.getUser());
-				group.setLastEditedTimestamp();
-				// No need to update users as well. Those documents are not affected by this modification
-				batch.store(group, false);
-				return Tuple.tuple(group, batch);
-			});
+			// Handle idempotency
+			Tuple<Group, SearchQueueBatch> tuple;
+			if (group.hasRole(role)) {
+				if (log.isDebugEnabled()) {
+					log.debug("Role {" + role.getUuid() + "} is already assigned to group {" + group.getUuid() + "}.");
+				}
+				tuple = Tuple.tuple(group, searchQueue.create());
+			} else {
+				tuple = db.tx(() -> {
+					SearchQueueBatch batch = searchQueue.create();
+					group.addRole(role);
+					group.setEditor(ac.getUser());
+					group.setLastEditedTimestamp();
+					// No need to update users as well. Those documents are not affected by this modification
+					batch.store(group, false);
+					return Tuple.tuple(group, batch);
+				});
+			}
 			return tuple.v2().processAsync().andThen(tuple.v1().transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 

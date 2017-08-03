@@ -30,7 +30,7 @@ public interface SearchProvider {
 
 	// TODO add a good response instead of void. We need this in order to handle correct logging?
 	/**
-	 * Update the document and invoke the handler when the document has been updated or an error occurred.
+	 * Update the document.
 	 * 
 	 * @param indexName
 	 *            Index name of the document
@@ -45,7 +45,7 @@ public interface SearchProvider {
 	Completable updateDocument(String indexName, String type, String uuid, JsonObject document);
 
 	/**
-	 * Delete the given document and invoke the handler when the document has been deleted or an error occurred.
+	 * Delete the given document.
 	 * 
 	 * @param indexName
 	 *            Index name of the document
@@ -57,7 +57,7 @@ public interface SearchProvider {
 	Completable deleteDocument(String indexName, String type, String uuid);
 
 	/**
-	 * Store the given document and invoke the handler when the document has been stored or an error occurred.
+	 * Store the given document.
 	 * 
 	 * @param indexName
 	 *            Index name of the document
@@ -71,7 +71,20 @@ public interface SearchProvider {
 	Completable storeDocument(String indexName, String type, String uuid, JsonObject document);
 
 	/**
-	 * Get the given document and invoke the handler when the document has been loaded or an error occurred.
+	 * Store a batch of document.
+	 * 
+	 * @param index
+	 *            Index name
+	 * @param type
+	 *            Index type
+	 * @param documents
+	 *            Map of documents in which the key represents the documentId to be used
+	 * @return
+	 */
+	Completable storeDocumentBatch(String index, String type, Map<String, JsonObject> documents);
+
+	/**
+	 * Get the given document.
 	 * 
 	 * @param indexName
 	 *            Index name of the document
@@ -80,7 +93,7 @@ public interface SearchProvider {
 	 * @param uuid
 	 *            Uuid for the document
 	 */
-	Observable<Map<String, Object>> getDocument(String indexName, String type, String uuid);
+	Single<Map<String, Object>> getDocument(String indexName, String type, String uuid);
 
 	/**
 	 * Start the search provider.

@@ -119,7 +119,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			db.tx(() -> {
 				updateNodeIndexMappings();
 				sub.onCompleted();
-				return null;
 			});
 		}));
 	}

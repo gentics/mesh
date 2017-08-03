@@ -254,35 +254,41 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			if (ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
 				SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
 				Tuple<SearchQueueBatch, Single<SchemaResponse>> tuple = db.tx(() -> {
-
-					// Assign the schema to the project
-					project.getSchemaContainerRoot().addSchemaContainer(schema);
-
-					// // Check whether there are any microschemas which are referenced by the schema
-					// for (FieldSchema field : schema.getLatestVersion().getSchema().getFields()) {
-					// if (field instanceof MicronodeFieldSchema) {
-					// MicronodeFieldSchema microschemaField = (MicronodeFieldSchema) field;
-					// for (String microschemaName : microschemaField.getAllowedMicroSchemas()) {
-					// // schema_error_microschema_reference_no_perm
-					// MicroschemaContainer microschema = ac.getProject().getMicroschemaContainerRoot().findByName(microschemaName);
-					// if (microschema == null) {
-					// throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
-					// }
-					// if (ac.getUser().hasPermission(microschema, READ_PERM)) {
-					// throw error(BAD_REQUEST, "schema_error_microschema_reference_no_perm", microschemaName, field.getName());
-					// }
-					// project.getMicroschemaContainerRoot().addMicroschema(microschema);
-					// }
-					// }
-					// }
-
 					SearchQueueBatch batch = searchQueue.create();
 
-					String releaseUuid = project.getLatestRelease().getUuid();
-					SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
-					batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
-					batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED, schemaContainerVersion.getSchema());
-					return Tuple.tuple(batch, schema.transformToRest(ac, 0));
+					SchemaContainerRoot root = project.getSchemaContainerRoot();
+					// Assign the schema to the project
+					if (!root.contains(schema)) {
+						root.addSchemaContainer(schema);
+
+						// // Check whether there are any microschemas which are referenced by the schema
+						// for (FieldSchema field : schema.getLatestVersion().getSchema().getFields()) {
+						// if (field instanceof MicronodeFieldSchema) {
+						// MicronodeFieldSchema microschemaField = (MicronodeFieldSchema) field;
+						// for (String microschemaName : microschemaField.getAllowedMicroSchemas()) {
+						// // schema_error_microschema_reference_no_perm
+						// MicroschemaContainer microschema = ac.getProject().getMicroschemaContainerRoot().findByName(microschemaName);
+						// if (microschema == null) {
+						// throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
+						// }
+						// if (ac.getUser().hasPermission(microschema, READ_PERM)) {
+						// throw error(BAD_REQUEST, "schema_error_microschema_reference_no_perm", microschemaName, field.getName());
+						// }
+						// project.getMicroschemaContainerRoot().addMicroschema(microschema);
+						// }
+						// }
+						// }
+
+						String releaseUuid = project.getLatestRelease().getUuid();
+						SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
+						batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
+						batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED,
+								schemaContainerVersion.getSchema());
+						return Tuple.tuple(batch, schema.transformToRest(ac, 0));
+					} else {
+						// Schema has already been assigned. No need to create indices
+						return Tuple.tuple(batch, schema.transformToRest(ac, 0));
+					}
 				});
 				tuple.v1().processSync();
 				return tuple.v2();
@@ -307,17 +313,17 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		db.operateTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			if (ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
-				// TODO check whether schema is assigned to project
-
-				SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
-				return db.tx(() -> {
-					project.getSchemaContainerRoot().removeSchemaContainer(schema);
-					return Single.just(null);
-				});
-			} else {
+			if (!ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
+
+			// TODO check whether schema is assigned to project
+
+			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, READ_PERM);
+			db.tx(() -> {
+				project.getSchemaContainerRoot().removeSchemaContainer(schema);
+			});
+			return Single.just(null);
 
 		}).subscribe(model -> ac.send(NO_CONTENT), ac::fail);
 	}

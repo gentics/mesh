@@ -80,4 +80,5 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 * @return Project or null if this is the global root container
 	 */
 	Project getProject();
+
 }
