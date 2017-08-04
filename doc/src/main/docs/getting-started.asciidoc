@@ -11,7 +11,7 @@ If you don't have much time:
 == Quickstart
 
 ----
-Oracle Java Runtime 1.8.0_40 or newer is required to run Gentics Mesh.
+Java Runtime 1.8.0_40 or newer is required to run Gentics Mesh.
 ----
 
 . Download Gentics Mesh from http://getmesh.io/Download into an *empty* folder

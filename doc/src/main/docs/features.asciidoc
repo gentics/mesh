@@ -63,7 +63,7 @@ For more details see the documentation on link:building-blocks.html#_node[node] 
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
+https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
 [source,json]
 ----
@@ -255,13 +255,13 @@ Retrieving a navigation object using the projects root node ```/``` including th
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/demo/navroot/?resolveLinks=short&maxDepth=1
+https://demo.getmesh.io/api/v1/demo/navroot/?resolveLinks=short&maxDepth=1
 
 The same can be achieved using the node specific navigation endpoint. In this case you can specify the root node of your navigation by providing the node uuid.
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navigation?resolveLinks=short&maxDepth=1
+https://demo.getmesh.io/api/v1/demo/nodes/72dbee3975054fce9bee397505cfcec5/navigation?resolveLinks=short&maxDepth=1
 
 [source,json]
 ----
@@ -612,7 +612,7 @@ The ```breadcrumb``` property will be returned in all API responses containing n
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
+https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
 [source,json]
 ----
@@ -724,8 +724,8 @@ Using the WebRoot API it is possible to easily integrate Gentics Mesh with many 
 [options="header"]
 |======
 | Framework                           | Language       | Example
-| http://silex.sensiolabs.org/[Silex] | PHP            | http://getmesh.io/Blog/Building+an+API-first+Web+App+with+Gentics+Mesh+and+the+PHP+Microframework+Silex[Blogpost]
-| http://expressjs.com/[ExpressJS]    | JS             | http://getmesh.io/Blog/Getting+started+with+Express+and+the+API-first+CMS+Gentics+Mesh[Blogpost]
+| http://silex.sensiolabs.org/[Silex] | PHP            | https://getmesh.io/Blog/Building+an+API-first+Web+App+with+Gentics+Mesh+and+the+PHP+Microframework+Silex[Blogpost]
+| http://expressjs.com/[ExpressJS]    | JS             | https://getmesh.io/Blog/Getting+started+with+Express+and+the+API-first+CMS+Gentics+Mesh[Blogpost]
 | http://vertx.io/[Vert.x]            | Java,JS,Ceylon | http://vertx.io/blog/data-driven-apps-made-easy-with-vert-x-3-4-0-and-headless-cms-gentics-mesh/[Blogpost]
 | http://lotusrb.org/[Lotus]          | Ruby           | -
 |======
@@ -755,7 +755,7 @@ NOTE: Each segment of the URL must be URL-encoded. A node's language variants mu
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
+https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resolveLinks=short
 
 Loading the node with the given UUID using API endpoint ```GET /api/v1/:projectName/nodes/:nodeUuid```.
 
@@ -763,14 +763,14 @@ Loading the node with the given UUID using API endpoint ```GET /api/v1/:projectN
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/demo/webroot/automobiles/ford-gt?resolveLinks=short
+https://demo.getmesh.io/api/v1/demo/webroot/automobiles/ford-gt?resolveLinks=short
 
 === Query binary content by path
 The WebRoot API, furthermore, directly supports delivering binary content using the ```fileName``` meta-data field of the ```binary``` field .
 
 ==== Fetch an image with UUID
 
-> http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
+> https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
 
 Downloading a node's binary field with the given name using API endpoint ```GET /api/v1/:projectName/nodes/:nodeUuid/binary/:fieldName```.
 
@@ -778,7 +778,7 @@ Downloading a node's binary field with the given name using API endpoint ```GET 
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg
+https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg
 
 TIP: When using a routing framework, in order to find out if a requested resource is binary data or JSON data you need to check the HTTP Content-Disposition response header. If it is set, it’s binary data.
 
@@ -789,15 +789,15 @@ In case, the binary data is an image, the WebRoot API allows to directly perform
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?cropx=10&cropy=100&cropw=800&croph=400&width=300
+https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?cropx=10&cropy=100&cropw=800&croph=400&width=300
 
 ==== Crop and resize an image with WebRoot path
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?cropx=10&cropy=100&cropw=800&croph=400&width=300
+https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?cropx=10&cropy=100&cropw=800&croph=400&width=300
 
-Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
+Find out more about this topic in our blogpost about https://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
 
 === Properties
 //TODO
@@ -893,7 +893,7 @@ Endpoint: ```/api/v1/:projectName/nodes/:uuid/binary/:fieldname?width=220```
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=300
+https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=300
 
 === Fetch and Crop an Image with WebRoot Path
 
@@ -903,7 +903,7 @@ Endpoint: ```/api/v1/:projectName/webroot/:path?cropx=10&cropy=100&cropw=800&cro
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?cropx=10&cropy=100&cropw=800&croph=400
+https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?cropx=10&cropy=100&cropw=800&croph=400
 
 NOTE: It is mandatory to specify all four crop parameters when cropping an image.
 
@@ -915,7 +915,7 @@ Endpoint: ```POST /api/v1/:projectName/nodes/:uuid/binaryTransform/:fieldname```
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
+https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTransform/image
 
 *Request Body:*
 [source,bash]
@@ -934,7 +934,7 @@ http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binaryTrans
 
 include::examples/tables/ImageManipulationParametersImpl.adoc[]
 
-Find out more about this topic in our blogpost about http://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
+Find out more about this topic in our blogpost about https://getmesh.io/Blog/Gentics+Mesh%27s+Image+Manipulation+API+and+Interface[Gentics Mesh's Image Manipulation API and Interface].
 
 == File Upload
 
@@ -1006,7 +1006,7 @@ Most responses within Gentics Mesh will contain a list of permissions which may 
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/demo/nodes/88fac3fbc61041c1bac3fbc610d1c182?version=published
+https://demo.getmesh.io/api/v1/demo/nodes/88fac3fbc61041c1bac3fbc610d1c182?version=published
 
 
 [source,json]
@@ -1086,7 +1086,7 @@ Alternatively, the endpoint ```/api/v1/users/:userUuid/permissions/:path``` prov
 
 .Try the example
 [TIP]
-http://getmesh.io/api/v1/users/5fb9654c0b734e87b9654c0b736e8701/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
+https://demo.getmesh.io/api/v1/users/5fb9654c0b734e87b9654c0b736e8701/permissions/projects/217f8c981ada4642bf8c981adaa642c3/nodes/88fac3fbc61041c1bac3fbc610d1c182
 
 === Assigning & Revoking Permissions 
 
