@@ -73,7 +73,7 @@ public class MeshLocalServer extends TestWatcher {
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
 		options.getAuthenticationOptions().setKeystorePath(basePath + "/keystore.jkms");
 		// options.getSearchOptions().setHttpEnabled(true);
-		options.setClusterMode(true);
+		options.getClusterOptions().setEnabled(true);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.getVertx().eventBus().consumer(STARTUP_EVENT_ADDRESS, mh -> {

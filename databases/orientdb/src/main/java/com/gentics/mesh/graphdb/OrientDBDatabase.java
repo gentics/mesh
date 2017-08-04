@@ -337,8 +337,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "info");
 		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
 		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);
-		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.isClusterMode()));
 		configString = configString.replaceAll("%NODENAME%", getNodeName());
+		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.getClusterOptions().isEnabled()));
+		String bindIp = "0.0.0.0";
+		// Only use the cluster network host if clustering is enabled.
+		if (options.getClusterOptions().isEnabled()) {
+			bindIp = options.getClusterOptions().getNetworkHost();
+		}
+		configString = configString.replaceAll("%BIND_IP%", bindIp);
 		String dbDir = storageOptions().getDirectory();
 		if (dbDir != null) {
 			configString = configString.replaceAll("%DB_PARENT_PATH%", escapeSafe(storageOptions().getDirectory()));
@@ -379,7 +385,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OServerPluginManager manager = new OServerPluginManager();
 		manager.config(server);
 		server.activate();
-		if (options.isClusterMode()) {
+		if (options.getClusterOptions().isEnabled()) {
 			ODistributedServerManager distributedManager = server.getDistributedManager();
 			topologyEventBridge = new TopologyEventBridge(this);
 			distributedManager.registerLifecycleListener(topologyEventBridge);

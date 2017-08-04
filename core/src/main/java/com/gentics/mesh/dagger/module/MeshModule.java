@@ -138,7 +138,7 @@ public class MeshModule {
 		if (options.getSearchOptions() == null || options.getSearchOptions().getDirectory() == null) {
 			searchProvider = new DummySearchProvider();
 		} else {
-			searchProvider = new ElasticSearchProvider().init(options);
+			searchProvider = new ElasticSearchProvider();
 		}
 		return searchProvider;
 	}

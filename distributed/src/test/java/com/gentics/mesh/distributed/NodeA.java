@@ -26,7 +26,7 @@ public class NodeA {
 		baseDir.mkdirs();
 
 		MeshOptions options = new MeshOptions();
-		options.setClusterMode(true);
+		options.getClusterOptions().setEnabled(true);
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
 		options.getHttpServerOptions().setPort(8080);

@@ -4,9 +4,6 @@ import static org.elasticsearch.client.Requests.refreshRequest;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.node.Node;
@@ -15,14 +12,12 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.UUIDUtil;
@@ -41,7 +36,7 @@ public class DemoDumpGenerator {
 		generator.shutdown();
 	}
 
-	public void init() throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
+	public void init() throws Exception {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 
@@ -71,7 +66,13 @@ public class DemoDumpGenerator {
 			KeyStoreHelper.gen(keyStoreFile.getAbsolutePath(), keyStorePass);
 		}
 		options.setNodeName("dumpGenerator");
-		Mesh.mesh(options);
+		Mesh mesh = Mesh.mesh(options);
+
+		// 1. Setup dagger
+		MeshComponent meshDagger = MeshInternal.create();
+		BootstrapInitializer boot = meshDagger.boot();
+		boot.init(mesh, false, options, null);
+
 	}
 
 	/**
@@ -80,22 +81,10 @@ public class DemoDumpGenerator {
 	 * @throws Exception
 	 */
 	public void dump() throws Exception {
-		// 1. Setup dagger
-		MeshComponent meshDagger = MeshInternal.create();
-		Database db = meshDagger.database();
-
-		// 2. Setup GraphDB
-		db.setupConnectionPool();
-		DatabaseHelper.init(db);
-
-		// 3. Initialise mesh
-		BootstrapInitializer boot = meshDagger.boot();
-		boot.initMandatoryData();
-		boot.initPermissions();
-		boot.markChangelogApplied();
-		boot.createSearchIndicesAndMappings();
 
 		// 4. Initialise demo data
+		MeshComponent meshDagger = MeshInternal.get();
+		BootstrapInitializer boot = meshDagger.boot();
 		DemoDataProvider provider = new DemoDataProvider(meshDagger.database(), meshDagger.meshLocalClientImpl(), boot);
 		invokeDump(boot, provider);
 

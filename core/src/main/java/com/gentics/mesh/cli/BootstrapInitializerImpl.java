@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -73,6 +71,7 @@ import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.event.MeshEventHandler;
@@ -230,7 +229,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void init(Mesh mesh, boolean hasOldLock, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		this.mesh = (MeshImpl) mesh;
 		GraphStorageOptions storageOptions = options.getStorageOptions();
-		boolean isClustered = options.isClusterMode();
+		boolean isClustered = options.getClusterOptions().isEnabled();
 		boolean isInitMode = options.isInitClusterMode();
 		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
 
@@ -241,6 +240,18 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		}
 
 		if (isClustered) {
+			ClusterOptions clusterOptions = options.getClusterOptions();
+
+			// Check whether we need to update the settings and use a determined local IP
+			if (clusterOptions.getNetworkHost() == null) {
+				String localIp = getLocalIpForRoutedRemoteIP("8.8.8.8");
+				log.info("No networkHost setting was specified within the cluster settings. Using the determined IP {" + localIp + "}.");
+				clusterOptions.setNetworkHost(localIp);
+			}
+
+			searchProvider.init(options);
+			searchProvider.start();
+
 			if (isInitMode) {
 				log.info("Init cluster flag was found. Creating initial graph database now.");
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
@@ -258,7 +269,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.setupConnectionPool();
 				initLocalData();
 			}
+			joinCluster();
 		} else {
+
+			searchProvider.init(options);
+			searchProvider.start();
+
 			initVertx(options, isClustered);
 			// No cluster mode - Just setup the connection pool and load or setup the local data
 			db.setupConnectionPool();
@@ -267,7 +283,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.startServer();
 			}
 		}
-		joinCluster();
 
 		routerStorage.init();
 		handleLocalData(hasOldLock, options, verticleLoader);
@@ -280,8 +295,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @param destination
 	 *            The remote host name or IP
 	 * @return An IP of a local network adapter
-	 * @throws UnknownHostException
-	 * @throws SocketException
 	 */
 	protected String getLocalIpForRoutedRemoteIP(String destination) {
 		try {
@@ -289,7 +302,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 			try (DatagramSocket datagramSocket = new DatagramSocket()) {
 				datagramSocket.connect(InetAddress.getByAddress(ipBytes), 0);
-
 				return datagramSocket.getLocalAddress().getHostAddress();
 			}
 		} catch (Exception e) {
@@ -300,14 +312,13 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	public void initVertx(MeshOptions options, boolean isClustered) {
 		VertxOptions vertxOptions = new VertxOptions();
-		vertxOptions.setClustered(options.isClusterMode());
-		// options.setClustered(true);
+		vertxOptions.setClustered(options.getClusterOptions().isEnabled());
 		vertxOptions.setBlockedThreadCheckInterval(1000 * 60 * 60);
 		// TODO configure worker pool size
 		vertxOptions.setWorkerPoolSize(12);
 		if (vertxOptions.isClustered()) {
 			log.info("Creating clustered vertx instance");
-			mesh.setVertx(createClusteredVertx(vertxOptions, (HazelcastInstance) db.getHazelcast()));
+			mesh.setVertx(createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.getHazelcast()));
 		} else {
 			log.info("Creating non-clustered vertx instance");
 			mesh.setVertx(Vertx.vertx(vertxOptions));
@@ -317,14 +328,18 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	/**
 	 * Create a clustered vert.x instance and block until the instance has been created.
 	 * 
+	 * @param options
+	 *            Mesh options
 	 * @param vertxOptions
+	 *            Vert.x options
 	 * @param hazelcast
+	 *            Hazelcast instance which should be used by vert.x
 	 */
-	private Vertx createClusteredVertx(VertxOptions vertxOptions, HazelcastInstance hazelcast) {
+	private Vertx createClusteredVertx(MeshOptions options, VertxOptions vertxOptions, HazelcastInstance hazelcast) {
 		Objects.requireNonNull(hazelcast, "The hazelcast instance was not yet initialized.");
 		manager = new HazelcastClusterManager(hazelcast);
 		vertxOptions.setClusterManager(manager);
-		String localIp = getLocalIpForRoutedRemoteIP("8.8.8.8");
+		String localIp = options.getClusterOptions().getNetworkHost();
 		vertxOptions.getEventBusOptions().setHost(localIp);
 		vertxOptions.getEventBusOptions().setClusterPublicHost(localIp);
 		vertxOptions.setClusterHost(localIp);

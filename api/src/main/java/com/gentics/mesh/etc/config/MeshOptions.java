@@ -13,16 +13,9 @@ import com.gentics.mesh.doc.GenerateDocumentation;
 @GenerateDocumentation
 public class MeshOptions {
 
-	public static final boolean ENABLED = true;
-	public static final boolean DISABLED = false;
-	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final int DEFAULT_MAX_DEPTH = 10;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag to enable or disable the cluster mode. (Not yet fully implemented)")
-	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
 
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
 
@@ -32,11 +25,15 @@ public class MeshOptions {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Turn on or off the update checker.")
-	private boolean updateCheck = ENABLED;
+	private boolean updateCheck = true;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Http server options.")
 	private HttpServerConfig httpServerOptions = new HttpServerConfig();
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Cluster options.")
+	private ClusterOptions clusterOptions = new ClusterOptions();
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Graph database options.")
@@ -71,27 +68,6 @@ public class MeshOptions {
 	private boolean isInitCluster = false;
 
 	public MeshOptions() {
-	}
-
-	/**
-	 * Return the cluster mode flag.
-	 * 
-	 * @return Flag value
-	 */
-	public boolean isClusterMode() {
-		return clusterMode;
-	}
-
-	/**
-	 * Set the flag which can toggle the cluster mode.
-	 * 
-	 * @param clusterMode
-	 *            Flag value
-	 * @return Fluent API
-	 */
-	public MeshOptions setClusterMode(boolean clusterMode) {
-		this.clusterMode = clusterMode;
-		return this;
 	}
 
 	/**
@@ -161,6 +137,15 @@ public class MeshOptions {
 	@JsonProperty("httpServer")
 	public HttpServerConfig getHttpServerOptions() {
 		return httpServerOptions;
+	}
+
+	@JsonProperty("cluster")
+	public ClusterOptions getClusterOptions() {
+		return clusterOptions;
+	}
+
+	public void setClusterOptions(ClusterOptions clusterOptions) {
+		this.clusterOptions = clusterOptions;
 	}
 
 	/**

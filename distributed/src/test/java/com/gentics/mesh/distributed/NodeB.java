@@ -27,7 +27,7 @@ public class NodeB {
 		baseDir.mkdirs();
 
 		MeshOptions options = new MeshOptions();
-		options.setClusterMode(true);
+		options.getClusterOptions().setEnabled(true);
 		options.getHttpServerOptions().setPort(8081);
 		options.getAuthenticationOptions().setKeystorePassword("nodeB");
 		options.setTempDirectory(baseDirPath + "/tmp");

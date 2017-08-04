@@ -41,7 +41,7 @@ public class RunnerNodeA {
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
 		options.getAuthenticationOptions().setKeystorePath(basePath + "/keystore.jkms");
 		// options.getSearchOptions().setHttpEnabled(true);
-		options.setClusterMode(true);
+		options.getClusterOptions().setEnabled(true);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {

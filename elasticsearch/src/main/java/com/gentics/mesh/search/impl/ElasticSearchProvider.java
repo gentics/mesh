@@ -32,6 +32,7 @@ import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
+import org.elasticsearch.common.settings.Settings.Builder;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
@@ -40,7 +41,8 @@ import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.search.SearchHit;
 
-import com.gentics.mesh.cli.MeshNameProvider;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.SearchProvider;
@@ -78,10 +80,10 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Creating elasticsearch node");
 		}
-		
+
 		ElasticSearchOptions searchOptions = options.getSearchOptions();
 		long start = System.currentTimeMillis();
-		Settings settings = Settings.settingsBuilder()
+		Builder builder = Settings.settingsBuilder()
 
 				.put("threadpool.index.queue_size", -1)
 
@@ -95,13 +97,24 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				.put("plugin.types", DeleteByQueryPlugin.class.getName())
 
-				.put("node.local", true)
-
 				// .put("index.store.type", "mmapfs")
 
-				.put("index.max_result_window", Integer.MAX_VALUE)
+				.put("index.max_result_window", Integer.MAX_VALUE);
 
-				.build();
+		builder.put("node.meshVersion", Mesh.getPlainVersion());
+		ClusterOptions clusterOptions= options.getClusterOptions();
+		if (clusterOptions.isEnabled()) {
+			builder.put("cluster.name", "mesh-cluster-" + Mesh.getPlainVersion());
+			// We run a multi-master environment. Every node should be able to be elected as master
+			builder.put("node.master", true);
+			builder.put("network.host", clusterOptions.getNetworkHost());
+			//TODO configure public and bind host
+		} else {
+			// TODO use transport.type: local for ES5
+			builder.put("node.local", true);
+		}
+
+		Settings settings = builder.build();
 
 		Set<Class<? extends Plugin>> classpathPlugins = new HashSet<>();
 		classpathPlugins.add(DeleteByQueryPlugin.class);
@@ -113,15 +126,9 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 	}
 
-	/**
-	 * Initialise and start the search provider using the given options.
-	 * 
-	 * @param options
-	 * @return Fluent API
-	 */
+	@Override
 	public ElasticSearchProvider init(MeshOptions options) {
 		this.options = options;
-		start();
 		return this;
 	}
 

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.json.JsonObject;
 import rx.Completable;
@@ -23,6 +24,11 @@ public class DummySearchProvider implements SearchProvider {
 	private List<String> getEvents = new ArrayList<>();
 	private List<String> dropIndexEvents = new ArrayList<>();
 	private List<String> createIndexEvents = new ArrayList<>();
+
+	@Override
+	public SearchProvider init(MeshOptions options) {
+		return this;
+	}
 
 	@Override
 	public void refreshIndex(String... indices) {
