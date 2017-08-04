@@ -22,6 +22,7 @@
 		</encoder>
 	</appender>
 
+	<logger name="org.elasticsearch.node" level="INFO" />
 	<logger name="io.vertx" level="INFO"/>
 	<logger name="com.gentics" level="INFO"/>
 	<logger name="org.elasticsearch" level="ERROR"/>

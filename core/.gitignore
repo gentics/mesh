@@ -1,4 +1,5 @@
 /target/
+/config
 /mesh.yml
 /.apt_generated/
 keystore.jceks

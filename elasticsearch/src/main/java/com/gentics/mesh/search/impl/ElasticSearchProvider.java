@@ -38,6 +38,7 @@ import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
+import org.elasticsearch.plugin.discovery.multicast.MulticastDiscoveryPlugin;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.search.SearchHit;
 
@@ -102,13 +103,15 @@ public class ElasticSearchProvider implements SearchProvider {
 				.put("index.max_result_window", Integer.MAX_VALUE);
 
 		builder.put("node.meshVersion", Mesh.getPlainVersion());
-		ClusterOptions clusterOptions= options.getClusterOptions();
+		ClusterOptions clusterOptions = options.getClusterOptions();
 		if (clusterOptions.isEnabled()) {
+			// We append the mesh version to the cluster name to ensure that no clusters from different mesh versions can be formed.
 			builder.put("cluster.name", "mesh-cluster-" + Mesh.getPlainVersion());
 			// We run a multi-master environment. Every node should be able to be elected as master
 			builder.put("node.master", true);
 			builder.put("network.host", clusterOptions.getNetworkHost());
-			//TODO configure public and bind host
+			builder.put("discovery.zen.ping.multicast.enabled", true);
+			// TODO configure public and bind host
 		} else {
 			// TODO use transport.type: local for ES5
 			builder.put("node.local", true);
@@ -118,7 +121,9 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		Set<Class<? extends Plugin>> classpathPlugins = new HashSet<>();
 		classpathPlugins.add(DeleteByQueryPlugin.class);
-		// TODO configure ES cluster options
+		if (clusterOptions.isEnabled()) {
+			classpathPlugins.add(MulticastDiscoveryPlugin.class);
+		}
 		node = new MeshNode(settings, classpathPlugins);
 		node.start();
 		if (log.isDebugEnabled()) {

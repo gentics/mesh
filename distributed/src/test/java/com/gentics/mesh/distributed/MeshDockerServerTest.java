@@ -44,6 +44,7 @@ public class MeshDockerServerTest {
 		clientB = serverB.getMeshClient();
 	}
 
+	
 	@Test
 	public void testElementUpdate() throws InterruptedException {
 
