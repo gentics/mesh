@@ -79,7 +79,7 @@ public class DemoRunner {
 
 	private static void setupDemo() throws FileNotFoundException, IOException, ZipException {
 		File dataDir = new File("data");
-		if (!dataDir.exists()) {
+		if (!dataDir.exists() || dataDir.list().length == 0) {
 			log.info("Extracting demo data since this is the first time you start mesh...");
 			unzip("/mesh-dump.zip", "data");
 			log.info("Demo data extracted to {" + dataDir.getAbsolutePath() + "}");

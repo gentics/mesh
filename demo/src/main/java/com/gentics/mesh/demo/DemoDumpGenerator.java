@@ -38,7 +38,6 @@ public class DemoDumpGenerator {
 		generator.init();
 		generator.dump();
 		generator.shutdown();
-
 	}
 
 	public void init() throws NoSuchAlgorithmException, KeyStoreException, CertificateException, IOException {
