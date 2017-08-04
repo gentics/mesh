@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.verticle.admin;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML;
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 
@@ -20,6 +22,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.SearchProvider;
 
+import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.ext.web.Router;
 
@@ -57,10 +60,11 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 		endpoint.description("Endpoint which provides a RAML document for all registed endpoints.");
 		endpoint.displayName("RAML specification");
 		endpoint.exampleResponse(OK, "123");
-		endpoint.produces("text/vnd.yaml");
+		endpoint.produces(APPLICATION_YAML);
 		endpoint.handler(rc -> {
 			RAMLGenerator generator = new RAMLGenerator();
 			String raml = generator.generate();
+			rc.response().putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_YAML_UTF8);
 			rc.response().end(raml);
 		});
 
