@@ -40,7 +40,7 @@ public final class Events {
 	/**
 	 * Event which is send to update the permission stores.
 	 */
-	public static final String EVENT_CLUSTER_CLEAR_PERMISSIONS = "mesh.cluster.clear-permission-store";
+	public static final String EVENT_CLEAR_PERMISSION_STORE = "mesh.clear-permission-store";
 
 	/* User */
 

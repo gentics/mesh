@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
+import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.console.ConsoleProvider;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -74,7 +75,6 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.event.MeshEventHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
@@ -122,9 +122,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public ConsoleProvider console;
-
-	@Inject
-	public MeshEventHandler eventHandler;
 
 	private static MeshRoot meshRoot;
 
@@ -402,7 +399,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public void registerEventHandlers() {
-		eventHandler.registerHandlers();
+		routerStorage.registerEventbusHandlers();
+		PermissionStore.registerEventHandler();
 	}
 
 	@Override

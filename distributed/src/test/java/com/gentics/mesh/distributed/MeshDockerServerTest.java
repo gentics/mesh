@@ -10,8 +10,14 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
+import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
+import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.schema.SchemaListResponse;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -44,7 +50,6 @@ public class MeshDockerServerTest {
 		clientB = serverB.getMeshClient();
 	}
 
-	
 	@Test
 	public void testElementUpdate() throws InterruptedException {
 
@@ -117,6 +122,39 @@ public class MeshDockerServerTest {
 	@Test
 	public void testNodeCreation() {
 
+		String projectName = "projectForNodeCreation";
+
+		// Node A: Create Project
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(projectName);
+		request.setSchemaRef("folder");
+		ProjectResponse projectResponse = call(() -> clientA.createProject(request));
+		String folderUuid = projectResponse.getRootNode().getUuid();
+
+		// Node A: Find the content schema
+		SchemaListResponse schemaListResponse = call(() -> clientA.findSchemas());
+		String contentSchemaUuid = schemaListResponse.getData().stream().filter(sr -> sr.getName().equals("content")).map(sr -> sr.getUuid())
+				.findAny().get();
+
+		// Node A: Assign content schema to project
+		call(() -> clientA.assignSchemaToProject(projectName, contentSchemaUuid));
+
+		// Node A: Create node
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName("content");
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
+		nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
+		nodeCreateRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
+		nodeCreateRequest.setSchema(schemaReference);
+		nodeCreateRequest.setParentNodeUuid(folderUuid);
+
+		NodeResponse response = call(() -> clientA.createNode(projectName, nodeCreateRequest));
+
+		NodeResponse nodeResponse = call(() -> clientB.findNodeByUuid(projectName, response.getUuid()));
+		assertEquals("Blessed mealtime again!", nodeResponse.getFields().getStringField("content").getString());
+
 	}
 
 	@Test
@@ -133,13 +171,14 @@ public class MeshDockerServerTest {
 		request.setSchemaRef("folder");
 		call(() -> clientA.createProject(request));
 
-		Thread.sleep(2000);
+		Thread.sleep(1000);
 
 		// Node A: List nodes of created project - We expect the REST route should work.
 		NodeListResponse response = call(() -> clientA.findNodes(newProjectName));
 		assertEquals(1, response.getData().size());
 
-		Thread.sleep(2000);
+		Thread.sleep(1000);
+
 		// Node B: List nodes of created project - We expect the REST route should work.
 		response = call(() -> clientB.findNodes(newProjectName));
 		assertEquals(1, response.getData().size());

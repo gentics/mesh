@@ -1,6 +1,6 @@
 package com.gentics.mesh.distributed;
 
-import static com.gentics.mesh.Events.EVENT_CLUSTER_CLEAR_PERMISSIONS;
+import static com.gentics.mesh.Events.EVENT_CLEAR_PERMISSION_STORE;
 import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_JOINED;
 import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_LEFT;
 import static com.gentics.mesh.Events.EVENT_CLUSTER_UPDATE_PROJECTS;
@@ -63,7 +63,7 @@ public class DistributedEventManager {
 //		});
 
 		// Register for events which are send whenever the permission store must be invalidated.
-		eb.consumer(EVENT_CLUSTER_CLEAR_PERMISSIONS, handler -> {
+		eb.consumer(EVENT_CLEAR_PERMISSION_STORE, handler -> {
 			PermissionStore.invalidate();
 		});
 	}

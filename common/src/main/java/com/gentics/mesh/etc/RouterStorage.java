@@ -1,6 +1,9 @@
 package com.gentics.mesh.etc;
 
+import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -17,6 +20,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import dagger.Lazy;
 import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.Router;
@@ -74,6 +79,22 @@ public class RouterStorage {
 
 	public static RouterStorage getIntance() {
 		return instance;
+	}
+
+	public void registerEventbusHandlers() {
+		Mesh.vertx().eventBus().consumer(EVENT_PROJECT_CREATED, (Message<JsonObject> rh) -> {
+			JsonObject json = rh.body();
+			String name = json.getString("name");
+			try {
+				RouterStorage.getIntance().addProjectRouter(name);
+				if (log.isInfoEnabled()) {
+					log.info("Registered project {" + name + "}");
+				}
+			} catch (InvalidNameException e) {
+				// TODO should we really fail here?
+				throw error(BAD_REQUEST, "Error while adding project to router storage", e);
+			}
+		});
 	}
 
 	/**
