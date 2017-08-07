@@ -14,9 +14,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import com.gentics.ferma.Tx;
-import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.TransformableElement;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -24,6 +23,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -41,7 +41,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 	private int perPage;
 
-	private InternalActionContext ac;
+	private User requestUser;
 
 	private Long totalPages = null;
 
@@ -50,7 +50,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	private AtomicLong totalCounter = new AtomicLong();
 
 	/**
-	 * Iterator over all items.
+	 * Iterator over all visible items. This iterator is bound to the created stream which will process all elements.
 	 */
 	private Iterator<? extends Vertex> visibleItems;
 
@@ -60,11 +60,9 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 	private long lowerBound;
 
-	private GraphPermission perm;
-
 	private Predicate<Vertex> extraFilter;
 
-	private DynamicTransformablePageImpl(InternalActionContext ac, PagingParameters pagingInfo, GraphPermission perm, Predicate<Vertex> extraFilter) {
+	private DynamicTransformablePageImpl(User requestUser, PagingParameters pagingInfo, Predicate<Vertex> extraFilter) {
 		if (pagingInfo.getPage() < 1) {
 			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(pagingInfo.getPage()));
 		}
@@ -73,8 +71,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 		}
 		this.pageNumber = pagingInfo.getPage();
 		this.perPage = pagingInfo.getPerPage();
-		this.ac = ac;
-		this.perm = perm;
+		this.requestUser = requestUser;
 		this.extraFilter = extraFilter;
 
 		this.lowerBound = (pageNumber - 1) * perPage;
@@ -88,22 +85,22 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	/**
 	 * Create new dynamic page.
 	 * 
-	 * @param ac
-	 *            Context of the operation
+	 * @param requestUser
+	 *            User which is used to check permissions
 	 * @param root
 	 *            Root vertex which provides the elements which can be paged
 	 * @param pagingInfo
 	 *            Paging information which contains the perPage and page information
 	 */
-	public DynamicTransformablePageImpl(InternalActionContext ac, RootVertex<? extends T> root, PagingParameters pagingInfo) {
-		this(ac, root, pagingInfo, READ_PERM, null);
+	public DynamicTransformablePageImpl(User requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo) {
+		this(requestUser, root, pagingInfo, READ_PERM, null);
 	}
 
 	/**
 	 * Create a new dynamic page.
 	 * 
-	 * @param ac
-	 *            Context of the operation
+	 * @param requestUser
+	 *            User which is used to check permissions
 	 * @param root
 	 *            Root vertex which provides the elements which can be paged
 	 * @param pagingInfo
@@ -114,17 +111,17 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *            Optional extra filter to filter by
 	 * 
 	 */
-	public DynamicTransformablePageImpl(InternalActionContext ac, RootVertex<? extends T> root, PagingParameters pagingInfo, GraphPermission perm,
+	public DynamicTransformablePageImpl(User requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo, GraphPermission perm,
 			Predicate<Vertex> extraFilter) {
-		this(ac, pagingInfo, perm, extraFilter);
-		init(root.getPersistanceClass(), "e." + root.getRootLabel().toLowerCase() + "_out", root.getId(), Direction.IN, root.getGraph());
+		this(requestUser, pagingInfo, extraFilter);
+		init(root.getPersistanceClass(), "e." + root.getRootLabel().toLowerCase() + "_out", root.getId(), Direction.IN, root.getGraph(), perm);
 	}
 
 	/**
 	 * Create a new dynamic page.
-	 * 
-	 * @param ac
-	 *            Current context
+	 *
+	 * @param requestUser
+	 *            User which is used to check permissions
 	 * @param indexName
 	 *            Name of the index which should be used to lookup the elements
 	 * @param indexKey
@@ -134,47 +131,53 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 * @param pagingInfo
 	 *            Paging parameters
 	 */
-	public DynamicTransformablePageImpl(InternalActionContext ac, String indexName, Object indexKey, Class<T> clazz, PagingParameters pagingInfo,
+	public DynamicTransformablePageImpl(User requestUser, String indexName, Object indexKey, Class<T> clazz, PagingParameters pagingInfo,
 			GraphPermission perm, Predicate<Vertex> extraFilter) {
-		this(ac, pagingInfo, perm, extraFilter);
-		init(clazz, indexName, indexKey, Direction.OUT, Tx.getActive().getGraph());
+		this(requestUser, pagingInfo, extraFilter);
+		init(clazz, indexName, indexKey, Direction.OUT, Tx.getActive().getGraph(), perm);
 	}
 
 	/**
-	 * Initalize the dynamic iterator which is bound to the most getters of this class. A stream is setup which is used to filter out the unwanted data. Paging
-	 * is also handled via the stream. At the end only a iterator is provided for the other methods. The iterator next method is invoked until the needed data
-	 * is provided or the iterator has no more items.
+	 * Create a new dynamic page.
 	 * 
+	 * @param user
+	 *            User to check permissions against
+	 * @param traversal
+	 *            Traversal which yields the items
+	 * @param pagingInfo
+	 *            Paging settings
+	 * @param perm
+	 *            Permission to check against
 	 * @param clazz
-	 *            Class used to frame the found elements.
-	 * @param indexName
-	 *            Name of the graph index to use
-	 * @param indexKey
-	 *            Key object used for the lookup
-	 * @param vertexDirection
-	 *            The direction to be resolved for each resulting edge in order to get to the target element.
-	 * @param graph
-	 *            Framed graph used to re-frame the resulting elements
+	 *            Element class used to reframe the found elements
 	 */
-	private void init(Class<? extends T> clazz, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph) {
-		MeshAuthUser requestUser = ac.getUser();
+	public DynamicTransformablePageImpl(User user, VertexTraversal<?, ?, ?> traversal, PagingParameters pagingInfo, GraphPermission perm,
+			Class<? extends T> clazz) {
+		this(user, pagingInfo, null);
+		init(clazz, traversal, perm);
+	}
 
+	private void init(Class<? extends T> clazz, VertexTraversal<?, ?, ?> traversal, GraphPermission perm) {
 		// Iterate over all vertices that are managed by this root vertex
-		Spliterator<Edge> itemEdges = graph.getEdges(indexName, indexKey).spliterator();
+		Stream<Vertex> stream = StreamSupport.stream(traversal.spliterator(), false).map(item -> {
+			return item.getElement();
+		});
+		applyPagingAndPermChecks(stream, clazz, perm);
+	}
+
+	/**
+	 * Modify the given stream and add further filters and mapping functions to it in order to be able to track operations and element handling.
+	 * 
+	 * @param stream
+	 * @param clazz
+	 * @param perm
+	 */
+	private void applyPagingAndPermChecks(Stream<Vertex> stream, Class<? extends T> clazz, GraphPermission perm) {
 		AtomicLong pageCounter = new AtomicLong();
+		FramedGraph graph = Tx.getActive().getGraph();
 
-		Stream<Vertex> stream = StreamSupport.stream(itemEdges, false)
-
-				// Sort the elements by element id
-				// .sorted(new ElementIdComparator())
-
-				// Get the vertex from the edge
-				.map(itemEdge -> {
-					return itemEdge.getVertex(vertexDirection);
-				})
-
-				// Only handle elements which are visible to the user
-				.filter(item -> requestUser.hasPermissionForId(item.getId(), perm));
+		// Only handle elements which are visible to the user
+		stream = stream.filter(item -> requestUser.hasPermissionForId(item.getId(), perm));
 
 		if (extraFilter != null) {
 			stream = stream.filter(extraFilter);
@@ -202,6 +205,39 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 				})
 
 				.iterator();
+
+	}
+
+	/**
+	 * Initialize the dynamic iterator which is bound to the most getters of this class. A stream is setup which is used to filter out the unwanted data. Paging
+	 * is also handled via the stream. At the end only a iterator is provided for the other methods. The iterator next method is invoked until the needed data
+	 * is provided or the iterator has no more items.
+	 * 
+	 * @param clazz
+	 *            Class used to frame the found elements.
+	 * @param indexName
+	 *            Name of the graph index to use
+	 * @param indexKey
+	 *            Key object used for the lookup
+	 * @param vertexDirection
+	 *            The direction to be resolved for each resulting edge in order to get to the target element.
+	 * @param graph
+	 *            Framed graph used to re-frame the resulting elements
+	 * @param perm
+	 *            Graph permission to filter by
+	 */
+	private void init(Class<? extends T> clazz, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph,
+			GraphPermission perm) {
+
+		// Iterate over all vertices that are managed by this root vertex
+		Spliterator<Edge> itemEdges = graph.getEdges(indexName, indexKey).spliterator();
+		Stream<Vertex> stream = StreamSupport.stream(itemEdges, false)
+
+				// Get the vertex from the edge
+				.map(itemEdge -> {
+					return itemEdge.getVertex(vertexDirection);
+				});
+		applyPagingAndPermChecks(stream, clazz, perm);
 
 	}
 

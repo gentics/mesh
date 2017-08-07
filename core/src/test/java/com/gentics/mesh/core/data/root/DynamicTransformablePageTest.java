@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -21,7 +22,7 @@ public class DynamicTransformablePageTest extends AbstractMeshTest {
 			NodeRoot root = boot().nodeRoot();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(2, 2);
 			InternalActionContext ac = getMockedInternalActionContext("", user(), project());
-			DynamicTransformablePageImpl page = new DynamicTransformablePageImpl<>(ac, root, pagingInfo);
+			DynamicTransformablePageImpl page = new DynamicTransformablePageImpl<>(ac.getUser(), root, pagingInfo);
 			long totalSize = page.getTotalElements();
 			System.out.println(totalSize);
 		}

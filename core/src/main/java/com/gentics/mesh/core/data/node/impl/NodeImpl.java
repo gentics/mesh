@@ -17,7 +17,6 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
-import static com.tinkerpop.blueprints.Direction.IN;
 import static com.tinkerpop.blueprints.Direction.OUT;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -38,8 +37,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
-
-import org.eclipse.jdt.core.IAccessRule;
 
 import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
@@ -109,10 +106,8 @@ import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
-import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
-import com.google.common.graph.Graph;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.EdgeTraversal;
@@ -255,7 +250,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public List<? extends Tag> getTags(Release release) {
-		return TagEdgeImpl.getTagTraversal(null, this, release).toListExplicit(TagImpl.class);
+		return TagEdgeImpl.getTagTraversal(this, release).toListExplicit(TagImpl.class);
 	}
 
 	@Override
@@ -1348,7 +1343,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		Object indexKey = db.createComposedIndexKey(getId(), releaseUuid);
 
 		GraphPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-		return new DynamicTransformablePageImpl<NodeImpl>(ac, indexName, indexKey, NodeImpl.class, pagingInfo, perm, (item) -> {
+		return new DynamicTransformablePageImpl<NodeImpl>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, (item) -> {
 			// Filter out nodes which do not provide one of the specified language tags
 			if (languageTags != null) {
 				Iterator<Edge> edgeIt = item.getEdges(OUT, HAS_FIELD_CONTAINER).iterator();
@@ -1367,8 +1362,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Release release) {
-		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(user, this, release);
-		return TraversalHelper.getPagedResult(traversal, params, TagImpl.class);
+		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, release);
+		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
 
 	@Override

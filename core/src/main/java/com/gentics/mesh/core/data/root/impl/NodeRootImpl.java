@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -29,7 +27,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -49,7 +46,6 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
@@ -90,27 +86,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public Page<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingParameters pagingInfo)
-			throws InvalidArgumentException {
-		VertexTraversal<?, ?, ?> traversal = requestUser.getPermTraversal(READ_PERM);
-		Page<? extends Node> nodePage = TraversalHelper.getPagedResult(traversal, pagingInfo, NodeImpl.class);
-		return nodePage;
-	}
-
-	@Override
-	public Page<? extends NodeGraphFieldContainer> findAllContents(InternalActionContext ac, PagingParameters pagingInfo) {
-
-		VertexTraversal<?, ?, ?> traversal = out(getRootLabel()).filter(vertex -> {
-			return ac.getUser().hasPermissionForId(vertex.getId(), READ_PERM);
-		}).outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, ac.getRelease().getUuid()).filter(edge -> {
-			// We only want to return published and draft container. No other versions or initial containers
-			ContainerType type = ContainerType.get(edge.getProperty(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY));
-			return (type.equals(DRAFT) || type.equals(PUBLISHED));
-		}).inV();
-
-		Page<? extends NodeGraphFieldContainer> containerPage = TraversalHelper.getPagedResult2(traversal, pagingInfo,
-				NodeGraphFieldContainerImpl.class);
-		return containerPage;
+	public Page<? extends Node> findAll(MeshAuthUser user, List<String> languageTags, PagingParameters pagingInfo) throws InvalidArgumentException {
+		VertexTraversal<?, ?, ?> traversal = user.getPermTraversal(READ_PERM);
+		return new DynamicTransformablePageImpl<Node>(user, traversal, pagingInfo, READ_PERM, NodeImpl.class);
 	}
 
 	@Override
@@ -122,77 +100,9 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		Release release = ac.getRelease();
 		String releaseUuid = release.getUuid();
 
-		return new DynamicTransformablePageImpl<>(ac, this, pagingInfo, perm, (item) -> {
+		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, perm, (item) -> {
 			return matchesReleaseAndType(item.getId(), releaseUuid, type.getCode());
 		});
-		// int page = pagingInfo.getPage();
-		// int perPage = pagingInfo.getPerPage();
-		//
-		// if (page < 1) {
-		// throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(page));
-		// }
-		// if (perPage < 0) {
-		// throw new GenericRestException(BAD_REQUEST, "error_pagesize_parameter", String.valueOf(perPage));
-		// }
-		//
-		// MeshAuthUser requestUser = ac.getUser();
-		// Release release = ac.getRelease();
-		// ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-		// GraphPermission perm = type == ContainerType.PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
-		// String releaseUuid = release.getUuid();
-		// FramedGraph graph = getGraph();
-		//
-		// // Internally we start with page 0 in order to comply with the tinkerpop range traversal values which start with 0.
-		// // External (for the enduser) all pages start with 1.
-		// page = page - 1;
-		//
-		// long low = page * perPage - 1;
-		// long upper = low + perPage;
-		//
-		// if (perPage == 0) {
-		// low = 0;
-		// upper = 0;
-		// }
-		//
-		// long count = 0;
-		// // Iterate over all found elements and frame them
-		// List<Node> elementsOfPage = new ArrayList<>();
-		//
-		// // NOT WORKING CURRENTLY:
-		// // Locate all in-bound vertex id's for item edges for this root vertex.
-		// // We use this method rather regular traversal in order to speedup the edge iteration.
-		// // Otherwise each edge would need to be loaded.
-		// // List<Object> inIds = db.edgeLookup(getRootLabel(), "inout", getId());
-		// Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", getId());
-		// for (Edge edge : edges) {
-		// Object id = edge.getVertex(Direction.IN).getId();
-		// // Check the permission
-		// if (!requestUser.hasPermissionForId(id, perm)) {
-		// continue;
-		// }
-		// // Check whether the node has content for our type and release otherwise exclude it
-		// if (!matchesReleaseAndType(id, releaseUuid, type.getCode())) {
-		// continue;
-		// }
-		// // Only add those vertices to the list which are within the bounds of the requested page
-		// if (count > low && count <= upper) {
-		// Vertex itemVertex = graph.getVertex(id);
-		// Node item = graph.frameElementExplicit(itemVertex, getPersistanceClass());
-		// // System.out.println("item" + item.getUuid());
-		// elementsOfPage.add(item);
-		// }
-		// count++;
-		// }
-		//
-		// // The totalPages of the list response must be zero if the perPage parameter is also zero.
-		// long totalPages = 0;
-		// if (perPage != 0) {
-		// totalPages = (long) Math.ceil(count / (double) (perPage));
-		// }
-		// // Internally the page size was reduced. We need to increment it now that we are finished.
-		// PageImpl<Node> resultPage = new PageImpl<Node>(elementsOfPage, count, ++page, totalPages, perPage);
-		// return new TransformablePageImpl<Node>(resultPage);
-
 	}
 
 	/**

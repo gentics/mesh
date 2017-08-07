@@ -58,7 +58,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	default public TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return new DynamicTransformablePageImpl<>(ac, this, pagingInfo, READ_PERM, null);
+		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, null);
 	}
 
 	/**

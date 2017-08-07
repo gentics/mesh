@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
@@ -21,6 +22,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.role.RoleReference;
@@ -30,7 +32,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
-import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
 import com.tinkerpop.blueprints.Edge;
@@ -68,11 +69,9 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public Page<? extends Group> getGroups(User user, PagingParameters params) {
-		VertexTraversal<?, ?, ?> traversal = out(HAS_ROLE).filter(group -> {
-			return user.hasPermissionForId(group.getId(), GraphPermission.READ_PERM);
-		});
-		return TraversalHelper.getPagedResult(traversal, params, GroupImpl.class);
+	public Page<? extends Group> getGroups(User user, PagingParameters pagingInfo) {
+		VertexTraversal<?, ?, ?> traversal = out(HAS_ROLE);
+		return new DynamicTransformablePageImpl<Group>(user, traversal, pagingInfo, READ_PERM, GroupImpl.class);
 	}
 
 	@Override
