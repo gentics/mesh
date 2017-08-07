@@ -2,6 +2,8 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
@@ -169,9 +171,9 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(),
 					new PagingParametersImpl().setPerPage(20000), new VersioningParametersImpl().draft()));
 
-			assertEquals(node.getChildren().size() - 1, nodeList.getMetainfo().getTotalCount());
 			assertEquals(0, nodeList.getData().stream().filter(p -> nodeWithNoPerm.getUuid().equals(p.getUuid())).count());
 			assertEquals(2, nodeList.getData().size());
+			assertEquals(node.getChildren().size() - 1, nodeList.getMetainfo().getTotalCount());
 		}
 	}
 

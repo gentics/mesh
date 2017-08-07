@@ -251,7 +251,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			Node node = content.getNode();
 			List<String> languageTags = getLanguageArgument(env);
 
-			TransformablePage<? extends Node> page = node.getChildren(gc.getUser(), languageTags, gc.getRelease().getUuid(), selectedType,
+			TransformablePage<? extends Node> page = node.getChildren(gc, languageTags, gc.getRelease().getUuid(), selectedType,
 					getPagingInfo(env));
 
 			// Transform the found nodes into contents

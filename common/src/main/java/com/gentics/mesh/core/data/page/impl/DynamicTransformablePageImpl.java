@@ -9,11 +9,11 @@ import java.util.List;
 import java.util.Spliterator;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.TransformableElement;
@@ -43,8 +43,6 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 	private InternalActionContext ac;
 
-	private RootVertex<? extends T> root;
-
 	private Long totalPages = null;
 
 	private List<T> elementsOfPage = new ArrayList<>();
@@ -54,7 +52,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	/**
 	 * Iterator over all items.
 	 */
-	private Iterator<Vertex> visibleItems;
+	private Iterator<? extends Vertex> visibleItems;
 
 	private AtomicBoolean pageFull = new AtomicBoolean(false);
 
@@ -65,6 +63,27 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	private GraphPermission perm;
 
 	private Predicate<Vertex> extraFilter;
+
+	private DynamicTransformablePageImpl(InternalActionContext ac, PagingParameters pagingInfo, GraphPermission perm, Predicate<Vertex> extraFilter) {
+		if (pagingInfo.getPage() < 1) {
+			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(pagingInfo.getPage()));
+		}
+		if (pagingInfo.getPerPage() < 0) {
+			throw new GenericRestException(BAD_REQUEST, "error_pagesize_parameter", String.valueOf(pagingInfo.getPerPage()));
+		}
+		this.pageNumber = pagingInfo.getPage();
+		this.perPage = pagingInfo.getPerPage();
+		this.ac = ac;
+		this.perm = perm;
+		this.extraFilter = extraFilter;
+
+		this.lowerBound = (pageNumber - 1) * perPage;
+
+		if (perPage == 0) {
+			this.lowerBound = 0;
+		}
+
+	}
 
 	/**
 	 * Create new dynamic page.
@@ -97,37 +116,51 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 */
 	public DynamicTransformablePageImpl(InternalActionContext ac, RootVertex<? extends T> root, PagingParameters pagingInfo, GraphPermission perm,
 			Predicate<Vertex> extraFilter) {
-		if (pagingInfo.getPage() < 1) {
-			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(pagingInfo.getPage()));
-		}
-		if (pagingInfo.getPerPage() < 0) {
-			throw new GenericRestException(BAD_REQUEST, "error_pagesize_parameter", String.valueOf(pagingInfo.getPerPage()));
-		}
-		this.pageNumber = pagingInfo.getPage();
-		this.perPage = pagingInfo.getPerPage();
-		this.ac = ac;
-		this.root = root;
-		this.perm = perm;
-		this.extraFilter = extraFilter;
-
-		this.lowerBound = (pageNumber - 1) * perPage;
-
-		if (perPage == 0) {
-			this.lowerBound = 0;
-		}
-
-		init();
+		this(ac, pagingInfo, perm, extraFilter);
+		init(root.getPersistanceClass(), "e." + root.getRootLabel().toLowerCase() + "_out", root.getId(), Direction.IN, root.getGraph());
 	}
 
 	/**
-	 * Initialize the paging iterator
+	 * Create a new dynamic page.
+	 * 
+	 * @param ac
+	 *            Current context
+	 * @param indexName
+	 *            Name of the index which should be used to lookup the elements
+	 * @param indexKey
+	 *            Key to be used for the index lookup
+	 * @param clazz
+	 *            Class of the element to be returned
+	 * @param pagingInfo
+	 *            Paging parameters
 	 */
-	private void init() {
+	public DynamicTransformablePageImpl(InternalActionContext ac, String indexName, Object indexKey, Class<T> clazz, PagingParameters pagingInfo,
+			GraphPermission perm, Predicate<Vertex> extraFilter) {
+		this(ac, pagingInfo, perm, extraFilter);
+		init(clazz, indexName, indexKey, Direction.OUT, Tx.getActive().getGraph());
+	}
+
+	/**
+	 * Initalize the dynamic iterator which is bound to the most getters of this class. A stream is setup which is used to filter out the unwanted data. Paging
+	 * is also handled via the stream. At the end only a iterator is provided for the other methods. The iterator next method is invoked until the needed data
+	 * is provided or the iterator has no more items.
+	 * 
+	 * @param clazz
+	 *            Class used to frame the found elements.
+	 * @param indexName
+	 *            Name of the graph index to use
+	 * @param indexKey
+	 *            Key object used for the lookup
+	 * @param vertexDirection
+	 *            The direction to be resolved for each resulting edge in order to get to the target element.
+	 * @param graph
+	 *            Framed graph used to re-frame the resulting elements
+	 */
+	private void init(Class<? extends T> clazz, String indexName, Object indexKey, Direction vertexDirection, FramedGraph graph) {
 		MeshAuthUser requestUser = ac.getUser();
 
 		// Iterate over all vertices that are managed by this root vertex
-		FramedGraph graph = root.getGraph();
-		Spliterator<Edge> itemEdges = graph.getEdges("e." + root.getRootLabel().toLowerCase() + "_out", root.getId()).spliterator();
+		Spliterator<Edge> itemEdges = graph.getEdges(indexName, indexKey).spliterator();
 		AtomicLong pageCounter = new AtomicLong();
 
 		Stream<Vertex> stream = StreamSupport.stream(itemEdges, false)
@@ -137,7 +170,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 				// Get the vertex from the edge
 				.map(itemEdge -> {
-					return itemEdge.getVertex(Direction.IN);
+					return itemEdge.getVertex(vertexDirection);
 				})
 
 				// Only handle elements which are visible to the user
@@ -159,7 +192,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 					// Only add elements to the list if those elements are part of selected the page
 					long elementsInPage = pageCounter.get();
 					if (elementsInPage < perPage) {
-						elementsOfPage.add(graph.frameElementExplicit(item, root.getPersistanceClass()));
+						elementsOfPage.add(graph.frameElementExplicit(item, clazz));
 						pageCounter.incrementAndGet();
 					} else {
 						pageFull.set(true);

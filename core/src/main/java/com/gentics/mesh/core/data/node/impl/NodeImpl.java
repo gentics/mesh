@@ -17,6 +17,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
+import static com.tinkerpop.blueprints.Direction.IN;
+import static com.tinkerpop.blueprints.Direction.OUT;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
@@ -36,6 +38,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
+
+import org.eclipse.jdt.core.IAccessRule;
 
 import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
@@ -108,6 +112,7 @@ import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
+import com.google.common.graph.Graph;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.EdgeTraversal;
@@ -453,8 +458,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public List<? extends Node> getChildren(String releaseUuid) {
-		// return inE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY,
-		// releaseUuid).outV().has(NodeImpl.class).toListExplicit(NodeImpl.class);
 		Database db = MeshInternal.get().database();
 		FramedGraph graph = Tx.getActive().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_release", db.createComposedIndexKey(getId(), releaseUuid));
@@ -1289,7 +1292,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	/**
-	 * Get a vertex traversal to find the children of this node, this user has read permission for
+	 * Get a vertex traversal to find the children of this node, this user has read permission for.
 	 *
 	 * @param requestUser
 	 *            user
@@ -1311,8 +1314,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		} else {
 			traversal = in(HAS_PARENT_NODE);
 		}
+		traversal = traversal.mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser).back();
 		if (releaseUuid != null || type != null) {
-			traversal = traversal.mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser).back();
 			EdgeTraversal<?, ?, ?> edgeTraversal = traversal.mark().outE(HAS_FIELD_CONTAINER);
 			if (releaseUuid != null) {
 				edgeTraversal = edgeTraversal.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid);
@@ -1339,10 +1342,27 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
+	public TransformablePage<? extends Node> getChildren(InternalActionContext ac, List<String> languageTags, String releaseUuid, ContainerType type,
 			PagingParameters pagingInfo) {
-		VertexTraversal<?, ?, ?> traversal = getChildrenTraversal(requestUser, releaseUuid, languageTags, type);
-		return TraversalHelper.getPagedResult(traversal, pagingInfo, NodeImpl.class);
+		String indexName = "e." + HAS_PARENT_NODE.toLowerCase() + "_release";
+		Object indexKey = db.createComposedIndexKey(getId(), releaseUuid);
+
+		GraphPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
+		return new DynamicTransformablePageImpl<NodeImpl>(ac, indexName, indexKey, NodeImpl.class, pagingInfo, perm, (item) -> {
+			// Filter out nodes which do not provide one of the specified language tags
+			if (languageTags != null) {
+				Iterator<Edge> edgeIt = item.getEdges(OUT, HAS_FIELD_CONTAINER).iterator();
+				while (edgeIt.hasNext()) {
+					Edge edge = edgeIt.next();
+					String languageTag = edge.getProperty(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY);
+					if (languageTags.contains(languageTag)) {
+						return true;
+					}
+				}
+				return false;
+			}
+			return true;
+		});
 	}
 
 	@Override

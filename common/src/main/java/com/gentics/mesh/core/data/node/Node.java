@@ -317,7 +317,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Return a page with child nodes that are visible to the given user.
 	 * 
-	 * @param requestUser
+	 * @param ac
+	 *            Context of the operation
 	 * @param languageTags
 	 * @param releaseUuid
 	 *            release Uuid
@@ -326,7 +327,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param pagingParameter
 	 * @return
 	 */
-	TransformablePage<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
+	TransformablePage<? extends Node> getChildren(InternalActionContext ac, List<String> languageTags, String releaseUuid, ContainerType type,
 			PagingParameters pagingParameter);
 
 	/**

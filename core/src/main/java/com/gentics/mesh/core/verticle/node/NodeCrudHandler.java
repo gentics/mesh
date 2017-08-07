@@ -183,7 +183,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			VersioningParameters versionParams = ac.getVersioningParameters();
 			GraphPermission requiredPermission = "published".equals(ac.getVersioningParameters().getVersion()) ? READ_PUBLISHED_PERM : READ_PERM;
 			Node node = getRootVertex(ac).loadObjectByUuid(ac, uuid, requiredPermission);
-			TransformablePage<? extends Node> page = node.getChildren(ac.getUser(), nodeParams.getLanguageList(),
+			TransformablePage<? extends Node> page = node.getChildren(ac, nodeParams.getLanguageList(),
 					ac.getRelease(node.getProject()).getUuid(), ContainerType.forVersion(versionParams.getVersion()), pagingParams);
 			// Handle etag
 			String etag = page.getETag(ac);
