@@ -4,14 +4,17 @@ import java.util.List;
 
 import com.gentics.mesh.core.data.page.Page;
 
+/**
+ * Wrapper for regular pages. This class comes in handy if you need to alter the element which the page returned. (e.g: convert a node page to a field container
+ * page.)
+ * 
+ * @param <T>
+ */
 public class WrappedPageImpl<T> implements Page<T> {
 
 	protected List<? extends T> wrappedList;
 
 	protected Page<?> wrappedPage;
-
-	public WrappedPageImpl() {
-	}
 
 	public WrappedPageImpl(List<T> elements, Page<?> page) {
 		this.wrappedList = elements;

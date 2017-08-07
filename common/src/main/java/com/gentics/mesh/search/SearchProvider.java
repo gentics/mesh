@@ -6,7 +6,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 import io.vertx.core.json.JsonObject;
 import rx.Completable;
-import rx.Observable;
 import rx.Single;
 
 /**

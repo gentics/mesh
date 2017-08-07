@@ -11,7 +11,6 @@ import com.gentics.mesh.rest.client.handler.impl.ModelResponseHandler;
 import com.gentics.mesh.rest.client.impl.MeshHttpRequestImpl;
 
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;

@@ -3,7 +3,6 @@ package com.gentics.mesh.rest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 
 import com.gentics.mesh.rest.client.MeshRestClient;
-import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
 import rx.Completable;
 import rx.Single;

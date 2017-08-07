@@ -45,7 +45,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.data.page.impl.WrappedPageImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
@@ -69,7 +68,6 @@ import graphql.schema.GraphQLObjectType.Builder;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
 import graphql.schema.GraphQLTypeReference;
-import graphql.schema.GraphQLUnionType;
 
 /**
  * The {@link QueryTypeProvider} provides as the name suggests the query type for the GraphQL schema. This type is the starting point for all GraphQL queries.

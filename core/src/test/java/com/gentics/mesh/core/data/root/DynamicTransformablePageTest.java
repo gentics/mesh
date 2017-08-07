@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;

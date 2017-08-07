@@ -151,7 +151,6 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	/**
 	 * Get traversal that finds all nodes that are tagged with this tag The nodes will be restricted to
 	 * <ol>
-	 * <li><i>requestUser</i> may read the node</li>
 	 * <li>node is tagged for the <i>release</i></li>
 	 * <li>node has field container in one of the <i>languageTags</i> in the <i>release</i> with <i>type</i></li>
 	 * </ol>

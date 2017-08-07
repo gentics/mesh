@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data;
 
-import java.util.Iterator;
-
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.graphdb.model.MeshElement;

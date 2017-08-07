@@ -9,7 +9,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 
 import io.vertx.core.json.JsonObject;
 import rx.Completable;
-import rx.Observable;
 import rx.Single;
 
 /**
