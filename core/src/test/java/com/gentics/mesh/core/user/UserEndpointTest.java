@@ -402,10 +402,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals("We did not find the expected count of users attached to the user root vertex.", intialUserCount + nUsers + 1, foundUsers);
 
 		// Test default paging parameters
-		MeshResponse<UserListResponse> future = client().findUsers().invoke();
-		latchFor(future);
-		assertSuccess(future);
-		ListResponse<UserResponse> restResponse = future.result();
+		ListResponse<UserResponse> restResponse = call(() -> client().findUsers());
 		assertEquals(25, restResponse.getMetainfo().getPerPage());
 		assertEquals(1, restResponse.getMetainfo().getCurrentPage());
 		// Admin User + Guest User + Dummy User = 3
@@ -415,16 +412,14 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		int perPage = 2;
 		int totalUsers = intialUserCount + nUsers;
 		int totalPages = ((int) Math.ceil(totalUsers / (double) perPage));
-		future = client().findUsers(new PagingParametersImpl(3, perPage)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		restResponse = future.result();
+		final int currentPerPage = 2;
+		restResponse = call(() -> client().findUsers(new PagingParametersImpl(3, currentPerPage)));
 
 		assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
 		assertEquals("We did not find the expected page in the list response.", 3, restResponse.getMetainfo().getCurrentPage());
-		assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + perPage + "}",
+		assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + currentPerPage + "}",
 				totalPages, restResponse.getMetainfo().getPageCount());
-		assertEquals(perPage, restResponse.getMetainfo().getPerPage());
+		assertEquals(currentPerPage, restResponse.getMetainfo().getPerPage());
 		assertEquals("The total amount of items does not match the expected one", totalUsers, restResponse.getMetainfo().getTotalCount());
 
 		perPage = 11;
@@ -445,20 +440,16 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 				.collect(Collectors.toList());
 		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
-		future = client().findUsers(new PagingParametersImpl(1, -1)).invoke();
-		latchFor(future);
-		expectException(future, BAD_REQUEST, "error_pagesize_parameter", "-1");
+		call(() -> client().findUsers(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
 
-		future = client().findUsers(new PagingParametersImpl(4242, 25)).invoke();
-		latchFor(future);
-		assertSuccess(future);
+		UserListResponse listResponse = call(() -> client().findUsers(new PagingParametersImpl(4242, 25)));
 
-		assertEquals("The result list should not contain any item since the page parameter is out of bounds", 0, future.result().getData().size());
-		assertEquals("The requested page should be set in the response but it was not", 4242, future.result().getMetainfo().getCurrentPage());
-		assertEquals("The page count value was not correct.", 1, future.result().getMetainfo().getPageCount());
+		assertEquals("The result list should not contain any item since the page parameter is out of bounds", 0, listResponse.getData().size());
+		assertEquals("The requested page should be set in the response but it was not", 4242, listResponse.getMetainfo().getCurrentPage());
+		assertEquals("The page count value was not correct.", 1, listResponse.getMetainfo().getPageCount());
 		assertEquals("We did not find the correct total count value in the response", nUsers + intialUserCount,
-				future.result().getMetainfo().getTotalCount());
-		assertEquals(25, future.result().getMetainfo().getPerPage());
+				listResponse.getMetainfo().getTotalCount());
+		assertEquals(25, listResponse.getMetainfo().getPerPage());
 
 	}
 

@@ -46,6 +46,7 @@ import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.impl.WrappedPageImpl;
 import com.gentics.mesh.core.data.root.NodeRoot;
 import com.gentics.mesh.core.data.service.WebRootService;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -281,7 +282,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 							NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
 							return new NodeContent(node, container);
 						}).collect(Collectors.toList());
-						return new PageImpl<NodeContent>(contents, nodes);
+						return new WrappedPageImpl<NodeContent>(contents, nodes);
 					}
 				}));
 
@@ -395,13 +396,13 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		type.field(newFieldDefinition().name("hasNextPage").description("Check whether the paged resource could serve another page")
 				.type(GraphQLBoolean).dataFetcher(env -> {
 					Page<?> page = env.getSource();
-					return page.getPageCount() > page.getNumber();
+					return page.hasNextPage();
 				}));
 
 		type.field(newFieldDefinition().name("hasPreviousPage").description("Check whether the current page has a previous page.")
 				.type(GraphQLBoolean).dataFetcher(env -> {
 					Page<?> page = env.getSource();
-					return page.getNumber() > 1;
+					return page.hasPreviousPage();
 				}));
 
 		return type.build();

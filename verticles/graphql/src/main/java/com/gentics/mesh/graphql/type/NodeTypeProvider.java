@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
@@ -33,7 +32,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.impl.WrappedPageImpl;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -260,7 +259,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				NodeGraphFieldContainer container = item.findNextMatchingFieldContainer(gc, languageTags);
 				return new NodeContent(item, container);
 			}).collect(Collectors.toList());
-			return new PageImpl<NodeContent>(contents, page);
+			return new WrappedPageImpl<NodeContent>(contents, page);
 		}, NODE_PAGE_TYPE_NAME).argument(createLanguageTagArg()));
 
 		// .parent

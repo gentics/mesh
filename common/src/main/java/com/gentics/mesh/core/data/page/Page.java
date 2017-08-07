@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.data.page;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import com.gentics.mesh.core.data.page.impl.PageImpl;
 import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.parameter.PagingParameters;
 
 /**
@@ -45,7 +47,9 @@ public interface Page<T> extends Iterable<T> {
 	 * 
 	 * @return
 	 */
-	int getSize();
+	default int getSize() {
+		return getWrappedList().size();
+	}
 
 	/**
 	 * Set the paging parameters into the given list response by examining the given page.
@@ -53,7 +57,13 @@ public interface Page<T> extends Iterable<T> {
 	 * @param response
 	 *            List response that will be updated
 	 */
-	void setPaging(ListResponse<?> response);
+	default void setPaging(ListResponse<?> response) {
+		PagingMetaInfo info = response.getMetainfo();
+		info.setCurrentPage(getNumber());
+		info.setPageCount(getPageCount());
+		info.setPerPage(getPerPage());
+		info.setTotalCount(getTotalElements());
+	}
 
 	/**
 	 * Apply paging to the list of elements.
@@ -91,8 +101,27 @@ public interface Page<T> extends Iterable<T> {
 
 	/**
 	 * Returns the wrapped list which contains the results.
+	 * 
 	 * @return
 	 */
 	List<? extends T> getWrappedList();
+
+	default Iterator<T> iterator() {
+		return (Iterator<T>) getWrappedList().iterator();
+	}
+
+	/**
+	 * Check whether there would be another page.
+	 * 
+	 * @return
+	 */
+	boolean hasNextPage();
+
+	/**
+	 * Check whether there would be a previous page.
+	 */
+	default boolean hasPreviousPage() {
+		return getNumber() > 1;
+	}
 
 }

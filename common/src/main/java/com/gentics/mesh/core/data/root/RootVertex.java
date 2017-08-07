@@ -9,9 +9,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
@@ -19,16 +16,13 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.page.impl.TransformablePageImpl;
+import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.ElementIdComparator;
 import com.syncleus.ferma.FramedGraph;
-import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
 
@@ -64,70 +58,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	default public TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-
-		int page = pagingInfo.getPage();
-		int perPage = pagingInfo.getPerPage();
-
-		if (page < 1) {
-			throw new GenericRestException(BAD_REQUEST, "error_page_parameter_must_be_positive", String.valueOf(page));
-		}
-		if (perPage < 0) {
-			throw new GenericRestException(BAD_REQUEST, "error_pagesize_parameter", String.valueOf(perPage));
-		}
-
-		// Internally we start with page 0 instead of 1 to keep page range calculations simple.
-		// External (for the enduser) all pages start with 1.
-		page = page - 1;
-
-		int low = page * perPage;
-
-		if (perPage == 0) {
-			low = 0;
-		}
-
-		MeshAuthUser requestUser = ac.getUser();
-
-		// Iterate over all vertices that are managed by this root vertex
-		FramedGraph graph = getGraph();
-		Iterable<Edge> itemEdges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_out", this.getId());
-
-		AtomicLong counter = new AtomicLong();
-		List<T> elementsOfPage = StreamSupport.stream(itemEdges.spliterator(), false)
-
-				// Get the vertex from the edge
-				.map(itemEdge -> itemEdge.getVertex(Direction.IN))
-
-				// Only handle elements which are visible to the user
-				.filter(item -> requestUser.hasPermissionForId(item.getId(), READ_PERM))
-
-				// We need to get a total count of all visible elements
-				.map(item -> {
-					counter.incrementAndGet();
-					return item;
-				})
-
-				// Sort the elements by element id
-				.sorted(new ElementIdComparator())
-
-				// Apply paging - skip to lower bounds
-				.skip(low)
-
-				// Apply paging - only include a specific amout of elements
-				.limit(perPage)
-
-				// Frame the remaining elements so that we can access their ferma methods
-				.map(item -> graph.frameElementExplicit(item, getPersistanceClass()))
-
-				// Create a list of all found elements
-				.collect(Collectors.toList());
-
-		// The totalPages of the list response must be zero if the perPage parameter is also zero.
-		int totalPages = 0;
-		if (perPage != 0) {
-			totalPages = (int) Math.ceil(counter.get() / (double) (perPage));
-		}
-
-		return new TransformablePageImpl<T>(elementsOfPage, counter.get(), ++page, totalPages, elementsOfPage.size(), perPage);
+		return new DynamicTransformablePageImpl<>(ac, this, pagingInfo, READ_PERM, null);
 	}
 
 	/**
