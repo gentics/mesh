@@ -37,11 +37,12 @@ public class GraphQLPermissionTest extends AbstractMeshTest {
 			for (Node node : project().getNodeRoot().findAll()) {
 				role().revokePermissions(node, GraphPermission.READ_PERM);
 			}
+			// Expliticly remove read_publish for a single node
 			role().revokePermissions(folder("news"), GraphPermission.READ_PUBLISHED_PERM);
 			tx.success();
 		}
 
-		// 3. Invoke the query and assert that the nodes can still be loaded
+		// 3. Invoke the query and assert that the nodes can still be loaded (due to read published)
 		String queryName = "node-perm-children-query";
 		GraphQLResponse response = call(
 				() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName), new VersioningParametersImpl().setVersion("published")));
