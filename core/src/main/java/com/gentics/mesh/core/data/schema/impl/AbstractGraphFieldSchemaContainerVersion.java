@@ -74,7 +74,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	protected abstract String getMigrationAddress();
 
 	@Override
-	public int getVersion() {
+	public String getVersion() {
 		return getProperty(VERSION_PROPERTY_KEY);
 	}
 
@@ -192,7 +192,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 		resultingSchema.validate();
 
 		// Increment version of the schema
-		resultingSchema.setVersion(resultingSchema.getVersion() + 1);
+		resultingSchema.setVersion(String.valueOf(Double.valueOf(resultingSchema.getVersion()) + 1));
 
 		// Create and set the next version of the schema
 		SCV nextVersion = getGraph().addFramedVertex(getContainerVersionClass());

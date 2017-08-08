@@ -196,6 +196,13 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<NodeResponse> createNode(String uuid, String projectName, NodeCreateRequest nodeCreateRequest,
+			ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public MeshRequest<NodeResponse> updateNode(String projectName, String uuid, NodeUpdateRequest nodeUpdateRequest,
 			ParameterProvider... parameters) {
 		LocalActionContextImpl<NodeResponse> ac = createContext(NodeResponse.class, parameters);
@@ -369,6 +376,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		ac.setPayloadObject(request);
 		projectCrudHandler.handleCreate(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ProjectResponse> createProject(String uuid, ProjectCreateRequest request) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -576,6 +589,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<GroupResponse> createGroup(String uuid, GroupCreateRequest createRequest) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest request) {
 		LocalActionContextImpl<GroupResponse> ac = createContext(GroupResponse.class);
 		ac.setPayloadObject(request);
@@ -647,6 +666,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<UserResponse> createUser(String uuid, UserCreateRequest request, ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public MeshRequest<UserResponse> updateUser(String uuid, UserUpdateRequest request, ParameterProvider... parameters) {
 		LocalActionContextImpl<UserResponse> ac = createContext(UserResponse.class, parameters);
 		ac.setPayloadObject(request);
@@ -695,6 +720,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		ac.setPayloadObject(request);
 		roleCrudHandler.handleCreate(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<RoleResponse> createRole(String uuid, RoleCreateRequest request) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
@@ -1078,6 +1109,13 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
+	public MeshRequest<ReleaseResponse> createRelease(String projectName, String uuid, ReleaseCreateRequest releaseCreateRequest,
+			ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
 	public MeshRequest<ReleaseResponse> findReleaseByUuid(String projectName, String releaseUuid, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
 		return null;
@@ -1169,7 +1207,7 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	@Override
 	public MeshRequest<GraphQLResponse> graphql(String projectName, GraphQLRequest request, ParameterProvider... parameters) {
 		// TODO Auto-generated method stub
@@ -1228,5 +1266,10 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRestClient setAuthenticationProvider(JWTAuthentication authentication) {
 		// TODO Auto-generated method stub
 		return this;
+	}
+
+	@Override
+	public String getBaseUri() {
+		return DEFAULT_BASEURI;
 	}
 }

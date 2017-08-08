@@ -2,9 +2,7 @@ package com.gentics.mesh.core.data.root;
 
 import java.util.List;
 
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -34,15 +32,6 @@ public interface NodeRoot extends RootVertex<Node> {
 	Page<? extends Node> findAll(MeshAuthUser requestUser, List<String> languageTags, PagingParameters pagingInfo) throws InvalidArgumentException;
 
 	/**
-	 * List all contents of nodes which are visible for the user.
-	 * 
-	 * @param ac
-	 * @param pagingInfo
-	 * @return
-	 */
-	Page<? extends NodeGraphFieldContainer> findAllContents(InternalActionContext ac, PagingParameters pagingInfo);
-
-	/**
 	 * Create a new node.
 	 * 
 	 * @param user
@@ -53,7 +42,24 @@ public interface NodeRoot extends RootVertex<Node> {
 	 *            Project to which the node should be assigned to
 	 * @return Created node
 	 */
-	Node create(User user, SchemaContainerVersion container, Project project);
+	default Node create(User user, SchemaContainerVersion container, Project project) {
+		return create(user, container, project, null);
+	}
+
+	/**
+	 * Create a new node.
+	 * 
+	 * @param user
+	 *            User that is used to set creator and editor references
+	 * @param container
+	 *            Schema version that should be used when creating the node
+	 * @param project
+	 *            Project to which the node should be assigned to
+	 * @param uuid
+	 *            Optional uuid
+	 * @return Created node
+	 */
+	Node create(User user, SchemaContainerVersion container, Project project, String uuid);
 
 	/**
 	 * Add the node to the aggregation node.

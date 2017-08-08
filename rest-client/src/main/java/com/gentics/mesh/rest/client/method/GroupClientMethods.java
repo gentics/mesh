@@ -29,10 +29,19 @@ public interface GroupClientMethods {
 	/**
 	 * Create the group.
 	 * 
-	 * @param groupCreateRequest
+	 * @param createRequest
 	 * @return
 	 */
-	MeshRequest<GroupResponse> createGroup(GroupCreateRequest groupCreateRequest);
+	MeshRequest<GroupResponse> createGroup(GroupCreateRequest createRequest);
+
+	/**
+	 * Create the group using the provided uuid.
+	 * 
+	 * @param uuid
+	 * @param createRequest
+	 * @return
+	 */
+	MeshRequest<GroupResponse> createGroup(String uuid, GroupCreateRequest createRequest);
 
 	/**
 	 * Update the group.

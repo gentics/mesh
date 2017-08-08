@@ -16,9 +16,9 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -46,7 +46,7 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 
 	@Test
 	public void testSearchSchema() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -75,7 +75,7 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 	public void testDocumentCreation() throws Exception {
 		final String newName = "newschema";
 		SchemaResponse schema = createSchema(newName);
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MeshAssert.assertElement(boot().schemaContainerRoot(), schema.getUuid(), true);
 		}
 		MeshResponse<SchemaListResponse> future = client()

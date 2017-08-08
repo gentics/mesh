@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<artifactId>mesh-common</artifactId>
@@ -10,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.9.17-SNAPSHOT</version>
+		<version>0.9.25-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -26,6 +25,11 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
+		</dependency>
+		<dependency>
+			<artifactId>ferma-extensions-api</artifactId>
+			<groupId>com.gentics.ferma</groupId>
+			<version>${ferma.extensions.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.syncleus.ferma</groupId>
@@ -93,8 +97,8 @@
 			<artifactId>rxjava</artifactId>
 			<version>${rx.version}</version>
 		</dependency>
-	
-	
+
+
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-api</artifactId>

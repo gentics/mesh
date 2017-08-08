@@ -9,6 +9,7 @@ import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -48,8 +49,11 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	}
 
 	@Override
-	public Language create(String languageName, String languageTag) {
+	public Language create(String languageName, String languageTag, String uuid) {
 		LanguageImpl language = getGraph().addFramedVertex(LanguageImpl.class);
+		if (uuid != null) {
+			language.setUuid(uuid);
+		}
 		language.setName(languageName);
 		language.setLanguageTag(languageTag);
 		addLanguage(language);
@@ -57,7 +61,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 	}
 
 	@Override
-	public Language create(InternalActionContext rc, SearchQueueBatch batch) {
+	public Language create(InternalActionContext rc, SearchQueueBatch batch, String uuid) {
 		throw new NotImplementedException("Languages can be created using REST");
 	}
 
@@ -75,7 +79,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 		if (it.hasNext()) {
 			//TODO check whether the language was assigned to this root node?
 			//return out(HAS_LANGUAGE).has(LanguageImpl.class).has("languageTag", languageTag).nextOrDefaultExplicit(LanguageImpl.class, null);
-			FramedGraph graph = Database.getThreadLocalGraph();
+			FramedGraph graph = Tx.getActive().getGraph();
 			return graph.frameElementExplicit(it.next(), LanguageImpl.class);
 		} else {
 			return null;

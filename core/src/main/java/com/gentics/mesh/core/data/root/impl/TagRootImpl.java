@@ -97,7 +97,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 	}
 
 	@Override
-	public Tag create(InternalActionContext ac, SearchQueueBatch batch) {
+	public Tag create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		throw new NotImplementedException("The tag family is the root element thus should be used for creation of tags.");
 	}
 

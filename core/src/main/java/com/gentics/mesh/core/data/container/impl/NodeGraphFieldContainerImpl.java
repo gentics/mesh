@@ -62,10 +62,15 @@ import com.google.common.collect.MapDifference;
 import com.google.common.collect.Maps;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
  * @see NodeGraphFieldContainer
  */
 public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl implements NodeGraphFieldContainer {
+
+	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
 
 	public static final String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
 
@@ -147,7 +152,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		batch.delete(this, releaseUuid, DRAFT, false);
 		if (isPublished(releaseUuid)) {
 			batch.delete(this, releaseUuid, PUBLISHED, false);
+			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 		}
+		// Remove the edge between the node and the container that matches the release
 		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 				.or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()),
 						e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode()))
@@ -201,7 +208,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		// Determine the webroot path of the container parent node
 		String segment = node.getPathSegment(releaseUuid, type, getLanguage().getLanguageTag());
 
-		// The webroot uniqueness will be checked by validating that the string [segmentValue-releaseUuid-parentNodeUuid] is only listed once within the given specific index for (drafts or published nodes) 
+		// The webroot uniqueness will be checked by validating that the string [segmentValue-releaseUuid-parentNodeUuid] is only listed once within the given
+		// specific index for (drafts or published nodes)
 		if (segment != null) {
 			StringBuilder webRootInfo = new StringBuilder(segment);
 			webRootInfo.append("-").append(releaseUuid);
@@ -214,6 +222,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			NodeGraphFieldContainerImpl conflictingContainer = MeshInternal.get().database().checkIndexUniqueness(indexName, this,
 					webRootInfo.toString());
 			if (conflictingContainer != null) {
+				if (log.isDebugEnabled()) {
+					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} using index {" + indexName + "}");
+				}
 				Node conflictingNode = conflictingContainer.getParentNode();
 				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(),
 						conflictingContainer.getLanguage().getLanguageTag(), conflictI18n, segmentFieldName, segment);
@@ -449,11 +460,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public User getEditor() {
 		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
 	}
-	
+
 	@Override
 	public String getSegmentFieldValue() {
 		String segmentFieldKey = getSchemaContainerVersion().getSchema().getSegmentField();
-		// 1. The container may reference a schema which has no segment	field set thus no path segment can be determined
+		// 1. The container may reference a schema which has no segment field set thus no path segment can be determined
 		if (segmentFieldKey == null) {
 			return null;
 		}

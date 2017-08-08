@@ -19,7 +19,22 @@ public interface GroupRoot extends RootVertex<Group> {
 	 *            User that is used to set the creator and editor references.
 	 * @return Created group
 	 */
-	Group create(String name, User user);
+	default Group create(String name, User user) {
+		return create(name, user, null);
+	}
+
+	/**
+	 * Create a new group and assign it to the group root.
+	 * 
+	 * @param name
+	 *            Name of the group
+	 * @param user
+	 *            User that is used to set the creator and editor references.
+	 * @param uuid
+	 *            optional uuid            
+	 * @return Created group
+	 */
+	Group create(String name, User user, String uuid);
 
 	/**
 	 * Add the group to the aggregation vertex.

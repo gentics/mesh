@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -30,7 +31,6 @@ import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -119,7 +119,7 @@ public class RestModelTest extends AbstractMeshTest {
 
 	@Test
 	public void testNodeList() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaModel folderSchema = schemaContainer("folder").getLatestVersion().getSchema();
 			SchemaModel contentSchema = schemaContainer("content").getLatestVersion().getSchema();
 

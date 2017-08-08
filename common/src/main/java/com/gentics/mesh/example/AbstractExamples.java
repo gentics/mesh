@@ -53,7 +53,7 @@ public abstract class AbstractExamples {
 		SchemaReference schemaReference = new SchemaReference();
 		schemaReference.setName(name);
 		schemaReference.setUuid(randomUUID());
-		schemaReference.setVersion(1);
+		schemaReference.setVersion("1.0");
 		return schemaReference;
 	}
 
@@ -70,7 +70,7 @@ public abstract class AbstractExamples {
 		return reference;
 	}
 
-	public MicroschemaReference getMicroschemaReference(String name, int version) {
+	public MicroschemaReference getMicroschemaReference(String name, String version) {
 		return new MicroschemaReference().setName(name).setUuid(randomUUID()).setVersion(version);
 	}
 

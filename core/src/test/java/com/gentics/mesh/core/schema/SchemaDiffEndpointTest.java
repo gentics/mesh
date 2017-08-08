@@ -12,6 +12,7 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -23,7 +24,6 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -65,7 +65,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testDiffDisplayField() throws GenericRestException, Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer container = schemaContainer("content");
 			Schema request = getSchema();
 			request.setDisplayField("slug");
@@ -80,7 +80,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testNoDiff() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer container = schemaContainer("content");
 			Schema request = getSchema();
 			SchemaChangesListModel changes = call(() -> client().diffSchema(container.getUuid(), request));
@@ -91,7 +91,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddField() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			Schema request = getSchema();
 			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binary");
@@ -109,7 +109,7 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testDefaultMigration() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaContainer schema = schemaContainer("content");
 			Schema request = getSchema();
 			request.removeField("content");

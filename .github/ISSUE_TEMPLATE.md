@@ -1,16 +1,15 @@
 ## Gentics Mesh Version, operating system, or hardware.
-- [ ] v0.9.x
+- v0.9.x
 
 ## Operating System
-- [ ] Linux
-- [ ] MacOSX
-- [ ] Windows
-- [ ] Other Unix
-- [ ] Other, name? 
+- Linux
+- MacOSX
+- Windows
+- Other, name?
 
 ## JVM
-- [ ] Oracle JDK 8
-- [ ] Open JDK 8
+- Oracle JDK 1.8.0_100
+- Open JDK 1.8.0_100
 
 ## Problem
 

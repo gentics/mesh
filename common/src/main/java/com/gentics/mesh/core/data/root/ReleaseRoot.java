@@ -27,7 +27,22 @@ public interface ReleaseRoot extends RootVertex<Release> {
 	 *            creator
 	 * @return new Release
 	 */
-	Release create(String name, User creator);
+	default Release create(String name, User creator) {
+		return create(name, creator, null);
+	}
+
+	/**
+	 * Create a new release and make it the latest The new release will be the initial release, if it is the first created.
+	 *
+	 * @param name
+	 *            release name
+	 * @param creator
+	 *            creator
+	 * @param uuid
+	 *            Optional uuid
+	 * @return new Release
+	 */
+	Release create(String name, User creator, String uuid);
 
 	/**
 	 * Get the initial release of this root.

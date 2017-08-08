@@ -1,8 +1,5 @@
 package com.gentics.mesh.graphdb.spi;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
@@ -10,13 +7,15 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.gentics.ferma.Tx;
+import com.gentics.ferma.TxHandler;
+import com.gentics.ferma.TxHandler0;
+import com.gentics.ferma.TxHandler1;
+import com.gentics.ferma.TxHandler2;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.graphdb.model.MeshElement;
-import com.syncleus.ferma.FramedGraph;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -33,28 +32,6 @@ import rx.Single;
 public interface Database {
 
 	static final Logger log = LoggerFactory.getLogger(Database.class);
-
-	/**
-	 * Thread local that is used to store references to the used graph.
-	 */
-	public static ThreadLocal<FramedGraph> threadLocalGraph = new ThreadLocal<>();
-
-	public static void setThreadLocalGraph(FramedGraph graph) {
-		Database.threadLocalGraph.set(graph);
-	}
-
-	/**
-	 * Return the current active graph. A transaction should be the only place where this threadlocal is updated.
-	 * 
-	 * @return
-	 */
-	public static FramedGraph getThreadLocalGraph() {
-		FramedGraph graph = Database.threadLocalGraph.get();
-		if (graph == null) {
-			throw error(INTERNAL_SERVER_ERROR, "Could not find thread local graph. Maybe you are executing this code outside of a transaction.");
-		}
-		return graph;
-	}
 
 	/**
 	 * Stop the graph database.
@@ -86,7 +63,7 @@ public interface Database {
 	 * <pre>
 	 * {
 	 * 	&#64;code
-	 * 	try(Trx tx = db.trx()) {
+	 * 	try(Tx tx = db.tx()) {
 	 * 	  // interact with graph db here
 	 *  }
 	 * }
@@ -105,30 +82,26 @@ public interface Database {
 	 */
 	<T> T tx(TxHandler<T> txHandler);
 
-	/**
-	 * Return a autocloseable transaction handler. Please note that this method will return a non transaction handler. All actions invoked are executed atomic
-	 * and no rollback can be performed. This object should be used within a try-with-resource block.
-	 * 
-	 * <pre>
-	 * {
-	 * 	&#64;code
-	 * 	try(NoTx tx = db.noTx()) {
-	 * 	  // interact with graph db here
-	 *  }
-	 * }
-	 * </pre>
-	 * 
-	 * @return
-	 */
-	NoTx noTx();
+	default void tx(TxHandler0 txHandler) {
+		tx((tx) -> {
+			txHandler.handle();
+		});
+	}
 
-	/**
-	 * Asynchronously execute the trxHandler within the scope of a non transaction.
-	 * 
-	 * @param trxHandler
-	 * @return
-	 */
-	default <T> Single<T> operateNoTx(TxHandler<Single<T>> trxHandler) {
+	default <T> T tx(TxHandler1<T> txHandler) {
+		return tx((tx) -> {
+			return txHandler.handle();
+		});
+	}
+
+	default void tx(TxHandler2 txHandler) {
+		tx((tx) -> {
+			txHandler.handle(tx);
+			return null;
+		});
+	}
+
+	default <T> Single<T> operateTx(TxHandler1<Single<T>> trxHandler) {
 		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
 		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
 		try {
@@ -139,8 +112,8 @@ public interface Database {
 
 		return Single.create(sub -> {
 			Mesh.vertx().executeBlocking(bc -> {
-				try (NoTx noTx = noTx()) {
-					Single<T> result = trxHandler.call();
+				try (Tx tx = tx()) {
+					Single<T> result = trxHandler.handle();
 					if (result == null) {
 						bc.complete();
 					} else {
@@ -168,13 +141,49 @@ public interface Database {
 	}
 
 	/**
-	 * Execute the given handler within the scope of a no transaction.
+	 * Asynchronously execute the trxHandler within the scope of a non transaction.
 	 * 
-	 * @param txHandler
-	 *            handler that is invoked within the scope of the no-transaction.
+	 * @param trxHandler
 	 * @return
 	 */
-	<T> T noTx(TxHandler<T> txHandler);
+	default <T> Single<T> operateTx(TxHandler<Single<T>> trxHandler) {
+		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
+		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
+		try {
+			throw new Exception("Transaction timeout exception");
+		} catch (Exception e1) {
+			reference.set(e1);
+		}
+
+		return Single.create(sub -> {
+			Mesh.vertx().executeBlocking(bc -> {
+				try (Tx tx = tx()) {
+					Single<T> result = trxHandler.handle(tx);
+					if (result == null) {
+						bc.complete();
+					} else {
+						try {
+							T ele = result.toBlocking().toFuture().get(40, TimeUnit.SECONDS);
+							bc.complete(ele);
+						} catch (TimeoutException e2) {
+							log.error("Timeout while processing result of transaction handler.", e2);
+							log.error("Calling transaction stacktrace.", reference.get());
+							bc.fail(reference.get());
+						}
+					}
+				} catch (Exception e) {
+					log.error("Error while handling no-transaction.", e);
+					bc.fail(e);
+				}
+			}, false, (AsyncResult<T> done) -> {
+				if (done.failed()) {
+					sub.onError(done.cause());
+				} else {
+					sub.onSuccess(done.result());
+				}
+			});
+		});
+	}
 
 	/**
 	 * Initialise the database and store the settings.

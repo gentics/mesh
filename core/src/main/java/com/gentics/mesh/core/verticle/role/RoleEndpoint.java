@@ -53,9 +53,9 @@ public class RoleEndpoint extends AbstractEndpoint {
 	private void addPermissionHandler() {
 		Endpoint permissionSetEndpoint = createEndpoint();
 		permissionSetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
-		permissionSetEndpoint.setRAMLPath("/{roleUuid}/permissions/{pathToElement}");
+		permissionSetEndpoint.setRAMLPath("/{roleUuid}/permissions/{path}");
 		permissionSetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
-		permissionSetEndpoint.addUriParameter("pathToElement", "API path to the element.",
+		permissionSetEndpoint.addUriParameter("path", "API path to the element.",
 				"projects/" + UUIDUtil.randomUUID() + "\nprojects/" + UUIDUtil.randomUUID() + "/nodes/" + UUIDUtil.randomUUID());
 		permissionSetEndpoint.method(POST);
 		permissionSetEndpoint.description("Set the permissions between role and the targeted element.");
@@ -71,9 +71,9 @@ public class RoleEndpoint extends AbstractEndpoint {
 
 		Endpoint permissionGetEndpoint = createEndpoint();
 		permissionGetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
-		permissionGetEndpoint.setRAMLPath("/{roleUuid}/permissions/{pathToElement}");
+		permissionGetEndpoint.setRAMLPath("/{roleUuid}/permissions/{path}");
 		permissionGetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
-		permissionGetEndpoint.addUriParameter("pathToElement", "API path to the element.",
+		permissionGetEndpoint.addUriParameter("path", "API path to the element.",
 				"projects/" + UUIDUtil.randomUUID() + "\nprojects/" + UUIDUtil.randomUUID() + "/nodes/" + UUIDUtil.randomUUID());
 		permissionGetEndpoint.description("Load the permissions between given role and the targeted element.");
 		permissionGetEndpoint.method(GET);
@@ -105,7 +105,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:roleUuid");
 		endpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
-		endpoint.description("Update the role with the given uuid.");
+		endpoint.description("Update the role with the given uuid. The role is created if no role with the specified uuid could be found.");
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.exampleRequest(roleExamples.getRoleUpdateRequest("New role name"));

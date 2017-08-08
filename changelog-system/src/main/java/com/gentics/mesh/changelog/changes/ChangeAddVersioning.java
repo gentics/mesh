@@ -63,8 +63,6 @@ public class ChangeAddVersioning extends AbstractChange {
 				release.addEdge("HAS_SCHEMA_VERSION", latestSchemaVersion);
 			}
 
-			//TODO assign also microschemas?
-
 			getOrFixUserReference(project, "HAS_EDITOR");
 			getOrFixUserReference(project, "HAS_CREATOR");
 

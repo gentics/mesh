@@ -25,7 +25,23 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 * @return Created schema container
 	 * @throws MeshSchemaException
 	 */
-	SchemaContainer create(SchemaModel schema, User creator) throws MeshSchemaException;
+	default SchemaContainer create(SchemaModel schema, User creator) throws MeshSchemaException {
+		return create(schema, creator, null);
+	}
+
+	/**
+	 * Create new schema container.
+	 * 
+	 * @param schema
+	 *            Schema that should be stored in the container
+	 * @param creator
+	 *            User that is used to set editor and creator references
+	 * @param uuid
+	 *            Optional uuid
+	 * @return Created schema container
+	 * @throws MeshSchemaException
+	 */
+	SchemaContainer create(SchemaModel schema, User creator, String uuid) throws MeshSchemaException;
 
 	/**
 	 * Add the schema to the aggregation node.
@@ -64,4 +80,5 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	 * @return Project or null if this is the global root container
 	 */
 	Project getProject();
+
 }

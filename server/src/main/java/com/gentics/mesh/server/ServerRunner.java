@@ -5,7 +5,11 @@ import java.io.File;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.crypto.KeyStoreHelper;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.search.verticle.ElasticsearchHeadVerticle;
+import com.gentics.mesh.util.DeploymentUtil;
+import com.gentics.mesh.verticle.admin.AdminGUIVerticle;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -33,7 +37,16 @@ public class ServerRunner {
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
 			config.put("port", options.getHttpServerOptions().getPort());
-			// DeploymentUtil.deployAndWait(vertx, config, new AdminGUIVerticle(MeshInternal.get().routerStorage()), false);
+
+			// Add admin ui
+			AdminGUIVerticle adminVerticle = new AdminGUIVerticle(MeshInternal.get().routerStorage());
+			DeploymentUtil.deployAndWait(vertx, config, adminVerticle, false);
+
+			// Add elastichead
+			if (options.getSearchOptions().isHttpEnabled()) {
+				ElasticsearchHeadVerticle headVerticle = new ElasticsearchHeadVerticle(MeshInternal.get().routerStorage());
+				DeploymentUtil.deployAndWait(vertx, config, headVerticle, false);
+			}
 		});
 		mesh.run();
 	}

@@ -12,6 +12,11 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
+import com.gentics.ferma.Tx;
+import com.gentics.ferma.TxHandler;
+import com.gentics.ferma.TxHandler0;
+import com.gentics.ferma.TxHandler1;
+import com.gentics.ferma.TxHandler2;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -94,6 +99,26 @@ public interface TestHelperMethods {
 		return MeshInternal.get().database();
 	}
 
+	default Tx tx() {
+		return db().tx();
+	}
+
+	default void tx(TxHandler0 handler) {
+		db().tx(handler);
+	}
+
+	default <T> T tx(TxHandler1<T> handler) {
+		return db().tx(handler);
+	}
+
+	default void tx(TxHandler2 handler) {
+		db().tx(handler);
+	}
+
+	default <T> T tx(TxHandler<T> handler) {
+		return db().tx(handler);
+	}
+
 	default BootstrapInitializer boot() {
 		return MeshInternal.get().boot();
 	}
@@ -128,6 +153,35 @@ public interface TestHelperMethods {
 		return group;
 	}
 
+	default String groupUuid() {
+		return data().getUserInfo().getGroupUuid();
+	}
+
+	default String userUuid() {
+		return data().getUserInfo().getUserUuid();
+	}
+
+	/**
+	 * Return the uuid of the initial project release.
+	 * 
+	 * @return
+	 */
+	default String initialReleaseUuid() {
+		return data().releaseUuid();
+	}
+
+	default String roleUuid() {
+		return data().getUserInfo().getRoleUuid();
+	}
+
+	default String projectUuid() {
+		return data().projectUuid();
+	}
+
+	default String contentUuid() {
+		return data().getContentUuid();
+	}
+
 	default MeshRestClient client() {
 		return getTestContext().getClient();
 	}
@@ -146,7 +200,7 @@ public interface TestHelperMethods {
 
 	default public Node folder(String key) {
 		Node node = data().getFolder(key);
-		node.reload();
+		// node.reload();
 		return node;
 	}
 
@@ -156,19 +210,19 @@ public interface TestHelperMethods {
 
 	default TagFamily tagFamily(String key) {
 		TagFamily family = data().getTagFamily(key);
-		family.reload();
+		// family.reload();
 		return family;
 	}
 
 	default Tag tag(String key) {
 		Tag tag = data().getTag(key);
-		tag.reload();
+		// tag.reload();
 		return tag;
 	}
 
 	default SchemaContainer schemaContainer(String key) {
 		SchemaContainer container = data().getSchemaContainer(key);
-		container.reload();
+		// container.reload();
 		return container;
 	}
 
@@ -186,13 +240,13 @@ public interface TestHelperMethods {
 
 	default Language english() {
 		Language language = data().getEnglish();
-		language.reload();
+		// language.reload();
 		return language;
 	}
 
 	default Language german() {
 		Language language = data().getGerman();
-		language.reload();
+		// language.reload();
 		return language;
 	}
 
@@ -206,7 +260,7 @@ public interface TestHelperMethods {
 
 	default MicroschemaContainer microschemaContainer(String key) {
 		MicroschemaContainer container = data().getMicroschemaContainers().get(key);
-		container.reload();
+//		container.reload();
 		return container;
 	}
 
@@ -233,17 +287,26 @@ public interface TestHelperMethods {
 	 */
 	default Node content() {
 		Node content = data().getContent("news overview");
-		content.reload();
+		// content.reload();
 		return content;
 	}
 
 	/**
-	 * Return the lastest release of the dummy project
+	 * Return the latest release of the dummy project.
 	 * 
 	 * @return
 	 */
-	default Release release() {
+	default Release latestRelease() {
 		return project().getLatestRelease();
+	}
+
+	/**
+	 * Returns the initial release of the dummy project.
+	 * 
+	 * @return
+	 */
+	default Release initialRelease() {
+		return project().getInitialRelease();
 	}
 
 	default UserResponse readUser(String uuid) {
@@ -487,7 +550,10 @@ public interface TestHelperMethods {
 	default public NodeResponse uploadImage(Node node, String languageTag, String fieldName) throws IOException {
 		String contentType = "image/jpeg";
 		String fileName = "blume.jpg";
-		prepareSchema(node, "image/.*", fieldName);
+		try (Tx tx = tx()) {
+			prepareSchema(node, "image/.*", fieldName);
+			tx.success();
+		}
 
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);

@@ -20,6 +20,7 @@ import com.gentics.mesh.example.TagFamilyExamples;
 import com.gentics.mesh.example.UserExamples;
 import com.gentics.mesh.example.VersioningExamples;
 import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.impl.EndpointImpl;
 
 import io.vertx.ext.web.Route;
 import io.vertx.ext.web.Router;
@@ -83,7 +84,7 @@ public abstract class AbstractEndpoint {
 	/**
 	 * Description of the endpoints in a broader scope.
 	 * 
-	 * @return Descripton of the endpoint
+	 * @return Description of the endpoint
 	 */
 	public abstract String getDescription();
 
@@ -131,7 +132,7 @@ public abstract class AbstractEndpoint {
 	 * @return Created endpoint
 	 */
 	protected Endpoint createEndpoint() {
-		Endpoint endpoint = new Endpoint(getRouter());
+		Endpoint endpoint = new EndpointImpl(getRouter());
 		endpoints.add(endpoint);
 		return endpoint;
 	}

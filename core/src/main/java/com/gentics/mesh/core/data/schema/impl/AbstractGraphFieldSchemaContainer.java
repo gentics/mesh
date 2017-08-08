@@ -2,6 +2,8 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.HashMap;
 import java.util.List;
@@ -76,7 +78,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	}
 
 	@Override
-	public SCV findVersionByRev(Integer version) {
+	public SCV findVersionByRev(String version) {
 		return out(HAS_PARENT_CONTAINER).has(AbstractGraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY, version)
 				.nextOrDefaultExplicit(getContainerVersionClass(), null);
 	}
@@ -88,14 +90,32 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 
 	@Override
 	public Single<R> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		String version = ac.getVersioningParameters().getVersion();
 		// Delegate transform call to latest version
-		return getLatestVersion().transformToRest(ac, level, languageTags);
+		if (version == null || version.equals("draft")) {
+			return getLatestVersion().transformToRest(ac, level, languageTags);
+		} else {
+			SCV foundVersion = findVersionByRev(version);
+			if (foundVersion == null) {
+				throw error(NOT_FOUND, "object_not_found_for_uuid_version", getUuid(), version);
+			}
+			return foundVersion.transformToRest(ac, level, languageTags);
+		}
 	}
 
 	@Override
 	public R transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
+		String version = ac.getVersioningParameters().getVersion();
 		// Delegate transform call to latest version
-		return getLatestVersion().transformToRestSync(ac, level, languageTags);
+		if (version == null || version.equals("draft")) {
+			return getLatestVersion().transformToRestSync(ac, level, languageTags);
+		} else {
+			SCV foundVersion = findVersionByRev(version);
+			if (foundVersion == null) {
+				throw error(NOT_FOUND, "object_not_found_for_uuid_version", getUuid(), version);
+			}
+			return foundVersion.transformToRestSync(ac, level, languageTags);
+		}
 	}
 
 	@Override
@@ -125,10 +145,7 @@ public abstract class AbstractGraphFieldSchemaContainer<R extends FieldSchemaCon
 	public Map<Release, SCV> findReferencedReleases() {
 		Map<Release, SCV> references = new HashMap<>();
 		for (SCV version : findAll()) {
-			Release release = version.getRelease();
-			if (release != null) {
-				references.put(release, version);
-			}
+			version.getReleases().forEach(release -> references.put(release, version));
 		}
 		return references;
 	}

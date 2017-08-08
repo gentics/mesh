@@ -16,7 +16,7 @@ public class MicroschemaModelImpl implements MicroschemaModel {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Version of the microschema")
-	private int version;
+	private String version;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Description of the microschema")
@@ -31,12 +31,12 @@ public class MicroschemaModelImpl implements MicroschemaModel {
 	private List<FieldSchema> fields = new ArrayList<>();
 
 	@Override
-	public int getVersion() {
+	public String getVersion() {
 		return version;
 	}
 
 	@Override
-	public MicroschemaModel setVersion(int version) {
+	public MicroschemaModel setVersion(String version) {
 		this.version = version;
 		return this;
 	}

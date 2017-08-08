@@ -1,5 +1,6 @@
 package com.gentics.mesh.assertj.impl;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 import com.gentics.mesh.assertj.AbstractMeshAssert;
@@ -18,6 +19,16 @@ public class TagResponseAssert extends AbstractMeshAssert<TagResponseAssert, Tag
 		assertEquals(tag.getUuid(), actual.getUuid());
 		// assertEquals(tag.getSchema().getUuid(), restTag.getSchema().getUuid());
 		// assertEquals(tag.getSchema().getName(), restTag.getSchema().getSchemaName());
+		return this;
+	}
+
+	public TagResponseAssert hasName(String name) {
+		assertThat(actual.getName()).as("Tag name").isEqualTo(name);
+		return this;
+	}
+
+	public TagResponseAssert hasUuid(String uuid) {
+		assertThat(actual.getUuid()).as("Tag uuid").isEqualTo(uuid);
 		return this;
 	}
 }

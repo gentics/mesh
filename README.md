@@ -1,13 +1,9 @@
-[![Build Status](https://travis-ci.org/gentics/mesh.svg)](https://travis-ci.org/gentics/mesh)
-[![Coverage Status](https://img.shields.io/coveralls/gentics/mesh.svg)](https://coveralls.io/r/gentics/mesh?branch=master)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.gentics.mesh/mesh/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.gentics.mesh/mesh)
-[![JavaDoc](https://javadoc-emblem.rhcloud.com/doc/com.gentics.mesh/mesh/badge.svg)](http://www.javadoc.io/doc/com.gentics.mesh/mesh)
 [![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
 [![Stack Overflow](http://img.shields.io/:stack%20overflow-genticsmesh-brightgreen.svg)](http://stackoverflow.com/questions/tagged/mesh-cms)
 
 # Gentics Mesh
 
-Gentics Mesh is an Open Source API-first CMS for developers. All contents can be stored/updated and retrieved using the [REST API](http://getmesh.io/docs/beta/raml/).
+Gentics Mesh is an Open Source API-first CMS for developers. All contents can be stored/updated and retrieved using the [REST API](https://getmesh.io/docs/beta/raml/).
 
 ## Features
 
@@ -21,24 +17,24 @@ Gentics Mesh is an Open Source API-first CMS for developers. All contents can be
 * Graph database at its core
 * Docker support
 
-![alt tag](http://getmesh.io/assets/mesh-heroimg.png)
+![alt tag](https://getmesh.io/assets/mesh-heroimg.png)
 
 ### Getting Started
 
-You need to have at least JRE 8 of Java installed. See the [Getting Started page](http://getmesh.io/docs/beta/getting-started.html) for more information.
+You need to have at least JRE 8 of Java installed. See the [Getting Started page](https://getmesh.io/docs/beta/getting-started.html) for more information.
 
 You can either download the all-in-one jar or fire-up one of the Docker images.
 
-* [Download from getmesh.io](http://getmesh.io/Download)
-* [Docker Hub](https://hub.docker.com/r/gentics/mesh-demo/)
-* [Maven Central](http://mvnrepository.com/artifact/com.gentics.mesh)
+* [Download from getmesh.io](https://getmesh.io/Download)
+* [Docker Hub](https://hub.docker.com/r/gentics/mesh/)
+* [Maven](https://maven.gentics.com/maven2/com/gentics/mesh)
 
-### [Changelog](http://getmesh.io/docs/beta/changelog.html)
+### [Changelog](https://getmesh.io/docs/beta/changelog.html)
 
 ### Documentation
 
-* http://getmesh.io/docs/beta/
-* http://getmesh.io/docs/beta/raml/
+* https://getmesh.io/docs/beta/
+* https://getmesh.io/docs/beta/raml/
 
 ### UI
 
@@ -70,11 +66,11 @@ Or a list of contents
 
 #### GraphQL
 
-If you want to retieve deeply nested data you may use the GraphiQL browser
+If you want to retrieve deeply nested data you may use the GraphiQL browser
 
 * http://localhost:8080/api/v1/demo/graphql/browser/
 
-Or try our [live demo](http://getmesh.io/api/v1/demo/graphql/browser/).
+Or try our [live demo](https://demo.getmesh.io/api/v1/demo/graphql/browser/).
 
 ### Example JSON
 

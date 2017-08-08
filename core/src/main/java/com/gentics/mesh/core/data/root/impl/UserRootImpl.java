@@ -71,8 +71,11 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
-	public User create(String username, User creator) {
+	public User create(String username, User creator, String uuid) {
 		User user = getGraph().addFramedVertex(UserImpl.class);
+		if (uuid != null) {
+			user.setUuid(uuid);
+		}
 		user.setUsername(username);
 		user.enable();
 
@@ -112,7 +115,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 		if (!it.hasNext()) {
 			return null;
 		}
-		FramedGraph graph = Database.getThreadLocalGraph();
+		FramedGraph graph = getGraph();
 		MeshAuthUserImpl user = graph.frameElement(it.next(), MeshAuthUserImpl.class);
 		if (it.hasNext()) {
 			throw new RuntimeException("Found multiple nodes with the same UUID");
@@ -136,7 +139,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 	}
 
 	@Override
-	public User create(InternalActionContext ac, SearchQueueBatch batch) {
+	public User create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		BootstrapInitializer boot = MeshInternal.get().boot();
 		MeshAuthUser requestUser = ac.getUser();
 
@@ -160,7 +163,7 @@ public class UserRootImpl extends AbstractRootVertex<User> implements UserRoot {
 			throw conflict(conflictingUser.getUuid(), userName, "user_conflicting_username");
 		}
 
-		User user = create(requestModel.getUsername(), requestUser);
+		User user = create(requestModel.getUsername(), requestUser, uuid);
 		user.setFirstname(requestModel.getFirstname());
 		user.setUsername(requestModel.getUsername());
 		user.setLastname(requestModel.getLastname());

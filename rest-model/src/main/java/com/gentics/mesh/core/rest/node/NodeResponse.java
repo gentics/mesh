@@ -83,9 +83,9 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	@JsonPropertyDescription("List of nodes which construct the breadcrumb. Note that the start node will not be included in the list.")
 	private Deque<NodeReference> breadcrumb = new ArrayDeque<>();
 
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Reference to the version of the node content.")
-	private VersionReference version;
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Version of the node content.")
+	private String version;
 
 	public NodeResponse() {
 	}
@@ -320,7 +320,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * 
 	 * @return version number
 	 */
-	public VersionReference getVersion() {
+	public String getVersion() {
 		return version;
 	}
 
@@ -330,7 +330,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	 * @param version
 	 * @return Fluent API
 	 */
-	public NodeResponse setVersion(VersionReference version) {
+	public NodeResponse setVersion(String version) {
 		this.version = version;
 		return this;
 	}

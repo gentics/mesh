@@ -59,12 +59,15 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public MicroschemaContainer create(MicroschemaModel microschema, User user) {
+	public MicroschemaContainer create(MicroschemaModel microschema, User user, String uuid) {
 		microschema.validate();
 		MicroschemaContainer container = getGraph().addFramedVertex(MicroschemaContainerImpl.class);
+		if (uuid != null) {
+			container.setUuid(uuid);
+		}
 		MicroschemaContainerVersion version = getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
 
-		microschema.setVersion(1);
+		microschema.setVersion("1.0");
 		container.setLatestVersion(version);
 		version.setName(microschema.getName());
 		version.setSchema(microschema);
@@ -82,14 +85,14 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public MicroschemaContainer create(InternalActionContext ac, SearchQueueBatch batch) {
+	public MicroschemaContainer create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		MicroschemaModel microschema = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
 		microschema.validate();
 		if (!requestUser.hasPermission(this, GraphPermission.CREATE_PERM)) {
 			throw error(FORBIDDEN, "error_missing_perm", getUuid());
 		}
-		MicroschemaContainer container = create(microschema, requestUser);
+		MicroschemaContainer container = create(microschema, requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
 		batch.store(container, true);
 		return container;
@@ -105,7 +108,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	public MicroschemaContainerVersion fromReference(MicroschemaReference reference, Release release) {
 		String microschemaName = reference.getName();
 		String microschemaUuid = reference.getUuid();
-		Integer version = release == null ? reference.getVersion() : null;
+		String version = release == null ? reference.getVersion() : null;
 		MicroschemaContainer container = null;
 		if (!isEmpty(microschemaName)) {
 			container = findByName(microschemaName);

@@ -35,7 +35,7 @@ public interface ResponseHandler<T> extends Handler<HttpClientResponse> {
 
 	@Override
 	default void handle(HttpClientResponse response) {
-		getFuture().setResponse(response);
+		getFuture().setRawResponse(response);
 		int code = response.statusCode();
 		if (code >= 200 && code < 300) {
 			handleSuccess(response);

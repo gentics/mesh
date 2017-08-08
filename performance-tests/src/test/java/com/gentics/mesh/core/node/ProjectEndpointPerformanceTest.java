@@ -31,7 +31,7 @@ public class ProjectEndpointPerformanceTest extends AbstractMeshTest {
 	public void testPerformance() {
 		addProjects();
 
-		String uuid = db().noTx(() -> project().getUuid());
+		String uuid = db().tx(() -> project().getUuid());
 
 		loggingStopWatch(logger, "project.read-page-100", 200, (step) -> {
 			call(() -> client().findProjects(new PagingParametersImpl().setPerPage(100)));

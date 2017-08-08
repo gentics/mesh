@@ -163,7 +163,7 @@ public class GroupEndpoint extends AbstractEndpoint {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:groupUuid");
 		endpoint.addUriParameter("groupUuid", "Uuid of the group which should be updated.", UUIDUtil.randomUUID());
-		endpoint.description("Update the group with the given uuid.");
+		endpoint.description("Update the group with the given uuid. The group is created if no group with the specified uuid could be found.");
 		endpoint.method(POST);
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.produces(APPLICATION_JSON);

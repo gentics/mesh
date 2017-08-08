@@ -15,6 +15,7 @@ import org.codehaus.jettison.json.JSONException;
 import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -28,7 +29,6 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -44,11 +44,11 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 	 * @throws JSONException
 	 */
 	protected void searchWithLanguages(String... expectedLanguages) throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
-		String uuid = db().noTx(() -> content("concorde").getUuid());
+		String uuid = db().tx(() -> content("concorde").getUuid());
 
 		NodeListResponse response = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("concorde"), new PagingParametersImpl().setPage(1).setPerPage(100),

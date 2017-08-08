@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -10,6 +11,7 @@ import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -20,21 +22,18 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.graphdb.NoTx;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeIntoNonFolderNode() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = content("concorde");
@@ -48,7 +47,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodesSame() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			String oldParentUuid = sourceNode.getParentNode(releaseUuid).getUuid();
@@ -60,7 +59,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeIntoChildNode() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("news");
 			Node targetNode = folder("2015");
@@ -76,23 +75,26 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeWithoutPerm() {
-		try (NoTx noTx = db().noTx()) {
-			String releaseUuid = project().getLatestRelease().getUuid();
-			Node sourceNode = folder("deals");
-			Node targetNode = folder("2015");
-			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
+		Node sourceNode = folder("deals");
+		Node targetNode = folder("2015");
 
+		try (Tx tx = tx()) {
+			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(initialReleaseUuid()).getUuid());
+			role().revokePermissions(sourceNode, GraphPermission.UPDATE_PERM);
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()), FORBIDDEN, "error_missing_perm",
 					sourceNode.getUuid());
 			assertNotEquals("The source node should not have been moved.", targetNode.getUuid(),
-					folder("deals").getParentNode(releaseUuid).getUuid());
+					folder("deals").getParentNode(initialReleaseUuid()).getUuid());
 		}
 	}
 
 	@Test
 	public void testMoveNodeWithPerm() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			Node sourceNode = folder("deals");
 			Node targetNode = folder("2015");
@@ -101,7 +103,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()));
 
 			sourceNode.reload();
-			try (Tx tx = db().tx()) {
+			try (Tx tx2 = tx()) {
 				assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
 						sourceNode.getParentNode(releaseUuid).getUuid());
 				assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
@@ -115,9 +117,9 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testMoveNodeWithNoSegmentFieldDefined() {
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 
-			//1. Create new schema which does not have a segmentfield defined
+			// 1. Create new schema which does not have a segmentfield defined
 			SchemaCreateRequest createRequest = new SchemaCreateRequest();
 			createRequest.setName("test");
 			createRequest.setDescription("Some test schema");
@@ -133,7 +135,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 			String releaseUuid = project().getLatestRelease().getUuid();
 			SchemaReference reference = new SchemaReference();
 			reference.setName("test");
-			reference.setVersion(1);
+			reference.setVersion("1.0");
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid, reference));
 
 			// We don't need to wait for a schema migration because there are no nodes which use the schema
@@ -157,25 +159,28 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveInRelease() {
-		try (NoTx noTx = db().noTx()) {
-			Project project = project();
-			Node movedNode = folder("deals");
-			Node targetNode = folder("2015");
-
+		Release newRelease;
+		Project project = project();
+		Node movedNode = folder("deals");
+		Node targetNode = folder("2015");
+		String oldParentUuid;
+		try (Tx tx = tx()) {
 			// 1. Get original parent uuid
-			String oldParentUuid = call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParametersImpl().draft()))
+			oldParentUuid = call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParametersImpl().draft()))
 					.getParentNode().getUuid();
 
-			Release initialRelease = project.getInitialRelease();
-			Release newRelease = project.getReleaseRoot().create("newrelease", user());
+			newRelease = project.getReleaseRoot().create("newrelease", user());
+			tx.success();
+		}
 
-			NodeResponse migrated = migrateNode(PROJECT_NAME, movedNode.getUuid(), initialRelease.getName(), newRelease.getName());
+		try (Tx tx = tx()) {
+			NodeResponse migrated = migrateNode(PROJECT_NAME, movedNode.getUuid(), initialRelease().getName(), newRelease.getName());
 			assertThat(migrated.getParentNode()).as("Migrated node parent").isNotNull();
 			assertThat(migrated.getParentNode().getUuid()).as("Migrated node parent").isEqualTo(oldParentUuid);
 
 			// 2. Move in initial release
 			call(() -> client().moveNode(PROJECT_NAME, movedNode.getUuid(), targetNode.getUuid(),
-					new VersioningParametersImpl().setRelease(initialRelease.getName())));
+					new VersioningParametersImpl().setRelease(initialRelease().getName())));
 
 			// 3. Assert that the node still uses the old parent for the new release
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(), new VersioningParametersImpl().draft())).getParentNode()
@@ -183,7 +188,7 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 			// 4. Assert that the node uses the new parent for the initial release
 			assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, movedNode.getUuid(),
-					new VersioningParametersImpl().setRelease(initialRelease.getName()).draft())).getParentNode().getUuid())
+					new VersioningParametersImpl().setRelease(initialRelease().getName()).draft())).getParentNode().getUuid())
 							.as("Parent Uuid in initial release").isEqualTo(targetNode.getUuid());
 		}
 	}

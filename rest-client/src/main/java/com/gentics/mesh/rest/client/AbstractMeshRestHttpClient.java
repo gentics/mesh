@@ -19,7 +19,6 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	protected static final Logger log = LoggerFactory.getLogger(AbstractMeshRestHttpClient.class);
 
-	public static final String BASEURI = "/api/v1";
 	public static final int DEFAULT_PORT = 8080;
 
 	protected HttpClient client;
@@ -27,6 +26,8 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	protected JWTAuthentication authentication;
 
 	protected boolean disableAnonymousAccess = false;
+
+	private String baseUri = DEFAULT_BASEURI;
 
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
@@ -51,22 +52,18 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 		client.close();
 	}
 
-	public static String getBaseuri() {
-		return BASEURI;
-	}
-
 	public void setClient(HttpClient client) {
 		this.client = client;
 	}
 
 	@Override
 	public Single<GenericMessageResponse> login() {
-		return authentication.login(getClient());
+		return authentication.login(this);
 	}
 
 	@Override
 	public Single<GenericMessageResponse> logout() {
-		return authentication.logout(getClient());
+		return authentication.logout(this);
 	}
 
 	@Override
@@ -100,7 +97,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @return
 	 */
 	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, Buffer bodyData, String contentType) {
-		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, bodyData, contentType, client, authentication, disableAnonymousAccess,
+		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, bodyData, contentType, this, authentication, disableAnonymousAccess,
 				"application/json");
 	}
 
@@ -118,7 +115,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @return
 	 */
 	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT, RestModel restModel) {
-		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, restModel, client, authentication, disableAnonymousAccess);
+		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, restModel, this, authentication, disableAnonymousAccess);
 	}
 
 	/**
@@ -131,7 +128,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @return
 	 */
 	protected <T> MeshRequest<T> handleRequest(HttpMethod method, String path, Class<? extends T> classOfT, String jsonBodyData) {
-		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, jsonBodyData, client, authentication, disableAnonymousAccess);
+		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, jsonBodyData, this, authentication, disableAnonymousAccess);
 	}
 
 	/**
@@ -146,7 +143,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * @return
 	 */
 	protected <T> MeshRequest<T> prepareRequest(HttpMethod method, String path, Class<? extends T> classOfT) {
-		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, client, authentication, disableAnonymousAccess);
+		return MeshRestRequestUtil.prepareRequest(method, path, classOfT, this, authentication, disableAnonymousAccess);
 	}
 
 	/**
@@ -169,6 +166,21 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 		} else {
 			return "";
 		}
+	}
+
+	/**
+	 * Set the base URI path to the Mesh-API.
+	 *
+	 * @param baseUri
+	 * 				the base URI
+	 */
+	public void setBaseUri(String baseUri) {
+		this.baseUri = baseUri;
+	}
+
+	@Override
+	public String getBaseUri() {
+		return baseUri;
 	}
 
 }

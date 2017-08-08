@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Group;
@@ -25,7 +26,6 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -56,7 +56,7 @@ public class DemoDumpGeneratorTest {
 	@Test
 	public void testSetup() throws Exception {
 		generator.dump();
-		try (NoTx tx = db.noTx()) {
+		try (Tx tx = db.tx()) {
 			assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").getNodeRoot().findAll().size() > 0);
 			User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
 			assertNotNull("The webclient user should have been created but could not be found.", user);
@@ -71,6 +71,9 @@ public class DemoDumpGeneratorTest {
 					user.hasPermission(boot.meshRoot().getUserRoot(), GraphPermission.READ_PERM));
 
 			assertTrue("We expected to find at least 5 nodes.", boot.meshRoot().getNodeRoot().findAll().size() > 5);
+
+			// Verify that the uuids have been updated
+			assertNotNull(boot.meshRoot().getNodeRoot().findByUuid("df8beb3922c94ea28beb3922c94ea2f6"));
 
 			// Verify that all documents are stored in the index
 			for (Node node : boot.meshRoot().getNodeRoot().findAll()) {
@@ -89,7 +92,7 @@ public class DemoDumpGeneratorTest {
 				String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type);
 				String documentType = NodeGraphFieldContainer.composeIndexType();
 				String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), languageTag);
-				if (searchProvider.getDocument(indexName, documentType, documentId).toBlocking().single() == null) {
+				if (searchProvider.getDocument(indexName, documentType, documentId).toBlocking() == null) {
 					String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag
 							+ "} could not be found within index {" + indexName + "} - {" + documentType + "} - {" + documentId + "}";
 					fail(msg);

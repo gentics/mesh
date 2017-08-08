@@ -33,6 +33,7 @@ import java.util.concurrent.CyclicBarrier;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -47,8 +48,9 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.graphdb.NoTx;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -68,7 +70,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testReadByUuidMultithreaded() throws Exception {
 		int nJobs = 10;
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
@@ -108,7 +110,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Override
 	public void testReadByUuidMultithreadedNonBlocking() throws Exception {
 		int nJobs = 200;
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
@@ -145,12 +147,25 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 		request.setName("new_microschema_name");
 		request.setDescription("microschema description");
 
-		String microschemaRootUuid = db().noTx(() -> meshRoot().getMicroschemaContainerRoot().getUuid());
-		try (NoTx noTx = db().noTx()) {
+		String microschemaRootUuid = db().tx(() -> meshRoot().getMicroschemaContainerRoot().getUuid());
+		try (Tx tx = tx()) {
 			role().revokePermissions(meshRoot().getMicroschemaContainerRoot(), CREATE_PERM);
+			tx.success();
 		}
 		call(() -> client().createMicroschema(request), FORBIDDEN, "error_missing_perm", microschemaRootUuid);
 
+	}
+
+	@Test
+	@Override
+	@Ignore("Not yet implemented")
+	public void testCreateWithUuid() throws Exception {
+	}
+
+	@Test
+	@Override
+	@Ignore("Not yet implemented")
+	public void testCreateWithDuplicateUuid() throws Exception {
 	}
 
 	@Test
@@ -163,8 +178,8 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Test
 	@Override
 	public void testReadByUUID() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
+		try (Tx tx = tx()) {
+			MicroschemaContainer vcardContainer = microschemaContainer("vcard");
 			assertNotNull(vcardContainer);
 			MicroschemaResponse microschemaResponse = call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()));
 			assertThat((Microschema) microschemaResponse).isEqualToComparingOnlyGivenFields(vcardContainer.getLatestVersion().getSchema(), "name",
@@ -173,9 +188,49 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	}
 
 	@Test
+	public void testReadVersion() {
+		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
+		String latestVersion = tx(() -> microschemaContainer("vcard").getLatestVersion().getVersion());
+		String json = tx(() -> microschemaContainer("vcard").getLatestVersion().getJson());
+
+		// Load the latest version
+		MicroschemaResponse restSchema = call(() -> client().findMicroschemaByUuid(uuid, new VersioningParametersImpl().setVersion(latestVersion)));
+		assertEquals("The loaded version did not match up with the requested version.", latestVersion, restSchema.getVersion());
+
+		// Now update the microschema
+		MicroschemaUpdateRequest request = JsonUtil.readValue(json, MicroschemaUpdateRequest.class);
+		request.setDescription("New description");
+		request.addField(FieldUtil.createHtmlFieldSchema("someHtml"));
+		call(() -> client().updateMicroschema(uuid, request));
+
+		// Load the previous version
+		restSchema = call(() -> client().findMicroschemaByUuid(uuid, new VersioningParametersImpl().setVersion(latestVersion)));
+		assertEquals("The loaded version did not match up with the requested version.", latestVersion, restSchema.getVersion());
+
+		// Load the latest version (2.0)
+		restSchema = call(() -> client().findMicroschemaByUuid(uuid));
+		assertEquals("The loaded version did not match up with the requested version.", "2.0", restSchema.getVersion());
+
+		// Load the expected 2.0 version
+		restSchema = call(() -> client().findMicroschemaByUuid(uuid, new VersioningParametersImpl().setVersion("2.0")));
+		assertEquals("The loaded version did not match up with the requested version.", "2.0", restSchema.getVersion());
+	}
+
+	@Test
+	public void testReadBogusVersion() {
+		String uuid = tx(() -> microschemaContainer("vcard").getUuid());
+
+		call(() -> client().findMicroschemaByUuid(uuid, new VersioningParametersImpl().setVersion("5.0")), NOT_FOUND,
+				"object_not_found_for_uuid_version", uuid, "5.0");
+
+		call(() -> client().findMicroschemaByUuid(uuid, new VersioningParametersImpl().setVersion("sadgsdgasgd")), BAD_REQUEST,
+				"error_illegal_version", "sadgsdgasgd");
+	}
+
+	@Test
 	@Override
 	public void testReadByUuidWithRolePerms() {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
 			assertNotNull(vcardContainer);
 			String uuid = vcardContainer.getUuid();
@@ -190,17 +245,17 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Test
 	@Override
 	public void testReadByUUIDWithMissingPermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		String uuid;
+		try (Tx tx = tx()) {
 			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
-			assertNotNull(vcardContainer);
-
+			uuid = vcardContainer.getUuid();
 			role().grantPermissions(vcardContainer, DELETE_PERM);
 			role().grantPermissions(vcardContainer, UPDATE_PERM);
 			role().grantPermissions(vcardContainer, CREATE_PERM);
 			role().revokePermissions(vcardContainer, READ_PERM);
-
-			call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()), FORBIDDEN, "error_missing_perm", vcardContainer.getUuid());
+			tx.success();
 		}
+		call(() -> client().findMicroschemaByUuid(uuid), FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
@@ -220,24 +275,24 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Test
 	@Override
 	public void testUpdateByUUIDWithoutPerm() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		String uuid;
+		try (Tx tx = tx()) {
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
-			assertNotNull(microschema);
+			uuid = microschema.getUuid();
 			role().revokePermissions(microschema, UPDATE_PERM);
-
-			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
-			request.setName("new-name");
-
-			call(() -> client().updateMicroschema(microschema.getUuid(), request), FORBIDDEN, "error_missing_perm", microschema.getUuid());
+			tx.success();
 		}
+
+		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
+		request.setName("new-name");
+		call(() -> client().updateMicroschema(uuid, request), FORBIDDEN, "error_missing_perm", uuid);
 	}
 
 	@Test
 	@Override
 	public void testUpdateWithBogusUuid() throws GenericRestException, Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer microschema = microschemaContainers().get("vcard");
-			assertNotNull(microschema);
 			String oldName = microschema.getName();
 			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 			request.setName("new-name");
@@ -252,13 +307,12 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Test
 	@Override
 	public void testDeleteByUUID() throws Exception {
-		String uuid = db().noTx(() -> microschemaContainers().get("vcard").getUuid());
-
+		String uuid = db().tx(() -> microschemaContainers().get("vcard").getUuid());
 		call(() -> client().deleteMicroschema(uuid));
 
 		// schema_delete_still_in_use
 
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer reloaded = boot().microschemaContainerRoot().findByUuid(uuid);
 			assertNull("The microschema should have been deleted.", reloaded);
 		}
@@ -266,7 +320,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 	@Test
 	public void testDeleteByUUIDWhileInUse() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			MicroschemaContainer microschemaContainer = microschemaContainers().get("vcard");
 
 			// 1. Create a new schema which uses the vcard microschema
@@ -302,11 +356,15 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 	@Test
 	@Override
 	public void testDeleteByUUIDWithNoPermission() throws Exception {
-		try (NoTx noTx = db().noTx()) {
-			MicroschemaContainer microschema = microschemaContainers().get("vcard");
+		MicroschemaContainer microschema;
+		try (Tx tx = tx()) {
+			microschema = microschemaContainers().get("vcard");
 			assertNotNull(microschema);
-
 			role().revokePermissions(microschema, DELETE_PERM);
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			call(() -> client().deleteMicroschema(microschema.getUuid()), FORBIDDEN, "error_missing_perm", microschema.getUuid());
 
 			assertElement(boot().microschemaContainerRoot(), microschema.getUuid(), true);

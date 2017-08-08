@@ -17,7 +17,7 @@ public interface NodeMigrationStatusMBean {
 	 * 
 	 * @return schema version
 	 */
-	int getVersion();
+	String getVersion();
 
 	/**
 	 * Get total number of nodes.

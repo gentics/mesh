@@ -26,12 +26,16 @@ import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
 /**
  * Handler for group specific request methods.
  */
 public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> {
+
+	private static final Logger log = LoggerFactory.getLogger(GroupCrudHandler.class);
 
 	private Lazy<BootstrapInitializer> boot;
 
@@ -57,7 +61,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	 *            Group Uuid from which the roles should be loaded
 	 */
 	public void handleGroupRolesList(InternalActionContext ac, String groupUuid) {
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, READ_PERM);
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			TransformablePage<? extends Role> rolePage = group.getRoles(ac.getUser(), pagingInfo);
@@ -76,19 +80,27 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(roleUuid, "roleUuid");
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
-
-			Tuple<Group, SearchQueueBatch> tuple = db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				group.addRole(role);
-				group.setEditor(ac.getUser());
-				group.setLastEditedTimestamp();
-				// No need to update users as well. Those documents are not affected by this modification
-				batch.store(group, false);
-				return Tuple.tuple(group, batch);
-			});
+			// Handle idempotency
+			Tuple<Group, SearchQueueBatch> tuple;
+			if (group.hasRole(role)) {
+				if (log.isDebugEnabled()) {
+					log.debug("Role {" + role.getUuid() + "} is already assigned to group {" + group.getUuid() + "}.");
+				}
+				tuple = Tuple.tuple(group, searchQueue.create());
+			} else {
+				tuple = db.tx(() -> {
+					SearchQueueBatch batch = searchQueue.create();
+					group.addRole(role);
+					group.setEditor(ac.getUser());
+					group.setLastEditedTimestamp();
+					// No need to update users as well. Those documents are not affected by this modification
+					batch.store(group, false);
+					return Tuple.tuple(group, batch);
+				});
+			}
 			return tuple.v2().processAsync().andThen(tuple.v1().transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
@@ -107,7 +119,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(roleUuid, "roleUuid");
 		validateParameter(groupUuid, "groupUuid");
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			// TODO check whether the role is actually part of the group
 			Group group = getRootVertex(ac).loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			Role role = boot.get().roleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
@@ -135,7 +147,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 	public void handleGroupUserList(InternalActionContext ac, String groupUuid) {
 		validateParameter(groupUuid, "groupUuid");
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			MeshAuthUser requestUser = ac.getUser();
 			PagingParametersImpl pagingInfo = new PagingParametersImpl(ac);
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, READ_PERM);
@@ -157,7 +169,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 			ResultInfo info = db.tx(() -> {
@@ -185,7 +197,7 @@ public class GroupCrudHandler extends AbstractCrudHandler<Group, GroupResponse> 
 		validateParameter(groupUuid, "groupUuid");
 		validateParameter(userUuid, "userUuid");
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			Group group = boot.get().groupRoot().loadObjectByUuid(ac, groupUuid, UPDATE_PERM);
 			User user = boot.get().userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
 

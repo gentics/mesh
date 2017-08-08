@@ -1,0 +1,20 @@
+{
+	microschema(name:"vcard") {
+		projects {
+			# [$.data.microschema.projects.elements.size()=1]
+			elements {
+				# [$.data.microschema.projects.elements[0].name=dummy]
+				name
+				# [$.data.microschema.projects.elements[0].uuid=<is-uuid>]
+				uuid
+				# [$.data.microschema.projects.elements[0].etag=<is-not-null>]
+				etag
+				# [$.data.microschema.projects.elements[0].created=<is-not-null>]
+				created
+				# [$.data.microschema.projects.elements[0].edited=<is-not-null>]
+				edited
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

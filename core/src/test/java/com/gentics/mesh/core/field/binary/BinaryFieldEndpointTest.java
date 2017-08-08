@@ -12,6 +12,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.field.AbstractFieldEndpointTest;
@@ -21,7 +22,6 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -46,7 +46,7 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	}
 
 	private void setSchema(boolean isRequired) {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
 
 			// add non restricted string field
@@ -73,21 +73,21 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testVersionConflictUpload() {
-		//1. Upload a binary field
-		String uuid = db().noTx(() -> folder("2015").getUuid());
+		// 1. Upload a binary field
+		String uuid = db().tx(() -> folder("2015").getUuid());
 		Buffer buffer = TestUtils.randomBuffer(1000);
-		VersionNumber version = db().noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+		VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 		NodeResponse responseA = call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer,
 				"filename.txt", "application/binary"));
 
-		assertThat(responseA.getVersion().getNumber().toString()).doesNotMatch(version.toString());
+		assertThat(responseA.getVersion()).doesNotMatch(version.toString());
 
 		// Upload again - A conflict should be detected since we provide the original outdated version
 		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 				"application/binary"), CONFLICT, "node_error_conflict_detected");
 
 		// Now use the correct version and verify that the upload succeeds
-		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", responseA.getVersion().getNumber(), FIELD_NAME, buffer, "filename.txt",
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", responseA.getVersion(), FIELD_NAME, buffer, "filename.txt",
 				"application/binary"));
 
 	}
@@ -95,51 +95,53 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (NoTx noTx = db().noTx()) {
-			//1. Upload a binary field
-			String uuid = db().noTx(() -> folder("2015").getUuid());
+		try (Tx tx = tx()) {
+			// 1. Upload a binary field
+			String uuid = db().tx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			VersionNumber version = db().noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+			VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 					"application/binary"));
 
 			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
 			assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 			BinaryField binaryField = firstResponse.getFields().getBinaryField(FIELD_NAME);
 
-			// 2. Update the node using the loaded binary field data 
+			// 2. Update the node using the loaded binary field data
 			NodeResponse secondResponse = updateNode(FIELD_NAME, binaryField);
 			assertThat(secondResponse.getFields().getBinaryField(FIELD_NAME)).as("Updated Field").isNotNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number should not be generated.").isEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number should not be generated.").isEqualTo(oldVersion);
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (NoTx noTx = db().noTx()) {
-			//1. Upload a binary field
-			String uuid = db().noTx(() -> folder("2015").getUuid());
-			VersionNumber version = db().noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
-			String filename = "filename.txt";
-			Buffer buffer = TestUtils.randomBuffer(1000);
+		String filename = "filename.txt";
+		Buffer buffer = TestUtils.randomBuffer(1000);
+		Node node = folder("2015");
+
+		try (Tx tx = tx()) {
+			// 1. Upload a binary field
+			String uuid = db().tx(() -> folder("2015").getUuid());
+			VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, filename,
 					"application/binary"));
 
 			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			// 2. Set the field to null
 			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
 			assertThat(secondResponse.getFields().getBinaryField(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isNotEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 
 			// Assert that the old version was not modified
-			Node node = folder("2015");
+			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
-			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion().getNumber());
+			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBinary(FIELD_NAME)).isNull();
 			assertThat(latest.getPreviousVersion().getBinary(FIELD_NAME)).isNotNull();
 			String oldFilename = latest.getPreviousVersion().getBinary(FIELD_NAME).getFileName();
@@ -147,40 +149,40 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			// 3. Set the field to null one more time and assert that no new version was created
 			NodeResponse thirdResponse = updateNode(FIELD_NAME, null);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion().getNumber(),
-					secondResponse.getVersion().getNumber());
+			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
+					secondResponse.getVersion());
 		}
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (NoTx noTx = db().noTx()) {
-			//1. Upload a binary field
-			String uuid = db().noTx(() -> folder("2015").getUuid());
+		try (Tx tx = tx()) {
+			// 1. Upload a binary field
+			String uuid = db().tx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			VersionNumber version = db().noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+			VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 					"application/binary"));
 
 			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
 			assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
-			String oldVersion = firstResponse.getVersion().getNumber();
+			String oldVersion = firstResponse.getVersion();
 
 			// 2. Set the field to empty - Node should not be updated since nothing changes
 			NodeResponse secondResponse = updateNode(FIELD_NAME, new BinaryFieldImpl());
 			assertThat(secondResponse.getFields().getBinaryField(FIELD_NAME)).as("Updated Field").isNotNull();
-			assertThat(secondResponse.getVersion().getNumber()).as("New version number").isEqualTo(oldVersion);
+			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldVersion);
 		}
 	}
 
 	@Test
 	public void testUpdateSetEmptyFilename() {
-		try (NoTx noTx = db().noTx()) {
-			//1. Upload a binary field
-			String uuid = db().noTx(() -> folder("2015").getUuid());
+		try (Tx tx = tx()) {
+			// 1. Upload a binary field
+			String uuid = db().tx(() -> folder("2015").getUuid());
 			Buffer buffer = TestUtils.randomBuffer(1000);
-			VersionNumber version = db().noTx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+			VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
 			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
 					"application/binary"));
 

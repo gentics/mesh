@@ -8,14 +8,14 @@ import com.gentics.mesh.core.rest.common.NameUuidReference;
  */
 public class MicroschemaReference extends NameUuidReference<MicroschemaReference> {
 
-	private Integer version;
+	private String version;
 
 	/**
 	 * Return the microschema version.
 	 * 
 	 * @return
 	 */
-	public Integer getVersion() {
+	public String getVersion() {
 		return version;
 	}
 
@@ -25,7 +25,7 @@ public class MicroschemaReference extends NameUuidReference<MicroschemaReference
 	 * @param version
 	 * @return fluent API
 	 */
-	public MicroschemaReference setVersion(Integer version) {
+	public MicroschemaReference setVersion(String version) {
 		this.version = version;
 		return this;
 	}

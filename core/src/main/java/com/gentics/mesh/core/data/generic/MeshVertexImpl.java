@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.NotImplementedException;
 
+import com.gentics.ferma.Tx;
 import com.gentics.ferma.annotation.GraphElement;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
@@ -149,7 +150,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	@Override
 	public FramedGraph getGraph() {
-		return Database.getThreadLocalGraph();
+		return Tx.getActive().getGraph();
 	}
 
 	@Override
@@ -167,7 +168,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	public Vertex getElement() {
 		// TODO FIXME We should store the element reference in a thread local map that is bound to the transaction. The references should be removed once the
 		// transaction finishes
-		FramedGraph fg = Database.getThreadLocalGraph();
+		FramedGraph fg = Tx.getActive().getGraph();
 		if (fg == null) {
 			throw new RuntimeException(
 					"Could not find thread local graph. The code is most likely not being executed in the scope of a transaction.");

@@ -15,10 +15,10 @@ import java.util.Date;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -28,7 +28,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchAndSort() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -65,7 +65,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 
 	@Test
 	public void testSearchContent() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			recreateIndices();
 		}
 
@@ -88,11 +88,14 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 	 */
 	@Test
 	public void testSearchMissingVertex() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		Node node = content("honda nr");
+		try (Tx tx = tx()) {
 			recreateIndices();
-
-			Node node = content("honda nr");
 			node.remove();
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
 			NodeListResponse response = call(() -> client().searchNodes(getSimpleQuery("the"), new PagingParametersImpl().setPage(1).setPerPage(2)));
 			assertEquals(0, response.getData().size());
 			assertEquals(0, response.getMetainfo().getTotalCount());

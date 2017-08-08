@@ -2,8 +2,8 @@ package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
@@ -32,7 +32,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.impl.WrappedPageImpl;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -251,7 +251,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			Node node = content.getNode();
 			List<String> languageTags = getLanguageArgument(env);
 
-			TransformablePage<? extends Node> page = node.getChildren(gc.getUser(), languageTags, gc.getRelease().getUuid(), selectedType,
+			TransformablePage<? extends Node> page = node.getChildren(gc, languageTags, gc.getRelease().getUuid(), selectedType,
 					getPagingInfo(env));
 
 			// Transform the found nodes into contents
@@ -259,7 +259,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				NodeGraphFieldContainer container = item.findNextMatchingFieldContainer(gc, languageTags);
 				return new NodeContent(item, container);
 			}).collect(Collectors.toList());
-			return new PageImpl<NodeContent>(contents, page);
+			return new WrappedPageImpl<NodeContent>(contents, page);
 		}, NODE_PAGE_TYPE_NAME).argument(createLanguageTagArg()));
 
 		// .parent
@@ -267,8 +267,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				.dataFetcher(this::parentNodeFetcher));
 
 		// .tags
-		nodeType.field(
-				newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((env) -> {
+		nodeType.field(newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME))
+				.dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
 					NodeContent content = env.getSource();
 					if (content == null) {
@@ -326,6 +326,20 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		// .editor
 		nodeType.field(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference(USER_TYPE_NAME))
 				.dataFetcher(this::editorFetcher));
+
+		// .schema
+		nodeType.field(newFieldDefinition().name("schema").description("Schema of the node").type(new GraphQLTypeReference(SCHEMA_TYPE_NAME))
+				.dataFetcher(env -> {
+					NodeContent content = env.getSource();
+					if (content == null) {
+						return null;
+					}
+					NodeGraphFieldContainer container = content.getContainer();
+					if (container == null) {
+						return null;
+					}
+					return container.getSchemaContainerVersion();
+				}));
 
 		// .isPublished
 		nodeType.field(newFieldDefinition().name("isPublished").description("Check whether the content is published.").type(GraphQLBoolean)

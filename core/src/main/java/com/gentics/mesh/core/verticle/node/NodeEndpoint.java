@@ -165,7 +165,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		fieldGet.addUriParameter("fieldName", "Name of the binary field", "image");
 		fieldGet.addQueryParameters(ImageManipulationParametersImpl.class);
 		fieldGet.method(GET);
-		fieldGet.description("Download the binary field with the given name. You canuse image query parameters for crop and resize if the binary data represents an image.");
+		fieldGet.description(
+				"Download the binary field with the given name. You can use image query parameters for crop and resize if the binary data represents an image.");
 		fieldGet.handler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			String fieldName = rc.request().getParam("fieldName");
@@ -217,7 +218,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getTags.addUriParameter("nodeUuid", "Uuid of the node.", UUIDUtil.randomUUID());
 		getTags.method(GET);
 		getTags.produces(APPLICATION_JSON);
-		getTags.exampleResponse(OK, tagExamples.getTagListResponse(), "List of tags that were used to tag the node.");
+		getTags.exampleResponse(OK, tagExamples.createTagListResponse(), "List of tags that were used to tag the node.");
 		getTags.description("Return a list of all tags which tag the node.");
 		getTags.addQueryParameters(VersioningParametersImpl.class);
 		getTags.handler(rc -> {
@@ -233,7 +234,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		bulkUpdate.produces(APPLICATION_JSON);
 		bulkUpdate.description("Update the list of assigned tags");
 		bulkUpdate.exampleRequest(tagExamples.getTagListUpdateRequest());
-		bulkUpdate.exampleResponse(OK, tagExamples.getTagListResponse(), "Updated tag list.");
+		bulkUpdate.exampleResponse(OK, tagExamples.createTagListResponse(), "Updated tag list.");
 		bulkUpdate.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String nodeUuid = ac.getParameter("nodeUuid");
@@ -354,7 +355,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		Endpoint endpoint = createEndpoint();
 		endpoint.description("Update the node with the given uuid. It is mandatory to specify the version within the update request. "
 				+ "Mesh will automatically check for version conflicts and return a 409 error if a conflict has been detected. "
-				+ "Additional conflict checks for WebRoot path conflicts will also be performed.");
+				+ "Additional conflict checks for WebRoot path conflicts will also be performed. The node is created if no node with the specified uuid could be found.");
 		endpoint.path("/:nodeUuid");
 		endpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		endpoint.method(POST);

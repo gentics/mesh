@@ -22,9 +22,9 @@ import javax.script.ScriptException;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.field.bool.BooleanListFieldHelper;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
@@ -195,7 +195,7 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 	@Override
 	@Test(expected = ClassNotFoundException.class)
 	public void testSystemExit() throws Throwable {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			invalidMigrationScript(CREATEBOOLEANLIST, FILL, KILLERSCRIPT);
 		}
 	}

@@ -1,0 +1,20 @@
+{
+	schema(name:"content") {
+		projects {
+			# [$.data.schema.projects.elements.size()=1]
+			elements {
+				# [$.data.schema.projects.elements[0].name=dummy]
+				name
+				# [$.data.schema.projects.elements[0].uuid=<is-uuid>]
+				uuid
+				# [$.data.schema.projects.elements[0].uuid=<is-not-null>]
+				etag
+				# [$.data.schema.projects.elements[0].uuid=<is-not-null>]
+				created
+				# [$.data.schema.projects.elements[0].uuid=<is-not-null>]
+				edited
+			}
+		}
+	}
+}
+# [$.errors=<is-undefined>]

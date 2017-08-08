@@ -135,13 +135,13 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public Release getRelease() {
-		return in(HAS_SCHEMA_VERSION).nextOrDefaultExplicit(ReleaseImpl.class, null);
+	public List<? extends Release> getReleases() {
+		return in(HAS_SCHEMA_VERSION).toListExplicit(ReleaseImpl.class);
 	}
 
 	@Override
 	public Single<SchemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return MeshInternal.get().database().operateNoTx(() -> {
+		return MeshInternal.get().database().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

@@ -73,7 +73,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 		if (log.isDebugEnabled()) {
 			log.debug("Handling permission request for element on path {" + pathToElement + "}");
 		}
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			// 1. Load the user that should be used - read perm implies that the
 			// user is able to read the attached permissions
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, READ_PERM);
@@ -107,7 +107,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	public void handleFetchToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			// 1. Load the user that should be used
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, CREATE_PERM);
 
@@ -136,7 +136,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	public void handleIssueAPIToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			// 1. Load the user that should be used
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 
@@ -166,7 +166,7 @@ public class UserCrudHandler extends AbstractCrudHandler<User, UserResponse> {
 	public void handleDeleteAPIToken(InternalActionContext ac, String userUuid) {
 		validateParameter(userUuid, "The userUuid must not be empty");
 
-		db.operateNoTx(() -> {
+		db.operateTx(() -> {
 			// 1. Load the user that should be used
 			User user = boot.userRoot().loadObjectByUuid(ac, userUuid, UPDATE_PERM);
 

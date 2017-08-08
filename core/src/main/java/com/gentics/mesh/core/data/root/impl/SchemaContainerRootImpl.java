@@ -67,14 +67,17 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public SchemaContainer create(SchemaModel schema, User creator) {
+	public SchemaContainer create(SchemaModel schema, User creator, String uuid) {
 		schema.validate();
 		SchemaContainerImpl container = getGraph().addFramedVertex(SchemaContainerImpl.class);
+		if (uuid != null) {
+			container.setUuid(uuid);
+		}
 		SchemaContainerVersion version = getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		container.setLatestVersion(version);
 
 		// set the initial version
-		schema.setVersion(1);
+		schema.setVersion("1.0");
 		version.setSchema(schema);
 		version.setName(schema.getName());
 		version.setSchemaContainer(container);
@@ -106,7 +109,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public SchemaContainer create(InternalActionContext ac, SearchQueueBatch batch) {
+	public SchemaContainer create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		MeshAuthUser requestUser = ac.getUser();
 		SchemaModel requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaModelImpl.class);
 		requestModel.validate();
@@ -120,7 +123,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 			throw conflict(conflictingSchema.getUuid(), schemaName, "schema_conflicting_name", schemaName);
 		}
 
-		SchemaContainer container = create(requestModel, requestUser);
+		SchemaContainer container = create(requestModel, requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, container);
 		batch.store(container, true);
 		return container;
@@ -134,7 +137,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		}
 		String schemaName = reference.getName();
 		String schemaUuid = reference.getUuid();
-		Integer schemaVersion = reference.getVersion();
+		String schemaVersion = reference.getVersion();
 
 		// Prefer the name over the uuid
 		SchemaContainer schemaContainer = null;

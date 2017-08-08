@@ -11,10 +11,10 @@ import java.io.IOException;
 import org.json.JSONException;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -28,10 +28,11 @@ public class GraphQLEndpointBasicTest extends AbstractMeshTest {
 
 	@Test
 	public void testIntrospection() throws IOException {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = tx()) {
 			for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
 				microschema.remove();
 			}
+			tx.success();
 		}
 		String queryName = "introspection-query";
 		GraphQLResponse response = call(() -> client().graphqlQuery(PROJECT_NAME, getGraphQLQuery(queryName)));

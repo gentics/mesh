@@ -11,6 +11,10 @@ public interface CrudEndpointTestCases {
 
 	void testCreateWithNoPerm() throws Exception;
 
+	void testCreateWithUuid() throws Exception;
+
+	void testCreateWithDuplicateUuid() throws Exception;
+
 	// Read
 	void testReadByUUID() throws Exception;
 

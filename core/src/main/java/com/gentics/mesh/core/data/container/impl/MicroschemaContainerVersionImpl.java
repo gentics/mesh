@@ -132,13 +132,13 @@ public class MicroschemaContainerVersionImpl
 	}
 
 	@Override
-	public Release getRelease() {
-		return in(HAS_MICROSCHEMA_VERSION).nextOrDefaultExplicit(ReleaseImpl.class, null);
+	public List<? extends Release> getReleases() {
+		return in(HAS_MICROSCHEMA_VERSION).toListExplicit(ReleaseImpl.class);
 	}
 
 	@Override
 	public Single<MicroschemaResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return MeshInternal.get().database().operateNoTx(() -> {
+		return MeshInternal.get().database().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}

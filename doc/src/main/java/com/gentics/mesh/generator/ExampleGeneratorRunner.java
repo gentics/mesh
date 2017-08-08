@@ -1,9 +1,13 @@
 package com.gentics.mesh.generator;
 
 import java.io.File;
+import java.io.IOException;
 
 import com.gentics.mesh.OptionsLoader;
 
+/**
+ * Runner for various example generators.
+ */
 public class ExampleGeneratorRunner {
 
 	public static File OUTPUT_ROOT_FOLDER = new File("src/main/docs/examples");
@@ -14,15 +18,30 @@ public class ExampleGeneratorRunner {
 		}
 		cleanConf();
 
+		// Generate asciidoc tables to be included in the docs.
 		TableGenerator tableGen = new TableGenerator(OUTPUT_ROOT_FOLDER);
 		tableGen.run();
 
+		// Generate model examples (json files)
 		ModelExampleGenerator restModelGen = new ModelExampleGenerator(OUTPUT_ROOT_FOLDER);
 		restModelGen.run();
 
-		RAMLGenerator generator = new RAMLGenerator(OUTPUT_ROOT_FOLDER);
+		// Generate RAML
+		RAMLGenerator generator = new RAMLGenerator(OUTPUT_ROOT_FOLDER, "api.raml", null, false);
 		generator.run();
 
+		// Generate the RAML for the raml2html docs. This raml includes a markdown table
+		generator = new RAMLGenerator(OUTPUT_ROOT_FOLDER, "api-docs.raml", (mimeType, clazz) -> {
+			try {
+				mimeType.setSchema(tableGen.renderModelTableViaSchema(clazz, tableGen.getTemplate("model-props-markdown-table.hbs")));
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new RuntimeException("Could not render table");
+			}
+		}, true);
+		generator.run();
+
+		// Generate elasticsearch flattened models
 		SearchModelGenerator searchModelGen = new SearchModelGenerator(OUTPUT_ROOT_FOLDER);
 		searchModelGen.run();
 	}

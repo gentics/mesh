@@ -9,8 +9,8 @@ import java.io.IOException;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-import com.gentics.mesh.graphdb.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -25,7 +25,7 @@ public class AdminEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testBackupRestore() throws IOException {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			group().addRole(roles().get("admin"));
 			tx.success();
 		}
@@ -39,7 +39,7 @@ public class AdminEndpointTest extends AbstractMeshTest {
 	@Test
 	@Ignore("Endpoint disabled")
 	public void testExportImport() {
-		try (Tx tx = db().tx()) {
+		try (Tx tx = tx()) {
 			group().addRole(roles().get("admin"));
 			tx.success();
 		}

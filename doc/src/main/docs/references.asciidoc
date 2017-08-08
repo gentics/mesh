@@ -25,37 +25,37 @@ We have set up a Gentics Mesh instance for demo purposes, that you can play with
 
 .List all projects. Well, it's just our demo project.
 [TIP]
-http://getmesh.io/api/v1/projects
+https://demo.getmesh.io/api/v1/projects
 
 .Want to fetch all content items including media? With pretty URLs? Here you go
 [TIP]
-http://getmesh.io/api/v1/demo/nodes/?resolveLinks=short
+https://demo.getmesh.io/api/v1/demo/nodes/?resolveLinks=short
 
 .OK, let's load a single content item.
 [TIP]
-http://getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0
+https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0
 
 .And now forget about UUIDs and do it with its corresponding WebRoot path
 [TIP]
-http://getmesh.io/api/v1/demo/webroot/automobiles/ford-gt
+https://demo.getmesh.io/api/v1/demo/webroot/automobiles/ford-gt
 
 That's easy. Well, what about images?
 
 .That's the image node
 [TIP]
-http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
+https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6
 
 .And that's the actual image
 [TIP]
-http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
+https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image
 
 .Let's do some resizing
 [TIP]
-http://getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=400
+https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binary/image?width=400
 
 .And now again with a readable WebRoot path
 [TIP]
-http://getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?width=400
+https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?width=400
 
 TIP: The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en[Postman] chrome extension can be used to build and invoke requests from your browser to Gentics Mesh.
 
@@ -272,7 +272,7 @@ Gentics Mesh first and foremost keeps your content safe - all data including med
 That is why Gentics Mesh instances ship with an included ```anonymous``` user/role/group set. 
 If no authentication details are provided Gentics Mesh will automatically try to authenticate with the user ```anonymous```.
 
-TIP: Try our Gentics Mesh demo instance without authenticating yourself: ```http://getmesh.io/api/v1/auth/me```. This link:raml/#auth[API endpoint] shows the currently authenticated user - which is ```anonymous```.
+TIP: Try our Gentics Mesh demo instance without authenticating yourself: ```https://demo.getmesh.io/api/v1/auth/me```. This link:raml/#auth[API endpoint] shows the currently authenticated user - which is ```anonymous```.
 
 You can assign ```readPublished``` permissions to the ```anonymous``` role for all elements you want to be publicly available.
 

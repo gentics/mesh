@@ -32,7 +32,6 @@
   <body>
     <div id="graphiql">Loading...</div>
     <script>
-
       /**
        * This GraphiQL example illustrates how to use some of GraphiQL's props
        * in order to enable reading and updating the URL parameters, making
@@ -41,9 +40,8 @@
        * This is only one example of this kind of feature, GraphiQL exposes
        * various React params to enable interesting integrations.
        */
-
       // Parse the search string to get url parameters.
-      var search = window.location.search;
+      var search = window.location.hash;
       var parameters = {};
       search.substr(1).split('&').forEach(function (entry) {
         var eq = entry.indexOf('=');
@@ -82,13 +80,13 @@
       }
 
       function updateURL() {
-        var newSearch = '?' + Object.keys(parameters).filter(function (key) {
+        var newSearch =  Object.keys(parameters).filter(function (key) {
           return Boolean(parameters[key]);
         }).map(function (key) {
           return encodeURIComponent(key) + '=' +
             encodeURIComponent(parameters[key]);
         }).join('&');
-        history.replaceState(null, null, newSearch);
+        window.location.hash = newSearch;
       }
 
       // Defines a GraphQL fetcher using the fetch API.

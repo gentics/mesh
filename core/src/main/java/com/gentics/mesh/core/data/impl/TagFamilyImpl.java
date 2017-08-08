@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
@@ -30,6 +31,7 @@ import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
@@ -42,7 +44,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
-import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import io.vertx.core.logging.Logger;
@@ -117,14 +118,18 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Page<? extends Tag> getTags(MeshAuthUser requestUser, PagingParameters pagingInfo) {
-		// TODO check perms
+	public Page<? extends Tag> getTags(MeshAuthUser user, PagingParameters pagingInfo) {
 		VertexTraversal<?, ?, ?> traversal = out(HAS_TAG).has(TagImpl.class);
-		return TraversalHelper.getPagedResult(traversal, pagingInfo, TagImpl.class);
+		return new DynamicTransformablePageImpl<Tag>(user, traversal, pagingInfo, READ_PERM, TagImpl.class);
 	}
 
 	@Override
 	public Tag create(InternalActionContext ac, SearchQueueBatch batch) {
+		return create(ac, batch, null);
+	}
+
+	@Override
+	public Tag create(InternalActionContext ac, SearchQueueBatch batch, String uuid) {
 		Project project = ac.getProject();
 		TagCreateRequest requestModel = ac.fromJson(TagCreateRequest.class);
 		String tagName = requestModel.getName();
@@ -142,9 +147,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			throw conflict(conflictingTag.getUuid(), tagName, "tag_create_tag_with_same_name_already_exists", tagName, getName());
 		}
 
-		Tag newTag = create(requestModel.getName(), project, requestUser);
-		ac.getUser()
-				.addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
+		Tag newTag = create(requestModel.getName(), project, requestUser, uuid);
+		ac.getUser().addCRUDPermissionOnRole(this, CREATE_PERM, newTag);
 		addTag(newTag);
 
 		batch.store(newTag, true);
@@ -258,7 +262,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Single<TagFamilyResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		return db.operateNoTx(() -> {
+		return db.operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
@@ -292,8 +296,11 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public Tag create(String name, Project project, User creator) {
+	public Tag create(String name, Project project, User creator, String uuid) {
 		TagImpl tag = getGraph().addFramedVertex(TagImpl.class);
+		if (uuid != null) {
+			tag.setUuid(uuid);
+		}
 		tag.setName(name);
 		tag.setCreated(creator);
 		tag.setProject(project);

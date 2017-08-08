@@ -51,7 +51,7 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 	 */
 	public NodeResponseAssert hasVersion(String number) {
 		assertThat(actual.getVersion()).as(descriptionText() + " version").isNotNull();
-		assertThat(actual.getVersion().getNumber()).as(descriptionText() + " version number").isEqualTo(number);
+		assertThat(actual.getVersion()).as(descriptionText() + " version number").isEqualTo(number);
 		return this;
 	}
 
@@ -90,6 +90,18 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 	 */
 	public NodeResponseAssert is(Node node) {
 		assertThat(actual.getUuid()).as("Uuid").isEqualTo(node.getUuid());
+		return this;
+	}
+
+	/**
+	 * Assert that the response has the given uuid
+	 * 
+	 * @param uuid
+	 *            uuid
+	 * @return fluent API
+	 */
+	public NodeResponseAssert hasUuid(String uuid) {
+		assertThat(actual.getUuid()).as("Uuid").isEqualTo(uuid);
 		return this;
 	}
 

@@ -9,7 +9,6 @@ import com.gentics.mesh.core.rest.schema.Schema;
 
 import io.vertx.core.json.JsonObject;
 import rx.Completable;
-import rx.Observable;
 import rx.Single;
 
 /**
@@ -53,9 +52,14 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Observable<Map<String, Object>> getDocument(String index, String type, String uuid) {
+	public Single<Map<String, Object>> getDocument(String index, String type, String uuid) {
 		getEvents.add(index + "-" + type + "-" + uuid);
-		return Observable.just(null);
+		return Single.just(null);
+	}
+
+	@Override
+	public Completable storeDocumentBatch(String index, String type, Map<String, JsonObject> documents) {
+		return Completable.complete();
 	}
 
 	@Override

@@ -9,13 +9,13 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.graphdb.NoTx;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -33,12 +33,12 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 	@Test
 	public void testES() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			recreateIndices();
 		}
 
 		String lastNodeUuid = null;
-		String uuid = db().noTx(() -> folder("news").getUuid());
+		String uuid = db().tx(() -> folder("news").getUuid());
 		int total = 600;
 		for (int i = 0; i < total; i++) {
 			NodeCreateRequest request = new NodeCreateRequest();
@@ -56,7 +56,7 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 		}
 
 		// Revoke all but one permission
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			for (Node node : boot().nodeRoot().findAll()) {
 				if (!node.getUuid().equals(lastNodeUuid)) {
 					role().revokePermissions(node, READ_PERM);
@@ -88,11 +88,11 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 
 	@Test
 	public void testSearchAndSort() throws Exception {
-		try (NoTx noTx = db().noTx()) {
+		try (Tx tx = db().tx()) {
 			recreateIndices();
 		}
 
-		String uuid = db().noTx(() -> folder("news").getUuid());
+		String uuid = db().tx(() -> folder("news").getUuid());
 		int total = 2000;
 		for (int i = 0; i < total; i++) {
 			NodeCreateRequest request = new NodeCreateRequest();

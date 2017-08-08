@@ -45,7 +45,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 	public void registerEndPoints() {
 		secureAll();
 		addReadHandlers();
-		addUpdateHandlers();
+		addAssignHandler();
 		addDeleteHandlers();
 	}
 
@@ -62,7 +62,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 		});
 	}
 
-	private void addUpdateHandlers() {
+	private void addAssignHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());

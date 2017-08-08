@@ -30,7 +30,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.node.VersionReference;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
@@ -113,6 +112,16 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		setAuthenticationProvider(new JWTAuthentication());
 	}
 
+	public MeshRestHttpClientImpl(String host, int port, Vertx vertx, boolean useSsl) {
+		HttpClientOptions options = new HttpClientOptions();
+		options.setDefaultHost(host);
+		options.setTryUseCompression(true);
+		options.setDefaultPort(port);
+		options.setSsl(useSsl);
+		this.client = vertx.createHttpClient(options);
+		setAuthenticationProvider(new JWTAuthentication());
+	}
+
 	@Override
 	public MeshRestClient enableAnonymousAccess() {
 		disableAnonymousAccess = false;
@@ -136,6 +145,16 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeCreateRequest, "nodeCreateRequest must not be null");
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes" + getQuery(parameters), NodeResponse.class, nodeCreateRequest);
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> createNode(String uuid, String projectName, NodeCreateRequest nodeCreateRequest,
+			ParameterProvider... parameters) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(nodeCreateRequest, "nodeCreateRequest must not be null");
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + uuid + getQuery(parameters), NodeResponse.class,
+				nodeCreateRequest);
 	}
 
 	@Override
@@ -312,6 +331,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<ProjectResponse> createProject(String uuid, ProjectCreateRequest projectCreateRequest) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(projectCreateRequest, "projectCreateRequest must not be null");
+		return prepareRequest(POST, "/projects/" + uuid, ProjectResponse.class, projectCreateRequest);
+	}
+
+	@Override
 	public MeshRequest<ProjectResponse> updateProject(String uuid, ProjectUpdateRequest projectUpdateRequest) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(projectUpdateRequest, "projectUpdateRequest must not be null");
@@ -416,6 +442,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<GroupResponse> createGroup(String uuid, GroupCreateRequest groupCreateRequest) {
+		Objects.requireNonNull(uuid, "The group uuid must not be null");
+		Objects.requireNonNull(groupCreateRequest, "groupCreateRequest must not be null");
+		return prepareRequest(POST, "/groups/" + uuid, GroupResponse.class, groupCreateRequest);
+	}
+
+	@Override
 	public MeshRequest<GroupResponse> updateGroup(String uuid, GroupUpdateRequest groupUpdateRequest) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(groupUpdateRequest, "groupUpdateRequest must not be null");
@@ -448,6 +481,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	public MeshRequest<UserResponse> createUser(UserCreateRequest userCreateRequest, ParameterProvider... parameters) {
 		Objects.requireNonNull(userCreateRequest, "userCreateRequest must not be null");
 		return prepareRequest(POST, "/users" + getQuery(parameters), UserResponse.class, userCreateRequest);
+	}
+
+	@Override
+	public MeshRequest<UserResponse> createUser(String uuid, UserCreateRequest userCreateRequest, ParameterProvider... parameters) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(userCreateRequest, "userCreateRequest must not be null");
+		return prepareRequest(POST, "/users/" + uuid + getQuery(parameters), UserResponse.class, userCreateRequest);
 	}
 
 	@Override
@@ -499,8 +539,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<RoleResponse> createRole(RoleCreateRequest roleCreateRequest) {
-		return prepareRequest(POST, "/roles", RoleResponse.class, roleCreateRequest);
+	public MeshRequest<RoleResponse> createRole(RoleCreateRequest createRequest) {
+		return prepareRequest(POST, "/roles", RoleResponse.class, createRequest);
+	}
+
+	@Override
+	public MeshRequest<RoleResponse> createRole(String uuid, RoleCreateRequest createRequest) {
+		return prepareRequest(POST, "/roles/" + uuid, RoleResponse.class, createRequest);
 	}
 
 	@Override
@@ -666,7 +711,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 			throw new RuntimeException("The path {" + path + "} must start with a slash");
 		}
 		// TODO encode path?
-		String requestUri = BASEURI + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
+		String requestUri = getBaseUri() + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
 		ResponseHandler<WebRootResponse> handler = new WebRootResponseHandler(HttpMethod.GET, requestUri);
 		HttpClientRequest request = client.request(GET, requestUri, handler);
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
@@ -827,7 +872,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<GenericMessageResponse> meshStatus() {
-		return prepareRequest(GET, BASEURI + "/admin/status", GenericMessageResponse.class);
+		return prepareRequest(GET, getBaseUri() + "/admin/status", GenericMessageResponse.class);
 	}
 
 	@Override
@@ -874,7 +919,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 
 		String path = "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binary/" + fieldKey + getQuery(parameters);
-		String uri = BASEURI + path;
+		String uri = getBaseUri() + path;
 
 		MeshBinaryResponseHandler handler = new MeshBinaryResponseHandler(GET, uri);
 		HttpClientRequest request = client.request(GET, uri, handler);
@@ -896,7 +941,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		BinaryFieldTransformRequest transformRequest = new BinaryFieldTransformRequest().setWidth(imageManipulationParameter.getWidth())
 				.setHeight(imageManipulationParameter.getHeight()).setCropx(imageManipulationParameter.getStartx())
 				.setCropy(imageManipulationParameter.getStarty()).setCroph(imageManipulationParameter.getCroph())
-				.setCropw(imageManipulationParameter.getCropw()).setLanguage(languageTag).setVersion(new VersionReference().setNumber(version));
+				.setCropw(imageManipulationParameter.getCropw()).setLanguage(languageTag).setVersion(version);
 
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binaryTransform/" + fieldKey, NodeResponse.class,
 				transformRequest);
@@ -965,7 +1010,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public void eventbus(Handler<WebSocket> wsConnect) {
-		client.websocket(BASEURI + "/eventbus/websocket", wsConnect);
+		client.websocket(getBaseUri() + "/eventbus/websocket", wsConnect);
 	}
 
 	@Override
@@ -975,6 +1020,17 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(releaseCreateRequest, "releaseCreateRequest must not be null");
 
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/releases" + getQuery(parameters), ReleaseResponse.class,
+				releaseCreateRequest);
+	}
+
+	@Override
+	public MeshRequest<ReleaseResponse> createRelease(String projectName, String uuid, ReleaseCreateRequest releaseCreateRequest,
+			ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		Objects.requireNonNull(releaseCreateRequest, "releaseCreateRequest must not be null");
+
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/releases/" + uuid + getQuery(parameters), ReleaseResponse.class,
 				releaseCreateRequest);
 	}
 
@@ -1008,7 +1064,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<String> getRAML() {
-		return MeshRestRequestUtil.prepareRequest(GET, "/raml", String.class, null, null, client, authentication, disableAnonymousAccess,
+		return MeshRestRequestUtil.prepareRequest(GET, "/raml", String.class, null, null, this, authentication, disableAnonymousAccess,
 				"text/vnd.yaml");
 	}
 

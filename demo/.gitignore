@@ -1,9 +1,13 @@
 /data
+/data*
 /demo
+/demo*
+/config*
 *.tgz 
 src/main/resources/mesh-demo.zip
 /target/
 mesh-dump.zip
+data-nodeA
 orient-plugins/studio*.zip
 mesh-ui-config.js
 data_*
