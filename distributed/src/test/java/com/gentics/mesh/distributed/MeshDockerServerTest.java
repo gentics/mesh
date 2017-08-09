@@ -1,6 +1,8 @@
 package com.gentics.mesh.distributed;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -16,6 +18,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
+import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.user.UserCreateRequest;
@@ -183,5 +186,53 @@ public class MeshDockerServerTest {
 		response = call(() -> clientB.findNodes(newProjectName));
 		assertEquals(1, response.getData().size());
 
+	}
+
+	/**
+	 * Update a project name and assert that the routes are being updated across the cluster.
+	 */
+	@Test
+	public void testProjectUpdate() {
+		String newProjectName = "clusteredProject1";
+		// Node A: Create Project
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(newProjectName);
+		request.setSchemaRef("folder");
+		ProjectResponse response = call(() -> clientA.createProject(request));
+
+		String newName = "newNameForProject";
+		call(() -> clientA.updateProject(response.getUuid(), new ProjectUpdateRequest().setName(newName)));
+
+		// Only the root node should be found
+		assertThat(call(() -> clientB.findNodes(newName)).getData()).hasSize(1);
+
+	}
+
+	/**
+	 * Invoke a schema update and verify that the schema migration is being executed. Validate that the search index and graph was updated across the cluster.
+	 */
+	@Test
+	public void testSchemaUpdate() {
+
+	}
+
+	/**
+	 * Verify that the project is deleted.
+	 */
+	@Test
+	public void testProjectDeletion() {
+		String newProjectName = "clusteredProject2";
+		// Node A: Create Project
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(newProjectName);
+		request.setSchemaRef("folder");
+		ProjectResponse response = call(() -> clientA.createProject(request));
+		String uuid = response.getUuid();
+
+		// Node B: Delete the project
+		call(() -> clientB.deleteProject(uuid));
+
+		// Node A: Assert that the project can't be found
+		call(() -> clientA.findProjectByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
 	}
 }

@@ -3,7 +3,6 @@ package com.gentics.mesh.distributed;
 import static com.gentics.mesh.Events.EVENT_CLEAR_PERMISSION_STORE;
 import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_JOINED;
 import static com.gentics.mesh.Events.EVENT_CLUSTER_NODE_LEFT;
-import static com.gentics.mesh.Events.EVENT_CLUSTER_UPDATE_PROJECTS;
 
 import java.util.Map;
 

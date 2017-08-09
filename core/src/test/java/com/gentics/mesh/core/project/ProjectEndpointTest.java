@@ -26,6 +26,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -42,7 +43,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -72,6 +72,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
@@ -438,17 +439,27 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
+		String uuid = projectUuid();
 		try (Tx tx = tx()) {
 			Project project = project();
-			String uuid = project.getUuid();
 			role().grantPermissions(project, UPDATE_PERM);
+			tx.success();
+		}
 
-			ProjectUpdateRequest request = new ProjectUpdateRequest();
-			request.setName("New Name");
+		String oldName = PROJECT_NAME;
+		String newName = "New Name";
+		ProjectUpdateRequest request = new ProjectUpdateRequest();
+		request.setName(newName);
+		assertThat(dummySearchProvider()).hasNoStoreEvents();
+		ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
 
-			assertThat(dummySearchProvider()).hasNoStoreEvents();
-			ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
-			project.reload();
+		// Assert that the routerstorage was updates
+		assertTrue("The new project router should have been added", meshDagger().routerStorage().hasProjectRouter(newName));
+		assertFalse("The old project router should have been removed", meshDagger().routerStorage().hasProjectRouter(oldName));
+		call(() -> client().findNodes(newName));
+
+		try (Tx tx = tx()) {
+			Project project = project();
 			assertThat(restProject).matches(project);
 			// All nodes + project + tags and tag families need to be reindex since the project name is part of the search document.
 			int expectedCount = 1;
@@ -463,8 +474,9 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			reloadedProject.reload();
-			assertEquals("New Name", reloadedProject.getName());
+			assertEquals(newName, reloadedProject.getName());
 		}
+
 	}
 
 	@Test

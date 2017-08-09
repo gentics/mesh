@@ -8,7 +8,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 

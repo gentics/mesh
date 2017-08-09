@@ -10,7 +10,6 @@ import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.INITIAL_RELEASE_NAME;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;

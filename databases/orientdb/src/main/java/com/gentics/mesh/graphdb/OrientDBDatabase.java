@@ -539,7 +539,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void enableMassInsert() {
 		OrientBaseGraph tx = unwrapCurrentGraph();
 		tx.getRawGraph().getTransaction().setUsingLog(false);
-		tx.declareIntent(new OIntentMassiveInsert().setDisableHooks(true).setDisableValidation(true).setDisableSecurity(true));
+		tx.declareIntent(new OIntentMassiveInsert().setDisableHooks(true).setDisableValidation(true));
 	}
 
 	@Override

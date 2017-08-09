@@ -1,13 +1,16 @@
 package com.gentics.mesh.etc;
 
 import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
+import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -17,9 +20,11 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.tx.Tx;
 
 import dagger.Lazy;
 import io.vertx.core.Handler;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -82,7 +87,8 @@ public class RouterStorage {
 	}
 
 	public void registerEventbusHandlers() {
-		Mesh.vertx().eventBus().consumer(EVENT_PROJECT_CREATED, (Message<JsonObject> rh) -> {
+		EventBus eb = Mesh.vertx().eventBus();
+		eb.consumer(EVENT_PROJECT_CREATED, (Message<JsonObject> rh) -> {
 			JsonObject json = rh.body();
 			String name = json.getString("name");
 			try {
@@ -95,6 +101,34 @@ public class RouterStorage {
 				throw error(BAD_REQUEST, "Error while adding project to router storage", e);
 			}
 		});
+
+		eb.consumer(EVENT_PROJECT_UPDATED, (Message<JsonObject> rh) -> {
+			RouterStorage routerStorage = RouterStorage.getIntance();
+			Database database = db.get();
+
+			try (Tx tx = database.tx()) {
+				Set<String> projectNames = new HashSet<>();
+				// Check whether there are any projects which do not have an active project router
+				for (Project project : boot.get().projectRoot().findAll()) {
+					if (!routerStorage.hasProjectRouter(project.getName())) {
+						routerStorage.addProjectRouter(project.getName());
+					}
+					projectNames.add(project.getName());
+				}
+
+				// Check whether there are any project routers which are no longer valid / in-sync with the projects.
+				for (String projectName : routerStorage.getProjectRouters().keySet()) {
+					if (!projectNames.contains(projectName)) {
+						routerStorage.removeProjectRouter(projectName);
+					}
+				}
+			} catch (InvalidNameException e) {
+				log.error("Could not update project routers", e);
+				rh.fail(400, "Invalid project name found");
+			}
+
+		});
+
 	}
 
 	/**
@@ -107,22 +141,22 @@ public class RouterStorage {
 	/**
 	 * Core routers are routers that are responsible for dealing with routes that are no project routes. E.g: /api/v1/admin, /api/v1
 	 */
-	private Map<String, Router> coreRouters = new HashMap<>();
+	private Map<String, Router> coreRouters = new ConcurrentHashMap<>();
 
 	/**
 	 * Custom routers. (E.g.: /demo)
 	 */
-	private Map<String, Router> customRouters = new HashMap<>();
+	private Map<String, Router> customRouters = new ConcurrentHashMap<>();
 
 	/**
 	 * Project routers are routers that handle project rest api endpoints. E.g: /api/v1/dummy, /api/v1/yourprojectname
 	 */
-	private Map<String, Router> projectRouters = new HashMap<>();
+	private Map<String, Router> projectRouters = new ConcurrentHashMap<>();
 
 	/**
 	 * Project sub routers are routers that are mounted by project routers. E.g: /api/v1/dummy/nodes, /api/v1/yourprojectname/tagFamilies
 	 */
-	private Map<String, Router> projectSubRouters = new HashMap<>();
+	private Map<String, Router> projectSubRouters = new ConcurrentHashMap<>();
 
 	/**
 	 * The root {@link Router} is a core router that is used as a parent for all other routers. This method will create the root router if non is existing.
@@ -243,6 +277,16 @@ public class RouterStorage {
 	}
 
 	/**
+	 * Check whether the project router for the given project name is already registered.
+	 * 
+	 * @param projectName
+	 * @return
+	 */
+	public boolean hasProjectRouter(String projectName) {
+		return projectRouters.containsKey(projectName);
+	}
+
+	/**
 	 * Add a new project router with the given name to the api router. This method will return an existing router when one already has been setup.
 	 * 
 	 * @param name
@@ -252,11 +296,8 @@ public class RouterStorage {
 	 */
 	public Router addProjectRouter(String name) throws InvalidNameException {
 		String encodedName = encodeFragment(name);
-		if (coreRouters.containsKey(encodedName)) {
-			throw new InvalidNameException("The project name {" + encodedName
-					+ "} is conflicting with a core router. Best guess is that an core verticle is already occupying the name. Please choose a different name or remove the conflicting core verticle.");
-		}
-		Router projectRouter = projectRouters.get(encodedName);
+		assertProjectNameValid(name);
+		Router projectRouter = projectRouters.get(name);
 		// TODO synchronise access to projectRouters
 		if (projectRouter == null) {
 			projectRouter = Router.router(Mesh.vertx());
@@ -334,7 +375,7 @@ public class RouterStorage {
 	}
 
 	/**
-	 * Return custom sub router
+	 * Return custom sub router.
 	 * 
 	 * @param name
 	 *            Name of the custom sub router
@@ -349,6 +390,19 @@ public class RouterStorage {
 		}
 		getCustomRouter().mountSubRouter("/" + name, router);
 		return router;
+	}
+
+	/**
+	 * Fail if the provided name is invalid or would cause a conflicts with an existing API router.
+	 * 
+	 * @param name
+	 *            Project name to be checked
+	 */
+	public void assertProjectNameValid(String name) {
+		String encodedName = encodeFragment(name);
+		if (coreRouters.containsKey(name) || coreRouters.containsKey(encodedName)) {
+			throw error(BAD_REQUEST, "project_error_name_already_reserved", name);
+		}
 	}
 
 }

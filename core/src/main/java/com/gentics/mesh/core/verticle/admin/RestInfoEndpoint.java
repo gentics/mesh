@@ -10,7 +10,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;

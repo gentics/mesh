@@ -1,7 +1,6 @@
 package com.gentics.mesh.cli;
 
 import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
@@ -22,18 +21,13 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
-import com.hazelcast.core.HazelcastInstance;
-
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
-import io.vertx.core.spi.cluster.ClusterManager;
-import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
 
 /**
  * @see Mesh

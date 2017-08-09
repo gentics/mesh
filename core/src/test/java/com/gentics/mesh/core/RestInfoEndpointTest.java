@@ -8,7 +8,6 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;

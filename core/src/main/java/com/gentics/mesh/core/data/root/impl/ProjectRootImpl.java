@@ -40,15 +40,10 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
  * @see ProjectRoot
  */
 public class ProjectRootImpl extends AbstractRootVertex<Project> implements ProjectRoot {
-
-	private static final Logger log = LoggerFactory.getLogger(ProjectRootImpl.class);
 
 	public static void init(Database database) {
 		database.addVertexType(ProjectRootImpl.class, MeshVertexImpl.class);
@@ -179,9 +174,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		if (conflictingProject != null) {
 			throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 		}
-		if (routerStorage.getCoreRouters().containsKey(requestModel.getName())) {
-			throw error(BAD_REQUEST, "project_error_name_already_reserved", requestModel.getName());
-		}
+		routerStorage.assertProjectNameValid(requestModel.getName());
 
 		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");

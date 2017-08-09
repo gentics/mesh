@@ -46,7 +46,7 @@ public final class PermissionStore {
 			if (log.isDebugEnabled()) {
 				log.debug("Clearing permission store due to received event from {" + e.address() + "}");
 			}
-			PermissionStore.invalidate();
+			PERM_CACHE.invalidateAll();
 		});
 	}
 
