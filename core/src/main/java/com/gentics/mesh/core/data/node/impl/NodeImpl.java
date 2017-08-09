@@ -254,7 +254,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers() {
+	public List<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers() {
 		return getGraphFieldContainers(getProject().getLatestRelease(), DRAFT);
 	}
 
@@ -271,16 +271,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, ContainerType type) {
-		// TODO ADD INDEX!
-		// String key = "r:" + releaseUuid + "t:" + type + "i:" + getId();
-		//
-		// Object result = map2.get(key);
-		// if(result!=null) {
-		// return (List<? extends NodeGraphFieldContainer>) result;
-		// }
 		List<? extends NodeGraphFieldContainerImpl> list = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().toListExplicit(NodeGraphFieldContainerImpl.class);
-		// map2.put(key, list);
 		return list;
 	}
 
@@ -1215,7 +1207,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public List<String> getAvailableLanguageNames() {
 		List<String> languageTags = new ArrayList<>();
 		// TODO it would be better to store the languagetag along with the edge
-		for (GraphFieldContainer container : getGraphFieldContainers()) {
+		for (GraphFieldContainer container : getDraftGraphFieldContainers()) {
 			languageTags.add(container.getLanguage().getLanguageTag());
 		}
 		return languageTags;

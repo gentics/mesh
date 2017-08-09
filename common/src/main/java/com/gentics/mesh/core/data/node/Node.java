@@ -167,7 +167,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @return
 	 */
-	List<? extends NodeGraphFieldContainer> getGraphFieldContainers();
+	List<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers();
 
 	/**
 	 * Return a list of all initial graph field containers for the node (in any release).
