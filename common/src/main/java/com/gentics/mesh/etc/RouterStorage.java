@@ -111,6 +111,7 @@ public class RouterStorage {
 				// Check whether there are any projects which do not have an active project router
 				for (Project project : boot.get().projectRoot().findAll()) {
 					if (!routerStorage.hasProjectRouter(project.getName())) {
+						log.info("Mounting project {" + project.getName() + "}");
 						routerStorage.addProjectRouter(project.getName());
 					}
 					projectNames.add(project.getName());
@@ -119,6 +120,7 @@ public class RouterStorage {
 				// Check whether there are any project routers which are no longer valid / in-sync with the projects.
 				for (String projectName : routerStorage.getProjectRouters().keySet()) {
 					if (!projectNames.contains(projectName)) {
+						log.info("Removing invalid mount {" + projectName + "}");
 						routerStorage.removeProjectRouter(projectName);
 					}
 				}

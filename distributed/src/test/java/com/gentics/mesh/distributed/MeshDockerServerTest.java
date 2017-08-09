@@ -1,8 +1,8 @@
 package com.gentics.mesh.distributed;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -190,20 +190,24 @@ public class MeshDockerServerTest {
 
 	/**
 	 * Update a project name and assert that the routes are being updated across the cluster.
+	 * @throws InterruptedException 
 	 */
 	@Test
-	public void testProjectUpdate() {
-		String newProjectName = "clusteredProject1";
+	public void testProjectUpdate() throws InterruptedException {
 		// Node A: Create Project
+		String newProjectName = "clusteredProject1";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(newProjectName);
 		request.setSchemaRef("folder");
 		ProjectResponse response = call(() -> clientA.createProject(request));
 
+		// Node A: Update project
 		String newName = "newNameForProject";
 		call(() -> clientA.updateProject(response.getUuid(), new ProjectUpdateRequest().setName(newName)));
 
-		// Only the root node should be found
+		Thread.sleep(6000);
+
+		// Node B: Only the root node should be found and routes should have been updated across the cluster
 		assertThat(call(() -> clientB.findNodes(newName)).getData()).hasSize(1);
 
 	}

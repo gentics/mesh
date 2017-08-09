@@ -346,6 +346,9 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		json.put("name", getName());
 		json.put("uuid", getUuid());
 		Mesh.vertx().eventBus().publish(EVENT_PROJECT_UPDATED, json);
+		if (log.isDebugEnabled()) {
+			log.debug("Project update event sent.");
+		}
 	}
 
 	@Override
@@ -356,7 +359,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		json.put("uuid", getUuid());
 		Mesh.vertx().eventBus().publish(EVENT_PROJECT_CREATED, json);
 		if (log.isDebugEnabled()) {
-			log.debug("Project update event send.");
+			log.debug("Project create event sent.");
 		}
 	}
 }
