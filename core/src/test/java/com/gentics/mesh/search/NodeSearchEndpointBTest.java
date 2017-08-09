@@ -4,6 +4,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -122,7 +123,12 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		// TODO do actual search (currently, we just test that indexing works with the mappings)
+		String nodeUuid = tx(() -> content("concorde").getUuid());
+
+		String query = getSimpleTermQuery("fields.nodelist", nodeUuid);
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query));
+		assertEquals("We expected to find the node itself since it contains a node list which includes a item which points to the same node.",
+				nodeUuid, response.getData().get(0).getUuid());
 	}
 
 	@Test
