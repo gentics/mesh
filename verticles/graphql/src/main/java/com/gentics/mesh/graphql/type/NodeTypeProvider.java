@@ -32,7 +32,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.impl.WrappedPageImpl;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -251,7 +251,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			Node node = content.getNode();
 			List<String> languageTags = getLanguageArgument(env);
 
-			TransformablePage<? extends Node> page = node.getChildren(gc.getUser(), languageTags, gc.getRelease().getUuid(), selectedType,
+			TransformablePage<? extends Node> page = node.getChildren(gc, languageTags, gc.getRelease().getUuid(), selectedType,
 					getPagingInfo(env));
 
 			// Transform the found nodes into contents
@@ -259,7 +259,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				NodeGraphFieldContainer container = item.findNextMatchingFieldContainer(gc, languageTags);
 				return new NodeContent(item, container);
 			}).collect(Collectors.toList());
-			return new PageImpl<NodeContent>(contents, page);
+			return new WrappedPageImpl<NodeContent>(contents, page);
 		}, NODE_PAGE_TYPE_NAME).argument(createLanguageTagArg()));
 
 		// .parent

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.Events.EVENT_GROUP_CREATED;
 import static com.gentics.mesh.Events.EVENT_GROUP_UPDATED;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
@@ -27,6 +28,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.group.GroupReference;
@@ -36,7 +38,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
-import com.gentics.mesh.util.TraversalHelper;
 import com.syncleus.ferma.traversals.VertexTraversal;
 
 import rx.Single;
@@ -130,18 +131,15 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public TransformablePage<? extends User> getVisibleUsers(MeshAuthUser requestUser, PagingParameters pagingInfo) {
-		VertexTraversal<?, ?, ?> traversal = in(HAS_USER).mark().in(GraphPermission.READ_PERM.label()).out(HAS_ROLE).in(HAS_USER).retain(requestUser)
-				.back().has(UserImpl.class);
-		return TraversalHelper.getPagedResult(traversal, pagingInfo, UserImpl.class);
+	public TransformablePage<? extends User> getVisibleUsers(MeshAuthUser user, PagingParameters pagingInfo) {
+		VertexTraversal<?, ?, ?> traversal = in(HAS_USER);
+		return new DynamicTransformablePageImpl<User>(user, traversal, pagingInfo, READ_PERM, UserImpl.class);
 	}
 
 	@Override
 	public TransformablePage<? extends Role> getRoles(User user, PagingParameters pagingInfo) {
-		// TODO handle request user / handle perms
 		VertexTraversal<?, ?, ?> traversal = in(HAS_ROLE);
-		TransformablePage<? extends Role> page = TraversalHelper.getPagedResult(traversal, pagingInfo, RoleImpl.class);
-		return page;
+		return new DynamicTransformablePageImpl<Role>(user, traversal, pagingInfo, READ_PERM, RoleImpl.class);
 	}
 
 	@Override

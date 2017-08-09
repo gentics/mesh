@@ -4,6 +4,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -15,7 +16,6 @@ import java.util.concurrent.CountDownLatch;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
@@ -25,6 +25,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
@@ -122,7 +123,12 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		// TODO do actual search (currently, we just test that indexing works with the mappings)
+		String nodeUuid = tx(() -> content("concorde").getUuid());
+
+		String query = getSimpleTermQuery("fields.nodelist", nodeUuid);
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query));
+		assertEquals("We expected to find the node itself since it contains a node list which includes a item which points to the same node.",
+				nodeUuid, response.getData().get(0).getUuid());
 	}
 
 	@Test

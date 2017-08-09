@@ -6,16 +6,17 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -26,9 +27,8 @@ import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuild
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.common.unit.TimeValue;
 
 import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -43,6 +43,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -54,6 +55,7 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.search.MeshSearchHit;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 
@@ -78,6 +80,8 @@ import rx.Single;
 public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
+
+	private static final int INITIAL_BATCH_SIZE = 30;
 
 	@Inject
 	NodeContainerTransformator transformator;
@@ -448,79 +452,105 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {" + getElementClass().getName() + "}");
 		}
+		Set<String> indices = getSelectedIndices(ac);
 
 		/*
 		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
 		 * to be written that deals with Document Level Permissions/Security (commonly known as DLS)
 		 */
 		SearchRequestBuilder builder = null;
+		builder = client.prepareSearch(indices.toArray(new String[indices.size()]));
 		try {
 			JSONObject queryStringObject = new JSONObject(query);
 			/**
 			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more
 			 * efficient ways to do deep scrolling.
 			 */
-			queryStringObject.put("from", 0);
-			queryStringObject.put("size", Integer.MAX_VALUE);
-			Set<String> indices = getSelectedIndices(ac);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryStringObject.toString());
+			// queryStringObject.put("from", 0);
+			// queryStringObject.put("size", Integer.MAX_VALUE);
+			// builder.setSource(queryStringObject.toString());
+			builder.setExtraSource(queryStringObject.toString());
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
-		CompletableFuture<Page<? extends NodeContent>> future = new CompletableFuture<>();
-		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		builder.execute().addListener(new ActionListener<SearchResponse>() {
+		// Only load the documentId we don't care about the indexed contents. The graph is our source of truth here.
+		builder.setFetchSource(false);
+		// builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+		builder.setSize(INITIAL_BATCH_SIZE);
+		builder.setScroll(new TimeValue(60000));
+		SearchResponse scrollResp = builder.execute().actionGet();
 
-			@Override
-			public void onResponse(SearchResponse response) {
-				Page<? extends NodeContent> page = db.tx(() -> {
-					List<NodeContent> elementList = new ArrayList<>();
-					for (SearchHit hit : response.getHits()) {
+		// The scrolling iterator will wrap the current response and query ES for more data if needed.
+		ScrollingIterator scrollingIt = new ScrollingIterator(client, scrollResp);
+		Page<? extends NodeContent> page = db.tx(() -> {
 
+			// Prepare a stream which applies all needed filtering
+			Stream<NodeContent> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(scrollingIt, Spliterator.ORDERED), false)
+
+					.map(hit -> {
 						String id = hit.getId();
 						int pos = id.indexOf("-");
+
 						String language = pos > 0 ? id.substring(pos + 1) : null;
 						String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-						// TODO check permissions without loading the vertex
+						return new MeshSearchHit<Node>(uuid, language);
+					})
+					// TODO filter by requested language
+					.filter(hit -> {
+						return hit.language != null;
+					})
 
-						// Locate the node
-						Node node = getRootVertex().findByUuid(uuid);
-						if (node != null) {
-							// Check permissions and language
-							for (GraphPermission permission : permissions) {
-								if (user.hasPermission(node, permission)) {
-									ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-									Language languageTag = boot.languageRoot().findByLanguageTag(language);
-									if (languageTag == null) {
-										log.debug("Could not find language {" + language + "}");
-										break;
-									}
-									// Locate the matching container and add it to the list of found containers
-									NodeGraphFieldContainer container = node.getGraphFieldContainer(languageTag, ac.getRelease(), type);
-									if (container != null) {
-										elementList.add(new NodeContent(node, container));
-									}
-									break;
-								}
+					.map(hit -> {
+						// Load the node
+						hit.element = getRootVertex().findByUuid(hit.uuid);
+						if (hit.element == null) {
+							log.error(
+									"Object could not be found for uuid {" + hit.uuid + "} in root vertex {" + getRootVertex().getRootLabel() + "}");
+						}
+
+						return hit;
+					})
+
+					.filter(hit -> {
+						// Only include found elements
+						return hit.element != null;
+					})
+
+					.filter(hit -> {
+						// TODO check permissions without loading the vertex
+						for (GraphPermission permission : permissions) {
+							boolean hasPerm = user.hasPermission(hit.element, permission);
+							if (hasPerm) {
+								return true;
 							}
 						}
-					}
-					Page<? extends NodeContent> containerPage = Page.applyPaging(elementList, pagingInfo);
-					return containerPage;
-				});
-				future.complete(page);
-			}
+						return false;
+					})
 
-			@Override
-			public void onFailure(Throwable e) {
-				log.error("Search query failed", e);
-				future.completeExceptionally(e);
-			}
+					.map(hit -> {
+
+						ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+						Language languageTag = boot.languageRoot().findByLanguageTag(hit.language);
+						if (languageTag == null) {
+							log.debug("Could not find language {" + hit.language + "}");
+							return null;
+						}
+
+						// Locate the matching container and add it to the list of found containers
+						NodeGraphFieldContainer container = hit.element.getGraphFieldContainer(languageTag, ac.getRelease(), type);
+						if (container != null) {
+							return new NodeContent(hit.element, container);
+						}
+						return null;
+					})
+
+					.filter(hit -> {
+						return hit != null;
+					});
+			return new DynamicStreamPageImpl<>(stream, pagingInfo);
 		});
-
-		return future.get(60, TimeUnit.SECONDS);
-
+		return page;
 	}
 
 }

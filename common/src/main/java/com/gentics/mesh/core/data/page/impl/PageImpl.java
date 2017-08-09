@@ -4,8 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.rest.common.ListResponse;
-import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 
 /**
  * @see Page
@@ -18,16 +16,6 @@ public class PageImpl<T> implements Iterable<T>, Page<T> {
 	protected long pageNumber;
 	protected long totalPages;
 	protected int perPage;
-
-	/**
-	 * Construct a new page and use the given page as a source for the page meta information.
-	 * 
-	 * @param wrappedList
-	 * @param page
-	 */
-	public PageImpl(List<? extends T> wrappedList, Page<?> page) {
-		this(wrappedList, page.getTotalElements(), page.getNumber(), page.getPageCount(), page.getPerPage());
-	}
 
 	/**
 	 * Construct a new page
@@ -82,17 +70,13 @@ public class PageImpl<T> implements Iterable<T>, Page<T> {
 	}
 
 	@Override
-	public void setPaging(ListResponse<?> response) {
-		PagingMetaInfo info = response.getMetainfo();
-		info.setCurrentPage(getNumber());
-		info.setPageCount(getPageCount());
-		info.setPerPage(getPerPage());
-		info.setTotalCount(getTotalElements());
+	public List<? extends T> getWrappedList() {
+		return wrappedList;
 	}
 
 	@Override
-	public List<? extends T> getWrappedList() {
-		return wrappedList;
+	public boolean hasNextPage() {
+		return getPageCount() > getNumber();
 	}
 
 }

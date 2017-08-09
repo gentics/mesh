@@ -60,31 +60,30 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadChildren() {
-		try (Tx tx = tx()) {
-			String uuid = project().getBaseNode().getUuid();
-			String etag = callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid));
+		String uuid = tx(() -> project().getBaseNode().getUuid());
+		String etag = callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid));
 
-			callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid), etag, true, 304);
-			callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid, new PagingParametersImpl().setPage(2)), etag, true, 200);
-			callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid, new PagingParametersImpl().setPerPage(2)), etag, true, 200);
+		callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid), etag, true, 304);
+		callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid, new PagingParametersImpl().setPage(2)), etag, true, 200);
+		callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid, new PagingParametersImpl().setPerPage(2)), etag, true, 200);
 
-			// Create a new node in the parent folder
-			NodeCreateRequest request = new NodeCreateRequest();
-			request.setLanguage("en");
-			request.setParentNode(new NodeReference().setUuid(uuid));
-			request.setSchema(new SchemaReference().setName("content"));
-			request.getFields().put("teaser", FieldUtil.createStringField("someTeaser"));
-			request.getFields().put("slug", FieldUtil.createStringField("someSlug"));
-			NodeResponse createdNode = call(() -> client().createNode(PROJECT_NAME, request));
+		// Create a new node in the parent folder
+		NodeCreateRequest request = new NodeCreateRequest();
+		request.setLanguage("en");
+		request.setParentNode(new NodeReference().setUuid(uuid));
+		request.setSchema(new SchemaReference().setName("content"));
+		request.getFields().put("teaser", FieldUtil.createStringField("someTeaser"));
+		request.getFields().put("slug", FieldUtil.createStringField("someSlug"));
+		NodeResponse createdNode = call(() -> client().createNode(PROJECT_NAME, request));
 
-			// We added another node but it has not yet been published
-			callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid, new VersioningParametersImpl().published()), etag, true, 304);
+		// We added another node but it has not yet been published
+		callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid, new VersioningParametersImpl().published()), etag, true, 304);
 
-			call(() -> client().publishNode(PROJECT_NAME, createdNode.getUuid()));
+		call(() -> client().publishNode(PROJECT_NAME, createdNode.getUuid()));
 
-			// We published the node thus the children result is different
-			callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid), etag, true, 200);
-		}
+		// We published the node thus the children result is different
+		callETag(() -> client().findNodeChildren(PROJECT_NAME, uuid), etag, true, 200);
+
 	}
 
 	@Test

@@ -89,6 +89,22 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
+	public void testApplyChanges() throws IOException {
+
+		String json = getJson("schema-changes.json");
+		String uuid = tx(() -> schemaContainer("folder").getUuid());
+		SchemaChangesListModel changes = JsonUtil.readValue(json, SchemaChangesListModel.class);
+		call(() -> client().applyChangesToSchema(uuid, changes));
+
+		SchemaResponse response = call(() -> client().findSchemaByUuid(uuid));
+		assertEquals("string", response.getField("pub_dir").getType());
+		assertNull("Slug should have been removed.", response.getField("slug"));
+		assertEquals("pub_dir", response.getDisplayField());
+		assertEquals("name", response.getSegmentField());
+		assertEquals(2, response.getFields().size());
+	}
+
+	@Test
 	public void testBlockingMigrationStatus() throws InterruptedException, IOException {
 		SchemaContainer container = schemaContainer("content");
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();

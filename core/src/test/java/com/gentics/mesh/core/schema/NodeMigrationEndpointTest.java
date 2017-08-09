@@ -1,11 +1,12 @@
 package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -14,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -36,17 +36,28 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
+import com.gentics.mesh.util.Tuple;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
@@ -223,6 +234,88 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(node.getGraphFieldContainer("en", project().getLatestRelease().getUuid(), ContainerType.PUBLISHED)).as("Migrated published")
 					.isOf(versionB).hasVersion("2.0");
 		}
+	}
+
+	@Test
+	public void testMicronodeListMigration() throws Exception {
+
+		// 1. Prepare the schema and add micronode list to the content schema
+		SchemaUpdateRequest schemaUpdate = db()
+				.tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(), SchemaUpdateRequest.class));
+		schemaUpdate.addField(FieldUtil.createListFieldSchema("micronode", "micronode").setAllowedSchemas("vcard"));
+
+		String schemaUuid = db().tx(() -> schemaContainer("content").getUuid());
+
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
+		call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		failingLatch(latch);
+
+		String parentNodeUuid = tx(() -> folder("2015").getUuid());
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setSchema(new SchemaReference().setName("content"));
+		nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("test"));
+		nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("test"));
+
+		MicronodeField micronodeA = FieldUtil.createMicronodeField("vcard",
+				Tuple.tuple("firstName", FieldUtil.createStringField("test-updated-firstname")),
+				Tuple.tuple("lastName", FieldUtil.createStringField("test-updated-lastname")));
+
+		MicronodeField micronodeB = FieldUtil.createMicronodeField("vcard", Tuple.tuple("firstName", FieldUtil.createStringField("test")),
+				Tuple.tuple("lastName", FieldUtil.createStringField("test")));
+
+		nodeCreateRequest.getFields().put("micronode", FieldUtil.createMicronodeListField(micronodeA, micronodeB));
+		nodeCreateRequest.setParentNodeUuid(parentNodeUuid);
+		nodeCreateRequest.setLanguage("en");
+
+		// 1. Create a node which contains a micronode list and at least two micronodes
+		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+		String nodeUuid = response.getUuid();
+		assertThat(response.getFields().getMicronodeFieldList("micronode").getItems()).isNotEmpty();
+		call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
+
+		// 2. Update the name and allow of the micronode list of the used schema
+		latch = TestUtils.latchForMigrationCompleted(client());
+		schemaUpdate.setName("someOtherName");
+		ListFieldSchema micronodeListFieldSchema = schemaUpdate.getField("micronode", ListFieldSchema.class);
+		micronodeListFieldSchema.setAllowedSchemas("vcard", "captionedImage");
+		call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		failingLatch(latch);
+
+		// 3. Assert that the node still contains the micronode list contents
+		NodeResponse migratedNode = call(
+				() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setVersion("published")));
+		assertThat(migratedNode.getFields().getMicronodeFieldList("micronode").getItems()).isNotEmpty();
+		assertNotEquals("The node should have been migrated due to the schema update.", migratedNode.getVersion(), response.getVersion());
+
+		// 4. Update the allow of the micronode list of the used schema
+		latch = TestUtils.latchForMigrationCompleted(client());
+		ListFieldSchema micronodeListFieldSchema2 = schemaUpdate.getField("micronode", ListFieldSchema.class);
+		micronodeListFieldSchema2.setAllowedSchemas("vcard");
+		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("otherMicronode").setAllowedMicroSchemas("vcard"));
+		call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		failingLatch(latch);
+
+		// 5. Assert that the node still contains the micronode list contents
+		migratedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setVersion("published")));
+		assertThat(migratedNode.getFields().getMicronodeFieldList("micronode").getItems()).isNotEmpty();
+		assertNotEquals("The node should have been migrated due to the schema update.", migratedNode.getVersion(), response.getVersion());
+
+		// 6. Now update the name of the microschema
+		String microschemaUuid = tx(() -> microschemaContainer("vcard").getUuid());
+		MicroschemaUpdateRequest microschemaUpdate = db()
+				.tx(() -> JsonUtil.readValue(microschemaContainer("vcard").getLatestVersion().getJson(), MicroschemaUpdateRequest.class));
+		microschemaUpdate.setName("someOtherName2");
+		microschemaUpdate.addField(FieldUtil.createStringFieldSchema("enemenemuh"));
+		latch = TestUtils.latchForMigrationCompleted(client());
+		call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
+		failingLatch(latch);
+
+		// 7. Verify that the node has been migrated again
+		NodeResponse migratedNode2 = call(
+				() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setVersion("published")));
+		assertThat(migratedNode2.getFields().getMicronodeFieldList("micronode").getItems()).isNotEmpty();
+		assertNotEquals("The node should have been migrated due to the schema update.", migratedNode.getVersion(), migratedNode2.getVersion());
+
 	}
 
 	@Test

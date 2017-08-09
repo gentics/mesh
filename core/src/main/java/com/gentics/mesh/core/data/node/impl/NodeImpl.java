@@ -19,6 +19,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
+import static com.tinkerpop.blueprints.Direction.OUT;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.METHOD_NOT_ALLOWED;
@@ -67,6 +68,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
@@ -106,7 +108,6 @@ import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.ETag;
-import com.gentics.mesh.util.TraversalHelper;
 import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
@@ -252,11 +253,11 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public List<? extends Tag> getTags(Release release) {
-		return TagEdgeImpl.getTagTraversal(null, this, release).toListExplicit(TagImpl.class);
+		return TagEdgeImpl.getTagTraversal(this, release).toListExplicit(TagImpl.class);
 	}
 
 	@Override
-	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers() {
+	public List<? extends NodeGraphFieldContainer> getDraftGraphFieldContainers() {
 		return getGraphFieldContainers(getProject().getLatestRelease(), DRAFT);
 	}
 
@@ -273,16 +274,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public List<? extends NodeGraphFieldContainer> getGraphFieldContainers(String releaseUuid, ContainerType type) {
-		// TODO ADD INDEX!
-		// String key = "r:" + releaseUuid + "t:" + type + "i:" + getId();
-		//
-		// Object result = map2.get(key);
-		// if(result!=null) {
-		// return (List<? extends NodeGraphFieldContainer>) result;
-		// }
 		List<? extends NodeGraphFieldContainerImpl> list = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
 				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode()).inV().toListExplicit(NodeGraphFieldContainerImpl.class);
-		// map2.put(key, list);
 		return list;
 	}
 
@@ -455,8 +448,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public List<? extends Node> getChildren(String releaseUuid) {
-		// return inE(HAS_PARENT_NODE).has(RELEASE_UUID_KEY,
-		// releaseUuid).outV().has(NodeImpl.class).toListExplicit(NodeImpl.class);
 		Database db = MeshInternal.get().database();
 		FramedGraph graph = Tx.getActive().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_release", db.createComposedIndexKey(getId(), releaseUuid));
@@ -1219,7 +1210,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	public List<String> getAvailableLanguageNames() {
 		List<String> languageTags = new ArrayList<>();
 		// TODO it would be better to store the languagetag along with the edge
-		for (GraphFieldContainer container : getGraphFieldContainers()) {
+		for (GraphFieldContainer container : getDraftGraphFieldContainers()) {
 			languageTags.add(container.getLanguage().getLanguageTag());
 		}
 		return languageTags;
@@ -1291,7 +1282,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	/**
-	 * Get a vertex traversal to find the children of this node, this user has read permission for
+	 * Get a vertex traversal to find the children of this node, this user has read permission for.
 	 *
 	 * @param requestUser
 	 *            user
@@ -1313,8 +1304,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		} else {
 			traversal = in(HAS_PARENT_NODE);
 		}
+		traversal = traversal.mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser).back();
 		if (releaseUuid != null || type != null) {
-			traversal = traversal.mark().in(permLabel).out(HAS_ROLE).in(HAS_USER).retain(requestUser).back();
 			EdgeTraversal<?, ?, ?> edgeTraversal = traversal.mark().outE(HAS_FIELD_CONTAINER);
 			if (releaseUuid != null) {
 				edgeTraversal = edgeTraversal.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid);
@@ -1341,16 +1332,38 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public TransformablePage<? extends Node> getChildren(MeshAuthUser requestUser, List<String> languageTags, String releaseUuid, ContainerType type,
+	public TransformablePage<? extends Node> getChildren(InternalActionContext ac, List<String> languageTags, String releaseUuid, ContainerType type,
 			PagingParameters pagingInfo) {
-		VertexTraversal<?, ?, ?> traversal = getChildrenTraversal(requestUser, releaseUuid, languageTags, type);
-		return TraversalHelper.getPagedResult(traversal, pagingInfo, NodeImpl.class);
+		String indexName = "e." + HAS_PARENT_NODE.toLowerCase() + "_release";
+		Object indexKey = db.createComposedIndexKey(getId(), releaseUuid);
+
+		GraphPermission perm = type == PUBLISHED ? READ_PUBLISHED_PERM : READ_PERM;
+		return new DynamicTransformablePageImpl<NodeImpl>(ac.getUser(), indexName, indexKey, NodeImpl.class, pagingInfo, perm, (item) -> {
+
+			// Filter out nodes which do not provide one of the specified language tags and type
+			if (languageTags != null) {
+				Iterator<Edge> edgeIt = item.getEdges(OUT, HAS_FIELD_CONTAINER).iterator();
+				while (edgeIt.hasNext()) {
+					Edge edge = edgeIt.next();
+					String currentType = edge.getProperty(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY);
+					if (!type.getCode().equals(currentType)) {
+						continue;
+					}
+					String languageTag = edge.getProperty(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY);
+					if (languageTags.contains(languageTag)) {
+						return true;
+					}
+				}
+				return false;
+			}
+			return true;
+		});
 	}
 
 	@Override
 	public TransformablePage<? extends Tag> getTags(User user, PagingParameters params, Release release) {
-		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(user, this, release);
-		return TraversalHelper.getPagedResult(traversal, params, TagImpl.class);
+		VertexTraversal<?, ?, ?> traversal = TagEdgeImpl.getTagTraversal(this, release);
+		return new DynamicTransformablePageImpl<Tag>(user, traversal, params, READ_PERM, TagImpl.class);
 	}
 
 	@Override

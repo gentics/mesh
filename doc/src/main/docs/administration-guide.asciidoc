@@ -14,13 +14,13 @@
 | https://google.github.io/dagger/                             | Dependency Injection | 2.6.x
 |======
 
-TIP: You can find the components' current version numbers by querying the Gentics Mesh demo instance http://getmesh.io/api/v1/ or your local instance http://localhost:8080/api/v1/.
+TIP: You can find the components' current version numbers by querying the Gentics Mesh demo instance https://demo.getmesh.io/api/v1/ or your local instance http://localhost:8080/api/v1/.
 
 == Run with JAR File
 
 Good news: there is no dedicated installation procedure for Gentics Mesh!
 
-All you need is to http://getmesh.io/Download[download the Gentics Mesh JAR] file and start by executing
+All you need is to https://getmesh.io/Download[download the Gentics Mesh JAR] file and start by executing
 
 [source,bash]
 ----

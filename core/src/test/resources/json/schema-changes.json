@@ -1,0 +1,43 @@
+{
+  "changes" : [ {
+    "operation" : "REMOVEFIELD",
+    "migrationScript" : "function migrate(node, fieldname, convert) {\n\tdelete node.fields[fieldname];\n\treturn node;\n}\n",
+    "properties" : {
+      "field" : "slug"
+    }
+  }, {
+    "operation" : "UPDATEFIELD",
+    "properties" : {
+      "field" : "name",
+      "label" : null
+    }
+  }, {
+    "operation" : "ADDFIELD",
+    "properties" : {
+      "field" : "pub_dir",
+      "label" : null,
+      "after" : "name",
+      "type" : "string"
+    }
+  }, {
+    "operation" : "UPDATESCHEMA",
+    "properties" : {
+      "order" : [ "name", "pub_dir" ]
+    }
+  }, {
+    "operation" : "UPDATESCHEMA",
+    "properties" : {
+      "description" : null
+    }
+  }, {
+    "operation" : "UPDATESCHEMA",
+    "properties" : {
+      "segmentFieldname" : "name"
+    }
+  }, {
+    "operation" : "UPDATESCHEMA",
+    "properties" : {
+      "displayFieldname" : "pub_dir"
+    }
+  } ]
+}

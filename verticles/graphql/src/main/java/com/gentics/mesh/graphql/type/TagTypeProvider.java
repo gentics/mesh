@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.TransformablePage;
-import com.gentics.mesh.core.data.page.impl.PageImpl;
+import com.gentics.mesh.core.data.page.impl.WrappedPageImpl;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
 import graphql.schema.GraphQLObjectType;
@@ -77,7 +77,7 @@ public class TagTypeProvider extends AbstractTypeProvider {
 						NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
 						return new NodeContent(node, container);
 					}).collect(Collectors.toList());
-					return new PageImpl<NodeContent>(contents, nodes);
+					return new WrappedPageImpl<NodeContent>(contents, nodes);
 				}));
 
 		return tagType.build();

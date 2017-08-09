@@ -10,7 +10,6 @@ import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.json.JsonObject;
 import rx.Completable;
-import rx.Observable;
 import rx.Single;
 
 /**

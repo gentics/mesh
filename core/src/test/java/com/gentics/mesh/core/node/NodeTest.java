@@ -266,13 +266,13 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(user, englishContainer.getEditor());
 			assertNotNull(englishContainer.getLastEditedTimestamp());
 
-			List<? extends GraphFieldContainer> allProperties = node.getGraphFieldContainers();
+			List<? extends GraphFieldContainer> allProperties = node.getDraftGraphFieldContainers();
 			assertNotNull(allProperties);
 			assertEquals(1, allProperties.size());
 
 			NodeGraphFieldContainer germanContainer = node.createGraphFieldContainer(german, node.getProject().getLatestRelease(), user);
 			germanContainer.createString("content").setString("german content");
-			assertEquals(2, node.getGraphFieldContainers().size());
+			assertEquals(2, node.getDraftGraphFieldContainers().size());
 
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english);
 			assertNotNull(container);
