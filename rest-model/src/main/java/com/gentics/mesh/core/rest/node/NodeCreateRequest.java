@@ -124,4 +124,17 @@ public class NodeCreateRequest implements FieldContainer {
 		return this;
 	}
 
+	/**
+	 * Shortcut to set the schema reference by schemaName.
+	 * 
+	 * @param schemaName
+	 * @return
+	 */
+	public NodeCreateRequest setSchemaName(String schemaName) {
+		SchemaReference schemaReference = new SchemaReference();
+		schemaReference.setName(schemaName);
+		setSchema(schemaReference);
+		return this;
+	}
+
 }

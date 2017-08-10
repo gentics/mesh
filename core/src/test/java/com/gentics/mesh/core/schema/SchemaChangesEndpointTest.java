@@ -3,10 +3,10 @@ package com.gentics.mesh.core.schema;
 import static com.gentics.mesh.Events.MESH_MIGRATION;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.expectResponseMessage;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -26,7 +26,6 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -54,6 +53,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.search.AbstractNodeSearchEndpointTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 
@@ -91,7 +91,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 	@Test
 	public void testApplyChanges() throws IOException {
 
-		String json = getJson("schema-changes.json");
+		String json = TestUtils.getJson("schema-changes.json");
 		String uuid = tx(() -> schemaContainer("folder").getUuid());
 		SchemaChangesListModel changes = JsonUtil.readValue(json, SchemaChangesListModel.class);
 		call(() -> client().applyChangesToSchema(uuid, changes));

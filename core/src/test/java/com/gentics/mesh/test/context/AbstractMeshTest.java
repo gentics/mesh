@@ -65,17 +65,6 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().value());
 	}
 
-	/**
-	 * Return the json data from classpath.
-	 * 
-	 * @param name
-	 * @return
-	 * @throws IOException
-	 */
-	public String getJson(String name) throws IOException {
-		return IOUtils.toString(getClass().getResourceAsStream("/json/" + name));
-	}
-
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
 		RoutingContext rc = mockRoutingContext();
 

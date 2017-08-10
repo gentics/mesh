@@ -41,6 +41,7 @@ public class NodeSearchEndpointATest extends AbstractNodeSearchEndpointTest {
 
 		String oldContent = "supersonic";
 		String newContent = "urschnell";
+
 		// "urschnell" not found in published nodes
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery(newContent)));
 		assertThat(response.getData()).as("Published search result").isEmpty();

@@ -10,6 +10,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.IOUtils;
+
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.vertx.core.json.JsonObject;
@@ -28,10 +30,10 @@ public final class TestUtils {
 	 * Construct a latch which will release when the migration has finished.
 	 * 
 	 * @return
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public static CountDownLatch latchForMigrationCompleted(MeshRestClient client) throws Exception {
-		// Construct latch in order to wait until the migration completed event was received 
+		// Construct latch in order to wait until the migration completed event was received
 		CountDownLatch latch = new CountDownLatch(1);
 		CountDownLatch registerLatch = new CountDownLatch(1);
 		client.eventbus(ws -> {
@@ -136,6 +138,17 @@ public final class TestUtils {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Return the json data from classpath.
+	 * 
+	 * @param name
+	 * @return
+	 * @throws IOException
+	 */
+	public static String getJson(String name) throws IOException {
+		return IOUtils.toString(TestUtils.class.getResourceAsStream("/json/" + name));
 	}
 
 	public static void sleep(long millis) {
