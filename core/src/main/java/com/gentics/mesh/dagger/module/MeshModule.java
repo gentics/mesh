@@ -93,16 +93,20 @@ public class MeshModule {
 	public static CorsHandler corsHandler() {
 		HttpServerConfig serverOptions = Mesh.mesh().getOptions().getHttpServerOptions();
 		String pattern = serverOptions.getCorsAllowedOriginPattern();
-		boolean allowCredentials = serverOptions.getCorsAllowCredentials();
 		CorsHandler corsHandler = CorsHandler.create(pattern);
+		boolean allowCredentials = serverOptions.getCorsAllowCredentials();
+		corsHandler.allowCredentials(allowCredentials);
 		corsHandler.allowedMethod(HttpMethod.GET);
 		corsHandler.allowedMethod(HttpMethod.POST);
 		corsHandler.allowedMethod(HttpMethod.PUT);
 		corsHandler.allowedMethod(HttpMethod.DELETE);
 		corsHandler.allowedHeader("Authorization");
+		corsHandler.allowedHeader("Anonymous-Authentication");
 		corsHandler.allowedHeader("Content-Type");
-		corsHandler.allowedHeader("Set-Cookie");
-		corsHandler.allowCredentials(allowCredentials);
+		corsHandler.allowedHeader("Accept");
+		corsHandler.allowedHeader("Content-Type");
+		corsHandler.allowedHeader("Origin");
+		corsHandler.allowedHeader("Cookie");
 		return corsHandler;
 	}
 
