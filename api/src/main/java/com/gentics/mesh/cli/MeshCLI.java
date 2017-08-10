@@ -13,6 +13,8 @@ public final class MeshCLI {
 
 	public static final String NODE_NAME = "nodeName";
 
+	public static final String CLUSTER_NAME = "clusterName";
+
 	public static final String HTTP_PORT = "httpPort";
 
 	/**
@@ -33,6 +35,9 @@ public final class MeshCLI {
 
 		Option nodeName = new Option(NODE_NAME, true, "Node instance name");
 		options.addOption(nodeName);
+
+		Option clusterName = new Option(CLUSTER_NAME, true, "Cluster name");
+		options.addOption(clusterName);
 
 		Option httpPort = new Option(HTTP_PORT, true, "Server HTTP port");
 		options.addOption(httpPort);

@@ -44,10 +44,16 @@ public final class OptionsLoader {
 	public static MeshOptions createOrloadOptions(String... args) {
 		MeshOptions options = loadMeshOptions();
 		applyCommandLineArgs(options, args);
-		// TODO validate configuration
+		options.validate();
 		return options;
 	}
 
+	/**
+	 * Parse the command line arguments and update the mesh options accordingly.
+	 * 
+	 * @param options
+	 * @param args
+	 */
 	private static void applyCommandLineArgs(MeshOptions options, String... args) {
 		try {
 			CommandLine commandLine = MeshCLI.parse(args);
@@ -57,6 +63,14 @@ public final class OptionsLoader {
 			if (!isEmpty(cliNodeName)) {
 				options.setNodeName(cliNodeName);
 			}
+
+			// Check whether a custom cluster parameter has been set
+			String cliClusterName = commandLine.getOptionValue(MeshCLI.CLUSTER_NAME);
+			if (!isEmpty(cliClusterName)) {
+				options.getClusterOptions().setClusterName(cliClusterName);
+				options.getClusterOptions().setEnabled(true);
+			}
+
 			String httpPort = commandLine.getOptionValue(MeshCLI.HTTP_PORT);
 			if (!isEmpty(httpPort)) {
 				options.getHttpServerOptions().setPort(Integer.valueOf(httpPort));
@@ -70,6 +84,11 @@ public final class OptionsLoader {
 		}
 	}
 
+	/**
+	 * Try to load the mesh options from different locations (classpath, config folder). Otherwise a default configuration will be generated.
+	 * 
+	 * @return
+	 */
 	private static MeshOptions loadMeshOptions() {
 
 		File confFile = new File(CONFIG_FOLDERNAME, MESH_CONF_FILENAME);

@@ -65,4 +65,8 @@ public class ElasticSearchOptions {
 		return this;
 	}
 
+	public void validate(MeshOptions meshOptions) {
+
+	}
+
 }

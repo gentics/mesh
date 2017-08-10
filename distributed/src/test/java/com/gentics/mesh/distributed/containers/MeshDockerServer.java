@@ -69,8 +69,10 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 	private Integer debugPort;
 
-	public MeshDockerServer(String prefix) {
-		this(prefix, false, true, Vertx.vertx(), null);
+	private String clusterName;
+
+	public MeshDockerServer(String nodeName) {
+		this("default", nodeName, false, true, Vertx.vertx(), null);
 	}
 
 	/**
@@ -82,10 +84,11 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	 * @param vertx
 	 *            Vertx instances used to create the rest client
 	 */
-	public MeshDockerServer(String nodeName, boolean initCluster, boolean waitForStartup, Vertx vertx, Integer debugPort) {
+	public MeshDockerServer(String clusterName, String nodeName, boolean initCluster, boolean waitForStartup, Vertx vertx, Integer debugPort) {
 		super(image);
 		this.vertx = vertx;
 		this.initCluster = initCluster;
+		this.clusterName = clusterName;
 		this.nodeName = nodeName;
 		this.waitForStartup = waitForStartup;
 		this.debugPort = debugPort;
@@ -107,6 +110,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		}
 		List<Integer> exposedPorts = new ArrayList<>();
 		addEnv("NODENAME", nodeName);
+		addEnv("CLUSTERNAME", clusterName);
 		if (debugPort != null) {
 			addEnv("JAVAOPTS", "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n ");
 			exposedPorts.add(8000);
@@ -117,7 +121,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		exposedPorts.add(9300);
 		setExposedPorts(exposedPorts);
 		setLogConsumers(Arrays.asList(logConsumer, startupConsumer));
-//		setContainerName("mesh-test-" + nodeName);
+		// setContainerName("mesh-test-" + nodeName);
 		setStartupAttempts(1);
 	}
 
@@ -215,7 +219,8 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		StringBuilder builder = new StringBuilder();
 		builder.append("#!/bin/sh\n");
 		// builder.append("echo java -cp " + classpath + " com.gentics.mesh.server.ServerRunner -nodeName $NODENAME $MESHARGS\n");
-		builder.append("java $JAVAOPTS -cp " + classpath + " com.gentics.mesh.server.ServerRunner -nodeName $NODENAME $MESHARGS\n");
+		builder.append("java $JAVAOPTS -cp " + classpath
+				+ " com.gentics.mesh.server.ServerRunner -nodeName $NODENAME -clusterName $CLUSTERNAME $MESHARGS\n");
 		// builder.append("java -Dfile.encoding=UTF-8 -classpath
 		// com.gentics.mesh.server.ServerRunner -nodeName $NODENAME $MESHARGS\n");
 		builder.append("\n\n");

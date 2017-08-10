@@ -60,7 +60,7 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public Vertx getVertx() {
-		//Objects.requireNonNull(vertx, "Vert.x has not yet been initalized");
+		// Objects.requireNonNull(vertx, "Vert.x has not yet been initalized");
 		return vertx;
 	}
 
@@ -207,7 +207,10 @@ public class MeshImpl implements Mesh {
 		log.info("#-------------------------------------------------------------#");
 		// log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
 		log.info(infoLine("Vert.x Version: " + getVertxVersion()));
-		log.info(infoLine("Mesh Node Id: " + getOptions().getNodeName()));
+		if (getOptions().getClusterOptions() != null && getOptions().getClusterOptions().isEnabled()) {
+			log.info(infoLine("Cluster Name: " + getOptions().getClusterOptions().getClusterName()));
+		}
+		log.info(infoLine("Mesh Node Name: " + getOptions().getNodeName()));
 		log.info("###############################################################");
 	}
 
@@ -216,7 +219,11 @@ public class MeshImpl implements Mesh {
 			log.info("###############################################################");
 			log.info(infoLine("Booting Skynet Kernel " + Mesh.getBuildInfo()));
 			Thread.sleep(500);
-			log.info(infoLine("Skynet Node Id: " + getOptions().getNodeName()));
+			if (getOptions().getClusterOptions() != null && getOptions().getClusterOptions().isEnabled()) {
+				log.info(infoLine("Skynet Global Name: " + getOptions().getClusterOptions().getClusterName()));
+				Thread.sleep(500);
+			}
+			log.info(infoLine("Skynet Node Name: " + getOptions().getNodeName()));
 			Thread.sleep(500);
 			log.info(infoLine("Skynet uses Vert.x Version: " + getVertxVersion()));
 			log.info("///");

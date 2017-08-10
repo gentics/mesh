@@ -106,7 +106,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		ClusterOptions clusterOptions = options.getClusterOptions();
 		if (clusterOptions.isEnabled()) {
 			// We append the mesh version to the cluster name to ensure that no clusters from different mesh versions can be formed.
-			builder.put("cluster.name", "mesh-cluster-" + Mesh.getPlainVersion());
+			builder.put("cluster.name", clusterOptions.getClusterName() + "-" + Mesh.getPlainVersion());
 			// We run a multi-master environment. Every node should be able to be elected as master
 			builder.put("node.master", true);
 			builder.put("network.host", clusterOptions.getNetworkHost());

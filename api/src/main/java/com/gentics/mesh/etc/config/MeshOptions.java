@@ -294,4 +294,25 @@ public class MeshOptions {
 		return this;
 	}
 
+	public void validate() {
+		if (getClusterOptions() != null) {
+			getClusterOptions().validate(this);
+		}
+		if (getStorageOptions() != null) {
+			getStorageOptions().validate(this);
+		}
+		if (getSearchOptions() != null) {
+			getSearchOptions().validate(this);
+		}
+		if (getHttpServerOptions() != null) {
+			getHttpServerOptions().validate(this);
+		}
+		if (getAuthenticationOptions() != null) {
+			getAuthenticationOptions().validate(this);
+		}
+		if (getImageOptions() != null) {
+			getImageOptions().validate(this);
+		}
+	}
+
 }

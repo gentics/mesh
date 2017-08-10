@@ -16,7 +16,7 @@ public class AuthenticationOptions {
 
 	public static final long DEFAULT_TOKEN_EXPIRATION_TIME = 60 * 60; // 1 hour
 
-	public static final String DEFAULT_KEYSTORE_PATH = CONFIG_FOLDERNAME +  "/keystore.jceks";
+	public static final String DEFAULT_KEYSTORE_PATH = CONFIG_FOLDERNAME + "/keystore.jceks";
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Time in minutes which an issued token stays valid.")
@@ -128,5 +128,10 @@ public class AuthenticationOptions {
 	public AuthenticationOptions setEnableAnonymousAccess(boolean enableAnonymousAccess) {
 		this.enableAnonymousAccess = enableAnonymousAccess;
 		return this;
+	}
+
+	public void validate(MeshOptions meshOptions) {
+		// TODO Auto-generated method stub
+
 	}
 }

@@ -1,5 +1,7 @@
 package com.gentics.mesh.etc.config;
 
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
@@ -18,14 +20,18 @@ public class ClusterOptions {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("IP or host which is used to announce and reach the instance in the cluster. Gentics Mesh will try to determine the IP automatically but you may use this setting to override this automatic IP handling.")
 	private String networkHost;
-	
-//	TODO use public and bind host - https://www.prjhub.com/#/issues/9058, https://www.elastic.co/guide/en/elasticsearch/reference/2.0/modules-network.html
-//	private String publicHost;
-//	private String bindHost;
+
+	// TODO use public and bind host - https://www.prjhub.com/#/issues/9058, https://www.elastic.co/guide/en/elasticsearch/reference/2.0/modules-network.html
+	// private String publicHost;
+	// private String bindHost;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag to enable or disable the cluster mode. (Not yet fully implemented)")
 	private boolean enabled = DEFAULT_CLUSTER_MODE;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Name of the cluster. Only instances with a common cluster name will form a cluster.")
+	private String clusterName;
 
 	/**
 	 * Return the cluster enabled flag.
@@ -64,6 +70,36 @@ public class ClusterOptions {
 	 */
 	public void setNetworkHost(String networkHost) {
 		this.networkHost = networkHost;
+	}
+
+	/**
+	 * Return the configured cluster name.
+	 * 
+	 * @return
+	 */
+	public String getClusterName() {
+		return clusterName;
+	}
+
+	/**
+	 * Set the cluster name to be used.
+	 * 
+	 * @param clusterName
+	 */
+	public void setClusterName(String clusterName) {
+		this.clusterName = clusterName;
+	}
+
+	/**
+	 * Validate the options.
+	 * 
+	 * @param meshOptions
+	 */
+	public void validate(MeshOptions meshOptions) {
+		if (isEnabled()) {
+			Objects.requireNonNull(getClusterName(), "No cluster.clusterName was specified within mesh options.");
+			Objects.requireNonNull(meshOptions.getNodeName(), "No nodeName was specified within mesh options.");
+		}
 	}
 
 }

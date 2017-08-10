@@ -81,4 +81,9 @@ public class ImageManipulatorOptions {
 		this.maxWidth = maxWidth;
 		return this;
 	}
+
+	public void validate(MeshOptions meshOptions) {
+		// TODO Auto-generated method stub
+
+	}
 }

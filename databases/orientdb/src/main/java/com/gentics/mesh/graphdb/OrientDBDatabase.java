@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Objects;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -36,7 +35,9 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
@@ -316,10 +317,16 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 * @return
 	 */
 	public String getNodeName() {
+		StringBuilder nameBuilder = new StringBuilder();
 		// TODO check for other invalid characters
-		String name = options.getNodeName();
-		Objects.requireNonNull(name, "No nodeName was specified within mesh options.");
-		name = name.replaceAll(" ", "_") + "@" + meshVersion;
+		String nodeName = options.getNodeName();
+		nameBuilder.append(nodeName);
+		nameBuilder.append("@");
+		nameBuilder.append(meshVersion);
+
+		// Sanitize the name
+		String name = nameBuilder.toString();
+		name = name.replaceAll(" ", "_");
 		name = name.replaceAll("\\.", "-");
 		return name;
 	}
@@ -364,7 +371,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	/**
-	 * Start the orientdb studio server by extracting the studio plugin zipfile.
+	 * Start the OrientDB studio server by extracting the studio plugin zipfile.
 	 * 
 	 * @throws Exception
 	 */
@@ -380,12 +387,18 @@ public class OrientDBDatabase extends AbstractDatabase {
 			pluginDirectory.mkdirs();
 			IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "orientdb-studio-2.2.24.zip")));
 		}
+
+		ClusterOptions clusterOptions = options.getClusterOptions();
+		if (clusterOptions != null && clusterOptions.isEnabled()) {
+			System.setProperty("mesh.clusterName", clusterOptions.getClusterName() + "@" + Mesh.getPlainVersion());
+		}
+
 		log.info("Starting OrientDB Server");
 		server.startup(getOrientServerConfig());
 		OServerPluginManager manager = new OServerPluginManager();
 		manager.config(server);
 		server.activate();
-		if (options.getClusterOptions().isEnabled()) {
+		if (clusterOptions != null && clusterOptions.isEnabled()) {
 			ODistributedServerManager distributedManager = server.getDistributedManager();
 			topologyEventBridge = new TopologyEventBridge(this);
 			distributedManager.registerLifecycleListener(topologyEventBridge);

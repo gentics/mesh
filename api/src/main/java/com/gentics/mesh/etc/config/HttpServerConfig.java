@@ -131,4 +131,9 @@ public class HttpServerConfig {
 		return this;
 	}
 
+	public void validate(MeshOptions meshOptions) {
+		// TODO Auto-generated method stub
+
+	}
+
 }
