@@ -2,6 +2,16 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.26 (10.08.2017)
+
+icon:check[] REST API: Added a missing allowed CORS headers which were needed to use the Gentics Mesh UI in a CORS environment.
+
+icon:plus[] UI: Add CORS support. Previously CORS was not supported by the UI.
+
+icon:check[] UI: Fix translation action. Previously a error prevented translations from being executed.
+
+icon:check[] UI: Fix image handling for binary fields. Previously only the default language image was displayed in the edit view. This has been fixed.
+
 == 0.9.25 (09.08.2017)
 
 icon:check[] Core: A bug in the schema changes apply code has been fixed. The bug previously prevented schema changes from being applied.
