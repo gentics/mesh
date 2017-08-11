@@ -102,11 +102,11 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 				return resultInfo;
 			});
 
-			// The release has been created now lets start the node migration
+			// The release has been created now lets start the release migration (specific node migration)
 			DeliveryOptions options = new DeliveryOptions();
 			options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, info.getProperty("projectUuid"));
 			options.addHeader(NodeMigrationVerticle.UUID_HEADER, info.getProperty("releaseUuid"));
-			Mesh.vertx().eventBus().send(RELEASE_MIGRATION_ADDRESS, null, options);
+			vertx.eventBus().send(RELEASE_MIGRATION_ADDRESS, null, options);
 
 			ac.setLocation(info.getProperty("path"));
 			// Finally process the batch

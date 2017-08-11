@@ -5,6 +5,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.Set;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
@@ -64,8 +65,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			if (editor != null) {
 				model.setEditor(editor.transformToReference());
 			} else {
-				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid()
-						+ "} has no editor. Omitting editor field");
+				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no editor. Omitting editor field");
 			}
 
 			String date = edited.getLastEditedDate();
@@ -78,8 +78,7 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 			if (creator != null) {
 				model.setCreator(creator.transformToReference());
 			} else {
-				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid()
-						+ "} has no creator. Omitting creator field");
+				log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
 			}
 
 			String date = created.getCreationDate();
@@ -104,6 +103,16 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	 */
 	protected boolean shouldUpdate(String restValue, String graphValue) {
 		return !isEmpty(restValue) && !restValue.equals(graphValue);
+	}
+
+	@Override
+	public void onUpdated() {
+		Mesh.vertx().eventBus().publish(getTypeInfo().getOnUpdatedAddress(), getUuid());
+	}
+
+	@Override
+	public void onCreated() {
+		Mesh.vertx().eventBus().publish(getTypeInfo().getOnCreatedAddress(), getUuid());
 	}
 
 }

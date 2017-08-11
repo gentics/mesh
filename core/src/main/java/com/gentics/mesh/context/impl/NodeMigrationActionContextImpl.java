@@ -140,11 +140,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public String getType() {
-				return User.TYPE;
-			}
-
-			@Override
 			public String getName() {
 				return "node_migration";
 			}

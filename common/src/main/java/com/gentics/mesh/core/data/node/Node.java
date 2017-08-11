@@ -1,11 +1,16 @@
 package com.gentics.mesh.core.data.node;
 
+import static com.gentics.mesh.Events.EVENT_NODE_CREATED;
+import static com.gentics.mesh.Events.EVENT_NODE_DELETED;
+import static com.gentics.mesh.Events.EVENT_NODE_UPDATED;
+
 import java.util.Deque;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.IndexableElement;
@@ -47,11 +52,13 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	public static final String TYPE = "node";
+	static final String TYPE = "node";
+
+	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_NODE_CREATED, EVENT_NODE_UPDATED, EVENT_NODE_DELETED);
 
 	@Override
-	default String getType() {
-		return Node.TYPE;
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
 	}
 
 	/**

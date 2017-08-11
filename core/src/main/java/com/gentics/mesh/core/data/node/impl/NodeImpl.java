@@ -40,7 +40,6 @@ import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -129,11 +128,12 @@ import rx.Single;
  */
 public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, Node> implements Node {
 
-	public static final String RELEASE_UUID_KEY = "releaseUuid";
-
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
+	public static final String RELEASE_UUID_KEY = "releaseUuid";
+
 	public static void init(Database database) {
+		//Node.EventType.CREATED
 		database.addVertexType(NodeImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_PARENT_NODE);
 		database.addCustomEdgeIndex(HAS_PARENT_NODE, "release", "in", RELEASE_UUID_KEY);
@@ -1888,17 +1888,6 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		return MeshInternal.get().database().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
-	}
-	
-	
-	@Override
-	public void onUpdated() {
-		Mesh.vertx().eventBus().publish(EVENT_NODE_UPDATED, getUuid());
-	}
-
-	@Override
-	public void onCreated() {
-		Mesh.vertx().eventBus().publish(EVENT_NODE_CREATED, getUuid());
 	}
 
 }

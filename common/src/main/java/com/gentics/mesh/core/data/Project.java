@@ -1,8 +1,13 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
+import static com.gentics.mesh.Events.EVENT_PROJECT_DELETED;
+import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
+
 import java.util.List;
 import java.util.Objects;
 
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
@@ -29,9 +34,11 @@ public interface Project
 	 */
 	static final String TYPE = "project";
 
+	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_PROJECT_CREATED, EVENT_PROJECT_UPDATED, EVENT_PROJECT_DELETED);
+
 	@Override
-	default String getType() {
-		return TYPE;
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
 	}
 
 	/**

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.data.impl;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -25,11 +26,6 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	public static void init(Database database) {
 		database.addVertexType(LanguageImpl.class, MeshVertexImpl.class);
 		database.addVertexIndex(LanguageImpl.class, true, LANGUAGE_TAG_PROPERTY_KEY);
-	}
-
-	@Override
-	public String getType() {
-		return Language.TYPE;
 	}
 
 	@Override
@@ -104,10 +100,10 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	public void onCreated() {
 		// TODO Auto-generated method stub
 	}
-	
+
 	@Override
 	public void onUpdated() {
 		// TODO Auto-generated method stub
 	}
-	
+
 }

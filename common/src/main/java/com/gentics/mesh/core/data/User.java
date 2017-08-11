@@ -1,10 +1,15 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.Events.EVENT_USER_CREATED;
+import static com.gentics.mesh.Events.EVENT_USER_DELETED;
+import static com.gentics.mesh.Events.EVENT_USER_UPDATED;
+
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -34,21 +39,23 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	static String TYPE = "user";
+	static final String TYPE = "user";
 
 	/**
 	 * API token id property name {@value #API_TOKEN_ID}
 	 */
-	static String API_TOKEN_ID = "APITokenId";
+	static final String API_TOKEN_ID = "APITokenId";
 
 	/**
 	 * API token timestamp property name {@value #API_TOKEN_ISSUE_TIMESTAMP}
 	 */
-	static String API_TOKEN_ISSUE_TIMESTAMP = "APITokenTimestamp";
+	static final String API_TOKEN_ISSUE_TIMESTAMP = "APITokenTimestamp";
+
+	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_USER_CREATED, EVENT_USER_UPDATED, EVENT_USER_DELETED);
 
 	@Override
-	default String getType() {
-		return User.TYPE;
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
 	}
 
 	/**
@@ -317,8 +324,8 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	boolean hasPermissionForId(Object elementId, GraphPermission permission);
 
 	/**
-	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the user
-	 * has READ permission or READ_PUBLISH permission on a published node.
+	 * Check the read permission on the given container and fail if the needed permission to read the container is not set. This method will not fail if the
+	 * user has READ permission or READ_PUBLISH permission on a published node.
 	 * 
 	 * @param container
 	 * @param releaseUuid

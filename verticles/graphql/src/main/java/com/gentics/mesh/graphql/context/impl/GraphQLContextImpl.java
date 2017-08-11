@@ -25,7 +25,7 @@ public class GraphQLContextImpl extends InternalRoutingActionContextImpl impleme
 				return vertex;
 			}
 		}
-		throw missingPerm(vertex.getType(), vertex.getUuid());
+		throw missingPerm(vertex.getTypeInfo().getType(), vertex.getUuid());
 	}
 
 }

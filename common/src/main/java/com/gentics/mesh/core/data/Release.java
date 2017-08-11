@@ -1,7 +1,12 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.Events.EVENT_RELEASE_CREATED;
+import static com.gentics.mesh.Events.EVENT_RELEASE_DELETED;
+import static com.gentics.mesh.Events.EVENT_RELEASE_UPDATED;
+
 import java.util.List;
 
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -14,17 +19,22 @@ import com.gentics.mesh.error.InvalidArgumentException;
 /**
  * The Release domain model interface.
  *
- * A release is a bundle of specific schema versions which are used within a
- * project. Releases can be used to create multiple tree structures within a
- * single project.
+ * A release is a bundle of specific schema versions which are used within a project. Releases can be used to create multiple tree structures within a single
+ * project.
  */
-public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, NamedElement,
-		ReferenceableElement<ReleaseReference>, UserTrackingVertex {
+public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, NamedElement, ReferenceableElement<ReleaseReference>, UserTrackingVertex {
 
 	/**
 	 * Type Value: {@value #TYPE}
 	 */
-	public static final String TYPE = "release";
+	static final String TYPE = "release";
+
+	static TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_RELEASE_CREATED, EVENT_RELEASE_UPDATED, EVENT_RELEASE_DELETED);
+
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
 
 	/**
 	 * Get whether the release is active.
@@ -89,8 +99,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	ReleaseRoot getRoot();
 
 	/**
-	 * Assign the given schema version to the release. This will effectively
-	 * unassign all other schema versions of the schema.
+	 * Assign the given schema version to the release. This will effectively unassign all other schema versions of the schema.
 	 * 
 	 * @param schemaContainerVersion
 	 * @return Fluent API
@@ -106,8 +115,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	Release unassignSchema(SchemaContainer schemaContainer);
 
 	/**
-	 * Check whether a version of this schema container is assigned to this
-	 * release.
+	 * Check whether a version of this schema container is assigned to this release.
 	 *
 	 * @param schema
 	 *            schema
@@ -116,8 +124,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	boolean contains(SchemaContainer schema);
 
 	/**
-	 * Check whether the given schema container version is assigned to this
-	 * release.
+	 * Check whether the given schema container version is assigned to this release.
 	 *
 	 * @param schemaContainerVersion
 	 *            schema container version
@@ -126,8 +133,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	boolean contains(SchemaContainerVersion schemaContainerVersion);
 
 	/**
-	 * Get the schema container version of the given schema container, that is
-	 * assigned to this release or null if not assigned at all.
+	 * Get the schema container version of the given schema container, that is assigned to this release or null if not assigned at all.
 	 * 
 	 * @param schemaContainer
 	 *            schema container
@@ -143,8 +149,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	List<? extends SchemaContainerVersion> findAllSchemaVersions();
 
 	/**
-	 * Assign the given microschema version to the release Unassign all other
-	 * versions of the microschema.
+	 * Assign the given microschema version to the release Unassign all other versions of the microschema.
 	 * 
 	 * @param microschemaContainerVersion
 	 * @return Fluent API
@@ -160,8 +165,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	Release unassignMicroschema(MicroschemaContainer microschemaContainer);
 
 	/**
-	 * Check whether a version of this microschema container is assigned to this
-	 * release.
+	 * Check whether a version of this microschema container is assigned to this release.
 	 *
 	 * @param microschema
 	 *            microschema
@@ -170,8 +174,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	boolean contains(MicroschemaContainer microschema);
 
 	/**
-	 * Check whether the given microschema container version is assigned to this
-	 * release.
+	 * Check whether the given microschema container version is assigned to this release.
 	 *
 	 * @param microschemaContainerVersion
 	 *            microschema container version
@@ -180,8 +183,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	boolean contains(MicroschemaContainerVersion microschemaContainerVersion);
 
 	/**
-	 * Get the microschema container version of the given microschema container,
-	 * that is assigned to this release or null if not assigned at all.
+	 * Get the microschema container version of the given microschema container, that is assigned to this release or null if not assigned at all.
 	 * 
 	 * @param microschemaContainer
 	 *            schema container

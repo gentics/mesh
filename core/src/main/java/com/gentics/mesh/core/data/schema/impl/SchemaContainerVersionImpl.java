@@ -41,11 +41,6 @@ public class SchemaContainerVersionImpl
 	}
 
 	@Override
-	public String getType() {
-		return SchemaContainerVersion.TYPE;
-	}
-
-	@Override
 	protected Class<? extends SchemaContainerVersion> getContainerVersionClass() {
 		return SchemaContainerVersionImpl.class;
 	}

@@ -1,8 +1,13 @@
 package com.gentics.mesh.core.data.schema;
 
+import static com.gentics.mesh.Events.EVENT_SCHEMA_CREATED;
+import static com.gentics.mesh.Events.EVENT_SCHEMA_DELETED;
+import static com.gentics.mesh.Events.EVENT_SCHEMA_UPDATED;
+
 import java.util.List;
 import java.util.Objects;
 
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -19,6 +24,8 @@ public interface SchemaContainer
 	 * Type Value: {@value #TYPE}
 	 */
 	static final String TYPE = "schemaContainer";
+
+	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_SCHEMA_CREATED, EVENT_SCHEMA_UPDATED, EVENT_SCHEMA_DELETED);
 
 	/**
 	 * Compose the index name for the schema index.
@@ -50,8 +57,8 @@ public interface SchemaContainer
 	}
 
 	@Override
-	default String getType() {
-		return TYPE;
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
 	}
 
 	/**
