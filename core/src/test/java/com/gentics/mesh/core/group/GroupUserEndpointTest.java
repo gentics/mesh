@@ -88,8 +88,8 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
+		GroupResponse restGroup = call(() -> client().addUserToGroup(groupUuid(), tx(() -> extraUser.getUuid())));
 		try (Tx tx = tx()) {
-			GroupResponse restGroup = call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()));
 			assertThat(restGroup).matches(group());
 			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), user().getUuid());
 			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), extraUser.getUuid());
