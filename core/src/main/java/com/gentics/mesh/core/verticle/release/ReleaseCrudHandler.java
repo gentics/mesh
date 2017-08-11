@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.verticle.release;
 
+import static com.gentics.mesh.Events.MICROSCHEMA_MIGRATION_ADDRESS;
+import static com.gentics.mesh.Events.RELEASE_MIGRATION_ADDRESS;
+import static com.gentics.mesh.Events.SCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
@@ -41,7 +44,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ResultInfo;
@@ -103,7 +106,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			DeliveryOptions options = new DeliveryOptions();
 			options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, info.getProperty("projectUuid"));
 			options.addHeader(NodeMigrationVerticle.UUID_HEADER, info.getProperty("releaseUuid"));
-			Mesh.vertx().eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options);
+			Mesh.vertx().eventBus().send(RELEASE_MIGRATION_ADDRESS, null, options);
 
 			ac.setLocation(info.getProperty("path"));
 			// Finally process the batch
@@ -181,7 +184,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 			// 2. Invoke migrations which will populate the created index
 			for (DeliveryOptions option : events) {
-				Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, option);
+				Mesh.vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, option);
 			}
 			return tuple.v1();
 
@@ -238,7 +241,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					options.addHeader(NodeMigrationVerticle.UUID_HEADER, version.getSchemaContainer().getUuid());
 					options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
 					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
-					Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options);
+					Mesh.vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options);
 				}
 				return getMicroschemaVersions(release);
 			});
@@ -312,7 +315,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project.getUuid());
 
 					MicroschemaContainerVersion version = currentVersion;
-					Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
+					Mesh.vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
 						try (Tx tx = db.tx()) {
 							log.info("After migration " + microschemaContainer.getName() + ":" + version.getVersion() + " - " + version.getUuid()
 									+ "=" + version.getFieldContainers(releaseUuid).size());
@@ -364,7 +367,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project.getUuid());
 
 					SchemaContainerVersion version = currentVersion;
-					Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
+					Mesh.vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
 						try (Tx tx = db.tx()) {
 							log.info("After migration " + schemaContainer.getName() + ":" + version.getVersion() + " - " + version.getUuid() + "="
 									+ version.getFieldContainers(releaseUuid).size());

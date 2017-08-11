@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.verticle.node;
+package com.gentics.mesh.core.verticle.migration;
 
 /**
  * Interface for the JMX MBean for node migrations.

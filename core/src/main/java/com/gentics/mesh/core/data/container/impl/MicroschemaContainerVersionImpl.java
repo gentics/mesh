@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.container.impl;
 
+import static com.gentics.mesh.Events.MICROSCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
@@ -25,7 +26,6 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -58,7 +58,7 @@ public class MicroschemaContainerVersionImpl extends
 
 	@Override
 	protected String getMigrationAddress() {
-		return NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS;
+		return MICROSCHEMA_MIGRATION_ADDRESS;
 	}
 
 	@Override

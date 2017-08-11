@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.schema.impl;
 
+import static com.gentics.mesh.Events.SCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
@@ -20,7 +21,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -56,7 +57,7 @@ public class SchemaContainerVersionImpl
 
 	@Override
 	protected String getMigrationAddress() {
-		return NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS;
+		return SCHEMA_MIGRATION_ADDRESS;
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.release;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.Events.RELEASE_MIGRATION_ADDRESS;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -30,7 +31,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -48,6 +49,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
 		vertx().deployVerticle(meshDagger().nodeMigrationVerticle(), options);
+		vertx().deployVerticle(meshDagger().releaseMigrationVerticle(), options);
 	}
 
 	@Test
@@ -249,7 +251,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
 		options.addHeader(NodeMigrationVerticle.UUID_HEADER, releaseUuid);
 		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-		vertx().eventBus().send(NodeMigrationVerticle.RELEASE_MIGRATION_ADDRESS, null, options, (rh) -> {
+		vertx().eventBus().send(RELEASE_MIGRATION_ADDRESS, null, options, (rh) -> {
 			future.complete(rh);
 		});
 

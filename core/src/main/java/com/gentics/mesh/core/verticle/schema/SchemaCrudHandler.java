@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.schema;
 
+import static com.gentics.mesh.Events.SCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -40,7 +41,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -201,7 +202,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			// Invoke the node release migration
 			for (DeliveryOptions option : events) {
-				Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, option);
+				Mesh.vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, option);
 			}
 
 			return message(ac, "migration_invoked", schemaName);

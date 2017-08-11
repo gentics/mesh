@@ -1,11 +1,11 @@
-package com.gentics.mesh.core.verticle.node;
+package com.gentics.mesh.core.verticle.migration;
 
 /**
  * JMX MBean for the node migrations
  */
 public class NodeMigrationStatus implements NodeMigrationStatusMBean {
 
-	protected Type type;
+	protected MigrationType type;
 
 	protected String name;
 
@@ -21,7 +21,7 @@ public class NodeMigrationStatus implements NodeMigrationStatusMBean {
 	 * @param version schema version
 	 * @param type type
 	 */
-	public NodeMigrationStatus(String name, String version, Type type) {
+	public NodeMigrationStatus(String name, String version, MigrationType type) {
 		this.name = name;
 		this.version = version;
 		this.type = type;
@@ -62,7 +62,5 @@ public class NodeMigrationStatus implements NodeMigrationStatusMBean {
 		nodesDone++;
 	}
 
-	protected static enum Type {
-		schema, microschema
-	}
+
 }

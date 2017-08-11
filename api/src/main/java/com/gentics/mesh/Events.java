@@ -10,7 +10,13 @@ public final class Events {
 	/**
 	 * Event which is send once the mesh instance is fully started and ready to accept requests.
 	 */
-	public static final String STARTUP_EVENT_ADDRESS = "mesh-startup-complete";
+	public static final String STARTUP_EVENT_ADDRESS = "mesh.startup-complete";
+
+	public final static String SCHEMA_MIGRATION_ADDRESS = "mesh.migration.migrateSchema";
+
+	public final static String MICROSCHEMA_MIGRATION_ADDRESS = "mesh.migration.migrateMicroschema";
+
+	public final static String RELEASE_MIGRATION_ADDRESS = "mesh.migration.migrateRelease";
 
 	/**
 	 * Event which is send once a new node is joining the cluster.

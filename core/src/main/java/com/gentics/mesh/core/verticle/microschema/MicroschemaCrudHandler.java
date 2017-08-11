@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.microschema;
 
+import static com.gentics.mesh.Events.MICROSCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -30,7 +31,7 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
@@ -109,7 +110,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 						options.addHeader(NodeMigrationVerticle.UUID_HEADER, createdVersion.getSchemaContainer().getUuid());
 						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, previouslyReferencedVersion.getUuid());
 						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, createdVersion.getUuid());
-						Mesh.vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options);
+						Mesh.vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options);
 
 					}
 				}

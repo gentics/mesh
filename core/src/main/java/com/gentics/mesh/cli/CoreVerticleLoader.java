@@ -9,7 +9,9 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.core.verticle.migration.micronode.MicronodeMigrationVerticle;
+import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
+import com.gentics.mesh.core.verticle.migration.release.ReleaseMigrationVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.RestAPIVerticle;
 
@@ -28,6 +30,12 @@ public class CoreVerticleLoader {
 
 	@Inject
 	public NodeMigrationVerticle nodeMigrationVerticle;
+
+	@Inject
+	public MicronodeMigrationVerticle micronodeMigrationVerticle;
+
+	@Inject
+	public ReleaseMigrationVerticle releaseMigrationVerticle;
 
 	@Inject
 	public CoreVerticleLoader() {
@@ -88,6 +96,8 @@ public class CoreVerticleLoader {
 	private List<AbstractVerticle> getMandatoryWorkerVerticleClasses() {
 		List<AbstractVerticle> verticles = new ArrayList<>();
 		verticles.add(nodeMigrationVerticle);
+		verticles.add(micronodeMigrationVerticle);
+		verticles.add(releaseMigrationVerticle);
 		return verticles;
 	}
 

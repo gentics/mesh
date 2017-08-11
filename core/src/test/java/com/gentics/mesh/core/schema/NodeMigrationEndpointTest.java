@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.Events.MICROSCHEMA_MIGRATION_ADDRESS;
+import static com.gentics.mesh.Events.SCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -49,7 +51,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -92,7 +94,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 
 			// Trigger migration by sending a event
-			vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+			vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				latch.countDown();
 			});
 
@@ -425,7 +427,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 		options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-		vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+		vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 			future.complete(rh);
 		});
 
@@ -514,7 +516,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-			vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
 			});
 
@@ -628,7 +630,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-			vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
 			});
 
@@ -744,7 +746,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-			vertx().eventBus().send(NodeMigrationVerticle.MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
 			});
 

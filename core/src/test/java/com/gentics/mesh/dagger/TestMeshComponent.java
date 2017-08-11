@@ -6,14 +6,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.verticle.migration.node.NodeMigrationHandler;
+import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.module.ExtraModule;
 import com.gentics.mesh.dagger.module.FakeConsoleModule;
 import com.gentics.mesh.dagger.module.MeshModule;
