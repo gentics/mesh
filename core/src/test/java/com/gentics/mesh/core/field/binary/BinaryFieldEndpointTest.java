@@ -122,23 +122,22 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 		Buffer buffer = TestUtils.randomBuffer(1000);
 		Node node = folder("2015");
 
+		// 1. Upload a binary field
+		String uuid = db().tx(() -> folder("2015").getUuid());
+		VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, filename, "application/binary"));
+
+		NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
+		String oldVersion = firstResponse.getVersion();
+
+		// 2. Set the field to null
+		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+		assertThat(secondResponse.getFields().getBinaryField(FIELD_NAME)).as("Updated Field").isNull();
+		assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
+
+		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			// 1. Upload a binary field
-			String uuid = db().tx(() -> folder("2015").getUuid());
-			VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
-
-			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, filename,
-					"application/binary"));
-
-			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
-			String oldVersion = firstResponse.getVersion();
-
-			// 2. Set the field to null
-			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
-			assertThat(secondResponse.getFields().getBinaryField(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
-
-			// Assert that the old version was not modified
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBinary(FIELD_NAME)).isNull();
