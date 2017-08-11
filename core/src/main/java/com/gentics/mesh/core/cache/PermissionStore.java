@@ -66,6 +66,8 @@ public final class PermissionStore {
 	 * Invalidate the LRU cache.
 	 */
 	public static void invalidate() {
+		// Invalidate locally and also send the event to inform other to purge the stored permissions
+		PERM_CACHE.invalidateAll();
 		Mesh.vertx().eventBus().publish(EVENT_CLEAR_PERMISSION_STORE, null);
 	}
 

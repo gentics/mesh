@@ -55,8 +55,8 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 			stopWatch("languageindex.read", 50000, (step) -> {
 				Iterable<Vertex> it = tx.getGraph().getVertices("LanguageImpl.languageTag", "en");
 				assertTrue(it.iterator().hasNext());
-				Iterable<Vertex> it2 = tx.getGraph()
-						.getVertices(LanguageImpl.class.getSimpleName() + "." + LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY, "en");
+				Iterable<Vertex> it2 = tx.getGraph().getVertices(LanguageImpl.class.getSimpleName() + "." + LanguageImpl.LANGUAGE_TAG_PROPERTY_KEY,
+						"en");
 				assertTrue(it2.iterator().hasNext());
 				Vertex vertex = it2.iterator().next();
 				assertNotNull("The language node with languageTag 'en' could not be found.", vertex);
@@ -194,33 +194,25 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Test
 	@Override
 	public void testReadPermission() {
-		try (Tx tx = tx()) {
-			testPermission(GraphPermission.READ_PERM, english());
-		}
+		testPermission(GraphPermission.READ_PERM, english());
 	}
 
 	@Test
 	@Override
 	public void testDeletePermission() {
-		try (Tx tx = tx()) {
-			testPermission(GraphPermission.DELETE_PERM, english());
-		}
+		testPermission(GraphPermission.DELETE_PERM, english());
 	}
 
 	@Test
 	@Override
 	public void testUpdatePermission() {
-		try (Tx tx = tx()) {
-			testPermission(GraphPermission.UPDATE_PERM, english());
-		}
+		testPermission(GraphPermission.UPDATE_PERM, english());
 	}
 
 	@Test
 	@Override
 	public void testCreatePermission() {
-		try (Tx tx = tx()) {
-			testPermission(GraphPermission.CREATE_PERM, english());
-		}
+		testPermission(GraphPermission.CREATE_PERM, english());
 	}
 
 }

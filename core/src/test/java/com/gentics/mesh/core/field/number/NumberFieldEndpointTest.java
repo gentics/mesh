@@ -82,17 +82,21 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
-			for (int i = 0; i < 20; i++) {
-				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
-				Number oldValue = getNumberValue(container, FIELD_NAME);
-				Number newValue = Integer.valueOf(i + 42);
+		Node node = folder("2015");
+		for (int i = 0; i < 20; i++) {
+			NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+			Number oldValue;
+			Number newValue;
+			try (Tx tx = tx()) {
+				oldValue = getNumberValue(container, FIELD_NAME);
+				newValue = Integer.valueOf(i + 42);
+			}
 
-				NodeResponse response = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(newValue));
-				NumberFieldImpl field = response.getFields().getNumberField(FIELD_NAME);
-				assertEquals(newValue, field.getNumber());
+			NodeResponse response = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(newValue));
+			NumberFieldImpl field = response.getFields().getNumberField(FIELD_NAME);
+			assertEquals(newValue, field.getNumber());
 
+			try (Tx tx = tx()) {
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getNumberValue(container, FIELD_NAME));
 			}

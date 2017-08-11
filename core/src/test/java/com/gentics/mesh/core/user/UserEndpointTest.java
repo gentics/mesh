@@ -417,7 +417,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
 		assertEquals("We did not find the expected page in the list response.", 3, restResponse.getMetainfo().getCurrentPage());
-		assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + currentPerPage + "}",
+		assertEquals(
+				"The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + currentPerPage + "}",
 				totalPages, restResponse.getMetainfo().getPageCount());
 		assertEquals(currentPerPage, restResponse.getMetainfo().getPerPage());
 		assertEquals("The total amount of items does not match the expected one", totalUsers, restResponse.getMetainfo().getTotalCount());
@@ -557,22 +558,25 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testUpdateUserAndSetNodeReference() throws Exception {
+		String nodeUuid = tx(() -> folder("news").getUuid());
+		String userUuid = userUuid();
+		User user = user();
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		String username = tx(() -> user.getUsername());
 		try (Tx tx = tx()) {
-			String nodeUuid = folder("news").getUuid();
-			User user = user();
-			String username = user.getUsername();
-			UserUpdateRequest updateRequest = new UserUpdateRequest();
 			updateRequest.setEmailAddress("t.stark@stark-industries.com");
 			updateRequest.setFirstname("Tony Awesome");
 			updateRequest.setLastname("Epic Stark");
 			updateRequest.setUsername("dummy_user_changed");
+		}
 
-			NodeReference userNodeReference = new NodeReference();
-			userNodeReference.setProjectName(PROJECT_NAME);
-			userNodeReference.setUuid(nodeUuid);
-			updateRequest.setNodeReference(userNodeReference);
+		NodeReference userNodeReference = new NodeReference();
+		userNodeReference.setProjectName(PROJECT_NAME);
+		userNodeReference.setUuid(nodeUuid);
+		updateRequest.setNodeReference(userNodeReference);
 
-			UserResponse restUser = call(() -> client().updateUser(user.getUuid(), updateRequest));
+		UserResponse restUser = call(() -> client().updateUser(userUuid, updateRequest));
+		try (Tx tx = tx()) {
 			assertNotNull(user().getReferencedNode());
 			assertNotNull(restUser.getNodeReference());
 			assertEquals(PROJECT_NAME, ((NodeReference) restUser.getNodeReference()).getProjectName());

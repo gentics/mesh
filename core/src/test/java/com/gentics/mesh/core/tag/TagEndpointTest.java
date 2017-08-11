@@ -61,7 +61,6 @@ import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 
-
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
@@ -200,7 +199,11 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Override
 	public void testUpdate() throws Exception {
 		Tag tag = tag("vehicle");
+		String tagUuid = tx(() -> tag.getUuid());
+
 		TagFamily parentTagFamily = tagFamily("basic");
+		String parentTagFamilyUuid = tx(() -> parentTagFamily.getUuid());
+
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		List<? extends Node> nodes;
 
@@ -226,9 +229,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tx.success();
 		}
 
+		TagResponse tag2 = call(() -> client().updateTag(PROJECT_NAME, parentTagFamilyUuid, tagUuid, tagUpdateRequest));
 		try (Tx tx = tx()) {
-			String tagUuid = tag.getUuid();
-			TagResponse tag2 = call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, tagUpdateRequest));
 			assertThat(tag2).matches(tag);
 			assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(project().getUuid()), Tag.composeIndexType(),
 					Tag.composeDocumentId(tag2.getUuid()));

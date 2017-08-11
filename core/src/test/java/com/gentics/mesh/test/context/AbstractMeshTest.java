@@ -66,7 +66,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	}
 
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
-		RoutingContext rc = mockRoutingContext();
+		RoutingContext rc = tx(() -> mockRoutingContext());
 
 		try (Tx tx = tx()) {
 			role().grantPermissions(element, perm);
