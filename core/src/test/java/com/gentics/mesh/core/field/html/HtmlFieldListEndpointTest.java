@@ -159,8 +159,6 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 				assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
 
 				// Assert the update within the graph
-				node.reload();
-				container.reload();
 				NodeGraphFieldContainer updatedContainer = container.getNextVersion();
 				assertEquals("The container version number did not match up with the response version number.",
 						updatedContainer.getVersion().toString(), response.getVersion());
@@ -191,7 +189,6 @@ public class HtmlFieldListEndpointTest extends AbstractListFieldEndpointTest {
 			assertThat(secondResponse.getFields().getHtmlFieldList(FIELD_NAME)).as("Updated Field").isNull();
 
 			// Assert that the old version was not modified
-			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getHTMLList(FIELD_NAME)).isNull();

@@ -204,7 +204,6 @@ public class MicronodeListFieldMigrationTest extends AbstractFieldMigrationTest 
 		customMigrationScript(CREATEMICRONODELIST, FILL, FETCH, "function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
 			MicronodeGraphFieldList field = container.getMicronodeList(name);
 			assertThat(field).as(NEWFIELD).isNotNull();
-			field.reload();
 			assertThat(field.getValues()).as(NEWFIELDVALUE).hasSize(2);
 			assertThat(field.getValues().get(0)).as(NEWFIELDVALUE)
 					.containsStringField("firstName", "Mickey").containsStringField("lastName", "Mouse");

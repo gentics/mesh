@@ -190,7 +190,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			assertThat(restProject).hasUuid(uuid);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
-			reloadedProject.reload();
 			assertEquals("New Name", reloadedProject.getName());
 		}
 	}
@@ -232,7 +231,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			assertThat(restProject).matches(request);
 			assertThat(restProject.getPermissions()).hasPerm(Permission.values());
 
-			meshRoot().getProjectRoot().reload();
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
 			// Read the project
@@ -419,7 +417,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		call(() -> client().findNodes(request.getName()));
 
 		try (Tx tx = tx()) {
-			project().reload();
 			assertEquals(request.getName(), project().getName());
 		}
 
@@ -473,7 +470,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			assertThat(dummySearchProvider()).hasEvents(expectedCount, 0, 0, 0);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
-			reloadedProject.reload();
 			assertEquals(newName, reloadedProject.getName());
 		}
 

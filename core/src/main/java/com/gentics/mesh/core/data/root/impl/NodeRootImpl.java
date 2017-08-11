@@ -123,7 +123,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public Node loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
-		reload();
 		Node element = findByUuid(uuid);
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);

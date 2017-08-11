@@ -221,7 +221,6 @@ public class StringListFieldMigrationTest extends AbstractFieldMigrationTest imp
 				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
 					StringGraphFieldList field = container.getStringList(name);
 					assertThat(field).as(NEWFIELD).isNotNull();
-					field.reload();
 					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(TEXT3, TEXT2, TEXT1);
 				});
 	}

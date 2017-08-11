@@ -184,7 +184,6 @@ public class NodeListFieldMigrationTest extends AbstractFieldMigrationTest imple
 		customMigrationScript(CREATENODELIST, FILL, FETCH, "function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
 			NodeGraphFieldList field = container.getNodeList(name);
 			assertThat(field).as(NEWFIELD).isNotNull();
-			field.reload();
 			assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(folder("news"), folder("2015"));
 		});
 	}

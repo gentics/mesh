@@ -81,7 +81,6 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			call(() -> client().assignSchemaToProject(extraProject.getName(), schema.getUuid()));
 			// assertThat(restSchema).matches(schema);
-			extraProject.getSchemaContainerRoot().reload();
 			assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid()));
 		}
 	}
@@ -132,7 +131,6 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			// final String removedProjectName = project.getName();
 			assertEquals("The removed schema should not be listed in the response", 0,
 					list.getData().stream().filter(s -> s.getUuid().equals(schema.getUuid())).count());
-			project.getSchemaContainerRoot().reload();
 			assertFalse("The schema should no longer be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
 		}
 	}

@@ -82,8 +82,6 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			MicroschemaResponse restMicroschema = call(() -> client().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()));
 			assertThat(restMicroschema.getUuid()).isEqualTo(microschema.getUuid());
-			extraProject.reload();
-			extraProject.getMicroschemaContainerRoot().reload();
 			assertNotNull("The microschema should be added to the extra project",
 					extraProject.getMicroschemaContainerRoot().findByUuid(microschema.getUuid()));
 		}
@@ -134,7 +132,6 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 			assertEquals("The removed microschema should not be listed in the response", 0,
 					list.getData().stream().filter(s -> s.getUuid().equals(microschema.getUuid())).count());
-			project.getMicroschemaContainerRoot().reload();
 			assertFalse("The microschema should no longer be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
 		}
 	}

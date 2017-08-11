@@ -84,7 +84,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	default public T findByName(InternalActionContext ac, String name, GraphPermission perm) {
-		reload();
 		T element = findByName(name);
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_name", name);
@@ -151,8 +150,6 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return Loaded element. If errorIfNotFound is true, a not found error will be thrown if the element could not be found and the returned value will never be null.
 	 */
 	default public T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
-		Database db = database();
-		reload();
 		T element = findByUuid(uuid);
 		if (element == null) {
 			if (errorIfNotFound) {

@@ -322,22 +322,16 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		String rootNodeSegment = stack.pop();
 		switch (rootNodeSegment) {
 		case ProjectRoot.TYPE:
-			root.getProjectRoot().reload();
 			return root.getProjectRoot().resolveToElement(stack);
 		case UserRoot.TYPE:
-			root.getUserRoot().reload();
 			return root.getUserRoot().resolveToElement(stack);
 		case GroupRoot.TYPE:
-			root.getGroupRoot().reload();
 			return root.getGroupRoot().resolveToElement(stack);
 		case RoleRoot.TYPE:
-			root.getRoleRoot().reload();
 			return root.getRoleRoot().resolveToElement(stack);
 		case MicroschemaContainerRoot.TYPE:
-			root.getMicroschemaContainerRoot().reload();
 			return root.getMicroschemaContainerRoot().resolveToElement(stack);
 		case SchemaContainerRoot.TYPE:
-			root.getSchemaContainerRoot().reload();
 			return root.getSchemaContainerRoot().resolveToElement(stack);
 		default:
 			// TOOO i18n

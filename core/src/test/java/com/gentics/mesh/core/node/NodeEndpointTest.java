@@ -303,7 +303,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeResponse nodeResponse = call(
 					() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setRelease(initialRelease.getName())));
 
-			meshRoot().getNodeRoot().reload();
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type)).as(type + " Field container for initial release")
@@ -334,7 +333,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeResponse nodeResponse = call(
 					() -> client().createNode(project.getName(), request, new VersioningParametersImpl().setRelease(initialRelease.getUuid())));
 
-			meshRoot().getNodeRoot().reload();
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
 				assertThat(newNode.getGraphFieldContainer("en", initialRelease.getUuid(), type)).as(type + " Field container for initial release")
@@ -367,7 +365,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, request));
 
-			meshRoot().getNodeRoot().reload();
 			Node newNode = meshRoot().getNodeRoot().findByUuid(nodeResponse.getUuid());
 
 			for (ContainerType type : Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT)) {
@@ -443,7 +440,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Delete the node
 			call(() ->  client().deleteNode(PROJECT_NAME, restNode2.getUuid()));
 
-			meshRoot().getNodeRoot().reload();
 			Node deletedNode = meshRoot().getNodeRoot().findByUuid(restNode2.getUuid());
 			assertNull("The node should have been deleted.", deletedNode);
 		}
@@ -1595,13 +1591,10 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// 5. Assert graph changes
 		try (Tx tx = tx()) {
-			node.reload();
-			origContainer.reload();
 
 			// First check whether the objects we check are the correct ones
 			assertEquals("The original container should be 1.0 (the latest published version)", "1.0", origContainer.getVersion().toString());
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
-			container.reload();
 			assertEquals("The loaded container did not match the latest version.", "1.1", container.getVersion().toString());
 
 			// Assert applied changes
@@ -1825,7 +1818,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// 5. Assert
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
-			node.reload();
 			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.DRAFT)).as("draft containers for initial release").isNotEmpty();
 			assertThat(node.getGraphFieldContainers(newRelease, ContainerType.DRAFT)).as("draft containers for new release").isEmpty();
 		}
@@ -1857,7 +1849,6 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			// 6. Assert
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
-			node.reload();
 			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.DRAFT)).as("draft containers for initial release").isNotEmpty();
 			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.PUBLISHED)).as("published containers for initial release")
 					.isNotEmpty();

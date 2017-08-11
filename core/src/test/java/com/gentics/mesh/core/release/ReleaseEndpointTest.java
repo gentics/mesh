@@ -118,8 +118,6 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			// all releases must form a chain
 			Set<String> foundReleases = new HashSet<>();
-			project.reload();
-			project.getReleaseRoot().reload();
 			Release previousRelease = null;
 			Release release = project.getInitialRelease();
 

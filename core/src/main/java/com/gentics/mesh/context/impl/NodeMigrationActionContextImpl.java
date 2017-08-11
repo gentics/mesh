@@ -175,11 +175,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void reload() {
-
-			}
-
-			@Override
 			public String getUuid() {
 				return null;
 			}
@@ -769,11 +764,9 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-				return MeshInternal.get()
-						.database()
-						.operateTx(() -> {
-							return Single.just(transformToRestSync(ac, level, languageTags));
-						});
+				return MeshInternal.get().database().operateTx(() -> {
+					return Single.just(transformToRestSync(ac, level, languageTags));
+				});
 			}
 
 			@Override
@@ -818,13 +811,13 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void onCreated() {
 				// TODO Auto-generated method stub
-				
+
 			}
 
 			@Override
 			public void onUpdated() {
 				// TODO Auto-generated method stub
-				
+
 			}
 		};
 		return user;

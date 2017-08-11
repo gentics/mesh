@@ -188,9 +188,4 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 		return (Vertex) vertex;
 	}
 
-	@Override
-	public void reload() {
-		//MeshInternal.get().database().reload(this);
-	}
-
 }

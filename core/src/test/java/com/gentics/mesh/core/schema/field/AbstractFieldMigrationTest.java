@@ -146,8 +146,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(versionB);
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
-		node.reload();
-		node.getGraphFieldContainer("en").reload();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -204,13 +202,10 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
-		oldContainer.reload();
 		assertThat(oldContainer).as("Old container").hasVersion(oldVersion.toString());
-		micronodeField.getMicronode().reload();
 		assertThat(micronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
 
 		// assert that migration worked
-		node.reload();
 		NodeGraphFieldContainer newContainer = node.getGraphFieldContainer("en");
 		assertThat(newContainer).as("New container").hasVersion(oldVersion.nextDraft().toString());
 		MicronodeGraphField newMicronodeField = newContainer.getMicronode(micronodeFieldName);
@@ -306,8 +301,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(versionB);
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
-		node.reload();
-		node.getGraphFieldContainer("en").reload();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -375,13 +368,10 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
-		oldContainer.reload();
 		assertThat(oldContainer).as("Old container").hasVersion(oldVersion.toString());
-		micronodeField.getMicronode().reload();
 		assertThat(micronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
 
 		// assert that migration worked
-		node.reload();
 		NodeGraphFieldContainer newContainer = node.getGraphFieldContainer("en");
 		assertThat(newContainer).as("New container").hasVersion(oldVersion.nextDraft().toString());
 		MicronodeGraphField newMicronodeField = newContainer.getMicronode(micronodeFieldName);
@@ -474,9 +464,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(versionB);
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
-		node.reload();
-		englishContainer.reload();
-		node.getGraphFieldContainer("en").reload();
 
 		// old container must not be changed
 		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
@@ -552,14 +539,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
 		// old container must be untouched
-		oldContainer.reload();
 		micronodeField = oldContainer.getMicronode(micronodeFieldName);
-		micronodeField.getMicronode().reload();
 		assertThat(oldContainer).as("Old container").hasVersion(oldVersion.toString());
 		assertThat(micronodeField.getMicronode()).as("Old micronode").isOf(versionA);
 
 		// assert that migration worked
-		node.reload();
 		NodeGraphFieldContainer newContainer = node.getGraphFieldContainer("en");
 		assertThat(newContainer).as("New container").hasVersion(oldVersion.nextDraft().toString());
 		MicronodeGraphField newMicronodeField = newContainer.getMicronode(micronodeFieldName);
@@ -656,8 +640,6 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(versionB);
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
-		node.reload();
-		node.getGraphFieldContainer("en").reload();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -719,13 +701,10 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		nodeMigrationHandler.migrateMicronodes(project(), project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
-		oldContainer.reload();
 		assertThat(oldContainer).as("Old container").hasVersion(oldVersion.toString());
-		micronodeField.getMicronode().reload();
 		assertThat(micronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
 
 		// assert that migration worked
-		node.reload();
 		NodeGraphFieldContainer newContainer = node.getGraphFieldContainer("en");
 		assertThat(newContainer).as("New container").hasVersion(oldVersion.nextDraft().toString());
 		MicronodeGraphField newMicronodeField = newContainer.getMicronode(micronodeFieldName);
@@ -934,9 +913,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 			DataProvider dataProvider, String... fieldNames) {
 		Language english = english();
 
-		node.getSchemaContainer().reload();
 		SchemaContainerVersion latestVersion = node.getSchemaContainer().getLatestVersion();
-		latestVersion.reload();
 
 		// Add a micronode field to the schema of the node.
 		SchemaModel schema = latestVersion.getSchema();

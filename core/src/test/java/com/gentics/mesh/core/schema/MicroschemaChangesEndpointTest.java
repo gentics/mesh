@@ -64,14 +64,10 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 			// 5. Wait for migration to finish
 			failingLatch(latch);
 
-			container.reload();
-			currentVersion.reload();
 			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
 
 			// 6. Assert migrated node
-			node.reload();
 			NodeGraphFieldContainer fieldContainer = node.getGraphFieldContainer("en");
-			fieldContainer.reload();
 			assertNotNull("The node should have a micronode graph field", fieldContainer.getMicronode("micronodeField"));
 		}
 	}
@@ -125,8 +121,6 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 			// 4. Latch for completion
 			failingLatch(latch);
-			container.reload();
-			currentVersion.reload();
 			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
 			assertNotNull("The container should now have a new version", currentVersion.getNextVersion());
 		}
@@ -155,8 +149,6 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 			// 4. Wait and assert
 			failingLatch(latch);
-			vcardContainer.reload();
-			currentVersion.reload();
 			assertEquals("The name of the microschema was not updated", name, currentVersion.getNextVersion().getName());
 		}
 	}
@@ -172,7 +164,6 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 			request.setName(name);
 
 			call(() -> client().updateMicroschema(microschema.getUuid(), request), CONFLICT, "schema_conflicting_name", name);
-			microschema.reload();
 			assertEquals("The name of the microschema was updated but it should not.", originalSchemaName, microschema.getName());
 		}
 	}

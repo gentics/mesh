@@ -39,13 +39,6 @@ import rx.Single;
 public class TxTest extends AbstractMeshTest {
 
 	@Test
-	public void testReload() {
-		try (Tx tx = tx()) {
-			user().reload();
-		}
-	}
-
-	@Test
 	public void testTransaction() throws InterruptedException {
 		AtomicInteger i = new AtomicInteger(0);
 

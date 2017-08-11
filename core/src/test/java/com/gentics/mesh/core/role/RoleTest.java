@@ -211,10 +211,8 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node parentNode = folder("news");
 			assertNotNull(parentNode);
 
-			parentNode.reload();
 			// Grant all permissions to all roles
 			for (Role role : roles().values()) {
-				role.reload();
 				for (GraphPermission perm : GraphPermission.values()) {
 					role.grantPermissions(parentNode, perm);
 				}

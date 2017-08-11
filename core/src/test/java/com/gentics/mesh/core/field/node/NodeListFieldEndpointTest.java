@@ -123,8 +123,6 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 				NodeResponse response = updateNode(FIELD_NAME, list);
 				NodeFieldList field = response.getFields().getNodeFieldList(FIELD_NAME);
 				assertThat(field.getItems()).as("Updated field").usingElementComparatorOnFields("uuid").containsExactlyElementsOf(list.getItems());
-				node.reload();
-				container.reload();
 
 				NodeGraphFieldContainer newContainerVersion = container.getNextVersion();
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
@@ -171,7 +169,6 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
-			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNodeList(FIELD_NAME)).isNull();

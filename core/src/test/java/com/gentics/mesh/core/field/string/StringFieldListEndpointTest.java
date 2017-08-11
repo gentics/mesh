@@ -181,8 +181,6 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 				NodeResponse response = updateNode(FIELD_NAME, list);
 				StringFieldListImpl field = response.getFields().getStringFieldList(FIELD_NAME);
 				assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
-				node.reload();
-				container.reload();
 
 				NodeGraphFieldContainer newContainerVersion = container.getNextVersion();
 				assertEquals("The old container version did not match", container.getVersion().nextDraft().toString(),
@@ -211,7 +209,6 @@ public class StringFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
-			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getStringList(FIELD_NAME)).isNull();

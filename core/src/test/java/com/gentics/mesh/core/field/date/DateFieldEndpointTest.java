@@ -68,8 +68,6 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 				DateFieldImpl field = response.getFields().getDateField(FIELD_NAME);
 				assertEquals("The timestamp did not match up.", toISO8601(nowEpoch), field.getDate());
 
-				node.reload();
-				container.reload();
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getDateValue(container, FIELD_NAME));
 			}
@@ -105,7 +103,6 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
 
 			// Assert that the old version was not modified
-			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getDate(FIELD_NAME)).isNull();

@@ -138,7 +138,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Map<String, String> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
-			boot.meshRoot().getProjectRoot().reload();
 			List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
 			for (Project project : projects) {
 				List<? extends Release> releases = project.getReleaseRoot().findAll();

@@ -92,11 +92,9 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 				throw result.cause();
 			}
 
-			newRelease.reload();
 			assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(true);
 
 			nodes.forEach(node -> {
-				node.reload();
 				Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT).forEach(type -> {
 					assertThat(node.getGraphFieldContainers(newRelease, type)).as(type + " Field Containers after Migration").isNotNull()
 							.isNotEmpty();

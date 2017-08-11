@@ -181,7 +181,6 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
 					BooleanGraphFieldList field = container.getBooleanList(name);
 					assertThat(field).as(NEWFIELD).isNotNull();
-					field.reload();
 					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(false, true);
 				});
 	}

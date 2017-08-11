@@ -56,7 +56,6 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 		// 3. Validate resize
 		try (Tx tx = tx()) {
 			Node node = folder("news");
-			node.reload();
 			validateResizeImage(download, node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 100, 102);
 		}
 
@@ -89,7 +88,6 @@ public class NodeImageResizeEndpointTest extends AbstractMeshTest {
 			ImageManipulationParameters params = new ImageManipulationParametersImpl().setWidth(options.getMaxWidth()).setHeight(102);
 			NodeDownloadResponse download = call(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "image", params));
 
-			node.reload();
 			assertNotNull(node.getLatestDraftFieldContainer(english()));
 			validateResizeImage(download, node.getLatestDraftFieldContainer(english()).getBinary("image"), params, 2048, 102);
 		}

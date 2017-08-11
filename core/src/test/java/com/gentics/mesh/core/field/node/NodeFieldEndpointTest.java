@@ -77,8 +77,6 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 				NodeResponse response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(newValue.getUuid()));
 				NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 				assertThat(field.getUuid()).as("New Value").isEqualTo(newValue.getUuid());
-				node.reload();
-				container.reload();
 
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getNodeValue(container, FIELD_NAME));

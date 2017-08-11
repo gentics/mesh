@@ -392,7 +392,6 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			SearchQueueBatch batch = createBatch();
 			InternalActionContext ac = mockActionContext("");
 			subFolder.deleteFromRelease(ac, initialRelease, batch, false);
-			folder.reload();
 
 			// 3. assert for new release
 			assertThat(folder).as("folder").hasNoChildren(initialRelease);
@@ -434,9 +433,6 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 3. migrate nodes
 			meshDagger().nodeMigrationHandler().migrateNodes(newRelease).await();
-			folder.reload();
-			subFolder.reload();
-			subSubFolder.reload();
 
 			// 4. assert nodes in new release
 			assertThat(folder).as("folder").hasOnlyChildren(newRelease, subFolder);
@@ -446,13 +442,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			SearchQueueBatch batch = createBatch();
 			// 5. reverse folders in new release
 			subSubFolder.moveTo(mockActionContext(), folder, batch);
-			folder.reload();
-			subFolder.reload();
-			subSubFolder.reload();
 			subFolder.moveTo(mockActionContext(), subSubFolder, batch);
-			folder.reload();
-			subFolder.reload();
-			subSubFolder.reload();
 
 			// 6. assert for new release
 			assertThat(folder).as("folder").hasChildren(newRelease, subSubFolder);
@@ -468,9 +458,6 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			batch = createBatch();
 			InternalActionContext ac = mockActionContext("");
 			subFolder.deleteFromRelease(ac, initialRelease, batch, false);
-			folder.reload();
-			subFolder.reload();
-			subSubFolder.reload();
 
 			// 9. assert for new release
 			assertThat(folder).as("folder").hasChildren(newRelease, subSubFolder);

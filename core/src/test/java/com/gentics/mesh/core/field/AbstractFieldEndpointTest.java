@@ -17,6 +17,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.syncleus.ferma.tx.Tx;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 
@@ -64,15 +65,16 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	 * @return
 	 */
 	protected NodeResponse updateNode(String fieldKey, Field field, boolean expandAll) {
-		Node node = folder("2015");
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
-		node.reload();
-		nodeUpdateRequest.setVersion(node.getLatestDraftFieldContainer(english()).getVersion().toString());
-
-		NodeResponse response = call(
-				() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")));
+		try (Tx tx = tx()) {
+			Node node = folder("2015");
+			nodeUpdateRequest.setVersion(node.getLatestDraftFieldContainer(english()).getVersion().toString());
+			tx.success();
+		}
+		String uuid = tx(() -> folder("2015").getUuid());
+		NodeResponse response = call(() -> client().updateNode(PROJECT_NAME, uuid, nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")));
 		assertNotNull("The response could not be found in the result of the future.", response);
 		assertNotNull("The field was not included in the response.", response.getFields().hasField(fieldKey));
 		return response;
@@ -102,9 +104,6 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 	 */
 	protected <U, T extends ListGraphField<?, ?, U>> List<U> getListValues(NodeGraphFieldContainer container, Class<T> classOfT, String fieldKey) {
 		T field = container.getList(classOfT, fieldKey);
-		if (field != null) {
-			field.reload();
-		}
 		return field != null ? field.getValues() : null;
 	}
 }

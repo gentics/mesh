@@ -141,8 +141,6 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 				NodeResponse response = updateNode(FIELD_NAME, list);
 				DateFieldListImpl field = response.getFields().getDateFieldList(FIELD_NAME);
 				assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
-				node.reload();
-				container.reload();
 
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getListValues(container, DateGraphFieldListImpl.class, FIELD_NAME));
@@ -174,7 +172,6 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 
 		try (Tx tx = tx()) {
 			// Assert that the old version was not modified
-			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getDateList(FIELD_NAME)).isNull();

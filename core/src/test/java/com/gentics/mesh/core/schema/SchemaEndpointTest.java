@@ -418,7 +418,6 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		call(() -> client().deleteSchema(uuid));
 
 		try (Tx tx = tx()) {
-			boot().schemaContainerRoot().reload();
 			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(uuid);
 			assertNull("The schema should have been deleted.", reloaded);
 		}

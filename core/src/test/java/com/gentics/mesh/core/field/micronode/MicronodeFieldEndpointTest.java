@@ -14,7 +14,6 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -42,6 +41,7 @@ import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
@@ -75,18 +75,17 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
+		Node node = folder("2015");
 
-			MicronodeResponse field = new MicronodeResponse();
-			field.setMicroschema(new MicroschemaReference().setName("vcard"));
-			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
-			field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
-			updateNode(FIELD_NAME, field);
-			node.reload();
+		MicronodeResponse field = new MicronodeResponse();
+		field.setMicroschema(new MicroschemaReference().setName("vcard"));
+		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
+		updateNode(FIELD_NAME, field);
 
-			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
-			for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 20; i++) {
+			try (Tx tx = tx()) {
+				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 				Micronode oldValue = getMicronodeValue(container, FIELD_NAME);
 
 				field = new MicronodeResponse();
@@ -98,14 +97,11 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 				MicronodeResponse fieldResponse = response.getFields().getMicronodeField(FIELD_NAME);
 				assertThat(fieldResponse).hasStringField("firstName", "Max").hasStringField("lastName", newLastName);
 
-				node.reload();
-				container.reload();
 				NodeGraphFieldContainer newContainer = container.getNextVersion();
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				if (oldValue == null) {
 					assertThat(getMicronodeValue(container, FIELD_NAME)).as("old value").isNull();
 				} else {
-					oldValue.reload();
 					assertThat(oldValue.getString("lastName").getString()).as("old lastName").isNotEqualTo(newLastName);
 					assertThat(getMicronodeValue(container, FIELD_NAME)).as("old value").isEqualToComparingFieldByField(oldValue);
 					assertThat(fieldResponse.getUuid()).as("New uuid").isNotEqualTo(oldValue.getUuid());
@@ -134,22 +130,21 @@ public class MicronodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		try (Tx tx = tx()) {
-			MicronodeResponse field = new MicronodeResponse();
-			field.setMicroschema(new MicroschemaReference().setName("vcard"));
-			field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
-			field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
-			NodeResponse firstResponse = updateNode(FIELD_NAME, field);
-			String oldNumber = firstResponse.getVersion();
+		MicronodeResponse field = new MicronodeResponse();
+		field.setMicroschema(new MicroschemaReference().setName("vcard"));
+		field.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		field.getFields().put("lastName", new StringFieldImpl().setString("Moritz"));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, field);
+		String oldNumber = firstResponse.getVersion();
 
-			// Assert that a null field value request will delete the micronode
-			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+		// Assert that a null field value request will delete the micronode
+		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+		try (Tx tx = tx()) {
 			assertThat(secondResponse.getFields().getMicronodeField(FIELD_NAME)).isNull();
 			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldNumber);
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
-			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getMicronode(FIELD_NAME)).isNull();

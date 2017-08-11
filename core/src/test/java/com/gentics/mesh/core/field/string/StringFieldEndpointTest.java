@@ -73,9 +73,9 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
-			for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 20; i++) {
+			try (Tx tx = tx()) {
+				Node node = folder("2015");
 				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 				String oldValue = getStringValue(container, FIELD_NAME);
 
@@ -84,8 +84,6 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 				NodeResponse response = updateNode(FIELD_NAME, new StringFieldImpl().setString(newValue));
 				StringFieldImpl field = response.getFields().getStringField(FIELD_NAME);
 				assertEquals(newValue, field.getString());
-				node.reload();
-				container.reload();
 
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getStringValue(container, FIELD_NAME));
@@ -96,30 +94,27 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSameValue() {
-		try (Tx tx = tx()) {
-			NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
-			String oldNumber = firstResponse.getVersion();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
+		String oldNumber = firstResponse.getVersion();
 
-			NodeResponse secondResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
-			assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
-		}
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
+		assertThat(secondResponse.getVersion()).as("New version number").isEqualTo(oldNumber);
 	}
 
 	@Test
 	@Override
 	public void testUpdateSetNull() {
-		Node node = folder("2015");
 
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
+		String oldVersion = firstResponse.getVersion();
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+		assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNull();
+		assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
+
+		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
-			String oldVersion = firstResponse.getVersion();
-
-			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
-			assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
-
-			// Assert that the old version was not modified
-			node.reload();
+			Node node = folder("2015");
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getString(FIELD_NAME)).isNull();
@@ -136,21 +131,20 @@ public class StringFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
+		StringField emptyField = new StringFieldImpl();
+		emptyField.setString("");
+		NodeResponse secondResponse = null;
 		try (Tx tx = tx()) {
-			NodeResponse firstResponse = updateNode(FIELD_NAME, new StringFieldImpl().setString("bla"));
 			String oldVersion = firstResponse.getVersion();
-
-			StringField emptyField = new StringFieldImpl();
-			emptyField.setString("");
-			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
+			secondResponse = updateNode(FIELD_NAME, emptyField);
 			assertThat(secondResponse.getFields().getStringField(FIELD_NAME)).as("Updated Field").isNotNull();
 			assertThat(secondResponse.getFields().getStringField(FIELD_NAME).getString()).as("Updated Field Value").isEqualTo("");
 			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
-
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
 		}
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(), secondResponse.getVersion());
+
 	}
 
 	/**

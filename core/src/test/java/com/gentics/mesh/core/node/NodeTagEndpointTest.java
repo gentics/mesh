@@ -74,7 +74,6 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 			NodeResponse restNode = call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()));
 
-			node.reload();
 			assertThat(restNode).contains(tag);
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
 
@@ -132,7 +131,6 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
 			assertThat(restNode).contains(tag);
-			node.reload();
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
 			// TODO check for properties of the nested tag
 		}

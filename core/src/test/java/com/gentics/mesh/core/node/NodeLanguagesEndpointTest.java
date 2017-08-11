@@ -48,7 +48,6 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			// Check the deletion
-			node.reload();
 			assertThat(dummySearchProvider()).recordedDeleteEvents(2);
 			assertFalse(node.getAvailableLanguageNames().contains("en"));
 			assertEquals(nLanguagesBefore - 1, node.getAvailableLanguageNames().size());

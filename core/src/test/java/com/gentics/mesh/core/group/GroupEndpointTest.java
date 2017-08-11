@@ -132,18 +132,17 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Test
 	public void testBatchCreation() {
 		try (Tx tx = tx()) {
-			for (int i = 0; i < 10; i++) {
-				System.out.println(i);
-				final String name = "test_" + i;
-				GroupCreateRequest request = new GroupCreateRequest();
-				request.setName(name);
-				GroupRoot root = meshRoot().getGroupRoot();
-				root.reload();
-				role().grantPermissions(root, CREATE_PERM);
-
-				GroupResponse restGroup = call(() -> client().createGroup(request));
-				assertThat(restGroup).matches(request);
-			}
+			GroupRoot root = meshRoot().getGroupRoot();
+			role().grantPermissions(root, CREATE_PERM);
+			tx.success();
+		}
+		for (int i = 0; i < 10; i++) {
+			System.out.println(i);
+			final String name = "test_" + i;
+			GroupCreateRequest request = new GroupCreateRequest();
+			request.setName(name);
+			GroupResponse restGroup = call(() -> client().createGroup(request));
+			assertThat(restGroup).matches(request);
 		}
 	}
 

@@ -99,6 +99,12 @@ public interface TestHelperMethods {
 		return MeshInternal.get().database();
 	}
 
+	/**
+	 * Create a new transaction.
+	 * 
+	 * @see Database#tx()
+	 * @return
+	 */
 	default Tx tx() {
 		return db().tx();
 	}
@@ -148,9 +154,7 @@ public interface TestHelperMethods {
 	}
 
 	default Group group() {
-		Group group = data().getUserInfo().getGroup();
-		group.reload();
-		return group;
+		return data().getUserInfo().getGroup();
 	}
 
 	default String groupUuid() {
@@ -260,7 +264,7 @@ public interface TestHelperMethods {
 
 	default MicroschemaContainer microschemaContainer(String key) {
 		MicroschemaContainer container = data().getMicroschemaContainers().get(key);
-//		container.reload();
+		// container.reload();
 		return container;
 	}
 
@@ -539,11 +543,11 @@ public interface TestHelperMethods {
 	default public MeshRequest<NodeResponse> uploadRandomData(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
 			String fileName) {
 
-		VersionNumber version = node.getGraphFieldContainer("en").getVersion();
+		VersionNumber version = tx(() -> node.getGraphFieldContainer("en").getVersion());
+		String uuid = tx(() -> node.getUuid());
 
-		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-		return client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldKey, buffer, fileName, contentType,
+		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldKey, buffer, fileName, contentType,
 				new NodeParametersImpl().setResolveLinks(LinkType.FULL));
 	}
 
@@ -595,7 +599,6 @@ public interface TestHelperMethods {
 
 	default public SchemaContainer getSchemaContainer() {
 		SchemaContainer container = data().getSchemaContainer("content");
-		container.reload();
 		return container;
 	}
 

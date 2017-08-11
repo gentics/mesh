@@ -141,8 +141,6 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 				NodeResponse response = updateNode(FIELD_NAME, list);
 				NumberFieldListImpl field = response.getFields().getNumberFieldList(FIELD_NAME);
 				assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
-				node.reload();
-				container.reload();
 
 				NodeGraphFieldContainer newContainerVersion = container.getNextVersion();
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(),
@@ -172,7 +170,6 @@ public class NumberFieldListEndpointTest extends AbstractListFieldEndpointTest {
 					.isNotEqualTo(secondResponse.getVersion());
 
 			// Assert that the old version was not modified
-			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNumberList(FIELD_NAME)).isNull();

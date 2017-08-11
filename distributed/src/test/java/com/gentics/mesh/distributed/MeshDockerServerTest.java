@@ -204,7 +204,7 @@ public class MeshDockerServerTest {
 		String newName = "newNameForProject";
 		call(() -> clientA.updateProject(response.getUuid(), new ProjectUpdateRequest().setName(newName)));
 
-		Thread.sleep(6000);
+		Thread.sleep(8000);
 
 		// Node B: Only the root node should be found and routes should have been updated across the cluster
 		assertThat(call(() -> clientB.findNodes(newName)).getData()).hasSize(1);

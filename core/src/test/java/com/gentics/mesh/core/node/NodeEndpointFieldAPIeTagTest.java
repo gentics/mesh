@@ -33,8 +33,6 @@ public class NodeEndpointFieldAPIeTagTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 
-			node.reload();
-
 			// 2. Download the data using the field api
 			String etag = callETag(() -> client().downloadBinaryField(PROJECT_NAME, node.getUuid(), "en", "binary"));
 			assertNotNull("A etag should have been generated.", etag);

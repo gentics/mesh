@@ -94,24 +94,23 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeWithPerm() {
-		try (Tx tx = tx()) {
-			String releaseUuid = project().getLatestRelease().getUuid();
-			Node sourceNode = folder("deals");
-			Node targetNode = folder("2015");
-			String oldSourceParentId = sourceNode.getParentNode(releaseUuid).getUuid();
-			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()));
+		Node sourceNode = folder("deals");
+		Node targetNode = folder("2015");
+		String releaseUuid = initialReleaseUuid();
+		String sourceNodeUuid = tx(() -> sourceNode.getUuid());
+		String targetNodeUuid = tx(() -> targetNode.getUuid());
+		String oldSourceParentId = tx(() -> sourceNode.getParentNode(releaseUuid).getUuid());
+		assertNotEquals(targetNodeUuid, tx(() -> sourceNode.getParentNode(releaseUuid).getUuid()));
+		call(() -> client().moveNode(PROJECT_NAME, sourceNodeUuid, targetNodeUuid));
 
-			sourceNode.reload();
-			try (Tx tx2 = tx()) {
-				assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
-						sourceNode.getParentNode(releaseUuid).getUuid());
-				assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
-						targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-				assertEquals("A store event for each language variation per version should occure", 4, dummySearchProvider().getStoreEvents().size());
-			}
-			// TODO assert entries
+		try (Tx tx2 = tx()) {
+			assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
+					sourceNode.getParentNode(releaseUuid).getUuid());
+			assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
+					targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
+			assertEquals("A store event for each language variation per version should occure", 4, dummySearchProvider().getStoreEvents().size());
 		}
+		// TODO assert entries
 	}
 
 	@Test

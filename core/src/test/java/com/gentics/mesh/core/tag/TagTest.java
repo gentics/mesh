@@ -224,15 +224,12 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 2. Create and Tag a node
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
 			node.addTag(tag, initialRelease);
-			node.reload();
 
 			// 3. Create new Release
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 4. Migrate nodes to new release
 			nodeMigrationHandler.migrateNodes(newRelease);
-			node.reload();
-			tag.reload();
 
 			// 5. Assert
 			assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release").usingElementComparatorOnFields("uuid", "name")
@@ -266,7 +263,6 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 2. Create and Tag a node
 			node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
 			node.addTag(tag, initialRelease);
-			node.reload();
 
 			// 3. Create new Release
 			newRelease = project.getReleaseRoot().create("newrelease", user());
@@ -276,8 +272,6 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// 5. Untag in initial Release
 			node.removeTag(tag, initialRelease);
-			node.reload();
-			tag.reload();
 
 			// 6. Assert
 			assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release").isEmpty();
@@ -352,8 +346,6 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertEquals(tags().size() - 1, root.findAll().size());
 			root.removeTag(tag);
 			assertEquals(tags().size() - 1, root.findAll().size());
-			root.reload();
-			tag.reload();
 			root.addTag(tag);
 			assertEquals(tags().size(), root.findAll().size());
 			root.addTag(tag);

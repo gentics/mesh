@@ -92,8 +92,6 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 				NodeResponse response = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(newValue));
 				NumberFieldImpl field = response.getFields().getNumberField(FIELD_NAME);
 				assertEquals(newValue, field.getNumber());
-				node.reload();
-				container.reload();
 
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getNumberValue(container, FIELD_NAME));

@@ -145,9 +145,6 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 					assertThat(response.getFields().getMicronodeFieldList(FIELD_NAME).getItems()).isEmpty();
 				}
 
-				node.reload();
-				container.reload();
-
 				// We only have to check for new versions if those should have been created.
 				boolean bothEmpty = oldValue != null && newValue.getItems().isEmpty() && oldValue.isEmpty();
 				if (!bothEmpty) {
@@ -198,7 +195,6 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
-			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getMicronodeList(FIELD_NAME)).isNull();

@@ -330,7 +330,6 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				node.publish(ac, batch);
 				return batch;
 			});
-			node.reload();
 			return sqb.processAsync().andThen(Single.just(node.transformToPublishStatus(ac)));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
@@ -393,7 +392,6 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				node.publish(ac, batch, languageTag);
 				return batch;
 			});
-			node.reload();
 			return sqb.processAsync().andThen(Single.just(node.transformToPublishStatus(ac, languageTag)));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}

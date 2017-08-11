@@ -135,8 +135,6 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 				NodeResponse response = updateNode(FIELD_NAME, list);
 				BooleanFieldListImpl field = response.getFields().getBooleanFieldList(FIELD_NAME);
 				assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
-				node.reload();
-				container.reload();
 
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getListValues(container, BooleanGraphFieldListImpl.class, FIELD_NAME));
@@ -160,7 +158,6 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 
 			// Assert that the old version was not modified
 			Node node = folder("2015");
-			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBooleanList(FIELD_NAME)).isNull();

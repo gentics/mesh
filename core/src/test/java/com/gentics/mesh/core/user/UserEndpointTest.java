@@ -573,7 +573,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			updateRequest.setNodeReference(userNodeReference);
 
 			UserResponse restUser = call(() -> client().updateUser(user.getUuid(), updateRequest));
-			user().reload();
 			assertNotNull(user().getReferencedNode());
 			assertNotNull(restUser.getNodeReference());
 			assertEquals(PROJECT_NAME, ((NodeReference) restUser.getNodeReference()).getProjectName());
@@ -1299,7 +1298,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		latchFor(response);
 		assertSuccess(response);
 		try (Tx tx = tx()) {
-			meshRoot().getUserRoot().reload();
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getRawResponse().statusCode());
@@ -1322,7 +1320,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		latchFor(response);
 		assertSuccess(response);
 		try (Tx tx = tx()) {
-			meshRoot().getUserRoot().reload();
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getRawResponse().statusCode());

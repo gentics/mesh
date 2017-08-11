@@ -349,7 +349,6 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Check that the extra role was updated as expected
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role reloadedRole = roleRoot.findByUuid(extraRoleUuid);
-			reloadedRole.reload();
 			assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
 		}
 	}
@@ -411,7 +410,6 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// Check that the role was updated
 		try (Tx tx = tx()) {
 			Role reloadedRole = boot().roleRoot().findByUuid(roleUuid());
-			reloadedRole.reload();
 			assertEquals(restRole.getName(), reloadedRole.getName());
 		}
 
@@ -437,7 +435,6 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0);
 
 		try (Tx tx = tx()) {
-			meshRoot().getRoleRoot().reload();
 			assertElement(meshRoot().getRoleRoot(), extraRoleUuid, false);
 		}
 

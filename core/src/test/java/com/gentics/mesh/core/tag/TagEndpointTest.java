@@ -229,7 +229,6 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		try (Tx tx = tx()) {
 			String tagUuid = tag.getUuid();
 			TagResponse tag2 = call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, tagUpdateRequest));
-			tag.reload();
 			assertThat(tag2).matches(tag);
 			assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(project().getUuid()), Tag.composeIndexType(),
 					Tag.composeDocumentId(tag2.getUuid()));

@@ -270,7 +270,6 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			restFields.put("stringfield", new StringFieldImpl().setString("test"));
 			field.getMicronode().updateFieldsFromRest(ac, restFields);
 
-			field.getMicronode().reload();
 			assertNotNull("The field should have been created.", field.getMicronode().getString("stringfield"));
 			assertEquals("The field did not contain the expected value", "test", field.getMicronode().getString("stringfield").getString());
 		}
