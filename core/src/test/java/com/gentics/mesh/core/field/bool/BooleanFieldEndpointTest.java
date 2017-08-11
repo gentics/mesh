@@ -65,21 +65,21 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
-			for (int i = 0; i < 20; i++) {
-				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
-				Boolean oldValue = getBooleanValue(container, FIELD_NAME);
+		Node node = folder("2015");
+		for (int i = 0; i < 20; i++) {
+			boolean flag = false;
+			NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+			final NodeGraphFieldContainer currentContainer = container;
+			Boolean oldValue = tx(() -> getBooleanValue(currentContainer, FIELD_NAME));
+			String expectedVersion = tx(() -> currentContainer.getVersion().nextDraft().toString());
 
-				String expectedVersion = container.getVersion().nextDraft().toString();
-				boolean flag = false;
-				NodeResponse response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(flag));
-				BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
-				assertEquals(flag, field.getValue());
-				assertEquals("The version within the response should be bumped by one minor version.", expectedVersion,
-						response.getVersion());
+			NodeResponse response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(flag));
+			BooleanFieldImpl field = response.getFields().getBooleanField(FIELD_NAME);
+			assertEquals(flag, field.getValue());
+			assertEquals("The version within the response should be bumped by one minor version.", expectedVersion, response.getVersion());
+
+			try (Tx tx = tx()) {
 				assertEquals("Check old value", oldValue, getBooleanValue(container, FIELD_NAME));
-
 				container = node.getGraphFieldContainer("en");
 				oldValue = getBooleanValue(container, FIELD_NAME);
 				response = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(!flag));
@@ -106,15 +106,15 @@ public class BooleanFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		NodeResponse firstResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
+		String oldVersion = firstResponse.getVersion();
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, new BooleanFieldImpl());
+		assertThat(secondResponse.getFields().getBooleanField(FIELD_NAME)).as("Updated Field").isNull();
+		assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
+
+		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			NodeResponse firstResponse = updateNode(FIELD_NAME, new BooleanFieldImpl().setValue(true));
-			String oldVersion = firstResponse.getVersion();
-
-			NodeResponse secondResponse = updateNode(FIELD_NAME, new BooleanFieldImpl());
-			assertThat(secondResponse.getFields().getBooleanField(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(secondResponse.getVersion()).as("New version number").isNotEqualTo(oldVersion);
-
-			// Assert that the old version was not modified
 			Node node = folder("2015");
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());

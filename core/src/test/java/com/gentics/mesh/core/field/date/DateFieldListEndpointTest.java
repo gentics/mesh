@@ -122,23 +122,28 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
+		Node node = folder("2015");
 
-			List<List<String>> valueCombinations = Arrays.asList(Arrays.asList(toISO8601(1000L), toISO8601(2000L), toISO8601(3000L)),
-					Arrays.asList(toISO8601(3000L), toISO8601(2000L), toISO8601(1000L)), Collections.emptyList(),
-					Arrays.asList(toISO8601(471100L), toISO8601(81500L)), Arrays.asList(toISO8601(3000L)));
+		List<List<String>> valueCombinations = Arrays.asList(Arrays.asList(toISO8601(1000L), toISO8601(2000L), toISO8601(3000L)),
+				Arrays.asList(toISO8601(3000L), toISO8601(2000L), toISO8601(1000L)), Collections.emptyList(),
+				Arrays.asList(toISO8601(471100L), toISO8601(81500L)), Arrays.asList(toISO8601(3000L)));
 
-			for (int i = 0; i < 20; i++) {
-				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
-				List<Long> oldValue = getListValues(container, DateGraphFieldListImpl.class, FIELD_NAME);
+		for (int i = 0; i < 20; i++) {
+			DateFieldListImpl list = new DateFieldListImpl();
+			NodeGraphFieldContainer container;
+			List<Long> oldValue;
+			try (Tx tx = tx()) {
+				container = node.getGraphFieldContainer("en");
+				oldValue = getListValues(container, DateGraphFieldListImpl.class, FIELD_NAME);
 				List<String> newValue = valueCombinations.get(i % valueCombinations.size());
-
-				DateFieldListImpl list = new DateFieldListImpl();
 				for (String value : newValue) {
 					list.add(value);
 				}
-				NodeResponse response = updateNode(FIELD_NAME, list);
+			}
+
+			NodeResponse response = updateNode(FIELD_NAME, list);
+
+			try (Tx tx = tx()) {
 				DateFieldListImpl field = response.getFields().getDateFieldList(FIELD_NAME);
 				assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
 
@@ -154,21 +159,18 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 		NodeResponse secondResponse;
 		Node node = folder("2015");
 
-		try (Tx tx = tx()) {
-			DateFieldListImpl list = new DateFieldListImpl();
-			String dateA = toISO8601(42000L);
-			String dateB = toISO8601(41000L);
-			list.add(dateA);
-			list.add(dateB);
+		DateFieldListImpl list = new DateFieldListImpl();
+		String dateA = toISO8601(42000L);
+		String dateB = toISO8601(41000L);
+		list.add(dateA);
+		list.add(dateB);
 
-			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-			String oldVersion = firstResponse.getVersion();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
+		String oldVersion = firstResponse.getVersion();
 
-			secondResponse = updateNode(FIELD_NAME, null);
-			assertThat(secondResponse.getFields().getDateFieldList(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion());
-			tx.success();
-		}
+		secondResponse = updateNode(FIELD_NAME, null);
+		assertThat(secondResponse.getFields().getDateFieldList(FIELD_NAME)).as("Updated Field").isNull();
+		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion());
 
 		try (Tx tx = tx()) {
 			// Assert that the old version was not modified
@@ -189,28 +191,24 @@ public class DateFieldListEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (Tx tx = tx()) {
-			DateFieldListImpl list = new DateFieldListImpl();
-			String dateA = toISO8601(4200L);
-			String dateB = toISO8601(4100L);
-			list.add(dateA);
-			list.add(dateB);
+		DateFieldListImpl list = new DateFieldListImpl();
+		String dateA = toISO8601(4200L);
+		String dateB = toISO8601(4100L);
+		list.add(dateA);
+		list.add(dateB);
 
-			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-			String oldVersion = firstResponse.getVersion();
+		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
+		String oldVersion = firstResponse.getVersion();
 
-			DateFieldListImpl emptyField = new DateFieldListImpl();
-			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
-			assertThat(secondResponse.getFields().getDateFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
-			assertThat(secondResponse.getFields().getDateFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
-			assertThat(secondResponse.getVersion()).as("New version number should be generated").isNotEqualTo(oldVersion);
+		DateFieldListImpl emptyField = new DateFieldListImpl();
+		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
+		assertThat(secondResponse.getFields().getDateFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
+		assertThat(secondResponse.getFields().getDateFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
+		assertThat(secondResponse.getVersion()).as("New version number should be generated").isNotEqualTo(oldVersion);
 
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
-			assertThat(secondResponse.getVersion()).as("No new version number should be generated")
-					.isEqualTo(secondResponse.getVersion());
-		}
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(), secondResponse.getVersion());
+		assertThat(secondResponse.getVersion()).as("No new version number should be generated").isEqualTo(secondResponse.getVersion());
 	}
 
 }

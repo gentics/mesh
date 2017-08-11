@@ -64,10 +64,10 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
-			List<Node> targetNodes = Arrays.asList(folder("news"), folder("deals"));
-			for (int i = 0; i < 20; i++) {
+		Node node = folder("2015");
+		List<Node> targetNodes = Arrays.asList(folder("news"), folder("deals"));
+		for (int i = 0; i < 20; i++) {
+			try (Tx tx = tx()) {
 				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 				Node oldValue = getNodeValue(container, FIELD_NAME);
 
@@ -145,33 +145,34 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testUpdateNodeFieldWithNodeResponseJson() {
 		Node node = folder("news");
+		String nodeUuid = tx(() -> node.getUuid());
 		Node node2 = folder("deals");
+		String node2Uuid = tx(() -> node2.getUuid());
 		Node updatedNode = folder("2015");
+		String updatedNodeUuid = tx(() -> updatedNode.getUuid());
 
-		try (Tx tx = tx()) {
-			// Load the node so that we can use it to prepare the update request
-			NodeResponse loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
+		// Load the node so that we can use it to prepare the update request
+		NodeResponse loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().draft()));
+		// Update the field to point to node
+		NodeResponse response = updateNode(FIELD_NAME, loadedNode);
+		NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
+		assertEquals(nodeUuid, field.getUuid());
 
-			// Update the field to point to node
-			NodeResponse response = updateNode(FIELD_NAME, loadedNode);
-			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertEquals(node.getUuid(), field.getUuid());
+		loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNodeUuid, new NodeParametersImpl().setLanguages("en"),
+				new VersioningParametersImpl().draft()));
+		field = loadedNode.getFields().getNodeFieldExpanded(FIELD_NAME);
+		assertEquals(nodeUuid, field.getUuid());
 
-			loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParametersImpl().setLanguages("en"),
-					new VersioningParametersImpl().draft()));
-			field = loadedNode.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertEquals(node.getUuid(), field.getUuid());
+		// Update the field to point to node2
+		response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(node2Uuid));
+		field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
+		assertEquals(node2Uuid, field.getUuid());
 
-			// Update the field to point to node2
-			response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(node2.getUuid()));
-			field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertEquals(node2.getUuid(), field.getUuid());
+		loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNodeUuid, new NodeParametersImpl().setLanguages("en"),
+				new VersioningParametersImpl().draft()));
+		field = loadedNode.getFields().getNodeFieldExpanded("nodeField");
+		assertEquals(node2Uuid, field.getUuid());
 
-			loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParametersImpl().setLanguages("en"),
-					new VersioningParametersImpl().draft()));
-			field = loadedNode.getFields().getNodeFieldExpanded("nodeField");
-			assertEquals(node2.getUuid(), field.getUuid());
-		}
 	}
 
 	@Test

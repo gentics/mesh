@@ -5,6 +5,8 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
@@ -16,7 +18,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -26,15 +27,10 @@ import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
-
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.test.util.MeshAssert.latchFor;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeTagEndpointTest extends AbstractMeshTest {
@@ -54,31 +50,33 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testAddTagToNode() throws Exception {
+		Node node = folder("2015");
+		String nodeUuid = tx(() -> node.getUuid());
+		Tag tag = tag("red");
+		String tagUuid = tx(() -> tag.getUuid());
+
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
-			Tag tag = tag("red");
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
-
 			assertThat(dummySearchProvider()).recordedStoreEvents(0);
-			MeshResponse<NodeResponse> future = client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			assertThat(dummySearchProvider())
-					.as("Recorded store events after node update occured. Published and draft of the node should have been updated.")
-					.recordedStoreEvents(2);
-			// node-[:nodeUuid]-[draft/published]-[schemaname]-[schemaversion]-[release_uuid]
-			dummySearchProvider().getStoreEvents()
-					.containsKey("node-" + node.getUuid() + "-published-folder-1-" + project().getLatestRelease().getUuid());
-			dummySearchProvider().getStoreEvents()
-					.containsKey("node-" + node.getUuid() + "-draft-folder-1-" + project().getLatestRelease().getUuid());
+		}
 
-			NodeResponse restNode = call(() -> client().addTagToNode(PROJECT_NAME, node.getUuid(), tag.getUuid()));
+		call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
+		assertThat(dummySearchProvider())
+				.as("Recorded store events after node update occured. Published and draft of the node should have been updated.")
+				.recordedStoreEvents(2);
+		// node-[:nodeUuid]-[draft/published]-[schemaname]-[schemaversion]-[release_uuid]
+		dummySearchProvider().getStoreEvents().containsKey("node-" + nodeUuid + "-published-folder-1-" + initialReleaseUuid());
+		dummySearchProvider().getStoreEvents().containsKey("node-" + nodeUuid + "-draft-folder-1-" + initialReleaseUuid());
 
+		NodeResponse restNode = call(() -> client().addTagToNode(PROJECT_NAME, nodeUuid, tagUuid));
+
+		try (Tx tx = tx()) {
 			assertThat(restNode).contains(tag);
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
-
-			// TODO check for properties of the nested tag
 		}
+
+		// TODO check for properties of the nested tag
+
 	}
 
 	@Test
@@ -122,18 +120,22 @@ public class NodeTagEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveTagFromNode() throws Exception {
+		Node node = folder("2015");
+		Tag tag = tag("bike");
+		String nodeUuid = tx(() -> node.getUuid());
+		String tagUuid = tx(() -> tag.getUuid());
 		try (Tx tx = tx()) {
-			Node node = folder("2015");
-			Tag tag = tag("bike");
 			assertTrue(node.getTags(project().getLatestRelease()).contains(tag));
+		}
 
-			call(() -> client().removeTagFromNode(PROJECT_NAME, node.getUuid(), tag.getUuid()));
+		call(() -> client().removeTagFromNode(PROJECT_NAME, nodeUuid, tagUuid));
+		NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid));
 
-			NodeResponse restNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid()));
+		try (Tx tx = tx()) {
 			assertThat(restNode).contains(tag);
 			assertFalse(node.getTags(project().getLatestRelease()).contains(tag));
-			// TODO check for properties of the nested tag
 		}
+		// TODO check for properties of the nested tag
 	}
 
 	@Test

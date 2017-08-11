@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.field;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.List;
@@ -27,7 +27,7 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		NodeParametersImpl parameters = new NodeParametersImpl();
 		parameters.setLanguages("en");
 		parameters.setExpandedFieldNames(expandedFieldNames);
-		return call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, new VersioningParametersImpl().draft()));
+		return call(() -> client().findNodeByUuid(PROJECT_NAME, tx(() -> node.getUuid()), parameters, new VersioningParametersImpl().draft()));
 	}
 
 	protected void createNodeAndExpectFailure(String fieldKey, Field field, HttpResponseStatus status, String bodyMessageI18nKey,
@@ -85,10 +85,10 @@ public abstract class AbstractFieldEndpointTest extends AbstractMeshTest impleme
 		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
 		nodeUpdateRequest.setLanguage("en");
 		nodeUpdateRequest.getFields().put(fieldKey, field);
-		nodeUpdateRequest.setVersion(node.getLatestDraftFieldContainer(english()).getVersion().toString());
+		nodeUpdateRequest.setVersion(tx(() -> node.getLatestDraftFieldContainer(english()).getVersion().toString()));
 
-		call(() -> client().updateNode(PROJECT_NAME, node.getUuid(), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")), status,
-				bodyMessageI18nKey, i18nParams);
+		call(() -> client().updateNode(PROJECT_NAME, tx(() -> node.getUuid()), nodeUpdateRequest, new NodeParametersImpl().setLanguages("en")),
+				status, bodyMessageI18nKey, i18nParams);
 	}
 
 	/**

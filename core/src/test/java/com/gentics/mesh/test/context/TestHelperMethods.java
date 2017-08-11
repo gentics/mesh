@@ -389,9 +389,9 @@ public interface TestHelperMethods {
 	}
 
 	default public MeshRequest<NodeResponse> createNodeAsync(String fieldKey, Field field) {
-		Node parentNode = folder("2015");
+		String parentNodeUuid = tx(() -> folder("2015").getUuid());
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNode.getUuid()));
+		nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNodeUuid));
 		nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
 		nodeCreateRequest.setLanguage("en");
 		if (fieldKey != null) {

@@ -177,21 +177,19 @@ public class BinaryFieldEndpointTest extends AbstractFieldEndpointTest {
 
 	@Test
 	public void testUpdateSetEmptyFilename() {
-		try (Tx tx = tx()) {
-			// 1. Upload a binary field
-			String uuid = db().tx(() -> folder("2015").getUuid());
-			Buffer buffer = TestUtils.randomBuffer(1000);
-			VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
-			call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
-					"application/binary"));
+		String uuid = tx(() -> folder("2015").getUuid());
+		// 1. Upload a binary field
+		Buffer buffer = TestUtils.randomBuffer(1000);
+		VersionNumber version = db().tx(() -> folder("2015").getGraphFieldContainer("en").getVersion());
+		call(() -> client().updateNodeBinaryField(PROJECT_NAME, uuid, "en", version.toString(), FIELD_NAME, buffer, "filename.txt",
+				"application/binary"));
 
-			NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
-			assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
+		NodeResponse firstResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().setVersion("draft")));
+		assertEquals("filename.txt", firstResponse.getFields().getBinaryField(FIELD_NAME).getFileName());
 
-			// 2. Set the field to empty
-			updateNodeFailure(FIELD_NAME, new BinaryFieldImpl().setFileName(""), BAD_REQUEST, "field_binary_error_emptyfilename", FIELD_NAME);
-			updateNodeFailure(FIELD_NAME, new BinaryFieldImpl().setMimeType(""), BAD_REQUEST, "field_binary_error_emptymimetype", FIELD_NAME);
-		}
+		// 2. Set the field to empty
+		updateNodeFailure(FIELD_NAME, new BinaryFieldImpl().setFileName(""), BAD_REQUEST, "field_binary_error_emptyfilename", FIELD_NAME);
+		updateNodeFailure(FIELD_NAME, new BinaryFieldImpl().setMimeType(""), BAD_REQUEST, "field_binary_error_emptymimetype", FIELD_NAME);
 	}
 
 	@Override
