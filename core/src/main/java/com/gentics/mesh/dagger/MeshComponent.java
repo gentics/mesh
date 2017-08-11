@@ -12,6 +12,7 @@ import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.migration.micronode.MicronodeMigrationHandler;
+import com.gentics.mesh.core.verticle.migration.micronode.MicronodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.migration.release.ReleaseMigrationVerticle;
@@ -64,6 +65,8 @@ public interface MeshComponent {
 	MeshAuthHandler authenticationHandler();
 
 	NodeMigrationVerticle nodeMigrationVerticle();
+
+	MicronodeMigrationVerticle micronodeMigrationVerticle();
 
 	ReleaseMigrationVerticle releaseMigrationVerticle();
 

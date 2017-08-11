@@ -74,6 +74,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
 		vertx().deployVerticle(meshDagger().nodeMigrationVerticle(), options);
+		vertx().deployVerticle(meshDagger().micronodeMigrationVerticle(), options);
 	}
 
 	@Test
