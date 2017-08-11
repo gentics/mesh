@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_CREATED;
-import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_UPDATED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
@@ -19,7 +17,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.HandleElementAction;
@@ -73,20 +70,17 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Database database() {
-		return MeshInternal.get()
-				.database();
+		return MeshInternal.get().database();
 	}
 
 	@Override
 	public TagFamilyReference transformToReference() {
-		return new TagFamilyReference().setName(getName())
-				.setUuid(getUuid());
+		return new TagFamilyReference().setName(getName()).setUuid(getUuid());
 	}
 
 	@Override
 	public TagFamilyRoot getTagFamilyRoot() {
-		return in(HAS_TAG_FAMILY).has(TagFamilyRootImpl.class)
-				.nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
+		return in(HAS_TAG_FAMILY).has(TagFamilyRootImpl.class).nextOrDefaultExplicit(TagFamilyRootImpl.class, null);
 	}
 
 	@Override
@@ -116,8 +110,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Project getProject() {
-		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class)
-				.nextOrDefaultExplicit(ProjectImpl.class, null);
+		return out(ASSIGNED_TO_PROJECT).has(ProjectImpl.class).nextOrDefaultExplicit(ProjectImpl.class, null);
 	}
 
 	@Override
@@ -194,10 +187,8 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			throw error(BAD_REQUEST, "tagfamily_name_not_set");
 		}
 
-		TagFamily tagFamilyWithSameName = project.getTagFamilyRoot()
-				.findByName(newName);
-		if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid()
-				.equals(this.getUuid())) {
+		TagFamily tagFamilyWithSameName = project.getTagFamilyRoot().findByName(newName);
+		if (tagFamilyWithSameName != null && !tagFamilyWithSameName.getUuid().equals(this.getUuid())) {
 			throw conflict(tagFamilyWithSameName.getUuid(), newName, "tagfamily_conflicting_name", newName);
 		}
 		this.setName(newName);
@@ -219,23 +210,19 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	public void handleRelatedEntries(HandleElementAction action) {
 		for (Tag tag : findAll()) {
 			HandleContext context = new HandleContext();
-			context.setProjectUuid(tag.getProject()
-					.getUuid());
+			context.setProjectUuid(tag.getProject().getUuid());
 			action.call(tag, context);
 
 			// To prevent nodes from being handled multiple times
 			HashSet<String> handledNodes = new HashSet<>();
 
-			for (Release release : tag.getProject()
-					.getReleaseRoot()
-					.findAll()) {
+			for (Release release : tag.getProject().getReleaseRoot().findAll()) {
 				for (Node node : tag.getNodes(release)) {
 					if (!handledNodes.contains(node.getUuid())) {
 						handledNodes.add(node.getUuid());
 						HandleContext nodeContext = new HandleContext();
 						context.setReleaseUuid(release.getUuid());
-						context.setProjectUuid(node.getProject()
-								.getUuid());
+						context.setProjectUuid(node.getProject().getUuid());
 						action.call(node, nodeContext);
 					}
 				}
@@ -292,10 +279,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public Tag findByName(String name) {
-		return out(getRootLabel()).mark()
-				.has(TagImpl.TAG_VALUE_KEY, name)
-				.back()
-				.nextOrDefaultExplicit(TagImpl.class, null);
+		return out(getRootLabel()).mark().has(TagImpl.TAG_VALUE_KEY, name).back().nextOrDefaultExplicit(TagImpl.class, null);
 	}
 
 	@Override
@@ -309,28 +293,13 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		tag.setProject(project);
 
 		// Add the tag to the global tag root
-		MeshInternal.get()
-				.boot()
-				.meshRoot()
-				.getTagRoot()
-				.addTag(tag);
+		MeshInternal.get().boot().meshRoot().getTagRoot().addTag(tag);
 		// And to the tag family
 		addTag(tag);
 
 		// Set the tag family for the tag
 		tag.setTagFamily(this);
 		return tag;
-	}
-	
-	
-	@Override
-	public void onUpdated() {
-		Mesh.vertx().eventBus().publish(EVENT_TAG_FAMILY_UPDATED, getUuid());
-	}
-
-	@Override
-	public void onCreated() {
-		Mesh.vertx().eventBus().publish(EVENT_TAG_FAMILY_CREATED, getUuid());
 	}
 
 }

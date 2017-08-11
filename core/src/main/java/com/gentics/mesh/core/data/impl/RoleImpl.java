@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.Events.EVENT_ROLE_CREATED;
-import static com.gentics.mesh.Events.EVENT_ROLE_UPDATED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
@@ -12,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -188,16 +185,6 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 		return db.operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
-	}
-
-	@Override
-	public void onUpdated() {
-		Mesh.vertx().eventBus().publish(EVENT_ROLE_UPDATED, getUuid());
-	}
-
-	@Override
-	public void onCreated() {
-		Mesh.vertx().eventBus().publish(EVENT_ROLE_CREATED, getUuid());
 	}
 
 }

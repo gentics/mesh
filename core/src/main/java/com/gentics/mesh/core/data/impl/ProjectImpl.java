@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.Events.EVENT_PROJECT_CREATED;
-import static com.gentics.mesh.Events.EVENT_PROJECT_UPDATED;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
@@ -59,7 +57,6 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
 
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
@@ -340,26 +337,4 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		});
 	}
 
-	@Override
-	public void onUpdated() {
-		JsonObject json = new JsonObject();
-		json.put("name", getName());
-		json.put("uuid", getUuid());
-		Mesh.vertx().eventBus().publish(EVENT_PROJECT_UPDATED, json);
-		if (log.isDebugEnabled()) {
-			log.debug("Project update event sent.");
-		}
-	}
-
-	@Override
-	public void onCreated() {
-		String name = getName();
-		JsonObject json = new JsonObject();
-		json.put("name", name);
-		json.put("uuid", getUuid());
-		Mesh.vertx().eventBus().publish(EVENT_PROJECT_CREATED, json);
-		if (log.isDebugEnabled()) {
-			log.debug("Project create event sent.");
-		}
-	}
 }

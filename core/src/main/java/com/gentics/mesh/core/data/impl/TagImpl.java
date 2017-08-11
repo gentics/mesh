@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.Events.EVENT_TAG_CREATED;
-import static com.gentics.mesh.Events.EVENT_TAG_UPDATED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
@@ -18,7 +16,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Arrays;
 import java.util.List;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.HandleContext;
@@ -249,13 +246,4 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		});
 	}
 
-	@Override
-	public void onUpdated() {
-		Mesh.vertx().eventBus().publish(EVENT_TAG_UPDATED, getUuid());
-	}
-
-	@Override
-	public void onCreated() {
-		Mesh.vertx().eventBus().publish(EVENT_TAG_CREATED, getUuid());
-	}
 }

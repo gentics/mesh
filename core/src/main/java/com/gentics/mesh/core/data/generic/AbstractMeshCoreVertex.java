@@ -11,6 +11,7 @@ import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -19,6 +20,7 @@ import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.dagger.MeshInternal;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -107,12 +109,34 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 
 	@Override
 	public void onUpdated() {
-		Mesh.vertx().eventBus().publish(getTypeInfo().getOnUpdatedAddress(), getUuid());
+		String address = getTypeInfo().getOnUpdatedAddress();
+		if (address != null) {
+			JsonObject json = new JsonObject();
+			if (this instanceof NamedElement) {
+				json.put("name", ((NamedElement) this).getName());
+			}
+			json.put("uuid", getUuid());
+			Mesh.vertx().eventBus().publish(address, json);
+			if (log.isDebugEnabled()) {
+				log.debug("Updated event sent {" + address + "}");
+			}
+		}
 	}
 
 	@Override
 	public void onCreated() {
-		Mesh.vertx().eventBus().publish(getTypeInfo().getOnCreatedAddress(), getUuid());
+		String address = getTypeInfo().getOnCreatedAddress();
+		if (address != null) {
+			JsonObject json = new JsonObject();
+			if (this instanceof NamedElement) {
+				json.put("name", ((NamedElement) this).getName());
+			}
+			json.put("uuid", getUuid());
+			Mesh.vertx().eventBus().publish(address, json);
+			if (log.isDebugEnabled()) {
+				log.debug("Created event sent {" + address + "}");
+			}
+		}
 	}
 
 }

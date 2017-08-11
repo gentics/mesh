@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.Events.EVENT_USER_CREATED;
-import static com.gentics.mesh.Events.EVENT_USER_UPDATED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
@@ -28,7 +26,6 @@ import java.util.Set;
 import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.ContainerType;
@@ -579,16 +576,6 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 		return db.operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
-	}
-
-	@Override
-	public void onUpdated() {
-		Mesh.vertx().eventBus().publish(EVENT_USER_UPDATED, getUuid());
-	}
-
-	@Override
-	public void onCreated() {
-		Mesh.vertx().eventBus().publish(EVENT_USER_CREATED, getUuid());
 	}
 
 }

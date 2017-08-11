@@ -1,5 +1,8 @@
 package com.gentics.mesh.core;
 
+/**
+ * Container for type specific meta information.
+ */
 public class TypeInfo {
 
 	private String type;
@@ -14,18 +17,38 @@ public class TypeInfo {
 		this.onDeletedAddress = onDeletedAddress;
 	}
 
+	/**
+	 * Return the type identifier.
+	 * 
+	 * @return
+	 */
 	public String getType() {
 		return type;
 	}
 
+	/**
+	 * Return the onCreated eventbus address.
+	 * 
+	 * @return
+	 */
 	public String getOnCreatedAddress() {
 		return onCreatedAddress;
 	}
 
+	/**
+	 * Return the onDeleted eventbus address.
+	 * 
+	 * @return
+	 */
 	public String getOnDeletedAddress() {
 		return onDeletedAddress;
 	}
 
+	/**
+	 * Return the onUpdated eventbus address.
+	 * 
+	 * @return
+	 */
 	public String getOnUpdatedAddress() {
 		return onUpdatedAddress;
 	}

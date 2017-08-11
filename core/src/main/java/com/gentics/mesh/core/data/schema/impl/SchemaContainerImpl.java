@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.schema.impl;
 
-import static com.gentics.mesh.Events.EVENT_SCHEMA_CREATED;
-import static com.gentics.mesh.Events.EVENT_SCHEMA_UPDATED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
@@ -11,7 +9,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.util.List;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -96,16 +93,6 @@ public class SchemaContainerImpl
 	@Override
 	public User getEditor() {
 		return out(HAS_EDITOR).nextOrDefaultExplicit(UserImpl.class, null);
-	}
-
-	@Override
-	public void onUpdated() {
-		Mesh.vertx().eventBus().publish(EVENT_SCHEMA_UPDATED, getUuid());
-	}
-
-	@Override
-	public void onCreated() {
-		Mesh.vertx().eventBus().publish(EVENT_SCHEMA_CREATED, getUuid());
 	}
 
 }

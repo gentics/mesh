@@ -3,7 +3,6 @@ package com.gentics.mesh.core.data.impl;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -95,15 +94,4 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
-
-	@Override
-	public void onCreated() {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public void onUpdated() {
-		// TODO Auto-generated method stub
-	}
-
 }

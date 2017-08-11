@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.impl;
 
-import static com.gentics.mesh.Events.EVENT_GROUP_CREATED;
-import static com.gentics.mesh.Events.EVENT_GROUP_UPDATED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_ROLE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
@@ -16,7 +14,6 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.List;
 import java.util.Set;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -244,13 +241,4 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 		});
 	}
 
-	@Override
-	public void onCreated() {
-		Mesh.vertx().eventBus().publish(EVENT_GROUP_CREATED, getUuid());
-	}
-
-	@Override
-	public void onUpdated() {
-		Mesh.vertx().eventBus().publish(EVENT_GROUP_UPDATED, getUuid());
-	}
 }
