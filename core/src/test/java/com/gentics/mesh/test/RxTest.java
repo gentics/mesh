@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.util.RxUtil;
 
 import io.vertx.rxjava.core.Vertx;
@@ -70,7 +69,7 @@ public class RxTest {
 
 	@Test
 	public void testRXFs() {
-		Vertx rxVertx = Vertx.newInstance(Mesh.vertx());
+		Vertx rxVertx = Vertx.newInstance(io.vertx.core.Vertx.vertx());
 		FileSystem fileSystem = rxVertx.fileSystem();
 		fileSystem.rxExists("/tmp").doOnError(error -> {
 			System.out.println("errör");

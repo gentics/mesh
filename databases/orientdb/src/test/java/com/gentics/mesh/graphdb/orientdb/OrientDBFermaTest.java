@@ -8,6 +8,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Group;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
@@ -29,7 +30,10 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 
 	@Before
 	public void setup() throws Exception {
-		db.init(null, "com.gentics.mesh.graphdb.orientdb.graph");
+		MeshOptions options = new MeshOptions();
+		options.getStorageOptions().setDirectory(null);
+		db.init(options, "com.gentics.mesh.graphdb.orientdb.graph");
+		db.setupConnectionPool();
 	}
 
 	@Test

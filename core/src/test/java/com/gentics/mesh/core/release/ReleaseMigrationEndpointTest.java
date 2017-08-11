@@ -55,43 +55,46 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		Release newRelease;
 		List<? extends Node> nodes;
 		List<? extends Node> published;
+		Project project = project();
 
 		try (Tx tx = tx()) {
-			Project project = project();
 			assertThat(project.getInitialRelease().isMigrated()).as("Initial release migration status").isEqualTo(true);
+		}
 
-			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
+		call(() -> client().takeNodeOffline(PROJECT_NAME, tx(() -> project().getBaseNode().getUuid()),
+				new PublishParametersImpl().setRecursive(true)));
 
-			published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
+		published = Arrays.asList(folder("news"), folder("2015"), folder("2014"), folder("march"));
+		try (Tx tx = tx()) {
 			nodes = project.getNodeRoot().findAll().stream().filter(node -> node.getParentNode(project.getLatestRelease().getUuid()) != null)
 					.collect(Collectors.toList());
-
 			assertThat(nodes).as("Nodes list").isNotEmpty();
+		}
 
-			// publish some nodes
-			published.forEach(node -> {
-				call(() -> client().publishNode(project.getName(), node.getUuid()));
-			});
+		// publish some nodes
+		published.forEach(node -> {
+			call(() -> client().publishNode(PROJECT_NAME, tx(() -> node.getUuid())));
+		});
 
+		try (Tx tx = tx()) {
 			newRelease = project.getReleaseRoot().create("newrelease", user());
 			assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(false);
 			tx.success();
 		}
-		try (Tx tx = tx()) {
-
-			nodes.forEach(node -> {
-				Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
-					assertThat(node.getGraphFieldContainers(newRelease, type)).as(type + " Field Containers before Migration").isNotNull().isEmpty();
-				});
+		nodes.forEach(node -> {
+			Arrays.asList(ContainerType.INITIAL, ContainerType.DRAFT, ContainerType.PUBLISHED).forEach(type -> {
+				assertThat(tx(() -> node.getGraphFieldContainers(newRelease, type))).as(type + " Field Containers before Migration").isNotNull()
+						.isEmpty();
 			});
+		});
+		CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(projectUuid(), tx(() -> newRelease.getUuid()));
 
-			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(projectUuid(), newRelease.getUuid());
+		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+		if (result.cause() != null) {
+			throw result.cause();
+		}
 
-			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
-			if (result.cause() != null) {
-				throw result.cause();
-			}
-
+		try (Tx tx = tx()) {
 			assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(true);
 
 			nodes.forEach(node -> {
