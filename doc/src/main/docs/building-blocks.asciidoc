@@ -13,6 +13,7 @@ You will learn:
 == Project
 
 In Gentics Mesh a *project* is the place to organize all the contents and media assets for a given project, e.g. a product catalogue website, your blog, your company intranet, an e-commerce website, a social community app - you name it. You can create as many projects as you would like.
+//TODO Recommendation about number of projects per instance
 
 A project represents the base element of your content structure, which includes your actual content items called nodes as well as tag families. The tags for tagging content items are grouped in tag families and are defined for a specific project. Schemas are assigned to projects in order to specify what types of nodes can be created. Users have access to a project and its contained content items depending on the role(s) they’ve been assigned.
 
@@ -22,7 +23,6 @@ TIP: Gentics Mesh creates a root or base node for each project. As you will lear
 
 [options="header",cols="2*"]
 |======
-//TODO add links and example columns
 
 | Description
 | API endpoint
@@ -44,16 +44,6 @@ TIP: Gentics Mesh creates a root or base node for each project. As you will lear
 
 |======
 
-=== Query Parameters
-
-==== Paging Parameters
-
-include::examples/tables/PagingParametersImpl.adoc[]
-
-==== Role Permission Parameters
-
-include::examples/tables/RolePermissionParametersImpl.adoc[]
-
 === Response Sample
 
 [source,json]
@@ -63,13 +53,13 @@ include::examples/api/response/api/v1/projects/\{projectUuid\}/200/example.json[
 
 == Node
 
-Content items in Gentics Mesh are called *nodes* and represent the main structural building blocks for your content. A node is a specific piece of content within your project. The type of a node is always defined by the assigned schema. For example in product catalogue website you would create content types like product, product categories, product images, and product manuals.
+Content items in Gentics Mesh are called *nodes* and represent the main structural building blocks for your content. A node is a specific piece of content within your project. The type of a node is always defined by the assigned schema. For example, in a product catalogue website you would create content types like product, product categories, product images, and product manuals.
 
 NOTE: In Gentics Mesh every content item is a node, there is no separate concept for media assets such as images, videos, and documents. Instead content types for them can be defined individually giving you the freedom to store any metadata with your assets. For your convenience Gentics Mesh is shipped with four default schemas - _image_, _video_, _audio_ and _document_ to be customized to your needs and liking!
 
 Nodes can be hierarchically structured if the schema is allowing this. They can be tagged by any number of tags. Furthermore, nodes can be translated into other languages, thus supporting multiple locales.
 
-NOTE: It is important to understand that a node is just a container for language variants. These language variants will store your fields. You can query individual language variants by appending the ```?lang``` query parameter. The ```language``` json property within an update or create request will be used to identify which language variant should be created or updated.
+NOTE: It is important to understand that a node is just a container for language variants. These language variants will store the actual fields. You can query individual language variants by appending the ```?lang``` query parameter. The ```language``` json property within an update or create request will be used to identify which language variant should be created or updated.
 
 === API endpoints
 [options="header",cols="2*"]
@@ -140,23 +130,6 @@ NOTE: It is important to understand that a node is just a container for language
 
 |======
 
-=== Query Parameters
-
-==== Versioning Parameters
-
-include::examples/tables/VersioningParametersImpl.adoc[]
-
-===== Paging Parameters
-
-include::examples/tables/PagingParametersImpl.adoc[]
-
-===== Node Parameters
-
-include::examples/tables/NodeParametersImpl.adoc[]
-
-===== Role Permission Parameters
-
-include::examples/tables/RolePermissionParametersImpl.adoc[]
 
 === Response Sample
 
@@ -167,7 +140,7 @@ include::examples/api/response/api/v1/\{project\}/nodes/\{nodeUuid\}/200/example
 
 == Schema
 
-Typically, each project will require a set of different content types. Together they can be considered the content model of your project. Staying with the example of a product catalogue website: a product, product category, product image, and product manual each represent a separate content type. In Gentics Mesh, a *schema* is used to define such content types in terms of a couple of standard fields (e.g. ```uuid```, ```name```, ```description```, ```version```, etc.) and an arbitrary number of custom fields (e.g., ```string```, ```number```, ```HTML```, ```date```, ```binary```, ```list```, ```node```, ```micronode```, ```boolean```). You can think of a schema as a blueprint for new content items.
+Typically, each project will require a set of different content types. Together they can be considered the content model of your project. Staying with the example of a product catalogue website: a product, product category, product image, and product manual each represent a separate content type. In Gentics Mesh, a *schema* is used to define such content types in terms of a couple of standard fields (e.g. ```uuid```, ```name```, ```description```, ```version```, etc.) and an arbitrary number of custom fields. Available <<Schema Field Types,field types>> are  ```string```, ```number```, ```HTML```, ```date```, ```binary```, ```list```, ```node```, ```micronode```, ```boolean```. You can think of a schema as a blueprint for new content items.
 
 TIP: Using the ```container``` property, a schema can be configured to allow for hierarchically structuring nodes. Nodes based on a such a schema may contain child nodes. This is the basis for building link:features.html#_contenttrees[content trees] in Gentics Mesh and leveraging the power of automatic link:features.html#_navigation[navigation menus], link:features.html#_breadcrumbs[breadcrumbs] and link:features.html#_prettyurls[pretty URLs].
 
@@ -202,16 +175,6 @@ TIP: Using the ```container``` property, a schema can be configured to allow for
 
 |======
 
-=== Query Parameters
-
-===== Paging Parameters
-
-include::examples/tables/PagingParametersImpl.adoc[]
-
-===== Role Permission Parameters
-
-include::examples/tables/RolePermissionParametersImpl.adoc[]
-
 === Response Sample
 
 [source,json]
@@ -223,13 +186,13 @@ include::examples/api/response/api/v1/schemas/\{schemaUuid\}/200/example.json[]
 
 Gentics Mesh allows you to define custom content types with a set of schema fields. A field is defined by an object which must have the following properties:
 
-* **`name`** A unique name to identify the field
+* **`name`** A unique name to identify the field.
 * **`type`** The type of data to be stored in this field.
 
 The following optional properties may be applied to any type of field:
 
 * **`required`** If `true`, this field may not be left empty.
-* **`label`** A human-readable label for the field to be used as a form label in the Gentics Mesh User Interface. If not defined, the "name" field would be used.
+* **`label`** A human-readable label for the field to be used as a form label in the Gentics Mesh User Interface. If not defined, the ```name``` field would be used.
 
 In addition to the above, certain types expose additional properties with which to configure the field. Such additional
 properties are defined in the <<Schema Field Types>> section.
@@ -246,13 +209,13 @@ properties are defined in the <<Schema Field Types>> section.
 | Validations
 
 | ```string```
-| A string field type is used for textual content, like title, names or paragraphs of text.
+| A ```string``` field type is used for textual content, like title, names or paragraphs of text.
 | The ```required``` property indicates if the field is mandatory or not.
 
 The optional ```allow``` property acts as a whitelist for allowed field values.
 
 | ```number```
-| The number field type is used for whole and decimal numbers.
+| The ```number``` field type is used for whole and decimal numbers.
 | The ```required``` property indicates if the field is mandatory or not.
 
 The optional ```min``` property specifies the lowest permitted value.
@@ -262,32 +225,32 @@ The optional ```max``` property represents the greatest permitted value.
 The optional ```step``` property allows specifying the size of the permitted increment in value.
 
 | ```date```
-| The date field type stores a date as ISO8601 formatted date string.
+| The ```date``` field type stores a date as ISO8601 formatted date string.
 | The ```required``` property indicates if the field is mandatory or not.
 
 
 | ```boolean```
-| The boolean field type doesn’t have any specific configuration settings.
+| The ```boolean``` field type doesn’t have any specific configuration settings.
 | The ```required``` property indicates if the field is mandatory or not.
 
 | ```html```
-| The html field type stores HTML data.
+| The ```html``` field type stores HTML data.
 | The ```required``` property indicates if the field is mandatory or not.
 
 | ```micronode```
-| A micronode field type stores a single micronode. A micronode is similar to a node. Typically they do not exist on their own but are tied to their (parent) node, e.g. an image with caption to be used in a blogpost node. For a detailed description see our definition of <<micronode>>.
+| A ```micronode``` field type stores a single micronode. A micronode is similar to a node. Typically they do not exist on their own but are tied to their (parent) node, e.g. an image with caption to be used in a blogpost node. For a detailed description see our definition of <<micronode>>.
 | The ```required``` property indicates if the field is mandatory or not.
 
-A micronode field type must have an ```allow``` property that acts as a whitelist for allowed microschemas.  If allow is an empty array, any type of micronode may be used.
+A ```micronode``` field type must have an ```allow``` property that acts as a whitelist for allowed microschemas.  If allow is an empty array, any type of micronode may be used.
 
 | ```node```
-| A node field type is used to specify a structural relationship between nodes. This kind of reference represents a 1:1 relationship.
+| A ```node``` field type is used to specify a structural relationship between nodes. This kind of reference represents a 1:1 relationship.
 | The ```required``` property indicates if the field is mandatory or not.
 
-A node field type must have an ```allow``` property, which acts as a whitelist for schemas which may be used. If allow is an empty array, any type of node may be used.
+A ```node``` field type must have an ```allow``` property, which acts as a whitelist for schemas which may be used. If allow is an empty array, any type of node may be used.
 
 | ```list```
-| A list field type allows for specifying a list with elements on the basis of other field types and thus represents a powerful mechanism for building your content model:
+| A ```list``` field type allows for specifying a list with elements on the basis of other field types and thus represents a powerful mechanism for building your content model:
 
 (1) Within a node you can have simple lists of arbitrary length. The ```listType``` property then has to be of type ```string```, ```number```, ```date```, ```boolean```, or ```HTML```. E.g. handling your recipe nodes of your food blog will be a breeze with string-typed lists for ingredients.
 
@@ -296,11 +259,11 @@ A node field type must have an ```allow``` property, which acts as a whitelist f
 (3) Furthermore, a ```list``` field type can be used to specify a structural relationship between nodes. In this case, the ```listType``` property has to be of type ```node```. This kind of reference represents a 1:n relationship. E.g., in your movie database app, you might want to list all actors of a movie.
 | The ```required``` property indicates if the field is mandatory or not.
 
-A micronode/node listType must have an ```allow property```, which acts as a whitelist for microschemas/schemas which may be used. If allow is an empty array, any type of node may be used.
+A ```micronode```/```node``` listType must have an ```allow property```, which acts as a whitelist for microschemas/schemas which may be used. If allow is an empty array, any type of node may be used.
 
 | ```binary```
 | The binary field type is used to store binary data, e.g., image, video, audio and documents.
-Depending on the actual data, Gentics Mesh will store related meta data e.g., ```fileName```, ```fileSize```, ```mimeType```, ```sha512sum``` and for images specifically ```width```, ```height```, and ```dominant Color```. Gentics Mesh will set values for all meta data properties automatically when uploading an image. The meta data properties mimeType, dominantColor and fileName can be changed on subsequent update requests.
+Depending on the actual data, Gentics Mesh will store related meta data e.g., ```fileName```, ```fileSize```, ```mimeType```, ```sha512sum``` and for images specifically ```width```, ```height```, and ```dominantColor```. Gentics Mesh will set values for all meta data properties automatically when uploading an image. The meta data properties ```mimeType```, ```dominantColor``` and ```fileName``` can be changed on subsequent update requests.
 | The ```required``` property indicates if the field is mandatory or not.
 
 |======
@@ -462,7 +425,9 @@ include::examples/api/response/api/v1/\{project\}/tagFamilies/\{tagFamilyUuid\}/
 == User
 
 Gentics Mesh *users* can be physical persons or client apps interacting with elements in Gentics Mesh. Both have a user object counterpart in Gentics Mesh.
-This user object has a standard set of properties, e.g.```firstname```, ```lastname```, ```username```, and ```emailAddress``` , which can be extended by referencing a custom user object. The property ```nodeReference``` is used for storing additional user-related data, thus allowing for extensible user profiles.
+This user object has a standard set of properties, e.g.```firstname```, ```lastname```, ```username```, and ```emailAddress``` , which can be extended by referencing a custom user object. 
+
+TIP: Gentics Mesh supports *user management for your apps*! The property ```nodeReference``` is used for storing additional user-related data based on a schema you define, thus allowing for extensible user profiles.
 
 In order to be able to store and retrieve content, a user needs to authenticate using one of the available link:references.html#_authentication[authentication] mechanisms.
 
@@ -502,28 +467,6 @@ In order to be able to store and retrieve content, a user needs to authenticate 
 | link:++raml#users__userUuid__token_delete++[```DELETE /api/v1/users/:userUuid/token```]
 
 |======
-
-=== Query Parameters
-
-==== Paging Parameters
-
-include::examples/tables/PagingParametersImpl.adoc[]
-
-==== Role Permission Parameters
-
-include::examples/tables/RolePermissionParametersImpl.adoc[]
-
-==== Node Parameters
-
-Parameters which affect the optional returned user ```nodeReference``` property.
-
-include::examples/tables/NodeParametersImpl.adoc[]
-
-include::examples/tables/VersioningParametersImpl.adoc[]
-
-==== User Parameters
-
-include::examples/tables/UserParametersImpl.adoc[]
 
 === Response Sample
 
@@ -578,16 +521,6 @@ include::examples/api/response/api/v1/users/\{userUuid\}/200/example.json[]
 | link:++raml#groups__groupUuid__users__userUuid__delete++[```DELETE /api/v1/group/:groupUuid/users/:userUuid```]
 |======
 
-=== Query Parameters
-
-==== Paging Parameters
-
-include::examples/tables/PagingParametersImpl.adoc[]
-
-==== Role Permission Parameters
-
-include::examples/tables/RolePermissionParametersImpl.adoc[]
-
 === Response Sample
 
 [source,json]
@@ -630,16 +563,6 @@ include::examples/api/response/api/v1/groups/\{groupUuid\}/200/example.json[]
 | Set role permissions on elements
 | link:++raml#roles__roleUuid__permissions__path__post++[```POST /api/v1/roles/:roleUuid/permissions/:path```]
 |======
-
-=== Query Parameters
-
-==== Paging Parameters
-
-include::examples/tables/PagingParametersImpl.adoc[]
-
-==== Role Permission Parameters
-
-include::examples/tables/RolePermissionParametersImpl.adoc[]
 
 === Response Sample
 
