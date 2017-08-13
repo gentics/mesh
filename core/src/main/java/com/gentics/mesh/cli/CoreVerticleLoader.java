@@ -46,9 +46,8 @@ public class CoreVerticleLoader {
 	 * Load verticles that are configured within the mesh configuration.
 	 * 
 	 * @param configuration
-	 * @throws InterruptedException
 	 */
-	public void loadVerticles(MeshOptions configuration) throws InterruptedException {
+	public void loadVerticles(MeshOptions configuration) {
 		JsonObject defaultConfig = new JsonObject();
 		defaultConfig.put("port", configuration.getHttpServerOptions().getPort());
 
@@ -57,9 +56,8 @@ public class CoreVerticleLoader {
 				if (log.isInfoEnabled()) {
 					log.info("Loading mandatory verticle {" + verticle.getClass().getName() + "}.");
 				}
-				// TODO handle custom config? i assume we will not allow this
 				deployAndWait(Mesh.vertx(), defaultConfig, verticle, false);
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
 			}
 		}
@@ -69,9 +67,8 @@ public class CoreVerticleLoader {
 				if (log.isInfoEnabled()) {
 					log.info("Loading mandatory verticle {" + verticle.getClass().getName() + "}.");
 				}
-				// TODO handle custom config? i assume we will not allow this
 				deployAndWait(Mesh.vertx(), defaultConfig, verticle, true);
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 				log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
 			}
 		}
