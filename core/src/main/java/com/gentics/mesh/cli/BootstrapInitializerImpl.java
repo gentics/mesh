@@ -254,7 +254,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// handles the clustering.
 				db.setupConnectionPool();
 				initLocalData();
+				//db.closeConnectionPool();
 				db.startServer();
+				//db.setupConnectionPool();
 				initVertx(options, isClustered);
 			} else {
 				// We need to wait for other nodes and receive the graphdb

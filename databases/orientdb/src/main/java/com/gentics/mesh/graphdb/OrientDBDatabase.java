@@ -61,6 +61,7 @@ import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
+import com.orientechnologies.orient.enterprise.channel.binary.ODistributedRedirectException;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager;
@@ -217,6 +218,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 		} else {
 			factory = new OrientGraphFactory("plocal:" + new File(storageOptions.getDirectory(), DB_NAME).getAbsolutePath()).setupPool(5, 100);
 		}
+	}
+
+	@Override
+	public void closeConnectionPool() {
+		factory.close();
+		Orient.instance().shutdown();
 	}
 
 	/**
@@ -718,12 +725,25 @@ public class OrientDBDatabase extends AbstractDatabase {
 				handlerResult = txHandler.handle(tx);
 				handlerFinished = true;
 				tx.success();
+			} catch (ODistributedRedirectException e) {
+				// https://www.prjhub.com/#/issues/8978
+				log.warn("Caught OrientDB redirection exception. The excption will be handled internally by the orientDB server.", e);
+//				
+//				// Reset previous result
+//				try {
+//					// Delay the retry by 50ms to give the other transaction a chance to finish
+//					Thread.sleep(50 + (retry * 5));
+//				} catch (InterruptedException e1) {
+//					e1.printStackTrace();
+//				}
+//				handlerFinished = false;
+//				handlerResult = null;
 			} catch (OSchemaException e) {
 				log.error("OrientDB schema exception detected.");
 				// TODO maybe we should invoke a metadata getschema reload?
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
-			} catch (OConcurrentModificationException e) {
+			} catch (OConcurrentModificationException  e) {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}

@@ -44,6 +44,11 @@ public interface Database extends TxFactory {
 	void setupConnectionPool() throws Exception;
 
 	/**
+	 * Close the pool and thus stop the graph database.
+	 */
+	void closeConnectionPool();
+
+	/**
 	 * Shortcut for stop/start. This will also drop the graph database.
 	 * 
 	 * @throws Exception

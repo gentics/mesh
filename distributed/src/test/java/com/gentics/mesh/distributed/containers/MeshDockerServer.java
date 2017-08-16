@@ -230,11 +230,8 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		// TODO Add an automatic shutdown timer to prevent dangling docker containers
 		StringBuilder builder = new StringBuilder();
 		builder.append("#!/bin/sh\n");
-		// builder.append("echo java -cp " + classpath + " com.gentics.mesh.server.ServerRunner -nodeName $NODENAME $MESHARGS\n");
 		builder.append("java $JAVAOPTS -cp " + classpath
 				+ " com.gentics.mesh.server.ServerRunner -nodeName $NODENAME -clusterName $CLUSTERNAME $MESHARGS\n");
-		// builder.append("java -Dfile.encoding=UTF-8 -classpath
-		// com.gentics.mesh.server.ServerRunner -nodeName $NODENAME $MESHARGS\n");
 		builder.append("\n\n");
 		return builder.toString();
 	}
@@ -271,7 +268,6 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		if (!TestEnvironment.dockerExecutionDriverSupportsExec()) {
 			// at time of writing, this is the expected result in CircleCI.
 			throw new UnsupportedOperationException("Your docker daemon is running the \"lxc\" driver, which doesn't support \"docker exec\".");
-
 		}
 
 		if (!isRunning()) {
@@ -282,7 +278,9 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 		logger().debug("Running \"exec\" command: " + String.join(" ", command));
 		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId).withAttachStdout(true).withAttachStderr(true)
-				.withUser("root").withPrivileged(true).withCmd(command).exec();
+				.withUser("root")
+				//.withPrivileged(true)
+				.withCmd(command).exec();
 
 		final ToStringConsumer stdoutConsumer = new ToStringConsumer();
 		final ToStringConsumer stderrConsumer = new ToStringConsumer();

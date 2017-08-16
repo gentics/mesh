@@ -47,6 +47,11 @@ public abstract class AbstractClusterTest {
 		return response;
 	}
 
+	/**
+	 * Generate a random string with the prefix "random"
+	 * 
+	 * @return
+	 */
 	protected String randomName() {
 		return "random" + System.currentTimeMillis();
 	}
