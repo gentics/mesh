@@ -9,7 +9,11 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -21,10 +25,14 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
+import com.gentics.mesh.util.VersionUtil;
+
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
@@ -142,15 +150,26 @@ public class MeshImpl implements Mesh {
 
 	/**
 	 * Send a request to the update checker.
+	 * 
+	 * @return Latest version of Gentics Mesh which is currently released.
 	 */
-	public void invokeUpdateCheck() {
+	public String invokeUpdateCheck() {
+		String currentVersion = Mesh.getPlainVersion();
 		log.info("Checking for updates..");
-
-		HttpClientRequest request = Mesh.vertx().createHttpClient().get("updates.getmesh.io", "/api/updatecheck?v=" + Mesh.getPlainVersion(), rh -> {
-			rh.bodyHandler(bh -> {
-				// JsonObject info = bh.toJsonObject();
-			});
-		});
+		CompletableFuture<JsonObject> fut = new CompletableFuture<>();
+		HttpClientRequest request = Mesh.vertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false)).get(443, "getmesh.io",
+				"/api/updatecheck?v=" + Mesh.getPlainVersion(), rh -> {
+					int code = rh.statusCode();
+					if (code < 200 || code >= 299) {
+						log.error("Update check failed with status code {" + code + "}");
+						fut.complete(null);
+					} else {
+						rh.bodyHandler(bh -> {
+							JsonObject info = bh.toJsonObject();
+							fut.complete(info);
+						});
+					}
+				});
 
 		MultiMap headers = request.headers();
 		headers.set("content-type", "application/json");
@@ -159,6 +178,28 @@ public class MeshImpl implements Mesh {
 			headers.set("X-Hostname", hostname);
 		}
 		request.end();
+		try {
+			JsonObject info = fut.get(1, TimeUnit.SECONDS);
+			String latestVersion = info.getString("latest");
+
+			if (currentVersion.contains("-SNAPSHOT")) {
+				log.warn("You are using a SNAPSHOT version {" + currentVersion
+						+ "}. This is potentially dangerous because this version has never been officially released.");
+				log.info("The latest version of Gentics Mesh is {" + latestVersion + "}");
+			} else {
+				int result = VersionUtil.compareVersions(latestVersion, currentVersion);
+				if (result >= 0) {
+					log.info("Great! You are using the latest version");
+				} else {
+					log.warn("Your Gentics Mesh version is outdated. You are using {" + currentVersion + "} but versio {" + latestVersion
+							+ "} is available.");
+				}
+			}
+			return latestVersion;
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			log.error("Update check failed.", e);
+			return null;
+		}
 	}
 
 	/**
