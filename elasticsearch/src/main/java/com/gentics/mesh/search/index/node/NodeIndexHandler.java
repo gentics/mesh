@@ -461,20 +461,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		builder = client.prepareSearch(indices.toArray(new String[indices.size()]));
 		try {
 			JSONObject queryStringObject = new JSONObject(query);
-			/**
-			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more
-			 * efficient ways to do deep scrolling.
-			 */
-			// queryStringObject.put("from", 0);
-			// queryStringObject.put("size", Integer.MAX_VALUE);
-			// builder.setSource(queryStringObject.toString());
 			builder.setExtraSource(queryStringObject.toString());
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
 		// Only load the documentId we don't care about the indexed contents. The graph is our source of truth here.
 		builder.setFetchSource(false);
-		// builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
 		builder.setSize(INITIAL_BATCH_SIZE);
 		builder.setScroll(new TimeValue(60000));
 		SearchResponse scrollResp = builder.execute().actionGet();

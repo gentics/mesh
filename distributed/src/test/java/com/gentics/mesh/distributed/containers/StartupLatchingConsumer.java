@@ -6,6 +6,8 @@ import java.util.function.Consumer;
 
 import org.testcontainers.containers.output.OutputFrame;
 
+import com.gentics.mesh.Events;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.functions.Action0;
@@ -37,7 +39,7 @@ public class StartupLatchingConsumer implements Consumer<OutputFrame> {
 	public void accept(OutputFrame frame) {
 		if (frame != null) {
 			String utf8String = frame.getUtf8String();
-			if (utf8String.contains("mesh-startup-complete")) {
+			if (utf8String.contains(Events.STARTUP_EVENT_ADDRESS)) {
 				log.info("Startup message seen. Releasing lock");
 				if (startupAction != null) {
 					startupAction.call();

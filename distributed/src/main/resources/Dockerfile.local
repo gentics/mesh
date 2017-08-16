@@ -1,7 +1,6 @@
 FROM    java:openjdk-8-jre-alpine
 
 USER root
-
 RUN mkdir /mesh
 RUN adduser -D -u 1000 -h /mesh mesh
 RUN chown mesh: /mesh
@@ -22,5 +21,6 @@ USER mesh
 VOLUME /data
 VOLUME /config
 
+USER mesh
 EXPOSE 8080
 CMD  ["/mesh/run.sh"]

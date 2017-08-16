@@ -16,7 +16,6 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -36,7 +35,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.vertx.core.Vertx;
 
-public class MeshDockerServerTest {
+public class MeshDockerServerTest extends AbstractClusterTest {
 
 	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
@@ -204,7 +203,7 @@ public class MeshDockerServerTest {
 		String newName = "newNameForProject";
 		call(() -> clientA.updateProject(response.getUuid(), new ProjectUpdateRequest().setName(newName)));
 
-		Thread.sleep(8000);
+		Thread.sleep(10000);
 
 		// Node B: Only the root node should be found and routes should have been updated across the cluster
 		assertThat(call(() -> clientB.findNodes(newName)).getData()).hasSize(1);
@@ -276,40 +275,6 @@ public class MeshDockerServerTest {
 
 		// Node A: Assert that the project can't be found
 		call(() -> clientA.findProjectByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
-	}
-
-	private NodeResponse createProjectAndNode(MeshRestClient client, String projectName) {
-
-		// Node A: Create Project
-		ProjectCreateRequest request = new ProjectCreateRequest();
-		request.setName(projectName);
-		request.setSchemaRef("folder");
-		ProjectResponse projectResponse = call(() -> client.createProject(request));
-		String folderUuid = projectResponse.getRootNode().getUuid();
-
-		// Node A: Find the content schema
-		SchemaListResponse schemaListResponse = call(() -> client.findSchemas());
-		String contentSchemaUuid = schemaListResponse.getData().stream().filter(sr -> sr.getName().equals("content")).map(sr -> sr.getUuid())
-				.findAny().get();
-
-		// Node A: Assign content schema to project
-		call(() -> client.assignSchemaToProject(projectName, contentSchemaUuid));
-
-		// Node A: Create node
-		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setLanguage("en");
-		nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("some rorschach teaser"));
-		nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("new-page.html"));
-		nodeCreateRequest.getFields().put("content", FieldUtil.createStringField("Blessed mealtime again!"));
-		nodeCreateRequest.setSchemaName("content");
-		nodeCreateRequest.setParentNodeUuid(folderUuid);
-
-		NodeResponse response = call(() -> client.createNode(projectName, nodeCreateRequest));
-		return response;
-	}
-
-	private String randomName() {
-		return "random" + System.currentTimeMillis();
 	}
 
 }

@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -19,14 +20,19 @@ import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.output.FrameConsumerResultCallback;
+import org.testcontainers.containers.output.OutputFrame;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.containers.output.ToStringConsumer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
+import org.testcontainers.utility.TestEnvironment;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.util.UUIDUtil;
+import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 
 import io.vertx.core.Vertx;
 import rx.functions.Action0;
@@ -37,6 +43,8 @@ import rx.functions.Action0;
  * @param <SELF>
  */
 public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends GenericContainer<SELF> {
+
+	private static final Charset UTF8 = Charset.forName("UTF-8");
 
 	private static final Logger log = LoggerFactory.getLogger(MeshDockerServer.class);
 
@@ -101,7 +109,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		try {
 			prepareFolder(dataPath);
 		} catch (Exception e) {
-			fail("Could not setup bind folders");
+			fail("Could not setup bind folder {" + dataPath + "}");
 		}
 
 		addFileSystemBind(dataPath, "/data", BindMode.READ_WRITE);
@@ -119,6 +127,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		exposedPorts.add(8080);
 		exposedPorts.add(9200);
 		exposedPorts.add(9300);
+		setPrivilegedMode(true);
 		setExposedPorts(exposedPorts);
 		setLogConsumers(Arrays.asList(logConsumer, startupConsumer));
 		// setContainerName("mesh-test-" + nodeName);
@@ -191,6 +200,9 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 			}
 			dockerImage.withFileFromPath("bin/server/target/mavendependencies-sharedlibs", libFolder.toPath());
 
+			// Add sudoers
+			dockerImage.withFileFromString("sudoers", "root ALL=(ALL) ALL\n%mesh ALL=(ALL) NOPASSWD: ALL\n");
+
 			// Add run script which executes mesh
 			dockerImage.withFileFromString("run.sh", generateRunScript(classPathArg));
 
@@ -239,6 +251,53 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 	public MeshRestClient getMeshClient() {
 		return client;
+	}
+
+	public void dropTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
+		execRootInContainer("apk", "--update","add" ,"iptables");
+		Thread.sleep(1000);
+		execRootInContainer("iptables", "-P", "INPUT", "DROP");
+		execRootInContainer("iptables", "-P", "OUTPUT", "DROP");
+		execRootInContainer("iptables", "-P", "FORWARD", "DROP");
+	}
+
+	public void resumeTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
+		execRootInContainer("iptables", "-F");
+	}
+
+	public ExecResult execRootInContainer(String... command) throws UnsupportedOperationException, IOException, InterruptedException {
+		Charset outputCharset = UTF8;
+
+		if (!TestEnvironment.dockerExecutionDriverSupportsExec()) {
+			// at time of writing, this is the expected result in CircleCI.
+			throw new UnsupportedOperationException("Your docker daemon is running the \"lxc\" driver, which doesn't support \"docker exec\".");
+
+		}
+
+		if (!isRunning()) {
+			throw new IllegalStateException("Container is not running so exec cannot be run");
+		}
+
+		this.dockerClient.execCreateCmd(this.containerId).withCmd(command);
+
+		logger().debug("Running \"exec\" command: " + String.join(" ", command));
+		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId).withAttachStdout(true).withAttachStderr(true)
+				.withUser("root").withPrivileged(true).withCmd(command).exec();
+
+		final ToStringConsumer stdoutConsumer = new ToStringConsumer();
+		final ToStringConsumer stderrConsumer = new ToStringConsumer();
+
+		FrameConsumerResultCallback callback = new FrameConsumerResultCallback();
+		callback.addConsumer(OutputFrame.OutputType.STDOUT, stdoutConsumer);
+		callback.addConsumer(OutputFrame.OutputType.STDERR, stderrConsumer);
+
+		dockerClient.execStartCmd(execCreateCmdResponse.getId()).exec(callback).awaitCompletion();
+
+		final ExecResult result = new ExecResult(stdoutConsumer.toString(outputCharset), stderrConsumer.toString(outputCharset));
+
+		logger().trace("stdout: " + result.getStdout());
+		logger().trace("stderr: " + result.getStderr());
+		return result;
 	}
 
 }
