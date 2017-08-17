@@ -162,14 +162,57 @@ public class AbstractMigrationVerticle extends AbstractVerticle {
 		JsonObject result = new JsonObject().put("type", "completed");
 		message.reply(result);
 		vertx.eventBus().publish(MESH_MIGRATION, result);
-		updateStatus();
+		
+		JsonObject info = new JsonObject();
+		info.put("nodeId", Mesh.mesh().getOptions().getNodeName());
+//		Schema/Microschema Uuid
+//		Start version
+//		Target version
+//		Start time
+//		Total amount of data which needs to be migrated
+//		Counter which returns the amount of data which has already been migrated
+
+		updateStatus(info);
 	}
 
-	public void updateStatus() {
+	public void updateStatus(JsonObject info) {
 		if (Mesh.mesh().getOptions().getClusterOptions().isEnabled()) {
-			vertx.sharedData().getClusterWideMap(MIGRATION_DATA_MAP_KEY, rh -> {
-				AsyncMap<Object, Object> map = rh.result();
-				purgeOldInfos(map);
+			vertx.sharedData().getLock("mesh.data.lock", rhl -> {
+				if (rhl.failed()) {
+					log.warn("Could not update status since lock could not be acquired", rhl.cause());
+				} else {
+					// Get the cluster data map
+					vertx.sharedData().getClusterWideMap(MIGRATION_DATA_MAP_KEY, rh -> {
+						if (rh.failed()) {
+							log.error("Could not load data map", rh.cause());
+						} else {
+							// Get the json object from the map
+							AsyncMap<Object, Object> map = rh.result();
+							map.get("data", rd -> {
+								if (rd.succeeded()) {
+									JsonObject obj = (JsonObject) rd.result();
+									if (obj == null) {
+										obj = new JsonObject();
+									}
+									if (obj.containsKey("i")) {
+										System.out.println(obj.getString("i"));
+									}
+									obj.put("i", "" + System.currentTimeMillis());
+									obj.put("e", info);
+									map.put("data", obj, ph -> {
+										if (ph.failed()) {
+											log.error("Could not store updated entry in map.", ph.cause());
+										}
+										rhl.result().release();
+									});
+								} else {
+									log.error("Could not load data", rd.cause());
+								}
+							});
+							purgeOldInfos(map);
+						}
+					});
+				}
 			});
 		} else {
 			LocalMap<Object, Object> map = vertx.sharedData().getLocalMap(MIGRATION_DATA_MAP_KEY);
@@ -179,7 +222,7 @@ public class AbstractMigrationVerticle extends AbstractVerticle {
 
 	private void purgeOldInfos(LocalMap<Object, Object> map) {
 		Set<Long> bogusKeys = new HashSet<>();
-		// Sort the entries by the initial timestamp, skip the amount of 
+		// Sort the entries by the initial timestamp, skip the amount of
 		// entries we want to keep and add the rest to the bogus keys list
 		map.entrySet().stream().sorted((o1, o2) -> {
 			Long key1 = (Long) o1.getKey();
@@ -199,6 +242,8 @@ public class AbstractMigrationVerticle extends AbstractVerticle {
 	private void purgeOldInfos(AsyncMap<Object, Object> map) {
 		System.out.println(map.getClass().getName());
 		// MAX_MIGRATION_DATE_ENTRIES
+		// map.clear(resultHandler);
+
 	}
 
 	/**
