@@ -40,4 +40,10 @@ public @interface MeshTestSetting {
 	 */
 	boolean inMemoryDB() default true;
 
+	/**
+	 * Flag which indicates that the cluster mode should be enabled.
+	 * 
+	 * @return
+	 */
+	boolean clusterMode() default false;
 }

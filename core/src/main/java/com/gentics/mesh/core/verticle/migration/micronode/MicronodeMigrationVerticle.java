@@ -6,7 +6,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.management.ObjectName;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
@@ -29,7 +28,7 @@ import io.vertx.core.logging.LoggerFactory;
 @Singleton
 public class MicronodeMigrationVerticle extends AbstractMigrationVerticle {
 
-	private static Logger log = LoggerFactory.getLogger(MicronodeMigrationVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationVerticle.class);
 
 	public final static String JMX_MBEAN_NAME = "com.gentics.mesh:type=MicronodeMigration";
 
@@ -65,62 +64,60 @@ public class MicronodeMigrationVerticle extends AbstractMigrationVerticle {
 	 */
 	private void registerMicroschemaMigration() {
 		microschemaMigrationConsumer = vertx.eventBus().consumer(MICROSCHEMA_MIGRATION_ADDRESS, (message) -> {
-
-			String microschemaUuid = message.headers().get(UUID_HEADER);
-			String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
-			String releaseUuid = message.headers().get(RELEASE_UUID_HEADER);
-			String fromVersionUuid = message.headers().get(FROM_VERSION_UUID_HEADER);
-			String toVersionUuuid = message.headers().get(TO_VERSION_UUID_HEADER);
-
-			if (log.isDebugEnabled()) {
-				log.debug("Micronode migration for microschema {" + microschemaUuid + "} from version {" + fromVersionUuid + "} to version {"
-						+ toVersionUuuid + "} was requested");
-			}
-
 			try {
-				ObjectName statusMBeanName = new ObjectName(JMX_MBEAN_NAME + ",name=" + microschemaUuid);
+
+				String microschemaUuid = message.headers().get(UUID_HEADER);
+				String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
+				String releaseUuid = message.headers().get(RELEASE_UUID_HEADER);
+				String fromVersionUuid = message.headers().get(FROM_VERSION_UUID_HEADER);
+				String toVersionUuuid = message.headers().get(TO_VERSION_UUID_HEADER);
+
+				if (log.isDebugEnabled()) {
+					log.debug("Micronode migration for microschema {" + microschemaUuid + "} from version {" + fromVersionUuid + "} to version {"
+							+ toVersionUuuid + "} was requested");
+				}
+
 				db.tx(() -> {
-					try {
-						Project project = boot.get().projectRoot().findByUuid(projectUuid);
-						if (project == null) {
-							throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
-						}
-						Release release = project.getReleaseRoot().findByUuid(releaseUuid);
-						if (release == null) {
-							throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
-						}
-
-						MicroschemaContainer schemaContainer = boot.get().microschemaContainerRoot().findByUuid(microschemaUuid);
-
-						if (schemaContainer == null) {
-							throw error(BAD_REQUEST, "Microschema container for uuid {" + microschemaUuid + "} can't be found.");
-						}
-						MicroschemaContainerVersion fromContainerVersion = schemaContainer.findVersionByUuid(fromVersionUuid);
-						if (fromContainerVersion == null) {
-							throw error(BAD_REQUEST,
-									"Source version uuid {" + fromVersionUuid + "} of microschema {" + microschemaUuid + "} could not be found.");
-						}
-						MicroschemaContainerVersion toContainerVersion = schemaContainer.findVersionByUuid(toVersionUuuid);
-						if (toContainerVersion == null) {
-							throw error(BAD_REQUEST,
-									"Target version uuid {" + toVersionUuuid + "} of microschema {" + microschemaUuid + "} could not be found.");
-						}
-
-						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
-								MigrationType.microschema);
-						if (checkAndLock(statusMBeanName, statusBean)) {
-							fail(message, "Migration for microschema {" + microschemaUuid + "} is already running");
-							return null;
-						}
-						micronodeMigrationHandler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
-					} catch (Exception e) {
-						setError(message, microschemaUuid, statusMBeanName, e);
+					Project project = boot.get().projectRoot().findByUuid(projectUuid);
+					if (project == null) {
+						throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
 					}
-					return null;
+					Release release = project.getReleaseRoot().findByUuid(releaseUuid);
+					if (release == null) {
+						throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
+					}
+
+					MicroschemaContainer schemaContainer = boot.get().microschemaContainerRoot().findByUuid(microschemaUuid);
+
+					if (schemaContainer == null) {
+						throw error(BAD_REQUEST, "Microschema container for uuid {" + microschemaUuid + "} can't be found.");
+					}
+					MicroschemaContainerVersion fromContainerVersion = schemaContainer.findVersionByUuid(fromVersionUuid);
+					if (fromContainerVersion == null) {
+						throw error(BAD_REQUEST,
+								"Source version uuid {" + fromVersionUuid + "} of microschema {" + microschemaUuid + "} could not be found.");
+					}
+					MicroschemaContainerVersion toContainerVersion = schemaContainer.findVersionByUuid(toVersionUuuid);
+					if (toContainerVersion == null) {
+						throw error(BAD_REQUEST,
+								"Target version uuid {" + toVersionUuuid + "} of microschema {" + microschemaUuid + "} could not be found.");
+					}
+
+					// Acquire the global lock and invoke the migration
+					executeLocked(() -> {
+						db.tx(() -> {
+							NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
+									MigrationType.microschema);
+							micronodeMigrationHandler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusBean)
+									.await();
+						});
+						done(message);
+					}, (error) -> {
+						handleError(message, error, "Migration for microschema {" + microschemaUuid + "} is already running.");
+					});
 				});
-				setDone(message, microschemaUuid, statusMBeanName);
 			} catch (Exception e) {
-				log.error("Error while generation jmx bean name", e);
+				handleError(message, e, "Error while preparing micronode migration.");
 			}
 		});
 

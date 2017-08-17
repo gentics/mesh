@@ -59,7 +59,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 *            microschema container version to end with
 	 * @param statusMBean
 	 *            JMX Status bean
-	 * @return Completable which will be invoked once the migration has completed
+	 * @return Completable which will be completed once the migration has completed
 	 */
 	public Completable migrateMicronodes(Project project, Release release, MicroschemaContainerVersion fromVersion,
 			MicroschemaContainerVersion toVersion, NodeMigrationStatus statusMBean) {
@@ -118,7 +118,6 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 							migrated.setVersion(oldPublished.getVersion().nextPublished());
 							node.setPublished(migrated, releaseUuid);
 
-							// migrate
 							migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
 							sqb.store(migrated, releaseUuid, PUBLISHED, false);
 							ac.getVersioningParameters().setVersion("draft");
@@ -132,7 +131,6 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 						node.setPublished(migrated, releaseUuid);
 					}
 
-					// migrate
 					migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
 
 					sqb.store(node, releaseUuid, DRAFT, false);

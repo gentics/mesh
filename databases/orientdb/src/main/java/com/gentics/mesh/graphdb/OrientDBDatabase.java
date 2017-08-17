@@ -728,22 +728,22 @@ public class OrientDBDatabase extends AbstractDatabase {
 			} catch (ODistributedRedirectException e) {
 				// https://www.prjhub.com/#/issues/8978
 				log.warn("Caught OrientDB redirection exception. The excption will be handled internally by the orientDB server.", e);
-//				
-//				// Reset previous result
-//				try {
-//					// Delay the retry by 50ms to give the other transaction a chance to finish
-//					Thread.sleep(50 + (retry * 5));
-//				} catch (InterruptedException e1) {
-//					e1.printStackTrace();
-//				}
-//				handlerFinished = false;
-//				handlerResult = null;
+				//
+				// // Reset previous result
+				// try {
+				// // Delay the retry by 50ms to give the other transaction a chance to finish
+				// Thread.sleep(50 + (retry * 5));
+				// } catch (InterruptedException e1) {
+				// e1.printStackTrace();
+				// }
+				// handlerFinished = false;
+				// handlerResult = null;
 			} catch (OSchemaException e) {
 				log.error("OrientDB schema exception detected.");
 				// TODO maybe we should invoke a metadata getschema reload?
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
-			} catch (OConcurrentModificationException  e) {
+			} catch (OConcurrentModificationException e) {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}

@@ -4,9 +4,10 @@ import static com.gentics.mesh.Events.SCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Objects;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.management.ObjectName;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -30,9 +31,9 @@ import io.vertx.core.logging.LoggerFactory;
 @Singleton
 public class NodeMigrationVerticle extends AbstractMigrationVerticle {
 
-	private static Logger log = LoggerFactory.getLogger(NodeMigrationVerticle.class);
+	private static final Logger log = LoggerFactory.getLogger(NodeMigrationVerticle.class);
 
-	public final static String JMX_MBEAN_NAME = "com.gentics.mesh:type=NodeMigration";
+	// public final static String JMX_MBEAN_NAME = "com.gentics.mesh:type=NodeMigration";
 
 	protected NodeMigrationHandler nodeMigrationHandler;
 
@@ -66,60 +67,59 @@ public class NodeMigrationVerticle extends AbstractMigrationVerticle {
 	 */
 	private void registerSchemaMigration() {
 		schemaMigrationConsumer = Mesh.vertx().eventBus().consumer(SCHEMA_MIGRATION_ADDRESS, (message) -> {
-
-			String schemaUuid = message.headers().get(UUID_HEADER);
-			String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
-			String releaseUuid = message.headers().get(RELEASE_UUID_HEADER);
-			String fromVersionUuid = message.headers().get(FROM_VERSION_UUID_HEADER);
-			String toVersionUuid = message.headers().get(TO_VERSION_UUID_HEADER);
-
-			if (log.isDebugEnabled()) {
-				log.debug("Node migration for schema {" + schemaUuid + "} from version {" + fromVersionUuid + "} to version {" + toVersionUuid
-						+ "} for release {" + releaseUuid + "} in project {" + projectUuid + "} was requested");
-			}
-
 			try {
-				ObjectName statusMBeanName = new ObjectName(JMX_MBEAN_NAME + ",name=" + schemaUuid);
-				db.tx(() -> {
-					try {
-						// Load the identified elements
-						Project project = boot.get().projectRoot().findByUuid(projectUuid);
-						if (project == null) {
-							throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
-						}
-						Release release = project.getReleaseRoot().findByUuid(releaseUuid);
-						if (release == null) {
-							throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
-						}
-						SchemaContainer schemaContainer = boot.get().schemaContainerRoot().findByUuid(schemaUuid);
-						if (schemaContainer == null) {
-							throw error(BAD_REQUEST, "Schema container for uuid {" + schemaUuid + "} can't be found.");
-						}
-						SchemaContainerVersion fromContainerVersion = schemaContainer.findVersionByUuid(fromVersionUuid);
-						if (fromContainerVersion == null) {
-							throw error(BAD_REQUEST, "Source version {" + fromVersionUuid + "} of schema {" + schemaUuid + "} could not be found.");
-						}
-						SchemaContainerVersion toContainerVersion = schemaContainer.findVersionByUuid(toVersionUuid);
-						if (toContainerVersion == null) {
-							throw error(BAD_REQUEST, "Target version {" + toVersionUuid + "} of schema {" + schemaUuid + "} could not be found.");
-						}
-						NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
-								MigrationType.schema);
+				String schemaUuid = message.headers().get(UUID_HEADER);
+				Objects.requireNonNull(schemaUuid, "The schemaUuid was not set the header.");
+				String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
+				Objects.requireNonNull(projectUuid, "The project uuid was not set the header.");
+				String releaseUuid = message.headers().get(RELEASE_UUID_HEADER);
+				Objects.requireNonNull(releaseUuid, "The release uuid was not set in the header.");
+				String fromVersionUuid = message.headers().get(FROM_VERSION_UUID_HEADER);
+				Objects.requireNonNull(fromVersionUuid, "The fromVersionUuid was not set in the header.");
+				String toVersionUuid = message.headers().get(TO_VERSION_UUID_HEADER);
+				Objects.requireNonNull(toVersionUuid, "The toVersionUuid was not set in the header.");
 
-						if (checkAndLock(statusMBeanName, statusBean)) {
-							fail(message, "Migration for schema {" + schemaUuid + "} is already running");
-							return null;
-						}
-						// Invoke the migration using the located elements
-						nodeMigrationHandler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
-					} catch (Exception e) {
-						setError(message, schemaUuid, statusMBeanName, e);
+				if (log.isDebugEnabled()) {
+					log.debug("Node migration for schema {" + schemaUuid + "} from version {" + fromVersionUuid + "} to version {" + toVersionUuid
+							+ "} for release {" + releaseUuid + "} in project {" + projectUuid + "} was requested.");
+				}
+
+				db.tx(() -> {
+					Project project = boot.get().projectRoot().findByUuid(projectUuid);
+					if (project == null) {
+						throw error(BAD_REQUEST, "Project for uuid {" + projectUuid + "} not found");
 					}
-					return null;
+					Release release = project.getReleaseRoot().findByUuid(releaseUuid);
+					if (release == null) {
+						throw error(BAD_REQUEST, "Release for uuid {" + releaseUuid + "} not found");
+					}
+					SchemaContainer schemaContainer = boot.get().schemaContainerRoot().findByUuid(schemaUuid);
+					if (schemaContainer == null) {
+						throw error(BAD_REQUEST, "Schema container for uuid {" + schemaUuid + "} can't be found.");
+					}
+					SchemaContainerVersion fromContainerVersion = schemaContainer.findVersionByUuid(fromVersionUuid);
+					if (fromContainerVersion == null) {
+						throw error(BAD_REQUEST, "Source version {" + fromVersionUuid + "} of schema {" + schemaUuid + "} could not be found.");
+					}
+					SchemaContainerVersion toContainerVersion = schemaContainer.findVersionByUuid(toVersionUuid);
+					if (toContainerVersion == null) {
+						throw error(BAD_REQUEST, "Target version {" + toVersionUuid + "} of schema {" + schemaUuid + "} could not be found.");
+					}
+
+					// Acquire the global lock and invoke the migration
+					executeLocked(() -> {
+						db.tx(() -> {
+							NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
+									MigrationType.schema);
+							nodeMigrationHandler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
+						});
+						done(message);
+					}, (error) -> {
+						handleError(message, error, "Migration for schema {" + schemaUuid + "} is already running.");
+					});
 				});
-				setDone(message, schemaUuid, statusMBeanName);
 			} catch (Exception e) {
-				log.error("Error while generation jmx bean name", e);
+				handleError(message, e, "Error while preparing node migration.");
 			}
 		});
 

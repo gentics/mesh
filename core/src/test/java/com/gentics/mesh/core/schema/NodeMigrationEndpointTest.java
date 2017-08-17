@@ -7,8 +7,9 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -65,8 +66,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, clusterMode = true)
 public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Before
@@ -79,30 +81,39 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testEmptyMigration() throws Throwable {
+		SchemaContainer container;
+		SchemaContainerVersion versionA;
+		SchemaContainerVersion versionB;
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		try (Tx tx = tx()) {
-
-			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-
 			String fieldName = "changedfield";
+			container = createDummySchemaWithChanges(fieldName);
+			versionB = container.getLatestVersion();
+			versionA = versionB.getPreviousVersion();
+			tx.success();
+		}
 
-			SchemaContainer container = createDummySchemaWithChanges(fieldName);
-			SchemaContainerVersion versionB = container.getLatestVersion();
-			SchemaContainerVersion versionA = versionB.getPreviousVersion();
-
+		CompletableFuture<Void> replyFuture = new CompletableFuture<>();
+		try (Tx tx = tx()) {
 			DeliveryOptions options = new DeliveryOptions();
+			options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid());
+			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, initialReleaseUuid());
 			options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
 
 			// Trigger migration by sending a event
-			vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
-				latch.countDown();
+			vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, options, (AsyncResult<Message<JsonObject>> rh) -> {
+				if (rh.failed()) {
+					fail(rh.cause().getMessage());
+				} else {
+					assertEquals("completed", rh.result().body().getString("type"));
+					replyFuture.complete(null);
+				}
 			});
-
-			failingLatch(latch);
-
 		}
-
+		failingLatch(latch);
+		replyFuture.get(10, SECONDS);
 	}
 
 	@Test
@@ -521,7 +532,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				future.complete(rh);
 			});
 
-			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+			AsyncResult<Message<Object>> result = future.get(1000, TimeUnit.SECONDS);
 			if (result.cause() != null) {
 				throw result.cause();
 			}

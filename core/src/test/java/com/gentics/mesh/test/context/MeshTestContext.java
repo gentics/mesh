@@ -44,8 +44,10 @@ import io.vertx.core.logging.LoggerFactory;
 
 public class MeshTestContext extends TestWatcher {
 
-	private List<File> tmpFolders = new ArrayList<>();
 	private static final Logger log = LoggerFactory.getLogger(MeshTestContext.class);
+	
+	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
+	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
 	private TestDataProvider dataProvider;
 	private DummySearchProvider dummySearchProvider;
@@ -69,6 +71,7 @@ public class MeshTestContext extends TestWatcher {
 			// Setup the dagger context and orientdb,es once
 			if (description.isSuite()) {
 				removeDataDirectory();
+				removeConfigDirectory();
 				MeshOptions options = init(settings);
 				initDagger(options, settings.testSize());
 				meshDagger.boot().registerEventHandlers();
@@ -95,6 +98,7 @@ public class MeshTestContext extends TestWatcher {
 			MeshTestSetting settings = getSettings(description);
 			if (description.isSuite()) {
 				removeDataDirectory();
+				removeConfigDirectory();
 			} else {
 				cleanupFolders();
 				if (settings.startServer()) {
@@ -111,6 +115,11 @@ public class MeshTestContext extends TestWatcher {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private void removeConfigDirectory() throws IOException {
+		FileUtils.deleteDirectory(new File(CONF_PATH));
+		System.setProperty("mesh.confDirName", CONF_PATH);
 	}
 
 	private void removeDataDirectory() throws IOException {
@@ -268,6 +277,13 @@ public class MeshTestContext extends TestWatcher {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
 
+		// Clustering options
+		if (settings.clusterMode()) {
+			options.getClusterOptions().setEnabled(true);
+			options.setInitCluster(true);
+			options.getClusterOptions().setClusterName("cluster" + System.currentTimeMillis());
+		}
+
 		// Setup the keystore
 		File keystoreFile = new File("target", "keystore_" + UUIDUtil.randomUUID() + ".jceks");
 		keystoreFile.deleteOnExit();
@@ -298,7 +314,7 @@ public class MeshTestContext extends TestWatcher {
 		// The database provider will switch to in memory mode when no directory has been specified.
 
 		String graphPath = null;
-		if (!settings.inMemoryDB()) {
+		if (!settings.inMemoryDB() || settings.clusterMode()) {
 			graphPath = "target/graphdb_" + UUIDUtil.randomUUID();
 			File directory = new File(graphPath);
 			directory.deleteOnExit();
@@ -336,7 +352,8 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Initialise the mesh dagger context and inject the dependencies within the test.
-	 * @param options 
+	 * 
+	 * @param options
 	 * 
 	 * @throws Exception
 	 */
@@ -349,7 +366,12 @@ public class MeshTestContext extends TestWatcher {
 		if (meshDagger.searchProvider() instanceof DummySearchProvider) {
 			dummySearchProvider = meshDagger.dummySearchProvider();
 		}
-		meshDagger.boot().init(Mesh.mesh(), false, options, null);
+		try {
+			meshDagger.boot().init(Mesh.mesh(), false, options, null);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 
 	public MeshRestClient getClient() {
