@@ -38,6 +38,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -114,6 +115,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 		failingLatch(latch);
 		replyFuture.get(10, SECONDS);
+		GenericMessageResponse response = call(() -> client().schemaMigrationStatus());
 	}
 
 	@Test

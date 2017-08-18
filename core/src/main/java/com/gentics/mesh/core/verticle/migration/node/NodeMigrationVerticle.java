@@ -16,8 +16,9 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationVerticle;
+import com.gentics.mesh.core.verticle.migration.MigrationStatus;
 import com.gentics.mesh.core.verticle.migration.MigrationType;
-import com.gentics.mesh.core.verticle.migration.NodeMigrationStatus;
+import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import dagger.Lazy;
@@ -29,18 +30,13 @@ import io.vertx.core.logging.LoggerFactory;
  * Dedicated worker verticle which will handle schema migrations.
  */
 @Singleton
-public class NodeMigrationVerticle extends AbstractMigrationVerticle {
+public class NodeMigrationVerticle extends AbstractMigrationVerticle<NodeMigrationHandler> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationVerticle.class);
 
-	// public final static String JMX_MBEAN_NAME = "com.gentics.mesh:type=NodeMigration";
-
-	protected NodeMigrationHandler nodeMigrationHandler;
-
 	@Inject
 	public NodeMigrationVerticle(Database db, Lazy<BootstrapInitializer> boot, NodeMigrationHandler handler) {
-		super(db, boot);
-		this.nodeMigrationHandler = handler;
+		super(handler, db, boot);
 	}
 
 	private MessageConsumer<Object> schemaMigrationConsumer;
@@ -67,6 +63,8 @@ public class NodeMigrationVerticle extends AbstractMigrationVerticle {
 	 */
 	private void registerSchemaMigration() {
 		schemaMigrationConsumer = Mesh.vertx().eventBus().consumer(SCHEMA_MIGRATION_ADDRESS, (message) -> {
+
+			MigrationStatus status = new MigrationStatusImpl(message, vertx, MigrationType.schema);
 			try {
 				String schemaUuid = message.headers().get(UUID_HEADER);
 				Objects.requireNonNull(schemaUuid, "The schemaUuid was not set the header.");
@@ -106,20 +104,23 @@ public class NodeMigrationVerticle extends AbstractMigrationVerticle {
 						throw error(BAD_REQUEST, "Target version {" + toVersionUuid + "} of schema {" + schemaUuid + "} could not be found.");
 					}
 
+					status.setSourceName(schemaContainer.getName());
+					status.setSourceVersion(fromContainerVersion.getVersion());
+					status.setTargetVersion(toContainerVersion.getVersion());
+					status.updateStatus();
+
 					// Acquire the global lock and invoke the migration
 					executeLocked(() -> {
 						db.tx(() -> {
-							NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
-									MigrationType.schema);
-							nodeMigrationHandler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusBean).await();
+							handler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, status).await();
 						});
-						done(message);
+						status.done(message);
 					}, (error) -> {
-						handleError(message, error, "Migration for schema {" + schemaUuid + "} is already running.");
+						status.handleError(message, error, "Migration for schema {" + schemaUuid + "} is already running.");
 					});
 				});
 			} catch (Exception e) {
-				handleError(message, e, "Error while preparing node migration.");
+				status.handleError(message, e, "Error while preparing node migration.");
 			}
 		});
 

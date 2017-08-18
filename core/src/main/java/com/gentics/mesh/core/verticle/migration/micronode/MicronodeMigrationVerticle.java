@@ -13,8 +13,9 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationVerticle;
+import com.gentics.mesh.core.verticle.migration.MigrationStatus;
 import com.gentics.mesh.core.verticle.migration.MigrationType;
-import com.gentics.mesh.core.verticle.migration.NodeMigrationStatus;
+import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import dagger.Lazy;
@@ -26,7 +27,7 @@ import io.vertx.core.logging.LoggerFactory;
  * Dedicated worker verticle which will micronode migrations.
  */
 @Singleton
-public class MicronodeMigrationVerticle extends AbstractMigrationVerticle {
+public class MicronodeMigrationVerticle extends AbstractMigrationVerticle<MicronodeMigrationHandler> {
 
 	private static final Logger log = LoggerFactory.getLogger(MicronodeMigrationVerticle.class);
 
@@ -34,12 +35,9 @@ public class MicronodeMigrationVerticle extends AbstractMigrationVerticle {
 
 	private MessageConsumer<Object> microschemaMigrationConsumer;
 
-	protected MicronodeMigrationHandler micronodeMigrationHandler;
-
 	@Inject
 	public MicronodeMigrationVerticle(Database db, Lazy<BootstrapInitializer> boot, MicronodeMigrationHandler micronodeMigrationHandler) {
-		super(db, boot);
-		this.micronodeMigrationHandler = micronodeMigrationHandler;
+		super(micronodeMigrationHandler, db, boot);
 	}
 
 	@Override
@@ -64,8 +62,9 @@ public class MicronodeMigrationVerticle extends AbstractMigrationVerticle {
 	 */
 	private void registerMicroschemaMigration() {
 		microschemaMigrationConsumer = vertx.eventBus().consumer(MICROSCHEMA_MIGRATION_ADDRESS, (message) -> {
+			MigrationStatus status = new MigrationStatusImpl(message, vertx, MigrationType.microschema);
 			try {
-
+				
 				String microschemaUuid = message.headers().get(UUID_HEADER);
 				String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
 				String releaseUuid = message.headers().get(RELEASE_UUID_HEADER);
@@ -106,18 +105,16 @@ public class MicronodeMigrationVerticle extends AbstractMigrationVerticle {
 					// Acquire the global lock and invoke the migration
 					executeLocked(() -> {
 						db.tx(() -> {
-							NodeMigrationStatus statusBean = new NodeMigrationStatus(schemaContainer.getName(), fromContainerVersion.getVersion(),
-									MigrationType.microschema);
-							micronodeMigrationHandler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusBean)
+							handler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, status)
 									.await();
 						});
-						done(message);
+						status.done(message);
 					}, (error) -> {
-						handleError(message, error, "Migration for microschema {" + microschemaUuid + "} is already running.");
+						status.handleError(message, error, "Migration for microschema {" + microschemaUuid + "} is already running.");
 					});
 				});
 			} catch (Exception e) {
-				handleError(message, e, "Error while preparing micronode migration.");
+				status.handleError(message, e, "Error while preparing micronode migration.");
 			}
 		});
 

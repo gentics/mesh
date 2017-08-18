@@ -29,19 +29,20 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationHandler;
-import com.gentics.mesh.core.verticle.migration.NodeMigrationStatus;
+import com.gentics.mesh.core.verticle.migration.MigrationStatus;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
 import rx.exceptions.CompositeException;
 
 /**
- * Handler for node migrations after schema updates
+ * Handler for node migrations after schema updates.
  */
 @Singleton
 public class NodeMigrationHandler extends AbstractMigrationHandler {
@@ -51,6 +52,10 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	@Inject
 	public NodeMigrationHandler(Database db, SearchQueue searchQueue, BinaryFieldHandler nodeFieldAPIHandler) {
 		super(db, searchQueue, nodeFieldAPIHandler);
+	}
+
+	public JsonObject createInfoJson() {
+		return null;
 	}
 
 	/**
@@ -68,7 +73,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 *            status MBean
 	 */
 	public Completable migrateNodes(Project project, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
-			NodeMigrationStatus statusMBean) {
+			MigrationStatus status) {
 		String releaseUuid = db.tx(release::getUuid);
 
 		// Get the containers of nodes, that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
@@ -83,8 +88,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 					+ fromVersion.getVersion() + "}");
 		}
 
-		if (statusMBean != null) {
-			statusMBean.setTotalNodes(fieldContainers.size());
+		if (status != null) {
+			status.setTotalElements(fieldContainers.size());
 		}
 
 		// Prepare the migration - Collect the migration scripts
@@ -112,8 +117,8 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				batches.add(batch.processAsync());
 			}
 
-			if (statusMBean != null) {
-				statusMBean.incNodesDone();
+			if (status != null) {
+				status.incDoneElements();
 			}
 		}
 

@@ -13,14 +13,16 @@ import java.util.Arrays;
 
 import javax.inject.Inject;
 
-import org.apache.commons.lang3.NotImplementedException;
-
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
+import com.gentics.mesh.core.verticle.migration.MigrationStatus;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.tx.Tx;
 
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import rx.Single;
 
@@ -28,6 +30,8 @@ import rx.Single;
  * Handler for admin request methods.
  */
 public class AdminHandler extends AbstractHandler {
+
+	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
 
 	private Database db;
 
@@ -124,10 +128,28 @@ public class AdminHandler extends AbstractHandler {
 	 * @param ac
 	 */
 	public void handleMigrationStatus(InternalActionContext ac) {
-
 		if (vertx.isClustered()) {
-			// TODO implement this
-			throw new NotImplementedException("cluster support for migration status is not yet implemented");
+			vertx.sharedData().getClusterWideMap(MigrationStatus.MIGRATION_DATA_MAP_KEY, rh -> {
+				if (rh.failed()) {
+					log.error("Could not load status map.", rh.cause());
+					ac.fail(rh.cause());
+				} else {
+					rh.result().get("data", dh -> {
+						if (dh.failed()) {
+							log.error("Could not load status data from map.", dh.cause());
+							ac.fail(dh.cause());
+						} else {
+							JsonObject obj = (JsonObject) dh.result();
+							if (obj != null) {
+								System.out.println(obj.encodePrettily());
+							}
+							//TODO return the correct json
+							ac.send(message(ac, "migration_status_idle"), OK);
+						}
+					});
+				}
+			});
+
 			// vertx.sharedData().getClusterWideMap("migrationStatus", rh -> {
 			// if (rh.failed()) {
 			// System.out.println("failed");

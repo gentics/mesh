@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationHandler;
-import com.gentics.mesh.core.verticle.migration.NodeMigrationStatus;
+import com.gentics.mesh.core.verticle.migration.MigrationStatus;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
@@ -48,7 +48,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 	/**
 	 * Migrate all micronodes referencing the given microschema container to the latest version
-	 *
+	 * 
 	 * @param project
 	 *            project
 	 * @param release
@@ -57,27 +57,27 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 *            microschema container version to start from
 	 * @param toVersion
 	 *            microschema container version to end with
-	 * @param statusMBean
-	 *            JMX Status bean
+	 * @param status
+	 *            Migration status
 	 * @return Completable which will be completed once the migration has completed
 	 */
 	public Completable migrateMicronodes(Project project, Release release, MicroschemaContainerVersion fromVersion,
-			MicroschemaContainerVersion toVersion, NodeMigrationStatus statusMBean) {
+			MicroschemaContainerVersion toVersion, MigrationStatus status) {
 		String releaseUuid = db.tx(release::getUuid);
 
-		// get the containers, that need to be transformed
+		// Get the containers, that need to be transformed
 		List<? extends NodeGraphFieldContainer> fieldContainers = db.tx(() -> fromVersion.getFieldContainers(release.getUuid()));
 
-		// no field containers, migration is done
+		// No field containers, migration is done
 		if (fieldContainers.isEmpty()) {
 			return Completable.complete();
 		}
 
-		if (statusMBean != null) {
-			statusMBean.setTotalNodes(fieldContainers.size());
+		if (status != null) {
+			status.setTotalElements(fieldContainers.size());
 		}
 
-		// collect the migration scripts
+		// Collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
 		Set<String> touchedFields = new HashSet<>();
 		try (Tx tx = db.tx()) {
@@ -106,12 +106,12 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 					if (container.isPublished(releaseUuid)) {
 						publish = true;
 					} else {
-						// check whether there is another published version
+						// Check whether there is another published version
 						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, PUBLISHED);
 						if (oldPublished != null) {
 							ac.getVersioningParameters().setVersion("published");
 
-							// clone the field container
+							// Clone the field container
 							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(oldPublished.getLanguage(), release,
 									oldPublished.getEditor(), oldPublished);
 
@@ -150,8 +150,8 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 				batches.add(batch.processAsync());
 			}
 
-			if (statusMBean != null) {
-				statusMBean.incNodesDone();
+			if (status != null) {
+				status.incDoneElements();
 			}
 		}
 
@@ -216,4 +216,5 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 			}
 		}
 	}
+
 }

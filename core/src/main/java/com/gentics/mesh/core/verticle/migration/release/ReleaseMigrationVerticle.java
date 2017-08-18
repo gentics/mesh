@@ -10,6 +10,9 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationVerticle;
+import com.gentics.mesh.core.verticle.migration.MigrationStatus;
+import com.gentics.mesh.core.verticle.migration.MigrationType;
+import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusImpl;
 import com.gentics.mesh.core.verticle.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -20,18 +23,15 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
-public class ReleaseMigrationVerticle extends AbstractMigrationVerticle {
+public class ReleaseMigrationVerticle extends AbstractMigrationVerticle<NodeMigrationHandler> {
 
 	private static final Logger log = LoggerFactory.getLogger(ReleaseMigrationVerticle.class);
 
 	private MessageConsumer<Object> releaseMigrationConsumer;
 
-	protected NodeMigrationHandler nodeMigrationHandler;
-
 	@Inject
 	public ReleaseMigrationVerticle(Database db, Lazy<BootstrapInitializer> boot, NodeMigrationHandler nodeMigrationHandler) {
-		super(db, boot);
-		this.nodeMigrationHandler = nodeMigrationHandler;
+		super(nodeMigrationHandler, db, boot);
 	}
 
 	@Override
@@ -56,6 +56,7 @@ public class ReleaseMigrationVerticle extends AbstractMigrationVerticle {
 	 */
 	private void registerReleaseMigration() {
 		releaseMigrationConsumer = vertx.eventBus().consumer(RELEASE_MIGRATION_ADDRESS, (message) -> {
+			MigrationStatus status = new MigrationStatusImpl(message, vertx, MigrationType.release);
 			try {
 				String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
 				String releaseUuid = message.headers().get(UUID_HEADER);
@@ -78,15 +79,15 @@ public class ReleaseMigrationVerticle extends AbstractMigrationVerticle {
 					// Acquire the global lock and invoke the migration
 					executeLocked(() -> {
 						db.tx(() -> {
-							nodeMigrationHandler.migrateNodes(release).await();
+							handler.migrateNodes(release).await();
 						});
-						done(message);
+						status.done(message);
 					}, (error) -> {
-						handleError(message, error, "Release migration for release { " + releaseUuid + "} failed.");
+						status.handleError(message, error, "Release migration for release { " + releaseUuid + "} failed.");
 					});
 				});
 			} catch (Exception e) {
-				handleError(message, e, "Error while preparing release migration.");
+				status.handleError(message, e, "Error while preparing release migration.");
 			}
 		});
 	}

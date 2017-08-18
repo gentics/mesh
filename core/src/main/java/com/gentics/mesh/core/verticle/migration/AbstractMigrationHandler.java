@@ -30,7 +30,8 @@ import io.vertx.core.buffer.Buffer;
 import jdk.nashorn.api.scripting.ClassFilter;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
-public abstract class AbstractMigrationHandler extends AbstractHandler {
+@SuppressWarnings("restriction")
+public abstract class AbstractMigrationHandler extends AbstractHandler implements MigrationHandler {
 
 	/**
 	 * Script engine factory.
@@ -82,8 +83,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler {
 			change = change.getNextChange();
 		}
 	}
-	
-	
+
 	/**
 	 * Migrate the given container. This will also set the new version to the container
 	 * 
