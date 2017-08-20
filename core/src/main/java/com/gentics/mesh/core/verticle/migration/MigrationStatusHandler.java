@@ -1,17 +1,16 @@
 package com.gentics.mesh.core.verticle.migration;
 
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
 /**
  * Interface for migration status of node, release and micronode migrations.
  */
-public interface MigrationStatus {
+public interface MigrationStatusHandler {
 
 	public static final int MAX_MIGRATION_DATE_ENTRIES = 20;
 
 	public static final String MIGRATION_DATA_MAP_KEY = "mesh.migration.data";
-	
+
 	/**
 	 * Return the type of migration which the status is linked to.
 	 * 
@@ -23,13 +22,16 @@ public interface MigrationStatus {
 	 * Update the migration status information
 	 * 
 	 * @param info
+	 * @return Fluent API
 	 */
-	void updateStatus(JsonObject info);
+	MigrationStatusHandler updateStatus(JsonObject info);
 
 	/**
 	 * Update the status and store it in the local or cluster wide map.
+	 * 
+	 * @return Fluent API
 	 */
-	void updateStatus();
+	MigrationStatusHandler updateStatus();
 
 	/**
 	 * Name of the schema.
@@ -42,9 +44,9 @@ public interface MigrationStatus {
 	 * Set the name of the migration (eg. name of the schema or release which started it)
 	 * 
 	 * @param name
-	 * @return
+	 * @return Fluent API
 	 */
-	MigrationStatus setSourceName(String name);
+	MigrationStatusHandler setSourceName(String name);
 
 	/**
 	 * Schema version.
@@ -57,9 +59,9 @@ public interface MigrationStatus {
 	 * Set the version of the element which started the migration (optional).
 	 * 
 	 * @param version
-	 * @return
+	 * @return Fluent API
 	 */
-	MigrationStatus setSourceVersion(String version);
+	MigrationStatusHandler setSourceVersion(String version);
 
 	/**
 	 * Schema version.
@@ -72,9 +74,9 @@ public interface MigrationStatus {
 	 * Set the version of the target version of the element we are migrating. (optional)
 	 * 
 	 * @param version
-	 * @return
+	 * @return Fluent API
 	 */
-	MigrationStatus setTargetVersion(String version);
+	MigrationStatusHandler setTargetVersion(String version);
 
 	/**
 	 * Get total number of elements.
@@ -95,17 +97,33 @@ public interface MigrationStatus {
 	 * 
 	 * @param totalElements
 	 *            total number
+	 * @return Fluent API
 	 */
-	void setTotalElements(int totalElements);
+	MigrationStatusHandler setTotalElements(int totalElements);
 
 	/**
 	 * Increase the number of elements done
+	 * 
+	 * @return Fluent API
 	 */
-	void incDoneElements();
+	MigrationStatusHandler incDoneElements();
 
-	void done(Message<Object> message);
+	/**
+	 * Update status and inform all the channels.
+	 * 
+	 * @return Fluent API
+	 */
 
-	void handleError(Message<Object> message, Throwable error, String string);
+	MigrationStatusHandler done();
+
+	/**
+	 * Handle the error and inform all channels.
+	 * 
+	 * @param error
+	 * @param string
+	 * @return Fluent API
+	 */
+	MigrationStatusHandler handleError(Throwable error, String string);
 
 	/**
 	 * Returns the human readable status.
@@ -132,8 +150,8 @@ public interface MigrationStatus {
 	 * Set the source element uuid.
 	 * 
 	 * @param sourceUuid
-	 * @return
+	 * @return Fluent API
 	 */
-	MigrationStatus setSourceUuid(String sourceUuid);
+	MigrationStatusHandler setSourceUuid(String sourceUuid);
 
 }

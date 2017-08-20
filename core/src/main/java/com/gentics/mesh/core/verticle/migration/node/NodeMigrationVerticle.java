@@ -16,9 +16,9 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationVerticle;
-import com.gentics.mesh.core.verticle.migration.MigrationStatus;
+import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.migration.MigrationType;
-import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusImpl;
+import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import dagger.Lazy;
@@ -64,7 +64,7 @@ public class NodeMigrationVerticle extends AbstractMigrationVerticle<NodeMigrati
 	private void registerSchemaMigration() {
 		schemaMigrationConsumer = Mesh.vertx().eventBus().consumer(SCHEMA_MIGRATION_ADDRESS, (message) -> {
 
-			MigrationStatus status = new MigrationStatusImpl(message, vertx, MigrationType.schema);
+			MigrationStatusHandler status = new MigrationStatusHandlerImpl(message, vertx, MigrationType.schema);
 			try {
 				String schemaUuid = message.headers().get(UUID_HEADER);
 				Objects.requireNonNull(schemaUuid, "The schemaUuid was not set the header.");
@@ -114,13 +114,13 @@ public class NodeMigrationVerticle extends AbstractMigrationVerticle<NodeMigrati
 						db.tx(() -> {
 							handler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, status).await();
 						});
-						status.done(message);
+						status.done();
 					}, (error) -> {
-						status.handleError(message, error, "Migration for schema {" + schemaUuid + "} is already running.");
+						status.handleError(error, "Migration for schema {" + schemaUuid + "} is already running.");
 					});
 				});
 			} catch (Exception e) {
-				status.handleError(message, e, "Error while preparing node migration.");
+				status.handleError(e, "Error while preparing node migration.");
 			}
 		});
 

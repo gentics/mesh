@@ -20,7 +20,10 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.AsyncMap;
 import io.vertx.core.shareddata.LocalMap;
 
-public abstract class AbstractMigrationStatus implements MigrationStatus {
+/**
+ * Abstract migration handler which contains the basic methods to implement a custom status handler.
+ */
+public abstract class AbstractMigrationStatusHandler implements MigrationStatusHandler {
 
 	public static final String ERROR_STATUS = "error";
 	public static final String RUNNING_STATUS = "running";
@@ -29,7 +32,7 @@ public abstract class AbstractMigrationStatus implements MigrationStatus {
 
 	protected MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
-	private static final Logger log = LoggerFactory.getLogger(AbstractMigrationStatus.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractMigrationStatusHandler.class);
 
 	protected Vertx vertx;
 
@@ -53,7 +56,7 @@ public abstract class AbstractMigrationStatus implements MigrationStatus {
 
 	protected int doneElements = 0;
 
-	public AbstractMigrationStatus(Message<Object> message, Vertx vertx, MigrationType type) {
+	public AbstractMigrationStatusHandler(Message<Object> message, Vertx vertx, MigrationType type) {
 		this.message = message;
 		this.vertx = vertx;
 		this.type = type;
@@ -67,7 +70,7 @@ public abstract class AbstractMigrationStatus implements MigrationStatus {
 	}
 
 	@Override
-	public MigrationStatus setSourceName(String name) {
+	public MigrationStatusHandler setSourceName(String name) {
 		this.sourceName = name;
 		return this;
 	}
@@ -78,7 +81,7 @@ public abstract class AbstractMigrationStatus implements MigrationStatus {
 	}
 
 	@Override
-	public MigrationStatus setSourceUuid(String sourceUuid) {
+	public MigrationStatusHandler setSourceUuid(String sourceUuid) {
 		this.sourceUuid = sourceUuid;
 		return this;
 	}
@@ -89,7 +92,7 @@ public abstract class AbstractMigrationStatus implements MigrationStatus {
 	}
 
 	@Override
-	public MigrationStatus setSourceVersion(String sourceVersion) {
+	public MigrationStatusHandler setSourceVersion(String sourceVersion) {
 		this.sourceVersion = sourceVersion;
 		return this;
 	}
@@ -100,7 +103,7 @@ public abstract class AbstractMigrationStatus implements MigrationStatus {
 	}
 
 	@Override
-	public MigrationStatus setTargetVersion(String targetVersion) {
+	public MigrationStatusHandler setTargetVersion(String targetVersion) {
 		this.targetVersion = targetVersion;
 		return this;
 	}
@@ -121,8 +124,9 @@ public abstract class AbstractMigrationStatus implements MigrationStatus {
 	}
 
 	@Override
-	public void setTotalElements(int totalElements) {
+	public MigrationStatusHandler setTotalElements(int totalElements) {
 		this.totalElements = totalElements;
+		return this;
 	}
 
 	@Override
@@ -131,8 +135,9 @@ public abstract class AbstractMigrationStatus implements MigrationStatus {
 	}
 
 	@Override
-	public void incDoneElements() {
+	public MigrationStatusHandler incDoneElements() {
 		doneElements++;
+		return this;
 	}
 
 	@Override
@@ -148,7 +153,7 @@ public abstract class AbstractMigrationStatus implements MigrationStatus {
 	public abstract JsonObject createInfoJson();
 
 	@Override
-	public void updateStatus(JsonObject info) {
+	public MigrationStatusHandler updateStatus(JsonObject info) {
 		if (Mesh.mesh().getOptions().getClusterOptions().isEnabled()) {
 			vertx.sharedData().getLock("mesh.data.lock", rhl -> {
 				if (rhl.failed()) {
@@ -201,6 +206,7 @@ public abstract class AbstractMigrationStatus implements MigrationStatus {
 			purgeOldEntries(obj);
 			map.put("data", obj);
 		}
+		return this;
 	}
 
 	public void purgeOldEntries(JsonObject obj) {
@@ -270,11 +276,12 @@ public abstract class AbstractMigrationStatus implements MigrationStatus {
 		return statusMBeanName;
 	}
 
-	private void stopJMX(ObjectName statusMBeanName) {
+	private MigrationStatusHandler stopJMX(ObjectName statusMBeanName) {
 		try {
 			mbs.unregisterMBean(statusMBeanName);
 		} catch (Exception e1) {
 		}
+		return this;
 	}
 
 	/**
@@ -284,16 +291,15 @@ public abstract class AbstractMigrationStatus implements MigrationStatus {
 	 * <li>Reply to the invoker of the migration</li>
 	 * <li>Send an event to other potential consumers on the eventbus</li>
 	 * </ul>
-	 * 
-	 * @param message
 	 */
-	public void done(Message<Object> message) {
+	public MigrationStatusHandler done() {
 		log.info("Migration completed without errors.");
 		this.status = COMPLETED_STATUS;
 		updateStatus(createInfoJson());
 		JsonObject result = new JsonObject().put("type", "completed");
 		message.reply(result);
 		vertx.eventBus().publish(MESH_MIGRATION, result);
+		return this;
 	}
 
 	/**
@@ -308,12 +314,13 @@ public abstract class AbstractMigrationStatus implements MigrationStatus {
 	 * @param error
 	 * @param failureMessage
 	 */
-	public void handleError(Message<Object> message, Throwable error, String failureMessage) {
+	public MigrationStatusHandler handleError(Throwable error, String failureMessage) {
 		log.error("Error handling migration", error);
 		this.status = ERROR_STATUS;
 		updateStatus(createInfoJson());
 		message.fail(100, failureMessage);
 		vertx.eventBus().publish(MESH_MIGRATION, new JsonObject().put("type", "failed"));
+		return this;
 	}
 
 }

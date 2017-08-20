@@ -13,9 +13,9 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationVerticle;
-import com.gentics.mesh.core.verticle.migration.MigrationStatus;
+import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.migration.MigrationType;
-import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusImpl;
+import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import dagger.Lazy;
@@ -62,7 +62,7 @@ public class MicronodeMigrationVerticle extends AbstractMigrationVerticle<Micron
 	 */
 	private void registerMicroschemaMigration() {
 		microschemaMigrationConsumer = vertx.eventBus().consumer(MICROSCHEMA_MIGRATION_ADDRESS, (message) -> {
-			MigrationStatus status = new MigrationStatusImpl(message, vertx, MigrationType.microschema);
+			MigrationStatusHandler status = new MigrationStatusHandlerImpl(message, vertx, MigrationType.microschema);
 			try {
 				
 				String microschemaUuid = message.headers().get(UUID_HEADER);
@@ -108,13 +108,13 @@ public class MicronodeMigrationVerticle extends AbstractMigrationVerticle<Micron
 							handler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, status)
 									.await();
 						});
-						status.done(message);
+						status.done();
 					}, (error) -> {
-						status.handleError(message, error, "Migration for microschema {" + microschemaUuid + "} is already running.");
+						status.handleError(error, "Migration for microschema {" + microschemaUuid + "} is already running.");
 					});
 				});
 			} catch (Exception e) {
-				status.handleError(message, e, "Error while preparing micronode migration.");
+				status.handleError(e, "Error while preparing micronode migration.");
 			}
 		});
 

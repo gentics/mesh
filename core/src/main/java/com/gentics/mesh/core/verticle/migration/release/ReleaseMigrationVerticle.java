@@ -10,9 +10,9 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationVerticle;
-import com.gentics.mesh.core.verticle.migration.MigrationStatus;
+import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.migration.MigrationType;
-import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusImpl;
+import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.core.verticle.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -56,7 +56,7 @@ public class ReleaseMigrationVerticle extends AbstractMigrationVerticle<NodeMigr
 	 */
 	private void registerReleaseMigration() {
 		releaseMigrationConsumer = vertx.eventBus().consumer(RELEASE_MIGRATION_ADDRESS, (message) -> {
-			MigrationStatus status = new MigrationStatusImpl(message, vertx, MigrationType.release);
+			MigrationStatusHandler status = new MigrationStatusHandlerImpl(message, vertx, MigrationType.release);
 			try {
 				String projectUuid = message.headers().get(PROJECT_UUID_HEADER);
 				String releaseUuid = message.headers().get(UUID_HEADER);
@@ -81,13 +81,13 @@ public class ReleaseMigrationVerticle extends AbstractMigrationVerticle<NodeMigr
 						db.tx(() -> {
 							handler.migrateNodes(release).await();
 						});
-						status.done(message);
+						status.done();
 					}, (error) -> {
-						status.handleError(message, error, "Release migration for release { " + releaseUuid + "} failed.");
+						status.handleError(error, "Release migration for release { " + releaseUuid + "} failed.");
 					});
 				});
 			} catch (Exception e) {
-				status.handleError(message, e, "Error while preparing release migration.");
+				status.handleError(e, "Error while preparing release migration.");
 			}
 		});
 	}

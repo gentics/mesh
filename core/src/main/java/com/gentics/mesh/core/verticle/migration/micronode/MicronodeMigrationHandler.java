@@ -25,7 +25,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationHandler;
-import com.gentics.mesh.core.verticle.migration.MigrationStatus;
+import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
@@ -62,7 +62,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 * @return Completable which will be completed once the migration has completed
 	 */
 	public Completable migrateMicronodes(Project project, Release release, MicroschemaContainerVersion fromVersion,
-			MicroschemaContainerVersion toVersion, MigrationStatus status) {
+			MicroschemaContainerVersion toVersion, MigrationStatusHandler status) {
 		String releaseUuid = db.tx(release::getUuid);
 
 		// Get the containers, that need to be transformed

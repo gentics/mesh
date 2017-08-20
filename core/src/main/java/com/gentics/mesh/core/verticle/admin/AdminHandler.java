@@ -16,7 +16,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.core.verticle.migration.MigrationStatus;
+import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
 
@@ -129,7 +129,7 @@ public class AdminHandler extends AbstractHandler {
 	 */
 	public void handleMigrationStatus(InternalActionContext ac) {
 		if (vertx.isClustered()) {
-			vertx.sharedData().getClusterWideMap(MigrationStatus.MIGRATION_DATA_MAP_KEY, rh -> {
+			vertx.sharedData().getClusterWideMap(MigrationStatusHandler.MIGRATION_DATA_MAP_KEY, rh -> {
 				if (rh.failed()) {
 					log.error("Could not load status map.", rh.cause());
 					ac.fail(rh.cause());

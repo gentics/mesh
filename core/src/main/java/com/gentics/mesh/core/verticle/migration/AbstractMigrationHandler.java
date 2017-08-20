@@ -48,7 +48,6 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 		this.db = db;
 		this.searchQueue = searchQueue;
 		this.binaryFieldHandler = binaryFieldHandler;
-
 	}
 
 	/**

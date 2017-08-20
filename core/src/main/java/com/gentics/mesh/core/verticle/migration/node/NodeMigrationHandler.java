@@ -29,7 +29,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationHandler;
-import com.gentics.mesh.core.verticle.migration.MigrationStatus;
+import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
@@ -69,16 +69,16 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 *            Old container version
 	 * @param toVersion
 	 *            New container version
-	 * @param statusMBean
-	 *            status MBean
+	 * @param status
+	 *            status handler which will be used to track the progress
+	 * @return Completable which is completed once the migration finishes
 	 */
 	public Completable migrateNodes(Project project, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion,
-			MigrationStatus status) {
-		String releaseUuid = db.tx(release::getUuid);
+			MigrationStatusHandler status) {
 
 		// Get the containers of nodes, that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
 		// versions.
-		List<? extends NodeGraphFieldContainer> fieldContainers = db.tx(() -> fromVersion.getFieldContainers(releaseUuid));
+		List<? extends NodeGraphFieldContainer> fieldContainers = db.tx(() -> fromVersion.getFieldContainers(release.getUuid()));
 
 		// No field containers -> no nodes, migration is done
 		if (fieldContainers.isEmpty()) {
@@ -110,8 +110,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 		// Iterate over all containers and invoke a migration for each one
 		for (NodeGraphFieldContainer container : fieldContainers) {
-			SearchQueueBatch batch = migrateContainer(ac, container, releaseUuid, toVersion, migrationScripts, release, newSchema, errorsDetected,
-					touchedFields);
+			SearchQueueBatch batch = migrateContainer(ac, container, toVersion, migrationScripts, release, newSchema, errorsDetected, touchedFields);
 			// Process the search queue batch in order to update the search index
 			if (batch != null) {
 				batches.add(batch.processAsync());
@@ -135,7 +134,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * 
 	 * @param ac
 	 * @param container
-	 * @param releaseUuid
+	 *            Container to be migrated
 	 * @param toVersion
 	 * @param migrationScripts
 	 * @param release
@@ -144,10 +143,11 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @param touchedFields
 	 * @return
 	 */
-	private SearchQueueBatch migrateContainer(NodeMigrationActionContextImpl ac, NodeGraphFieldContainer container, String releaseUuid,
-			SchemaContainerVersion toVersion, List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Release release,
-			SchemaModel newSchema, List<Exception> errorsDetected, Set<String> touchedFields) {
+	private SearchQueueBatch migrateContainer(NodeMigrationActionContextImpl ac, NodeGraphFieldContainer container, SchemaContainerVersion toVersion,
+			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Release release, SchemaModel newSchema, List<Exception> errorsDetected,
+			Set<String> touchedFields) {
 		SearchQueueBatch batch = db.tx((tx) -> {
+			String releaseUuid = release.getUuid();
 			SearchQueueBatch sqb = searchQueue.create();
 
 			try {

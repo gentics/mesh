@@ -1,7 +1,8 @@
 package com.gentics.mesh.core.verticle.migration.impl;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.verticle.migration.AbstractMigrationStatus;
+import com.gentics.mesh.core.verticle.migration.AbstractMigrationStatusHandler;
+import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.migration.MigrationType;
 import com.gentics.mesh.util.DateUtils;
 
@@ -12,9 +13,9 @@ import io.vertx.core.json.JsonObject;
 /**
  * The migration status class keeps track of the status of a migration and manages also the errors and event handling.
  */
-public class MigrationStatusImpl extends AbstractMigrationStatus {
+public class MigrationStatusHandlerImpl extends AbstractMigrationStatusHandler {
 
-	public MigrationStatusImpl(Message<Object> message, Vertx vertx, MigrationType type) {
+	public MigrationStatusHandlerImpl(Message<Object> message, Vertx vertx, MigrationType type) {
 		super(message, vertx, type);
 	}
 
@@ -41,8 +42,9 @@ public class MigrationStatusImpl extends AbstractMigrationStatus {
 	}
 
 	@Override
-	public void updateStatus() {
+	public MigrationStatusHandler updateStatus() {
 		updateStatus(createInfoJson());
+		return this;
 	}
 
 }
