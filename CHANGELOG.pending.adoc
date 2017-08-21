@@ -1,0 +1,1 @@
+icon:check[] REST: Invalid date were not correctly handled. An error will now be thrown if a date string can't be parsed.

@@ -3,6 +3,7 @@ package com.gentics.mesh.core.field.date;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.util.DateUtils.fromISO8601;
 import static com.gentics.mesh.util.DateUtils.toISO8601;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -137,11 +138,21 @@ public class DateFieldEndpointTest extends AbstractFieldEndpointTest {
 		}
 	}
 
+	@Test
+	public void testDateFormat() {
+		try (Tx tx = tx()) {
+			String invalidDate = "2017-08-21T10:46:26+0200";
+			updateNodeFailure(FIELD_NAME, new DateFieldImpl().setDate(invalidDate), BAD_REQUEST, "error_date_format_invalid", invalidDate);
+		}
+	}
+
 	/**
 	 * Get the date value
 	 *
-	 * @param container container
-	 * @param fieldName field name
+	 * @param container
+	 *            container
+	 * @param fieldName
+	 *            field name
 	 * @return date value (may be null)
 	 */
 	protected Long getDateValue(NodeGraphFieldContainer container, String fieldName) {

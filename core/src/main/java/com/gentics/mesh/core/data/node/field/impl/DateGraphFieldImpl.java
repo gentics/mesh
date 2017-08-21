@@ -51,9 +51,9 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 
 		// Handle Update / Create
 		if (dateGraphField == null) {
-			container.createDate(fieldKey).setDate(fromISO8601(dateField.getDate()));
+			container.createDate(fieldKey).setDate(fromISO8601(dateField.getDate(), true));
 		} else {
-			dateGraphField.setDate(fromISO8601(dateField.getDate()));
+			dateGraphField.setDate(fromISO8601(dateField.getDate(), true));
 		}
 	};
 
