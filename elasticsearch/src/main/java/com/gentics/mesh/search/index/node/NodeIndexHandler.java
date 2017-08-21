@@ -483,7 +483,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		builder.setSize(INITIAL_BATCH_SIZE);
 		builder.setScroll(new TimeValue(60000));
 		SearchResponse scrollResp = builder.execute().actionGet();
-
+		long unfilteredCount = scrollResp.getHits().getTotalHits();
 		// The scrolling iterator will wrap the current response and query ES for more data if needed.
 		ScrollingIterator scrollingIt = new ScrollingIterator(client, scrollResp);
 		Page<? extends NodeContent> page = db.tx(() -> {
@@ -552,7 +552,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					.filter(hit -> {
 						return hit != null;
 					});
-			return new DynamicStreamPageImpl<>(stream, pagingInfo);
+			DynamicStreamPageImpl<NodeContent> dynamicPage = new DynamicStreamPageImpl<>(stream, pagingInfo);
+			dynamicPage.setUnfilteredSearchCount(unfilteredCount);
+			return dynamicPage;
 		});
 		return page;
 	}
