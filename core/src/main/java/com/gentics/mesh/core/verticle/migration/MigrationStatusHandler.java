@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.migration;
 
-import io.vertx.core.json.JsonObject;
+import com.gentics.mesh.core.rest.admin.MigrationInfo;
+import com.gentics.mesh.core.rest.admin.MigrationType;
 
 /**
  * Interface for migration status of node, release and micronode migrations.
@@ -24,7 +25,7 @@ public interface MigrationStatusHandler {
 	 * @param info
 	 * @return Fluent API
 	 */
-	MigrationStatusHandler updateStatus(JsonObject info);
+	MigrationStatusHandler updateStatus(MigrationInfo info);
 
 	/**
 	 * Update the status and store it in the local or cluster wide map.

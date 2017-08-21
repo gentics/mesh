@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.admin;
 
+import static com.gentics.mesh.core.rest.admin.MigrationStatus.IDLE;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -17,6 +18,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.admin.MeshStatusResponse;
+import com.gentics.mesh.core.rest.admin.MigrationStatus;
+import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -146,35 +149,28 @@ public class AdminHandler extends AbstractHandler {
 							log.error("Could not load status data from map.", dh.cause());
 							ac.fail(dh.cause());
 						} else {
-							JsonObject obj = (JsonObject) dh.result();
-							if (obj != null) {
-								System.out.println(obj.encodePrettily());
+							MigrationStatusResponse response = (MigrationStatusResponse) dh.result();
+							if (response == null) {
+								response = new MigrationStatusResponse();
 							}
-							// TODO return the correct json
-							ac.send(message(ac, "migration_status_idle"), OK);
+							// TODO determine the latest status
+							MigrationStatus latestStatus = IDLE;
+							response.setStatus(latestStatus);
+							ac.send(response, OK);
 						}
 					});
 				}
 			});
-
-			// vertx.sharedData().getClusterWideMap("migrationStatus", rh -> {
-			// if (rh.failed()) {
-			// System.out.println("failed");
-			// rh.cause().printStackTrace();
-			// } else {
-			// rh.result().get("status", vh -> {
-			// ac.respond(message(ac, "test"), OK);
-			// });
-			// }
-			// });
 		} else {
-			LocalMap<String, String> map = vertx.sharedData().getLocalMap("migrationStatus");
-			String statusKey = "migration_status_idle";
-			String currentStatusKey = map.get("status");
-			if (currentStatusKey != null) {
-				statusKey = currentStatusKey;
+			LocalMap<String, MigrationStatusResponse> map = vertx.sharedData().getLocalMap(MigrationStatusHandler.MIGRATION_DATA_MAP_KEY);
+			MigrationStatusResponse response = map.get("data");
+			if (response == null) {
+				response = new MigrationStatusResponse();
 			}
-			ac.send(message(ac, statusKey), OK);
+			// TODO determine the latest status
+			MigrationStatus latestStatus = IDLE;
+			response.setStatus(latestStatus);
+			ac.send(response, OK);
 		}
 	}
 

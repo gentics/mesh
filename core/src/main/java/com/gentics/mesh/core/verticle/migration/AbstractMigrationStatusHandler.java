@@ -4,6 +4,7 @@ import static com.gentics.mesh.Events.MESH_MIGRATION;
 
 import java.lang.management.ManagementFactory;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import javax.management.MBeanServer;
@@ -11,6 +12,11 @@ import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.rest.admin.MigrationInfo;
+import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.admin.MigrationType;
+import com.gentics.mesh.util.DateUtils;
+import com.jayway.jsonpath.internal.function.numeric.Min;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -146,14 +152,16 @@ public abstract class AbstractMigrationStatusHandler implements MigrationStatusH
 	}
 
 	/**
-	 * Create the json object which contains the migration status info.
+	 * Create the info object which contains the migration status.
 	 * 
 	 * @return
 	 */
-	public abstract JsonObject createInfoJson();
+	public abstract MigrationInfo createInfo();
 
 	@Override
-	public MigrationStatusHandler updateStatus(JsonObject info) {
+	public MigrationStatusHandler updateStatus(MigrationInfo info) {
+		String startDate = DateUtils.toISO8601(getStartTime());
+
 		if (Mesh.mesh().getOptions().getClusterOptions().isEnabled()) {
 			vertx.sharedData().getLock("mesh.data.lock", rhl -> {
 				if (rhl.failed()) {
@@ -168,20 +176,29 @@ public abstract class AbstractMigrationStatusHandler implements MigrationStatusH
 							AsyncMap<Object, Object> map = rh.result();
 							map.get("data", rd -> {
 								if (rd.succeeded()) {
-									JsonObject obj = (JsonObject) rd.result();
-									if (obj == null) {
-										obj = new JsonObject();
-									}
-									String key = String.valueOf(getStartTime());
-									obj.put(key, info);
-
-									// TODO TESTCODE
-									for (int i = 0; i < 30; i++) {
-										obj.put(String.valueOf(i), info);
+									MigrationStatusResponse response = (MigrationStatusResponse) rd.result();
+									if (response == null) {
+										response = new MigrationStatusResponse();
 									}
 
-									purgeOldEntries(obj);
-									map.put("data", obj, ph -> {
+									MigrationInfo currentInfo = response.getMigrations().stream().filter(e -> startDate.equals(e.getStartDate()))
+											.findFirst().orElse(new MigrationInfo());
+
+									// We may have located a new migration. Lets add it to the list
+									if (!response.getMigrations().contains(currentInfo)) {
+										response.getMigrations().add(currentInfo);
+									}
+
+									// String key = String.valueOf(getStartTime());
+									// obj.put(key, info);
+									//
+									// // // TODO TESTCODE
+									// // for (int i = 0; i < 30; i++) {
+									// // obj.put(String.valueOf(i), info);
+									// // }
+									//
+									purgeOldEntries(response.getMigrations());
+									map.put("data", response, ph -> {
 										if (ph.failed()) {
 											log.error("Could not store updated entry in map.", ph.cause());
 										}
@@ -198,35 +215,44 @@ public abstract class AbstractMigrationStatusHandler implements MigrationStatusH
 			});
 		} else {
 			LocalMap<Object, Object> map = Mesh.vertx().sharedData().getLocalMap(MIGRATION_DATA_MAP_KEY);
-			JsonObject obj = (JsonObject) map.get("data");
-			if (obj == null) {
-				obj = new JsonObject();
+			MigrationStatusResponse response = (MigrationStatusResponse) map.get("data");
+			if (response == null) {
+				response = new MigrationStatusResponse();
 			}
-			obj.put(String.valueOf(getStartTime()), createInfoJson());
-			purgeOldEntries(obj);
-			map.put("data", obj);
+
+			MigrationInfo currentInfo = response.getMigrations().stream().filter(e -> startDate.equals(e.getStartDate())).findFirst().orElse(null);
+
+			// We need to add the new migration to the list
+			if (currentInfo != null) {
+				response.getMigrations().remove(currentInfo);
+			}
+			response.getMigrations().add(currentInfo);
+
+			purgeOldEntries(response.getMigrations());
+			if (map.containsKey("data")) {
+				map.replace("data", response);
+			} else {
+				map.put("data", response);
+			}
 		}
 		return this;
 	}
 
-	public void purgeOldEntries(JsonObject obj) {
-		Set<String> bogusKeys = new HashSet<>();
-		obj.fieldNames().stream().sorted((o1, o2) -> {
-			Long key1 = Long.valueOf(o1);
-			Long key2 = Long.valueOf(o2);
+	public void purgeOldEntries(List<MigrationInfo> list) {
+		Set<MigrationInfo> oldInfos = new HashSet<>();
+		list.stream().sorted((o1, o2) -> {
+			Long key1 = Long.valueOf(DateUtils.fromISO8601(o1.getStartDate()));
+			Long key2 = Long.valueOf(DateUtils.fromISO8601(o2.getStartDate()));
 			return Long.compare(key1, key2);
 		}).skip(MAX_MIGRATION_DATE_ENTRIES).map(e -> {
-			bogusKeys.add(e);
+			if (log.isDebugEnabled()) {
+				log.debug("Removed info with date {" + e.getStartDate() + "} from object.");
+			}
+			oldInfos.add(e);
 			return null;
 		});
-		// Finally remove the bogus keys
-		for (String key : bogusKeys) {
-			if (log.isDebugEnabled()) {
-				log.debug("Removed {" + key + "} from object.");
-			}
-			obj.remove(key);
-		}
-
+		// Finally remove the old infos
+		list.removeAll(oldInfos);
 	}
 
 	// /**
@@ -295,7 +321,7 @@ public abstract class AbstractMigrationStatusHandler implements MigrationStatusH
 	public MigrationStatusHandler done() {
 		log.info("Migration completed without errors.");
 		this.status = COMPLETED_STATUS;
-		updateStatus(createInfoJson());
+		updateStatus();
 		JsonObject result = new JsonObject().put("type", "completed");
 		message.reply(result);
 		vertx.eventBus().publish(MESH_MIGRATION, result);
@@ -317,7 +343,7 @@ public abstract class AbstractMigrationStatusHandler implements MigrationStatusH
 	public MigrationStatusHandler handleError(Throwable error, String failureMessage) {
 		log.error("Error handling migration", error);
 		this.status = ERROR_STATUS;
-		updateStatus(createInfoJson());
+		updateStatus();
 		message.fail(100, failureMessage);
 		vertx.eventBus().publish(MESH_MIGRATION, new JsonObject().put("type", "failed"));
 		return this;

@@ -8,6 +8,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
@@ -121,10 +122,11 @@ public class AdminEndpoint extends AbstractEndpoint {
 	 */
 	private void addMeshStatusHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.description("Return the mesh system status.");
+		endpoint.description("Return the Gentics Mesh server status.");
 		endpoint.path("/status");
 		endpoint.method(GET);
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "System status");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(OK, adminExamples.createMeshStatusResponse(MeshStatus.READY), "Status of the Gentics Mesh server.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			//TODO this is currently polled by apa. We need to update their monitoring as well if we change this

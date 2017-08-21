@@ -32,7 +32,9 @@ public interface AdminClientMethods {
 	 * Invoke a graph database export.
 	 * 
 	 * @return
+	 * @deprecated Endpoint currently not supported
 	 */
+	@Deprecated
 	MeshRequest<GenericMessageResponse> invokeExport();
 
 	/**
@@ -46,7 +48,9 @@ public interface AdminClientMethods {
 	 * Invoke a graph database import.
 	 * 
 	 * @return
+	 * @deprecated Endpoint currently not supported
 	 */
+	@Deprecated
 	MeshRequest<GenericMessageResponse> invokeImport();
 
 }

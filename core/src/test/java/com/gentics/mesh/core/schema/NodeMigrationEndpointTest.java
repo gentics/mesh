@@ -126,6 +126,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		replyFuture.get(10, SECONDS);
 		MigrationStatusResponse status = call(() -> client().migrationStatus());
 		assertEquals(IDLE, status.getStatus());
+		assertEquals(1, status.getMigrations().size());
 	}
 
 	@Test

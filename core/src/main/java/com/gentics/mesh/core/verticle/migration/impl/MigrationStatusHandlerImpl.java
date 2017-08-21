@@ -1,14 +1,14 @@
 package com.gentics.mesh.core.verticle.migration.impl;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.rest.admin.MigrationInfo;
+import com.gentics.mesh.core.rest.admin.MigrationType;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationStatusHandler;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.verticle.migration.MigrationType;
 import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonObject;
 
 /**
  * The migration status class keeps track of the status of a migration and manages also the errors and event handling.
@@ -20,30 +20,30 @@ public class MigrationStatusHandlerImpl extends AbstractMigrationStatusHandler {
 	}
 
 	@Override
-	public JsonObject createInfoJson() {
-		JsonObject info = new JsonObject();
-		info.put("type", getType());
-		info.put("status", getStatus());
-		info.put("startDate", DateUtils.toISO8601(getStartTime()));
-		info.put("sourceName", getSourceName());
-		info.put("sourceUuid", getSourceUuid());
+	public MigrationInfo createInfo() {
+		MigrationInfo info = new MigrationInfo();
+		info.setType(getType());
+		info.setStatus(getStatus());
+		info.setStartDate(DateUtils.toISO8601(getStartTime()));
+		info.setSourceName(getSourceName());
+		info.setSourceUuid(getSourceUuid());
 		String version = getSourceVersion();
 		if (version != null) {
-			info.put("sourceVersion", getSourceVersion());
+			info.setSourceVersion(getSourceVersion());
 		}
 		String targetVersion = getTargetVersion();
 		if (targetVersion != null) {
-			info.put("targetVersion", targetVersion);
+			info.setTargetVersion(targetVersion);
 		}
-		info.put("total", getTotalElements());
-		info.put("done", getDoneElements());
-		info.put("nodeId", Mesh.mesh().getOptions().getNodeName());
+		info.setTotal(getTotalElements());
+		info.setDone(getDoneElements());
+		info.setNodeId(Mesh.mesh().getOptions().getNodeName());
 		return info;
 	}
 
 	@Override
 	public MigrationStatusHandler updateStatus() {
-		updateStatus(createInfoJson());
+		updateStatus(createInfo());
 		return this;
 	}
 
