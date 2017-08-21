@@ -12,6 +12,8 @@ import java.util.Objects;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
+import com.gentics.mesh.core.rest.admin.MeshStatusResponse;
+import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -867,13 +869,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> schemaMigrationStatus() {
-		return prepareRequest(GET, "/admin/status/migrations", GenericMessageResponse.class);
+	public MeshRequest<MigrationStatusResponse> migrationStatus() {
+		return prepareRequest(GET, "/admin/status/migrations", MigrationStatusResponse.class);
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> meshStatus() {
-		return prepareRequest(GET, getBaseUri() + "/admin/status", GenericMessageResponse.class);
+	public MeshRequest<MeshStatusResponse> meshStatus() {
+		return prepareRequest(GET, getBaseUri() + "/admin/status", MeshStatusResponse.class);
 	}
 
 	@Override

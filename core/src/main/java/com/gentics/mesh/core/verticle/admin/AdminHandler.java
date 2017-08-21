@@ -14,7 +14,9 @@ import java.util.Arrays;
 import javax.inject.Inject;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.rest.admin.MeshStatusResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -35,8 +37,10 @@ public class AdminHandler extends AbstractHandler {
 
 	private Database db;
 
-	public void handleStatus(InternalActionContext ac) {
-		ac.send(message(ac, "status_ready"), OK);
+	public void handleMeshStatus(InternalActionContext ac) {
+		MeshStatusResponse response = new MeshStatusResponse();
+		response.setStatus(Mesh.mesh().getStatus());
+		ac.send(response, OK);
 	}
 
 	@Inject
@@ -54,7 +58,10 @@ public class AdminHandler extends AbstractHandler {
 			if (!ac.getUser().hasAdminRole()) {
 				throw error(FORBIDDEN, "error_admin_permission_required");
 			}
+			MeshStatus oldStatus = Mesh.mesh().getStatus();
+			Mesh.mesh().setStatus(MeshStatus.BACKUP);
 			db.backupGraph(Mesh.mesh().getOptions().getStorageOptions().getBackupDirectory());
+			Mesh.mesh().setStatus(oldStatus);
 			return Single.just(message(ac, "backup_finished"));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
@@ -143,7 +150,7 @@ public class AdminHandler extends AbstractHandler {
 							if (obj != null) {
 								System.out.println(obj.encodePrettily());
 							}
-							//TODO return the correct json
+							// TODO return the correct json
 							ac.send(message(ac, "migration_status_idle"), OK);
 						}
 					});

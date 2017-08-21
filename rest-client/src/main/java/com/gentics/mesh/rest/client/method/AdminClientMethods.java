@@ -1,5 +1,7 @@
 package com.gentics.mesh.rest.client.method;
 
+import com.gentics.mesh.core.rest.admin.MeshStatusResponse;
+import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 
@@ -10,14 +12,14 @@ public interface AdminClientMethods {
 	 * 
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> meshStatus();
+	MeshRequest<MeshStatusResponse> meshStatus();
 
 	/**
-	 * Return the current schema/microschema migration status.
+	 * Return the migration status.
 	 * 
 	 * @return
 	 */
-	MeshRequest<GenericMessageResponse> schemaMigrationStatus();
+	MeshRequest<MigrationStatusResponse> migrationStatus();
 
 	/**
 	 * Invoke a graph database backup.

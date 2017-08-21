@@ -3,6 +3,8 @@ package com.gentics.mesh.core.schema;
 import static com.gentics.mesh.Events.MESH_MIGRATION;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.admin.MigrationStatus.IDLE;
+import static com.gentics.mesh.core.rest.admin.MigrationStatus.RUNNING;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.expectResponseMessage;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -33,6 +35,8 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.admin.MigrationStatus;
+import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -125,11 +129,11 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		try (Tx tx = tx()) {
 			// Assert migration is in idle
-			GenericMessageResponse status = call(() -> client().schemaMigrationStatus());
-			expectResponseMessage(status, "migration_status_idle");
+			MigrationStatusResponse migrationStatus = call(() -> client().migrationStatus());
+			assertEquals(IDLE, migrationStatus.getStatus());
 
 			// Trigger migration
-			status = call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
+			GenericMessageResponse status = call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
 			expectResponseMessage(status, "migration_invoked", "content");
 
 			SchemaResponse schema = call(() -> client().findSchemaByUuid(container.getUuid()));
@@ -140,8 +144,8 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			Thread.sleep(3000);
 
 			// Assert migration is running
-			status = call(() -> client().schemaMigrationStatus());
-			expectResponseMessage(status, "migration_status_running");
+			migrationStatus = call(() -> client().migrationStatus());
+			assertEquals(RUNNING, migrationStatus.getStatus());
 			Thread.sleep(10000);
 
 			// Check for 45 seconds whether the migration finishes
@@ -149,7 +153,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 				try {
 					Thread.sleep(1000);
 					// Assert migration has finished
-					status = call(() -> client().schemaMigrationStatus());
+					migrationStatus = call(() -> client().migrationStatus());
 					expectResponseMessage(status, "migration_status_idle");
 					break;
 				} catch (ComparisonFailure e) {

@@ -3,13 +3,16 @@ package com.gentics.mesh.core.schema;
 import static com.gentics.mesh.Events.MICROSCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.Events.SCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.admin.MigrationStatus.IDLE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -38,7 +41,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -69,7 +72,7 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
-@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, clusterMode = true)
+@MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, clusterMode = false)
 public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Before
@@ -78,6 +81,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		options.setWorker(true);
 		vertx().deployVerticle(meshDagger().nodeMigrationVerticle(), options);
 		vertx().deployVerticle(meshDagger().micronodeMigrationVerticle(), options);
+	}
+
+	@Test
+	public void testIdleMigrationStatus() {
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertEquals(IDLE, status.getStatus());
 	}
 
 	@Test
@@ -115,7 +124,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 		failingLatch(latch);
 		replyFuture.get(10, SECONDS);
-		GenericMessageResponse response = call(() -> client().schemaMigrationStatus());
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertEquals(IDLE, status.getStatus());
 	}
 
 	@Test

@@ -137,4 +137,19 @@ public interface Mesh {
 		Mesh.mesh().run();
 	}
 
+	/**
+	 * Set the current server status.
+	 * 
+	 * @param status
+	 * @return
+	 */
+	Mesh setStatus(MeshStatus status);
+
+	/**
+	 * Return the current server status.
+	 * 
+	 * @return
+	 */
+	MeshStatus getStatus();
+
 }

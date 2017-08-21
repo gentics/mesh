@@ -31,6 +31,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -262,6 +263,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// We need to wait for other nodes and receive the graphdb
 				db.startServer();
 				initVertx(options, isClustered);
+				Mesh.mesh().setStatus(MeshStatus.WAITING_FOR_CLUSTER);
 				db.joinCluster();
 				isInitialSetup = false;
 				db.setupConnectionPool();

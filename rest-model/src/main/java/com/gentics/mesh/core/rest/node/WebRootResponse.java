@@ -1,10 +1,12 @@
 package com.gentics.mesh.core.rest.node;
 
+import com.gentics.mesh.core.rest.common.RestModel;
+
 /**
  * Webroot response which is a container for either a node response or a download response. The webroot endpoint can return either a node response or a binary
  * field download.
  */
-public class WebRootResponse {
+public class WebRootResponse implements RestModel {
 
 	private NodeResponse nodeResponse;
 

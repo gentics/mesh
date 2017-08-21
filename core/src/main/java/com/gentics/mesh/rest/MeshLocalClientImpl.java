@@ -12,6 +12,8 @@ import com.gentics.mesh.context.impl.LocalActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
+import com.gentics.mesh.core.rest.admin.MeshStatusResponse;
+import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -852,14 +854,14 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> meshStatus() {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public MeshRequest<MeshStatusResponse> meshStatus() {
+		LocalActionContextImpl<MeshStatusResponse> ac = createContext(MeshStatusResponse.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> schemaMigrationStatus() {
-		LocalActionContextImpl<GenericMessageResponse> ac = createContext(GenericMessageResponse.class);
+	public MeshRequest<MigrationStatusResponse> migrationStatus() {
+		LocalActionContextImpl<MigrationStatusResponse> ac = createContext(MigrationStatusResponse.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 

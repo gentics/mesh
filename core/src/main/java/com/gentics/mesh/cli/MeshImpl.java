@@ -19,6 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -54,6 +55,8 @@ public class MeshImpl implements Mesh {
 	private MeshOptions options;
 	private Vertx vertx;
 	private CountDownLatch latch = new CountDownLatch(1);
+
+	private MeshStatus status = MeshStatus.STARTING;
 
 	static {
 		// Use slf4j instead of jul
@@ -105,6 +108,7 @@ public class MeshImpl implements Mesh {
 		if (options.isUpdateCheckEnabled()) {
 			invokeUpdateCheck();
 		}
+		setStatus(MeshStatus.READY);
 		dontExit();
 	}
 
@@ -308,6 +312,7 @@ public class MeshImpl implements Mesh {
 	@Override
 	public void shutdown() throws Exception {
 		log.info("Mesh shutting down...");
+		setStatus(MeshStatus.SHUTTING_DOWN);
 		MeshComponent meshInternal = MeshInternal.get();
 		// meshInternal.searchQueue().blockUntilEmpty(120);
 		meshInternal.database().stop();
@@ -343,6 +348,17 @@ public class MeshImpl implements Mesh {
 	 */
 	private void deleteLock() {
 		new File(LOCK_FILENAME).delete();
+	}
+
+	@Override
+	public MeshStatus getStatus() {
+		return status;
+	}
+
+	@Override
+	public Mesh setStatus(MeshStatus status) {
+		this.status = status;
+		return this;
 	}
 
 }

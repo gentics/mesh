@@ -1,26 +1,39 @@
 package com.gentics.mesh.core.admin;
 
+import static com.gentics.mesh.core.rest.admin.MigrationStatus.IDLE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.expectResponseMessage;
 import static com.gentics.mesh.test.TestSize.PROJECT;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.core.rest.admin.MeshStatusResponse;
+import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true, inMemoryDB = false)
 public class AdminEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMigrationStatusWithNoMigrationRunning() {
-		GenericMessageResponse message = call(() -> client().schemaMigrationStatus());
-		expectResponseMessage(message, "migration_status_idle");
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertEquals(IDLE, status.getStatus());
+	}
+
+	@Test
+	public void testMeshStatus() {
+		Mesh.mesh().setStatus(MeshStatus.WAITING_FOR_CLUSTER);
+		MeshStatusResponse status = call(() -> client().meshStatus());
+		assertEquals(MeshStatus.WAITING_FOR_CLUSTER, status.getStatus());
 	}
 
 	@Test

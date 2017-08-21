@@ -40,7 +40,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 
 	@Override
 	public void registerEndPoints() {
-		addStatusHandler();
+		addMeshStatusHandler();
 		addMigrationStatusHandler();
 
 		secureAll();
@@ -119,7 +119,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	/**
 	 * Handler that reacts onto status requests.
 	 */
-	private void addStatusHandler() {
+	private void addMeshStatusHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.description("Return the mesh system status.");
 		endpoint.path("/status");
@@ -128,7 +128,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			//TODO this is currently polled by apa. We need to update their monitoring as well if we change this
-			handler.handleStatus(ac);
+			handler.handleMeshStatus(ac);
 		});
 
 	}
