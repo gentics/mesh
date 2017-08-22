@@ -22,6 +22,8 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.search.SearchHit;
 
 import com.gentics.ferma.Tx;
@@ -49,6 +51,7 @@ import com.tinkerpop.gremlin.Tokens.T;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import rx.Completable;
 
 /**
@@ -209,7 +212,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 					}
 
 					@Override
-					public void onFailure(Throwable e) {
+					public void onFailure(Exception e) {
 						sub.onError(e);
 					}
 				});
@@ -351,13 +354,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
 			Set<String> indices = getSelectedIndices(ac);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryStringObject.toString());
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(SearchSourceBuilder.fromXContent(XContentType.JSON.xContent().createParser(NamedXContentRegistry.EMPTY, query)));
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
 		CompletableFuture<Page<? extends T>> future = new CompletableFuture<>();
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		builder.execute().addListener(new ActionListener<SearchResponse>() {
+		builder.execute(new ActionListener<SearchResponse>() {
 
 			@Override
 			public void onResponse(SearchResponse response) {
@@ -390,7 +393,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			}
 
 			@Override
-			public void onFailure(Throwable e) {
+			public void onFailure(Exception e) {
 				log.error("Search query failed", e);
 				future.completeExceptionally(e);
 			}

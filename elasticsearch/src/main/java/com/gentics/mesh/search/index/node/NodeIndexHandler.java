@@ -62,6 +62,9 @@ import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
@@ -387,7 +390,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					}
 
 					@Override
-					public void onFailure(Throwable e) {
+					public void onFailure(Exception e) {
 						sub.onError(e);
 					}
 				});
@@ -473,7 +476,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			// queryStringObject.put("from", 0);
 			// queryStringObject.put("size", Integer.MAX_VALUE);
 			// builder.setSource(queryStringObject.toString());
-			builder.setExtraSource(queryStringObject.toString());
+			builder.setSource(SearchSourceBuilder.fromXContent(XContentType.JSON.xContent().createParser(NamedXContentRegistry.EMPTY, queryStringObject.toString())));
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
