@@ -19,8 +19,9 @@
 		<ferma.version>2.3.1-SNAPSHOT</ferma.version>
 		<ferma.orientdb.version>2.3.1-SNAPSHOT</ferma.orientdb.version>
 		<elasticsearch.version>2.4.6</elasticsearch.version>
-		<orientdb.version>2.2.25</orientdb.version>
+		<orientdb.version>2.2.26</orientdb.version>
 		<dagger.version>2.7</dagger.version>
+		<hazelcast.version>3.8.4</hazelcast.version>
 		<rx.version>1.2.3</rx.version>
 
 		<surefire.forkcount>5</surefire.forkcount>
