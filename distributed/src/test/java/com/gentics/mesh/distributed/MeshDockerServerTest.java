@@ -16,6 +16,8 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.admin.MigrationStatus;
+import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -238,7 +240,17 @@ public class MeshDockerServerTest extends AbstractClusterTest {
 		// System.out.println(call(() -> clientA.schemaMigrationStatus()).getMessage());
 		// Thread.sleep(1000);
 		// }
-		Thread.sleep(10000);
+		Thread.sleep(1000);
+
+		// Check status on nodeA
+		MigrationStatusResponse status = call(() -> clientA.migrationStatus());
+		assertEquals(MigrationStatus.IDLE, status.getStatus());
+		assertEquals(MigrationStatus.COMPLETED, status.getMigrations().get(0).getStatus());
+
+		// Check status on nodeB
+		status = call(() -> clientB.migrationStatus());
+		assertEquals(MigrationStatus.IDLE, status.getStatus());
+		assertEquals(MigrationStatus.COMPLETED, status.getMigrations().get(0).getStatus());
 
 		// NodeB: Now verify that the migration on nodeA has updated the node
 		NodeResponse response2 = call(() -> clientB.findNodeByUuid(projectName, response.getUuid()));

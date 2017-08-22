@@ -201,7 +201,7 @@ public class MeshImpl implements Mesh {
 			}
 			return latestVersion;
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			log.error("Update check failed.", e);
+			log.warn("Update check failed.", e);
 			return null;
 		}
 	}

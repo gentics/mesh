@@ -83,11 +83,11 @@ public class ReleaseMigrationVerticle extends AbstractMigrationVerticle<NodeMigr
 						});
 						status.done();
 					}, (error) -> {
-						status.handleError(error, "Release migration for release { " + releaseUuid + "} failed.");
+						status.error(error, "Release migration for release { " + releaseUuid + "} failed.");
 					});
 				});
 			} catch (Exception e) {
-				status.handleError(e, "Error while preparing release migration.");
+				status.error(e, "Error while preparing release migration.");
 			}
 		});
 	}

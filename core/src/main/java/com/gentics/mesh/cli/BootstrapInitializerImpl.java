@@ -8,6 +8,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static java.util.concurrent.TimeUnit.SECONDS;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.DatagramSocket;
@@ -19,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -173,28 +173,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	/**
-	 * Use the hazelcast cluster manager to join the cluster of mesh instances.
-	 */
-	private void joinCluster() {
-		log.info("Joining cluster...");
-		CountDownLatch latch = new CountDownLatch(1);
-		manager.join(rh -> {
-			if (!rh.succeeded()) {
-				log.error("Error while joining mesh cluster.", rh.cause());
-			} else {
-				log.info("Joined the hazelcast vert.x cluster");
-			}
-			latch.countDown();
-		});
-		try {
-			latch.await(60, SECONDS);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	/**
 	 * Initialize the local data or create the initial dataset if no local data could be found.
 	 * 
 	 * @throws Exception
@@ -269,7 +247,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.setupConnectionPool();
 				initLocalData();
 			}
-			joinCluster();
+			boolean active =false;
+			while(!active) {
+				log.info("Waiting for hazelcast to become active");
+				Thread.sleep(1000);
+				active = manager.getHazelcastInstance().getLifecycleService().isRunning();
+			}
 		} else {
 
 			searchProvider.init(options);
@@ -350,15 +333,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			if (rh.failed()) {
 				Throwable cause = rh.cause();
 				log.error("Failed to create clustered vert.x instance", cause);
-				throw new RuntimeException("Error while creating clusterd vert.x instance", cause);
+				fut.completeExceptionally(new RuntimeException("Error while creating clusterd vert.x instance", cause));
+				return;
 			}
 			Vertx vertx = rh.result();
-			manager.setVertx(vertx);
 			fut.complete(vertx);
 		});
 		try {
-			Vertx vertx = fut.get(100, SECONDS);
-			return vertx;
+			return fut.get(10, SECONDS);
 		} catch (Exception e) {
 			throw new RuntimeException("Error while creating clusterd vert.x instance");
 		}

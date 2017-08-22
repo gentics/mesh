@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.node.impl;
 
-import static com.gentics.mesh.Events.EVENT_NODE_CREATED;
-import static com.gentics.mesh.Events.EVENT_NODE_UPDATED;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.INITIAL;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;

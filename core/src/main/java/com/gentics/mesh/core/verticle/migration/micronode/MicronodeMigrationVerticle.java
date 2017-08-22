@@ -62,7 +62,7 @@ public class MicronodeMigrationVerticle extends AbstractMigrationVerticle<Micron
 	 */
 	private void registerMicroschemaMigration() {
 		microschemaMigrationConsumer = vertx.eventBus().consumer(MICROSCHEMA_MIGRATION_ADDRESS, (message) -> {
-			MigrationStatusHandler status = new MigrationStatusHandlerImpl(message, vertx, MigrationType.microschema);
+			MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(message, vertx, MigrationType.microschema);
 			try {
 				
 				String microschemaUuid = message.headers().get(UUID_HEADER);
@@ -105,16 +105,16 @@ public class MicronodeMigrationVerticle extends AbstractMigrationVerticle<Micron
 					// Acquire the global lock and invoke the migration
 					executeLocked(() -> {
 						db.tx(() -> {
-							handler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, status)
+							handler.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusHandler)
 									.await();
 						});
-						status.done();
+						statusHandler.done();
 					}, (error) -> {
-						status.handleError(error, "Migration for microschema {" + microschemaUuid + "} is already running.");
+						statusHandler.error(error, "Migration for microschema {" + microschemaUuid + "} is already running.");
 					});
 				});
 			} catch (Exception e) {
-				status.handleError(e, "Error while preparing micronode migration.");
+				statusHandler.error(e, "Error while preparing micronode migration.");
 			}
 		});
 

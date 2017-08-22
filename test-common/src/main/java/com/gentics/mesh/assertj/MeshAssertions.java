@@ -14,6 +14,7 @@ import com.gentics.mesh.assertj.impl.JsonArrayAssert;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
 import com.gentics.mesh.assertj.impl.MicronodeAssert;
 import com.gentics.mesh.assertj.impl.MicronodeResponseAssert;
+import com.gentics.mesh.assertj.impl.MigrationStatusResponseAssert;
 import com.gentics.mesh.assertj.impl.NavigationResponseAssert;
 import com.gentics.mesh.assertj.impl.NodeAssert;
 import com.gentics.mesh.assertj.impl.NodeGraphFieldContainerAssert;
@@ -42,6 +43,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -191,5 +193,9 @@ public class MeshAssertions extends Assertions {
 
 	public static GenericRestExceptionAssert assertThat(GenericRestException actual) {
 		return new GenericRestExceptionAssert(actual);
+	}
+	
+	public static MigrationStatusResponseAssert assertThat(MigrationStatusResponse actual) {
+		return new MigrationStatusResponseAssert(actual);
 	}
 }

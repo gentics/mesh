@@ -3,6 +3,8 @@ package com.gentics.mesh.core.schema;
 import static com.gentics.mesh.Events.MICROSCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.Events.SCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.rest.admin.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.MigrationStatus.FAILED;
 import static com.gentics.mesh.core.rest.admin.MigrationStatus.IDLE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -12,16 +14,20 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
@@ -41,6 +47,8 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
+import com.gentics.mesh.core.rest.admin.MigrationInfo;
+import com.gentics.mesh.core.rest.admin.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -56,6 +64,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
@@ -124,9 +133,25 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 		failingLatch(latch);
 		replyFuture.get(10, SECONDS);
+
+		Thread.sleep(2000);
 		MigrationStatusResponse status = call(() -> client().migrationStatus());
-		assertEquals(IDLE, status.getStatus());
-		assertEquals(1, status.getMigrations().size());
+		assertThat(status).listsAll(COMPLETED).hasInfos(1).hasStatus(IDLE);
+
+		// Check the status info
+		MigrationInfo info = status.getMigrations().get(0);
+		assertEquals(MigrationStatus.COMPLETED, info.getStatus());
+		try (Tx tx = tx()) {
+			assertEquals(container.getName(), info.getSourceName());
+			assertEquals(container.getUuid(), info.getSourceUuid());
+			assertEquals(versionA.getVersion(), info.getSourceVersion());
+			assertEquals(versionB.getVersion(), info.getTargetVersion());
+			String nodeName = Mesh.mesh().getOptions().getNodeName();
+			assertEquals("The node name of the migration did not match up.", nodeName, info.getNodeName());
+			assertEquals("Not all elements were migrated.", info.getDone(), info.getTotal());
+			assertEquals("The migration should not have affected any elements.", 0, info.getDone());
+			assertNotNull("The start date has not been set.", info.getStartDate());
+		}
 	}
 
 	@Test
@@ -177,6 +202,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 					.isEqualTo("modified second content");
 			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0);
 		}
+
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertThat(status).listsAll(COMPLETED).hasInfos(1).hasStatus(IDLE);
 	}
 
 	@Test
@@ -218,6 +246,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value")
 					.isEqualTo("modified first content");
 		}
+
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertThat(status).listsAll(COMPLETED).hasInfos(2).hasStatus(IDLE);
 	}
 
 	@Test
@@ -253,6 +284,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(node.getGraphFieldContainer("en", project().getLatestRelease().getUuid(), ContainerType.PUBLISHED)).as("Migrated published")
 					.isOf(versionB).hasVersion("2.0");
 		}
+
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertEquals(MigrationStatus.IDLE, status.getStatus());
 	}
 
 	@Test
@@ -335,6 +369,64 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(migratedNode2.getFields().getMicronodeFieldList("micronode").getItems()).isNotEmpty();
 		assertNotEquals("The node should have been migrated due to the schema update.", migratedNode.getVersion(), migratedNode2.getVersion());
 
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertThat(status).listsAll(COMPLETED).hasInfos(4).hasStatus(IDLE);
+
+	}
+
+	/**
+	 * Asserts that the error is handled in the setup of the migration.
+	 * 
+	 * @throws ExecutionException
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testMigrationFailureInSetup() throws InterruptedException, ExecutionException {
+
+		DeliveryOptions options = new DeliveryOptions();
+		options.addHeader(NodeMigrationVerticle.UUID_HEADER, "bogus");
+		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, "bogus");
+		options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, "bogus");
+		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, "bogus");
+		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
+		vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+			future.complete(rh);
+		});
+		AsyncResult<Message<Object>> result = future.get();
+		assertTrue(result.failed());
+
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertThat(status).listsAll(FAILED).hasInfos(1).hasStatus(IDLE);
+		assertNotNull("An error should be stored along with the info.", status.getMigrations().get(0).getError());
+	}
+
+	/**
+	 * Assert that the migration info will be limited to a certain amount of infos.
+	 * 
+	 * @throws ExecutionException
+	 * @throws InterruptedException
+	 */
+	@Test
+	public void testMigrationInfoCleanup() throws InterruptedException, ExecutionException {
+		// Run 100 migrations which should all fail
+		for (int i = 0; i < 100; i++) {
+			DeliveryOptions options = new DeliveryOptions();
+			options.addHeader(NodeMigrationVerticle.UUID_HEADER, "bogus");
+			options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, "bogus");
+			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, "bogus");
+			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, "bogus");
+			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
+			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
+				future.complete(rh);
+			});
+			AsyncResult<Message<Object>> result = future.get();
+			assertTrue(result.failed());
+		}
+
+		// Verify that only the max amount of migrations is returned.
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertThat(status).listsAll(FAILED).hasInfos(MigrationStatusHandler.MAX_MIGRATION_INFO_ENTRIES).hasStatus(IDLE);
+
 	}
 
 	@Test
@@ -379,6 +471,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(node.getGraphFieldContainer("en", project().getLatestRelease().getUuid(), ContainerType.PUBLISHED)).as("Migrated published")
 					.isOf(versionB).hasVersion("2.0");
 		}
+
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertThat(status).listsAll(COMPLETED).hasInfos(1).hasStatus(IDLE);
+
 	}
 
 	private SchemaContainer createDummySchemaWithChanges(String fieldName) {
@@ -569,6 +665,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronode(micronodeFieldName).getMicronode().getString(fieldName).getString())
 					.as("Migrated field value").isEqualTo("modified second content");
 		}
+
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertThat(status).listsAll(COMPLETED).hasInfos(1).hasStatus(IDLE);
+
 	}
 
 	@Test
@@ -692,6 +792,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(secondNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()
 					.getString(fieldName).getString()).as("Migrated field value").isEqualTo("modified third content");
 		}
+
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertThat(status).listsAll(COMPLETED).hasInfos(1).hasStatus(IDLE);
+
 	}
 
 	@Test
@@ -800,5 +904,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(firstNode.getGraphFieldContainer("en").getMicronodeList(micronodeFieldName).getList().get(1).getMicronode()
 					.getString("firstName").getString()).as("Not migrated field value").isEqualTo("Max");
 		}
+
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertThat(status).listsAll(COMPLETED).hasInfos(1).hasStatus(IDLE);
 	}
 }

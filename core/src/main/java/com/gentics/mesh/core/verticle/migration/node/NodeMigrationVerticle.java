@@ -64,7 +64,7 @@ public class NodeMigrationVerticle extends AbstractMigrationVerticle<NodeMigrati
 	private void registerSchemaMigration() {
 		schemaMigrationConsumer = Mesh.vertx().eventBus().consumer(SCHEMA_MIGRATION_ADDRESS, (message) -> {
 
-			MigrationStatusHandler status = new MigrationStatusHandlerImpl(message, vertx, MigrationType.schema);
+			MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(message, vertx, MigrationType.schema);
 			try {
 				String schemaUuid = message.headers().get(UUID_HEADER);
 				Objects.requireNonNull(schemaUuid, "The schemaUuid was not set the header.");
@@ -104,23 +104,24 @@ public class NodeMigrationVerticle extends AbstractMigrationVerticle<NodeMigrati
 						throw error(BAD_REQUEST, "Target version {" + toVersionUuid + "} of schema {" + schemaUuid + "} could not be found.");
 					}
 
-					status.setSourceName(schemaContainer.getName());
-					status.setSourceVersion(fromContainerVersion.getVersion());
-					status.setTargetVersion(toContainerVersion.getVersion());
-					status.updateStatus();
+					statusHandler.getInfo().setSourceName(schemaContainer.getName());
+					statusHandler.getInfo().setSourceUuid(schemaContainer.getUuid());
+					statusHandler.getInfo().setSourceVersion(fromContainerVersion.getVersion());
+					statusHandler.getInfo().setTargetVersion(toContainerVersion.getVersion());
+					statusHandler.updateStatus();
 
 					// Acquire the global lock and invoke the migration
 					executeLocked(() -> {
 						db.tx(() -> {
-							handler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, status).await();
+							handler.migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusHandler).await();
 						});
-						status.done();
+						statusHandler.done();
 					}, (error) -> {
-						status.handleError(error, "Migration for schema {" + schemaUuid + "} is already running.");
+						statusHandler.error(error, "Migration for schema {" + schemaUuid + "} is already running.");
 					});
 				});
 			} catch (Exception e) {
-				status.handleError(e, "Error while preparing node migration.");
+				statusHandler.error(e, "Error while preparing node migration.");
 			}
 		});
 

@@ -2,8 +2,6 @@ package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 
-import java.io.IOException;
-
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;

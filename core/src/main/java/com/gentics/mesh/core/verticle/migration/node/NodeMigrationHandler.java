@@ -89,7 +89,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		}
 
 		if (status != null) {
-			status.setTotalElements(fieldContainers.size());
+			status.getInfo().setTotal(fieldContainers.size());
 		}
 
 		// Prepare the migration - Collect the migration scripts
@@ -117,7 +117,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			}
 
 			if (status != null) {
-				status.incDoneElements();
+				status.getInfo().incDone();
 			}
 		}
 
