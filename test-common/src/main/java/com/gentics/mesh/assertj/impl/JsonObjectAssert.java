@@ -12,6 +12,7 @@ import java.util.Scanner;
 
 import org.assertj.core.api.AbstractAssert;
 
+import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.UUIDUtil;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
@@ -120,6 +121,8 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 			pathIsNull(path, msg);
 		} else if ("<is-uuid>".equals(value)) {
 			pathIsUuid(path, msg);
+		} else if ("<is-date>".equals(value)) {
+			pathIsDate(path, msg);
 		} else if ("<is-undefined>".equals(value)) {
 			pathIsUndefined(path, msg);
 		} else {
@@ -154,6 +157,19 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	public JsonObjectAssert pathIsUuid(String path) {
 		return pathIsUuid(path, null);
 	}
+	
+	
+
+	public JsonObjectAssert pathIsDate(String path, String msg) {
+		if (msg == null) {
+			msg = "";
+		}
+		String value = JsonPath.read(actual.toString(), path);
+		assertNotNull("Value on path {" + path + "} was null", value);
+		assertTrue("The specified value {" + value + "} on path {" + path + "} was no date: " + msg, DateUtils.isDate(value));
+		return this;
+	}
+
 
 	public JsonObjectAssert pathIsUuid(String path, String msg) {
 		if (msg == null) {
