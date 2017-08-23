@@ -60,7 +60,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
 	private Action0 startupAction = () -> {
-		client = MeshRestClient.create("localhost", getMappedPort(8080), vertx);
+		client = MeshRestClient.create("localhost", getMappedPort(8080), false, vertx);
 		client.setLogin("admin", "admin");
 		client.login().toBlocking().value();
 	};
@@ -251,7 +251,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	}
 
 	public void dropTraffic() throws UnsupportedOperationException, IOException, InterruptedException {
-		execRootInContainer("apk", "--update","add" ,"iptables");
+		execRootInContainer("apk", "--update", "add", "iptables");
 		Thread.sleep(1000);
 		execRootInContainer("iptables", "-P", "INPUT", "DROP");
 		execRootInContainer("iptables", "-P", "OUTPUT", "DROP");
@@ -279,7 +279,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		logger().debug("Running \"exec\" command: " + String.join(" ", command));
 		final ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(this.containerId).withAttachStdout(true).withAttachStderr(true)
 				.withUser("root")
-				//.withPrivileged(true)
+				// .withPrivileged(true)
 				.withCmd(command).exec();
 
 		final ToStringConsumer stdoutConsumer = new ToStringConsumer();
