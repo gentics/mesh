@@ -2,11 +2,22 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.27 (23.08.2017)
+
+icon:plus[] GraphQL: It is now possible to retrieve the unfiltered result count. This count is directly loaded from the search provider and may match up with the exact filtered count.
+            The advantage of this value is that it can be retrieved very fast.
+
+icon:plus[] Java REST Client: The client now also supports encrypted connections.
+
+icon:check[] REST: Invalid date were not correctly handled. An error will now be thrown if a date string can't be parsed.
+
+icon:check[] GraphQL: Various errors which occurred when loading a schema of a node via GraphQL have been fixed now.
+
 == 0.9.26 (10.08.2017)
 
-icon:check[] REST API: Added a missing allowed CORS headers which were needed to use the Gentics Mesh UI in a CORS environment.
-
 icon:plus[] UI: Add CORS support. Previously CORS was not supported by the UI.
+
+icon:check[] REST API: Added a missing allowed CORS headers which were needed to use the Gentics Mesh UI in a CORS environment.
 
 icon:check[] UI: Fix translation action. Previously a error prevented translations from being executed.
 
@@ -14,13 +25,13 @@ icon:check[] UI: Fix image handling for binary fields. Previously only the defau
 
 == 0.9.25 (09.08.2017)
 
-icon:check[] Core: A bug in the schema changes apply code has been fixed. The bug previously prevented schema changes from being applied.
+icon:plus[] Demo: The demo dump extraction will now also work if an empty data exists. This is useful when providing a docker mount for the demo data.
 
 icon:plus[] GraphQL: The paging performance has been improved.
 
 icon:plus[] Core: Various missing permission checks have been added.
 
-icon:plus[] Demo: The demo dump extraction will now also work if an empty data exists. This is useful when providing a docker mount for the demo data.
+icon:check[] Core: A bug in the schema changes apply code has been fixed. The bug previously prevented schema changes from being applied.
 
 == 0.9.24 (03.08.2017)
 

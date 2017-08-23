@@ -20,6 +20,11 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 
 	protected long lowerBound;
 
+	/**
+	 * The unfiltered raw search count which was returned by the search provider.
+	 */
+	protected long unfilteredSearchCount;
+
 	protected Long totalPages = null;
 
 	protected AtomicBoolean pageFull = new AtomicBoolean(false);
@@ -97,6 +102,17 @@ public abstract class AbstractDynamicPage<T> implements Page<T> {
 			visibleItems.next();
 		}
 		return hasNextPage.get();
+	}
+
+	@Override
+	public long getUnfilteredSearchCount() {
+		return unfilteredSearchCount;
+	}
+
+	@Override
+	public Page<T> setUnfilteredSearchCount(long unfilteredSearchCount) {
+		this.unfilteredSearchCount = unfilteredSearchCount;
+		return this;
 	}
 
 }

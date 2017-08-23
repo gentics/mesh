@@ -87,4 +87,15 @@ public final class DateUtils {
 
 	}
 
+	/**
+	 * Check whether the date can be parsed.
+	 * 
+	 * @param dateString
+	 * @return
+	 */
+	public static boolean isDate(String dateString) {
+		Long date = fromISO8601(dateString);
+		return date != null;
+	}
+
 }

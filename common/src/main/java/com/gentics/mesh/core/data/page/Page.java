@@ -124,4 +124,19 @@ public interface Page<T> extends Iterable<T> {
 		return getNumber() > 1;
 	}
 
+	/**
+	 * Return the unfiltered raw search count which was returned by the search provider.
+	 * 
+	 * @return
+	 */
+	long getUnfilteredSearchCount();
+
+	/**
+	 * Set the unfiltered search count.
+	 * 
+	 * @param unfilteredSearchCount
+	 * @return Fluent API
+	 */
+	Page<T> setUnfilteredSearchCount(long unfilteredSearchCount);
+
 }

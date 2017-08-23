@@ -44,12 +44,14 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 *            Server host
 	 * @param port
 	 *            Server port
+	 * @param ssl
+	 *            Flag which is used to toggle ssl mode
 	 * @param vertx
 	 *            Vert.x instance to be used in combination with the vertx http client
 	 * @return
 	 */
-	static MeshRestClient create(String host, int port, Vertx vertx) {
-		return new MeshRestHttpClientImpl(host, port, vertx);
+	static MeshRestClient create(String host, int port, boolean ssl, Vertx vertx) {
+		return new MeshRestHttpClientImpl(host, port, ssl, vertx);
 	}
 
 	/**
@@ -116,10 +118,8 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 */
 	MeshRestClient setAuthenticationProvider(JWTAuthentication authentication);
 
-
 	/**
-	 * Get the base URI path to the Mesh-API.
-	 * If the base URI is not set, the DEFAULT_BASE_URI is returned.
+	 * Get the base URI path to the Mesh-API. If the base URI is not set, the DEFAULT_BASE_URI is returned.
 	 *
 	 * @return the base URI
 	 */

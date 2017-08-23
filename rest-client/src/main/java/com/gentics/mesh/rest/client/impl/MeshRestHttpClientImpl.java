@@ -103,14 +103,15 @@ import io.vertx.core.http.WebSocket;
 public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	public MeshRestHttpClientImpl(String host, Vertx vertx) {
-		this(host, DEFAULT_PORT, vertx);
+		this(host, DEFAULT_PORT, false, vertx);
 	}
 
-	public MeshRestHttpClientImpl(String host, int port, Vertx vertx) {
+	public MeshRestHttpClientImpl(String host, int port, boolean ssl, Vertx vertx) {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost(host);
 		options.setTryUseCompression(true);
 		options.setDefaultPort(port);
+		options.setSsl(ssl);
 		this.client = vertx.createHttpClient(options);
 		setAuthenticationProvider(new JWTAuthentication());
 	}

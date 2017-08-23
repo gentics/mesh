@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 
@@ -115,6 +116,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 			Object source = env.getSource();
 			if (source instanceof NodeContent) {
 				element = ((NodeContent) source).getNode();
+			} else if (source instanceof SchemaContainerVersion) {
+				element = ((SchemaContainerVersion) source).getSchemaContainer();
 			} else {
 				element = env.getSource();
 			}
@@ -142,6 +145,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 					CreatorTrackingVertex vertex = null;
 					if (source instanceof NodeContent) {
 						vertex = ((NodeContent) source).getNode();
+					} else if (source instanceof SchemaContainerVersion) {
+						vertex = ((SchemaContainerVersion) source).getSchemaContainer();
 					} else {
 						vertex = env.getSource();
 					}
@@ -157,6 +162,8 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 					CreatorTrackingVertex vertex = null;
 					if (source instanceof NodeContent) {
 						vertex = ((NodeContent) source).getNode();
+					} else if (source instanceof SchemaContainerVersion) {
+						vertex = ((SchemaContainerVersion) source).getSchemaContainer();
 					} else {
 						vertex = env.getSource();
 					}
@@ -166,16 +173,30 @@ public class InterfaceTypeProvider extends AbstractTypeProvider {
 		if (!isNode) {
 			// .edited
 			builder.field(newFieldDefinition().name("edited").description("ISO8601 formatted edit timestamp").type(GraphQLString).dataFetcher(env -> {
-				EditorTrackingVertex vertex = env.getSource();
-				return vertex.getLastEditedDate();
+				Object source = env.getSource();
+				if (source instanceof SchemaContainerVersion) {
+					source = ((SchemaContainerVersion) source).getSchemaContainer();
+				}
+				if (source instanceof EditorTrackingVertex) {
+					EditorTrackingVertex vertex = (EditorTrackingVertex) source;
+					return vertex.getLastEditedDate();
+				}
+				return null;
 			}));
 
 			// .editor
 			builder.field(newFieldDefinition().name("editor").description("Editor of the element").type(new GraphQLTypeReference("User"))
 					.dataFetcher(env -> {
-						GraphQLContext gc = env.getContext();
-						EditorTrackingVertex vertex = env.getSource();
-						return gc.requiresPerm(vertex.getEditor(), READ_PERM);
+						Object source = env.getSource();
+						if (source instanceof SchemaContainerVersion) {
+							source = ((SchemaContainerVersion) source).getSchemaContainer();
+						}
+						if (source instanceof EditorTrackingVertex) {
+							GraphQLContext gc = env.getContext();
+							EditorTrackingVertex vertex = (EditorTrackingVertex) source;
+							return gc.requiresPerm(vertex.getEditor(), READ_PERM);
+						}
+						return null;
 					}));
 		}
 

@@ -194,7 +194,7 @@ public class MeshTestContext extends TestWatcher {
 
 		// Setup the rest client
 		try (Tx tx = db().tx()) {
-			client = MeshRestClient.create("localhost", getPort(), Mesh.vertx());
+			client = MeshRestClient.create("localhost", getPort(), false, Mesh.vertx());
 			client.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 			client.login().toBlocking().value();
 		}

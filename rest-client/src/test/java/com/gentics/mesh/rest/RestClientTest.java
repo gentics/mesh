@@ -17,7 +17,7 @@ public class RestClientTest {
 
 	@Test
 	public void testRestClient() {
-		MeshRestClient client = MeshRestClient.create("localhost", 8080, Vertx.vertx());
+		MeshRestClient client = MeshRestClient.create("localhost", 8080, false, Vertx.vertx());
 		client.close();
 	}
 

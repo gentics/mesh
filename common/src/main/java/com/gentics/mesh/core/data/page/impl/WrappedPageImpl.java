@@ -50,4 +50,15 @@ public class WrappedPageImpl<T> implements Page<T> {
 	public boolean hasNextPage() {
 		return wrappedPage.hasNextPage();
 	}
+
+	@Override
+	public long getUnfilteredSearchCount() {
+		return wrappedPage.getUnfilteredSearchCount();
+	}
+
+	@Override
+	public Page<T> setUnfilteredSearchCount(long unfilteredSearchCount) {
+		wrappedPage.setUnfilteredSearchCount(unfilteredSearchCount);
+		return this;
+	}
 }
