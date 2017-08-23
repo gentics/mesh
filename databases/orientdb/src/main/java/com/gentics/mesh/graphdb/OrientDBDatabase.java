@@ -43,6 +43,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
 import com.hazelcast.core.HazelcastInstance;
+import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
@@ -50,7 +51,6 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
-import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
@@ -725,25 +725,12 @@ public class OrientDBDatabase extends AbstractDatabase {
 				handlerResult = txHandler.handle(tx);
 				handlerFinished = true;
 				tx.success();
-			} catch (ODistributedRedirectException e) {
-				// https://www.prjhub.com/#/issues/8978
-				log.warn("Caught OrientDB redirection exception. The excption will be handled internally by the orientDB server.", e);
-				//
-				// // Reset previous result
-				// try {
-				// // Delay the retry by 50ms to give the other transaction a chance to finish
-				// Thread.sleep(50 + (retry * 5));
-				// } catch (InterruptedException e1) {
-				// e1.printStackTrace();
-				// }
-				// handlerFinished = false;
-				// handlerResult = null;
 			} catch (OSchemaException e) {
 				log.error("OrientDB schema exception detected.");
 				// TODO maybe we should invoke a metadata getschema reload?
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
-			} catch (OConcurrentModificationException e) {
+			} catch (ONeedRetryException e) {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
