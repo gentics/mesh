@@ -1,0 +1,1 @@
+icon:check[] Core: The permission check system has been updated. The elements which have only `readPublished` permission can now also be read if the user has only `read` permission. The `read` permission automatically also grants `readPublished`.
