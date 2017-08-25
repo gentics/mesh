@@ -89,7 +89,6 @@ public class AbstractInterceptingVertexFrame extends AbstractVertexFrame {
 
 	@Override
 	public FramedGraph getGraph() {
-		//return new DelegatingFramedGraph<>(Database.getThreadLocalGraph(), true, false);
 		return Tx.getActive().getGraph();
 	}
 

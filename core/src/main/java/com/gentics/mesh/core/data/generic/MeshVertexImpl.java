@@ -179,7 +179,6 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 			throw new RuntimeException("No vertex for Id {" + id + "} could be found within the graph");
 		}
 		Element vertex = ((WrappedVertex) vertexForId).getBaseElement();
-		// Element vertex = threadLocalElement.get();
 
 		// Unwrap wrapped vertex
 		if (vertex instanceof WrappedElement) {

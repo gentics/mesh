@@ -40,7 +40,6 @@ public class AbstractInterceptingEdgeFrame extends AbstractEdgeFrame {
 
 	@Override
 	public FramedGraph getGraph() {
-		// return new DelegatingFramedGraph<>(Database.getThreadLocalGraph(), true, false);
 		return Tx.getActive().getGraph();
 	}
 

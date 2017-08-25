@@ -12,6 +12,7 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.INITIAL_RELEASE_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
@@ -25,6 +26,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.junit.Ignore;
@@ -53,6 +55,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
+import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
@@ -224,7 +227,9 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ReleaseCreateRequest request = new ReleaseCreateRequest();
 		String releaseName = "New Release";
 		request.setName(releaseName);
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		call(() -> client().createRelease(PROJECT_NAME, request));
+		failingLatch(latch);
 		call(() -> client().createRelease(PROJECT_NAME, request), CONFLICT, "release_conflicting_name", releaseName);
 	}
 
@@ -233,18 +238,22 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String releaseName = "New Release";
 		String newProjectName = "otherproject";
 
+
+		// 1. Create a new release
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		ReleaseCreateRequest request = new ReleaseCreateRequest();
 		request.setName(releaseName);
-
 		call(() -> client().createRelease(PROJECT_NAME, request));
+		failingLatch(latch);
 
+		// 2. Create a new project and release and use the same name. This is allowed and should not raise any error.
+		latch = TestUtils.latchForMigrationCompleted(client());
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName(newProjectName);
 		createProject.setSchema(new SchemaReference().setName("folder"));
 		call(() -> client().createProject(createProject));
-
 		call(() -> client().createRelease(newProjectName, request));
-
+		failingLatch(latch);
 	}
 
 	@Override
@@ -540,19 +549,22 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	public void testAssignBogusSchemaVersion() throws Exception {
 		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
-				new SchemaReference().setName("content").setVersion("4711.0")), BAD_REQUEST, "error_schema_reference_not_found", "content", "-", "4711.0");
+				new SchemaReference().setName("content").setVersion("4711.0")), BAD_REQUEST, "error_schema_reference_not_found", "content", "-",
+				"4711.0");
 	}
 
 	@Test
 	public void testAssignBogusSchemaUuid() throws Exception {
-		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), new SchemaReference().setUuid("bogusuuid").setVersion("1.0")),
-				BAD_REQUEST, "error_schema_reference_not_found", "-", "bogusuuid", "1.0");
+		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
+				new SchemaReference().setUuid("bogusuuid").setVersion("1.0")), BAD_REQUEST, "error_schema_reference_not_found", "-", "bogusuuid",
+				"1.0");
 	}
 
 	@Test
 	public void testAssignBogusSchemaName() throws Exception {
-		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), new SchemaReference().setName("bogusname").setVersion("1.0")),
-				BAD_REQUEST, "error_schema_reference_not_found", "bogusname", "-", "1.0");
+		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
+				new SchemaReference().setName("bogusname").setVersion("1.0")), BAD_REQUEST, "error_schema_reference_not_found", "bogusname", "-",
+				"1.0");
 	}
 
 	@Test
@@ -563,8 +575,9 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 
-		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), new SchemaReference().setName(schemaName).setVersion("1.0")),
-				BAD_REQUEST, "error_schema_reference_not_found", schemaName, "-", "1.0");
+		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
+				new SchemaReference().setName(schemaName).setVersion("1.0")), BAD_REQUEST, "error_schema_reference_not_found", schemaName, "-",
+				"1.0");
 	}
 
 	@Test
@@ -582,8 +595,9 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 		// try to downgrade schema version
-		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), new SchemaReference().setUuid(schemaUuid).setVersion("1.0")),
-				BAD_REQUEST, "release_error_downgrade_schema_version", "schemaname", "2.0", "1.0");
+		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
+				new SchemaReference().setUuid(schemaUuid).setVersion("1.0")), BAD_REQUEST, "release_error_downgrade_schema_version", "schemaname",
+				"2.0", "1.0");
 
 	}
 
@@ -595,8 +609,8 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			tx.success();
 		}
 
-		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), new SchemaReference().setName("content").setVersion("1.0")),
-				FORBIDDEN, "error_missing_perm", initialReleaseUuid());
+		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
+				new SchemaReference().setName("content").setVersion("1.0")), FORBIDDEN, "error_missing_perm", initialReleaseUuid());
 	}
 
 	@Test
