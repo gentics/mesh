@@ -168,7 +168,6 @@ public class MeshTestContext extends TestWatcher {
 		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
 		port = com.gentics.mesh.test.util.TestUtils.getRandomPort();
-		vertx = Mesh.vertx();
 
 		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);
 		JsonObject config = new JsonObject();
@@ -386,6 +385,7 @@ public class MeshTestContext extends TestWatcher {
 		}
 		try {
 			meshDagger.boot().init(Mesh.mesh(), false, options, null);
+			vertx = Mesh.vertx();
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw e;
