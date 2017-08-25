@@ -44,6 +44,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
 
 public class MeshTestContext extends TestWatcher {
 
@@ -98,7 +99,10 @@ public class MeshTestContext extends TestWatcher {
 					});
 					fut.get(10, TimeUnit.SECONDS);
 				} else {
-					vertx.sharedData().getLocalMap(MigrationStatusHandler.MIGRATION_DATA_MAP_KEY).clear();
+					LocalMap<Object, Object> map = vertx.sharedData().getLocalMap(MigrationStatusHandler.MIGRATION_DATA_MAP_KEY);
+					if (map != null) {
+						map.clear();
+					}
 				}
 			}
 		} catch (Exception e) {
