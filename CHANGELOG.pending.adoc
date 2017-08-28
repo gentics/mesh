@@ -1,3 +1,5 @@
 icon:check[] Core: The permission check system has been updated. The elements which have only `readPublished` permission can now also be read if the user has only `read` permission. The `read` permission automatically also grants `readPublished`.
 
 icon:check[] Java REST Client: The classes `NodeResponse` and `MicronodeField` now correctly implement the interface `FieldContainer`.
+
+icon:check[] REST: The endpoint `/api/v1/{projectName}/nodes/{nodeUuid}/binary/{fieldName}` did not correctly handle the read published nodes permission. This has been fixed now. link:https://github.com/gentics/mesh/issues/111[#111]
