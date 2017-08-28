@@ -140,7 +140,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 						release.getUuid());
 			}
 			// Additionally check whether the read published permission could grant read perm for published nodes
-			if (fieldContainer.isPublished(release.getUuid()) && requestUser.hasPermission(element, READ_PUBLISHED_PERM)) {
+			boolean isPublished = fieldContainer.isPublished(release.getUuid());
+			if (isPublished && requestUser.hasPermission(element, READ_PUBLISHED_PERM)) {
+				return element;
+			// The container could be a draft. Check whether READ perm is granted.
+			} else if (!isPublished && requestUser.hasPermission(element, READ_PERM)) {
 				return element;
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", uuid);

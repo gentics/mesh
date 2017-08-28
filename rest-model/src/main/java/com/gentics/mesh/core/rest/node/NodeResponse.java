@@ -25,7 +25,7 @@ import com.gentics.mesh.parameter.NodeParameters;
 /**
  * POJO for the node rest response model.
  */
-public class NodeResponse extends AbstractGenericRestResponse implements NodeField, NodeFieldListItem, ExpandableNode {
+public class NodeResponse extends AbstractGenericRestResponse implements NodeField, NodeFieldListItem, ExpandableNode, FieldContainer {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("ISO 639-1 language tag of the node content.")

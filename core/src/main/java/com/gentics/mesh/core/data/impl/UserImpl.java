@@ -288,7 +288,12 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 					return true;
 				}
 			}
-			return false;
+			// Fall back to read and check whether the user has read perm. Read permission also includes read published.
+			if (permission == READ_PUBLISHED_PERM) {
+				return hasPermissionForId(elementId, READ_PERM);
+			} else {
+				return false;
+			}
 		}
 
 	}

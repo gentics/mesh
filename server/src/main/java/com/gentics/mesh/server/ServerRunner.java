@@ -23,6 +23,7 @@ public class ServerRunner {
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
+		System.setProperty("storage.trackChangedRecordsInWAL", "true");
 		log = LoggerFactory.getLogger(ServerRunner.class);
 	}
 

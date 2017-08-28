@@ -2,7 +2,9 @@ package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
@@ -88,7 +90,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		db.operateTx(() -> {
 			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PUBLISHED_PERM);
 			// Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 			// if (language == null) {
 			// throw error(NOT_FOUND, "error_language_not_found", languageTag);
