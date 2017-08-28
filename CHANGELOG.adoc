@@ -2,6 +2,14 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.28 (28.08.2017)
+
+icon:check[] Core: The permission check system has been updated. The elements which have only `readPublished` permission can now also be read if the user has only `read` permission. The `read` permission automatically also grants `readPublished`.
+
+icon:check[] Java REST Client: The classes `NodeResponse` and `MicronodeField` now correctly implement the interface `FieldContainer`.
+
+icon:check[] REST: The endpoint `/api/v1/{projectName}/nodes/{nodeUuid}/binary/{fieldName}` did not correctly handle the read published nodes permission. This has been fixed now. link:https://github.com/gentics/mesh/issues/111[#111]
+
 == 0.9.27 (23.08.2017)
 
 icon:plus[] GraphQL: It is now possible to retrieve the unfiltered result count. This count is directly loaded from the search provider and may not match up with the exact filtered count.

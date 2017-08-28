@@ -125,7 +125,7 @@ WARNING: Sending user credentials as base64 encoded string, or as plaintext is h
 ==== Authentication Configuration
 
 Gentics Mesh uses JWT (JSON Web Token) to handle authentication. It is thus required to create a cryptograph key to sign and verify the generated JWT's. 
-Typically, if no keystore file has been provided, Gentics Mesh will create one on the basis of the configuration details in ```mesh.yml``` (see link:administration-guide.html#_configuration_and_settings[Configuration & Settings]). If the ```keystorePassword``` property is omitted, a password will be generated randomly and stored in the configuration file.
+Typically, if no keystore file has been provided, Gentics Mesh will create one on the basis of the configuration details in ```mesh.yml``` (see link:administration-guide.html#_conf[Configuration & Settings]). If the ```keystorePassword``` property is omitted, a password will be generated randomly and stored in the configuration file.
 
 [source,bash]
 ----
@@ -142,13 +142,13 @@ Alternatively, you can use the https://docs.oracle.com/javase/8/docs/technotes/t
 keytool -genseckey -keystore keystore.jceks -storetype jceks -storepass secret -keyalg HMacSHA256 -keysize 2048 -alias HS256 -keypass secret
 ----
 
-After creating the keystore, you need to set the keystore password, the path to the keystore file, and the used algorithm in the ```mesh.yml``` configuration file (see link:administration-guide.html#_configuration_and_settings[Configuration & Settings]).
+After creating the keystore, you need to set the keystore password, the path to the keystore file, and the used algorithm in the ```mesh.yml``` configuration file (see link:administration-guide.html#_conf[Configuration & Settings]).
 
 ==== JWT 
 
 In order to be able to store and retrieve content, a Gentics Mesh user needs to authenticate (`username:password`). 
 
-Each way will store a JWT in a cookie which is used to authenticate the user for succeeding requests. The token only lasts a certain amount of time (which can be configured in the ```mesh.yml``` file explained in the link:administration-guide.html#_configuration_and_settings[Configuration & Settings] section), so it might be necessary to refresh the token. The JWT will be automatically renewed with every request on the Gentics Mesh API. 
+Each way will store a JWT in a cookie which is used to authenticate the user for succeeding requests. The token only lasts a certain amount of time (which can be configured in the ```mesh.yml``` file, see setting ```tokenExpirationTime``` in the link:administration-guide.html#_conf[Configuration & Settings] section), so it might be necessary to refresh the token. The JWT will be automatically renewed with every request on the Gentics Mesh API. 
 
 === Login
 
@@ -278,7 +278,7 @@ You can assign ```readPublished``` permissions to the ```anonymous``` role for a
 
 NOTE: Assigning further permissions would of course allow for other operations to be granted. 
 
-Anonymous access can be configured in the ```mesh.yml``` configuration file (see link:administration-guide.html#_configuration_and_settings[Configuration & Settings]):
+Anonymous access can be configured in the ```mesh.yml``` configuration file (see link:administration-guide.html#_conf[Configuration & Settings]):
 
 [source,yaml]
 ----
