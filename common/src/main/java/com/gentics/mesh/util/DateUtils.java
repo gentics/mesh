@@ -1,5 +1,8 @@
 package com.gentics.mesh.util;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -45,13 +48,18 @@ public final class DateUtils {
 		return Instant.ofEpochSecond(timeInMs / 1000).atZone(ZoneOffset.UTC).format(DateTimeFormatter.ISO_INSTANT);
 	}
 
+	public static Long fromISO8601(String dateString) {
+		return fromISO8601(dateString, false);
+	}
+
 	/**
 	 * Converts the provided date string into an unixtimestamp value.
 	 * 
 	 * @param dateString
+	 * @param failOnFormatError
 	 * @return Unixtimestamp value or null if the provided date string was also null.
 	 */
-	public static Long fromISO8601(String dateString) {
+	public static Long fromISO8601(String dateString, boolean failOnFormatError) {
 		if (dateString == null) {
 			return null;
 		}
@@ -70,10 +78,24 @@ public final class DateUtils {
 				if (log.isDebugEnabled()) {
 					log.debug("Fallback failed with exception", e);
 				}
+				if (failOnFormatError) {
+					throw error(BAD_REQUEST, "error_date_format_invalid", dateString);
+				}
 			}
 		}
 		return null;
 
+	}
+
+	/**
+	 * Check whether the date can be parsed.
+	 * 
+	 * @param dateString
+	 * @return
+	 */
+	public static boolean isDate(String dateString) {
+		Long date = fromISO8601(dateString);
+		return date != null;
 	}
 
 }

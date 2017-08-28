@@ -31,7 +31,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 	}
-	
+
 	@Rule
 	@ClassRule
 	public static MeshTestContext testContext = new MeshTestContext();
@@ -63,6 +63,17 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
 		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
 		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().value());
+	}
+
+	/**
+	 * Return the json data from classpath.
+	 * 
+	 * @param name
+	 * @return
+	 * @throws IOException
+	 */
+	public String getJson(String name) throws IOException {
+		return IOUtils.toString(getClass().getResourceAsStream("/json/" + name));
 	}
 
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {

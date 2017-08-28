@@ -87,6 +87,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testData.add(new Object[] { "role-user-group-query", true, "draft" });
 		testData.add(new Object[] { "group-query", true, "draft" });
 		testData.add(new Object[] { "schema-query", true, "draft" });
+//		testData.add(new Object[] { "schema-projects-query", true, "draft" });
 		testData.add(new Object[] { "microschema-query", true, "draft" });
 		testData.add(new Object[] { "paging-query", true, "draft" });
 		testData.add(new Object[] { "tagFamily-query", true, "draft" });
@@ -106,7 +107,6 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testData.add(new Object[] { "release-query", true, "draft" });
 		testData.add(new Object[] { "user-query", true, "draft" });
 		testData.add(new Object[] { "mesh-query", true, "draft" });
-		testData.add(new Object[] { "schema-projects-query", true, "draft" });
 		testData.add(new Object[] { "microschema-projects-query", true, "draft" });
 		testData.add(new Object[] { "node-version-published-query", true, "published" });
 		return testData;

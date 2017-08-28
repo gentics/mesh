@@ -2,6 +2,45 @@
 
 = Gentics Mesh Changelog
 
+== 0.9.28 (28.08.2017)
+
+icon:check[] Core: The permission check system has been updated. The elements which have only `readPublished` permission can now also be read if the user has only `read` permission. The `read` permission automatically also grants `readPublished`.
+
+icon:check[] Java REST Client: The classes `NodeResponse` and `MicronodeField` now correctly implement the interface `FieldContainer`.
+
+icon:check[] REST: The endpoint `/api/v1/{projectName}/nodes/{nodeUuid}/binary/{fieldName}` did not correctly handle the read published nodes permission. This has been fixed now. link:https://github.com/gentics/mesh/issues/111[#111]
+
+== 0.9.27 (23.08.2017)
+
+icon:plus[] GraphQL: It is now possible to retrieve the unfiltered result count. This count is directly loaded from the search provider and may not match up with the exact filtered count.
+            The advantage of this value is that it can be retrieved very fast.
+
+icon:plus[] Java REST Client: The client now also supports encrypted connections.
+
+icon:check[] REST: Invalid date were not correctly handled. An error will now be thrown if a date string can't be parsed.
+
+icon:check[] GraphQL: Various errors which occurred when loading a schema of a node via GraphQL have been fixed now.
+
+== 0.9.26 (10.08.2017)
+
+icon:plus[] UI: Add CORS support. Previously CORS was not supported by the UI.
+
+icon:check[] REST API: Added a missing allowed CORS headers which were needed to use the Gentics Mesh UI in a CORS environment.
+
+icon:check[] UI: Fix translation action. Previously a error prevented translations from being executed.
+
+icon:check[] UI: Fix image handling for binary fields. Previously only the default language image was displayed in the edit view. This has been fixed.
+
+== 0.9.25 (09.08.2017)
+
+icon:plus[] Demo: The demo dump extraction will now also work if an empty data exists. This is useful when providing a docker mount for the demo data.
+
+icon:plus[] GraphQL: The paging performance has been improved.
+
+icon:plus[] Core: Various missing permission checks have been added.
+
+icon:check[] Core: A bug in the schema changes apply code has been fixed. The bug previously prevented schema changes from being applied.
+
 == 0.9.24 (03.08.2017)
 
 icon:plus[] REST API: Added idempotency checks for various endpoints to prevent execution of superfluous operations. (E.g: Assign role to group, Assign schema to project)

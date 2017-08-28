@@ -275,4 +275,12 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 */
 	String getSegmentFieldValue();
 
+	/**
+	 * Find the specified version of the container.
+	 * 
+	 * @param version
+	 * @return
+	 */
+	NodeGraphFieldContainer findVersion(String version);
+
 }

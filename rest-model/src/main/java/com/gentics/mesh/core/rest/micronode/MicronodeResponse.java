@@ -14,7 +14,7 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 /**
  * POJO for the micronode rest response model.
  */
-public class MicronodeResponse extends AbstractResponse implements MicronodeField, FieldContainer {
+public class MicronodeResponse extends AbstractResponse implements MicronodeField {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the microschema of the micronode.")

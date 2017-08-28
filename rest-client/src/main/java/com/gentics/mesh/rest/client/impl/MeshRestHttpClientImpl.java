@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.impl;
 
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_YAML_UTF8;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
 import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -100,14 +101,15 @@ import io.vertx.core.http.WebSocket;
 public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	public MeshRestHttpClientImpl(String host, Vertx vertx) {
-		this(host, DEFAULT_PORT, vertx);
+		this(host, DEFAULT_PORT, false, vertx);
 	}
 
-	public MeshRestHttpClientImpl(String host, int port, Vertx vertx) {
+	public MeshRestHttpClientImpl(String host, int port, boolean ssl, Vertx vertx) {
 		HttpClientOptions options = new HttpClientOptions();
 		options.setDefaultHost(host);
 		options.setTryUseCompression(true);
 		options.setDefaultPort(port);
+		options.setSsl(ssl);
 		this.client = vertx.createHttpClient(options);
 		setAuthenticationProvider(new JWTAuthentication());
 	}
@@ -1065,7 +1067,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	@Override
 	public MeshRequest<String> getRAML() {
 		return MeshRestRequestUtil.prepareRequest(GET, "/raml", String.class, null, null, this, authentication, disableAnonymousAccess,
-				"text/vnd.yaml");
+				APPLICATION_YAML_UTF8);
 	}
 
 	@Override

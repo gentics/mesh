@@ -41,7 +41,7 @@ public class WebRootService {
 		// Handle path to project root (baseNode)
 		if ("/".equals(path) || path.isEmpty()) {
 			//TODO Why this container? Any other container would also be fine?
-			NodeGraphFieldContainer container = baseNode.getGraphFieldContainers().get(0);
+			NodeGraphFieldContainer container = baseNode.getDraftGraphFieldContainers().get(0);
 			nodePath.addSegment(new PathSegment(container, null, null));
 			return nodePath;
 		}

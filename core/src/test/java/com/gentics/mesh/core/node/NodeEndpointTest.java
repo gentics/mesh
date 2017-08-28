@@ -754,6 +754,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node folder = nodes.remove(0);
 			tx((tx) -> {
 				role().revokePermissions(folder, READ_PUBLISHED_PERM);
+				role().revokePermissions(folder, READ_PERM);
 				tx.success();
 			});
 

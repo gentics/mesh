@@ -11,9 +11,71 @@
 	}
 
 	schema(name:"content") {
+		# [$.data.schema.uuid=<is-uuid>]
+		uuid
+		# [$.data.schema.name=content]
 		name
-		uuid,
+		# [$.data.schema.etag=<is-not-null>]
+		etag
+		# [$.data.schema.created=<is-date>]
+		created
+		creator {
+			# [$.data.schema.creator.uuid=<is-uuid>]
+			uuid
+			# [$.data.schema.creator.etag=<is-not-null>]
+			etag
+			# [$.data.schema.creator.created=<is-date>]
+			created
+			edited
+			username
+			firstname
+			lastname
+			emailAddress
+		}
+		# [$.data.schema.edited=<is-not-null>]
+		edited
+		editor {
+			# [$.data.schema.editor.uuid=<is-uuid>]
+			uuid
+			# [$.data.schema.editor.etag=<is-not-null>]
+			etag
+			# [$.data.schema.editor.created=<is-date>]
+			created
+			edited
+			username
+			firstname
+			lastname
+			emailAddress
+		}
+		# [$.data.schema.displayField=title]
+		displayField
+		# [$.data.schema.segmentField=slug]
+		segmentField
+		# [$.data.schema.isContainer=false]
 		isContainer
+	}
+	project {
+		name
+		rootNode {
+			schema {
+				#[$.data.project.rootNode.schema.uuid=<is-uuid>]
+				uuid
+				#[$.data.project.rootNode.schema.name=folder]
+				name
+				#[$.data.project.rootNode.schema.etag=<is-not-null>]
+				etag
+				#[$.data.project.rootNode.schema.created=<is-date>]
+				created
+				#[$.data.project.rootNode.schema.edited=<is-date>]
+				edited
+				#[$.data.project.rootNode.schema.isContainer=true]
+				isContainer
+				#[$.data.project.rootNode.schema.displayField=folder]
+				displayField
+				#[$.data.project.rootNode.schema.segmentField=folder]
+				segmentField
+			}
+		}
 	}
 }
 # [$.errors=<is-undefined>]

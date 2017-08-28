@@ -288,6 +288,29 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	}
 
 	@Override
+	public NodeGraphFieldContainer findVersion(String version) {
+		if (getVersion().toString().equals(version)) {
+			return this;
+		}
+		NodeGraphFieldContainer container = this;
+		while (container != null) {
+			container = container.getNextVersion();
+			if (container != null && container.getVersion().toString().equals(version)) {
+				return container;
+			}
+		}
+
+		container = this;
+		while (container != null) {
+			container = container.getPreviousVersion();
+			if (container != null && container.getVersion().toString().equals(version)) {
+				return container;
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public void clone(NodeGraphFieldContainer container) {
 		List<GraphField> otherFields = container.getFields();
 

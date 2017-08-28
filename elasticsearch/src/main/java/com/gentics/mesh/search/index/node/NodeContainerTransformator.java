@@ -308,11 +308,6 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 
 		switch (type) {
 		case STRING:
-			fieldInfo.put("type", STRING);
-			fieldInfo.put("index", ANALYZED);
-			fieldInfo.put("analyzer", TRIGRAM_ANALYZER);
-			addRawInfo(fieldInfo, STRING);
-			break;
 		case HTML:
 			fieldInfo.put("type", STRING);
 			fieldInfo.put("index", ANALYZED);

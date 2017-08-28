@@ -34,7 +34,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			String username = user.getUsername();
 			String uuid = user.getUuid();
 
-			MeshRestClient client = MeshRestClient.create("localhost", port(), Mesh.vertx());
+			MeshRestClient client = MeshRestClient.create("localhost", port(), false, Mesh.vertx());
 			client.setLogin(username, data().getUserInfo().getPassword());
 			Single<GenericMessageResponse> future = client.login();
 
@@ -74,7 +74,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 	public void testLoginAndDisableUser() {
 		String username = db().tx(() -> user().getUsername());
 
-		MeshRestClient client = MeshRestClient.create("localhost", port(), Mesh.vertx());
+		MeshRestClient client = MeshRestClient.create("localhost", port(), false, Mesh.vertx());
 		client.setLogin(username, data().getUserInfo().getPassword());
 		Single<GenericMessageResponse> future = client.login();
 
@@ -97,7 +97,7 @@ public class AuthenticationEndpointTest extends AbstractMeshTest {
 			User user = user();
 			String username = user.getUsername();
 
-			MeshRestClient client = MeshRestClient.create("localhost", port(), Mesh.vertx());
+			MeshRestClient client = MeshRestClient.create("localhost", port(), false, Mesh.vertx());
 			client.setLogin(username, data().getUserInfo().getPassword());
 			Single<GenericMessageResponse> future = client.login();
 

@@ -16,6 +16,8 @@ import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.core.rest.user.UserResponse;
+import com.gentics.mesh.parameter.client.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -54,6 +56,17 @@ public class AnonymousAccessEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 		call(() -> client().findNodeByUuid(PROJECT_NAME, uuid), UNAUTHORIZED, "error_not_authorized");
+	}
+
+	@Test
+	public void testReadPublishedNode() {
+		try (Tx tx = tx()) {
+			anonymousRole().grantPermissions(content(), READ_PERM);
+			tx.success();
+		}
+
+		client().logout().toCompletable().await();
+		call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().setVersion("published")));
 	}
 
 }
