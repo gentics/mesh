@@ -47,8 +47,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	private static Logger log = LoggerFactory.getLogger(MeshRootImpl.class);
 
-	private static MeshRoot instance;
-
 	private static UserRoot userRoot;
 	private static GroupRoot groupRoot;
 	private static RoleRoot roleRoot;
@@ -62,14 +60,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	private static SchemaContainerRoot schemaContainerRoot;
 	private static MicroschemaContainerRoot microschemaContainerRoot;
-
-	public static MeshRoot getInstance() {
-		return instance;
-	}
-
-	public static void setInstance(MeshRoot meshRoot) {
-		instance = meshRoot;
-	}
 
 	public static void init(Database database) {
 		database.addVertexType(MeshRootImpl.class, MeshVertexImpl.class);

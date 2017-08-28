@@ -313,6 +313,8 @@ public class MeshOptions {
 		if (getImageOptions() != null) {
 			getImageOptions().validate(this);
 		}
+
+		// TODO check for other invalid characters in node name
 	}
 
 }

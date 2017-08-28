@@ -575,7 +575,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		try (Tx tx = db.tx()) {
 			meshRoot = meshRoot();
-			MeshRootImpl.setInstance(meshRoot);
 
 			meshRoot.getNodeRoot();
 			meshRoot.getTagRoot();

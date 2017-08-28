@@ -794,7 +794,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
 				// TODO Auto-generated method stub
-
 			}
 
 			@Override
@@ -806,13 +805,11 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void onCreated() {
 				// TODO Auto-generated method stub
-
 			}
 
 			@Override
 			public void onUpdated() {
 				// TODO Auto-generated method stub
-
 			}
 		};
 		return user;

@@ -31,7 +31,7 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	private Object id;
-	
+
 	protected Database db;
 
 	public static void init(Database database) {

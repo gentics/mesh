@@ -56,8 +56,8 @@ public abstract class AbstractClusterTest {
 		return "random" + System.currentTimeMillis();
 	}
 
-	protected MeshDockerServer addSlave(String clusterName, String nodeName) {
-		MeshDockerServer server = new MeshDockerServer(clusterName, nodeName, false, true, vertx, null);
+	protected MeshDockerServer addSlave(String clusterName, String nodeName, boolean clearFolders) {
+		MeshDockerServer server = new MeshDockerServer(clusterName, nodeName, false, true, clearFolders, vertx, null);
 		server.start();
 		return server;
 	}

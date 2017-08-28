@@ -75,12 +75,14 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 	private boolean waitForStartup;
 
+	private boolean clearDataFolders;
+
 	private Integer debugPort;
 
 	private String clusterName;
 
 	public MeshDockerServer(String nodeName) {
-		this("default", nodeName, false, true, Vertx.vertx(), null);
+		this("default", nodeName, false, true, true, Vertx.vertx(), null);
 	}
 
 	/**
@@ -92,12 +94,14 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	 * @param vertx
 	 *            Vertx instances used to create the rest client
 	 */
-	public MeshDockerServer(String clusterName, String nodeName, boolean initCluster, boolean waitForStartup, Vertx vertx, Integer debugPort) {
+	public MeshDockerServer(String clusterName, String nodeName, boolean initCluster, boolean waitForStartup, boolean clearDataFolders, Vertx vertx,
+			Integer debugPort) {
 		super(image);
 		this.vertx = vertx;
 		this.initCluster = initCluster;
 		this.clusterName = clusterName;
 		this.nodeName = nodeName;
+		this.clearDataFolders = clearDataFolders;
 		this.waitForStartup = waitForStartup;
 		this.debugPort = debugPort;
 	}
@@ -106,10 +110,12 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	protected void configure() {
 		String dataPath = "target/" + nodeName + "-data";
 
-		try {
-			prepareFolder(dataPath);
-		} catch (Exception e) {
-			fail("Could not setup bind folder {" + dataPath + "}");
+		if (clearDataFolders) {
+			try {
+				prepareFolder(dataPath);
+			} catch (Exception e) {
+				fail("Could not setup bind folder {" + dataPath + "}");
+			}
 		}
 
 		addFileSystemBind(dataPath, "/data", BindMode.READ_WRITE);

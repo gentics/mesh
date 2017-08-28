@@ -14,7 +14,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 public class ClusterErrorHandlingTest extends AbstractClusterTest {
 
 	@ClassRule
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, vertx, 8000);
+	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, 8000);
 
 	public static MeshRestClient clientA;
 
@@ -37,7 +37,7 @@ public class ClusterErrorHandlingTest extends AbstractClusterTest {
 		request.setSchemaRef("folder");
 		ProjectResponse response = call(() -> clientA.createProject(request));
 
-		MeshDockerServer serverB = addSlave("dockerCluster", "nodeB");
+		MeshDockerServer serverB = addSlave("dockerCluster", "nodeB", true);
 		serverB.dropTraffic();
 		call(() -> serverB.getMeshClient().findProjectByUuid(response.getUuid()));
 	}
@@ -56,18 +56,30 @@ public class ClusterErrorHandlingTest extends AbstractClusterTest {
 		request.setSchemaRef("folder");
 		ProjectResponse response = call(() -> clientA.createProject(request));
 
-		MeshDockerServer serverB1 = addSlave("dockerCluster", "nodeB");
-		serverB1.stop();
+		MeshDockerServer serverB1 = addSlave("dockerCluster", "nodeB", true);
 		Thread.sleep(2000);
+		serverB1.stop();
+
 		// Node A: Create another project
 		ProjectCreateRequest request2 = new ProjectCreateRequest();
 		request2.setName(randomName());
 		request2.setSchemaRef("folder");
 		ProjectResponse response2 = call(() -> clientA.createProject(request2));
 
-		MeshDockerServer serverB2 = addSlave("dockerCluster", "nodeB");
+		// Now start the stopped instance again
+		Thread.sleep(2000);
+		MeshDockerServer serverB2 = addSlave("dockerCluster", "nodeB", false);
+
+		ProjectCreateRequest request3 = new ProjectCreateRequest();
+		request3.setName(randomName());
+		request3.setSchemaRef("folder");
+		ProjectResponse response3 = call(() -> clientA.createProject(request3));
+
 		// Both projects should be found
 		call(() -> serverB2.getMeshClient().findProjectByUuid(response.getUuid()));
+		call(() -> clientA.findProjectByUuid(response3.getUuid()));
+		call(() -> serverB2.getMeshClient().findProjectByUuid(response3.getUuid()));
+		call(() -> clientA.findProjectByUuid(response2.getUuid()));
 		call(() -> serverB2.getMeshClient().findProjectByUuid(response2.getUuid()));
 	}
 

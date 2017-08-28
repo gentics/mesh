@@ -61,6 +61,7 @@ import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
+import com.orientechnologies.orient.core.tx.ORollbackException;
 import com.orientechnologies.orient.enterprise.channel.binary.ODistributedRedirectException;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
@@ -116,7 +117,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
 
-	private int maxRetry = 25;
+	private int maxRetry = 535;
 
 	@Override
 	public void stop() {
@@ -325,7 +326,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 */
 	public String getNodeName() {
 		StringBuilder nameBuilder = new StringBuilder();
-		// TODO check for other invalid characters
 		String nodeName = options.getNodeName();
 		nameBuilder.append(nodeName);
 		nameBuilder.append("@");
@@ -731,12 +731,14 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (ONeedRetryException e) {
+				System.out.println(retry); 
+				
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
 				try {
-					// Delay the retry by 50ms to give the other transaction a chance to finish
-					Thread.sleep(50 + (retry * 5));
+					// Increase the delay for each retry by 25ms to give the other transaction a chance to finish
+					Thread.sleep(50 + (retry * 25));
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
