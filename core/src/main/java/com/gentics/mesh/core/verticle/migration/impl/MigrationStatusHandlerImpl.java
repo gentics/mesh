@@ -50,7 +50,6 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		String startDate = DateUtils.toISO8601(System.currentTimeMillis());
 		String nodeName = Mesh.mesh().getOptions().getNodeName();
 		this.info = new MigrationInfo(type, startDate, nodeName);
-
 	}
 
 	@Override
@@ -130,11 +129,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	public void purgeOldEntries(List<MigrationInfo> list) {
 		Set<MigrationInfo> oldInfos = new HashSet<>();
-		list.stream().sorted((o1, o2) -> {
-			Long key1 = Long.valueOf(DateUtils.fromISO8601(o1.getStartDate()));
-			Long key2 = Long.valueOf(DateUtils.fromISO8601(o2.getStartDate()));
-			return Long.compare(key1, key2);
-		}).skip(MAX_MIGRATION_INFO_ENTRIES).map(e -> {
+		list.stream().sorted().skip(MAX_MIGRATION_INFO_ENTRIES).map(e -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Removed info with date {" + e.getStartDate() + "} from object.");
 			}

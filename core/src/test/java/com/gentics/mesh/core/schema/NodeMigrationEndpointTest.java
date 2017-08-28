@@ -103,7 +103,6 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		SchemaContainer container;
 		SchemaContainerVersion versionA;
 		SchemaContainerVersion versionB;
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		try (Tx tx = tx()) {
 			String fieldName = "changedfield";
 			container = createDummySchemaWithChanges(fieldName);
@@ -131,7 +130,6 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				}
 			});
 		}
-		failingLatch(latch);
 		replyFuture.get(10, SECONDS);
 
 		Thread.sleep(2000);

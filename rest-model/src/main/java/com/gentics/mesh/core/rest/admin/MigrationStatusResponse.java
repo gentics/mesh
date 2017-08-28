@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.admin;
 
+import static com.gentics.mesh.core.rest.admin.MigrationStatus.IDLE;
+
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,8 +14,6 @@ import io.vertx.core.shareddata.impl.ClusterSerializable;
 
 public class MigrationStatusResponse implements RestModel, ClusterSerializable {
 
-	private MigrationStatus status;
-
 	private List<MigrationInfo> migrations = new ArrayList<MigrationInfo>();
 
 	/**
@@ -22,18 +22,15 @@ public class MigrationStatusResponse implements RestModel, ClusterSerializable {
 	 * @return
 	 */
 	public MigrationStatus getStatus() {
-		return status;
-	}
-
-	/**
-	 * Set the status of the latest migration.
-	 * 
-	 * @param status
-	 * @return
-	 */
-	public MigrationStatusResponse setStatus(MigrationStatus status) {
-		this.status = status;
-		return this;
+		MigrationStatus latestStatus = getMigrations().stream().sorted().reduce((first, second) -> second).map(e -> e.getStatus()).orElse(IDLE);
+		// Some stati describe the end of a migration. This means other migrations could be executed. Thus we return idle in those cases.
+		switch (latestStatus) {
+		case COMPLETED:
+		case FAILED:
+			return MigrationStatus.IDLE;
+		default:
+			return latestStatus;
+		}
 	}
 
 	/**
@@ -60,7 +57,7 @@ public class MigrationStatusResponse implements RestModel, ClusterSerializable {
 		int start = pos + 4;
 		String encoded = buffer.getString(start, start + length);
 		MigrationStatusResponse fromBuffer = JsonUtil.readValue(encoded, getClass());
-		this.setStatus(fromBuffer.getStatus());
+		// this.setStatus(fromBuffer.getStatus());
 		this.setMigrations(fromBuffer.getMigrations());
 		return pos + length + 4;
 	}

@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.verticle.admin;
 
-import static com.gentics.mesh.core.rest.admin.MigrationStatus.IDLE;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -18,7 +17,6 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.admin.MeshStatusResponse;
-import com.gentics.mesh.core.rest.admin.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
@@ -152,9 +150,6 @@ public class AdminHandler extends AbstractHandler {
 							if (response == null) {
 								response = new MigrationStatusResponse();
 							}
-							// TODO determine the latest status
-							MigrationStatus latestStatus = IDLE;
-							response.setStatus(latestStatus);
 							ac.send(response, OK);
 						}
 					});
@@ -166,9 +161,6 @@ public class AdminHandler extends AbstractHandler {
 			if (response == null) {
 				response = new MigrationStatusResponse();
 			}
-			// TODO determine the latest status
-			MigrationStatus latestStatus = IDLE;
-			response.setStatus(latestStatus);
 			ac.send(response, OK);
 		}
 	}

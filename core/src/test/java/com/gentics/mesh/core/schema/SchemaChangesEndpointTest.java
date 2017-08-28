@@ -3,8 +3,9 @@ package com.gentics.mesh.core.schema;
 import static com.gentics.mesh.Events.MESH_MIGRATION;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.admin.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.MigrationStatus.IDLE;
-import static com.gentics.mesh.core.rest.admin.MigrationStatus.RUNNING;
+import static com.gentics.mesh.core.rest.admin.MigrationStatus.STARTING;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.expectResponseMessage;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -23,7 +24,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.ComparisonFailure;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -144,8 +144,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// Assert migration is running
 			migrationStatus = call(() -> client().migrationStatus());
-			assertEquals(RUNNING, migrationStatus.getStatus());
-			Thread.sleep(10000);
+			assertEquals(STARTING, migrationStatus.getStatus());
 
 			// Check for 45 seconds whether the migration finishes
 			for (int i = 0; i < 45; i++) {
@@ -153,9 +152,10 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 					Thread.sleep(1000);
 					// Assert migration has finished
 					migrationStatus = call(() -> client().migrationStatus());
-					expectResponseMessage(status, "migration_status_idle");
+					assertEquals(IDLE, migrationStatus.getStatus());
+					assertEquals(COMPLETED, migrationStatus.getMigrations().get(0).getStatus());
 					break;
-				} catch (ComparisonFailure e) {
+				} catch (AssertionError e) {
 					System.out.println("Waiting " + i + " sec");
 					if (i == 30) {
 						throw e;

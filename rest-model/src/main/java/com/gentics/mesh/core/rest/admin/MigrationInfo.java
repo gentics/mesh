@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.admin;
 
+import java.time.OffsetDateTime;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -8,7 +10,7 @@ import com.gentics.mesh.util.UUIDUtil;
 /**
  * Model for the migration status information.
  */
-public class MigrationInfo implements RestModel {
+public class MigrationInfo implements RestModel, Comparable<MigrationInfo> {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Uuid of the migration. The id can be used to identify a certain migration.")
@@ -351,6 +353,13 @@ public class MigrationInfo implements RestModel {
 	public String toString() {
 		return getType() + " on {" + getStartDate() + "} @ {" + getNodeName() + "} with status {" + getStatus() + "} - " + getDone() + "/"
 				+ getTotal();
+	}
+
+	@Override
+	public int compareTo(MigrationInfo o) {
+		long t1 = OffsetDateTime.parse(getStartDate()).toEpochSecond();
+		long t2 = OffsetDateTime.parse(o.getStartDate()).toEpochSecond();
+		return Long.compare(t1, t2);
 	}
 
 }

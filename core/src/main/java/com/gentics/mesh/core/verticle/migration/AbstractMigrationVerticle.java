@@ -66,6 +66,7 @@ public abstract class AbstractMigrationVerticle<T extends MigrationHandler> exte
 						action.call();
 					} catch (Exception e) {
 						log.error("Error while executing locked action", e);
+						errorAction.call(e);
 					} finally {
 						lock.release();
 					}
