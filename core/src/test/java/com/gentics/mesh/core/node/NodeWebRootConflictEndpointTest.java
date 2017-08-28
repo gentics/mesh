@@ -237,7 +237,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		// 1. Create new release and migrate nodes
 		db().tx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
-			meshDagger().nodeMigrationHandler().migrateNodes(newRelease);
+			meshDagger().releaseMigrationHandler().migrateRelease(newRelease);
 			return null;
 		});
 

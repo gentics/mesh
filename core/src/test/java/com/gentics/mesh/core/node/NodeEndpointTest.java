@@ -1809,7 +1809,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 3. migrate nodes
-			meshDagger().nodeMigrationHandler().migrateNodes(newRelease).await();
+			meshDagger().releaseMigrationHandler().migrateRelease(newRelease).await();
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(initialRelease.getUuid())));
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(newRelease.getUuid())));
 
@@ -1830,7 +1830,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node node = content("concorde");
 			String uuid = node.getUuid();
 
-			// 2. Publish the node
+			// 2. publish the node
 			SearchQueueBatch batch = createBatch();
 			node.publish(mockActionContext(), batch);
 
@@ -1840,14 +1840,14 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 4. migrate nodes
-			meshDagger().nodeMigrationHandler().migrateNodes(newRelease).await();
+			meshDagger().releaseMigrationHandler().migrateRelease(newRelease).await();
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(initialRelease.getUuid())));
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(newRelease.getUuid())));
 
 			// 5. delete node in new release
 			call(() -> client().deleteNode(PROJECT_NAME, uuid, new VersioningParametersImpl().setRelease(newRelease.getUuid())));
 
-			// 6. Assert
+			// 6. assert
 			assertElement(meshRoot().getNodeRoot(), uuid, true);
 			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.DRAFT)).as("draft containers for initial release").isNotEmpty();
 			assertThat(node.getGraphFieldContainers(initialRelease, ContainerType.PUBLISHED)).as("published containers for initial release")

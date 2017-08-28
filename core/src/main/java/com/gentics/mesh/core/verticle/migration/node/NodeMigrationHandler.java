@@ -1,11 +1,7 @@
 package com.gentics.mesh.core.verticle.migration.node;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.INITIAL;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,7 +16,6 @@ import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
@@ -35,7 +30,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
@@ -52,10 +46,6 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	@Inject
 	public NodeMigrationHandler(Database db, SearchQueue searchQueue, BinaryFieldHandler nodeFieldAPIHandler) {
 		super(db, searchQueue, nodeFieldAPIHandler);
-	}
-
-	public JsonObject createInfoJson() {
-		return null;
 	}
 
 	/**
@@ -218,81 +208,6 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 	}
 
-	/**
-	 * Migrate all nodes from one release to the other
-	 * 
-	 * @param newRelease
-	 *            new release
-	 * @return Completable which will be invoked once the migration has completed
-	 */
-	public Completable migrateNodes(Release newRelease) {
-		Release oldRelease = db.tx(() -> {
-			if (newRelease.isMigrated()) {
-				throw error(BAD_REQUEST, "Release {" + newRelease.getName() + "} is already migrated");
-			}
-
-			Release old = newRelease.getPreviousRelease();
-			if (old == null) {
-				throw error(BAD_REQUEST, "Release {" + newRelease.getName() + "} does not have previous release");
-			}
-
-			if (!old.isMigrated()) {
-				throw error(BAD_REQUEST, "Cannot migrate nodes to release {" + newRelease.getName() + "}, because previous release {" + old.getName()
-						+ "} is not fully migrated yet.");
-			}
-
-			return old;
-		});
-
-		String oldReleaseUuid = db.tx(() -> oldRelease.getUuid());
-		String newReleaseUuid = db.tx(() -> newRelease.getUuid());
-		List<? extends Node> nodes = db.tx(() -> oldRelease.getRoot().getProject().getNodeRoot().findAll());
-		List<Completable> batches = new ArrayList<>();
-		for (Node node : nodes) {
-			SearchQueueBatch sqb = db.tx(() -> {
-				if (!node.getGraphFieldContainers(newRelease, INITIAL).isEmpty()) {
-					return null;
-				}
-				node.getGraphFieldContainers(oldRelease, DRAFT).stream().forEach(container -> {
-					GraphFieldContainerEdgeImpl initialEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-					initialEdge.setLanguageTag(container.getLanguage().getLanguageTag());
-					initialEdge.setType(INITIAL);
-					initialEdge.setReleaseUuid(newReleaseUuid);
-
-					GraphFieldContainerEdgeImpl draftEdge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-					draftEdge.setLanguageTag(container.getLanguage().getLanguageTag());
-					draftEdge.setType(DRAFT);
-					draftEdge.setReleaseUuid(newReleaseUuid);
-				});
-				SearchQueueBatch batch = searchQueue.create();
-				batch.store(node, newReleaseUuid, DRAFT, false);
-
-				node.getGraphFieldContainers(oldRelease, PUBLISHED).stream().forEach(container -> {
-					GraphFieldContainerEdgeImpl edge = node.addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-					edge.setLanguageTag(container.getLanguage().getLanguageTag());
-					edge.setType(PUBLISHED);
-					edge.setReleaseUuid(newReleaseUuid);
-				});
-				batch.store(node, newReleaseUuid, PUBLISHED, false);
-
-				Node parent = node.getParentNode(oldReleaseUuid);
-				if (parent != null) {
-					node.setParentNode(newReleaseUuid, parent);
-				}
-
-				// migrate tags
-				node.getTags(oldRelease).forEach(tag -> node.addTag(tag, newRelease));
-				return batch;
-			});
-			batches.add(sqb.processAsync());
-		}
-
-		db.tx(() -> {
-			newRelease.setMigrated(true);
-			return null;
-		});
-
-		return Completable.merge(batches);
-	}
+	
 
 }

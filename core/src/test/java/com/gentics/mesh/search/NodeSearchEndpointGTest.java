@@ -162,21 +162,21 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		String uuid = db().tx(() -> content("concorde").getUuid());
+		String uuid = tx(() -> content("concorde").getUuid());
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 
+		// Create a new release and migrate the nodes
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
+		String releaseName = "newrelease";
 		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
-		createRelease.setName("newrelease");
+		createRelease.setName(releaseName);
 		call(() -> client().createRelease(PROJECT_NAME, createRelease));
 		failingLatch(latch);
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic")));
-		assertThat(response.getData()).as("Search result").isEmpty();
-
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
-				new VersioningParametersImpl().setRelease(db().tx(() -> project().getInitialRelease().getName()))));
+		// Assert that the node can be found within the publish index witin the new release
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
+				new VersioningParametersImpl().setRelease(releaseName).setVersion("published")));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 

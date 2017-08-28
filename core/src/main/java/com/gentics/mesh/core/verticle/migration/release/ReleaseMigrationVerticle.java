@@ -13,7 +13,6 @@ import com.gentics.mesh.core.rest.admin.MigrationType;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationVerticle;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusHandlerImpl;
-import com.gentics.mesh.core.verticle.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 
 import dagger.Lazy;
@@ -23,15 +22,15 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 @Singleton
-public class ReleaseMigrationVerticle extends AbstractMigrationVerticle<NodeMigrationHandler> {
+public class ReleaseMigrationVerticle extends AbstractMigrationVerticle<ReleaseMigrationHandler> {
 
 	private static final Logger log = LoggerFactory.getLogger(ReleaseMigrationVerticle.class);
 
 	private MessageConsumer<Object> releaseMigrationConsumer;
 
 	@Inject
-	public ReleaseMigrationVerticle(Database db, Lazy<BootstrapInitializer> boot, NodeMigrationHandler nodeMigrationHandler) {
-		super(nodeMigrationHandler, db, boot);
+	public ReleaseMigrationVerticle(Database db, Lazy<BootstrapInitializer> boot, ReleaseMigrationHandler releaseMigrationHandler) {
+		super(releaseMigrationHandler, db, boot);
 	}
 
 	@Override
@@ -79,7 +78,7 @@ public class ReleaseMigrationVerticle extends AbstractMigrationVerticle<NodeMigr
 					// Acquire the global lock and invoke the migration
 					executeLocked(() -> {
 						db.tx(() -> {
-							handler.migrateNodes(release).await();
+							handler.migrateRelease(release).await();
 						});
 						status.done();
 					}, (error) -> {

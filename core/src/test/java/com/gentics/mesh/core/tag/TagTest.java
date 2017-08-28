@@ -21,7 +21,6 @@ import java.util.concurrent.CountDownLatch;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
@@ -39,12 +38,13 @@ import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.node.ElementEntry;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
-import com.gentics.mesh.core.verticle.migration.node.NodeMigrationHandler;
+import com.gentics.mesh.core.verticle.migration.release.ReleaseMigrationHandler;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -58,11 +58,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 	public static final String ENGLISH_NAME = "test english name";
 
-	private NodeMigrationHandler nodeMigrationHandler;
+	private ReleaseMigrationHandler releaseMigrationHandler;
 
 	@Before
 	public void setupHandler() {
-		this.nodeMigrationHandler = meshDagger().nodeMigrationHandler();
+		this.releaseMigrationHandler = meshDagger().releaseMigrationHandler();
 	}
 
 	@Test
@@ -179,7 +179,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 3. Migrate nodes to new release
-			nodeMigrationHandler.migrateNodes(newRelease);
+			releaseMigrationHandler.migrateRelease(newRelease);
 
 			// 4. Create and Tag a node
 			Node node = folder("2015").create(user(), getSchemaContainer().getLatestVersion(), project);
@@ -229,7 +229,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 4. Migrate nodes to new release
-			nodeMigrationHandler.migrateNodes(newRelease);
+			releaseMigrationHandler.migrateRelease(newRelease);
 
 			// 5. Assert
 			assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release").usingElementComparatorOnFields("uuid", "name")
@@ -268,7 +268,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 4. Migrate nodes to new release
-			nodeMigrationHandler.migrateNodes(newRelease);
+			releaseMigrationHandler.migrateRelease(newRelease);
 
 			// 5. Untag in initial Release
 			node.removeTag(tag, initialRelease);

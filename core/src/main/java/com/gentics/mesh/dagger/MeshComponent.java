@@ -15,6 +15,7 @@ import com.gentics.mesh.core.verticle.migration.micronode.MicronodeMigrationHand
 import com.gentics.mesh.core.verticle.migration.micronode.MicronodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
+import com.gentics.mesh.core.verticle.migration.release.ReleaseMigrationHandler;
 import com.gentics.mesh.core.verticle.migration.release.ReleaseMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.dagger.module.ConsoleModule;
@@ -75,6 +76,8 @@ public interface MeshComponent {
 	NodeIndexHandler nodeContainerIndexHandler();
 
 	NodeMigrationHandler nodeMigrationHandler();
+
+	ReleaseMigrationHandler releaseMigrationHandler();
 
 	MicronodeMigrationHandler micronodeMigrationHandler();
 
