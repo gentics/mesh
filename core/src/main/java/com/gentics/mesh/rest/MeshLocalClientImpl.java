@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.MeshStatusResponse;
 import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -1268,6 +1269,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRestClient setAuthenticationProvider(JWTAuthentication authentication) {
 		// TODO Auto-generated method stub
 		return this;
+	}
+
+	@Override
+	public MeshRequest<ConsistencyCheckResponse> checkConsistency() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.util.TestUtils.getJson;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -18,12 +19,17 @@ import org.junit.rules.RuleChain;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.admin.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.group.GroupCreateRequest;
+import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.core.rest.role.RoleCreateRequest;
+import com.gentics.mesh.core.rest.role.RolePermissionRequest;
+import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -37,14 +43,14 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.vertx.core.Vertx;
 
-public class MeshDockerServerTest extends AbstractClusterTest {
+public class BasicClusterTest extends AbstractClusterTest {
 
 	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true ,vertx, 8000);
+	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, 8000);
 
-	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", false, false,true, vertx, null);
+	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", false, false, true, vertx, null);
 
 	public static MeshRestClient clientA;
 	public static MeshRestClient clientB;
@@ -185,6 +191,53 @@ public class MeshDockerServerTest extends AbstractClusterTest {
 		response = call(() -> clientB.findNodes(newProjectName));
 		assertEquals(1, response.getData().size());
 
+	}
+
+	@Test
+	public void testPermissionChanges() {
+		// Node A - Create project
+		String newProjectName = randomName();
+		ProjectCreateRequest request = new ProjectCreateRequest();
+		request.setName(newProjectName);
+		request.setSchemaRef("folder");
+		ProjectResponse projectResponse = call(() -> clientA.createProject(request));
+
+		// Node A - Create role with read perm on project
+		RoleResponse roleResponse = call(() -> clientA.createRole(new RoleCreateRequest().setName("newRole")));
+		RolePermissionRequest permRequest = new RolePermissionRequest().setRecursive(true);
+		permRequest.getPermissions().setRead(true);
+		call(() -> clientA.updateRolePermissions(roleResponse.getUuid(), "projects/" + projectResponse.getUuid(), permRequest));
+
+		// Node A - Create Group and user
+		GroupResponse groupResponse = call(() -> clientA.createGroup(new GroupCreateRequest().setName("newGroup")));
+		call(() -> clientA.addRoleToGroup(groupResponse.getUuid(), roleResponse.getUuid()));
+		String username = "dummyUser";
+		String password = "dummyPass";
+		UserResponse userResponse = call(() -> clientA.createUser(new UserCreateRequest().setUsername(username).setPassword(password)));
+		call(() -> clientA.addUserToGroup(groupResponse.getUuid(), userResponse.getUuid()));
+
+		// Node B - Login with new user and read the project
+		clientB.logout().toBlocking().value();
+		clientB.setLogin(username, password);
+		clientB.login().toBlocking().value();
+		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()));
+
+		
+		// 1. Test permission removal
+		permRequest.getPermissions().setRead(false);
+		call(() -> clientA.updateRolePermissions(roleResponse.getUuid(), "projects/" + projectResponse.getUuid(), permRequest));
+		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()),  FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
+		permRequest.getPermissions().setRead(true);
+		call(() -> clientA.updateRolePermissions(roleResponse.getUuid(), "projects/" + projectResponse.getUuid(), permRequest));
+		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()));
+
+		// 2. Test role removal - Now remove the role from the group and check that this change is reflected on clientB
+		call(() -> clientA.removeRoleFromGroup(groupResponse.getUuid(), roleResponse.getUuid()));
+		clientA.logout().toBlocking().value();
+		clientA.setLogin(username, password);
+		clientA.login().toBlocking().value();
+		call(() -> clientA.findProjectByUuid(projectResponse.getUuid()),  FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
+		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()),  FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
 	}
 
 	/**

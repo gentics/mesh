@@ -93,6 +93,8 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	 * @param waitForStartup
 	 * @param vertx
 	 *            Vertx instances used to create the rest client
+	 * @param debugPort
+	 *            JNLP debug port. No debugging is enabled when set to null.
 	 */
 	public MeshDockerServer(String clusterName, String nodeName, boolean initCluster, boolean waitForStartup, boolean clearDataFolders, Vertx vertx,
 			Integer debugPort) {

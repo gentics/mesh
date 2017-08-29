@@ -1,8 +1,13 @@
 package com.gentics.mesh.example;
 
+import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 
+import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencyInfo;
+import com.gentics.mesh.core.rest.admin.consistency.InconsistencySeverity;
 import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
@@ -22,7 +27,7 @@ public class MiscExamples extends AbstractExamples {
 	}
 
 	public GenericMessageResponse getMessageResponse() {
-		//TODO allow for custom messages
+		// TODO allow for custom messages
 		GenericMessageResponse message = new GenericMessageResponse();
 		message.setMessage("I18n message");
 		return message;
@@ -51,6 +56,13 @@ public class MiscExamples extends AbstractExamples {
 			e.printStackTrace();
 		}
 		return node;
+	}
+
+	public ConsistencyCheckResponse createConsistencyCheckResponse() {
+		ConsistencyCheckResponse response = new ConsistencyCheckResponse();
+		response.getInconsistencies().add(new InconsistencyInfo().setSeverity(InconsistencySeverity.LOW).setElementUuid(randomUUID())
+				.setDescription("A dangling field container has been found."));
+		return response;
 	}
 
 }

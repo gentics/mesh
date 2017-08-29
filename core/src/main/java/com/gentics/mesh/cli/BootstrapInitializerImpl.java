@@ -175,9 +175,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	/**
 	 * Initialize the local data or create the initial dataset if no local data could be found.
 	 * 
+	 * @param isJoiningCluster
+	 *            Flag which indicates that the instance is joining the cluster. In those cases various checks must not be invoked.
 	 * @throws Exception
 	 */
-	private void initLocalData() throws Exception {
+	private void initLocalData(boolean isJoiningCluster) throws Exception {
 		boolean isEmptyInstallation = isEmptyInstallation();
 		if (isEmptyInstallation) {
 			// Update graph indices and vertex types (This may take some time)
@@ -192,11 +194,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			markChangelogApplied();
 			createSearchIndicesAndMappings();
 		} else {
+
 			handleMeshVersion();
-			// Only execute the changelog if there are any elements in the graph
-			invokeChangelog();
-			// Update graph indices and vertex types (This may take some time)
-			DatabaseHelper.init(db);
+			if (!isJoiningCluster) {
+				// Only execute the changelog if there are any elements in the graph
+				invokeChangelog();
+				// Update graph indices and vertex types (This may take some time)
+				DatabaseHelper.init(db);
+			}
 		}
 	}
 
@@ -232,10 +237,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
 				// handles the clustering.
 				db.setupConnectionPool();
-				initLocalData();
-				//db.closeConnectionPool();
+				initLocalData(false);
+				// db.closeConnectionPool();
 				db.startServer();
-				//db.setupConnectionPool();
+				// db.setupConnectionPool();
 				initVertx(options, isClustered);
 			} else {
 				// We need to wait for other nodes and receive the graphdb
@@ -245,10 +250,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				db.joinCluster();
 				isInitialSetup = false;
 				db.setupConnectionPool();
-				initLocalData();
+				initLocalData(true);
 			}
-			boolean active =false;
-			while(!active) {
+			boolean active = false;
+			while (!active) {
 				log.info("Waiting for hazelcast to become active");
 				Thread.sleep(1000);
 				active = manager.getHazelcastInstance().getLifecycleService().isRunning();
@@ -261,7 +266,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			initVertx(options, isClustered);
 			// No cluster mode - Just setup the connection pool and load or setup the local data
 			db.setupConnectionPool();
-			initLocalData();
+			initLocalData(false);
 			if (startOrientServer) {
 				db.startServer();
 			}

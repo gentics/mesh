@@ -12,6 +12,7 @@ import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
+import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 
@@ -23,10 +24,13 @@ public class AdminEndpoint extends AbstractEndpoint {
 
 	private AdminHandler handler;
 
+	private ConsistencyCheckHandler consistencyHandler;
+
 	@Inject
-	public AdminEndpoint(RouterStorage routerStorage, AdminHandler adminHandler) {
+	public AdminEndpoint(RouterStorage routerStorage, AdminHandler adminHandler, ConsistencyCheckHandler consistencyHandler) {
 		super("admin", routerStorage);
 		this.handler = adminHandler;
+		this.consistencyHandler = consistencyHandler;
 	}
 
 	public AdminEndpoint() {
@@ -47,11 +51,24 @@ public class AdminEndpoint extends AbstractEndpoint {
 		secureAll();
 		addBackupHandler();
 		addRestoreHandler();
-		//addImportHandler();
-		//addExportHandler();
+		addConsistencyCheckHandler();
+		// addImportHandler();
+		// addExportHandler();
 		// addVerticleHandler();
 		// addServiceHandler();
 
+	}
+
+	private void addConsistencyCheckHandler() {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/consistency/check");
+		endpoint.method(GET);
+		endpoint.description("Invokes a consistency check of the graph database and returns a list of found issues");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(OK, miscExamples.createConsistencyCheckResponse(), "Consistency check report");
+		endpoint.handler(rc -> {
+			consistencyHandler.invokeCheck(new InternalRoutingActionContextImpl(rc));
+		});
 	}
 
 	private void addMigrationStatusHandler() {
@@ -129,7 +146,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.exampleResponse(OK, adminExamples.createMeshStatusResponse(MeshStatus.READY), "Status of the Gentics Mesh server.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			//TODO this is currently polled by apa. We need to update their monitoring as well if we change this
+			// TODO this is currently polled by apa. We need to update their monitoring as well if we change this
 			handler.handleMeshStatus(ac);
 		});
 

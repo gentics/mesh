@@ -9,7 +9,7 @@ import org.junit.Test;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.distributed.containers.MeshLocalServer;
 
-public class MeshLocalServerTest {
+public class LocalServerTest {
 
 	@ClassRule
 	public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
