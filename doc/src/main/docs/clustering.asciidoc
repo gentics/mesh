@@ -100,6 +100,7 @@ Are my changes directly visible on other instances?::
 The replication handles this as fast as the network allows but by default replication is happening asynchronous
 which means that it could take a few moments until your changes are propagated throughout the cluster.
 This behaviour is configureable via the OrientDB `writeQuorum` setting. Take a look at the link:https://orientdb.com/docs/2.2/Distributed-Configuration.html[OrientDB distributed configuration] if you want to know more.
+Our tests currently only cover the default `writeQuorum` and `readQuorum` of 1.
 
 What happens if the network between my instances fails?::
 The instances will continue to operate normally but will no longer be able to see each other's changes.
@@ -109,21 +110,23 @@ Which ports are needed for clustering?::
 Clustering involves the following components: Vert.x, ElasticSearch and OrientDB, Hazelcast. Each component utilize different ports.
 * ElasticSearch: 9200, 9300
 * OrientDB: 2424-2430, 2480-2490
-* Vert.x:  0  (random)       
+* Vert.x:  0  (random)
 * Hazelcast: 2434 (default, dynamic)
 
 I want to use a load balancer to distribute load across my instances. Do I need to handle sticky sessions?::
 Gentics Mesh does not use sessions. Instead a stateless JWT mechanism is used. This means you can direct your traffic to any of clustered instances. No need to setup something special.
 
 Can I use sharding to split up my data across multiple data centers?::
-No. Sharding is not supported.
+No. Sharding is not supported but you are still able to span a cluster across multiple datacenters.
 
 Can I split a single cluster into one or more clusters?::
-Yes. This can be done by starting a new cluster using a different `cluster.clusterName` setting.
+Yes. This can be done by starting a new cluster using a different `cluster.clusterName` setting within the `mesh.yml` file.
 
 == Monitoring
 
-Cluster monitoring is still in development although it is possible to access the JMX beans of OrientDB and ElasticSearch.
+The `/api/v1/admin/cluster/status` endpoint can be used to retrieve information about the cluster topology and status of instances within the cluster.
+
+Additionally it is possible to access the JMX beans of OrientDB and ElasticSearch.
 
 == Limitations
 
