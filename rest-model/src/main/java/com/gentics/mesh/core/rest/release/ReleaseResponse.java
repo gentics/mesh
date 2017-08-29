@@ -16,7 +16,7 @@ public class ReleaseResponse extends AbstractGenericRestResponse {
 	// private boolean active;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Flag which indicates whether any active node migration for this release is still running or whether all nodes have been migrated to this release")
+	@JsonPropertyDescription("Flag which indicates whether any active node migration for this release is still running or whether all nodes have been migrated to this release.")
 	private boolean migrated;
 
 	public ReleaseResponse() {

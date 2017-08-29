@@ -12,8 +12,10 @@ import com.gentics.mesh.context.impl.LocalActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.core.rest.admin.MeshStatusResponse;
-import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -856,6 +858,14 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	@Override
 	public MeshRequest<MeshStatusResponse> meshStatus() {
 		LocalActionContextImpl<MeshStatusResponse> ac = createContext(MeshStatusResponse.class);
+		adminHandler.handleMeshStatus(ac);
+		return new MeshLocalRequestImpl<>(ac.getFuture());
+	}
+
+	@Override
+	public MeshRequest<ClusterStatusResponse> clusterStatus() {
+		LocalActionContextImpl<ClusterStatusResponse> ac = createContext(ClusterStatusResponse.class);
+		adminHandler.handleClusterStatus(ac);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1268,6 +1278,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRestClient setAuthenticationProvider(JWTAuthentication authentication) {
 		// TODO Auto-generated method stub
 		return this;
+	}
+
+	@Override
+	public MeshRequest<ConsistencyCheckResponse> checkConsistency() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override

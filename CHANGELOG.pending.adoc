@@ -1,3 +1,0 @@
-icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.25
-icon:plus[] Configuration: The configuration files were moved to a dedicated `config` folder.
-icon:check[] REST: Invalid date were not correctly handled. An error will now be thrown if a date string can't be parsed.

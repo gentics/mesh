@@ -16,9 +16,11 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -37,11 +39,14 @@ import org.w3c.dom.NodeList;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
+import com.gentics.mesh.util.DateUtils;
 import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
@@ -61,8 +66,6 @@ import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
-import com.orientechnologies.orient.core.tx.ORollbackException;
-import com.orientechnologies.orient.enterprise.channel.binary.ODistributedRedirectException;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager;
@@ -109,11 +112,11 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private OrientGraphFactory factory;
 
-	private HazelcastInstance hazelcast;
-
 	private TypeResolver resolver;
 
 	private OServer server;
+
+	private OHazelcastPlugin hazelcastPlugin;
 
 	private DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
 
@@ -410,8 +413,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 			topologyEventBridge = new TopologyEventBridge(this);
 			distributedManager.registerLifecycleListener(topologyEventBridge);
 			if (server.getDistributedManager() instanceof OHazelcastPlugin) {
-				OHazelcastPlugin plugin = (OHazelcastPlugin) distributedManager;
-				hazelcast = plugin.getHazelcastInstance();
+				hazelcastPlugin = (OHazelcastPlugin) distributedManager;
 			}
 		}
 		manager.startup();
@@ -731,8 +733,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (ONeedRetryException e) {
-				System.out.println(retry); 
-				
+				System.out.println(retry);
+
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
@@ -877,6 +879,49 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	@Override
 	public HazelcastInstance getHazelcast() {
-		return hazelcast;
+		return hazelcastPlugin != null ? hazelcastPlugin.getHazelcastInstance() : null;
+	}
+
+	public ClusterStatusResponse getClusterStatus() {
+		ClusterStatusResponse response = new ClusterStatusResponse();
+		if (hazelcastPlugin != null) {
+			ODocument distribCfg = hazelcastPlugin.getClusterConfiguration();
+
+			Collection<ODocument> members = distribCfg.field("members");
+			if (members != null) {
+				for (ODocument m : members) {
+					if (m == null) {
+						continue;
+					}
+					ClusterInstanceInfo instanceInfo = new ClusterInstanceInfo();
+					String name = m.field("name");
+
+					int idx = name.indexOf("@");
+					if (idx > 0) {
+						name = name.substring(0, idx);
+					}
+
+					instanceInfo.setName(name);
+					instanceInfo.setStatus(m.field("status"));
+					Date date = m.field("startedOn");
+					instanceInfo.setStartDate(DateUtils.toISO8601(date.getTime()));
+
+					String address = null;
+					Collection<Map> listeners = m.field("listeners");
+					if (listeners != null) {
+						for (Map l : listeners) {
+							String protocol = (String) l.get("protocol");
+							if (protocol.equals("ONetworkProtocolBinary")) {
+								address = (String) l.get("listen");
+							}
+						}
+					}
+					instanceInfo.setAddress(address);
+
+					response.getInstances().add(instanceInfo);
+				}
+			}
+		}
+		return response;
 	}
 }

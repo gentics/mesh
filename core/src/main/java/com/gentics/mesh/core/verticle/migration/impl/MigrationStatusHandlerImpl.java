@@ -14,10 +14,10 @@ import javax.management.ObjectName;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.core.rest.admin.MigrationInfo;
-import com.gentics.mesh.core.rest.admin.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
-import com.gentics.mesh.core.rest.admin.MigrationType;
+import com.gentics.mesh.core.rest.admin.migration.MigrationInfo;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.util.DateUtils;
 

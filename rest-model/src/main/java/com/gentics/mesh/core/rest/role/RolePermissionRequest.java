@@ -45,9 +45,11 @@ public class RolePermissionRequest implements RestModel {
 	 * 
 	 * @param recursive
 	 *            Recursive flag value
+	 * @return Fluent API
 	 */
-	public void setRecursive(Boolean recursive) {
+	public RolePermissionRequest setRecursive(Boolean recursive) {
 		this.recursive = recursive;
+		return this;
 	}
 
 }

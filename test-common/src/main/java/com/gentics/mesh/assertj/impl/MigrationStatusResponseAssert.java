@@ -4,9 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.rest.admin.MigrationInfo;
-import com.gentics.mesh.core.rest.admin.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.admin.migration.MigrationInfo;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 
 public class MigrationStatusResponseAssert extends AbstractAssert<MigrationStatusResponseAssert, MigrationStatusResponse> {
 

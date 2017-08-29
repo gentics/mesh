@@ -1,12 +1,15 @@
 package com.gentics.mesh.core.rest.admin;
 
-import static com.gentics.mesh.core.rest.admin.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.MigrationStatus.FAILED;
-import static com.gentics.mesh.core.rest.admin.MigrationStatus.IDLE;
-import static com.gentics.mesh.core.rest.admin.MigrationStatus.STARTING;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.IDLE;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.STARTING;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+
+import com.gentics.mesh.core.rest.admin.migration.MigrationInfo;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 
 public class MigrationStatusResponseTest {
 

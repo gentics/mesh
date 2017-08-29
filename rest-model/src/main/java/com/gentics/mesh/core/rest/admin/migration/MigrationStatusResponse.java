@@ -1,6 +1,6 @@
-package com.gentics.mesh.core.rest.admin;
+package com.gentics.mesh.core.rest.admin.migration;
 
-import static com.gentics.mesh.core.rest.admin.MigrationStatus.IDLE;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.IDLE;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

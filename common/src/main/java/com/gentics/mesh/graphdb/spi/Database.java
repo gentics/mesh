@@ -9,6 +9,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.tx.Tx;
@@ -407,5 +408,12 @@ public interface Database extends TxFactory {
 	void startServer() throws Exception;
 
 	Object getHazelcast();
+
+	/**
+	 * Return the database cluster status.
+	 * 
+	 * @return
+	 */
+	ClusterStatusResponse getClusterStatus();
 
 }

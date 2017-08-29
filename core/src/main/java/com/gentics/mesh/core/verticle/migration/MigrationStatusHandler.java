@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.migration;
 
-import com.gentics.mesh.core.rest.admin.MigrationInfo;
+import com.gentics.mesh.core.rest.admin.migration.MigrationInfo;
 
 /**
  * Interface for migration status of node, release and micronode migrations.

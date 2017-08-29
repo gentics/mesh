@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
+import com.gentics.mesh.core.rest.admin.migration.MigrationInfo;
+
 public class MigrationInfoTest {
 
 	@Test

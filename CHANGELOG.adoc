@@ -2,6 +2,34 @@
 
 = Gentics Mesh Changelog
 
+== 0.10.0 (30.08.2017)
+
+icon:plus[] Clustering: This release introduces the master-master clustering support. You can read more about clustering and the configuration in the link:/docs/beta/clustering.html[clustering documentation].
+
+icon:plus[] Manual Change: The configuration files `mesh.yml`, `keystore.jceks` must be moved to a subfolder `config` folder.
+
+[source,bash]
+----
+mkdir config
+mv mesh.yml config
+mv keystore.jceks config
+----
+
+icon:plus[] Manual Change: The graph database folder needs to be moved. Please create the `storage` subfolder and move the existing data into that folder.
+
+[source,bash]
+----
+mkdir -p data/graphdb/storage
+mv data/graphdb/* data/graphdb/storage/
+----
+
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.26
+
+icon:plus[] REST: The `/api/v1/admin/consistency/check` endpoint has been added. The endpoint can be used to verify the database integrity.
+
+icon:check[] REST: Invalid date strings were not correctly handled. An error will now be thrown if a date string can't be parsed.
+
+
 == 0.9.28 (28.08.2017)
 
 icon:check[] Core: The permission check system has been updated. The elements which have only `readPublished` permission can now also be read if the user has only `read` permission. The `read` permission automatically also grants `readPublished`.
@@ -441,14 +469,14 @@ icon:bullhorn[] Content releases support
 
 [quote]
 ____
-This version of Gentics Mesh introduces _Content Releases_. A detailed description of this feature can be found in our http://getmesh.io/docs/beta/index.html[Documentation].
+This version of Gentics Mesh introduces _Content Releases_. A detailed description of this feature can be found in our https://getmesh.io/docs/beta/index.html[Documentation].
 ____
 
 icon:bullhorn[] Versioning support
 
 [quote]
 ____
-This version of Gentics Mesh introduces versioning of contents. A detailed description of the versioning feature can be found in our http://getmesh.io/docs/beta/index.html[Documentation].
+This version of Gentics Mesh introduces versioning of contents. A detailed description of the versioning feature can be found in our https://getmesh.io/docs/beta/index.html[Documentation].
 
 Important changes summary:
 
