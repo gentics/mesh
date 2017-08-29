@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.rest.admin;
+package com.gentics.mesh.core.rest.admin.migration;
 
 import java.time.OffsetDateTime;
 

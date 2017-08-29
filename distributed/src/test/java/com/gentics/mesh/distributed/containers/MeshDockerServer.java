@@ -81,8 +81,10 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 	private String clusterName;
 
+	private String extraOpts;
+
 	public MeshDockerServer(String nodeName) {
-		this("default", nodeName, false, true, true, Vertx.vertx(), null);
+		this("default", nodeName, false, true, true, Vertx.vertx(), null, null);
 	}
 
 	/**
@@ -95,9 +97,11 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	 *            Vertx instances used to create the rest client
 	 * @param debugPort
 	 *            JNLP debug port. No debugging is enabled when set to null.
+	 * @param extraOpts
+	 *            Additional jvm options
 	 */
 	public MeshDockerServer(String clusterName, String nodeName, boolean initCluster, boolean waitForStartup, boolean clearDataFolders, Vertx vertx,
-			Integer debugPort) {
+			Integer debugPort, String extraOpts) {
 		super(image);
 		this.vertx = vertx;
 		this.initCluster = initCluster;
@@ -106,6 +110,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		this.clearDataFolders = clearDataFolders;
 		this.waitForStartup = waitForStartup;
 		this.debugPort = debugPort;
+		this.extraOpts = extraOpts;
 	}
 
 	@Override
@@ -127,11 +132,22 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		List<Integer> exposedPorts = new ArrayList<>();
 		addEnv("NODENAME", nodeName);
 		addEnv("CLUSTERNAME", clusterName);
+		String javaOpts = null;
 		if (debugPort != null) {
-			addEnv("JAVAOPTS", "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n ");
+			javaOpts = "-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=n ";
 			exposedPorts.add(8000);
 			setPortBindings(Arrays.asList("8000:8000"));
 		}
+		if (extraOpts != null) {
+			if (javaOpts == null) {
+				javaOpts = "";
+			}
+			javaOpts += extraOpts + " ";
+		}
+		if (javaOpts != null) {
+			addEnv("JAVAOPTS", javaOpts);
+		}
+
 		exposedPorts.add(8080);
 		exposedPorts.add(9200);
 		exposedPorts.add(9300);

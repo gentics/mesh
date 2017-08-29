@@ -12,9 +12,10 @@ import java.util.Objects;
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
-import com.gentics.mesh.core.rest.admin.MeshStatusResponse;
-import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -874,7 +875,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	public MeshRequest<MigrationStatusResponse> migrationStatus() {
 		return prepareRequest(GET, "/admin/status/migrations", MigrationStatusResponse.class);
 	}
-	
+
 	@Override
 	public MeshRequest<ConsistencyCheckResponse> checkConsistency() {
 		return prepareRequest(GET, "/admin/consistency/check", ConsistencyCheckResponse.class);
@@ -883,6 +884,11 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	@Override
 	public MeshRequest<MeshStatusResponse> meshStatus() {
 		return prepareRequest(GET, "/admin/status", MeshStatusResponse.class);
+	}
+
+	@Override
+	public MeshRequest<ClusterStatusResponse> clusterStatus() {
+		return prepareRequest(GET, "/admin/cluster/status", ClusterStatusResponse.class);
 	}
 
 	@Override

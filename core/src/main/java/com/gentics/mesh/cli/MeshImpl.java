@@ -192,10 +192,10 @@ public class MeshImpl implements Mesh {
 				log.info("The latest version of Gentics Mesh is {" + latestVersion + "}");
 			} else {
 				int result = VersionUtil.compareVersions(latestVersion, currentVersion);
-				if (result >= 0) {
+				if (result == 0) {
 					log.info("Great! You are using the latest version");
-				} else {
-					log.warn("Your Gentics Mesh version is outdated. You are using {" + currentVersion + "} but versio {" + latestVersion
+				} else if (result > 0) {
+					log.warn("Your Gentics Mesh version is outdated. You are using {" + currentVersion + "} but version {" + latestVersion
 							+ "} is available.");
 				}
 			}

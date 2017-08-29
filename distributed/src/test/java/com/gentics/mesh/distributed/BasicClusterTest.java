@@ -17,8 +17,9 @@ import org.junit.Test;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.rest.admin.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -48,9 +49,9 @@ public class BasicClusterTest extends AbstractClusterTest {
 	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, 8000);
+	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, 8000, null);
 
-	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", false, false, true, vertx, null);
+	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", false, false, true, vertx, null, null);
 
 	public static MeshRestClient clientA;
 	public static MeshRestClient clientB;
@@ -64,6 +65,12 @@ public class BasicClusterTest extends AbstractClusterTest {
 		serverB.awaitStartup(200);
 		clientA = serverA.getMeshClient();
 		clientB = serverB.getMeshClient();
+	}
+
+	@Test
+	public void testClusterStatus() {
+		ClusterStatusResponse response = call(() -> clientA.clusterStatus());
+		System.out.println(response.toJson());
 	}
 
 	@Test
@@ -222,11 +229,10 @@ public class BasicClusterTest extends AbstractClusterTest {
 		clientB.login().toBlocking().value();
 		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()));
 
-		
 		// 1. Test permission removal
 		permRequest.getPermissions().setRead(false);
 		call(() -> clientA.updateRolePermissions(roleResponse.getUuid(), "projects/" + projectResponse.getUuid(), permRequest));
-		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()),  FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
+		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
 		permRequest.getPermissions().setRead(true);
 		call(() -> clientA.updateRolePermissions(roleResponse.getUuid(), "projects/" + projectResponse.getUuid(), permRequest));
 		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()));
@@ -236,8 +242,8 @@ public class BasicClusterTest extends AbstractClusterTest {
 		clientA.logout().toBlocking().value();
 		clientA.setLogin(username, password);
 		clientA.login().toBlocking().value();
-		call(() -> clientA.findProjectByUuid(projectResponse.getUuid()),  FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
-		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()),  FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
+		call(() -> clientA.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
+		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
 	}
 
 	/**

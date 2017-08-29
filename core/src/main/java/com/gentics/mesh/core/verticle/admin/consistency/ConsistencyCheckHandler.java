@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.verticle.admin.consistency;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
@@ -42,6 +44,9 @@ public class ConsistencyCheckHandler extends AbstractHandler {
 
 	public void invokeCheck(InternalActionContext ac) {
 		db.operateTx((tx) -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
 			log.info("Consistency check has been invoked.");
 			ConsistencyCheckResponse response = new ConsistencyCheckResponse();
 			// Check domain model

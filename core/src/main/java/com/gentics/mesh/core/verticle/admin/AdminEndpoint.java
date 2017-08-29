@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.verticle.admin;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -51,11 +53,25 @@ public class AdminEndpoint extends AbstractEndpoint {
 		secureAll();
 		addBackupHandler();
 		addRestoreHandler();
+		addClusterStatusHandler();
 		addConsistencyCheckHandler();
 		// addImportHandler();
 		// addExportHandler();
 		// addVerticleHandler();
 		// addServiceHandler();
+
+	}
+
+	private void addClusterStatusHandler() {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/cluster/status");
+		endpoint.method(GET);
+		endpoint.description("Loads the cluster status information.");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(OK, adminExamples.createClusterStatusResponse(), "Cluster status.");
+		endpoint.handler(rc -> {
+			handler.handleClusterStatus(new InternalRoutingActionContextImpl(rc));
+		});
 
 	}
 

@@ -15,7 +15,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 public class ErrorHandlingClusterTest extends AbstractClusterTest {
 
 	@ClassRule
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, 8000);
+	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, 8000, null);
 
 	public static MeshRestClient clientA;
 

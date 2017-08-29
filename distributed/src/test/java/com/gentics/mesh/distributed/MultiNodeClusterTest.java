@@ -21,13 +21,13 @@ public class MultiNodeClusterTest extends AbstractClusterTest {
 	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, 8000);
+	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, 8000, null);
 
-	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", false, false, true, vertx, null);
+	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", false, false, true, vertx, null, null);
 
-	public static MeshDockerServer serverC = new MeshDockerServer("dockerCluster", "nodeC", false, false, true, vertx, null);
+	public static MeshDockerServer serverC = new MeshDockerServer("dockerCluster", "nodeC", false, false, true, vertx, null, null);
 
-	public static MeshDockerServer serverD = new MeshDockerServer("dockerCluster", "nodeD", false, false, true, vertx, null);
+	public static MeshDockerServer serverD = new MeshDockerServer("dockerCluster", "nodeD", false, false, true, vertx, null, null);
 
 	@ClassRule
 	public static RuleChain chain = RuleChain.outerRule(serverD).around(serverC).around(serverB).around(serverA);

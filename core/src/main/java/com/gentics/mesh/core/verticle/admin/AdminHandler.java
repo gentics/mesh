@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.admin;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
@@ -16,11 +17,17 @@ import javax.inject.Inject;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.rest.admin.MeshStatusResponse;
-import com.gentics.mesh.core.rest.admin.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.hazelcast.core.HazelcastInstance;
+import com.hazelcast.core.Member;
+import com.hazelcast.nio.Address;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
@@ -163,6 +170,21 @@ public class AdminHandler extends AbstractHandler {
 			}
 			ac.send(response, OK);
 		}
+	}
+
+	public void handleClusterStatus(InternalActionContext ac) {
+		db.operateTx(() -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+
+			MeshOptions options = Mesh.mesh().getOptions();
+			if (options.getClusterOptions() != null && options.getClusterOptions().isEnabled()) {
+				return Single.just(db.getClusterStatus());
+			} else {
+				throw error(BAD_REQUEST, "error_cluster_status_only_aviable_in_cluster_mode");
+			}
+		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
 }
