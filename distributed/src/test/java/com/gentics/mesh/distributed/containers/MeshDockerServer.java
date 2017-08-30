@@ -151,7 +151,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		exposedPorts.add(8080);
 		exposedPorts.add(9200);
 		exposedPorts.add(9300);
-		setPrivilegedMode(true);
+//		setPrivilegedMode(true);
 		setExposedPorts(exposedPorts);
 		setLogConsumers(Arrays.asList(logConsumer, startupConsumer));
 		// setContainerName("mesh-test-" + nodeName);

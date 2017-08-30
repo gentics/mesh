@@ -16,7 +16,7 @@ public class NodeRejectionClusterTest {
 
 	private static Vertx vertx = Vertx.vertx();
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, 8000, "-Dmesh.internal.version=0.10.0");
+	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, null, "-Dmesh.internal.version=0.10.0");
 
 	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", false, false, true, vertx, null, "-Dmesh.internal.version=0.10.1");
 

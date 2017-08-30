@@ -49,7 +49,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, 8000, null);
+	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, null, null);
 
 	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", false, false, true, vertx, null, null);
 

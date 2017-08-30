@@ -172,7 +172,7 @@ public class DockerClientFactory {
 		InspectContainerResponse inspectedContainer = dockerClient.inspectContainerCmd(id).exec();
 
 		String portSpec = inspectedContainer.getNetworkSettings().getPorts().getBindings().values().iterator().next()[0].getHostPortSpec();
-
+		System.out.println(portSpec);
 		String response;
 		try (Socket socket = new Socket(hostIpAddress, Integer.parseInt(portSpec))) {
 			response = IOUtils.toString(socket.getInputStream(), Charset.defaultCharset());
