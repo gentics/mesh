@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.BindMode;
@@ -90,7 +91,8 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	 * 
 	 * @param clusterName
 	 * @param nodeName
-	 * @param dataPathPostfix Postfix of the data folder
+	 * @param dataPathPostfix
+	 *            Postfix of the data folder
 	 * @param initCluster
 	 * @param waitForStartup
 	 * @param vertx
@@ -100,8 +102,8 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	 * @param extraOpts
 	 *            Additional JVM options
 	 */
-	public MeshDockerServer(String clusterName, String nodeName, String dataPathPostfix, boolean initCluster, boolean waitForStartup, boolean clearDataFolders, Vertx vertx,
-			Integer debugPort, String extraOpts) {
+	public MeshDockerServer(String clusterName, String nodeName, String dataPathPostfix, boolean initCluster, boolean waitForStartup,
+			boolean clearDataFolders, Vertx vertx, Integer debugPort, String extraOpts) {
 		super(image);
 		this.vertx = vertx;
 		this.clusterName = clusterName;
@@ -234,7 +236,10 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 			dockerImage.withFileFromString("run.sh", generateRunScript(classPathArg));
 
 			// Add docker file which contains the build instructions
-			dockerImage.withFileFromClasspath("Dockerfile", "/Dockerfile.local");
+			String dockerFile = IOUtils.toString(MeshDockerServer.class.getResourceAsStream("/Dockerfile.local"));
+			dockerFile = dockerFile.replaceAll("%UID%", "10000");
+			dockerFile = dockerFile.replaceAll("%GID%", "10000");
+			dockerImage.withFileFromString("Dockerfile", dockerFile);
 
 			// Add custom mesh.yml
 			dockerImage.withFileFromString("/mesh.yml", generateMeshYML(enableClustering));
