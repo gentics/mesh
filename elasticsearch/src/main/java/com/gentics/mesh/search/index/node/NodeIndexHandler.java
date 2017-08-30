@@ -315,6 +315,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			obs.add(updateNodeIndexMapping(indexName, entry.getSchema()));
 			return searchProvider.createIndex(indexName).andThen(Completable.merge(obs));
 		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Only found indices:");
+				for (String idx : indexInfo.keySet()) {
+					log.debug("Index name {" + idx + "}");
+				}
+			}
 			throw error(INTERNAL_SERVER_ERROR, "error_index_unknown", indexName);
 		}
 	}

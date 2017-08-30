@@ -2,6 +2,7 @@ package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.util.TestUtils.getJson;
+import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,13 +12,16 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
 
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.core.rest.admin.migration.MigrationInfo;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
@@ -43,15 +47,19 @@ import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class BasicClusterTest extends AbstractClusterTest {
+
+	private static final Logger log = LoggerFactory.getLogger(BasicClusterTest.class);
 
 	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, null, null);
+	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", randomToken(), true, true, true, vertx, null, null);
 
-	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", false, false, true, vertx, null, null);
+	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", randomToken(), false, false, true, vertx, null, null);
 
 	public static MeshRestClient clientA;
 	public static MeshRestClient clientB;
@@ -67,10 +75,24 @@ public class BasicClusterTest extends AbstractClusterTest {
 		clientB = serverB.getMeshClient();
 	}
 
+	@Before
+	public void setupLogin() {
+		clientA.setLogin("admin", "admin");
+		clientA.login().toBlocking().value();
+		clientB.setLogin("admin", "admin");
+		clientB.login().toBlocking().value();
+	}
+
 	@Test
 	public void testClusterStatus() {
 		ClusterStatusResponse response = call(() -> clientA.clusterStatus());
-		System.out.println(response.toJson());
+		assertThat(response.getInstances()).hasSize(2);
+		ClusterInstanceInfo first = response.getInstances().get(0);
+		assertEquals("ONLINE", first.getStatus());
+		assertEquals("nodeB", first.getName());
+		ClusterInstanceInfo second = response.getInstances().get(1);
+		assertEquals("ONLINE", second.getStatus());
+		assertEquals("nodeA", second.getName());
 	}
 
 	@Test
@@ -264,7 +286,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 		String newName = "newNameForProject";
 		call(() -> clientA.updateProject(response.getUuid(), new ProjectUpdateRequest().setName(newName)));
 
-		Thread.sleep(10000);
+		Thread.sleep(20000);
 
 		// Node B: Only the root node should be found and routes should have been updated across the cluster
 		assertThat(call(() -> clientB.findNodes(newName)).getData()).hasSize(1);
@@ -290,16 +312,21 @@ public class BasicClusterTest extends AbstractClusterTest {
 		request.setDisplayField("slug");
 		request.setSegmentField("slug");
 		request.setFields(schemaResponse.getFields());
-		request.validate();
 		request.getFields().add(FieldUtil.createStringFieldSchema("someText"));
+		request.validate();
 		call(() -> clientA.updateSchema(schemaResponse.getUuid(), request));
 
-		// TODO latch on the migration and wait
-		// for (int i = 0; i < 10; i++) {
-		// System.out.println(call(() -> clientA.schemaMigrationStatus()).getMessage());
-		// Thread.sleep(1000);
-		// }
-		Thread.sleep(1000);
+		for (int i = 0; i < 10; i++) {
+			MigrationStatusResponse statusResponse = call(() -> clientA.migrationStatus());
+			if (statusResponse.getMigrations().size() > 0) {
+				MigrationInfo first = statusResponse.getMigrations().get(0);
+				if (MigrationStatus.COMPLETED.equals(first.getStatus())) {
+					log.info("Migration completed...");
+					break;
+				}
+			}
+			Thread.sleep(1000);
+		}
 
 		// Check status on nodeA
 		MigrationStatusResponse status = call(() -> clientA.migrationStatus());

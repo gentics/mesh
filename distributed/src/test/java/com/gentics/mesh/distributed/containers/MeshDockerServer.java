@@ -83,14 +83,14 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 	private String extraOpts;
 
-	public MeshDockerServer(String nodeName) {
-		this("default", nodeName, false, true, true, Vertx.vertx(), null, null);
-	}
+	private String dataPathPostfix;
 
 	/**
 	 * Create a new docker server
 	 * 
+	 * @param clusterName
 	 * @param nodeName
+	 * @param dataPathPostfix Postfix of the data folder
 	 * @param initCluster
 	 * @param waitForStartup
 	 * @param vertx
@@ -98,15 +98,16 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	 * @param debugPort
 	 *            JNLP debug port. No debugging is enabled when set to null.
 	 * @param extraOpts
-	 *            Additional jvm options
+	 *            Additional JVM options
 	 */
-	public MeshDockerServer(String clusterName, String nodeName, boolean initCluster, boolean waitForStartup, boolean clearDataFolders, Vertx vertx,
+	public MeshDockerServer(String clusterName, String nodeName, String dataPathPostfix, boolean initCluster, boolean waitForStartup, boolean clearDataFolders, Vertx vertx,
 			Integer debugPort, String extraOpts) {
 		super(image);
 		this.vertx = vertx;
-		this.initCluster = initCluster;
 		this.clusterName = clusterName;
 		this.nodeName = nodeName;
+		this.dataPathPostfix = dataPathPostfix;
+		this.initCluster = initCluster;
 		this.clearDataFolders = clearDataFolders;
 		this.waitForStartup = waitForStartup;
 		this.debugPort = debugPort;
@@ -116,7 +117,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 	@Override
 	protected void configure() {
-		String dataPath = "target/" + nodeName + "-data";
+		String dataPath = "/opt/jenkins-slave/" + nodeName + "-data-" + dataPathPostfix;
 
 		if (clearDataFolders) {
 			try {

@@ -1,6 +1,7 @@
 package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.util.TokenUtil.randomToken;
 
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -9,7 +10,6 @@ import org.junit.rules.RuleChain;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.distributed.containers.MeshDockerServer;
-import com.gentics.mesh.rest.client.MeshRequest;
 
 import io.vertx.core.Vertx;
 
@@ -21,13 +21,13 @@ public class MultiNodeClusterTest extends AbstractClusterTest {
 	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, null, null);
+	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", randomToken(), true, true, true, vertx, null, null);
 
-	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", false, false, true, vertx, null, null);
+	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", randomToken(), false, false, true, vertx, null, null);
 
-	public static MeshDockerServer serverC = new MeshDockerServer("dockerCluster", "nodeC", false, false, true, vertx, null, null);
+	public static MeshDockerServer serverC = new MeshDockerServer("dockerCluster", "nodeC", randomToken(), false, false, true, vertx, null, null);
 
-	public static MeshDockerServer serverD = new MeshDockerServer("dockerCluster", "nodeD", false, false, true, vertx, null, null);
+	public static MeshDockerServer serverD = new MeshDockerServer("dockerCluster", "nodeD", randomToken(), false, false, true, vertx, null, null);
 
 	@ClassRule
 	public static RuleChain chain = RuleChain.outerRule(serverD).around(serverC).around(serverB).around(serverA);

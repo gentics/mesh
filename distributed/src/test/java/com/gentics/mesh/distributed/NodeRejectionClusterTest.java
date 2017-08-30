@@ -1,5 +1,7 @@
 package com.gentics.mesh.distributed;
 
+import static com.gentics.mesh.util.TokenUtil.randomToken;
+
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -16,9 +18,11 @@ public class NodeRejectionClusterTest {
 
 	private static Vertx vertx = Vertx.vertx();
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, null, "-Dmesh.internal.version=0.10.0");
+	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", randomToken(), true, true, true, vertx, null,
+			"-Dmesh.internal.version=0.10.0");
 
-	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", false, false, true, vertx, null, "-Dmesh.internal.version=0.10.1");
+	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", randomToken(), false, false, true, vertx, null,
+			"-Dmesh.internal.version=0.10.1");
 
 	@ClassRule
 	public static RuleChain chain = RuleChain.outerRule(serverB).around(serverA);
@@ -26,9 +30,9 @@ public class NodeRejectionClusterTest {
 	@BeforeClass
 	public static void waitForNodes() throws InterruptedException {
 	}
-	
+
 	@Test
-	public void testCluster( ) {
-			
+	public void testCluster() {
+
 	}
 }

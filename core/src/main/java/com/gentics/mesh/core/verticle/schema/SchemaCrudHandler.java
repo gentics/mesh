@@ -15,6 +15,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
@@ -49,7 +51,10 @@ import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
@@ -198,11 +203,20 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				return Completable.merge(completables);
 			});
 
+			// Ensure that the transaction is flushed to disk
+			Thread.sleep(100);
 			searchBatchCompletable.await();
 
-			// Invoke the node release migration
+			// Execute the events sequentially in order to avoid locks
 			for (DeliveryOptions option : events) {
-				Mesh.vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, option);
+				CompletableFuture<AsyncResult<Message<JsonObject>>> f = new CompletableFuture<>();
+				Mesh.vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, option, (AsyncResult<Message<JsonObject>> rh) -> {
+					f.complete(rh);
+				});
+				AsyncResult<Message<JsonObject>> result = f.get(10, TimeUnit.MINUTES);
+				if (result.failed()) {
+					log.error("Event handling failed for event {" + option.getHeaders() + "}", result.cause());
+				}
 			}
 
 			return message(ac, "migration_invoked", schemaName);

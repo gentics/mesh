@@ -1,6 +1,7 @@
 package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.util.TokenUtil.randomToken;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -15,7 +16,7 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 public class ErrorHandlingClusterTest extends AbstractClusterTest {
 
 	@ClassRule
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", true, true, true, vertx, 8000, null);
+	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", randomToken(), true, true, true, vertx, 8000, null);
 
 	public static MeshRestClient clientA;
 
@@ -39,8 +40,8 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 		request.setSchemaRef("folder");
 		ProjectResponse response = call(() -> clientA.createProject(request));
 
-		MeshDockerServer serverB = addSlave("dockerCluster", "nodeB", true);
-		//serverB.dropTraffic();
+		MeshDockerServer serverB = addSlave("dockerCluster", "nodeB", randomToken(), true);
+		// serverB.dropTraffic();
 		call(() -> serverB.getMeshClient().findProjectByUuid(response.getUuid()));
 	}
 
@@ -58,7 +59,8 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 		request.setSchemaRef("folder");
 		ProjectResponse response = call(() -> clientA.createProject(request));
 
-		MeshDockerServer serverB1 = addSlave("dockerCluster", "nodeB", true);
+		String dataPathPostfix = randomToken();
+		MeshDockerServer serverB1 = addSlave("dockerCluster", "nodeB", dataPathPostfix, true);
 		Thread.sleep(2000);
 		serverB1.stop();
 
@@ -70,7 +72,7 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 
 		// Now start the stopped instance again
 		Thread.sleep(2000);
-		MeshDockerServer serverB2 = addSlave("dockerCluster", "nodeB", false);
+		MeshDockerServer serverB2 = addSlave("dockerCluster", "nodeB", dataPathPostfix, false);
 
 		ProjectCreateRequest request3 = new ProjectCreateRequest();
 		request3.setName(randomName());
