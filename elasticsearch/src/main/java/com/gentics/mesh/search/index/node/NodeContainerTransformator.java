@@ -55,6 +55,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.search.index.AbstractTransformator;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -363,6 +364,14 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 				case "micronode":
 					fieldInfo.put("type", NESTED);
 					fieldInfo.put("dynamic", true);
+
+					// TODO
+					//	for(String microschema : listFieldSchema.getAllowedSchemas()) {
+					//	1. Load the microschema version by name from the release to which this schema belongs
+					//	2. Add the fields for the microschema to the mapping using the microschema name as a prefix for the fields
+					//	}
+					// TODO Also add index creation to MicronodeMigrationHandler 
+
 					// fieldProps.put(field.getName(), fieldInfo);
 					break;
 				case "string":
@@ -391,6 +400,14 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 			microschemaMappingProperties.put(UUID_KEY, notAnalyzedType(STRING));
 			microschemaMapping.put("properties", microschemaMappingProperties);
 			fieldInfo.put("dynamic", true);
+
+			// TODO
+			//	for(String microschema : ((MicronodeFieldSchema)fieldSchema).getAllowedMicroSchemas()) {
+			//	1. Load the microschema version by name from the release to which this schema belongs
+			//	2. Add the fields for the microschema to the mapping using the microschema name as a prefix for the fields
+			//	}
+			// TODO Also add index creation to MicronodeMigrationHandler
+
 			// TODO add version
 			fieldInfo.put("properties", micronodeMappingProperties);
 			break;

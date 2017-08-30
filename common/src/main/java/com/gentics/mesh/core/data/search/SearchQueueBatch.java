@@ -197,7 +197,7 @@ public interface SearchQueueBatch {
 	 * @param node
 	 * @param releaseUuid
 	 * @param type
-	 * @param addRelatedElements
+	 * @param addRelatedElements Whether to also add related elements (e.g: child nodes)
 	 * @return Fluent API
 	 */
 	SearchQueueBatch store(Node node, String releaseUuid, ContainerType type, boolean addRelatedElements);
