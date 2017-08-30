@@ -10,10 +10,10 @@
 
 		<handler class="com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin">
 			<parameters>
-				<parameter name="nodeName" value="Frenzied_Bidoof@0-9-27-SNAPSHOT" />
-				<parameter name="enabled" value="false" />
-				<parameter name="configuration.db.default" value="${ORIENTDB_HOME}/config/default-distributed-db-config.json" />
-				<parameter name="configuration.hazelcast" value="${ORIENTDB_HOME}/config/hazelcast.xml" />
+				<parameter name="nodeName" value="%NODENAME%" />
+				<parameter name="enabled" value="%DISTRIBUTED%" />
+				<parameter name="configuration.db.default" value="${ORIENTDB_HOME}/%CONFDIR_NAME%/default-distributed-db-config.json" />
+				<parameter name="configuration.hazelcast" value="${ORIENTDB_HOME}/%CONFDIR_NAME%/hazelcast.xml" />
 			</parameters>
 		</handler>
 
@@ -71,8 +71,8 @@
 		<entry name="db.pool.max" value="50" />
 		<!-- PROFILER: configures the profiler as <seconds-for-snapshot>,<archive-snapshot-size>,<summary-size> -->
 		<entry name="profiler.enabled" value="false" />
-		<entry name="plugin.directory" value="orientdb-plugins" />
-		<entry name="server.database.path" value="/media/nvm/mesh/mesh/server/data/graphdb" />
+		<entry name="plugin.directory" value="%PLUGIN_DIRECTORY%" />
+		<entry name="server.database.path" value="%DB_PARENT_PATH%" />
 
 		<!-- LOG: enable/Disable logging. Levels are: finer, fine, finest, info, warning -->
 		<entry name="log.console.level" value="finest" />

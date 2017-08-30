@@ -22,6 +22,10 @@ public class ElasticSearchOptions {
 	@JsonPropertyDescription("Flag which indicates whether to enable or disable the elasticsearch http server. Please note that the HTTP server is not secured and thus this option should only be enabled if the server has been protected properly.")
 	private boolean httpEnabled = false;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configures the elasticsarch transport.tcp.port setting.")
+	private String transportPort = "9300-9400";
+
 	/**
 	 * Check whether the http server should be enabled.
 	 * 
@@ -65,8 +69,30 @@ public class ElasticSearchOptions {
 		return this;
 	}
 
-	public void validate(MeshOptions meshOptions) {
+	/**
+	 * Return the transport.tcp.port configured value.
+	 * 
+	 * @return
+	 */
+	public String getTransportPort() {
+		return transportPort;
+	}
 
+	/**
+	 * Set the transport.tcp.port value.
+	 * 
+	 * @param transportPort
+	 * @return
+	 */
+	public ElasticSearchOptions setTransportPort(String transportPort) {
+		this.transportPort = transportPort;
+		return this;
+	}
+
+	public void validate(MeshOptions meshOptions) {
+		if (meshOptions.getClusterOptions() != null && meshOptions.getClusterOptions().isEnabled() && getTransportPort() == null) {
+			throw new NullPointerException("The searchprovider transport port setting must be configured when clustering is enabled.");
+		}
 	}
 
 }

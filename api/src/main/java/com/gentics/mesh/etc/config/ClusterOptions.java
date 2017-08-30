@@ -33,6 +33,10 @@ public class ClusterOptions {
 	@JsonPropertyDescription("Name of the cluster. Only instances with a common cluster name will form a cluster.")
 	private String clusterName;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Port used by Vert.x for the eventbus server. A random free port will be selected if set to 0.")
+	private Integer vertxPort = 0;
+
 	/**
 	 * Return the cluster enabled flag.
 	 * 
@@ -100,6 +104,24 @@ public class ClusterOptions {
 			Objects.requireNonNull(getClusterName(), "No cluster.clusterName was specified within mesh options.");
 			Objects.requireNonNull(meshOptions.getNodeName(), "No nodeName was specified within mesh options.");
 		}
+	}
+
+	/**
+	 * Return the vert.x cluster port.
+	 * 
+	 * @return
+	 */
+	public Integer getVertxPort() {
+		return vertxPort;
+	}
+
+	/**
+	 * Set the vert.x cluster port.
+	 * 
+	 * @param vertxPort
+	 */
+	public void setVertxPort(Integer vertxPort) {
+		this.vertxPort = vertxPort;
 	}
 
 }

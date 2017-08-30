@@ -100,6 +100,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private static final String ORIENTDB_SERVER_CONFIG = "orientdb-server-config.xml";
 
+	private static final String ORIENTDB_SECURITY_SERVER_CONFIG = "security.json";
+
 	private static final String ORIENTDB_DISTRIBUTED_CONFIG = "default-distributed-db-config.json";
 
 	private static final String ORIENTDB_HAZELCAST_CONFIG = "hazelcast.xml";
@@ -256,6 +258,25 @@ public class OrientDBDatabase extends AbstractDatabase {
 			writeOrientServerConfig(serverConfigFile);
 		}
 
+		File securityConfigFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_SECURITY_SERVER_CONFIG);
+		// Check whether the initial configuration needs to be written
+		if (!securityConfigFile.exists()) {
+			log.info("Creating orientdb server security configuration file {" + securityConfigFile + "}");
+			writeOrientServerSecurityConfig(securityConfigFile);
+		}
+
+	}
+
+	private void writeOrientServerSecurityConfig(File securityConfigFile) throws IOException {
+		String resourcePath = "/config/" + ORIENTDB_SECURITY_SERVER_CONFIG;
+		InputStream configIns = getClass().getResourceAsStream(resourcePath);
+		if (configIns == null) {
+			log.error("Could not find default orientdb server security configuration file {" + resourcePath + "} within classpath.");
+		}
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
+		String configString = writer.toString();
+		FileUtils.writeStringToFile(securityConfigFile, configString);
 	}
 
 	private void writeHazelcastConfig(File hazelcastConfigFile) throws IOException {
@@ -288,38 +309,33 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private String getOrientServerConfig() throws Exception {
 		File configFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_SERVER_CONFIG);
+		String configString = FileUtils.readFileToString(configFile);
 
-		// Load and parse the xml file - We need to update the stored nodeName value
-		DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-		DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-		Document doc = dBuilder.parse(configFile);
-		NodeList parameters = doc.getElementsByTagName("parameter");
-		boolean found = false;
-
-		// Iterate over all parameters and locate the nodeName parameter
-		for (int i = 0; i < parameters.getLength(); i++) {
-			Node parameter = parameters.item(i);
-			NamedNodeMap attributes = parameter.getAttributes();
-			Node nameAttr = attributes.getNamedItem("name");
-			String name = nameAttr.getNodeValue();
-			if ("nodeName".equals(name)) {
-				Node valueNode = attributes.getNamedItem("value");
-				valueNode.setNodeValue(getNodeName());
-				found = true;
-				break;
+		// Now replace the parameters within the configuration
+		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", new File("orientdb-plugins").getAbsolutePath());
+		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "info");
+		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
+		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);
+		configString = configString.replaceAll("%NODENAME%", getNodeName());
+		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.getClusterOptions().isEnabled()));
+		String bindIp = "0.0.0.0";
+		// Only use the cluster network host if clustering is enabled.
+		if (options.getClusterOptions().isEnabled()) {
+			bindIp = options.getClusterOptions().getNetworkHost();
+		}
+		configString = configString.replaceAll("%BIND_IP%", bindIp);
+		String dbDir = storageOptions().getDirectory();
+		if (dbDir != null) {
+			configString = configString.replaceAll("%DB_PARENT_PATH%", escapeSafe(storageOptions().getDirectory()));
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Not setting DB_PARENT_PATH because no database dir was configured.");
 			}
 		}
-		if (!found) {
-			throw new RuntimeException("Could  not find {nodeName} parameter within {" + configFile + "}");
+		if (log.isDebugEnabled()) {
+			log.debug("Effective orientdb server configuration:" + configString);
 		}
-		DOMSource source = new DOMSource(doc);
-		TransformerFactory transformerFactory = TransformerFactory.newInstance();
-		Transformer transformer = transformerFactory.newTransformer();
-		StringWriter writer = new StringWriter();
-		transformer.transform(source, new javax.xml.transform.stream.StreamResult(writer));
-		String result = writer.toString();
-
-		return result;
+		return configString;
 	}
 
 	/**
@@ -350,33 +366,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 		StringWriter writer = new StringWriter();
 		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
 		String configString = writer.toString();
-		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", "orientdb-plugins");
-		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "info");
-		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
-		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);
-		configString = configString.replaceAll("%NODENAME%", getNodeName());
-		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.getClusterOptions().isEnabled()));
-		String bindIp = "0.0.0.0";
-		// Only use the cluster network host if clustering is enabled.
-		if (options.getClusterOptions().isEnabled()) {
-			bindIp = options.getClusterOptions().getNetworkHost();
-		}
-		configString = configString.replaceAll("%BIND_IP%", bindIp);
-		String dbDir = storageOptions().getDirectory();
-		if (dbDir != null) {
-			configString = configString.replaceAll("%DB_PARENT_PATH%", escapeSafe(storageOptions().getDirectory()));
-		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("Not setting DB_PARENT_PATH because no database dir was configured.");
-			}
-		}
-		if (log.isDebugEnabled()) {
-			log.debug("Effective orientdb server configuration:" + configString);
-		}
-		if (log.isDebugEnabled()) {
-			log.debug("OrientDB config");
-			log.debug(configString);
-		}
 		FileUtils.writeStringToFile(configFile, configString);
 	}
 
@@ -392,14 +381,15 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (server == null) {
 			server = OServerMain.create();
 			log.info("Extracting OrientDB Studio");
-			InputStream ins = getClass().getResourceAsStream("/plugins/orientdb-studio-2.2.24.zip");
+			InputStream ins = getClass().getResourceAsStream("/plugins/orientdb-studio-2.2.26.zip");
 			File pluginDirectory = new File("orientdb-plugins");
 			pluginDirectory.mkdirs();
-			IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "orientdb-studio-2.2.24.zip")));
+			IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "orientdb-studio-2.2.26.zip")));
 		}
 
 		ClusterOptions clusterOptions = options.getClusterOptions();
 		if (clusterOptions != null && clusterOptions.isEnabled()) {
+			// This setting will be referenced by the hazelcast configuration
 			System.setProperty("mesh.clusterName", clusterOptions.getClusterName() + "@" + Mesh.getPlainVersion());
 		}
 
@@ -733,8 +723,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
 			} catch (ONeedRetryException e) {
-				System.out.println(retry);
-
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}

@@ -96,6 +96,8 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				.put("node.name", options.getNodeName())
 
+				.put("transport.tcp.port", searchOptions.getTransportPort())
+
 				.put("plugin.types", DeleteByQueryPlugin.class.getName())
 
 				// .put("index.store.type", "mmapfs")

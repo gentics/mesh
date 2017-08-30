@@ -332,6 +332,12 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.getEventBusOptions().setClusterPublicHost(localIp);
 		vertxOptions.setClusterHost(localIp);
 		vertxOptions.setClusterPublicHost(localIp);
+
+		Integer clusterPort = options.getClusterOptions().getVertxPort();
+		int vertxClusterPort = clusterPort == null ? 0 : clusterPort;
+		vertxOptions.setClusterPort(vertxClusterPort);
+		vertxOptions.setClusterPublicPort(vertxClusterPort);
+
 		CompletableFuture<Vertx> fut = new CompletableFuture<>();
 		Vertx.clusteredVertx(vertxOptions, rh -> {
 			log.info("Created clustered vert.x instance");

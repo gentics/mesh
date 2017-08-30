@@ -15,21 +15,26 @@ Clustering is also a way to increase redundancy and fault tolerance since each i
 
 * `cluster.enabled`
 
-The cluster mode can be switched on using the mesh.yml `cluster.enabled` setting. 
+The cluster mode can be switched on using this setting. 
 
 * `cluster.networkHost`
 
-The `cluster.networkHost` setting is optional and can be used to configure the network which the cluster daemons bind to.
+This setting is optional and can be used to configure the network which the cluster daemons bind to.
 Gentics Mesh will try to determine the network automatically if no setting has been provided. The value of this setting will currently also be used to connect other instances to the configured instance. 
 So make sure that the IP/Host can be reached from other potential instances in your network.
 
 *  `cluster.clusterName`
 
-The `cluster.clusterName` setting is required when clustering is enabled. This setting is used to group your instances together. It can also be used to form a new cluster next to an existing cluster.
+The setting is required when clustering is enabled. It is used to group your instances together. It can also be used to form a new cluster next to an existing cluster. Only instances with the same clusterName will be able to find eachother.
+
+* `cluster.vertxPort`
+
+The vertxPort setting is used by the Vert.x eventbus message service. By default vert.x will choose any free port and utilize it for the service.
 
 * `nodeName`
 
 The node name is used to identify the instance in the cluster. The name must be unique to a single instance and should not be changed.
+
 
 .mesh.yml
 [source,yaml]
@@ -38,8 +43,41 @@ nodeName: "nodeA"
 cluster:
   networkHost: "192.168.10.20"
   clusterName: "mesh.testing"
+  vertxPort: 0
   enabled: true
 ----
+
+=== Port Mapping
+
+Clustering involves the following components: Vert.x, ElasticSearch and OrientDB, Hazelcast. Each component utilize different ports.
+
+.Table Port Mappings
+[options="header",cols="5%,30%,20%,45%"]
+|===
+|Component | Default Port |Protocol | Configuration file
+
+| Vert.x
+| 0  (random, eventbus server)
+| TCP
+| `mesh.yml` - `cluster/vertxPort`
+
+|ElasticSearch
+|9200 (REST), 9300-9400 (Clustering)
+|TCP, UDP
+| `mesh.yml` - `search/transportPort`
+
+|OrientDB
+|2424-2430 (binary), 2480-2490 (HTTP)
+|TCP
+| `orientdb-server-config.xml` - `network/listeners/listener`
+
+| Hazelcast
+| 2434 (dynamic)
+| TCP, UDP
+| `hazelcast.xml` - `network/port`
+
+|===
+
 
 == Setup
 
@@ -53,6 +91,10 @@ Similar to the first time when you start Gentics Mesh in single mode a new data 
 If you have not yet setup a database and just start Gentics Mesh with clustering enabled not much will happen. It will wait for other instances in the cluster which can provide a database for it.
 
 You can start up additional instances once your initial cluster instance is up and running.
+
+* Enable clusering on an non-clustered instance
+
+Just set the `cluster.enabled` flag and specifiy a `cluster.clusterName` within your `mesh.yml`.
 
 == Node discovery
 
@@ -100,18 +142,11 @@ Are my changes directly visible on other instances?::
 The replication handles this as fast as the network allows but by default replication is happening asynchronous
 which means that it could take a few moments until your changes are propagated throughout the cluster.
 This behaviour is configureable via the OrientDB `writeQuorum` setting. Take a look at the link:https://orientdb.com/docs/2.2/Distributed-Configuration.html[OrientDB distributed configuration] if you want to know more.
-Our tests currently only cover the default `writeQuorum` and `readQuorum` of 1.
+Our tests currently only cover the `writeQuorum` and `readQuorum` of *1*.
 
 What happens if the network between my instances fails?::
 The instances will continue to operate normally but will no longer be able to see each other's changes.
 Once the network issue is resolved the instances will update themself and resume normal operation.
-
-Which ports are needed for clustering?::
-Clustering involves the following components: Vert.x, ElasticSearch and OrientDB, Hazelcast. Each component utilize different ports.
-* ElasticSearch: 9200, 9300
-* OrientDB: 2424-2430, 2480-2490
-* Vert.x:  0  (random)
-* Hazelcast: 2434 (default, dynamic)
 
 I want to use a load balancer to distribute load across my instances. Do I need to handle sticky sessions?::
 Gentics Mesh does not use sessions. Instead a stateless JWT mechanism is used. This means you can direct your traffic to any of clustered instances. No need to setup something special.

@@ -38,6 +38,7 @@ mesh.lock
 binaryImageCache
 .factorypath
 mesh-ui-config.js
+*/config/security.json
 doc/src/main/docs/changelog.asciidoc
 alltests
 inclusions.txt
