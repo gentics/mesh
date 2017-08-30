@@ -237,8 +237,9 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 
 			// Add docker file which contains the build instructions
 			String dockerFile = IOUtils.toString(MeshDockerServer.class.getResourceAsStream("/Dockerfile.local"));
-			dockerFile = dockerFile.replaceAll("%UID%", "10000");
-			dockerFile = dockerFile.replaceAll("%GID%", "10000");
+			// We need to keep the uid of the docker container env and the local test execution env in sync to be able to access the data of the mounted volume.
+			int uid = UnixUtils.getUid();
+			dockerFile = dockerFile.replaceAll("%UID%", String.valueOf(uid));
 			dockerImage.withFileFromString("Dockerfile", dockerFile);
 
 			// Add custom mesh.yml
