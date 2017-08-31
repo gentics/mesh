@@ -6,6 +6,8 @@ import java.lang.management.ManagementFactory;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 import javax.management.MalformedObjectNameException;
@@ -55,15 +57,18 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	@Override
 	public MigrationStatusHandler updateStatus() {
 		if (Mesh.mesh().getOptions().getClusterOptions().isEnabled()) {
+			CountDownLatch latch = new CountDownLatch(1);
 			vertx.sharedData().getLock("mesh.data.lock", rhl -> {
 				if (rhl.failed()) {
 					log.warn("Could not update status since lock could not be acquired", rhl.cause());
+					latch.countDown();
 				} else {
 					// Get the cluster data map
 					vertx.sharedData().getClusterWideMap(MIGRATION_DATA_MAP_KEY, rh -> {
 						if (rh.failed()) {
 							log.error("Could not load data map", rh.cause());
 							rhl.result().release();
+							latch.countDown();
 						} else {
 							// Get the json object from the map
 							AsyncMap<Object, Object> map = rh.result();
@@ -80,16 +85,25 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 											log.error("Could not store updated entry in map.", ph.cause());
 										}
 										rhl.result().release();
+										latch.countDown();
 									});
 								} else {
 									log.error("Could not load data", rd.cause());
 									rhl.result().release();
+									latch.countDown();
 								}
 							});
 						}
 					});
 				}
 			});
+			try {
+				latch.await(10, TimeUnit.SECONDS);
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		} else {
 			LocalMap<Object, Object> map = Mesh.vertx().sharedData().getLocalMap(MIGRATION_DATA_MAP_KEY);
 			MigrationStatusResponse response = (MigrationStatusResponse) map.get("data");

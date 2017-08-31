@@ -7,6 +7,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -23,19 +24,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -109,6 +100,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
 	private static final String DB_NAME = "storage";
+
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-2.2.26.zip";
 
 	private TopologyEventBridge topologyEventBridge;
 
@@ -380,11 +373,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
 		if (server == null) {
 			server = OServerMain.create();
-			log.info("Extracting OrientDB Studio");
-			InputStream ins = getClass().getResourceAsStream("/plugins/orientdb-studio-2.2.26.zip");
-			File pluginDirectory = new File("orientdb-plugins");
-			pluginDirectory.mkdirs();
-			IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "orientdb-studio-2.2.26.zip")));
+			updateOrientDBPlugin();
 		}
 
 		ClusterOptions clusterOptions = options.getClusterOptions();
@@ -409,6 +398,40 @@ public class OrientDBDatabase extends AbstractDatabase {
 		manager.startup();
 		// The registerLifecycleListener may not have been invoked. We need to redirect the online event manually.
 		postStartupDBEventHandling();
+	}
+
+	/**
+	 * Check the orientdb plugin directory and extract the orientdb studio plugin if needed.
+	 * 
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	private void updateOrientDBPlugin() throws FileNotFoundException, IOException {
+		InputStream ins = getClass().getResourceAsStream("/plugins/" + ORIENTDB_STUDIO_ZIP);
+		File pluginDirectory = new File("orientdb-plugins");
+		pluginDirectory.mkdirs();
+
+		// Remove old plugins
+		boolean currentPluginFound = false;
+		for (File plugin : pluginDirectory.listFiles()) {
+			if (plugin.isFile()) {
+				String filename = plugin.getName();
+				log.debug("Checking orientdb plugin: " + filename);
+				if (filename.equals(ORIENTDB_STUDIO_ZIP)) {
+					currentPluginFound = true;
+					continue;
+				}
+				if (filename.startsWith("orientdb-studio-")) {
+					plugin.delete();
+				}
+			}
+		}
+
+		if (!currentPluginFound) {
+			log.info("Extracting OrientDB Studio");
+			IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "orientdb-studio-2.2.26.zip")));
+		}
+
 	}
 
 	private void postStartupDBEventHandling() {

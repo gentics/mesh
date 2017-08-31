@@ -393,6 +393,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		AsyncResult<Message<Object>> result = future.get();
 		assertTrue(result.failed());
 
+		// TODO BUG - We need to wait 100ms because the event handling and clustered data map updating is handled within the same event loop
+		Thread.sleep(100);
 		MigrationStatusResponse status = call(() -> client().migrationStatus());
 		assertThat(status).listsAll(FAILED).hasInfos(1).hasStatus(IDLE);
 		assertNotNull("An error should be stored along with the info.", status.getMigrations().get(0).getError());

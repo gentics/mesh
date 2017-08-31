@@ -18,6 +18,9 @@ public class ConsistencyCheckTest extends AbstractMeshTest {
 
 	@Test
 	public void testConsistencyCheck() {
+		client().setLogin("admin", "admin");
+		client().login().toBlocking().value();
+
 		ConsistencyCheckResponse response = call(() -> client().checkConsistency());
 		assertThat(response.getInconsistencies()).isEmpty();
 		assertEquals(ConsistencyRating.CONSISTENT, response.getResult());
