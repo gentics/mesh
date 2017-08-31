@@ -3,6 +3,7 @@ package com.gentics.mesh.distributed;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.util.TestUtils.getJson;
 import static com.gentics.mesh.util.TokenUtil.randomToken;
+import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -52,14 +53,18 @@ import io.vertx.core.logging.LoggerFactory;
 
 public class BasicClusterTest extends AbstractClusterTest {
 
+	private static String clusterPostFix = randomUUID();
+
 	private static final Logger log = LoggerFactory.getLogger(BasicClusterTest.class);
 
 	private static Vertx vertx = Vertx.vertx();
 	// public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
 
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", randomToken(), true, true, true, vertx, null, null);
+	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeA", randomToken(), true, true, true, vertx,
+			null, null);
 
-	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster", "nodeB", randomToken(), false, false, true, vertx, null, null);
+	public static MeshDockerServer serverB = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeB", randomToken(), false, false, true, vertx,
+			null, null);
 
 	public static MeshRestClient clientA;
 	public static MeshRestClient clientB;

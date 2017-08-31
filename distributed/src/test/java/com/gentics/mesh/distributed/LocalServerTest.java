@@ -1,6 +1,7 @@
 package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 import static org.junit.Assert.*;
 
 import org.junit.ClassRule;
@@ -11,8 +12,10 @@ import com.gentics.mesh.distributed.containers.MeshLocalServer;
 
 public class LocalServerTest {
 
+	private static String clusterPostFix = randomUUID();
+
 	@ClassRule
-	public static MeshLocalServer serverA = new MeshLocalServer("localNodeA", true, true);
+	public static MeshLocalServer serverA = new MeshLocalServer("cluster" + clusterPostFix, "localNodeA", true, true);
 
 	@Test
 	public void testServer() {

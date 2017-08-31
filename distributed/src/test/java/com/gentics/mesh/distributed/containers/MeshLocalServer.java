@@ -34,17 +34,24 @@ public class MeshLocalServer extends TestWatcher {
 	private boolean waitForStartup;
 
 	private int httpPort;
-	
-	/**
-	 * Action which will be invoked once the mesh instance is ready.
-	 */
 
-	public MeshLocalServer(String nodeName, boolean initCluster, boolean waitForStartup) {
+	private String clusterName;
+
+	/**
+	 * Create a new local server.
+	 * 
+	 * @param clusterName
+	 * @param nodeName
+	 * @param initCluster
+	 * @param waitForStartup
+	 */
+	public MeshLocalServer(String clusterName, String nodeName, boolean initCluster, boolean waitForStartup) {
 		if (inUse) {
 			throw new RuntimeException("The Mesh local server rule can't be used twice in the same JVM.");
 		}
 		inUse = true;
 		this.initCluster = initCluster;
+		this.clusterName = clusterName;
 		this.nodeName = nodeName;
 		this.waitForStartup = waitForStartup;
 	}
@@ -74,6 +81,7 @@ public class MeshLocalServer extends TestWatcher {
 		options.getAuthenticationOptions().setKeystorePath(basePath + "/keystore.jkms");
 		// options.getSearchOptions().setHttpEnabled(true);
 		options.getClusterOptions().setEnabled(true);
+		options.getClusterOptions().setClusterName(clusterName);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.getVertx().eventBus().consumer(STARTUP_EVENT_ADDRESS, mh -> {

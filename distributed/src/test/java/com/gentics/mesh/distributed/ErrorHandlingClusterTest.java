@@ -2,6 +2,7 @@ package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.util.TokenUtil.randomToken;
+import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -15,8 +16,11 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 
 public class ErrorHandlingClusterTest extends AbstractClusterTest {
 
+	private static String clusterPostFix = randomUUID();
+
 	@ClassRule
-	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster", "nodeA", randomToken(), true, true, true, vertx, 8000, null);
+	public static MeshDockerServer serverA = new MeshDockerServer("dockerCluster" + clusterPostFix, "nodeA", randomToken(), true, true, true, vertx,
+			8000, null);
 
 	public static MeshRestClient clientA;
 
@@ -40,7 +44,7 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 		request.setSchemaRef("folder");
 		ProjectResponse response = call(() -> clientA.createProject(request));
 
-		MeshDockerServer serverB = addSlave("dockerCluster", "nodeB", randomToken(), true);
+		MeshDockerServer serverB = addSlave("dockerCluster" + clusterPostFix, "nodeB", randomToken(), true);
 		// serverB.dropTraffic();
 		call(() -> serverB.getMeshClient().findProjectByUuid(response.getUuid()));
 	}
@@ -60,7 +64,7 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 		ProjectResponse response = call(() -> clientA.createProject(request));
 
 		String dataPathPostfix = randomToken();
-		MeshDockerServer serverB1 = addSlave("dockerCluster", "nodeB", dataPathPostfix, true);
+		MeshDockerServer serverB1 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, true);
 		Thread.sleep(2000);
 		serverB1.stop();
 
@@ -72,7 +76,7 @@ public class ErrorHandlingClusterTest extends AbstractClusterTest {
 
 		// Now start the stopped instance again
 		Thread.sleep(2000);
-		MeshDockerServer serverB2 = addSlave("dockerCluster", "nodeB", dataPathPostfix, false);
+		MeshDockerServer serverB2 = addSlave("dockerCluster" + clusterPostFix, "nodeB", dataPathPostfix, false);
 
 		ProjectCreateRequest request3 = new ProjectCreateRequest();
 		request3.setName(randomName());
