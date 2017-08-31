@@ -91,20 +91,14 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
 		String microschemaUuid = microschemaResponse.getUuid();
 		// Assigning the microschema to the project is not needed since this is done during schema update
-		
-//		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaUuid));
+		//call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaUuid));
 
 		// 2. Add micronode field to content schema
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
 		call(() -> client().updateSchema(schemaUuid, schemaUpdate));
 
-		// 3. Search directly for existing content
-		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
-		assertThat(response.getData()).as("Search result").isEmpty();
-
-		// 4. Wait until the migration is complete and search again
+		// 4. Wait until the migration is complete and search
 		failingLatch(latch);
 		NodeListResponse response2 = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
@@ -151,7 +145,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		NodeResponse nodeResponse2 = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeResponse.getUuid()));
 		assertEquals("someNewText", nodeResponse2.getFields().getMicronodeField("micro").getFields().getStringField("textNew").getString());
 
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
 		assertThat(response.getData()).as("Search result").isNotEmpty();
 
 	}

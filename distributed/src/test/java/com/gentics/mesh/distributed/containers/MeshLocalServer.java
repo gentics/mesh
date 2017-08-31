@@ -84,9 +84,7 @@ public class MeshLocalServer extends TestWatcher {
 		options.getClusterOptions().setClusterName(clusterName);
 
 		Mesh mesh = Mesh.mesh(options);
-		mesh.getVertx().eventBus().consumer(STARTUP_EVENT_ADDRESS, mh -> {
-			waitingLatch.countDown();
-		});
+	
 
 		new Thread(() -> {
 			try {
@@ -96,7 +94,20 @@ public class MeshLocalServer extends TestWatcher {
 				e.printStackTrace();
 			}
 		}).start();
+		
+		while(mesh.getVertx() ==null) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 
+		mesh.getVertx().eventBus().consumer(STARTUP_EVENT_ADDRESS, mh -> {
+			waitingLatch.countDown();
+		});
+		
 		if (waitForStartup) {
 			try {
 				awaitStartup(200);

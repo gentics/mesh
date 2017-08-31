@@ -140,16 +140,19 @@ public class NodeSearchEndpointBTest extends AbstractNodeSearchEndpointTest {
 		NodeResponse concorde = call(
 				() -> client().findNodeByUuid(PROJECT_NAME, db().tx(() -> content("concorde").getUuid()), new VersioningParametersImpl().draft()));
 
+		// 1. Create a new release
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
 		createRelease.setName("newrelease");
 		call(() -> client().createRelease(PROJECT_NAME, createRelease));
 		failingLatch(latch);
 
+		// 2. Search within the newly create release
 		NodeListResponse response = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
-		assertThat(response.getData()).as("Search result").isEmpty();
+		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 
+		// 3. Search within the initial release
 		String releaseName = db().tx(() -> project().getInitialRelease().getName());
 		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
 				new VersioningParametersImpl().setRelease(releaseName).draft()));
