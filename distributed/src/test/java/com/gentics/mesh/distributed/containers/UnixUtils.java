@@ -17,7 +17,7 @@ public final class UnixUtils {
 			// Get the input stream and read from it
 			in = child.getInputStream();
 			String output = IOUtils.toString(in);
-			return Integer.valueOf(output);
+			return Integer.valueOf(output.trim());
 		} finally {
 			if (in != null) {
 				in.close();
