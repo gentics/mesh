@@ -31,6 +31,10 @@ icon:plus[] REST: The `/api/v1/admin/consistency/check` endpoint has been added.
 
 icon:check[] REST: Invalid date strings were not correctly handled. An error will now be thrown if a date string can't be parsed.
 
+icon:check[] REST: The delete handling has been updated.
+                   It is now possible to specify the `?recusive=true` parameter to recusivly delete nodes.
+                   By default `?recusive=false` will be used. Deleting a node which contains children will thus cause an error.
+                   The behavior of node language deletion has been updated as well. Deleting the last language of a node will also remove this node. This removal will again fail if no `?recusive=true` query parameter has been added.
 
 == 0.9.28 (28.08.2017)
 

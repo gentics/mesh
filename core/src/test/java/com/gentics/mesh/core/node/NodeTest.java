@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.rest.SortOrder.UNSORTED;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.util.TestUtils.size;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -85,7 +86,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node newSubNode;
 			newSubNode = newsNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 
-			assertEquals(1, newsNode.getChildren().size());
+			assertEquals(1, size(newsNode.getChildren()));
 			Node firstChild = newsNode.getChildren().iterator().next();
 			assertEquals(newSubNode.getUuid(), firstChild.getUuid());
 		}
@@ -309,6 +310,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, true);
 			SearchQueueBatch batch = createBatch();
 			InternalActionContext ac = mockActionContext("");
+			ac.getDeleteParameters().setRecursive(true);
 			try (Tx tx2 = tx()) {
 				node.deleteFromRelease(ac, project().getLatestRelease(), batch, false);
 				tx2.success();
@@ -391,6 +393,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 2. delete folder for initial release
 			SearchQueueBatch batch = createBatch();
 			InternalActionContext ac = mockActionContext("");
+			ac.getDeleteParameters().setRecursive(true);
 			subFolder.deleteFromRelease(ac, initialRelease, batch, false);
 
 			// 3. assert for new release
@@ -457,6 +460,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 8. delete folder for initial release
 			batch = createBatch();
 			InternalActionContext ac = mockActionContext("");
+			ac.getDeleteParameters().setRecursive(true);
 			subFolder.deleteFromRelease(ac, initialRelease, batch, false);
 
 			// 9. assert for new release

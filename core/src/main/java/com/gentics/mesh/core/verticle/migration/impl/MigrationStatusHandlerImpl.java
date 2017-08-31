@@ -101,7 +101,6 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 				latch.await(10, TimeUnit.SECONDS);
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		} else {

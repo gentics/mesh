@@ -2,9 +2,10 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.util.TestUtils.size;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -18,7 +19,6 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
@@ -34,6 +34,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeChildrenEndpointTest extends AbstractMeshTest {
@@ -144,12 +145,13 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			assertNotNull(node);
 			assertNotNull(node.getUuid());
 
-			int expectedItemsInPage = node.getChildren().size() > 25 ? 25 : node.getChildren().size();
+			long size = size(node.getChildren());
+			long expectedItemsInPage =  size > 25 ? 25 : size;
 
 			NodeListResponse nodeList = call(() -> client().findNodeChildren(PROJECT_NAME, node.getUuid(), new PagingParametersImpl(),
 					new VersioningParametersImpl().draft()));
 
-			assertEquals(node.getChildren().size(), nodeList.getMetainfo().getTotalCount());
+			assertEquals(size(node.getChildren()), nodeList.getMetainfo().getTotalCount());
 			assertEquals(expectedItemsInPage, nodeList.getData().size());
 		}
 	}
@@ -171,7 +173,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 
 			assertEquals(0, nodeList.getData().stream().filter(p -> nodeWithNoPerm.getUuid().equals(p.getUuid())).count());
 			assertEquals(2, nodeList.getData().size());
-			assertEquals(node.getChildren().size() - 1, nodeList.getMetainfo().getTotalCount());
+			assertEquals(size(node.getChildren()) - 1, nodeList.getMetainfo().getTotalCount());
 		}
 	}
 
@@ -195,14 +197,14 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testReadReleaseChildren() {
 		Node node = folder("news");
-		int childrenSize;
-		int expectedItemsInPage;
+		long childrenSize;
+		long expectedItemsInPage;
 		Release newRelease;
 		Node firstChild;
 
 		try (Tx tx = tx()) {
-			firstChild = node.getChildren().get(0);
-			childrenSize = node.getChildren().size();
+			firstChild = node.getChildren().iterator().next();
+			childrenSize = size(node.getChildren());
 			expectedItemsInPage = childrenSize > 25 ? 25 : childrenSize;
 
 			newRelease = project().getReleaseRoot().create("newrelease", user());

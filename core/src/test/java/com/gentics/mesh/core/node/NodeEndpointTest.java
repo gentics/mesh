@@ -67,6 +67,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.VersioningParameters;
+import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
@@ -1032,7 +1033,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// Trx.setBarrier(barrier);
 		Set<MeshResponse<Void>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
-			set.add(client().deleteNode(PROJECT_NAME, uuid).invoke());
+			set.add(client().deleteNode(PROJECT_NAME, uuid, new DeleteParametersImpl().setRecursive(true)).invoke());
 		}
 
 		validateDeletion(set, null);

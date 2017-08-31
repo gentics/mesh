@@ -6,6 +6,7 @@ import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
@@ -111,6 +112,22 @@ public final class TestUtils {
 	public static String getHostname() throws UnknownHostException {
 		java.net.InetAddress localMachine = java.net.InetAddress.getLocalHost();
 		return localMachine.getHostName();
+	}
+
+	/**
+	 * Iterates over the iterable and returns the size.
+	 * 
+	 * @param it
+	 * @return
+	 */
+	public static long size(Iterable<?> it) {
+		Iterator<?> iterator = it.iterator();
+		long size = 0;
+		while (iterator.hasNext()) {
+			iterator.next();
+			size++;
+		}
+		return size;
 	}
 
 	/**

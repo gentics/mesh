@@ -131,6 +131,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		MeshAuthUser requestUser = ac.getUser();
 		if (perm == READ_PUBLISHED_PERM) {
 			Release release = ac.getRelease(element.getProject());
+
 			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 			NodeGraphFieldContainer fieldContainer = element.findNextMatchingFieldContainer(requestedLanguageTags, release.getUuid(),
 					ac.getVersioningParameters().getVersion());

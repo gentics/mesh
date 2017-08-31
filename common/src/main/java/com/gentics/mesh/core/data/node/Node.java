@@ -241,19 +241,19 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	void setProject(Project project);
 
 	/**
-	 * Return the list of children for this node for all releases.
+	 * Return the children for this node for all releases.
 	 * 
 	 * @return
 	 */
-	List<? extends Node> getChildren();
+	Iterable<Node> getChildren();
 
 	/**
-	 * Return the list of children for this node in the given release.
+	 * Return the children for this node in the given release.
 	 * 
 	 * @param releaseUuid
 	 * @return
 	 */
-	List<? extends Node> getChildren(String releaseUuid);
+	Iterable<Node> getChildren(String releaseUuid);
 
 	/**
 	 * Return the list of children for this node, that the given user has read permission for. Filter by the provides information.
@@ -477,8 +477,9 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param language
 	 *            Language which will be used to find the field container which should be deleted
 	 * @param batch
+	 * @param failForLastContainer Whether to execute the last container check and fail or not.
 	 */
-	void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, SearchQueueBatch batch);
+	void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, SearchQueueBatch batch, boolean failForLastContainer);
 
 	/**
 	 * Resolve the given path and return the path object that contains the resolved nodes.
