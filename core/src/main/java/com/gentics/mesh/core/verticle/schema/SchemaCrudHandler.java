@@ -197,6 +197,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						options.addHeader(NodeMigrationVerticle.UUID_HEADER, schemaUuid);
 						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, fromVersion);
 						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, toVersion);
+						options.setSendTimeout(90 * 1000);
 						events.add(options);
 					}
 				}

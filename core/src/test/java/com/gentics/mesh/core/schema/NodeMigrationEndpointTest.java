@@ -233,6 +233,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			project().getLatestRelease().assignSchemaVersion(versionB);
 			tx.success();
 		}
+		Thread.sleep(1000);
 
 		try (Tx tx = tx()) {
 			doSchemaMigration(container, versionA, versionB);
@@ -547,12 +548,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
 		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 		options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
+		options.setSendTimeout(900 * 1000);
 		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 		vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 			future.complete(rh);
 		});
 
-		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+		AsyncResult<Message<Object>> result = future.get(30, TimeUnit.SECONDS);
 		if (result.cause() != null) {
 			throw result.cause();
 		}
