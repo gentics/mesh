@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
+import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -45,6 +46,7 @@ import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
 import com.gentics.mesh.distributed.containers.MeshDockerServer;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.vertx.core.Vertx;
@@ -205,6 +207,31 @@ public class BasicClusterTest extends AbstractClusterTest {
 	}
 
 	@Test
+	public void testPublishNode() {
+		String projectName = randomName();
+		NodeResponse response = createProjectAndNode(clientA, projectName);
+		String uuid = response.getUuid();
+
+		ReleaseListResponse releasesResponse = call(() -> clientA.findReleases(projectName));
+		String releaseUuid = releasesResponse.getData().get(0).getUuid();
+
+		// NodeA - Assert that the node is offline
+		call(() -> clientA.findNodeByUuid(projectName, uuid, new VersioningParametersImpl().published()), NOT_FOUND,
+				"node_error_published_not_found_for_uuid_release_language", uuid, "en", releaseUuid);
+
+		// NodeA - Now publish the node
+		call(() -> clientA.publishNode(projectName, uuid));
+
+		// NodeA - Assert that the node can now be loaded
+		NodeResponse publishedNode = call(() -> clientA.findNodeByUuid(projectName, uuid, new VersioningParametersImpl().published()));
+		assertEquals("en", publishedNode.getLanguage());
+
+		// NodeB - Assert that the node can now be loaded
+		publishedNode = call(() -> clientB.findNodeByUuid(projectName, uuid, new VersioningParametersImpl().published()));
+		assertEquals("en", publishedNode.getLanguage());
+	}
+
+	@Test
 	public void testCreateProject() throws InterruptedException {
 		String newProjectName = randomName();
 		// Node A: Create Project
@@ -228,7 +255,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 	}
 
 	@Test
-	public void testPermissionChanges() {
+	public void testPermissionChanges() throws InterruptedException {
 		// Node A - Create project
 		String newProjectName = randomName();
 		ProjectCreateRequest request = new ProjectCreateRequest();
@@ -259,9 +286,11 @@ public class BasicClusterTest extends AbstractClusterTest {
 		// 1. Test permission removal
 		permRequest.getPermissions().setRead(false);
 		call(() -> clientA.updateRolePermissions(roleResponse.getUuid(), "projects/" + projectResponse.getUuid(), permRequest));
+		Thread.sleep(2000);
 		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
 		permRequest.getPermissions().setRead(true);
 		call(() -> clientA.updateRolePermissions(roleResponse.getUuid(), "projects/" + projectResponse.getUuid(), permRequest));
+		Thread.sleep(2000);
 		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()));
 
 		// 2. Test role removal - Now remove the role from the group and check that this change is reflected on clientB

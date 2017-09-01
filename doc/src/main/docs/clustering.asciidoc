@@ -101,6 +101,11 @@ Just set the `cluster.enabled` flag and specifiy a `cluster.clusterName` within 
 We currently only support multicast discovery.
 This means that all instances must share the same network and be able to receive multicast broadcast messages.
 
+== Session distribution
+
+Since Gentics Mesh is not using sessions it is not needed to distribute sessions across the cluster. A link:https://jwt.io/introduction/[JWT] will be used to authenticate the user. 
+Each instance of Gentics Mesh is able to validate the JWT by using the crypographic key which has been stored in the `config/keystore.jceks` file. This means the same `keystore.jceks` must be available on each instance.
+
 == Handling binary data
 
 File uploads are currently not automatically being distributed. This means that it is required to share the data of the upload directory manually.
@@ -113,6 +118,15 @@ The only directory which needs to be shared across the cluster is the upload dir
 upload:
   directory: "data/binaryFiles"
 ----
+
+== Transaction handling / Change propagation
+
+Transactions are directly being handled by link:http://orientdb.com/docs/2.2.x/Transactions.html[OrientDB].
+
+The distribution of data (write) is executed synchronous and will be directly visible on other instances. 
+Operations which modify permissions are handled asynchronous and may take a few miliseconds to propagate throughout the cluster.
+Operations which invoke node, micronode or release migrations can only be executed seperately throughout the cluster. 
+A running migration on one instance will cause the other instances of the cluster to reject any migration request as long as a migration is active.
 
 == Upgrading a cluster
 
@@ -139,7 +153,7 @@ Can I add new instances at any time?::
 Yes. New instances can be added at any time.
 
 Are my changes directly visible on other instances?::
-The replication handles this as fast as the network allows but by default replication is happening asynchronous
+The replication handles this as fast as the network allows but by default replication is happening synchronous to fullfill the `writeQuorum` and asynchronous once the quorum has been satisfied.
 which means that it could take a few moments until your changes are propagated throughout the cluster.
 This behaviour is configureable via the OrientDB `writeQuorum` setting. Take a look at the link:https://orientdb.com/docs/2.2/Distributed-Configuration.html[OrientDB distributed configuration] if you want to know more.
 Our tests currently only cover the `writeQuorum` and `readQuorum` of *1*.

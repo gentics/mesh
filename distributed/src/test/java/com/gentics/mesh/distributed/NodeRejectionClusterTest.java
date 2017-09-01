@@ -1,13 +1,17 @@
 package com.gentics.mesh.distributed;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
+import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.distributed.containers.MeshDockerServer;
 
 import io.vertx.core.Vertx;
@@ -35,7 +39,12 @@ public class NodeRejectionClusterTest {
 	}
 
 	@Test
-	public void testCluster() {
-
+	public void testCluster() throws InterruptedException {
+		// Wait some time to give the other node time to join the cluster
+		Thread.sleep(30000);
+		// Verify that the node did not join the cluster since the version is different.
+		ClusterStatusResponse response = call(() -> serverA.getMeshClient().clusterStatus());
+		assertThat(response.getInstances()).hasSize(1);
+		assertEquals("nodeA", response.getInstances().get(0).getName());
 	}
 }

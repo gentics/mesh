@@ -76,6 +76,7 @@ import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.MavenVersionNumber;
@@ -338,6 +339,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.setClusterPort(vertxClusterPort);
 		vertxOptions.setClusterPublicPort(vertxClusterPort);
 
+		if (log.isDebugEnabled()) {
+			log.debug("Using these vert.x options for vertx {\n" + JsonUtil.toJson(vertxOptions) + "\n}");
+		}
 		CompletableFuture<Vertx> fut = new CompletableFuture<>();
 		Vertx.clusteredVertx(vertxOptions, rh -> {
 			log.info("Created clustered vert.x instance");
