@@ -14,7 +14,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<projectRoot>${project.basedir}/../..</projectRoot>
-		<graphql.version>3.0.0</graphql.version>
+		<graphql.version>4.0</graphql.version>
 	</properties>
 
 	<dependencies>
