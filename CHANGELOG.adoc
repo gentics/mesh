@@ -6,7 +6,7 @@
 
 icon:plus[] Clustering: This release introduces the master-master clustering support. You can read more about clustering and the configuration in the link:/docs/beta/clustering.html[clustering documentation].
 
-icon:plus[] Manaual Change: Configuration changes. The `clusterMode` setting has been deprecated in favour of the new cluster configuration. This setting must be removed from the `mesh.yml` file.
+icon:plus[] Manual Change: Configuration changes. The `clusterMode` setting has been deprecated in favour of the new cluster configuration. This setting must be removed from the `mesh.yml` file.
 
 icon:plus[] Manual Change: The configuration files `mesh.yml`, `keystore.jceks` must be moved to a subfolder `config` folder.
 
@@ -29,12 +29,14 @@ icon:plus[] Core: The OrientDB graph database version was updated to version 2.2
 
 icon:plus[] REST: The `/api/v1/admin/consistency/check` endpoint has been added. The endpoint can be used to verify the database integrity.
 
+icon:check[] Core: Fix missing OrientDB roles and users for some older graph databases. Some graph databases did not create the needed OrientDB user and roles. These roles and users are needed for the OrientDB server and are different from Gentics Mesh users and roles.
+
 icon:check[] REST: Invalid date strings were not correctly handled. An error will now be thrown if a date string can't be parsed.
 
 icon:check[] REST: The delete handling has been updated.
-                   It is now possible to specify the `?recusive=true` parameter to recusivly delete nodes.
-                   By default `?recusive=false` will be used. Deleting a node which contains children will thus cause an error.
-                   The behavior of node language deletion has been updated as well. Deleting the last language of a node will also remove this node. This removal will again fail if no `?recusive=true` query parameter has been added.
+                   It is now possible to specify the `?recursive=true` parameter to recursively delete nodes.
+                   By default `?recursive=false` will be used. Deleting a node which contains children will thus cause an error.
+                   The behaviour of node language deletion has been updated as well. Deleting the last language of a node will also remove this node. This removal will again fail if no `?recursive=true` query parameter has been added.
 
 == 0.9.28 (28.08.2017)
 

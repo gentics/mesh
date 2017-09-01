@@ -12,6 +12,7 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.MissingOrientCredentialFixer;
 import com.gentics.mesh.search.verticle.ElasticsearchHeadVerticle;
 import com.gentics.mesh.util.DeploymentUtil;
 import com.gentics.mesh.verticle.admin.AdminGUIVerticle;
@@ -42,9 +43,15 @@ public class DemoRunner {
 		setupDemo();
 
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
+
+		MissingOrientCredentialFixer.fix(options);
+
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowCredentials(false);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
+		// For Mesh UI Dev
+		//options.getHttpServerOptions().setCorsAllowCredentials(true);
+		//options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setStartServer(true);
 		// options.getSearchOptions().setHttpEnabled(true);
