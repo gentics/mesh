@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.gentics.mesh.search.ElasticSearchUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.ActionListener;
@@ -77,7 +78,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		long start = System.currentTimeMillis();
 		Settings settings = Settings.builder()
 
-				.put("threadpool.index.queue_size", -1)
+				.put("thread_pool.index.queue_size", -1)
 
 				.put("http.enabled", options.isHttpEnabled())
 
@@ -87,11 +88,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				.put("node.name", MeshNameProvider.getInstance().getName())
 
-				.put("node.local", true)
-
-				// .put("index.store.type", "mmapfs")
-
-				.put("index.max_result_window", Integer.MAX_VALUE)
+				.put("transport.type", "local")
 
 				.build();
 
@@ -397,7 +394,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 			SearchRequestBuilder builder = null;
 			try {
-				builder = client.prepareSearch(indices).setSource(SearchSourceBuilder.fromXContent(XContentType.JSON.xContent().createParser(NamedXContentRegistry.EMPTY, searchQuery)));
+				builder = client.prepareSearch(indices).setSource(ElasticSearchUtil.parseQuery(searchQuery));
 			} catch (IOException e) {
 				throw new RuntimeException("Could not parse JSON", e);
 			}

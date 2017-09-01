@@ -21,6 +21,7 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryParseContext;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.search.SearchHit;
 
@@ -141,7 +142,7 @@ public class SearchRestHandler {
 			 */
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(SearchSourceBuilder.fromXContent(XContentType.JSON.xContent().createParser(NamedXContentRegistry.EMPTY, queryStringObject.toString())));
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(ElasticSearchUtil.parseQuery(queryStringObject.toString()));
 		} catch (Exception e) {
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;

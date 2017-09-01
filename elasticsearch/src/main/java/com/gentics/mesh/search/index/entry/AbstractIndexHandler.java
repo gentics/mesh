@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.gentics.mesh.search.ElasticSearchUtil;
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
@@ -24,6 +25,7 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryParseContext;
 import org.elasticsearch.search.SearchHit;
 
 import com.gentics.ferma.Tx;
@@ -354,7 +356,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
 			Set<String> indices = getSelectedIndices(ac);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(SearchSourceBuilder.fromXContent(XContentType.JSON.xContent().createParser(NamedXContentRegistry.EMPTY, query)));
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(ElasticSearchUtil.parseQuery(query));
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
