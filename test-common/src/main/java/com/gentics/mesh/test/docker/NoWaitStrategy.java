@@ -1,4 +1,4 @@
-package com.gentics.mesh.distributed.containers;
+package com.gentics.mesh.test.docker;
 
 import org.testcontainers.containers.GenericContainer.AbstractWaitStrategy;
 
