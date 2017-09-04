@@ -6,6 +6,8 @@
 
 icon:plus[] Clustering: Added link:https://getmesh.io/docs/beta/clustering.html#_node_discovery[documentation] and support for cluster configurations which use a list of static IPs instead of multicast discovery.
 
+icon:check[] GraphQL: Updated graphiql browser to latest version to fix various issues when using aliases.
+
 == 0.10.0 (04.09.2017)
 
 icon:plus[] Clustering: This release introduces the master-master clustering support. You can read more about clustering and the configuration in the link:/docs/beta/clustering.html[clustering documentation].
