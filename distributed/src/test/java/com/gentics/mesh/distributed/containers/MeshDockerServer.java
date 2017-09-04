@@ -120,6 +120,9 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	@Override
 	protected void configure() {
 		String dataPath = "/opt/jenkins-slave/" + nodeName + "-data-" + dataPathPostfix;
+		// Ensure that the folder is created upfront. This is important to keep the uid and gids correct.
+		// Otherwise the folder would be created by docker using root.
+		new File(dataPath).mkdirs();
 
 		if (clearDataFolders) {
 			try {
