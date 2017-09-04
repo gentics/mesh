@@ -16,7 +16,7 @@
 
 		<asm.version>3.3.1</asm.version>
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
-		<ferma.version>2.3.1-SNAPSHOT</ferma.version>
+		<ferma.version>2.3.1</ferma.version>
 		<ferma.orientdb.version>2.3.1-SNAPSHOT</ferma.orientdb.version>
 		<elasticsearch.version>2.4.6</elasticsearch.version>
 		<orientdb.version>2.2.26</orientdb.version>
