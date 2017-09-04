@@ -174,9 +174,6 @@ ul.doc-toc h2 {
                             <li>
                                 <a href="features.html#_eventbus_bridge_websocket">Eventbus Bridge &amp; Web Socket</a>
                             </li>
-                            <li>
-                                <a href="features.html#_clustering">Clustering</a>
-                            </li>
                         </ul>
                     </li>
                     <li class="section">

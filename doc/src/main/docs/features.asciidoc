@@ -1946,6 +1946,4 @@ The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possibl
 
 == Clustering
 
-Clustering support is still in development.
-
-It will be possible to use master/master replication for OrientDB. Clustering for the Elasticsearch nodes and the Vert.x event message bus.
+Clustering is described in detail in our dedicated link:clustering.html[clustering documentation].

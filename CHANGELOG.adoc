@@ -2,6 +2,11 @@
 
 = Gentics Mesh Changelog
 
+== 0.10.1 (04.09.)
+
+icon:plus[] Clustering: Add documentation and support for cluster configurations using static IPs instead of multicast discovery.
+
+
 == 0.10.0 (04.09.2017)
 
 icon:plus[] Clustering: This release introduces the master-master clustering support. You can read more about clustering and the configuration in the link:/docs/beta/clustering.html[clustering documentation].
