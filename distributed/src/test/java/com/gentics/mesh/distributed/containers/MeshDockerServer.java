@@ -122,7 +122,6 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 		String dataPath = "/opt/jenkins-slave/" + nodeName + "-data-" + dataPathPostfix;
 		// Ensure that the folder is created upfront. This is important to keep the uid and gids correct.
 		// Otherwise the folder would be created by docker using root.
-		new File(dataPath).mkdirs();
 
 		if (clearDataFolders) {
 			try {
@@ -131,6 +130,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 				fail("Could not setup bind folder {" + dataPath + "}");
 			}
 		}
+		new File(dataPath).mkdirs();
 
 		addFileSystemBind(dataPath, "/data", BindMode.READ_WRITE);
 		if (initCluster) {
