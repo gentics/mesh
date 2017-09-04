@@ -1,4 +1,4 @@
-package com.gentics.mesh.distributed.containers;
+package com.gentics.mesh.test;
 
 import static com.gentics.mesh.Events.STARTUP_EVENT_ADDRESS;
 
