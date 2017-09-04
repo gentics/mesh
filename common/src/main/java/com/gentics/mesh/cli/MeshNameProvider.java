@@ -3,13 +3,13 @@ package com.gentics.mesh.cli;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.StringWriter;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Month;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
-import org.joda.time.DateTime;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -76,12 +76,12 @@ public class MeshNameProvider {
 	 * @return
 	 */
 	public String getRandomName() {
-		SimpleDateFormat sdf = new SimpleDateFormat("MM-dd");
 		try {
 			JSONArray adjArray = adjectives.getJSONArray("data");
 			int randomAdjectiveIndex = (int) (Math.random() * adjArray.length());
 			String partA = StringUtils.trim(adjArray.getString(randomAdjectiveIndex));
-			if (new DateTime(sdf.parse("01-01")).equals(new DateTime())) {
+			LocalDate now = LocalDate.now();
+			if (now.getDayOfMonth() == 1 && now.getMonth() == Month.APRIL) {
 				return partA + " Skynet";
 			}
 			JSONArray nameArray = names.getJSONArray("data");

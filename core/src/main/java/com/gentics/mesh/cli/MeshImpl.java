@@ -7,7 +7,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -16,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
@@ -130,12 +130,8 @@ public class MeshImpl implements Mesh {
 	 * @return
 	 */
 	private boolean isFirstApril() {
-		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("MM-dd");
-			return new DateTime(sdf.parse("01-04")).equals(new DateTime());
-		} catch (Exception e) {
-			return false;
-		}
+		LocalDate now = LocalDate.now();
+		return now.getDayOfMonth() == 1 && now.getMonth() == Month.APRIL;
 	}
 
 	/**
