@@ -366,7 +366,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				schema.getLatestVersion().applyChanges(ac, batch);
 				return batch;
 			}).processSync();
-			return message(ac, "migration_invoked", schema.getName());
+			return message(ac, "schema_changes_applied", schema.getName());
 		}, model -> ac.send(model, OK));
 
 	}
