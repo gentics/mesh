@@ -16,6 +16,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
@@ -53,6 +54,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+@Ignore
 public class BasicClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();

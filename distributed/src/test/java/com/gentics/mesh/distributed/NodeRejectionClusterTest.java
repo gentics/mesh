@@ -8,6 +8,7 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
@@ -19,6 +20,7 @@ import io.vertx.core.Vertx;
 /**
  * Assert that a node will not be able to join the cluster if the mesh versions are not matching.
  */
+@Ignore
 public class NodeRejectionClusterTest {
 
 	private static String clusterPostFix = randomUUID();

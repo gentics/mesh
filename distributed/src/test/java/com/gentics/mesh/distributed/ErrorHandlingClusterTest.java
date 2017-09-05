@@ -14,6 +14,7 @@ import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.distributed.containers.MeshDockerServer;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
+@Ignore
 public class ErrorHandlingClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
