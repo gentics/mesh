@@ -23,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -122,7 +123,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
-
+			options.setSendTimeout(400 * 1000);
 			// Trigger migration by sending a event
 			vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, options, (AsyncResult<Message<JsonObject>> rh) -> {
 				if (rh.failed()) {
@@ -133,7 +134,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				}
 			});
 		}
-		replyFuture.get(10, SECONDS);
+		replyFuture.get(50, SECONDS);
 
 		Thread.sleep(2000);
 		MigrationStatusResponse status = call(() -> client().migrationStatus());
@@ -452,9 +453,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	 * 
 	 * @throws ExecutionException
 	 * @throws InterruptedException
+	 * @throws TimeoutException 
 	 */
 	@Test
-	public void testMigrationInfoCleanup() throws InterruptedException, ExecutionException {
+	public void testMigrationInfoCleanup() throws InterruptedException, ExecutionException, TimeoutException {
 		// Run 100 migrations which should all fail
 		for (int i = 0; i < 100; i++) {
 			DeliveryOptions options = new DeliveryOptions();
@@ -462,11 +464,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, "bogus");
 			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, "bogus");
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, "bogus");
+			options.setSendTimeout(5 * 1000);
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
 			});
-			AsyncResult<Message<Object>> result = future.get();
+			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
 			assertTrue(result.failed());
 		}
 
@@ -687,6 +690,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
+			options.setSendTimeout(400 * 1000);
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
@@ -805,12 +809,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
+			options.setSendTimeout(400 * 1000);
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
 			});
 
-			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+			AsyncResult<Message<Object>> result = future.get(40, TimeUnit.SECONDS);
 			if (result.cause() != null) {
 				throw result.cause();
 			}
@@ -925,12 +930,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
+			options.setSendTimeout(400 * 1000);
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
 			});
 
-			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+			AsyncResult<Message<Object>> result = future.get(40, TimeUnit.SECONDS);
 			if (result.cause() != null) {
 				throw result.cause();
 			}
