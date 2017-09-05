@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ALLOW_KEY;
+
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -30,15 +32,15 @@ public class NodeFieldSchemaImpl extends AbstractFieldSchema implements NodeFiel
 	@Override
 	public Map<String, Object> getAllChangeProperties() {
 		Map<String, Object> map = super.getAllChangeProperties();
-		map.put("allow", getAllowedSchemas());
+		map.put(ALLOW_KEY, getAllowedSchemas());
 		return map;
 	}
 
 	@Override
 	public void apply(Map<String, Object> fieldProperties) {
 		super.apply(fieldProperties);
-		if (fieldProperties.get("allowedSchemas") != null) {
-			setAllowedSchemas((String[]) fieldProperties.get("allowedSchemas"));
+		if (fieldProperties.get(ALLOW_KEY) != null) {
+			setAllowedSchemas((String[]) fieldProperties.get(ALLOW_KEY));
 		}
 	}
 }
