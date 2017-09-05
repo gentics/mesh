@@ -193,7 +193,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 
 			UpdateFieldChange nodeFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			nodeFieldUpdate.setFieldName("nodeField");
-			nodeFieldUpdate.setRestProperty("allowedSchemas", new String[] { "schemaA", "schemaB" });
+			nodeFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { "schemaA", "schemaB" });
 			nodeFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
 			binaryFieldUpdate.setNextChange(nodeFieldUpdate);
 
