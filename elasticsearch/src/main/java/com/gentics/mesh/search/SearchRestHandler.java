@@ -264,20 +264,9 @@ public class SearchRestHandler {
 
 				// Iterate over all index handlers update the index
 				for (IndexHandler<?> handler : registry.getHandlers()) {
-					// Create all indices.
+					// Create all indices and mappings
 					handler.init().await();
-
 					searchProvider.refreshIndex();
-					// Clear all indices.
-					handler.clearIndex().onErrorComplete(error -> {
-						// if (error instanceof IndexMissingException) {
-						// return true;
-						// } else {
-						log.error("Can't clear index for {" + handler.getClass().getName() + "}", error);
-						return false;
-						// }
-					}).await();
-
 					handler.reindexAll().await();
 				}
 				return Single.just(message(ac, "search_admin_reindex_invoked"));

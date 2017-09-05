@@ -242,16 +242,12 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 				}
 				// Clear the batch entries so that the GC can claim the memory
 				clear();
-
-				// Remove the batch from the queue
-				MeshInternal.get().searchQueue().remove(this);
 			}).doOnError(error -> {
 				log.error("Error while processing batch {" + batchId + "}");
 				if (log.isDebugEnabled()) {
 					printDebug();
 				}
 				clear();
-				MeshInternal.get().searchQueue().remove(this);
 			});
 		});
 	}

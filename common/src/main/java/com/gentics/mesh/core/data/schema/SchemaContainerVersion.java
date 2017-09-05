@@ -29,12 +29,12 @@ public interface SchemaContainerVersion
 	}
 
 	/**
-	 * Return a list {@link NodeGraphFieldContainer} that use this schema version and are DRAFT versions for the given release
+	 * Return an iterable for {@link NodeGraphFieldContainer}'s that use this schema version and are DRAFT versions for the given release
 	 * 
 	 * @param releaseUuid
 	 *            release Uuid
 	 * @return
 	 */
-	List<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid);
+	Iterable<NodeGraphFieldContainer> getFieldContainers(String releaseUuid);
 
 }

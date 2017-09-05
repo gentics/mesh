@@ -236,6 +236,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		}
 	}
 
+	@Override
+	public Node getParentNode(String uuid) {
+		return inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
+				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, uuid).nextOrDefaultExplicit(NodeImpl.class, null);
+	}
+
 	/**
 	 * Get the parent node
 	 * 

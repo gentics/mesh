@@ -8,6 +8,10 @@ icon:check[] Java REST Client: Various missing request parameter implementations
 
 icon:plus[] Clustering: Added link:https://getmesh.io/docs/beta/clustering.html#_node_discovery[documentation] and support for cluster configurations which use a list of static IPs instead of multicast discovery.
 
+icon:plus[] Node Migration: The node migration performance has been increased.
+
+icon:check[] Node Migration: A bug has been fixed which prevented node migrations with more then 5000 elements from completing.
+
 icon:check[] GraphQL: Updated graphiql browser to latest version to fix various issues when using aliases.
 
 == 0.10.0 (04.09.2017)

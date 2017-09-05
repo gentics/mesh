@@ -68,19 +68,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 		// Get the containers of nodes, that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
 		// versions.
-		List<? extends NodeGraphFieldContainer> fieldContainers = db.tx(() -> fromVersion.getFieldContainers(release.getUuid()));
-
-		// No field containers -> no nodes, migration is done
-		if (fieldContainers.isEmpty()) {
-			return Completable.complete();
-		} else {
-			log.info("Found {" + fieldContainers.size() + "} containers which still make use of schema {" + fromVersion.getName() + "@"
-					+ fromVersion.getVersion() + "}");
-		}
-
-		if (status != null) {
-			status.getInfo().setTotal(fieldContainers.size());
-		}
+		Iterable<NodeGraphFieldContainer> fieldContainers = fromVersion.getFieldContainers(release.getUuid());
 
 		// Prepare the migration - Collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
@@ -95,28 +83,41 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		ac.setRelease(release);
 
 		SchemaModel newSchema = toVersion.getSchema();
-		List<Completable> batches = new ArrayList<>();
 		List<Exception> errorsDetected = new ArrayList<>();
 
 		// Iterate over all containers and invoke a migration for each one
+		long count = 0;
 		for (NodeGraphFieldContainer container : fieldContainers) {
+			if (log.isDebugEnabled()) {
+				log.debug("Migrating container {" + container.getUuid() + "}");
+			}
 			SearchQueueBatch batch = migrateContainer(ac, container, toVersion, migrationScripts, release, newSchema, errorsDetected, touchedFields);
 			// Process the search queue batch in order to update the search index
 			if (batch != null) {
-				batches.add(batch.processAsync());
+				batch.processSync();
 			}
 
 			if (status != null) {
 				status.getInfo().incDone();
 			}
+			if (count % 50 == 0) {
+				log.info("Migrated containers: " + count);
+			}
+			count++;
 		}
-
+		log.info("Migration of " + count + " containers done..");
+		log.info("Encountered {" + errorsDetected.size() + "} errors during migration.");
 		Completable result = Completable.complete();
 		if (!errorsDetected.isEmpty()) {
+			if (log.isDebugEnabled()) {
+				for (Exception error : errorsDetected) {
+					log.error("Encountered migration error.", error);
+				}
+			}
 			result = Completable.error(new CompositeException(errorsDetected));
 		}
 
-		return Completable.merge(batches).andThen(result);
+		return result;
 	}
 
 	/**
@@ -207,7 +208,5 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		return batch;
 
 	}
-
-	
 
 }

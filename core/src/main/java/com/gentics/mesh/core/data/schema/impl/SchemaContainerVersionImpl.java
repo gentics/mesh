@@ -6,6 +6,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 
 import java.util.List;
+import java.util.Spliterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -25,6 +28,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
+import com.syncleus.ferma.VertexFrame;
 
 import rx.Single;
 
@@ -55,10 +59,13 @@ public class SchemaContainerVersionImpl
 	}
 
 	@Override
-	public List<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
-		return in(HAS_SCHEMA_CONTAINER_VERSION).mark().inE(HAS_FIELD_CONTAINER)
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back().toListExplicit(NodeGraphFieldContainerImpl.class);
+	public Iterable<NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
+		Spliterator<VertexFrame> it = in(HAS_SCHEMA_CONTAINER_VERSION).spliterator();
+		Stream<NodeGraphFieldContainer> stream = StreamSupport.stream(it, false).map(frame -> frame.reframe(NodeGraphFieldContainerImpl.class))
+				.filter(e -> {
+					return e.getParentNode(releaseUuid) != null;
+				}).map( e -> (NodeGraphFieldContainer)e);
+		return () -> stream.iterator();
 	}
 
 	@Override
