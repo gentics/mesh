@@ -80,7 +80,7 @@ public class MeshNameProvider {
 			JSONArray adjArray = adjectives.getJSONArray("data");
 			int randomAdjectiveIndex = (int) (Math.random() * adjArray.length());
 			String partA = StringUtils.trim(adjArray.getString(randomAdjectiveIndex));
-			LocalDate now = LocalDate.now();
+			LocalDate now = getDate();
 			if (now.getDayOfMonth() == 1 && now.getMonth() == Month.APRIL) {
 				return partA + " Skynet";
 			}
@@ -94,5 +94,9 @@ public class MeshNameProvider {
 			log.error("Error while getting random name.", e);
 			return "Unknown";
 		}
+	}
+
+	public LocalDate getDate() {
+		return LocalDate.now();
 	}
 }

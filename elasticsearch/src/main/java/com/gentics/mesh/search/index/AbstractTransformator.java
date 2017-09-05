@@ -18,6 +18,8 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
 
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Abstract search document transformator which provides various helper methods which are commonly used among transformer implementations.
@@ -26,6 +28,30 @@ import io.vertx.core.json.JsonObject;
  *            Type of the element which can be transformed
  */
 public abstract class AbstractTransformator<T> implements Transformator<T> {
+
+	private static final Logger log = LoggerFactory.getLogger(AbstractTransformator.class);
+
+	public static final int MAX_RAW_FIELD_LEN = 32_700;
+
+	/**
+	 * Truncate the field to the 32KB boundary for tokens within the lucene.
+	 * 
+	 * @param input
+	 * @return Truncated string
+	 */
+	protected String truncateRawFieldValue(String input) {
+		if (input == null) {
+			return null;
+		}
+		if (input.length() > MAX_RAW_FIELD_LEN) {
+			if (log.isDebugEnabled()) {
+				log.debug("String with len {" + input.length() + "} is too long. Truncating it to {" + MAX_RAW_FIELD_LEN + "}");
+			}
+			return input.substring(0, MAX_RAW_FIELD_LEN);
+		} else {
+			return input;
+		}
+	}
 
 	/**
 	 * Add basic references (creator, editor, created, edited) to the map for the given vertex.

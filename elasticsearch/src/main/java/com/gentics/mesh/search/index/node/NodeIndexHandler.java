@@ -22,15 +22,11 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import org.codehaus.jettison.json.JSONObject;
-import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -58,6 +54,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.MeshSearchHit;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -366,38 +363,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @return
 	 */
 	public Completable updateNodeIndexMapping(String indexName, Schema schema) {
-
-		// String type = schema.getName() + "-" + schema.getVersion();
-		String type = NodeGraphFieldContainer.composeIndexType();
-		// Check whether the search provider is a dummy provider or not
-		if (searchProvider.getNode() == null) {
-			return Completable.complete();
-		}
-		return Completable.create(sub -> {
-			org.elasticsearch.node.Node esNode = getESNode();
-			PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
-			mappingRequestBuilder.setType(type);
-
+		return Completable.defer(() -> {
+			String type = NodeGraphFieldContainer.composeIndexType();
 			JsonObject mappingJson = transformator.getMapping(schema, type);
 			if (log.isDebugEnabled()) {
 				log.debug(mappingJson.toString());
 			}
-			mappingRequestBuilder.setSource(mappingJson.toString());
-			mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
-
-				@Override
-				public void onResponse(PutMappingResponse response) {
-					sub.onCompleted();
-				}
-
-				@Override
-				public void onFailure(Throwable e) {
-					sub.onError(e);
-				}
-			});
-
+			return searchProvider.updateMapping(indexName, type, mappingJson);
 		});
-
 	}
 
 	@Override

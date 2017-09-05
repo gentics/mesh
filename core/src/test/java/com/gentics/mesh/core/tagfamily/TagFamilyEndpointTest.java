@@ -390,7 +390,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 				}
 			}
 
-			assertThat(dummySearchProvider()).hasEvents(storeCount + 1, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(storeCount + 1, 0, 0, 0, 0);
 		}
 	}
 

@@ -88,6 +88,7 @@ public final class TestUtils {
 	/**
 	 * Creates a random hash
 	 * 
+	 * @param len
 	 * @return
 	 */
 	public static String getRandomHash(int len) {

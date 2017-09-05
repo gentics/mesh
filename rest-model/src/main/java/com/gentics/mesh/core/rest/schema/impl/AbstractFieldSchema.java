@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_ADD_RAW;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LABEL_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LIST_TYPE_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
@@ -17,6 +18,8 @@ import java.util.Objects;
 import org.apache.commons.lang.StringUtils;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
@@ -30,11 +33,21 @@ import com.google.common.collect.Maps;
  */
 public abstract class AbstractFieldSchema implements FieldSchema {
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Name of the field")
 	private String name;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Label of the field")
 	private String label;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Flag which indicates whether the field is required or not. A create request will fail if no field value has been specified. The update request will fail when the value is omitted and the field has never been saved before.")
 	private boolean required = false;
+
+	@JsonProperty(value = "searchIndex", required = false)
+	@JsonPropertyDescription("Index specific options.")
+	private IndexOptions indexOptions;
 
 	@Override
 	public String getLabel() {
@@ -70,10 +83,30 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 	}
 
 	@Override
+	public IndexOptions getIndexOptions() {
+		return indexOptions;
+	}
+
+	@Override
+	public AbstractFieldSchema setIndexOptions(IndexOptions indexOptions) {
+		this.indexOptions = indexOptions;
+		return this;
+	}
+
+	@Override
 	public void apply(Map<String, Object> fieldProperties) {
 		if (fieldProperties.get(SchemaChangeModel.REQUIRED_KEY) != null) {
 			setRequired(Boolean.valueOf(String.valueOf(fieldProperties.get(REQUIRED_KEY))));
 		}
+		if (fieldProperties.get(SchemaChangeModel.INDEX_ADD_RAW) != null) {
+			IndexOptions options = getIndexOptions();
+			if (options == null) {
+				options = new IndexOptions();
+				setIndexOptions(options);
+			}
+			options.setAddRaw(Boolean.valueOf(String.valueOf(fieldProperties.get(INDEX_ADD_RAW))));
+		}
+
 		String label = (String) fieldProperties.get(LABEL_KEY);
 		if (label != null) {
 			setLabel(label);
@@ -89,7 +122,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 
 	@Override
 	public SchemaChangeModel compareTo(FieldSchema fieldSchema) {
-		//Create the initial empty change
+		// Create the initial empty change
 		SchemaChangeModel change = new SchemaChangeModel(EMPTY, getName());
 
 		Map<String, Object> schemaPropertiesA = getAllChangeProperties();
@@ -139,6 +172,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 		Map<String, Object> map = new HashMap<>();
 		map.put(LABEL_KEY, getLabel());
 		map.put(REQUIRED_KEY, isRequired());
+		map.put(INDEX_ADD_RAW, getIndexOptions() == null ? null : getIndexOptions().getAddRaw());
 		return map;
 	}
 

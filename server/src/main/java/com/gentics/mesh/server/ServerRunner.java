@@ -30,6 +30,12 @@ public class ServerRunner {
 
 	public static void main(String[] args) throws Exception {
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
+//		options.getClusterOptions().setEnabled(true);
+//		options.getClusterOptions().setClusterName("thefirstmeshcr");
+		options.setNodeName("johannes");
+		options.getSearchOptions().setHttpEnabled(true);
+		options.getStorageOptions().setStartServer(true);
+//		options.getClusterOptions().setNetworkHost("10.210.247.31");
 
 		MissingOrientCredentialFixer.fix(options);
 

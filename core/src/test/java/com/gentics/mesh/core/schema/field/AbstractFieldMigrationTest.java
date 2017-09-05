@@ -70,7 +70,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	protected final static String KILLERSCRIPT = "function migrate(node, fieldname) {var System = Java.type('java.lang.System'); System.exit(0);}";
 
 	protected NodeMigrationHandler nodeMigrationHandler;
-	
+
 	protected MicronodeMigrationHandler micronodeMigrationHandler;
 
 	@Before
@@ -467,8 +467,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(versionB);
+		Tx.getActive().getGraph().commit();
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
-
 		// old container must not be changed
 		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
 		// assert that migration worked
