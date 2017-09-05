@@ -205,8 +205,22 @@ In addition to the above, certain types expose additional properties with which 
 properties are defined in the <<Schema Field Types>> section.
 
 ==== Schema Field Types
-//TODO add examples
 
+Typical example for a string schema field:
+
+[source,json]
+----
+{
+    "name" : "name",
+    "label" : "Name",
+    "required" : true,
+    "type" : "string",
+    "allow": ["red", "green", "blue"],
+    "searchIndex": {
+        "addRaw": true
+    }
+}
+----
 
 [options="header",cols="3*"]
 |======
