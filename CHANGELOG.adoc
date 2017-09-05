@@ -4,11 +4,27 @@
 
 == 0.10.1 (TBD)
 
-icon:check[] Java REST Client: Various missing request parameter implementations have been added to the mesh-rest-client module.
-
 icon:plus[] Clustering: Added link:https://getmesh.io/docs/beta/clustering.html#_node_discovery[documentation] and support for cluster configurations which use a list of static IPs instead of multicast discovery.
 
 icon:plus[] Node Migration: The node migration performance has been increased.
+
+icon:check[] Search: The `raw` field will no longer be added by default to the search index. Instead it can be added using the new `searchIndex.addRaw` flag within the schema field.
+             Please note that the raw field value in the search index will be automatically truncated to a size of 32KB. Otherwise the value can't be added to search index.
+
+[source,json]
+----
+{
+    "name" : "name",
+    "label" : "Name",
+    "required" : true,
+    "type" : "string",
+    "searchIndex": {
+        "addRaw": true
+    }
+}
+---- 
+
+icon:check[] Java REST Client: Various missing request parameter implementations have been added to the mesh-rest-client module.
 
 icon:check[] Node Migration: A bug has been fixed which prevented node migrations with more then 5000 elements from completing.
 
