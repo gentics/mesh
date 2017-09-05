@@ -84,10 +84,12 @@ public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Mi
 		// Fields
 		for (FieldSchema fieldEntry : microschema.getFields()) {
 			Field restField = getRestFieldFromGraph(ac, fieldEntry.getName(), fieldEntry, requestedLanguageTags, level);
-			if (restField == null) {
-				log.info("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
-			} else {
+			if (restField != null) {
 				restMicronode.getFields().put(fieldEntry.getName(), restField);
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Field for key {" + fieldEntry.getName() + "} could not be found. Ignoring the field.");
+				}
 			}
 		}
 
