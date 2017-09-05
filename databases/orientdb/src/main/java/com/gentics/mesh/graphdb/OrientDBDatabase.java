@@ -4,6 +4,7 @@ import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -310,14 +311,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
 		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);
 		configString = configString.replaceAll("%NODENAME%", getNodeName());
-		configString = configString.replaceAll("%NETWORK_HOST%", options.getClusterOptions().getNetworkHost());
-		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.getClusterOptions().isEnabled()));
-		String bindIp = "0.0.0.0";
-		// Only use the cluster network host if clustering is enabled.
-		if (options.getClusterOptions().isEnabled()) {
-			bindIp = options.getClusterOptions().getNetworkHost();
+		String networkHost = options.getClusterOptions().getNetworkHost();
+		if (isEmpty(networkHost)) {
+			networkHost = "0.0.0.0";
 		}
-		configString = configString.replaceAll("%BIND_IP%", bindIp);
+		configString = configString.replaceAll("%NETWORK_HOST%", networkHost);
+		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.getClusterOptions().isEnabled()));
+		// Only use the cluster network host if clustering is enabled.
 		String dbDir = storageOptions().getDirectory();
 		if (dbDir != null) {
 			configString = configString.replaceAll("%DB_PARENT_PATH%", escapeSafe(storageOptions().getDirectory()));
@@ -370,6 +370,8 @@ public class OrientDBDatabase extends AbstractDatabase {
 	 */
 	@Override
 	public void startServer() throws Exception {
+		ClusterOptions clusterOptions = options.getClusterOptions();
+		boolean isClusteringEnabled = clusterOptions != null && clusterOptions.isEnabled();
 		String orientdbHome = new File("").getAbsolutePath();
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
 		if (server == null) {
@@ -377,7 +379,6 @@ public class OrientDBDatabase extends AbstractDatabase {
 			updateOrientDBPlugin();
 		}
 
-		ClusterOptions clusterOptions = options.getClusterOptions();
 		if (clusterOptions != null && clusterOptions.isEnabled()) {
 			// This setting will be referenced by the hazelcast configuration
 			System.setProperty("mesh.clusterName", clusterOptions.getClusterName() + "@" + Mesh.getPlainVersion());
@@ -388,7 +389,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		OServerPluginManager manager = new OServerPluginManager();
 		manager.config(server);
 		server.activate();
-		if (clusterOptions != null && clusterOptions.isEnabled()) {
+		if (isClusteringEnabled) {
 			ODistributedServerManager distributedManager = server.getDistributedManager();
 			topologyEventBridge = new TopologyEventBridge(this);
 			distributedManager.registerLifecycleListener(topologyEventBridge);
@@ -397,8 +398,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 			}
 		}
 		manager.startup();
-		// The registerLifecycleListener may not have been invoked. We need to redirect the online event manually.
-		postStartupDBEventHandling();
+		if (isClusteringEnabled) {
+			// The registerLifecycleListener may not have been invoked. We need to redirect the online event manually.
+			postStartupDBEventHandling();
+		}
 	}
 
 	/**
