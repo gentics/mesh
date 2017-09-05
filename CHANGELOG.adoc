@@ -4,6 +4,8 @@
 
 == 0.10.1 (TBD)
 
+icon:check[] Java REST Client: Various missing request parameter implementations have been added to the mesh-rest-client module.
+
 icon:plus[] Clustering: Added link:https://getmesh.io/docs/beta/clustering.html#_node_discovery[documentation] and support for cluster configurations which use a list of static IPs instead of multicast discovery.
 
 icon:check[] GraphQL: Updated graphiql browser to latest version to fix various issues when using aliases.

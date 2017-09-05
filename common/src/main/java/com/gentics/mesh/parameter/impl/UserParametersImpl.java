@@ -13,8 +13,6 @@ import com.gentics.mesh.util.TokenUtil;
 
 public class UserParametersImpl extends AbstractParameters implements UserParameters {
 
-	public static final String TOKEN_PARAMETER_KEY = "token";
-
 	public UserParametersImpl() {
 	}
 
@@ -45,17 +43,6 @@ public class UserParametersImpl extends AbstractParameters implements UserParame
 		parameters.put(TOKEN_PARAMETER_KEY, pageParameter);
 
 		return parameters;
-	}
-
-	@Override
-	public String getToken() {
-		return getParameter(TOKEN_PARAMETER_KEY);
-	}
-
-	@Override
-	public UserParameters setToken(String token) {
-		setParameter(TOKEN_PARAMETER_KEY, token);
-		return this;
 	}
 
 	@Override
