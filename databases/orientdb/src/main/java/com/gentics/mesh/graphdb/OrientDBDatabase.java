@@ -310,6 +310,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
 		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);
 		configString = configString.replaceAll("%NODENAME%", getNodeName());
+		configString = configString.replaceAll("%NETWORK_HOST%", options.getClusterOptions().getNetworkHost());
 		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.getClusterOptions().isEnabled()));
 		String bindIp = "0.0.0.0";
 		// Only use the cluster network host if clustering is enabled.

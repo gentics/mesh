@@ -1,8 +1,6 @@
 package com.gentics.mesh.core.verticle.admin;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
@@ -93,7 +91,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.method(GET);
 		endpoint.description("Return the current schema or node migration status.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Migration status.");
+		endpoint.exampleResponse(OK, adminExamples.createMigrationStatusResponse(), "Migration status.");
 		endpoint.handler(rc -> {
 			handler.handleMigrationStatus(new InternalRoutingActionContextImpl(rc));
 		});

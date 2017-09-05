@@ -1,4 +1,4 @@
-package com.gentics.mesh.distributed.containers;
+package com.gentics.mesh.test.docker;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;

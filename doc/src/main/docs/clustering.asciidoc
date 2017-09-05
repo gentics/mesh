@@ -98,9 +98,26 @@ Just set the `cluster.enabled` flag and specifiy a `cluster.clusterName` within 
 
 == Node discovery
 
-We currently only support multicast discovery.
-This means that all instances must share the same network and be able to receive multicast broadcast messages.
+By default all nodes will be discovered using link:https://en.wikipedia.org/wiki/Multicast_Source_Discovery_Protocol[multicast discovery].
+In that configuration all instances must share the same network and be able to receive multicast broadcast messages.
 
+Alternatively it is also possible to hardcode the IP addresses of the cluster instances within the `hazelcast.xml` file. Just replace the existing join section with the following one:
+
+.hazelcast.xml
+[source,xml]
+----
+...
+  <join>
+    <multicast enabled="false"></multicast>
+      <tcp-ip enabled="true">
+   	  <member>192.168.10.100</member> <!-- instance A -->
+   	  <member>192.168.10.101</member> <!-- instance B -->
+    </tcp-ip>
+  </join>
+...
+----
+
+  
 == Session distribution
 
 Since Gentics Mesh is not using sessions it is not needed to distribute sessions across the cluster. A link:https://jwt.io/introduction/[JWT] will be used to authenticate the user. 
