@@ -7,10 +7,11 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.schema.FieldTypeChange;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.UpdateFieldChange;
@@ -41,6 +42,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 /**
  * Test for common mutator operations on a field containers.
@@ -201,11 +203,13 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			stringFieldUpdate.setRestProperty(ALLOW_KEY, new String[] { "valueA", "valueB" });
 			stringFieldUpdate.setFieldName("stringField");
 			stringFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
+			stringFieldUpdate.setRestProperty(SchemaChangeModel.INDEX_ADD_RAW, true);
 			nodeFieldUpdate.setNextChange(stringFieldUpdate);
 
 			UpdateFieldChange htmlFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			htmlFieldUpdate.setFieldName("htmlField");
 			htmlFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
+			htmlFieldUpdate.setRestProperty(SchemaChangeModel.INDEX_ADD_RAW, false);
 			stringFieldUpdate.setNextChange(htmlFieldUpdate);
 
 			UpdateFieldChange numberFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
@@ -238,52 +242,62 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			// 3. Apply the changes
 			Schema updatedSchema = mutator.apply(version);
 
-			// Binary 
+			// Binary
 			BinaryFieldSchema binaryFieldSchema = updatedSchema.getField("binaryField", BinaryFieldSchemaImpl.class);
 			assertNotNull(binaryFieldSchema);
 			assertArrayEquals(new String[] { "newTypes" }, binaryFieldSchema.getAllowedMimeTypes());
 			assertFalse("The required flag should now be set to false.", binaryFieldSchema.isRequired());
+			assertNull("The index option was not set correctly.", binaryFieldSchema.getIndexOptions());
 
 			// Node
 			NodeFieldSchema nodeFieldSchema = updatedSchema.getField("nodeField", NodeFieldSchemaImpl.class);
 			assertNotNull(nodeFieldSchema);
 			assertArrayEquals(new String[] { "schemaA", "schemaB" }, nodeFieldSchema.getAllowedSchemas());
 			assertFalse("The required flag should now be set to false.", nodeFieldSchema.isRequired());
+			assertNull("The index option was not set correctly.", nodeFieldSchema.getIndexOptions());
 
 			// Microschema
 			MicronodeFieldSchema micronodeFieldSchema = updatedSchema.getField("micronodeField", MicronodeFieldSchemaImpl.class);
 			assertNotNull(micronodeFieldSchema);
 			assertArrayEquals(new String[] { "A", "B", "C" }, micronodeFieldSchema.getAllowedMicroSchemas());
 			assertFalse("The required flag should now be set to false.", micronodeFieldSchema.isRequired());
+			assertNull("The index option was not set correctly.", micronodeFieldSchema.getIndexOptions());
 
 			// String
 			StringFieldSchema stringFieldSchema = updatedSchema.getField("stringField", StringFieldSchemaImpl.class);
 			assertNotNull(stringFieldSchema);
 			assertArrayEquals(new String[] { "valueA", "valueB" }, stringFieldSchema.getAllowedValues());
 			assertFalse("The required flag should now be set to false.", stringFieldSchema.isRequired());
+			assertTrue("The index option addRaw was not set correctly.", stringFieldSchema.getIndexOptions().getAddRaw());
 
 			// Html
 			HtmlFieldSchema htmlFieldSchema = updatedSchema.getField("htmlField", HtmlFieldSchemaImpl.class);
 			assertNotNull(htmlFieldSchema);
 			assertFalse("The required flag should now be set to false.", htmlFieldSchema.isRequired());
+			assertFalse("The index option was not set correctly.", htmlFieldSchema.getIndexOptions().getAddRaw());
 
 			// Boolean
 			BooleanFieldSchema booleanFieldSchema = updatedSchema.getField("booleanField", BooleanFieldSchemaImpl.class);
 			assertFalse("The required flag should now be set to false.", booleanFieldSchema.isRequired());
+			assertNull("The index option was not set correctly.", booleanFieldSchema.getIndexOptions());
 
 			// Date
 			DateFieldSchema dateFieldSchema = updatedSchema.getField("dateField", DateFieldSchemaImpl.class);
 			assertFalse("The required flag should now be set to false.", dateFieldSchema.isRequired());
+			assertNull("The index option was not set correctly.", dateFieldSchema.getIndexOptions());
 
 			// Number
 			NumberFieldSchema numberFieldSchema = updatedSchema.getField("numberField", NumberFieldSchemaImpl.class);
 			assertFalse("The required flag should now be set to false.", numberFieldSchema.isRequired());
+			assertNull("The index option was not set correctly.", numberFieldSchema.getIndexOptions());
 
 			// List
 			ListFieldSchema listFieldSchema = updatedSchema.getField("listField", ListFieldSchemaImpl.class);
 			assertFalse("The required flag should now be set to false.", listFieldSchema.isRequired());
 			assertNotNull(listFieldSchema.getAllowedSchemas());
 			assertThat(listFieldSchema.getAllowedSchemas()).contains("A1", "B1", "C1");
+			assertNull("The index option was not set correctly.", listFieldSchema.getIndexOptions());
+
 		}
 	}
 

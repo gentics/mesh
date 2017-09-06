@@ -18,10 +18,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -60,6 +63,7 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.IndexOptions;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -105,7 +109,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		SchemaContainerVersion versionB;
 		try (Tx tx = tx()) {
 			String fieldName = "changedfield";
-			container = createDummySchemaWithChanges(fieldName);
+			container = createDummySchemaWithChanges(fieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 			tx.success();
@@ -119,7 +123,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
-
+			options.setSendTimeout(400 * 1000);
 			// Trigger migration by sending a event
 			vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, options, (AsyncResult<Message<JsonObject>> rh) -> {
 				if (rh.failed()) {
@@ -130,7 +134,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				}
 			});
 		}
-		replyFuture.get(10, SECONDS);
+		replyFuture.get(50, SECONDS);
 
 		Thread.sleep(2000);
 		MigrationStatusResponse status = call(() -> client().migrationStatus());
@@ -162,7 +166,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		String fieldName = "changedfield";
 
 		try (Tx tx = tx()) {
-			container = createDummySchemaWithChanges(fieldName);
+			container = createDummySchemaWithChanges(fieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
@@ -198,11 +202,54 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 			assertThat(secondNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value")
 					.isEqualTo("modified second content");
-			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0, 0);
 		}
 
 		MigrationStatusResponse status = call(() -> client().migrationStatus());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1).hasStatus(IDLE);
+	}
+
+	@Test
+	public void testMigrateAddRawField() throws Throwable {
+
+		Node node = content();
+		String nodeUuid = contentUuid();
+		// Add some really long string value to the content
+		try (Tx tx = tx()) {
+			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
+			container.getString("title").setString(TestUtils.getRandomHash(40_000));
+			container.getString("teaser").setString(TestUtils.getRandomHash(40_000));
+			tx.success();
+		}
+
+		String schemaUuid = tx(() -> node.getSchemaContainer().getUuid());
+
+		// Update the schema and enable the addRaw field
+		SchemaUpdateRequest request = tx(() -> JsonUtil.readValue(node.getSchemaContainer().getLatestVersion().getJson(), SchemaUpdateRequest.class));
+		request.getField("teaser").setIndexOptions(new IndexOptions().setAddRaw(true));
+		call(() -> client().updateSchema(schemaUuid, request));
+
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertThat(status).listsAll(COMPLETED).hasInfos(1).hasStatus(IDLE);
+		assertThat(dummySearchProvider()).hasEvents(55, 0, 0, 2, 2);
+		for (JsonObject mapping : dummySearchProvider().getUpdateMappingEvents().values()) {
+			assertThat(mapping).has("$.node.properties.fields.properties.teaser.fields.raw.type", "string",
+					"The mapping should include a raw field for the teaser field");
+			assertThat(mapping).hasNot("$.node.properties.fields.properties.title.fields.raw",
+					"The mapping should not include a raw field for the title field");
+		}
+
+		List<JsonObject> searchDocumentsOfContent = dummySearchProvider().getStoreEvents().entrySet().stream()
+				.filter(e -> e.getKey().endsWith(nodeUuid + "-en")).map(e -> e.getValue()).collect(Collectors.toList());
+		assertThat(searchDocumentsOfContent).isNotEmpty();
+		// Assert that the documents are correct. The teaser must have been truncated.
+		for (JsonObject doc : searchDocumentsOfContent) {
+			String teaser = doc.getJsonObject("fields").getString("teaser");
+			assertThat(teaser).hasSize(32_700);
+			String content = doc.getJsonObject("fields").getString("title");
+			assertThat(content).hasSize(40_000);
+		}
+
 	}
 
 	@Test
@@ -214,7 +261,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		Node firstNode;
 
 		try (Tx tx = tx()) {
-			container = createDummySchemaWithChanges(fieldName);
+			container = createDummySchemaWithChanges(fieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
@@ -259,7 +306,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		Node node;
 
 		try (Tx tx = tx()) {
-			container = createDummySchemaWithChanges(fieldName);
+			container = createDummySchemaWithChanges(fieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
@@ -406,9 +453,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	 * 
 	 * @throws ExecutionException
 	 * @throws InterruptedException
+	 * @throws TimeoutException 
 	 */
 	@Test
-	public void testMigrationInfoCleanup() throws InterruptedException, ExecutionException {
+	public void testMigrationInfoCleanup() throws InterruptedException, ExecutionException, TimeoutException {
 		// Run 100 migrations which should all fail
 		for (int i = 0; i < 100; i++) {
 			DeliveryOptions options = new DeliveryOptions();
@@ -416,11 +464,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, "bogus");
 			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, "bogus");
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, "bogus");
+			options.setSendTimeout(5 * 1000);
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
 			});
-			AsyncResult<Message<Object>> result = future.get();
+			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
 			assertTrue(result.failed());
 		}
 
@@ -439,7 +488,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		SchemaContainer container;
 
 		try (Tx tx = tx()) {
-			container = createDummySchemaWithChanges(fieldName);
+			container = createDummySchemaWithChanges(fieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
@@ -478,7 +527,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	}
 
-	private SchemaContainer createDummySchemaWithChanges(String fieldName) {
+	private SchemaContainer createDummySchemaWithChanges(String fieldName, boolean setAddRaw) {
 
 		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
 		boot().schemaContainerRoot().addSchemaContainer(container);
@@ -504,6 +553,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		schemaB.setName("migratedSchema");
 		schemaB.setVersion("2.0");
 		FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
+		if (setAddRaw) {
+			newField.setIndexOptions(new IndexOptions().setAddRaw(true));
+		}
 		schemaB.addField(newField);
 		schemaB.addField(FieldUtil.createStringFieldSchema("name"));
 		schemaB.setDisplayField("name");
@@ -638,6 +690,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
+			options.setSendTimeout(400 * 1000);
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
@@ -756,12 +809,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
+			options.setSendTimeout(400 * 1000);
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
 			});
 
-			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+			AsyncResult<Message<Object>> result = future.get(40, TimeUnit.SECONDS);
 			if (result.cause() != null) {
 				throw result.cause();
 			}
@@ -876,12 +930,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
 			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
 			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
+			options.setSendTimeout(400 * 1000);
 			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
 			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
 				future.complete(rh);
 			});
 
-			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
+			AsyncResult<Message<Object>> result = future.get(40, TimeUnit.SECONDS);
 			if (result.cause() != null) {
 				throw result.cause();
 			}

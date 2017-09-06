@@ -22,10 +22,10 @@ public class SchemaChangeModel implements RestModel {
 	public static final String ADD_FIELD_AFTER_KEY = "after";
 
 	public static final String REQUIRED_KEY = "required";
+	
+	public static final String INDEX_ADD_RAW ="searchIndexaddRaw";
 
 	public static final String SEGMENT_FIELD_KEY = "segmentFieldname";
-
-	//public static final String CONTAINER_FIELD_KEY = "containerFieldname";
 
 	public static final String DISPLAY_FIELD_NAME_KEY = "displayFieldname";
 

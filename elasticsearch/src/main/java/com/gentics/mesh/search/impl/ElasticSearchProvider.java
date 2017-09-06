@@ -16,6 +16,8 @@ import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -213,6 +215,35 @@ public class ElasticSearchProvider implements SearchProvider {
 					}
 				}
 
+			});
+		});
+	}
+
+	@Override
+	public Completable updateMapping(String indexName, String type, JsonObject mapping) {
+		return Completable.create(sub -> {
+			// Check whether the search provider is a dummy provider or not
+			if (getNode() == null) {
+				sub.onCompleted();
+				return;
+			}
+
+			org.elasticsearch.node.Node esNode = getNode();
+			PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
+			mappingRequestBuilder.setType(type);
+
+			mappingRequestBuilder.setSource(mapping.toString());
+			mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
+
+				@Override
+				public void onResponse(PutMappingResponse response) {
+					sub.onCompleted();
+				}
+
+				@Override
+				public void onFailure(Throwable e) {
+					sub.onError(e);
+				}
 			});
 		});
 	}

@@ -133,7 +133,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// Trigger migration
 			GenericMessageResponse status = call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
-			expectResponseMessage(status, "migration_invoked", "content");
+			expectResponseMessage(status, "schema_changes_applied", "content");
 
 			SchemaResponse schema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
@@ -198,7 +198,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		// Trigger migration
 		GenericMessageResponse status = call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
-		expectResponseMessage(status, "migration_invoked", "content");
+		expectResponseMessage(status, "schema_changes_applied", "content");
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
 				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
@@ -391,7 +391,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// 3. Invoke migration
 		GenericMessageResponse status = call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
-		expectResponseMessage(status, "migration_invoked", "content");
+		expectResponseMessage(status, "schema_changes_applied", "content");
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
 				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
@@ -471,7 +471,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// 3. Invoke migration
 			GenericMessageResponse status = call(() -> client().applyChangesToSchema(containerUuid, listOfChanges));
-			expectResponseMessage(status, "migration_invoked", "content");
+			expectResponseMessage(status, "schema_changes_applied", "content");
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(containerUuid));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid,
 					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));

@@ -106,15 +106,35 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	}
 
 	/**
+	 * Verify that the search provider recorded the given update mapping event.
+	 * 
+	 * @param indexName
+	 * @param type
+	 * @return
+	 */
+	public DummySearchProviderAssert hasUpdateMapping(String indexName, String type) {
+		boolean hasDrop = actual.getUpdateMappingEvents().containsKey(indexName + "-" + type);
+		if (!hasDrop) {
+			for (String event : actual.getUpdateMappingEvents().keySet()) {
+				System.out.println("Recorded update mapping event: " + event);
+			}
+		}
+		assertTrue("The update mapping event could not be found. {" + indexName + "-" + type + "}", hasDrop);
+		return this;
+	}
+
+	/**
 	 * Assert that the correct count of events was registered.
 	 * 
 	 * @param storeEvents
 	 * @param deleteEvents
 	 * @param dropIndexEvents
 	 * @param createIndexEvents
+	 * @param updateMappingEvents
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert hasEvents(int storeEvents, int deleteEvents, int dropIndexEvents, int createIndexEvents) {
+	public DummySearchProviderAssert hasEvents(int storeEvents, int deleteEvents, int dropIndexEvents, int createIndexEvents,
+			int updateMappingEvents) {
 		String storeInfo = actual.getStoreEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
 		assertEquals("The search provider did not record the correct amount of store events. Found events: {\n" + storeInfo + "\n}", storeEvents,
 				actual.getStoreEvents().size());
@@ -130,6 +150,10 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 		String createInfo = actual.getCreateIndexEvents().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
 		assertEquals("The search provider did not record the correct amount of create index events. Found events: {\n" + createInfo + "\n}",
 				createIndexEvents, actual.getCreateIndexEvents().size());
+
+		String updateMappingInfo = actual.getUpdateMappingEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
+		assertEquals("The search provider did not record the correct amount of update mapping events. Found events: {\n" + updateMappingInfo + "\n}",
+				updateMappingEvents, actual.getUpdateMappingEvents().size());
 
 		return this;
 	}

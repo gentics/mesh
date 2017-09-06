@@ -185,4 +185,14 @@ public interface SearchProvider {
 	 */
 	SearchProvider init(MeshOptions options);
 
+	/**
+	 * Update the mapping for the given index and type using the provided mapping json.
+	 * 
+	 * @param indexName
+	 * @param type
+	 * @param mapping
+	 * @return
+	 */
+	Completable updateMapping(String indexName, String type, JsonObject mapping);
+
 }

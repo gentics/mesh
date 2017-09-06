@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
+import com.gentics.mesh.core.rest.schema.impl.IndexOptions;
 
 /**
  * A field schema is a field within a schema. In contradiction to node fields a field schema is the blueprint of a field and will not store any data. Instead it
@@ -40,7 +41,7 @@ public interface FieldSchema {
 	 */
 	FieldSchema setLabel(String label);
 
-	//TODO is this not the fieldkey? is the key the name??
+	// TODO is this not the fieldkey? is the key the name??
 	/**
 	 * Return the name of the field schema.
 	 * 
@@ -100,5 +101,19 @@ public interface FieldSchema {
 	 */
 	@JsonIgnore
 	Map<String, Object> getAllChangeProperties();
+
+	/**
+	 * Return the index options.
+	 * 
+	 * @return
+	 */
+	IndexOptions getIndexOptions();
+
+	/**
+	 * Set the index options.
+	 * 
+	 * @param indexOptions
+	 */
+	FieldSchema setIndexOptions(IndexOptions indexOptions);
 
 }

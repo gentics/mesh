@@ -193,13 +193,34 @@ The following optional properties may be applied to any type of field:
 
 * **`required`** If `true`, this field may not be left empty.
 * **`label`** A human-readable label for the field to be used as a form label in the Gentics Mesh User Interface. If not defined, the ```name``` field would be used.
+* **`searchIndex`** The search index options of the field. These options can be used to influence how the field information is added to the search index.
+
+There are the following search options:
+
+* **`addRaw`** By default no *raw* property will be added to the search index. 
+               The *raw* property is useful for link:https://www.elastic.co/guide/en/elasticsearch/reference/2.3/query-dsl-term-query.html[term queries] which are used to find the *exact* term specified in the query.
+               Please note that values which exceed 32KB in size will automatically be truncated to be indexable.
 
 In addition to the above, certain types expose additional properties with which to configure the field. Such additional
 properties are defined in the <<Schema Field Types>> section.
 
 ==== Schema Field Types
-//TODO add examples
 
+Typical example for a string schema field:
+
+[source,json]
+----
+{
+    "name" : "name",
+    "label" : "Name",
+    "required" : true,
+    "type" : "string",
+    "allow": ["red", "green", "blue"],
+    "searchIndex": {
+        "addRaw": true
+    }
+}
+----
 
 [options="header",cols="3*"]
 |======

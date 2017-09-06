@@ -12,7 +12,6 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
@@ -21,11 +20,15 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.IndexOptions;
+import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
@@ -88,7 +91,8 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		assertEquals("Exactly two nodes should be found for the given filesize range.", 2, response.getData().size());
 
 		// width
-		response = call(() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.width", 300, 500), new VersioningParametersImpl().draft()));
+		response = call(
+				() -> client().searchNodes(PROJECT_NAME, getRangeQuery("fields.binary.width", 300, 500), new VersioningParametersImpl().draft()));
 		assertEquals("Exactly one node should be found for the given image width range.", 1, response.getData().size());
 
 		// height
@@ -146,10 +150,23 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	@Test
+	public void testSearchStringFieldNoRaw() throws Exception {
+		try (Tx tx = tx()) {
+			recreateIndices();
+		}
+
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
+				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
+		assertEquals("No results should be found since the raw field was not added to the teaser schema field", 0, response.getData().size());
+	}
+
+	@Test
 	public void testSearchStringFieldRaw() throws Exception {
 		try (Tx tx = tx()) {
 			recreateIndices();
 		}
+
+		addRawToSchemaField();
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
 				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
@@ -161,6 +178,8 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		try (Tx tx = tx()) {
 			recreateIndices();
 		}
+
+		addRawToSchemaField();
 
 		// Add the user to the admin group - this way the user is in fact an admin.
 		try (Tx tx = tx()) {
@@ -175,6 +194,15 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
 				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));
 		assertEquals("Check hits for 'supersonic' before update", 1, response.getData().size());
+	}
+
+	private void addRawToSchemaField() {
+		// Update the schema and enable the addRaw field
+		String schemaUuid = tx(() -> content().getSchemaContainer().getUuid());
+		SchemaUpdateRequest request = tx(
+				() -> JsonUtil.readValue(content().getSchemaContainer().getLatestVersion().getJson(), SchemaUpdateRequest.class));
+		request.getField("teaser").setIndexOptions(new IndexOptions().setAddRaw(true));
+		call(() -> client().updateSchema(schemaUuid, request));
 	}
 
 	@Test

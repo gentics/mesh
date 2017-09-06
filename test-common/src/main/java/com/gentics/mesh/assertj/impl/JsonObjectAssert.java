@@ -41,6 +41,16 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		return this;
 	}
 
+	public JsonObjectAssert hasNot(String path, String msg) {
+		try {
+			getByPath(path);
+			fail("Could not find property for path {" + path + "} - Json is:\n--snip--\n" + actual.encodePrettily() + "\n--snap--\n" + msg);
+		} catch (PathNotFoundException e) {
+			// Okay
+		}
+		return this;
+	}
+
 	public JsonObjectAssert has(String path, String value, String msg) {
 		try {
 			Object actualValue = getByPath(path);
@@ -157,8 +167,6 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 	public JsonObjectAssert pathIsUuid(String path) {
 		return pathIsUuid(path, null);
 	}
-	
-	
 
 	public JsonObjectAssert pathIsDate(String path, String msg) {
 		if (msg == null) {
@@ -169,7 +177,6 @@ public class JsonObjectAssert extends AbstractAssert<JsonObjectAssert, JsonObjec
 		assertTrue("The specified value {" + value + "} on path {" + path + "} was no date: " + msg, DateUtils.isDate(value));
 		return this;
 	}
-
 
 	public JsonObjectAssert pathIsUuid(String path, String msg) {
 		if (msg == null) {

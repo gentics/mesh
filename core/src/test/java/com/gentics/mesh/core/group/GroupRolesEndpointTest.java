@@ -74,10 +74,10 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		GroupResponse restGroup = call(() -> client().addRoleToGroup(groupUuid(), roleUuid));
 		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), groupUuid());
 		// The role is not updated since it is not changing
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		// Check for idempotency
 		call(() -> client().addRoleToGroup(groupUuid(), roleUuid));
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertEquals(1, restGroup.getRoles().stream().filter(ref -> ref.getName().equals("extraRole")).count());
@@ -129,7 +129,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		call(() -> client().removeRoleFromGroup(groupUuid(), roleUuid));
 		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), groupUuid());
 		// The role is not updated since it is not changing
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		GroupResponse restGroup = call(() -> client().findGroupByUuid(groupUuid()));
 		assertFalse(restGroup.getRoles().contains("extraRole"));
