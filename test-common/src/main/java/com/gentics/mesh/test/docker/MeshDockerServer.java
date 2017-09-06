@@ -2,7 +2,6 @@ package com.gentics.mesh.test.docker;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

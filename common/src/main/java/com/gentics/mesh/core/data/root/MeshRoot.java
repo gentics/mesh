@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.root;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.job.JobRoot;
 
 /**
  * The mesh root is the primary graph element. All other aggregation nodes for users, roles, groups, projects connect to this element.
@@ -45,6 +46,13 @@ public interface MeshRoot extends MeshVertex {
 	 * @return
 	 */
 	RoleRoot getRoleRoot();
+
+	/**
+	 * Returns the job queue vertex.
+	 * 
+	 * @return
+	 */
+	JobRoot getJobRoot();
 
 	/**
 	 * Returns the language aggregation vertex.

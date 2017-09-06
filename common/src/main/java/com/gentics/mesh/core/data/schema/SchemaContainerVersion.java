@@ -4,8 +4,6 @@ import static com.gentics.mesh.Events.EVENT_SCHEMA_CREATED;
 import static com.gentics.mesh.Events.EVENT_SCHEMA_DELETED;
 import static com.gentics.mesh.Events.EVENT_SCHEMA_UPDATED;
 
-import java.util.List;
-
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.rest.schema.SchemaModel;

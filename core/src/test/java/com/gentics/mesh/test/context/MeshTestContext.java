@@ -14,14 +14,13 @@ import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerTestMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
@@ -38,6 +37,7 @@ import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
@@ -63,7 +63,7 @@ public class MeshTestContext extends TestWatcher {
 
 	private RestAPIVerticle restVerticle;
 
-	private NodeMigrationVerticle nodeMigrationVerticle;
+	private JobWorkerVerticle jobWorkerVerticle;
 
 	private List<String> deploymentIds = new ArrayList<>();
 	private RouterStorage routerStorage;
@@ -177,8 +177,8 @@ public class MeshTestContext extends TestWatcher {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
 		CountDownLatch latch = new CountDownLatch(1);
-		nodeMigrationVerticle = meshDagger.nodeMigrationVerticle();
-		vertx.deployVerticle(nodeMigrationVerticle, options, rh -> {
+		jobWorkerVerticle = meshDagger.jobWorkerVerticle();
+		vertx.deployVerticle(jobWorkerVerticle, options, rh -> {
 			String deploymentId = rh.result();
 			deploymentIds.add(deploymentId);
 			latch.countDown();

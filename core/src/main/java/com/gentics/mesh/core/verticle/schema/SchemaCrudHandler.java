@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.schema;
 
-import static com.gentics.mesh.Events.SCHEMA_MIGRATION_ADDRESS;
+import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
@@ -15,16 +15,14 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -37,13 +35,11 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -51,13 +47,9 @@ import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Completable;
 import rx.Single;
 
 public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
@@ -105,8 +97,10 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				return message(ac, "schema_update_no_difference_detected", schemaName);
 			}
 
+			JobRoot jobRoot = boot.get().meshRoot().getJobRoot();
+
 			List<DeliveryOptions> events = new ArrayList<>();
-			Completable searchBatchCompletable = db.tx(() -> {
+			SearchQueueBatch currentBatch = db.tx(() -> {
 
 				// Check whether there are any microschemas which are referenced by the schema
 				for (FieldSchema field : requestModel.getFields()) {
@@ -142,11 +136,9 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				}
 
 				events.clear();
-				List<Completable> completables = new ArrayList<>();
-				SearchQueueBatch batch = searchQueue.create();
-				completables.add(batch.processAsync());
 
 				// 3. Apply the found changes to the schema
+				SearchQueueBatch batch = searchQueue.create();
 				SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				// Check whether the assigned releases of the schema should also directly be updated.
@@ -173,53 +165,22 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						if (log.isDebugEnabled()) {
 							log.debug("Preparing node migration for release {" + releaseEntry.getKey().getUuid() + "}");
 						}
-						String projectUuid = release.getRoot().getProject().getUuid();
 						String fromVersion = previouslyReferencedVersion.getUuid();
 						String toVersion = createdVersion.getUuid();
-						String releaseUuid = release.getUuid();
-						SchemaModel newSchema = createdVersion.getSchema();
 						String schemaUuid = createdVersion.getSchemaContainer().getUuid();
 						if (log.isDebugEnabled()) {
 							log.debug("Migrating nodes from schema version {" + fromVersion + "} to {" + toVersion + "} for schema with uuid {"
 									+ schemaUuid + "}");
 						}
 
-						// The node migration needs to write into a new index. Lets prepare the creation of that index
-						SearchQueueBatch indexCreatingBatch = searchQueue.create();
-						indexCreatingBatch.createNodeIndex(projectUuid, releaseUuid, toVersion, DRAFT, newSchema);
-						indexCreatingBatch.createNodeIndex(projectUuid, releaseUuid, toVersion, PUBLISHED, newSchema);
-						completables.add(indexCreatingBatch.processAsync());
-
-						// Lets also prepare the invocation of the migration. The migration is delegated to a worker verticle.
-						DeliveryOptions options = new DeliveryOptions();
-						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
-						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, releaseUuid);
-						options.addHeader(NodeMigrationVerticle.UUID_HEADER, schemaUuid);
-						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, fromVersion);
-						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, toVersion);
-						options.setSendTimeout(90 * 1000);
-						events.add(options);
+						// Add new job to jobqueue
+						jobRoot.enqueueSchemaMigration(release, previouslyReferencedVersion, createdVersion);
 					}
 				}
-				return Completable.merge(completables);
+				return batch;
 			});
-
-			// Ensure that the transaction is flushed to disk
-			Thread.sleep(100);
-			searchBatchCompletable.await();
-
-			// Execute the events sequentially in order to avoid locks
-			for (DeliveryOptions option : events) {
-				CompletableFuture<AsyncResult<Message<JsonObject>>> f = new CompletableFuture<>();
-				Mesh.vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, option, (AsyncResult<Message<JsonObject>> rh) -> {
-					f.complete(rh);
-				});
-				AsyncResult<Message<JsonObject>> result = f.get(10, TimeUnit.MINUTES);
-				if (result.failed()) {
-					log.error("Event handling failed for event {" + option.getHeaders() + "}", result.cause());
-				}
-			}
-
+			vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
+			currentBatch.processSync();
 			return message(ac, "migration_invoked", schemaName);
 
 		}, model -> ac.send(model, OK));

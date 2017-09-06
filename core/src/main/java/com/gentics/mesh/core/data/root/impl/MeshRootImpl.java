@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
@@ -23,6 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.job.JobRoot;
+import com.gentics.mesh.core.data.job.impl.JobRootImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -60,6 +63,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	private static SchemaContainerRoot schemaContainerRoot;
 	private static MicroschemaContainerRoot microschemaContainerRoot;
+	private static JobRoot jobRoot;
 
 	public static void init(Database database) {
 		database.addVertexType(MeshRootImpl.class, MeshVertexImpl.class);
@@ -73,6 +77,25 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	@Override
 	public void setMeshVersion(String version) {
 		setProperty(MESH_VERSION, version);
+	}
+
+	@Override
+	public JobRoot getJobRoot() {
+		if (jobRoot == null) {
+			synchronized (MeshRootImpl.class) {
+				JobRoot foundJobRoot = out(HAS_JOB_ROOT).nextOrDefaultExplicit(JobRootImpl.class, null);
+				if (foundJobRoot == null) {
+					jobRoot = getGraph().addFramedVertex(JobRootImpl.class);
+					linkOut(jobRoot, HAS_JOB_ROOT);
+					if (log.isInfoEnabled()) {
+						log.info("Created job queue {" + jobRoot.getUuid() + "}");
+					}
+				} else {
+					jobRoot = foundJobRoot;
+				}
+			}
+		}
+		return jobRoot;
 	}
 
 	@Override
@@ -284,6 +307,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		MeshRootImpl.tagFamilyRoot = null;
 		MeshRootImpl.microschemaContainerRoot = null;
 		MeshRootImpl.languageRoot = null;
+		MeshRootImpl.jobRoot = null;
 	}
 
 	@Override

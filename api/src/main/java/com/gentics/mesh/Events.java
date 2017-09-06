@@ -12,11 +12,10 @@ public final class Events {
 	 */
 	public static final String STARTUP_EVENT_ADDRESS = "mesh.startup-complete";
 
-	public final static String SCHEMA_MIGRATION_ADDRESS = "mesh.migration.schema";
-
-	public final static String MICROSCHEMA_MIGRATION_ADDRESS = "mesh.migration.microschema";
-
-	public final static String RELEASE_MIGRATION_ADDRESS = "mesh.migration.release";
+	/**
+	 * Address for handler which will process registered job.
+	 */
+	public final static String JOB_WORKER_ADDRESS = "job.worker";
 
 	/**
 	 * Event which is send once a new node is joining the cluster.

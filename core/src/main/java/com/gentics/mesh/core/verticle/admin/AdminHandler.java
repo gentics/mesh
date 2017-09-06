@@ -17,17 +17,12 @@ import javax.inject.Inject;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
-import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.hazelcast.core.HazelcastInstance;
-import com.hazelcast.core.Member;
-import com.hazelcast.nio.Address;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;

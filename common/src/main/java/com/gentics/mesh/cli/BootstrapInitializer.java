@@ -6,6 +6,7 @@ import java.util.Collection;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -56,6 +57,13 @@ public interface BootstrapInitializer {
 	 * @return
 	 */
 	UserRoot userRoot();
+
+	/**
+	 * Return the job root element.
+	 * 
+	 * @return
+	 */
+	JobRoot jobRoot();
 
 	/**
 	 * Return the global node root element. Note that projects have their own node root element.

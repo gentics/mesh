@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.schema.impl;
 
-import static com.gentics.mesh.Events.SCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 
@@ -51,17 +50,12 @@ public class SchemaContainerVersionImpl
 	}
 
 	@Override
-	protected String getMigrationAddress() {
-		return SCHEMA_MIGRATION_ADDRESS;
-	}
-
-	@Override
 	public Iterable<NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
 		Spliterator<VertexFrame> it = in(HAS_SCHEMA_CONTAINER_VERSION).spliterator();
 		Stream<NodeGraphFieldContainer> stream = StreamSupport.stream(it, false).map(frame -> frame.reframe(NodeGraphFieldContainerImpl.class))
 				.filter(e -> {
 					return e.getParentNode(releaseUuid) != null;
-				}).map( e -> (NodeGraphFieldContainer)e);
+				}).map(e -> (NodeGraphFieldContainer) e);
 		return () -> stream.iterator();
 	}
 

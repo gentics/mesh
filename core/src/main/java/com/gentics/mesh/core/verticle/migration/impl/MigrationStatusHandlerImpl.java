@@ -23,7 +23,6 @@ import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.util.DateUtils;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -43,10 +42,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	private MigrationInfo info;
 
-	private Message<Object> message;
-
-	public MigrationStatusHandlerImpl(Message<Object> message, Vertx vertx, MigrationType type) {
-		this.message = message;
+	public MigrationStatusHandlerImpl(Vertx vertx, MigrationType type) {
 		this.vertx = vertx;
 		String startDate = DateUtils.toISO8601(System.currentTimeMillis());
 		String nodeName = Mesh.mesh().getOptions().getNodeName();
@@ -210,7 +206,6 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		info.setStopDate(DateUtils.toISO8601(System.currentTimeMillis()));
 		updateStatus();
 		JsonObject result = new JsonObject().put("type", "completed");
-		message.reply(result);
 		vertx.eventBus().publish(MESH_MIGRATION, result);
 		return this;
 	}
@@ -232,7 +227,6 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		info.setStopDate(DateUtils.toISO8601(System.currentTimeMillis()));
 		info.setError(failureMessage + "\n\n" + ExceptionUtils.getStackTrace(error));
 		updateStatus();
-		message.fail(100, failureMessage);
 		vertx.eventBus().publish(MESH_MIGRATION, new JsonObject().put("type", "failed"));
 		return this;
 	}

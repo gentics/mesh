@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.data.container.impl;
 
-import static com.gentics.mesh.Events.MICROSCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ITEM;
@@ -49,11 +48,6 @@ public class MicroschemaContainerVersionImpl extends
 	@Override
 	protected Class<? extends MicroschemaContainer> getContainerClass() {
 		return MicroschemaContainerImpl.class;
-	}
-
-	@Override
-	protected String getMigrationAddress() {
-		return MICROSCHEMA_MIGRATION_ADDRESS;
 	}
 
 	@Override

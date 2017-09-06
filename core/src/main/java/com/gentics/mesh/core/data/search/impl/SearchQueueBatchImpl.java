@@ -26,7 +26,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.index.common.CreateIndexEntryImpl;
 import com.gentics.mesh.search.index.common.DropIndexEntryImpl;

@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.microschema;
 
-import static com.gentics.mesh.Events.MICROSCHEMA_MIGRATION_ADDRESS;
+import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
@@ -19,6 +19,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -31,7 +32,6 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
@@ -67,6 +67,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 		validateParameter(uuid, "uuid");
 
 		utils.operateTx(ac, () -> {
+
 			RootVertex<MicroschemaContainer> root = getRootVertex(ac);
 			MicroschemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			Microschema requestModel = JsonUtil.readValue(ac.getBodyAsString(), MicroschemaModelImpl.class);
@@ -81,6 +82,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			}
 			db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
+				JobRoot jobRoot = boot.get().jobRoot();
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
@@ -90,8 +92,6 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 					// Assign the created version to the found releases
 					for (Map.Entry<Release, MicroschemaContainerVersion> releaseEntry : referencedReleases.entrySet()) {
 						Release release = releaseEntry.getKey();
-						Project projectOfRelease = release.getProject();
-
 						// Check whether a list of release names was specified and skip releases which were not included in the list.
 						List<String> releaseNames = updateParams.getReleaseNames();
 						if (releaseNames != null && !releaseNames.isEmpty() && !releaseNames.contains(release.getName())) {
@@ -104,13 +104,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 						release.assignMicroschemaVersion(createdVersion);
 
 						// start microschema migration
-						DeliveryOptions options = new DeliveryOptions();
-						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectOfRelease.getUuid());
-						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
-						options.addHeader(NodeMigrationVerticle.UUID_HEADER, createdVersion.getSchemaContainer().getUuid());
-						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, previouslyReferencedVersion.getUuid());
-						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, createdVersion.getUuid());
-						Mesh.vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options);
+						jobRoot.enqueueMicroschemaMigration(release, previouslyReferencedVersion, createdVersion);
+						Mesh.vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
 
 					}
 				}

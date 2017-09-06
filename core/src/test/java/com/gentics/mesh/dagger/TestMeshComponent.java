@@ -11,12 +11,10 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.core.verticle.migration.micronode.MicronodeMigrationHandler;
-import com.gentics.mesh.core.verticle.migration.micronode.MicronodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.migration.node.NodeMigrationHandler;
-import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.core.verticle.migration.release.ReleaseMigrationHandler;
-import com.gentics.mesh.core.verticle.migration.release.ReleaseMigrationVerticle;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.dagger.module.ExtraModule;
 import com.gentics.mesh.dagger.module.FakeConsoleModule;
@@ -62,11 +60,7 @@ public interface TestMeshComponent extends MeshComponent {
 
 	MeshAuthHandler authenticationHandler();
 
-	NodeMigrationVerticle nodeMigrationVerticle();
-
-	MicronodeMigrationVerticle micronodeMigrationVerticle();
-
-	ReleaseMigrationVerticle releaseMigrationVerticle();
+	JobWorkerVerticle jobWorkerVerticle();
 
 	ServerSchemaStorage serverSchemaStorage();
 

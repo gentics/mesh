@@ -16,7 +16,6 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -26,6 +25,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 import com.gentics.mesh.test.util.MeshAssert;
 import com.gentics.mesh.test.util.TestUtils;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.DeploymentOptions;
 
@@ -36,12 +36,12 @@ public class SchemaSearchEndpointTest extends AbstractMeshTest implements BasicS
 	public void setupWorkerVerticle() throws Exception {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
-		vertx().deployVerticle(meshDagger().nodeMigrationVerticle(), options);
+		vertx().deployVerticle(meshDagger().jobWorkerVerticle(), options);
 	}
 
 	@After
-	public void setopWorkerVerticle() throws Exception {
-		meshDagger().nodeMigrationVerticle().stop();
+	public void removeWorkerVerticle() throws Exception {
+		meshDagger().jobWorkerVerticle().stop();
 	}
 
 	@Test

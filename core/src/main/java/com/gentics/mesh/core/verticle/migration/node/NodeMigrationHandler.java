@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -85,9 +86,20 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		SchemaModel newSchema = toVersion.getSchema();
 		List<Exception> errorsDetected = new ArrayList<>();
 
+		// The node migration needs to write into a new index. Lets prepare the creation of that index
+		SearchQueueBatch indexCreatingBatch = searchQueue.create();
+		indexCreatingBatch.createNodeIndex(project.getUuid(), release.getUuid(), toVersion.getUuid(), DRAFT, newSchema);
+		indexCreatingBatch.createNodeIndex(project.getUuid(), release.getUuid(), toVersion.getUuid(), PUBLISHED, newSchema);
+
+		Iterator<NodeGraphFieldContainer> it = fieldContainers.iterator();
+		// Only create a new index if we actually need to migrate elements.
+		if (it.hasNext()) {
+			indexCreatingBatch.processSync();
+		}
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
-		for (NodeGraphFieldContainer container : fieldContainers) {
+		while (it.hasNext()) {
+			NodeGraphFieldContainer container = it.next();
 			if (log.isDebugEnabled()) {
 				log.debug("Migrating container {" + container.getUuid() + "}");
 			}
@@ -102,6 +114,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			}
 			if (count % 50 == 0) {
 				log.info("Migrated containers: " + count);
+				status.updateStatus();
 			}
 			count++;
 		}

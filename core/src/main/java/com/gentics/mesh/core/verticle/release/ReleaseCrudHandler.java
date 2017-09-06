@@ -1,10 +1,6 @@
 package com.gentics.mesh.core.verticle.release;
 
-import static com.gentics.mesh.Events.MICROSCHEMA_MIGRATION_ADDRESS;
-import static com.gentics.mesh.Events.RELEASE_MIGRATION_ADDRESS;
-import static com.gentics.mesh.Events.SCHEMA_MIGRATION_ADDRESS;
-import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
@@ -13,9 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
@@ -28,6 +22,8 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -45,14 +41,12 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
@@ -101,14 +95,13 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 				resultInfo.setProperty("path", created.getAPIPath(ac));
 				resultInfo.setProperty("projectUuid", project.getUuid());
 				resultInfo.setProperty("releaseUuid", created.getUuid());
+				JobRoot jobRoot = boot.jobRoot();
+				jobRoot.enqueueReleaseMigration(created);
 				return resultInfo;
 			});
 
 			// The release has been created now lets start the release migration (specific node migration)
-			DeliveryOptions options = new DeliveryOptions();
-			options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, info.getProperty("projectUuid"));
-			options.addHeader(NodeMigrationVerticle.UUID_HEADER, info.getProperty("releaseUuid"));
-			vertx.eventBus().send(RELEASE_MIGRATION_ADDRESS, null, options);
+			vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
 
 			ac.setLocation(info.getProperty("path"));
 			// Finally process the batch
@@ -148,8 +141,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			SchemaReferenceList schemaReferenceList = ac.fromJson(SchemaReferenceList.class);
 			Project project = ac.getProject();
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
-			List<DeliveryOptions> events = new ArrayList<>();
 
+			JobRoot jobRoot = boot.jobRoot();
 			Tuple<Single<SchemaReferenceList>, SearchQueueBatch> tuple = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
 
@@ -165,17 +158,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					}
 					release.assignSchemaVersion(version);
 
-					// Create index queue entries for creating indices
-					batch.addNodeIndex(project, release, version, DRAFT);
-					batch.addNodeIndex(project, release, version, PUBLISHED);
-
-					DeliveryOptions options = new DeliveryOptions();
-					options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, release.getRoot().getProject().getUuid());
-					options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
-					options.addHeader(NodeMigrationVerticle.UUID_HEADER, version.getSchemaContainer().getUuid());
-					options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
-					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
-					events.add(options);
+					jobRoot.enqueueReleaseMigration(release, assignedVersion, version);
 				}
 
 				return Tuple.tuple(getSchemaVersions(release), batch);
@@ -185,9 +168,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			tuple.v2().processSync();
 
 			// 2. Invoke migrations which will populate the created index
-			for (DeliveryOptions option : events) {
-				Mesh.vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, option);
-			}
+			Mesh.vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
+
 			return tuple.v1();
 
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
@@ -223,6 +205,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			Release release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			MicroschemaReferenceList microschemaReferenceList = ac.fromJson(MicroschemaReferenceList.class);
 			MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
+			JobRoot jobRoot = boot.jobRoot();
 
 			return db.tx(() -> {
 				// Transform the list of references into microschema container version vertices
@@ -235,15 +218,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 								version.getVersion());
 					}
 					release.assignMicroschemaVersion(version);
-
-					// start microschema migration
-					DeliveryOptions options = new DeliveryOptions();
-					options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, release.getRoot().getProject().getUuid());
-					options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, release.getUuid());
-					options.addHeader(NodeMigrationVerticle.UUID_HEADER, version.getSchemaContainer().getUuid());
-					options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, assignedVersion.getUuid());
-					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, version.getUuid());
-					Mesh.vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options);
+					jobRoot.enqueueMicroschemaMigration(release, assignedVersion, version);
 				}
 				return getMicroschemaVersions(release);
 			});
@@ -291,6 +266,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String releaseUuid) {
 		utils.operateTx(ac, () -> {
 			Project project = ac.getProject();
+			JobRoot jobRoot = boot.jobRoot();
+			Release release = project.getReleaseRoot().findByUuid(releaseUuid);
 			for (MicroschemaContainer microschemaContainer : boot.microschemaContainerRoot().findAll()) {
 				MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
 				MicroschemaContainerVersion currentVersion = latestVersion;
@@ -299,32 +276,14 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					if (currentVersion == null) {
 						break;
 					}
-					// System.out.println("Before migration " + schemaContainer.getName() + " - " + currentVersion.getUuid() + "="
-					// + currentVersion.getFieldContainers(releaseUuid).size());
-					// if (!getLatestVersion().getUuid().equals(version.getUuid())) {
-					// for (GraphFieldContainer container : version.getFieldContainers()) {
-					// NodeImpl node = container.in(HAS_FIELD_CONTAINER).nextOrDefaultExplicit(NodeImpl.class, null);
-					// System.out.println(
-					// "Node: " + node.getUuid() + "ne: " + node.getLastEditedTimestamp() + "nc: " + node.getCreationTimestamp());
-					// }
-					// }
-					CountDownLatch latch = new CountDownLatch(1);
-					DeliveryOptions options = new DeliveryOptions();
-					options.addHeader(NodeMigrationVerticle.UUID_HEADER, microschemaContainer.getUuid());
-					options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, currentVersion.getUuid());
-					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, latestVersion.getUuid());
-					options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, releaseUuid);
-					options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project.getUuid());
 
-					MicroschemaContainerVersion version = currentVersion;
-					Mesh.vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
-						try (Tx tx = db.tx()) {
-							log.info("After migration " + microschemaContainer.getName() + ":" + version.getVersion() + " - " + version.getUuid()
-									+ "=" + version.getFieldContainers(releaseUuid).size());
-						}
-						latch.countDown();
-					});
-					latch.await();
+					Job job = jobRoot.enqueueMicroschemaMigration(release, currentVersion, latestVersion);
+					job.process();
+
+					try (Tx tx = db.tx()) {
+						log.info("After migration " + microschemaContainer.getName() + ":" + currentVersion.getVersion() + " - "
+								+ currentVersion.getUuid() + "=" + currentVersion.getFieldContainers(release.getUuid()).size());
+					}
 				}
 
 			}
@@ -342,7 +301,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	public void handleMigrateRemainingNodes(InternalActionContext ac, String releaseUuid) {
 
 		utils.operateTx(ac, () -> {
-			Project project = ac.getProject();
+			JobRoot jobRoot = boot.jobRoot();
+			Release release = ac.getProject().getReleaseRoot().findByUuid(releaseUuid);
 			for (SchemaContainer schemaContainer : boot.schemaContainerRoot().findAll()) {
 				SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
 				SchemaContainerVersion currentVersion = latestVersion;
@@ -351,30 +311,21 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					if (currentVersion == null) {
 						break;
 					}
-					CountDownLatch latch = new CountDownLatch(1);
-					DeliveryOptions options = new DeliveryOptions();
-					options.addHeader(NodeMigrationVerticle.UUID_HEADER, schemaContainer.getUuid());
-					options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, currentVersion.getUuid());
-					options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, latestVersion.getUuid());
-					options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, releaseUuid);
-					options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project.getUuid());
-					options.setSendTimeout(400*1000);
-					SchemaContainerVersion version = currentVersion;
-					Mesh.vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, options, rh -> {
-						try (Tx tx = db.tx()) {
-							if (rh.failed()) {
-								log.error("Migration failed of " + schemaContainer.getName() + ":" + version.getVersion() + " - " + version.getUuid()
-										+ " failed with error", rh.cause());
-							}
-							Iterator<NodeGraphFieldContainer> it = version.getFieldContainers(releaseUuid).iterator();
-							log.info("After migration " + schemaContainer.getName() + ":" + version.getVersion() + " - " + version.getUuid() + " has unmigrated containers: " + it.hasNext());
-						}
-						latch.countDown();
-					});
-					latch.await();
+					Job job = jobRoot.enqueueSchemaMigration(release, currentVersion, latestVersion);
+					try {
+						job.process();
+						Iterator<NodeGraphFieldContainer> it = currentVersion.getFieldContainers(release.getUuid()).iterator();
+						log.info("After migration " + schemaContainer.getName() + ":" + currentVersion.getVersion() + " - " + currentVersion.getUuid()
+								+ " has unmigrated containers: " + it.hasNext());
+					} catch (Exception e) {
+						log.error("Migration failed of " + schemaContainer.getName() + ":" + currentVersion.getVersion() + " - "
+								+ currentVersion.getUuid() + " failed with error", e);
+					}
+
 				}
 
 			}
+
 			return message(ac, "schema_migration_executed");
 		}, model -> ac.send(model, OK));
 	}

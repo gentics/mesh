@@ -1,16 +1,16 @@
 package com.gentics.mesh.core.release;
 
+import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.Events.RELEASE_MIGRATION_ADDRESS;
-import static com.gentics.mesh.test.ClientHelper.call;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -24,22 +24,20 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.eventbus.Message;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
@@ -48,8 +46,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	public void setupVerticleTest() throws Exception {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
-		vertx().deployVerticle(meshDagger().nodeMigrationVerticle(), options);
-		vertx().deployVerticle(meshDagger().releaseMigrationVerticle(), options);
+		vertx().deployVerticle(meshDagger().jobWorkerVerticle(), options);
 	}
 
 	@Test
@@ -89,12 +86,8 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 						.isEmpty();
 			});
 		});
-		CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(projectUuid(), tx(() -> newRelease.getUuid()));
-
-		AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
-		if (result.cause() != null) {
-			throw result.cause();
-		}
+		requestReleaseMigration(newRelease);
+		triggerAndWaitForMigration();
 
 		try (Tx tx = tx()) {
 			assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(true);
@@ -130,9 +123,8 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartForInitial() throws Throwable {
 		try (Tx tx = tx()) {
-			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(projectUuid(), initialReleaseUuid());
-			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
-			assertThat(result.failed()).isTrue();
+			requestReleaseMigration(initialRelease());
+			triggerAndWaitForMigration(MigrationStatus.FAILED);
 		}
 	}
 
@@ -145,13 +137,13 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(projectUuid(), newRelease.getUuid());
-			AsyncResult<Message<Object>> result = future.get(20, TimeUnit.SECONDS);
-			assertTrue("The migration did run into a timeout after 20 seconds", result.succeeded());
+			requestReleaseMigration(newRelease);
+			triggerAndWaitForMigration(MigrationStatus.COMPLETED);
 
-			future = requestReleaseMigration(projectUuid(), newRelease.getUuid());
-			result = future.get(10, TimeUnit.SECONDS);
-			assertThat(result.failed()).isTrue();
+			requestReleaseMigration(newRelease);
+			MigrationStatusResponse response = triggerAndWaitForMigration(null);
+			List<MigrationStatus> status = response.getMigrations().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+			assertThat(status).containsExactly(MigrationStatus.COMPLETED, MigrationStatus.FAILED);
 		}
 
 	}
@@ -169,17 +161,18 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(projectUuid(), newestRelease.getUuid());
-			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
-			assertThat(result.failed()).isTrue();
+			requestReleaseMigration(newestRelease);
+			triggerAndWaitForMigration(FAILED);
 
-			future = requestReleaseMigration(projectUuid(), newRelease.getUuid());
-			result = future.get(10, TimeUnit.SECONDS);
-			assertThat(result.succeeded()).isTrue();
+			requestReleaseMigration(newRelease);
+			MigrationStatusResponse response = triggerAndWaitForMigration(null);
+			List<MigrationStatus> status = response.getMigrations().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+			assertThat(status).containsExactly(FAILED, COMPLETED);
 
-			future = requestReleaseMigration(projectUuid(), newestRelease.getUuid());
-			result = future.get(10, TimeUnit.SECONDS);
-			assertThat(result.succeeded()).isTrue();
+			requestReleaseMigration(newestRelease);
+			response = triggerAndWaitForMigration(null);
+			status = response.getMigrations().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+			assertThat(status).containsExactly(FAILED, COMPLETED, COMPLETED);
 		}
 	}
 
@@ -225,36 +218,19 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			CompletableFuture<AsyncResult<Message<Object>>> future = requestReleaseMigration(projectUuid(), newRelease.getUuid());
-
-			try (Timer.Context ctx = migrationTimer.time()) {
-				AsyncResult<Message<Object>> result = future.get(10, TimeUnit.MINUTES);
-				if (result.cause() != null) {
-					throw result.cause();
-				}
-			}
-		}
+		requestReleaseMigration(newRelease);
+		triggerAndWaitForMigration();
 	}
 
 	/**
 	 * Request release migration and return the future
 	 * 
-	 * @param projectUuid
-	 *            project Uuid
-	 * @param releaseUuid
-	 *            release Uuid
+	 * @param release
 	 * @return future
 	 */
-	protected CompletableFuture<AsyncResult<Message<Object>>> requestReleaseMigration(String projectUuid, String releaseUuid) {
-		DeliveryOptions options = new DeliveryOptions();
-		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
-		options.addHeader(NodeMigrationVerticle.UUID_HEADER, releaseUuid);
-		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-		vertx().eventBus().send(RELEASE_MIGRATION_ADDRESS, null, options, (rh) -> {
-			future.complete(rh);
+	protected void requestReleaseMigration(Release release) {
+		tx(() -> {
+			boot().jobRoot().enqueueReleaseMigration(release);
 		});
-
-		return future;
 	}
 }

@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.rest.node.field;
 
 import com.gentics.mesh.core.rest.common.FieldContainer;
-import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
 /**

@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.schema;
 
-import static com.gentics.mesh.Events.MICROSCHEMA_MIGRATION_ADDRESS;
-import static com.gentics.mesh.Events.SCHEMA_MIGRATION_ADDRESS;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
@@ -9,21 +7,12 @@ import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.IDLE;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
-import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.junit.Before;
@@ -69,7 +58,6 @@ import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.verticle.migration.node.NodeMigrationVerticle;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -79,10 +67,7 @@ import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
-import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true, clusterMode = false)
@@ -92,8 +77,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	public void deployWorkerVerticle() throws Exception {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
-		vertx().deployVerticle(meshDagger().nodeMigrationVerticle(), options);
-		vertx().deployVerticle(meshDagger().micronodeMigrationVerticle(), options);
+		vertx().deployVerticle(meshDagger().jobWorkerVerticle(), options);
 	}
 
 	@Test
@@ -115,28 +99,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		CompletableFuture<Void> replyFuture = new CompletableFuture<>();
 		try (Tx tx = tx()) {
-			DeliveryOptions options = new DeliveryOptions();
-			options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid());
-			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, initialReleaseUuid());
-			options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
-			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
-			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
-			options.setSendTimeout(400 * 1000);
-			// Trigger migration by sending a event
-			vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, options, (AsyncResult<Message<JsonObject>> rh) -> {
-				if (rh.failed()) {
-					fail(rh.cause().getMessage());
-				} else {
-					assertEquals("completed", rh.result().body().getString("type"));
-					replyFuture.complete(null);
-				}
-			});
+			boot().jobRoot().enqueueSchemaMigration(initialRelease(), versionA, versionB);
+			tx.success();
 		}
-		replyFuture.get(50, SECONDS);
+		triggerAndWaitForMigration();
 
-		Thread.sleep(2000);
 		MigrationStatusResponse status = call(() -> client().migrationStatus());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1).hasStatus(IDLE);
 
@@ -191,7 +159,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			doSchemaMigration(container, versionA, versionB);
+			doSchemaMigration(versionA, versionB);
 
 			// assert that migration worked
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -202,7 +170,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertThat(secondNode.getGraphFieldContainer("en")).as("Migrated field container").isOf(versionB).hasVersion("0.2");
 			assertThat(secondNode.getGraphFieldContainer("en").getString(fieldName).getString()).as("Migrated field value")
 					.isEqualTo("modified second content");
-			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 2, 2);
 		}
 
 		MigrationStatusResponse status = call(() -> client().migrationStatus());
@@ -227,7 +195,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Update the schema and enable the addRaw field
 		SchemaUpdateRequest request = tx(() -> JsonUtil.readValue(node.getSchemaContainer().getLatestVersion().getJson(), SchemaUpdateRequest.class));
 		request.getField("teaser").setIndexOptions(new IndexOptions().setAddRaw(true));
-		call(() -> client().updateSchema(schemaUuid, request));
+		waitForMigration(() -> {
+			call(() -> client().updateSchema(schemaUuid, request));
+		}, COMPLETED);
 
 		MigrationStatusResponse status = call(() -> client().migrationStatus());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1).hasStatus(IDLE);
@@ -283,8 +253,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		Thread.sleep(1000);
 
 		try (Tx tx = tx()) {
-			doSchemaMigration(container, versionA, versionB);
-			doSchemaMigration(container, versionA, versionB);
+			doSchemaMigration(versionA, versionB);
+			doSchemaMigration(versionA, versionB);
 
 			// assert that migration worked, but was only performed once
 			assertThat(firstNode).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -325,7 +295,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			doSchemaMigration(container, versionA, versionB);
+			doSchemaMigration(versionA, versionB);
 			assertThat(node.getGraphFieldContainer("en")).as("Migrated draft").isOf(versionB).hasVersion("2.0");
 			assertThat(node.getGraphFieldContainer("en", project().getLatestRelease().getUuid(), ContainerType.PUBLISHED)).as("Migrated published")
 					.isOf(versionB).hasVersion("2.0");
@@ -339,15 +309,15 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	public void testMicronodeListMigration() throws Exception {
 
 		// 1. Prepare the schema and add micronode list to the content schema
-		SchemaUpdateRequest schemaUpdate = db()
-				.tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(), SchemaUpdateRequest.class));
+		SchemaUpdateRequest schemaUpdate = tx(
+				() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(), SchemaUpdateRequest.class));
 		schemaUpdate.addField(FieldUtil.createListFieldSchema("micronode", "micronode").setAllowedSchemas("vcard"));
 
 		String schemaUuid = db().tx(() -> schemaContainer("content").getUuid());
 
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-		call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-		failingLatch(latch);
+		waitForMigration(() -> {
+			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		}, COMPLETED);
 
 		String parentNodeUuid = tx(() -> folder("2015").getUuid());
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
@@ -373,12 +343,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		call(() -> client().publishNode(PROJECT_NAME, nodeUuid));
 
 		// 2. Update the name and allow of the micronode list of the used schema
-		latch = TestUtils.latchForMigrationCompleted(client());
 		schemaUpdate.setName("someOtherName");
 		ListFieldSchema micronodeListFieldSchema = schemaUpdate.getField("micronode", ListFieldSchema.class);
 		micronodeListFieldSchema.setAllowedSchemas("vcard", "captionedImage");
-		call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-		failingLatch(latch);
+
+		waitForMigration(() -> {
+			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		}, COMPLETED);
 
 		// 3. Assert that the node still contains the micronode list contents
 		NodeResponse migratedNode = call(
@@ -387,12 +358,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertNotEquals("The node should have been migrated due to the schema update.", migratedNode.getVersion(), response.getVersion());
 
 		// 4. Update the allow of the micronode list of the used schema
-		latch = TestUtils.latchForMigrationCompleted(client());
 		ListFieldSchema micronodeListFieldSchema2 = schemaUpdate.getField("micronode", ListFieldSchema.class);
 		micronodeListFieldSchema2.setAllowedSchemas("vcard");
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("otherMicronode").setAllowedMicroSchemas("vcard"));
-		call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-		failingLatch(latch);
+		waitForMigration(() -> {
+			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		}, COMPLETED);
 
 		// 5. Assert that the node still contains the micronode list contents
 		migratedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().setVersion("published")));
@@ -405,9 +376,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				.tx(() -> JsonUtil.readValue(microschemaContainer("vcard").getLatestVersion().getJson(), MicroschemaUpdateRequest.class));
 		microschemaUpdate.setName("someOtherName2");
 		microschemaUpdate.addField(FieldUtil.createStringFieldSchema("enemenemuh"));
-		latch = TestUtils.latchForMigrationCompleted(client());
-		call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
-		failingLatch(latch);
+		waitForMigration(() -> {
+			call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
+		}, COMPLETED);
 
 		// 7. Verify that the node has been migrated again
 		NodeResponse migratedNode2 = call(
@@ -423,59 +394,45 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	/**
 	 * Asserts that the error is handled in the setup of the migration.
 	 * 
-	 * @throws ExecutionException
-	 * @throws InterruptedException
+	 * @throws Exception
 	 */
 	@Test
-	public void testMigrationFailureInSetup() throws InterruptedException, ExecutionException {
+	public void testMigrationFailureInSetup() throws Exception {
 
-		DeliveryOptions options = new DeliveryOptions();
-		options.addHeader(NodeMigrationVerticle.UUID_HEADER, "bogus");
-		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, "bogus");
-		options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, "bogus");
-		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, "bogus");
-		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-		vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
-			future.complete(rh);
+		tx(() -> {
+			boot().jobRoot().enqueueMicroschemaMigration(initialRelease(), microschemaContainer("vcard").getLatestVersion(),
+					microschemaContainer("vcard").getLatestVersion());
 		});
-		AsyncResult<Message<Object>> result = future.get();
-		assertTrue(result.failed());
 
-		// TODO BUG - We need to wait 100ms because the event handling and clustered data map updating is handled within the same event loop
-		Thread.sleep(100);
+		tx(() -> {
+			microschemaContainer("vcard").getLatestVersion().remove();
+		});
+		triggerAndWaitForMigration(FAILED);
+
 		MigrationStatusResponse status = call(() -> client().migrationStatus());
 		assertThat(status).listsAll(FAILED).hasInfos(1).hasStatus(IDLE);
 		assertNotNull("An error should be stored along with the info.", status.getMigrations().get(0).getError());
 	}
 
 	/**
-	 * Assert that the migration info will be limited to a certain amount of infos.
+	 * Assert that the migration info will be limited to a certain amount of information.
 	 * 
-	 * @throws ExecutionException
-	 * @throws InterruptedException
-	 * @throws TimeoutException 
+	 * @throws Exception
 	 */
 	@Test
-	public void testMigrationInfoCleanup() throws InterruptedException, ExecutionException, TimeoutException {
+	public void testMigrationInfoCleanup() throws Exception {
 		// Run 100 migrations which should all fail
 		for (int i = 0; i < 100; i++) {
-			DeliveryOptions options = new DeliveryOptions();
-			options.addHeader(NodeMigrationVerticle.UUID_HEADER, "bogus");
-			options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, "bogus");
-			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, "bogus");
-			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, "bogus");
-			options.setSendTimeout(5 * 1000);
-			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
-				future.complete(rh);
+			tx(() -> {
+				SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
+				boot().jobRoot().enqueueSchemaMigration(initialRelease(), version, version);
 			});
-			AsyncResult<Message<Object>> result = future.get(10, TimeUnit.SECONDS);
-			assertTrue(result.failed());
 		}
+		triggerAndWaitForMigration();
 
 		// Verify that only the max amount of migrations is returned.
 		MigrationStatusResponse status = call(() -> client().migrationStatus());
-		assertThat(status).listsAll(FAILED).hasInfos(MigrationStatusHandler.MAX_MIGRATION_INFO_ENTRIES).hasStatus(IDLE);
+		assertThat(status).listsAll(MigrationStatus.COMPLETED).hasInfos(MigrationStatusHandler.MAX_MIGRATION_INFO_ENTRIES).hasStatus(IDLE);
 
 	}
 
@@ -516,7 +473,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			doSchemaMigration(container, versionA, versionB);
+			doSchemaMigration(versionA, versionB);
 			assertThat(node.getGraphFieldContainer("en")).as("Migrated draft").isOf(versionB).hasVersion("2.1");
 			assertThat(node.getGraphFieldContainer("en", project().getLatestRelease().getUuid(), ContainerType.PUBLISHED)).as("Migrated published")
 					.isOf(versionB).hasVersion("2.0");
@@ -585,31 +542,17 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	/**
 	 * Start a schema migration, await the result and assert success
 	 * 
-	 * @param container
-	 *            schema container
 	 * @param versionA
 	 *            version A
 	 * @param versionB
 	 *            version B
 	 * @throws Throwable
 	 */
-	private void doSchemaMigration(SchemaContainer container, SchemaContainerVersion versionA, SchemaContainerVersion versionB) throws Throwable {
-		DeliveryOptions options = new DeliveryOptions();
-		options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project().getUuid());
-		options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
-		options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
-		options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
-		options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
-		options.setSendTimeout(900 * 1000);
-		CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-		vertx().eventBus().send(SCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
-			future.complete(rh);
+	private void doSchemaMigration(SchemaContainerVersion versionA, SchemaContainerVersion versionB) throws Throwable {
+		tx(() -> {
+			boot().jobRoot().enqueueSchemaMigration(project().getLatestRelease(), versionA, versionB);
 		});
-
-		AsyncResult<Message<Object>> result = future.get(30, TimeUnit.SECONDS);
-		if (result.cause() != null) {
-			throw result.cause();
-		}
+		triggerAndWaitForMigration();
 	}
 
 	@Test
@@ -684,22 +627,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			DeliveryOptions options = new DeliveryOptions();
-			options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
-			options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project().getUuid());
-			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
-			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
-			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
-			options.setSendTimeout(400 * 1000);
-			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
-				future.complete(rh);
-			});
+			boot().jobRoot().enqueueMicroschemaMigration(initialRelease(), versionA, versionB);
+			tx.success();
+		}
 
-			AsyncResult<Message<Object>> result = future.get(1000, TimeUnit.SECONDS);
-			if (result.cause() != null) {
-				throw result.cause();
-			}
+		try (Tx tx = tx()) {
+			triggerAndWaitForMigration();
 
 			// assert that migration worked and created a new version
 			assertThat(firstMicronodeField.getMicronode()).as("Old Micronode").isOf(versionA);
@@ -802,23 +735,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			DeliveryOptions options = new DeliveryOptions();
-			options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
-			options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project().getUuid());
-			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
-			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
-			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
-			options.setSendTimeout(400 * 1000);
-			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
-				future.complete(rh);
-			});
+		tx(() -> {
+			boot().jobRoot().enqueueMicroschemaMigration(project().getLatestRelease(), versionA, versionB);
+		});
 
-			AsyncResult<Message<Object>> result = future.get(40, TimeUnit.SECONDS);
-			if (result.cause() != null) {
-				throw result.cause();
-			}
+		triggerAndWaitForMigration();
+
+		try (Tx tx = tx()) {
 
 			// assert that migration worked and created a new version
 			assertThat(firstMicronodeListField.getList().get(0).getMicronode()).as("Old Micronode").isOf(versionA);
@@ -924,22 +847,13 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			DeliveryOptions options = new DeliveryOptions();
-			options.addHeader(NodeMigrationVerticle.UUID_HEADER, container.getUuid());
-			options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, project().getUuid());
-			options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, project().getLatestRelease().getUuid());
-			options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, versionA.getUuid());
-			options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, versionB.getUuid());
-			options.setSendTimeout(400 * 1000);
-			CompletableFuture<AsyncResult<Message<Object>>> future = new CompletableFuture<>();
-			vertx().eventBus().send(MICROSCHEMA_MIGRATION_ADDRESS, null, options, (rh) -> {
-				future.complete(rh);
-			});
+			boot().jobRoot().enqueueMicroschemaMigration(project().getLatestRelease(), versionA, versionB);
+			tx.success();
+		}
 
-			AsyncResult<Message<Object>> result = future.get(40, TimeUnit.SECONDS);
-			if (result.cause() != null) {
-				throw result.cause();
-			}
+		triggerAndWaitForMigration();
+
+		try (Tx tx = tx()) {
 
 			// assert that migration worked and created a new version
 			assertThat(firstMicronodeListField.getList().get(0).getMicronode()).as("Old Micronode").isOf(versionA);

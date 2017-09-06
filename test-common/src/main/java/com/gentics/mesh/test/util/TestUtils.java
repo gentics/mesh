@@ -1,7 +1,12 @@
 package com.gentics.mesh.test.util;
 
+import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.Events.MESH_MIGRATION;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.IDLE;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -13,6 +18,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
 
+import com.gentics.mesh.core.rest.admin.migration.MigrationInfo;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.rest.client.MeshRestClient;
 
 import io.vertx.core.json.JsonObject;

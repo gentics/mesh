@@ -1,24 +1,18 @@
 package com.gentics.mesh.graphql.type;
 
-import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_PAGE_TYPE_NAME;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 
-import java.util.stream.Collectors;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.NamedElement;
-import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
-import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.json.JsonUtil;
 
 import graphql.schema.DataFetchingEnvironment;
