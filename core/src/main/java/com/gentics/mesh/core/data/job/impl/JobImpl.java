@@ -224,11 +224,6 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 				if (release == null) {
 					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} cannot be found.");
 				}
-				Project project = release.getProject();
-				if (project == null) {
-					throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} cannot be found.");
-				}
-
 				db.tx(() -> {
 					MeshInternal.get().releaseMigrationHandler().migrateRelease(release).await();
 				});

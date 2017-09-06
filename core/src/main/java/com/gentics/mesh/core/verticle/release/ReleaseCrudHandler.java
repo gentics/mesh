@@ -10,7 +10,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.Iterator;
-import java.util.concurrent.CountDownLatch;
 
 import javax.inject.Inject;
 

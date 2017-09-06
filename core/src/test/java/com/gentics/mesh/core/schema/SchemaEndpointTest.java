@@ -47,6 +47,7 @@ import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -245,7 +246,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
 		request.setDescription("New description");
 		request.addField(FieldUtil.createHtmlFieldSchema("someHtml"));
-		call(() -> client().updateSchema(uuid, request));
+		waitForMigration(() -> {
+			call(() -> client().updateSchema(uuid, request));
+		}, MigrationStatus.COMPLETED);
 
 		// Load the previous version
 		restSchema = call(() -> client().findSchemaByUuid(uuid, new VersioningParametersImpl().setVersion(latestVersion)));
@@ -348,7 +351,10 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		// 2. Add micronode field to content schema
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
-		call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+
+		waitForMigration(() -> {
+			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		}, MigrationStatus.COMPLETED);
 
 		filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream()
 				.filter(microschema -> microschema.getUuid().equals(microschemaUuid)).collect(Collectors.toList());

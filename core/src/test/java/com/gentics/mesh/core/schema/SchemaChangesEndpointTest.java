@@ -131,13 +131,17 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			MigrationStatusResponse migrationStatus = call(() -> client().migrationStatus());
 			assertEquals(IDLE, migrationStatus.getStatus());
 
-			// Trigger migration
 			GenericMessageResponse status = call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
 			expectResponseMessage(status, "schema_changes_applied", "content");
 
 			SchemaResponse schema = call(() -> client().findSchemaByUuid(container.getUuid()));
-			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
-					new SchemaReference().setName("content").setVersion(schema.getVersion())));
+			assertEquals("2.0", schema.getVersion());
+
+			// Trigger migration
+			waitForMigration(() -> {
+				call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
+						new SchemaReference().setName("content").setVersion(schema.getVersion())));
+			}, COMPLETED);
 
 			// Wait a few seconds until the migration has started
 			Thread.sleep(3000);
