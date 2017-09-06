@@ -807,6 +807,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 	}
 
 	@Test
+	@Ignore
 	public void testReadPublishedNodeNoPermission3() {
 		String uuid = tx(() -> content().getUuid());
 		NodeResponse draftResponse = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
