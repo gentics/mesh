@@ -8,6 +8,8 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.util.Map;
+
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -36,6 +38,7 @@ import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -85,8 +88,21 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 		response.setErrorMessage(getErrorMessage());
 		response.setErrorDetail(getErrorDetail());
 		response.setType(getType());
-		response.setReleaseUuid(getRelease().getUuid());
 
+		Map<String, String> props = response.getProperties();
+		props.put("releaseUuid", getRelease().getUuid());
+
+		if (getToSchemaVersion() != null) {
+			props.put("schemaUuid", getToSchemaVersion().getSchemaContainer().getUuid());
+			props.put("fromSchemaVersionUuid", getFromSchemaVersion().getUuid());
+			props.put("toSchemaVersionUuid", getToSchemaVersion().getUuid());
+		}
+
+		if (getToMicroschemaVersion() != null) {
+			props.put("microschemaUuid", getToMicroschemaVersion().getSchemaContainer().getUuid());
+			props.put("fromMicroschemaVersionUuid", getFromMicroschemaVersion().getUuid());
+			props.put("toMicroschemaVersion", getToMicroschemaVersion().getUuid());
+		}
 		return response;
 	}
 
@@ -151,7 +167,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	}
 
 	@Override
-	public MicroschemaContainerVersion getToMicroschemaContainerVersion() {
+	public MicroschemaContainerVersion getToMicroschemaVersion() {
 		return out(HAS_TO_VERSION).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
@@ -214,6 +230,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 
 	@Override
 	public void process() {
+		log.info("Processing job {" + getUuid() + "}");
 		switch (getType()) {
 		case schema:
 			handleNodeMigration();
@@ -233,7 +250,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(getUuid(), Mesh.vertx(), MigrationType.schema);
 		try {
 
-			db.tx(() -> {
+			try (Tx tx = db.tx()) {
 				Release release = getRelease();
 				if (release == null) {
 					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} not found");
@@ -266,12 +283,10 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 				statusHandler.getInfo().setTargetVersion(toContainerVersion.getVersion());
 				statusHandler.updateStatus();
 
-				db.tx(() -> {
-					MeshInternal.get().nodeMigrationHandler().migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusHandler)
-							.await();
-				});
+				MeshInternal.get().nodeMigrationHandler().migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusHandler)
+						.await();
 				statusHandler.done();
-			});
+			}
 		} catch (Exception e) {
 			statusHandler.error(e, "Error while preparing node migration.");
 		}
@@ -285,16 +300,14 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 				log.debug("Release migration for job {" + getUuid() + "} was requested");
 			}
 
-			db.tx(() -> {
+			try (Tx tx = db.tx()) {
 				Release release = getRelease();
 				if (release == null) {
 					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} cannot be found.");
 				}
-				db.tx(() -> {
-					MeshInternal.get().releaseMigrationHandler().migrateRelease(release).await();
-				});
+				MeshInternal.get().releaseMigrationHandler().migrateRelease(release).await();
 				status.done();
-			});
+			}
 		} catch (Exception e) {
 			status.error(e, "Error while preparing release migration.");
 			throw e;
@@ -305,7 +318,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(getUuid(), Mesh.vertx(), MigrationType.microschema);
 		try {
 
-			db.tx(() -> {
+			try (Tx tx = db.tx()) {
 				Release release = getRelease();
 				if (release == null) {
 					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} not found");
@@ -314,7 +327,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 				if (fromContainerVersion == null) {
 					throw error(BAD_REQUEST, "Source version of microschema for job {" + getUuid() + "} could not be found.");
 				}
-				MicroschemaContainerVersion toContainerVersion = getToMicroschemaContainerVersion();
+				MicroschemaContainerVersion toContainerVersion = getToMicroschemaVersion();
 				if (toContainerVersion == null) {
 					throw error(BAD_REQUEST, "Target version of microschema for job {" + getUuid() + "} could not be found.");
 				}
@@ -328,12 +341,10 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 					throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
 				}
 
-				db.tx(() -> {
-					MeshInternal.get().micronodeMigrationHandler()
-							.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusHandler).await();
-				});
+				MeshInternal.get().micronodeMigrationHandler()
+						.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusHandler).await();
 				statusHandler.done();
-			});
+			}
 		} catch (Exception e) {
 			statusHandler.error(e, "Error while preparing micronode migration.");
 		}

@@ -1,5 +1,8 @@
 package com.gentics.mesh.core.rest.job;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
@@ -32,8 +35,8 @@ public class JobResponse extends AbstractResponse {
 	private MigrationType type;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("The release reference information of the job.")
-	private String releaseUuid;
+	@JsonPropertyDescription("Properties of the job.")
+	private Map<String, String> properties = new HashMap<>();
 
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
@@ -59,12 +62,8 @@ public class JobResponse extends AbstractResponse {
 		this.type = type;
 	}
 
-	public String getReleaseUuid() {
-		return releaseUuid;
-	}
-
-	public void setReleaseUuid(String releaseUuid) {
-		this.releaseUuid = releaseUuid;
+	public Map<String, String> getProperties() {
+		return properties;
 	}
 
 	public String getCreated() {

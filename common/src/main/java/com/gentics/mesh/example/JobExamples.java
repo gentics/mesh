@@ -21,7 +21,7 @@ public class JobExamples extends AbstractExamples {
 		response.setCreator(createUserReference());
 		response.setCreated(createTimestamp());
 		response.setType(MigrationType.release);
-		response.setReleaseUuid(randomUUID());
+		response.getProperties().put("releaseUuid", randomUUID());
 		return response;
 	}
 

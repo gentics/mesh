@@ -22,6 +22,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.tx.Tx;
 
 /**
  * @see JobRoot
@@ -122,9 +123,12 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 				if (job.hasFailed()) {
 					continue;
 				}
-				job.process();
-				// Job is done. Remove it from the root
-				job.remove();
+				try (Tx tx = db.tx()) {
+					job.process();
+					// Job is done. Remove it from the root
+					job.remove();
+					tx.success();
+				}
 			} catch (Exception e) {
 				job.markAsFailed(e);
 				log.error("Error while processing job {" + job.getUuid() + "}");

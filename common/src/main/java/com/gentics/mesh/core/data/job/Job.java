@@ -94,7 +94,7 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * 
 	 * @return
 	 */
-	MicroschemaContainerVersion getToMicroschemaContainerVersion();
+	MicroschemaContainerVersion getToMicroschemaVersion();
 
 	/**
 	 * Set the microschema version reference.

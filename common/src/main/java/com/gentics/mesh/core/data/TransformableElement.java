@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.graphdb.model.MeshElement;
 
 import rx.Single;
@@ -13,6 +12,7 @@ import rx.Single;
  * @param <T>
  *            RestModel response class
  */
+@SuppressWarnings("unused")
 public interface TransformableElement<T extends RestModel> extends MeshElement {
 
 	/**

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.job;
 
+import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.assertMessage;
@@ -15,6 +16,7 @@ import static org.junit.Assert.assertNull;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
@@ -87,7 +89,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 		}, FAILED, 1);
 
 		call(() -> client().invokeJobProcessing());
-		TestUtils.sleep(10_000);
+		TestUtils.sleep(5_000);
 		MigrationStatusResponse status = call(() -> client().migrationStatus());
 		assertEquals("No other migration should have been executed.", 1, status.getMigrations().size());
 		assertEquals(jobUuid, status.getMigrations().get(0).getJobUuid());
@@ -121,6 +123,48 @@ public class JobEndpointTest extends AbstractMeshTest {
 		}, FAILED, 1);
 		assertEquals("The job uuid of the job should match up with the migration status info uuid.", jobUuid,
 				response.getMigrations().get(0).getJobUuid());
+
+	}
+
+	@Test
+	public void testReadJob() {
+		String jobUuid = tx(() -> {
+			Job job = boot().jobRoot().enqueueReleaseMigration(user(), initialRelease());
+			return job.getUuid();
+		});
+
+		String job2Uuid = tx(() -> {
+			SchemaContainer schema = schemaContainer("content");
+			Job job = boot().jobRoot().enqueueSchemaMigration(user(), initialRelease(), schema.getLatestVersion(), schema.getLatestVersion());
+			return job.getUuid();
+		});
+
+		String job3Uuid = tx(() -> {
+			SchemaContainer schema = schemaContainer("folder");
+			Job job = boot().jobRoot().enqueueSchemaMigration(user(), initialRelease(), schema.getLatestVersion(), schema.getLatestVersion());
+			return job.getUuid();
+		});
+
+		tx(() -> group().addRole(roles().get("admin")));
+
+		JobResponse jobResponse = call(() -> client().findJobByUuid(job3Uuid));
+		try (Tx tx = tx()) {
+			SchemaContainer schema = schemaContainer("folder");
+			assertEquals(initialReleaseUuid(), jobResponse.getProperties().get("releaseUuid"));
+			assertEquals(schema.getUuid(), jobResponse.getProperties().get("schemaUuid"));
+			assertEquals(schema.getLatestVersion().getUuid(), jobResponse.getProperties().get("toSchemaVersionUuid"));
+			assertEquals(schema.getLatestVersion().getUuid(), jobResponse.getProperties().get("fromSchemaVersionUuid"));
+		}
+
+		waitForMigration(() -> {
+			vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
+		}, null, 3);
+
+		jobResponse = call(() -> client().findJobByUuid(jobUuid));
+		assertEquals(initialReleaseUuid(), jobResponse.getProperties().get("releaseUuid"));
+
+		// The job was processed and removed from the list
+		call(() -> client().findJobByUuid(job2Uuid), NOT_FOUND, "object_not_found_for_uuid", job2Uuid);
 
 	}
 
