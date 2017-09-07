@@ -1167,7 +1167,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	@Override
 	public MeshRequest<Void> resetJob(String uuid) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
-		return prepareRequest(DELETE, "/admin/jobs/" + uuid + "/reset", Void.class);
+		return prepareRequest(DELETE, "/admin/jobs/" + uuid + "/error", Void.class);
 	}
 
 	@Override

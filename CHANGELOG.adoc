@@ -11,6 +11,8 @@ icon:plus[] Node Migration: The node migration performance has been increased.
 icon:check[] Search: The `raw` field will no longer be added by default to the search index. Instead it can be added using the new `searchIndex.addRaw` flag within the schema field.
              Please note that the raw field value in the search index will be automatically truncated to a size of 32KB. Otherwise the value can't be added to search index.
 
+icon:plus[] REST: Added new endpoints `/api/v1/admin/jobs` to list and check queued migration jobs. The new endpoints are described in the link:/docs/beta/features.html#_schema_microschema_migration[feature documentation].
+
 [source,json]
 ----
 {

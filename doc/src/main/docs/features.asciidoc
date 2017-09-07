@@ -1931,6 +1931,29 @@ Finally the changes can be applied by sending the request to ```/api/v1/schemas/
 include::examples/api/request/api/v1/schemas/\{schemaUuid\}/changes/request-body.json[]
 ----
 
+== Executing migrations
+
+Migrations can potentially affect a huge amount of nodes depending on the size of your project. As such the migration could take some time to complete. 
+This is why we designed migrations in ways that they can be executed asynchronously.
+Various operations in Gentics Mesh (eg. Schema update, assigning versions to releases, creating releases) may trigger migrations. 
+Before the migration is being executed a job is added to the job queue. You can view the queue via the `/api/v1/admin/jobs` endpoint. 
+These jobs will be processed and execute the actual migration.
+
+By default updating a schema will create a new schema version and the nodes will be migrated to that new version. 
+If you want to deferre this operation you can set the `updateAssignedReleases` query parameter to false when updating a schema/microschema. 
+This leads to a new schema version being created but the version would not be linked to your current release and no migration would be invoked.
+
+Once a job has been queued and a migration has been invoked the status can be checked via the `/api/v1/admin/status/migrations` endpoint.
+
+A job will only be removed from the job list when the job completed without any error. Erroneous jobs will stay in the job list.
+This way interrupted migrations can be picked up and executed once again.
+
+Intermediate errors may cause a job to fail. In those cases it is possible to reset the error flag of a job by executing `DELETE /api/v1/admin/jobs/:jobUuid/error`.
+The job can run again once the error flag has been cleared. It is possible to invoke `POST /api/v1/admin/processJobs` to trigger a manual event which will start the job processing.
+
+Jobs which keep failing can be permanently removed from the job queue via the `DELETE /api/v1/admin/jobs/:jobUuid` endpoint. 
+Please note that it is only possible to remove jobs which have failed. Jobs which don't fail will automatically be removed from the list.
+
 == Eventbus Bridge & Websocket
 
 The ```/api/v1/eventbus``` endpoint allows clients to access the eventbus. This may be useful if you want to react on specific events.

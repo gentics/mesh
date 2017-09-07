@@ -253,7 +253,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		});
 
 		Endpoint resetJob = createEndpoint();
-		resetJob.path("/jobs/:jobUuid/reset");
+		resetJob.path("/jobs/:jobUuid/error");
 		resetJob.method(DELETE);
 		resetJob.description("Deletes error state from the job. This will make it possible to execute the job once again.");
 		resetJob.addUriParameter("jobUuid", "Uuid of the job.", UUIDUtil.randomUUID());
