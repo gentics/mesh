@@ -56,6 +56,11 @@ public class JobWorkerVerticle extends AbstractVerticle {
 			log.debug("Starting verticle {" + getClass().getName() + "}");
 		}
 		registerJobHandler();
+
+		// The verticle has been deployed. Now wait a few seconds and trigger an event so that remaining jobs will be handled.
+		vertx.setTimer(30_000, rh -> {
+			vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
+		});
 		super.start();
 	}
 
