@@ -238,7 +238,12 @@ public class MeshTestContext extends TestWatcher {
 
 	private void closeClient() throws Exception {
 		if (client != null) {
-			client.close();
+			try {
+				client.close();
+			} catch (IllegalStateException e) {
+				// Ignored
+				e.printStackTrace();
+			}
 		}
 	}
 
