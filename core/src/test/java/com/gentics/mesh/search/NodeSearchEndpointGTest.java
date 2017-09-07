@@ -1,5 +1,6 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -91,15 +92,14 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
 		String microschemaUuid = microschemaResponse.getUuid();
 		// Assigning the microschema to the project is not needed since this is done during schema update
-		//call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaUuid));
+		// call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaUuid));
 
 		// 2. Add micronode field to content schema
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
-		call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		waitForMigration(() -> {
+			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		}, COMPLETED);
 
-		// 4. Wait until the migration is complete and search
-		failingLatch(latch);
 		NodeListResponse response2 = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
 		assertThat(response2.getData()).as("Search result").isNotEmpty();
@@ -125,9 +125,9 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		microschemaUpdate.setName("TestMicroschema");
 		microschemaUpdate.addField(FieldUtil.createStringFieldSchema("textNew"));
 		microschemaUpdate.addField(FieldUtil.createNodeFieldSchema("nodeRefNew").setAllowedSchemas("content"));
-		latch = TestUtils.latchForMigrationCompleted(client());
-		call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
-		failingLatch(latch);
+		waitForMigration(() -> {
+			call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
+		}, COMPLETED);
 
 		// Update the node and populate the new fields
 		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
@@ -145,7 +145,8 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		NodeResponse nodeResponse2 = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeResponse.getUuid()));
 		assertEquals("someNewText", nodeResponse2.getFields().getMicronodeField("micro").getFields().getStringField("textNew").getString());
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(
+				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
 		assertThat(response.getData()).as("Search result").isNotEmpty();
 
 	}

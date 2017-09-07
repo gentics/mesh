@@ -27,6 +27,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -91,12 +92,13 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		//TODO this test should work once the lowercase filter has been applied
+		// TODO this test should work once the lowercase filter has been applied
 		JsonObject query = new JsonObject().put("min_score", 1.0).put("query",
 				new JsonObject().put("match_phrase", new JsonObject().put("fields.content", new JsonObject().put("query", "Hersteller"))));
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query.toString(),
-				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("de")));
+		NodeListResponse response = call(
+				() -> client().searchNodes(PROJECT_NAME, query.toString(), new PagingParametersImpl().setPage(1).setPerPage(2),
+						new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("de")));
 		assertEquals(1, response.getData().size());
 
 		String name = response.getData().get(0).getFields().getStringField("teaser").getString();
@@ -113,7 +115,6 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 2. Assert that the the en, de variant of the node could be found in the search index
 		String uuid = db().tx(() -> content("concorde").getUuid());
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		NodeListResponse response = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid), new PagingParametersImpl().setPage(1).setPerPage(10),
 						new NodeParametersImpl().setLanguages("en", "de"), new VersioningParametersImpl().draft()));
@@ -139,13 +140,14 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 5. Assign the new schema version to the release
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
-		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, db().tx(() -> project().getLatestRelease().getUuid()),
-				new SchemaReference().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
 
 		// Wait for migration to complete
-		failingLatch(latch);
+		waitForMigration(() -> {
+			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, db().tx(() -> project().getLatestRelease().getUuid()),
+					new SchemaReference().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
+		}, MigrationStatus.COMPLETED);
 
-		searchProvider().refreshIndex();
+//		searchProvider().refreshIndex();
 
 		// 6. Assert that the two migrated language variations can be found
 		response = call(

@@ -156,8 +156,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 								version.getVersion());
 					}
 					release.assignSchemaVersion(version);
-
-					jobRoot.enqueueReleaseMigration(release, assignedVersion, version);
+					jobRoot.enqueueSchemaMigration(release, assignedVersion, version);
 				}
 
 				return Tuple.tuple(getSchemaVersions(release), batch);
@@ -206,7 +205,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
 			JobRoot jobRoot = boot.jobRoot();
 
-			return db.tx(() -> {
+			Single<MicroschemaReferenceList> model = db.tx(() -> {
 				// Transform the list of references into microschema container version vertices
 				for (MicroschemaReference reference : microschemaReferenceList) {
 					MicroschemaContainerVersion version = microschemaContainerRoot.fromReference(reference);
@@ -221,6 +220,10 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 				}
 				return getMicroschemaVersions(release);
 			});
+
+			vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
+			return model;
+
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 

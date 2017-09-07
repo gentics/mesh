@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
@@ -40,10 +41,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testRemoveField() throws Exception {
-		// 1. Setup eventbus bridge latch
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-
-		// 2. Create node that uses the microschema
+		// 1. Create node that uses the microschema
 		Node node;
 		MicroschemaContainer microschemaContainer = microschemaContainer("vcard");
 		MicroschemaContainerVersion beforeVersion;
@@ -54,57 +52,29 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 		String microschemaUuid = tx(() -> microschemaContainer.getUuid());
-		// 3. Create changes
+		// 2. Create changes
 		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
 		SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange("firstName");
 		listOfChanges.getChanges().add(change);
 
-		// 4. Invoke migration
 		try (Tx tx = tx()) {
 			assertNull("The schema should not yet have any changes", microschemaContainer.getLatestVersion().getNextChange());
 		}
 
+		// 3. Invoke migration
 		call(() -> client().applyChangesToMicroschema(microschemaUuid, listOfChanges));
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
-		call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
-				new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
+		waitForMigration(() -> {
+			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
+					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
+		}, COMPLETED);
 
-		// 5. Wait for migration to finish
-		failingLatch(latch);
-
-		// 6. Assert migrated node
+		// 4. Assert migrated node
 		try (Tx tx = tx()) {
 			assertNotNull("The change should have been added to the schema.", beforeVersion.getNextChange());
 			NodeGraphFieldContainer fieldContainer = node.getGraphFieldContainer("en");
 			assertNotNull("The node should have a micronode graph field", fieldContainer.getMicronode("micronodeField"));
 		}
-	}
-
-	private Node createMicronodeNode() {
-
-		// 1. Update folder schema
-		SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
-		MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
-		microschemaFieldSchema.setName("micronodeField");
-		microschemaFieldSchema.setLabel("Some label");
-		microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
-		schema.addField(microschemaFieldSchema);
-		schemaContainer("folder").getLatestVersion().setSchema(schema);
-
-		// 2. Create node with vcard micronode
-		MicronodeResponse micronode = new MicronodeResponse();
-		MicroschemaReference ref = new MicroschemaReference();
-		ref.setName("vcard");
-		micronode.setMicroschema(ref);
-		micronode.getFields().put("firstName", new StringFieldImpl().setString("Max"));
-		micronode.getFields().put("lastName", new StringFieldImpl().setString("Mustermann"));
-		NodeResponse response = createNode("micronodeField", micronode);
-		Node node = MeshInternal.get().boot().meshRoot().getNodeRoot().findByUuid(response.getUuid());
-		assertNotNull("The node should have been created.", node);
-		assertNotNull("The node should have a micronode graph field", node.getGraphFieldContainer("en").getMicronode("micronodeField"));
-
-		return node;
-
 	}
 
 	@Test
@@ -151,19 +121,16 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		// 1. Setup new microschema
 		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
 		request.setName(name);
-
-		// 2. Setup eventbus bridged latch
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-
-		// 3. Invoke migration
 		call(() -> client().updateMicroschema(vcardUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(vcardUuid));
-		call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
-				new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
+
+		// 2. Invoke migration
+		waitForMigration(() -> {
+			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
+					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
+		}, COMPLETED);
 
 		try (Tx tx = tx()) {
-			// 4. Wait and assert
-			failingLatch(latch);
 			assertEquals("The name of the microschema was not updated", name, beforeVersion.getNextVersion().getName());
 		}
 	}
@@ -181,6 +148,33 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 			call(() -> client().updateMicroschema(microschema.getUuid(), request), CONFLICT, "schema_conflicting_name", name);
 			assertEquals("The name of the microschema was updated but it should not.", originalSchemaName, microschema.getName());
 		}
+	}
+
+	private Node createMicronodeNode() {
+
+		// 1. Update folder schema
+		SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+		MicronodeFieldSchema microschemaFieldSchema = new MicronodeFieldSchemaImpl();
+		microschemaFieldSchema.setName("micronodeField");
+		microschemaFieldSchema.setLabel("Some label");
+		microschemaFieldSchema.setAllowedMicroSchemas(new String[] { "vcard" });
+		schema.addField(microschemaFieldSchema);
+		schemaContainer("folder").getLatestVersion().setSchema(schema);
+
+		// 2. Create node with vcard micronode
+		MicronodeResponse micronode = new MicronodeResponse();
+		MicroschemaReference ref = new MicroschemaReference();
+		ref.setName("vcard");
+		micronode.setMicroschema(ref);
+		micronode.getFields().put("firstName", new StringFieldImpl().setString("Max"));
+		micronode.getFields().put("lastName", new StringFieldImpl().setString("Mustermann"));
+		NodeResponse response = createNode("micronodeField", micronode);
+		Node node = MeshInternal.get().boot().meshRoot().getNodeRoot().findByUuid(response.getUuid());
+		assertNotNull("The node should have been created.", node);
+		assertNotNull("The node should have a micronode graph field", node.getGraphFieldContainer("en").getMicronode("micronodeField"));
+
+		return node;
+
 	}
 
 }

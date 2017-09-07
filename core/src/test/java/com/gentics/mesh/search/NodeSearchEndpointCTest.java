@@ -1,5 +1,6 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.expectResponseMessage;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
@@ -202,7 +203,9 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		SchemaUpdateRequest request = tx(
 				() -> JsonUtil.readValue(content().getSchemaContainer().getLatestVersion().getJson(), SchemaUpdateRequest.class));
 		request.getField("teaser").setIndexOptions(new IndexOptions().setAddRaw(true));
-		call(() -> client().updateSchema(schemaUuid, request));
+		waitForMigration(() -> {
+			call(() -> client().updateSchema(schemaUuid, request));
+		}, COMPLETED);
 	}
 
 	@Test

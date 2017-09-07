@@ -14,7 +14,6 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
@@ -35,9 +34,9 @@ import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
+import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
-import io.vertx.core.eventbus.DeliveryOptions;
 import rx.Single;
 
 public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaContainer, MicroschemaResponse> {
@@ -80,18 +79,19 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			if (model.getChanges().isEmpty()) {
 				return message(ac, "schema_update_no_difference_detected", name);
 			}
-			db.tx(() -> {
+			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
+			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
 				JobRoot jobRoot = boot.get().jobRoot();
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
-				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 				if (updateParams.getUpdateAssignedReleases()) {
 					Map<Release, MicroschemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
 
 					// Assign the created version to the found releases
 					for (Map.Entry<Release, MicroschemaContainerVersion> releaseEntry : referencedReleases.entrySet()) {
 						Release release = releaseEntry.getKey();
+
 						// Check whether a list of release names was specified and skip releases which were not included in the list.
 						List<String> releaseNames = updateParams.getReleaseNames();
 						if (releaseNames != null && !releaseNames.isEmpty() && !releaseNames.contains(release.getName())) {
@@ -103,16 +103,20 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 						// Assign the new version to the release
 						release.assignMicroschemaVersion(createdVersion);
 
-						// start microschema migration
+						// Enqueue the job so that the worker can process it later on
 						jobRoot.enqueueMicroschemaMigration(release, previouslyReferencedVersion, createdVersion);
-						Mesh.vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
-
 					}
 				}
+				return Tuple.tuple(batch, createdVersion.getVersion());
+			});
 
-				return batch;
-			}).processSync();
-			return message(ac, "migration_invoked", name);
+			info.v1().processSync();
+			if (updateParams.getUpdateAssignedReleases()) {
+				vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
+				return message(ac, "schema_updated_migration_invoked", name, info.v2());
+			} else {
+				return message(ac, "schema_updated_migration_deferred", name, info.v2());
+			}
 
 		}, model -> ac.send(model, OK));
 

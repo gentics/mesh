@@ -12,7 +12,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -47,7 +46,6 @@ import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
@@ -98,9 +96,9 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			}
 
 			JobRoot jobRoot = boot.get().meshRoot().getJobRoot();
+			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 
-			List<DeliveryOptions> events = new ArrayList<>();
-			SearchQueueBatch currentBatch = db.tx(() -> {
+			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
 
 				// Check whether there are any microschemas which are referenced by the schema
 				for (FieldSchema field : requestModel.getFields()) {
@@ -135,15 +133,12 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 					}
 				}
 
-				events.clear();
-
 				// 3. Apply the found changes to the schema
 				SearchQueueBatch batch = searchQueue.create();
 				SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				// Check whether the assigned releases of the schema should also directly be updated.
 				// This will trigger a node migration.
-				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 				if (updateParams.getUpdateAssignedReleases()) {
 					Map<Release, SchemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
 
@@ -162,26 +157,20 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						// Assign the new version to the release
 						release.assignSchemaVersion(createdVersion);
 
-						if (log.isDebugEnabled()) {
-							log.debug("Preparing node migration for release {" + releaseEntry.getKey().getUuid() + "}");
-						}
-						String fromVersion = previouslyReferencedVersion.getUuid();
-						String toVersion = createdVersion.getUuid();
-						String schemaUuid = createdVersion.getSchemaContainer().getUuid();
-						if (log.isDebugEnabled()) {
-							log.debug("Migrating nodes from schema version {" + fromVersion + "} to {" + toVersion + "} for schema with uuid {"
-									+ schemaUuid + "}");
-						}
-
-						// Add new job to jobqueue
+						// Enqueue the job so that the worker can process it later on
 						jobRoot.enqueueSchemaMigration(release, previouslyReferencedVersion, createdVersion);
 					}
 				}
-				return batch;
+				return Tuple.tuple(batch, createdVersion.getVersion());
 			});
-			vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
-			currentBatch.processSync();
-			return message(ac, "migration_invoked", schemaName);
+
+			info.v1().processSync();
+			if (updateParams.getUpdateAssignedReleases()) {
+				vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
+				return message(ac, "schema_updated_migration_invoked", schemaName, info.v2());
+			} else {
+				return message(ac, "schema_updated_migration_deferred", schemaName, info.v2());
+			}
 
 		}, model -> ac.send(model, OK));
 	}
@@ -237,25 +226,6 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 					// Assign the schema to the project
 					if (!root.contains(schema)) {
 						root.addSchemaContainer(schema);
-
-						// // Check whether there are any microschemas which are referenced by the schema
-						// for (FieldSchema field : schema.getLatestVersion().getSchema().getFields()) {
-						// if (field instanceof MicronodeFieldSchema) {
-						// MicronodeFieldSchema microschemaField = (MicronodeFieldSchema) field;
-						// for (String microschemaName : microschemaField.getAllowedMicroSchemas()) {
-						// // schema_error_microschema_reference_no_perm
-						// MicroschemaContainer microschema = ac.getProject().getMicroschemaContainerRoot().findByName(microschemaName);
-						// if (microschema == null) {
-						// throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
-						// }
-						// if (ac.getUser().hasPermission(microschema, READ_PERM)) {
-						// throw error(BAD_REQUEST, "schema_error_microschema_reference_no_perm", microschemaName, field.getName());
-						// }
-						// project.getMicroschemaContainerRoot().addMicroschema(microschema);
-						// }
-						// }
-						// }
-
 						String releaseUuid = project.getLatestRelease().getUuid();
 						SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
 						batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
@@ -322,12 +292,13 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 		utils.operateTx(ac, () -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-			db.tx(() -> {
+			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				schema.getLatestVersion().applyChanges(ac, batch);
-				return batch;
-			}).processSync();
-			return message(ac, "schema_changes_applied", schema.getName());
+				SchemaContainerVersion newVersion = schema.getLatestVersion().applyChanges(ac, batch);
+				return Tuple.tuple(batch, newVersion.getVersion());
+			});
+			info.v1().processSync();
+			return message(ac, "schema_changes_applied", schema.getName(), info.v2());
 		}, model -> ac.send(model, OK));
 
 	}
