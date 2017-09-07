@@ -1313,4 +1313,9 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		return null;
 	}
 
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeJobProcessing() {
+		return null;
+	}
+
 }

@@ -6,7 +6,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PER
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.IDLE;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.expectResponseMessage;
+import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
@@ -76,7 +76,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		waitForMigration(() -> {
 			// Invoke the update of the schema which will trigger the node migration
 			GenericMessageResponse message = call(() -> client().updateSchema(schemaUuid, request));
-			expectResponseMessage(message, "schema_updated_migration_invoked", "content", "2.0");
+			assertMessage(message, "schema_updated_migration_invoked", "content", "2.0");
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
@@ -130,7 +130,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertEquals(IDLE, migrationStatus.getStatus());
 
 			GenericMessageResponse status = call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
-			expectResponseMessage(status, "schema_changes_applied", "content");
+			assertMessage(status, "schema_changes_applied", "content");
 
 			SchemaResponse schema = call(() -> client().findSchemaByUuid(container.getUuid()));
 			assertEquals("2.0", schema.getVersion());
@@ -176,7 +176,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		// Trigger migration
 		GenericMessageResponse status = call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
-		expectResponseMessage(status, "schema_changes_applied", "content");
+		assertMessage(status, "schema_changes_applied", "content");
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
 				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
@@ -220,7 +220,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		try (Tx tx = tx()) {
 			GenericMessageResponse status = call(() -> client().updateSchema(schemaContainer.getUuid(), request,
 					new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
-			expectResponseMessage(status, "schema_updated_migration_deferred", request.getName(), "2.0");
+			assertMessage(status, "schema_updated_migration_deferred", request.getName(), "2.0");
 			// 5. assign the new schema version to the release (which will start the migration)
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaContainer.getUuid()));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
@@ -369,7 +369,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// 3. Invoke migration
 		GenericMessageResponse status = call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
-		expectResponseMessage(status, "schema_changes_applied", "content");
+		assertMessage(status, "schema_changes_applied", "content");
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
 				new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
@@ -449,7 +449,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// 3. Invoke migration
 			GenericMessageResponse status = call(() -> client().applyChangesToSchema(containerUuid, listOfChanges));
-			expectResponseMessage(status, "schema_changes_applied", "content");
+			assertMessage(status, "schema_changes_applied", "content");
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(containerUuid));
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid,
 					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
@@ -508,7 +508,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 			// Update the schema server side
 			GenericMessageResponse status = call(() -> client().updateSchema(container.getUuid(), schema));
-			expectResponseMessage(status, "schema_update_no_difference_detected");
+			assertMessage(status, "schema_update_no_difference_detected");
 		}
 	}
 
@@ -530,7 +530,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		// 3. Update the schema server side -> 2.0
 		GenericMessageResponse status = call(
 				() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
-		expectResponseMessage(status, "schema_updated_migration_deferred", "content", "2.0");
+		assertMessage(status, "schema_updated_migration_deferred", "content", "2.0");
 
 		// 4. Assign the new schema version to the release
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));

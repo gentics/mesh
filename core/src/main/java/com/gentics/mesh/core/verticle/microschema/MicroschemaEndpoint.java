@@ -96,7 +96,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.description(
 				"Apply the provided changes on the latest version of the schema and migrate all nodes which are based on the schema. Please note that this operation is non-blocking and will continue to run in the background.");
 		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Microschema migration was invoked.");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Microschema migration was invoked.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String schemaUuid = ac.getParameter("microschemaUuid");
@@ -160,7 +160,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		endpoint.consumes(APPLICATION_JSON);
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaUpdateRequest());
 		// endpoint.exampleResponse(OK, microschemaExamples.getGeolocationMicroschemaResponse(), "Updated microschema.");
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Migration message.");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Migration message.");
 		endpoint.description("Update the microschema with the given uuid.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);

@@ -2,7 +2,7 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.expectResponseMessage;
+import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getRangeQuery;
@@ -190,7 +190,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		searchProvider().refreshIndex();
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());
-		expectResponseMessage(message, "search_admin_reindex_invoked");
+		assertMessage(message, "search_admin_reindex_invoked");
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("fields.teaser.raw", "Concorde_english_name"),
 				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft()));

@@ -26,7 +26,7 @@ public class MiscExamples extends AbstractExamples {
 		return status;
 	}
 
-	public GenericMessageResponse getMessageResponse() {
+	public GenericMessageResponse createMessageResponse() {
 		// TODO allow for custom messages
 		GenericMessageResponse message = new GenericMessageResponse();
 		message.setMessage("I18n message");

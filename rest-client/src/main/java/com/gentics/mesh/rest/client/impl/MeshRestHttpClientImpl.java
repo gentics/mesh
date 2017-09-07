@@ -1170,4 +1170,9 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		return prepareRequest(DELETE, "/admin/jobs/" + uuid + "/reset", Void.class);
 	}
 
+	@Override
+	public MeshRequest<GenericMessageResponse> invokeJobProcessing() {
+		return prepareRequest(POST, "/admin/processJobs", GenericMessageResponse.class);
+	}
+
 }

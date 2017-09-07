@@ -365,7 +365,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
 		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
-		endpoint.exampleResponse(CONFLICT, miscExamples.getMessageResponse(), "A conflict has been detected.");
+		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");

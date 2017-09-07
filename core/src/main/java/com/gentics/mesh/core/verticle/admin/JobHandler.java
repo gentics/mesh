@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.verticle.admin;
 
+import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
@@ -128,6 +130,21 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			Job job = root.loadObjectByUuidNoPerm(uuid, true);
 			job.removeErrorState();
 			return job.transformToRestSync(ac, 0);
+		}, (model) -> ac.send(model, OK));
+	}
+
+	/**
+	 * Invoke the job worker verticle.
+	 * 
+	 * @param ac
+	 */
+	public void handleInvokeJobWorker(InternalActionContext ac) {
+		utils.operateTx(ac, (tx) -> {
+			if (!ac.getUser().hasAdminRole()) {
+				throw error(FORBIDDEN, "error_admin_permission_required");
+			}
+			vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
+			return message(ac, "job_processing_invoked");
 		}, (model) -> ac.send(model, OK));
 	}
 }

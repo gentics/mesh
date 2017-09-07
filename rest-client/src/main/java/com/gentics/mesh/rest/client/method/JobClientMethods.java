@@ -1,5 +1,6 @@
 package com.gentics.mesh.rest.client.method;
 
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -42,5 +43,12 @@ public interface JobClientMethods {
 	 * @return
 	 */
 	MeshRequest<Void> resetJob(String uuid);
+
+	/**
+	 * Manually invoke the job processing.
+	 * 
+	 * @return
+	 */
+	MeshRequest<GenericMessageResponse> invokeJobProcessing();
 
 }

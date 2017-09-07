@@ -59,7 +59,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		endpoint.method(GET);
 		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		endpoint.description("Invoked the node migration for not yet migrated nodes of schemas that are assigned to the release.");
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "schema_migration_invoked");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -74,7 +74,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		endpoint.method(GET);
 		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		endpoint.description("Invoked the micronode migration for not yet migrated micronodes of microschemas that are assigned to the release.");
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "schema_migration_invoked");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);

@@ -2,7 +2,7 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.expectResponseMessage;
+import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
@@ -133,7 +133,7 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		// 4. Invoke the schema migration
 		GenericMessageResponse message = call(
 				() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
-		expectResponseMessage(message, "schema_updated_migration_deferred", "content", "2.0");
+		assertMessage(message, "schema_updated_migration_deferred", "content", "2.0");
 
 		// 5. Assign the new schema version to the release
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));

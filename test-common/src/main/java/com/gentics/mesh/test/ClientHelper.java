@@ -167,7 +167,7 @@ public final class ClientHelper {
 		assertEquals(msg, expectedJson, sanitizedJson);
 	}
 
-	public static void expectResponseMessage(GenericMessageResponse response, String i18nKey, String... i18nParams) {
+	public static void assertMessage(GenericMessageResponse response, String i18nKey, String... i18nParams) {
 		Locale en = Locale.ENGLISH;
 		String message = I18NUtil.get(en, i18nKey, i18nParams);
 		assertEquals("The response message does not match.", message, response.getMessage());

@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.admin;
 
 import static com.gentics.mesh.test.ClientHelper.call;
-import static com.gentics.mesh.test.ClientHelper.expectResponseMessage;
+import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.TestSize.PROJECT;
 
 import java.io.IOException;
@@ -24,10 +24,10 @@ public class AdminEndpointBackupTest extends AbstractMeshTest {
 			tx.success();
 		}
 		GenericMessageResponse message = call(() -> client().invokeBackup());
-		expectResponseMessage(message, "backup_finished");
+		assertMessage(message, "backup_finished");
 
 		message = call(() -> client().invokeRestore());
-		expectResponseMessage(message, "restore_finished");
+		assertMessage(message, "restore_finished");
 	}
 
 	@Test
@@ -38,10 +38,10 @@ public class AdminEndpointBackupTest extends AbstractMeshTest {
 			tx.success();
 		}
 		GenericMessageResponse message = call(() -> client().invokeExport());
-		expectResponseMessage(message, "export_finished");
+		assertMessage(message, "export_finished");
 
 		message = call(() -> client().invokeImport());
-		expectResponseMessage(message, "import_finished");
+		assertMessage(message, "import_finished");
 	}
 
 }

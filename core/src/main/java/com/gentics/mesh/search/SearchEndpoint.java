@@ -127,7 +127,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 		statusEndpoint.method(GET);
 		statusEndpoint.description("Returns the search index status.");
 		statusEndpoint.produces(APPLICATION_JSON);
-		statusEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Search index status.");
+		statusEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Search index status.");
 		statusEndpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			searchHandler.handleStatus(ac);
@@ -138,7 +138,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 		createMappings.method(GET);
 		createMappings.produces(APPLICATION_JSON);
 		createMappings.description("Create search index mappings.");
-		createMappings.exampleResponse(OK, miscExamples.getMessageResponse(), "Create all mappings.");
+		createMappings.exampleResponse(OK, miscExamples.createMessageResponse(), "Create all mappings.");
 		createMappings.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			searchHandler.createMappings(ac);
@@ -149,7 +149,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 		reindexEndpoint.method(GET);
 		reindexEndpoint.produces(APPLICATION_JSON);
 		reindexEndpoint.description("Invokes a full reindex of the search indices. This operation may take some time to complete.");
-		reindexEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Invoked reindex command for all elements.");
+		reindexEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Invoked reindex command for all elements.");
 		reindexEndpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			searchHandler.handleReindex(ac);

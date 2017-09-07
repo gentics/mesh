@@ -76,7 +76,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		endpoint.description("Apply the posted changes to the schema. The schema migration will not automatically be started.");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(schemaExamples.getSchemaChangesListModel());
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Schema changes have been applied.");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Schema changes have been applied.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String schemaUuid = ac.getParameter("schemaUuid");

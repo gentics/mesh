@@ -109,7 +109,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.method(POST);
 		endpoint.description("Invoke a orientdb graph database export.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Export process was invoked.");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Export process was invoked.");
 		endpoint.handler(rc -> {
 			adminHandler.handleExport(new InternalRoutingActionContextImpl(rc));
 		});
@@ -122,7 +122,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.description(
 				"Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Database import command was invoked.");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database import command was invoked.");
 		endpoint.handler(rc -> {
 			adminHandler.handleImport(new InternalRoutingActionContextImpl(rc));
 		});
@@ -134,7 +134,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.description(
 				"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effecivly destroy all previously stored data.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Database restore command was invoked.");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database restore command was invoked.");
 		endpoint.method(POST);
 		endpoint.handler(rc -> {
 			adminHandler.handleRestore(new InternalRoutingActionContextImpl(rc));
@@ -148,7 +148,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.description(
 				"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Incremental backup was invoked.");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Incremental backup was invoked.");
 		endpoint.handler(rc -> {
 			adminHandler.handleBackup(new InternalRoutingActionContextImpl(rc));
 		});
@@ -205,6 +205,18 @@ public class AdminEndpoint extends AbstractEndpoint {
 	// }
 
 	private void addJobHandler() {
+
+		Endpoint invokeJobWorker = createEndpoint();
+		invokeJobWorker.path("/processJobs");
+		invokeJobWorker.method(POST);
+		invokeJobWorker.description("Invoke the processing of remaining jobs.");
+		invokeJobWorker.produces(APPLICATION_JSON);
+		invokeJobWorker.exampleResponse(OK, miscExamples.createMessageResponse(), "Response message.");
+		invokeJobWorker.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			jobHandler.handleInvokeJobWorker(ac);
+		});
+
 		Endpoint readJobList = createEndpoint();
 		readJobList.path("/jobs");
 		readJobList.method(GET);
@@ -239,7 +251,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 			String uuid = ac.getParameter("jobUuid");
 			jobHandler.handleDelete(ac, uuid);
 		});
-		
+
 		Endpoint resetJob = createEndpoint();
 		resetJob.path("/jobs/:jobUuid/reset");
 		resetJob.method(DELETE);
