@@ -16,7 +16,7 @@ public class ProjectUpdateRequest implements RestModel {
 	/**
 	 * Return the project name.
 	 * 
-	 * @return
+	 * @return New project name
 	 */
 	public String getName() {
 		return name;
@@ -26,6 +26,7 @@ public class ProjectUpdateRequest implements RestModel {
 	 * Set the project name.
 	 * 
 	 * @param name
+	 *            New name of the project
 	 * @return Fluent API
 	 */
 	public ProjectUpdateRequest setName(String name) {

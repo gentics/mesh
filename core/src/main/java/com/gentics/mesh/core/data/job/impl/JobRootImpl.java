@@ -59,7 +59,8 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueMicroschemaMigration(User creator, Release release, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion) {
+	public Job enqueueMicroschemaMigration(User creator, Release release, MicroschemaContainerVersion fromVersion,
+			MicroschemaContainerVersion toVersion) {
 		Job job = getGraph().addFramedVertex(JobImpl.class);
 		job.setType(MigrationType.microschema);
 		job.setCreated(creator);
@@ -117,6 +118,10 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		Iterable<? extends Job> it = findAllIt();
 		for (Job job : it) {
 			try {
+				// Don't execute failed jobs again
+				if (job.hasFailed()) {
+					continue;
+				}
 				job.process();
 				// Job is done. Remove it from the root
 				job.remove();

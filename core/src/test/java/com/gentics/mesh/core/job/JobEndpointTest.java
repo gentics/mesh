@@ -21,6 +21,7 @@ import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.util.TestUtils;
 import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT_AND_NODE, startServer = true)
@@ -67,6 +68,32 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	}
 
+	/**
+	 * Verify that no failed jobs are executed again. Those jobs must be ignored by the job worker verticle.
+	 */
+	@Test
+	public void testHandlingOfFailedJobs() {
+
+		String jobUuid = tx(() -> {
+			Job job = boot().jobRoot().enqueueReleaseMigration(user(), initialRelease());
+			return job.getUuid();
+		});
+
+		tx(() -> group().addRole(roles().get("admin")));
+
+		waitForMigration(() -> {
+			GenericMessageResponse msg = call(() -> client().invokeJobProcessing());
+			assertMessage(msg, "job_processing_invoked");
+		}, FAILED, 1);
+
+		call(() -> client().invokeJobProcessing());
+		TestUtils.sleep(10_000);
+		MigrationStatusResponse status = call(() -> client().migrationStatus());
+		assertEquals("No other migration should have been executed.", 1, status.getMigrations().size());
+		assertEquals(jobUuid, status.getMigrations().get(0).getJobUuid());
+
+	}
+
 	@Test
 	public void testLoadBogusJob() {
 		try (Tx tx = tx()) {
@@ -93,7 +120,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 			assertMessage(msg, "job_processing_invoked");
 		}, FAILED, 1);
 		assertEquals("The job uuid of the job should match up with the migration status info uuid.", jobUuid,
-				response.getMigrations().get(0).getUuid());
+				response.getMigrations().get(0).getJobUuid());
 
 	}
 
