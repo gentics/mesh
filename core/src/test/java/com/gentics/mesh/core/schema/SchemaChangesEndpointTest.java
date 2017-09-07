@@ -77,7 +77,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// Invoke the update of the schema which will trigger the node migration
 			GenericMessageResponse message = call(() -> client().updateSchema(schemaUuid, request));
 			expectResponseMessage(message, "schema_updated_migration_invoked", "content", "2.0");
-		}, COMPLETED);
+		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
 			assertEquals("The name of the old version should not be updated", "content", currentVersion.getName());
@@ -139,7 +139,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			waitForMigration(() -> {
 				call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
 						new SchemaReference().setName("content").setVersion(schema.getVersion())));
-			}, COMPLETED);
+			}, COMPLETED, 1);
 		}
 
 	}
@@ -538,7 +538,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		waitForMigration(() -> {
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
 					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
-		}, COMPLETED);
+		}, COMPLETED, 1);
 
 		Schema reloadedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 		assertEquals("The segment field slug should be set", "slug", reloadedSchema.getSegmentField());

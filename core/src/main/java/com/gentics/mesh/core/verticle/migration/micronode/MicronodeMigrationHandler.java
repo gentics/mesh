@@ -74,7 +74,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		}
 
 		if (status != null) {
-			status.getInfo().setTotal(fieldContainers.size());
+			status.getInfo().setCompleted(fieldContainers.size());
 		}
 
 		// Collect the migration scripts
@@ -151,7 +151,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 			}
 
 			if (status != null) {
-				status.getInfo().incDone();
+				status.getInfo().incCompleted();
 			}
 		}
 

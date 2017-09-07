@@ -132,10 +132,14 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	 * Execute the action and check that the migration is executed and yields the given status.
 	 * 
 	 * @param action
+	 *            Action to be invoked. This action should trigger the migrations
 	 * @param status
+	 *            Expected migration status for all migrations. No assertion will be performed when the status is null
+	 * @param expectedMigrations
+	 *            Amount of expected migrations
 	 * @return Migration status
 	 */
-	protected MigrationStatusResponse waitForMigration(Action0 action, MigrationStatus status) {
+	protected MigrationStatusResponse waitForMigration(Action0 action, MigrationStatus status, int expectedMigrations) {
 		// Load a status just before the action
 		MigrationStatusResponse before = call(() -> client().migrationStatus());
 
@@ -147,7 +151,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 		for (int i = 0; i < MAX_WAIT; i++) {
 			MigrationStatusResponse response = call(() -> client().migrationStatus());
 			MigrationStatus currentStatus = response.getStatus();
-			if (currentStatus == IDLE && response.getMigrations().size() > before.getMigrations().size()) {
+			if (currentStatus == IDLE && response.getMigrations().size() == before.getMigrations().size() + expectedMigrations) {
 				if (status != null) {
 					for (MigrationInfo info : response.getMigrations()) {
 						assertEquals("One migration did not finish {\n" + info.toJson() + "\n} with the expected status.", status, info.getStatus());
@@ -183,7 +187,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	protected MigrationStatusResponse triggerAndWaitForMigration(MigrationStatus status) {
 		return waitForMigration(() -> {
 			vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
-		}, status);
+		}, status, 1);
 	}
 
 }

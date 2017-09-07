@@ -67,7 +67,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		waitForMigration(() -> {
 			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
 					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
-		}, COMPLETED);
+		}, COMPLETED, 1);
 
 		// 4. Assert migrated node
 		try (Tx tx = tx()) {
@@ -128,7 +128,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		waitForMigration(() -> {
 			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
 					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
-		}, COMPLETED);
+		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
 			assertEquals("The name of the microschema was not updated", name, beforeVersion.getNextVersion().getName());

@@ -23,8 +23,7 @@ public class AdminExamples {
 	public MigrationStatusResponse createMigrationStatusResponse() {
 		MigrationStatusResponse status = new MigrationStatusResponse();
 		MigrationInfo info = new MigrationInfo();
-		info.setDone(20);
-		info.setTotal(150);
+		info.setCompleted(20);
 		info.setNodeName("local");
 		info.setStatus(MigrationStatus.RUNNING);
 		info.setSourceName("content");

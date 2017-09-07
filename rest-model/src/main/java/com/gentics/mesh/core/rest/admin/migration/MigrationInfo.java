@@ -42,11 +42,7 @@ public class MigrationInfo implements RestModel, Comparable<MigrationInfo> {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The amount of elements which have already been processed.")
-	private int done;
-
-	@JsonProperty(required = true)
-	@JsonPropertyDescription("The amount of elements which need to be processed.")
-	private int total;
+	private int completed;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The target version of the element which was used to start the migration.")
@@ -262,43 +258,21 @@ public class MigrationInfo implements RestModel, Comparable<MigrationInfo> {
 	}
 
 	/**
-	 * Return the total amount of elements which will be processed.
+	 * Return the amount of completed elements.
 	 * 
 	 * @return
 	 */
-	public int getTotal() {
-		return total;
+	public int getCompleted() {
+		return completed;
 	}
 
 	/**
-	 * Set the total amount of elements which will be processed.
+	 * Set the amount of completed elements.
 	 * 
-	 * @param total
-	 * @return
+	 * @param completed
 	 */
-	public MigrationInfo setTotal(int total) {
-		this.total = total;
-		return this;
-	}
-
-	/**
-	 * Return the count of elements which have been processed.
-	 * 
-	 * @return
-	 */
-	public int getDone() {
-		return done;
-	}
-
-	/**
-	 * Set the count of elements which have been processed.
-	 * 
-	 * @param done
-	 * @return
-	 */
-	public MigrationInfo setDone(int done) {
-		this.done = done;
-		return this;
+	public void setCompleted(int completed) {
+		this.completed = completed;
 	}
 
 	/**
@@ -326,8 +300,8 @@ public class MigrationInfo implements RestModel, Comparable<MigrationInfo> {
 	 * 
 	 * @return
 	 */
-	public MigrationInfo incDone() {
-		this.done++;
+	public MigrationInfo incCompleted() {
+		this.completed++;
 		return this;
 	}
 
@@ -351,8 +325,7 @@ public class MigrationInfo implements RestModel, Comparable<MigrationInfo> {
 
 	@Override
 	public String toString() {
-		return getType() + " on {" + getStartDate() + "} @ {" + getNodeName() + "} with status {" + getStatus() + "} - " + getDone() + "/"
-				+ getTotal();
+		return getType() + " on {" + getStartDate() + "} @ {" + getNodeName() + "} with status {" + getStatus() + "} - " + getCompleted();
 	}
 
 	@Override

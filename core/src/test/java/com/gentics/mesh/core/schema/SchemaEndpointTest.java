@@ -248,7 +248,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		request.addField(FieldUtil.createHtmlFieldSchema("someHtml"));
 		waitForMigration(() -> {
 			call(() -> client().updateSchema(uuid, request));
-		}, MigrationStatus.COMPLETED);
+		}, MigrationStatus.COMPLETED, 1);
 
 		// Load the previous version
 		restSchema = call(() -> client().findSchemaByUuid(uuid, new VersioningParametersImpl().setVersion(latestVersion)));
@@ -354,7 +354,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		waitForMigration(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-		}, MigrationStatus.COMPLETED);
+		}, MigrationStatus.COMPLETED, 1);
 
 		filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream()
 				.filter(microschema -> microschema.getUuid().equals(microschemaUuid)).collect(Collectors.toList());

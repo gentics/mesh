@@ -98,7 +98,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
 		waitForMigration(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
-		}, COMPLETED);
+		}, COMPLETED, 1);
 
 		NodeListResponse response2 = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
@@ -127,7 +127,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		microschemaUpdate.addField(FieldUtil.createNodeFieldSchema("nodeRefNew").setAllowedSchemas("content"));
 		waitForMigration(() -> {
 			call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
-		}, COMPLETED);
+		}, COMPLETED, 1);
 
 		// Update the node and populate the new fields
 		NodeUpdateRequest updateRequest = new NodeUpdateRequest();

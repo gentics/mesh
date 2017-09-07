@@ -110,7 +110,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			}
 
 			if (status != null) {
-				status.getInfo().incDone();
+				status.getInfo().incCompleted();
 			}
 			if (count % 50 == 0) {
 				log.info("Migrated containers: " + count);

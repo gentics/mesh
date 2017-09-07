@@ -205,7 +205,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		request.getField("teaser").setIndexOptions(new IndexOptions().setAddRaw(true));
 		waitForMigration(() -> {
 			call(() -> client().updateSchema(schemaUuid, request));
-		}, COMPLETED);
+		}, COMPLETED, 1);
 	}
 
 	@Test
