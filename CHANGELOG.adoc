@@ -13,6 +13,8 @@ icon:check[] Search: The `raw` field will no longer be added by default to the s
 
 icon:plus[] REST: Added new endpoints `/api/v1/admin/jobs` to list and check queued migration jobs. The new endpoints are described in the link:/docs/beta/features.html#_schema_microschema_migration[feature documentation].
 
+icon:check[] Migration: Interrupted migrations will now automatically be started again after the server has been started.
+
 [source,json]
 ----
 {
