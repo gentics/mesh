@@ -68,7 +68,7 @@ import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
 import com.syncleus.ferma.ext.orientdb.OrientDBTx;
 import com.syncleus.ferma.tx.Tx;
-import com.syncleus.ferma.tx.TxHandler;
+import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -731,7 +731,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T> T tx(TxHandler<T> txHandler) {
+	public <T> T tx(TxAction<T> txHandler) {
 		/**
 		 * OrientDB uses the MVCC pattern which requires a retry of the code that manipulates the graph in cases where for example an
 		 * {@link OConcurrentModificationException} is thrown.

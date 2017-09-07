@@ -19,7 +19,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.elasticsearch.common.collect.Tuple;
 
-import com.syncleus.ferma.tx.TxHandler1;
+import com.syncleus.ferma.tx.TxAction1;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -430,7 +430,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 * @param handler
 	 *            Handler which provides the root vertex which will be used to locate the node
 	 */
-	protected void readElement(InternalActionContext ac, String uuid, TxHandler1<RootVertex<Node>> handler) {
+	protected void readElement(InternalActionContext ac, String uuid, TxAction1<RootVertex<Node>> handler) {
 		validateParameter(uuid, "uuid");
 
 		utils.operateTx(ac, () -> {

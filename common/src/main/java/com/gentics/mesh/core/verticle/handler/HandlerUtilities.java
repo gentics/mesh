@@ -30,10 +30,10 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.UUIDUtil;
-import com.syncleus.ferma.tx.TxHandler;
-import com.syncleus.ferma.tx.TxHandler0;
-import com.syncleus.ferma.tx.TxHandler1;
-import com.syncleus.ferma.tx.TxHandler2;
+import com.syncleus.ferma.tx.TxAction;
+import com.syncleus.ferma.tx.TxAction0;
+import com.syncleus.ferma.tx.TxAction1;
+import com.syncleus.ferma.tx.TxAction2;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
@@ -63,7 +63,7 @@ public class HandlerUtilities {
 	 * @param ac
 	 * @param handler
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, TxHandler1<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler) {
 		createOrUpdateElement(ac, null, handler);
 	}
 
@@ -76,7 +76,7 @@ public class HandlerUtilities {
 	 * @param uuid
 	 *            Uuid of the element which should be deleted
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxHandler1<RootVertex<T>> handler,
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void deleteElement(InternalActionContext ac, TxAction1<RootVertex<T>> handler,
 			String uuid) {
 		operateTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
@@ -108,7 +108,7 @@ public class HandlerUtilities {
 	 * 
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void updateElement(InternalActionContext ac, String uuid,
-			TxHandler1<RootVertex<T>> handler) {
+			TxAction1<RootVertex<T>> handler) {
 		createOrUpdateElement(ac, uuid, handler);
 	}
 
@@ -122,7 +122,7 @@ public class HandlerUtilities {
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void createOrUpdateElement(InternalActionContext ac, String uuid,
-			TxHandler1<RootVertex<T>> handler) {
+			TxAction1<RootVertex<T>> handler) {
 		AtomicBoolean created = new AtomicBoolean(false);
 		operateTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
@@ -189,7 +189,7 @@ public class HandlerUtilities {
 	 *            Permission to check against when loading the element
 	 */
 	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElement(InternalActionContext ac, String uuid,
-			TxHandler1<RootVertex<T>> handler, GraphPermission perm) {
+			TxAction1<RootVertex<T>> handler, GraphPermission perm) {
 		operateTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
 			T element = root.loadObjectByUuid(ac, uuid, perm);
@@ -211,7 +211,7 @@ public class HandlerUtilities {
 	 * @param handler
 	 *            Handler which provides the root vertex which should be used when loading the element
 	 */
-	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxHandler1<RootVertex<T>> handler) {
+	public <T extends MeshCoreVertex<RM, T>, RM extends RestModel> void readElementList(InternalActionContext ac, TxAction1<RootVertex<T>> handler) {
 		operateTx(ac, (tx) -> {
 			RootVertex<T> root = handler.handle();
 
@@ -238,26 +238,26 @@ public class HandlerUtilities {
 	 * @param action
 	 *            Action which will be invoked once the handler has finished
 	 */
-	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxHandler<RM> handler, Action1<RM> action) {
+	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction<RM> handler, Action1<RM> action) {
 		operate(ac, () -> {
 			return database.tx(handler);
 		}, action);
 	}
 
-	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxHandler0 handler, Action1<RM> action) {
+	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction0 handler, Action1<RM> action) {
 		operate(ac, () -> {
 			database.tx(handler);
 			return null;
 		}, action);
 	}
 
-	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxHandler1<RM> handler, Action1<RM> action) {
+	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction1<RM> handler, Action1<RM> action) {
 		operate(ac, () -> {
 			return database.tx(handler);
 		}, action);
 	}
 
-	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxHandler2 handler, Action1<RM> action) {
+	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction2 handler, Action1<RM> action) {
 		operate(ac, () -> {
 			database.tx(handler);
 			return null;
@@ -271,7 +271,7 @@ public class HandlerUtilities {
 	 * @param handler
 	 * @param action
 	 */
-	private <RM extends RestModel> void operate(InternalActionContext ac, TxHandler1<RM> handler, Action1<RM> action) {
+	private <RM extends RestModel> void operate(InternalActionContext ac, TxAction1<RM> handler, Action1<RM> action) {
 		Mesh.vertx().executeBlocking(bc -> {
 			try {
 				bc.complete(handler.handle());

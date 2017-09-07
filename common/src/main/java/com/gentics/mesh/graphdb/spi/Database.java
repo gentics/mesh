@@ -14,8 +14,8 @@ import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.tx.TxFactory;
-import com.syncleus.ferma.tx.TxHandler;
-import com.syncleus.ferma.tx.TxHandler1;
+import com.syncleus.ferma.tx.TxAction;
+import com.syncleus.ferma.tx.TxAction1;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -61,7 +61,7 @@ public interface Database extends TxFactory {
 	 */
 	void clear();
 
-	default <T> Single<T> operateTx(TxHandler1<Single<T>> trxHandler) {
+	default <T> Single<T> operateTx(TxAction1<Single<T>> trxHandler) {
 		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
 		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
 		try {
@@ -106,7 +106,7 @@ public interface Database extends TxFactory {
 	 * @param trxHandler
 	 * @return
 	 */
-	default <T> Single<T> operateTx(TxHandler<Single<T>> trxHandler) {
+	default <T> Single<T> operateTx(TxAction<Single<T>> trxHandler) {
 		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
 		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
 		try {

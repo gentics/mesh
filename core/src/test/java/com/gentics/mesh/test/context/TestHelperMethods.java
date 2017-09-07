@@ -13,10 +13,10 @@ import java.util.Map;
 import org.apache.commons.io.IOUtils;
 
 import com.syncleus.ferma.tx.Tx;
-import com.syncleus.ferma.tx.TxHandler;
-import com.syncleus.ferma.tx.TxHandler0;
-import com.syncleus.ferma.tx.TxHandler1;
-import com.syncleus.ferma.tx.TxHandler2;
+import com.syncleus.ferma.tx.TxAction;
+import com.syncleus.ferma.tx.TxAction0;
+import com.syncleus.ferma.tx.TxAction1;
+import com.syncleus.ferma.tx.TxAction2;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -109,19 +109,19 @@ public interface TestHelperMethods {
 		return db().tx();
 	}
 
-	default void tx(TxHandler0 handler) {
+	default void tx(TxAction0 handler) {
 		db().tx(handler);
 	}
 
-	default <T> T tx(TxHandler1<T> handler) {
+	default <T> T tx(TxAction1<T> handler) {
 		return db().tx(handler);
 	}
 
-	default void tx(TxHandler2 handler) {
+	default void tx(TxAction2 handler) {
 		db().tx(handler);
 	}
 
-	default <T> T tx(TxHandler<T> handler) {
+	default <T> T tx(TxAction<T> handler) {
 		return db().tx(handler);
 	}
 
