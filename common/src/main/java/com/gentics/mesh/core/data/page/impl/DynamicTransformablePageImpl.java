@@ -137,7 +137,9 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 		FramedGraph graph = Tx.getActive().getGraph();
 
 		// Only handle elements which are visible to the user
-		stream = stream.filter(item -> requestUser.hasPermissionForId(item.getId(), perm));
+		if (perm != null) {
+			stream = stream.filter(item -> requestUser.hasPermissionForId(item.getId(), perm));
+		}
 
 		if (extraFilter != null) {
 			stream = stream.filter(extraFilter);

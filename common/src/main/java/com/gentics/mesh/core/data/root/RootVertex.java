@@ -41,10 +41,21 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	/**
 	 * Return a list of all elements.
 	 * 
+	 * @deprecated Use {@link #findAllIt()} instead.
 	 * @return
 	 */
+	@Deprecated
 	default public List<? extends T> findAll() {
 		return out(getRootLabel()).toListExplicit(getPersistanceClass());
+	}
+
+	/**
+	 * Return an iterator of all elements.
+	 * 
+	 * @return
+	 */
+	default public Iterable<? extends T> findAllIt() {
+		return out(getRootLabel()).frameExplicit(getPersistanceClass());
 	}
 
 	/**
@@ -59,6 +70,20 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 */
 	default public TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, null);
+	}
+
+	/**
+	 * Find all elements and return a paged result. No permission check will be performed.
+	 * 
+	 * @param ac
+	 *            action context
+	 * @param pagingInfo
+	 *            Paging information object that contains page options.
+	 * 
+	 * @return
+	 */
+	default public TransformablePage<? extends T> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
+		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, null);
 	}
 
 	/**
@@ -147,7 +172,8 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 *            Permission that must be granted in order to load the object
 	 * @param errorIfNotFound
 	 *            True if an error should be thrown, when the element could not be found
-	 * @return Loaded element. If errorIfNotFound is true, a not found error will be thrown if the element could not be found and the returned value will never be null.
+	 * @return Loaded element. If errorIfNotFound is true, a not found error will be thrown if the element could not be found and the returned value will never
+	 *         be null.
 	 */
 	default public T loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm, boolean errorIfNotFound) {
 		T element = findByUuid(uuid);
@@ -166,6 +192,28 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 		} else {
 			throw error(FORBIDDEN, "error_missing_perm", elementUuid);
 		}
+	}
+
+	/**
+	 * Load the object by uuid. No permission check will be performed.
+	 * 
+	 * @param uuid
+	 *            Uuid of the object that should be loaded
+	 * @param errorIfNotFound
+	 *            True if an error should be thrown, when the element could not be found
+	 * @return Loaded element. If errorIfNotFound is true, a not found error will be thrown if the element could not be found and the returned value will never
+	 *         be null.
+	 */
+	default public T loadObjectByUuidNoPerm(String uuid, boolean errorIfNotFound) {
+		T element = findByUuid(uuid);
+		if (element == null) {
+			if (errorIfNotFound) {
+				throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
+			} else {
+				return null;
+			}
+		}
+		return element;
 	}
 
 	/**

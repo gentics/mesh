@@ -20,10 +20,10 @@ public class GroupExamples extends AbstractExamples {
 	public GroupResponse getGroupResponse1(String name) {
 		GroupResponse group = new GroupResponse();
 		group.setUuid(randomUUID());
-		group.setCreated(getTimestamp());
-		group.setCreator(getUserReference());
-		group.setEdited(getTimestamp());
-		group.setEditor(getUserReference());
+		group.setCreated(createTimestamp());
+		group.setCreator(createUserReference());
+		group.setEdited(createTimestamp());
+		group.setEditor(createUserReference());
 		group.setName(name);
 		group.setPermissions(READ, UPDATE, DELETE, CREATE);
 		group.getRoles().add(new RoleReference().setName("admin").setUuid(randomUUID()));

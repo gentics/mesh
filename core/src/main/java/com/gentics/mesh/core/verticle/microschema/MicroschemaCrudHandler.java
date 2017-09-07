@@ -18,6 +18,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -79,6 +80,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			if (model.getChanges().isEmpty()) {
 				return message(ac, "schema_update_no_difference_detected", name);
 			}
+			User user = ac.getUser();
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
@@ -104,7 +106,7 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 						release.assignMicroschemaVersion(createdVersion);
 
 						// Enqueue the job so that the worker can process it later on
-						jobRoot.enqueueMicroschemaMigration(release, previouslyReferencedVersion, createdVersion);
+						jobRoot.enqueueMicroschemaMigration(user, release, previouslyReferencedVersion, createdVersion);
 					}
 				}
 				return Tuple.tuple(batch, createdVersion.getVersion());

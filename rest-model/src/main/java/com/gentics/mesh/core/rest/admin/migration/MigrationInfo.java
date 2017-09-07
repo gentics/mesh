@@ -5,7 +5,6 @@ import java.time.OffsetDateTime;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * Model for the migration status information.
@@ -13,7 +12,7 @@ import com.gentics.mesh.util.UUIDUtil;
 public class MigrationInfo implements RestModel, Comparable<MigrationInfo> {
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("Uuid of the migration. The id can be used to identify a certain migration.")
+	@JsonPropertyDescription("Uuid of the job which triggered the migration.")
 	private String uuid;
 
 	@JsonProperty(required = true)
@@ -66,6 +65,8 @@ public class MigrationInfo implements RestModel, Comparable<MigrationInfo> {
 	/**
 	 * Create a new migration info.
 	 * 
+	 * @param uuid
+	 *            Uuid of the job which triggered the migration
 	 * @param type
 	 *            Type of the migration
 	 * @param startDate
@@ -73,8 +74,8 @@ public class MigrationInfo implements RestModel, Comparable<MigrationInfo> {
 	 * @param nodeName
 	 *            Name of the node on which the migration is running
 	 */
-	public MigrationInfo(MigrationType type, String startDate, String nodeName) {
-		this.uuid = UUIDUtil.randomUUID();
+	public MigrationInfo(String uuid, MigrationType type, String startDate, String nodeName) {
+		this.uuid = uuid;
 		this.type = type;
 		this.startDate = startDate;
 		this.status = MigrationStatus.STARTING;

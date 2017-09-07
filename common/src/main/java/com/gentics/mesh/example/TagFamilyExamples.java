@@ -15,10 +15,10 @@ public class TagFamilyExamples extends AbstractExamples {
 		TagFamilyResponse response = new TagFamilyResponse();
 		response.setPermissions(READ, DELETE, CREATE);
 		response.setName(name);
-		response.setEdited(getTimestamp());
-		response.setEditor(getUserReference());
-		response.setCreated(getTimestamp());
-		response.setCreator(getUserReference());
+		response.setEdited(createTimestamp());
+		response.setEditor(createUserReference());
+		response.setCreated(createTimestamp());
+		response.setCreator(createUserReference());
 		return response;
 	}
 

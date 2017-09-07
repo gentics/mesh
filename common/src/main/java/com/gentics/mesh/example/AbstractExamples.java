@@ -22,7 +22,7 @@ public abstract class AbstractExamples {
 	 * 
 	 * @return
 	 */
-	public String getTimestamp() {
+	public String createTimestamp() {
 		return ZonedDateTime.now().format(DateTimeFormatter.ISO_INSTANT);
 	}
 
@@ -62,7 +62,7 @@ public abstract class AbstractExamples {
 	 * 
 	 * @return
 	 */
-	public UserReference getUserReference() {
+	public UserReference createUserReference() {
 		UserReference reference = new UserReference();
 		reference.setUuid(randomUUID());
 		reference.setFirstName("Joe");

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
@@ -8,16 +9,19 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
+import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -35,7 +39,6 @@ import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements Job {
 
@@ -46,37 +49,50 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	}
 
 	@Override
+	protected void init() {
+		super.init();
+	}
+
+	@Override
 	public Job update(InternalActionContext ac, SearchQueueBatch batch) {
 		throw new NotImplementedException("Jobs can't be updated");
 	}
 
 	@Override
 	public TypeInfo getTypeInfo() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public String getAPIPath(InternalActionContext ac) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public Single<JobResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public JobResponse transformToRestSync(InternalActionContext ac, int level, String... languageTags) {
-		// TODO Auto-generated method stub
-		return null;
+		JobResponse response = new JobResponse();
+		response.setUuid(getUuid());
+
+		User creator = getCreator();
+		if (creator != null) {
+			response.setCreator(creator.transformToReference());
+		} else {
+			log.error("The object {" + getClass().getSimpleName() + "} with uuid {" + getUuid() + "} has no creator. Omitting creator field");
+		}
+
+		String date = getCreationDate();
+		response.setCreated(date);
+		response.setErrorMessage(getErrorMessage());
+		response.setErrorDetail(getErrorDetail());
+		response.setType(getType());
+		response.setReleaseUuid(getRelease().getUuid());
+
+		return response;
 	}
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid());
+		return ETag.hash(getUuid() + getErrorMessage() + getErrorDetail());
 	}
 
 	@Override
@@ -145,6 +161,58 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	}
 
 	@Override
+	public void delete(SearchQueueBatch batch) {
+		remove();
+	}
+
+	@Override
+	public String getErrorDetail() {
+		return getProperty(ERROR_DETAIL_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setErrorDetail(String info) {
+		setProperty(ERROR_DETAIL_PROPERTY_KEY, info);
+	}
+
+	@Override
+	public String getErrorMessage() {
+		return getProperty(ERROR_MSG_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setErrorMessage(String message) {
+		setProperty(ERROR_MSG_PROPERTY_KEY, message);
+	}
+
+	@Override
+	public void setError(Exception e) {
+		setErrorDetail(ExceptionUtils.getStackTrace(e));
+		setErrorMessage(e.getMessage());
+	}
+
+	@Override
+	public boolean hasFailed() {
+		return getErrorMessage() != null || getErrorDetail() != null;
+	}
+
+	@Override
+	public void markAsFailed(Exception e) {
+		setError(e);
+	}
+
+	@Override
+	public void removeErrorState() {
+		setErrorDetail(null);
+		setErrorMessage(null);
+	}
+
+	@Override
+	public User getCreator() {
+		return out(HAS_CREATOR).nextOrDefault(UserImpl.class, null);
+	}
+
+	@Override
 	public void process() {
 		switch (getType()) {
 		case schema:
@@ -159,11 +227,10 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 		default:
 			throw error(INTERNAL_SERVER_ERROR, "Unknown job type {" + getType() + "}");
 		}
-
 	}
 
-	public void handleNodeMigration() {
-		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(Mesh.vertx(), MigrationType.schema);
+	private void handleNodeMigration() {
+		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(getUuid(), Mesh.vertx(), MigrationType.schema);
 		try {
 
 			db.tx(() -> {
@@ -199,7 +266,6 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 				statusHandler.getInfo().setTargetVersion(toContainerVersion.getVersion());
 				statusHandler.updateStatus();
 
-				// Acquire the global lock and invoke the migration
 				db.tx(() -> {
 					MeshInternal.get().nodeMigrationHandler().migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusHandler)
 							.await();
@@ -211,8 +277,8 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 		}
 	}
 
-	public void handleReleaseMigration() {
-		MigrationStatusHandler status = new MigrationStatusHandlerImpl(Mesh.vertx(), MigrationType.release);
+	private void handleReleaseMigration() {
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl(getUuid(), Mesh.vertx(), MigrationType.release);
 		try {
 
 			if (log.isDebugEnabled()) {
@@ -231,11 +297,12 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 			});
 		} catch (Exception e) {
 			status.error(e, "Error while preparing release migration.");
+			throw e;
 		}
 	}
 
-	public void handleMicroschemaMigration() {
-		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(Mesh.vertx(), MigrationType.microschema);
+	private void handleMicroschemaMigration() {
+		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(getUuid(), Mesh.vertx(), MigrationType.microschema);
 		try {
 
 			db.tx(() -> {

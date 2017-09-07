@@ -24,10 +24,10 @@ public class RoleExamples extends AbstractExamples {
 	public RoleResponse getRoleResponse1(String name) {
 		RoleResponse role = new RoleResponse();
 		role.setName(name);
-		role.setCreated(getTimestamp());
-		role.setCreator(getUserReference());
-		role.setEdited(getTimestamp());
-		role.setEditor(getUserReference());
+		role.setCreated(createTimestamp());
+		role.setCreator(createUserReference());
+		role.setEdited(createTimestamp());
+		role.setEditor(createUserReference());
 		role.setPermissions(READ, UPDATE, DELETE, CREATE);
 		role.setUuid(randomUUID());
 		return role;
@@ -60,10 +60,10 @@ public class RoleExamples extends AbstractExamples {
 		RoleResponse role = new RoleResponse();
 		role.setName("Admin role");
 		role.setUuid(randomUUID());
-		role.setCreated(getTimestamp());
-		role.setCreator(getUserReference());
-		role.setEdited(getTimestamp());
-		role.setEditor(getUserReference());
+		role.setCreated(createTimestamp());
+		role.setCreator(createUserReference());
+		role.setEdited(createTimestamp());
+		role.setEditor(createUserReference());
 		role.setPermissions(READ, UPDATE, DELETE, CREATE);
 		List<GroupReference> groups = new ArrayList<>();
 		groups.add(new GroupReference().setName("editors").setUuid(randomUUID()));

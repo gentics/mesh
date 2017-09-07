@@ -42,11 +42,11 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	private MigrationInfo info;
 
-	public MigrationStatusHandlerImpl(Vertx vertx, MigrationType type) {
+	public MigrationStatusHandlerImpl(String uuid, Vertx vertx, MigrationType type) {
 		this.vertx = vertx;
 		String startDate = DateUtils.toISO8601(System.currentTimeMillis());
 		String nodeName = Mesh.mesh().getOptions().getNodeName();
-		this.info = new MigrationInfo(type, startDate, nodeName);
+		this.info = new MigrationInfo(uuid, type, startDate, nodeName);
 	}
 
 	@Override

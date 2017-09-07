@@ -24,6 +24,8 @@ import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
 import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
+import com.gentics.mesh.core.rest.job.JobListResponse;
+import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
@@ -1144,4 +1146,28 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		String path = "/" + encodeFragment(projectName) + "/graphql" + getQuery(parameters);
 		return prepareRequest(POST, path, GraphQLResponse.class, request);
 	}
+
+	@Override
+	public MeshRequest<JobListResponse> findJobs(PagingParameters... parameters) {
+		return prepareRequest(GET, "/admin/jobs" + getQuery(parameters), JobListResponse.class);
+	}
+
+	@Override
+	public MeshRequest<JobResponse> findJobByUuid(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(GET, "/admin/jobs/" + uuid, JobResponse.class);
+	}
+
+	@Override
+	public MeshRequest<Void> deleteJob(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(DELETE, "/admin/jobs/" + uuid, Void.class);
+	}
+
+	@Override
+	public MeshRequest<Void> resetJob(String uuid) {
+		Objects.requireNonNull(uuid, "uuid must not be null");
+		return prepareRequest(DELETE, "/admin/jobs/" + uuid + "/reset", Void.class);
+	}
+
 }

@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
@@ -33,21 +34,23 @@ import rx.Single;
 /**
  * Handler for admin request methods.
  */
+@Singleton
+
 public class AdminHandler extends AbstractHandler {
 
 	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
 
 	private Database db;
 
+	@Inject
+	public AdminHandler(Database db) {
+		this.db = db;
+	}
+
 	public void handleMeshStatus(InternalActionContext ac) {
 		MeshStatusResponse response = new MeshStatusResponse();
 		response.setStatus(Mesh.mesh().getStatus());
 		ac.send(response, OK);
-	}
-
-	@Inject
-	public AdminHandler(Database db) {
-		this.db = db;
 	}
 
 	/**

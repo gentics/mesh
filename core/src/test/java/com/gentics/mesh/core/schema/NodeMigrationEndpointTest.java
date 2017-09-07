@@ -92,7 +92,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			boot().jobRoot().enqueueSchemaMigration(initialRelease(), versionA, versionB);
+			boot().jobRoot().enqueueSchemaMigration(user(), initialRelease(), versionA, versionB);
 			tx.success();
 		}
 		triggerAndWaitForMigration();
@@ -392,7 +392,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	public void testMigrationFailureInSetup() throws Exception {
 
 		tx(() -> {
-			boot().jobRoot().enqueueMicroschemaMigration(initialRelease(), microschemaContainer("vcard").getLatestVersion(),
+			boot().jobRoot().enqueueMicroschemaMigration(user(), initialRelease(), microschemaContainer("vcard").getLatestVersion(),
 					microschemaContainer("vcard").getLatestVersion());
 		});
 
@@ -418,7 +418,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		for (int i = 0; i < 100; i++) {
 			tx(() -> {
 				SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
-				boot().jobRoot().enqueueSchemaMigration(initialRelease(), version, version);
+				boot().jobRoot().enqueueSchemaMigration(user(), initialRelease(), version, version);
 			});
 		}
 		triggerAndWaitForMigration();
@@ -544,7 +544,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	 */
 	private void doSchemaMigration(SchemaContainerVersion versionA, SchemaContainerVersion versionB) throws Throwable {
 		tx(() -> {
-			boot().jobRoot().enqueueSchemaMigration(project().getLatestRelease(), versionA, versionB);
+			boot().jobRoot().enqueueSchemaMigration(user(), project().getLatestRelease(), versionA, versionB);
 		});
 		triggerAndWaitForMigration();
 	}
@@ -621,7 +621,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			boot().jobRoot().enqueueMicroschemaMigration(initialRelease(), versionA, versionB);
+			boot().jobRoot().enqueueMicroschemaMigration(user(), initialRelease(), versionA, versionB);
 			tx.success();
 		}
 
@@ -730,7 +730,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		tx(() -> {
-			boot().jobRoot().enqueueMicroschemaMigration(project().getLatestRelease(), versionA, versionB);
+			boot().jobRoot().enqueueMicroschemaMigration(user(), project().getLatestRelease(), versionA, versionB);
 		});
 
 		triggerAndWaitForMigration();
@@ -841,7 +841,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			boot().jobRoot().enqueueMicroschemaMigration(project().getLatestRelease(), versionA, versionB);
+			boot().jobRoot().enqueueMicroschemaMigration(user(), project().getLatestRelease(), versionA, versionB);
 			tx.success();
 		}
 

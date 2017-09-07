@@ -35,7 +35,7 @@ public class VersioningExamples extends AbstractExamples {
 	public PublishStatusResponse createPublishStatusResponse() {
 		PublishStatusResponse response = new PublishStatusResponse();
 		Map<String, PublishStatusModel> languages = new HashMap<>();
-		languages.put("en", createPublishStatusModel(true, getUserReference(), getTimestamp(), "3.0"));
+		languages.put("en", createPublishStatusModel(true, createUserReference(), createTimestamp(), "3.0"));
 		languages.put("de", createPublishStatusModel(false, null, null, "0.4"));
 		languages.put("fr", createPublishStatusModel(false, null, null, "5.2"));
 		response.setAvailableLanguages(languages);
@@ -64,7 +64,7 @@ public class VersioningExamples extends AbstractExamples {
 	}
 
 	public PublishStatusModel createPublishStatusModel() {
-		return createPublishStatusModel(true, getUserReference(), getTimestamp(), "3.0");
+		return createPublishStatusModel(true, createUserReference(), createTimestamp(), "3.0");
 	}
 
 	/**
@@ -79,10 +79,10 @@ public class VersioningExamples extends AbstractExamples {
 		response.setName(name);
 		response.setUuid(randomUUID());
 		// response.setActive(true);
-		response.setCreated(getTimestamp());
-		response.setCreator(getUserReference());
-		response.setEdited(getTimestamp());
-		response.setEditor(getUserReference());
+		response.setCreated(createTimestamp());
+		response.setCreator(createUserReference());
+		response.setEdited(createTimestamp());
+		response.setEditor(createUserReference());
 		response.setMigrated(true);
 		response.setPermissions(READ, UPDATE,  DELETE, CREATE);
 		response.setRolePerms(READ, UPDATE,  DELETE, CREATE);

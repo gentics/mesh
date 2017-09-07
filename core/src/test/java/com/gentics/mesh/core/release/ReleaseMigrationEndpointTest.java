@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.release;
 
-import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -230,7 +229,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	 */
 	protected void requestReleaseMigration(Release release) {
 		tx(() -> {
-			boot().jobRoot().enqueueReleaseMigration(release);
+			boot().jobRoot().enqueueReleaseMigration(user(), release);
 		});
 	}
 }

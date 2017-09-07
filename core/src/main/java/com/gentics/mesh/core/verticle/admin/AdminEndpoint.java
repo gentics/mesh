@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.admin;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
@@ -15,6 +16,7 @@ import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * The admin verticle provides core administration rest endpoints.
@@ -22,14 +24,17 @@ import com.gentics.mesh.rest.Endpoint;
 @Singleton
 public class AdminEndpoint extends AbstractEndpoint {
 
-	private AdminHandler handler;
+	private AdminHandler adminHandler;
+
+	private JobHandler jobHandler;
 
 	private ConsistencyCheckHandler consistencyHandler;
 
 	@Inject
-	public AdminEndpoint(RouterStorage routerStorage, AdminHandler adminHandler, ConsistencyCheckHandler consistencyHandler) {
+	public AdminEndpoint(RouterStorage routerStorage, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler) {
 		super("admin", routerStorage);
-		this.handler = adminHandler;
+		this.adminHandler = adminHandler;
+		this.jobHandler = jobHandler;
 		this.consistencyHandler = consistencyHandler;
 	}
 
@@ -57,6 +62,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		// addExportHandler();
 		// addVerticleHandler();
 		// addServiceHandler();
+		addJobHandler();
 
 	}
 
@@ -68,7 +74,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createClusterStatusResponse(), "Cluster status.");
 		endpoint.handler(rc -> {
-			handler.handleClusterStatus(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleClusterStatus(new InternalRoutingActionContextImpl(rc));
 		});
 
 	}
@@ -93,7 +99,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, adminExamples.createMigrationStatusResponse(), "Migration status.");
 		endpoint.handler(rc -> {
-			handler.handleMigrationStatus(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleMigrationStatus(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
@@ -105,7 +111,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Export process was invoked.");
 		endpoint.handler(rc -> {
-			handler.handleExport(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleExport(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
@@ -118,7 +124,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Database import command was invoked.");
 		endpoint.handler(rc -> {
-			handler.handleImport(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleImport(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
@@ -131,7 +137,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Database restore command was invoked.");
 		endpoint.method(POST);
 		endpoint.handler(rc -> {
-			handler.handleRestore(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleRestore(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
@@ -144,7 +150,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Incremental backup was invoked.");
 		endpoint.handler(rc -> {
-			handler.handleBackup(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleBackup(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
@@ -161,7 +167,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			// TODO this is currently polled by apa. We need to update their monitoring as well if we change this
-			handler.handleMeshStatus(ac);
+			adminHandler.handleMeshStatus(ac);
 		});
 
 	}
@@ -197,5 +203,53 @@ public class AdminEndpoint extends AbstractEndpoint {
 	// rc.response().end("Undeploy " + rc.request().params().get("clazz"));
 	// });
 	// }
+
+	private void addJobHandler() {
+		Endpoint readJobList = createEndpoint();
+		readJobList.path("/jobs");
+		readJobList.method(GET);
+		readJobList.description("List all currently queued jobs.");
+		readJobList.produces(APPLICATION_JSON);
+		readJobList.exampleResponse(OK, jobExamples.createJobList(), "List of jobs.");
+		readJobList.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			jobHandler.handleReadList(ac);
+		});
+
+		Endpoint readJob = createEndpoint();
+		readJob.path("/jobs/:jobUuid");
+		readJob.method(GET);
+		readJob.description("Load a specific job.");
+		readJob.produces(APPLICATION_JSON);
+		readJob.addUriParameter("jobUuid", "Uuid of the job.", UUIDUtil.randomUUID());
+		readJob.exampleResponse(OK, jobExamples.createJobResponse(), "Job information.");
+		readJob.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String uuid = ac.getParameter("jobUuid");
+			jobHandler.handleRead(ac, uuid);
+		});
+
+		Endpoint deleteJob = createEndpoint();
+		deleteJob.path("/jobs/:jobUuid");
+		deleteJob.method(DELETE);
+		deleteJob.description("Deletes the job. Note that it is only possible to delete failed jobs");
+		deleteJob.addUriParameter("jobUuid", "Uuid of the job.", UUIDUtil.randomUUID());
+		deleteJob.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String uuid = ac.getParameter("jobUuid");
+			jobHandler.handleDelete(ac, uuid);
+		});
+		
+		Endpoint resetJob = createEndpoint();
+		resetJob.path("/jobs/:jobUuid/reset");
+		resetJob.method(DELETE);
+		resetJob.description("Deletes error state from the job. This will make it possible to execute the job once again.");
+		resetJob.addUriParameter("jobUuid", "Uuid of the job.", UUIDUtil.randomUUID());
+		resetJob.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String uuid = ac.getParameter("jobUuid");
+			jobHandler.handleResetJob(ac, uuid);
+		});
+	}
 
 }

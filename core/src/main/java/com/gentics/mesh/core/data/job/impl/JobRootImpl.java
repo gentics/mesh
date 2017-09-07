@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.job.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -11,6 +12,7 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
@@ -28,6 +30,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	public static void init(Database database) {
 		database.addVertexType(JobRootImpl.class, MeshVertexImpl.class);
+		database.addEdgeIndex(HAS_JOB, true, false, true);
 	}
 
 	@Override
@@ -41,9 +44,10 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueSchemaMigration(Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
+	public Job enqueueSchemaMigration(User creator, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
 		Job job = getGraph().addFramedVertex(JobImpl.class);
 		job.setType(MigrationType.schema);
+		job.setCreated(creator);
 		job.setRelease(release);
 		job.setFromSchemaVersion(fromVersion);
 		job.setToSchemaVersion(toVersion);
@@ -55,9 +59,10 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueMicroschemaMigration(Release release, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion) {
+	public Job enqueueMicroschemaMigration(User creator, Release release, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion) {
 		Job job = getGraph().addFramedVertex(JobImpl.class);
 		job.setType(MigrationType.microschema);
+		job.setCreated(creator);
 		job.setRelease(release);
 		job.setFromMicroschemaVersion(fromVersion);
 		job.setToMicroschemaVersion(toVersion);
@@ -70,8 +75,9 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueReleaseMigration(Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
+	public Job enqueueReleaseMigration(User creator, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
 		Job job = getGraph().addFramedVertex(JobImpl.class);
+		job.setCreated(creator);
 		job.setType(MigrationType.release);
 		job.setRelease(release);
 		job.setFromSchemaVersion(fromVersion);
@@ -84,8 +90,9 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	}
 
 	@Override
-	public Job enqueueReleaseMigration(Release release) {
+	public Job enqueueReleaseMigration(User creator, Release release) {
 		Job job = getGraph().addFramedVertex(JobImpl.class);
+		job.setCreated(creator);
 		job.setType(MigrationType.release);
 		job.setRelease(release);
 		addItem(job);
@@ -107,16 +114,29 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public void process() {
-		Iterable<? extends JobImpl> it = out(HAS_JOB).frameExplicit(JobImpl.class);
+		Iterable<? extends Job> it = findAllIt();
 		for (Job job : it) {
 			try {
 				job.process();
 				// Job is done. Remove it from the root
 				job.remove();
 			} catch (Exception e) {
+				job.markAsFailed(e);
 				log.error("Error while processing job {" + job.getUuid() + "}");
 			}
 		}
+	}
+
+	@Override
+	public void purgeFailed() {
+		log.info("Purging failed jobs..");
+		Iterable<? extends JobImpl> it = out(HAS_JOB).hasNot("error", null).frameExplicit(JobImpl.class);
+		long count = 0;
+		for (Job job : it) {
+			job.delete(null);
+			count++;
+		}
+		log.info("Purged {" + count + "} failed jobs.");
 	}
 
 }

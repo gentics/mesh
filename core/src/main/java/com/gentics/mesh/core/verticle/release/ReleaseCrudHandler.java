@@ -21,6 +21,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -83,6 +84,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	public void handleCreate(InternalActionContext ac) {
 		utils.operateTx(ac, (tx) -> {
 			Database db = MeshInternal.get().database();
+			User user = ac.getUser();
 
 			ResultInfo info = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
@@ -95,7 +97,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 				resultInfo.setProperty("projectUuid", project.getUuid());
 				resultInfo.setProperty("releaseUuid", created.getUuid());
 				JobRoot jobRoot = boot.jobRoot();
-				jobRoot.enqueueReleaseMigration(created);
+				jobRoot.enqueueReleaseMigration(user, created);
 				return resultInfo;
 			});
 
@@ -142,6 +144,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 
 			JobRoot jobRoot = boot.jobRoot();
+			User user = ac.getUser();
 			Tuple<Single<SchemaReferenceList>, SearchQueueBatch> tuple = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
 
@@ -156,7 +159,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 								version.getVersion());
 					}
 					release.assignSchemaVersion(version);
-					jobRoot.enqueueSchemaMigration(release, assignedVersion, version);
+					jobRoot.enqueueSchemaMigration(user, release, assignedVersion, version);
 				}
 
 				return Tuple.tuple(getSchemaVersions(release), batch);
@@ -203,8 +206,9 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			Release release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			MicroschemaReferenceList microschemaReferenceList = ac.fromJson(MicroschemaReferenceList.class);
 			MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
-			JobRoot jobRoot = boot.jobRoot();
 
+			JobRoot jobRoot = boot.jobRoot();
+			User user = ac.getUser();
 			Single<MicroschemaReferenceList> model = db.tx(() -> {
 				// Transform the list of references into microschema container version vertices
 				for (MicroschemaReference reference : microschemaReferenceList) {
@@ -216,7 +220,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 								version.getVersion());
 					}
 					release.assignMicroschemaVersion(version);
-					jobRoot.enqueueMicroschemaMigration(release, assignedVersion, version);
+					jobRoot.enqueueMicroschemaMigration(user, release, assignedVersion, version);
 				}
 				return getMicroschemaVersions(release);
 			});
@@ -269,8 +273,9 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 		utils.operateTx(ac, () -> {
 			Project project = ac.getProject();
 			JobRoot jobRoot = boot.jobRoot();
+			User user = ac.getUser();
 			Release release = project.getReleaseRoot().findByUuid(releaseUuid);
-			for (MicroschemaContainer microschemaContainer : boot.microschemaContainerRoot().findAll()) {
+			for (MicroschemaContainer microschemaContainer : boot.microschemaContainerRoot().findAllIt()) {
 				MicroschemaContainerVersion latestVersion = microschemaContainer.getLatestVersion();
 				MicroschemaContainerVersion currentVersion = latestVersion;
 				while (true) {
@@ -279,7 +284,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 						break;
 					}
 
-					Job job = jobRoot.enqueueMicroschemaMigration(release, currentVersion, latestVersion);
+					Job job = jobRoot.enqueueMicroschemaMigration(user,release, currentVersion, latestVersion);
 					job.process();
 
 					try (Tx tx = db.tx()) {
@@ -304,8 +309,9 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 		utils.operateTx(ac, () -> {
 			JobRoot jobRoot = boot.jobRoot();
+			User user = ac.getUser();
 			Release release = ac.getProject().getReleaseRoot().findByUuid(releaseUuid);
-			for (SchemaContainer schemaContainer : boot.schemaContainerRoot().findAll()) {
+			for (SchemaContainer schemaContainer : boot.schemaContainerRoot().findAllIt()) {
 				SchemaContainerVersion latestVersion = schemaContainer.getLatestVersion();
 				SchemaContainerVersion currentVersion = latestVersion;
 				while (true) {
@@ -313,7 +319,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					if (currentVersion == null) {
 						break;
 					}
-					Job job = jobRoot.enqueueSchemaMigration(release, currentVersion, latestVersion);
+					Job job = jobRoot.enqueueSchemaMigration(user, release, currentVersion, latestVersion);
 					try {
 						job.process();
 						Iterator<NodeGraphFieldContainer> it = currentVersion.getFieldContainers(release.getUuid()).iterator();

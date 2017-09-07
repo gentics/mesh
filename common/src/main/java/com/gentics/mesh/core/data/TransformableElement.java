@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.graphdb.model.MeshElement;
 
 import rx.Single;
@@ -33,7 +34,9 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 * @param languageTags
 	 *            optional list of language tags to be used for language fallback
 	 */
-	Single<T> transformToRest(InternalActionContext ac, int level, String... languageTags);
+	default Single<T> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return Single.just(transformToRestSync(ac, level, languageTags));
+	}
 
 	/**
 	 * Transform the element into the matching rest model response synchronously.

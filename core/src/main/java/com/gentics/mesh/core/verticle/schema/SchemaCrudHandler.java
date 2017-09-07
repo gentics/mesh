@@ -21,6 +21,7 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -97,7 +98,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			JobRoot jobRoot = boot.get().meshRoot().getJobRoot();
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
-
+			User user = ac.getUser();
 			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
 
 				// Check whether there are any microschemas which are referenced by the schema
@@ -158,7 +159,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						release.assignSchemaVersion(createdVersion);
 
 						// Enqueue the job so that the worker can process it later on
-						jobRoot.enqueueSchemaMigration(release, previouslyReferencedVersion, createdVersion);
+						jobRoot.enqueueSchemaMigration(user, release, previouslyReferencedVersion, createdVersion);
 					}
 				}
 				return Tuple.tuple(batch, createdVersion.getVersion());

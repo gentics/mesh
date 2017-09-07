@@ -26,10 +26,10 @@ public class TagExamples extends AbstractExamples {
 	public TagResponse createTagResponse1(String name) {
 		TagResponse tag = new TagResponse();
 		tag.setUuid(randomUUID());
-		tag.setCreated(getTimestamp());
-		tag.setCreator(getUserReference());
-		tag.setEdited(getTimestamp());
-		tag.setEditor(getUserReference());
+		tag.setCreated(createTimestamp());
+		tag.setCreator(createUserReference());
+		tag.setEdited(createTimestamp());
+		tag.setEditor(createUserReference());
 		tag.setName(name);
 		tag.setPermissions(READ, UPDATE, DELETE, CREATE);
 		tag.setTagFamily(getTagFamilyReference());
@@ -39,10 +39,10 @@ public class TagExamples extends AbstractExamples {
 	public TagResponse getTagResponse2() {
 		TagResponse tag = new TagResponse();
 		tag.setUuid(randomUUID());
-		tag.setCreated(getTimestamp());
-		tag.setCreator(getUserReference());
-		tag.setEdited(getTimestamp());
-		tag.setEditor(getUserReference());
+		tag.setCreated(createTimestamp());
+		tag.setCreator(createUserReference());
+		tag.setEdited(createTimestamp());
+		tag.setEditor(createUserReference());
 		tag.setName("Name for language tag en");
 		tag.setTagFamily(getTagFamilyReference());
 		tag.setPermissions(READ, CREATE);

@@ -58,9 +58,9 @@ public class NodeExamples extends AbstractExamples {
 		parentNodeReference.setUuid(randomUUID());
 		parentNodeReference.setDisplayName("parentNodeDisplayName");
 		nodeResponse.setParentNode(parentNodeReference);
-		nodeResponse.setCreated(getTimestamp());
-		nodeResponse.setEdited(getTimestamp());
-		nodeResponse.setCreator(getUserReference());
+		nodeResponse.setCreated(createTimestamp());
+		nodeResponse.setEdited(createTimestamp());
+		nodeResponse.setCreator(createUserReference());
 		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(randomUUID()).setTagFamily("colors"));
 		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
 		nodeResponse.setAvailableLanguages(Arrays.asList("en", "de"));
@@ -79,7 +79,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("relatedProduct", createNodeField(randomUUID()));
 		fields.put("price", createNumberField(100.1));
 		fields.put("enabled", createBooleanField(true));
-		fields.put("release", createDateField(getTimestamp()));
+		fields.put("release", createDateField(createTimestamp()));
 		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
@@ -159,10 +159,10 @@ public class NodeExamples extends AbstractExamples {
 		parentNodeReference.setDisplayName("parentNodeDisplayName");
 
 		nodeResponse.setParentNode(parentNodeReference);
-		nodeResponse.setCreator(getUserReference());
-		nodeResponse.setCreated(getTimestamp());
-		nodeResponse.setEdited(getTimestamp());
-		nodeResponse.setEditor(getUserReference());
+		nodeResponse.setCreator(createUserReference());
+		nodeResponse.setCreated(createTimestamp());
+		nodeResponse.setEdited(createTimestamp());
+		nodeResponse.setEditor(createUserReference());
 
 		FieldMap fields = nodeResponse.getFields();
 		fields.put("name", createStringField("Name for language tag en"));
@@ -203,7 +203,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("relatedProduct", createNodeField(randomUUID()));
 		fields.put("price", createNumberField(100.1));
 		fields.put("enabled", createBooleanField(true));
-		fields.put("release", createDateField(getTimestamp()));
+		fields.put("release", createDateField(createTimestamp()));
 		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
@@ -259,7 +259,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("relatedProduct-", createNodeField(randomUUID()));
 		fields.put("price", createNumberField(100.1));
 		fields.put("enabled", createBooleanField(true));
-		fields.put("release", createDateField(getTimestamp()));
+		fields.put("release", createDateField(createTimestamp()));
 		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));

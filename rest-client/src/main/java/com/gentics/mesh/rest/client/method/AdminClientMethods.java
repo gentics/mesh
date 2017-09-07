@@ -7,6 +7,9 @@ import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
 
+/**
+ * Admin specific client methods
+ */
 public interface AdminClientMethods {
 
 	/**
