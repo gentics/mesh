@@ -14,6 +14,7 @@ Gentics Mesh is an Open Source API-first CMS for developers. All contents can be
 * GraphQL API
 * Image API
 * Tagging API
+* Cluster support
 * Graph database at its core
 * Docker support
 
