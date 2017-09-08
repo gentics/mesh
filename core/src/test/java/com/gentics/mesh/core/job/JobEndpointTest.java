@@ -152,8 +152,8 @@ public class JobEndpointTest extends AbstractMeshTest {
 			SchemaContainer schema = schemaContainer("folder");
 			assertEquals(initialReleaseUuid(), jobResponse.getProperties().get("releaseUuid"));
 			assertEquals(schema.getUuid(), jobResponse.getProperties().get("schemaUuid"));
-			assertEquals(schema.getLatestVersion().getUuid(), jobResponse.getProperties().get("toSchemaVersionUuid"));
-			assertEquals(schema.getLatestVersion().getUuid(), jobResponse.getProperties().get("fromSchemaVersionUuid"));
+			assertEquals(schema.getLatestVersion().getVersion(), jobResponse.getProperties().get("fromVersion"));
+			assertEquals(schema.getLatestVersion().getVersion(), jobResponse.getProperties().get("toVersion"));
 		}
 
 		waitForMigration(() -> {

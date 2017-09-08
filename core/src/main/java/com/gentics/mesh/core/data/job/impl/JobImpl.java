@@ -94,14 +94,14 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 
 		if (getToSchemaVersion() != null) {
 			props.put("schemaUuid", getToSchemaVersion().getSchemaContainer().getUuid());
-			props.put("fromSchemaVersionUuid", getFromSchemaVersion().getUuid());
-			props.put("toSchemaVersionUuid", getToSchemaVersion().getUuid());
+			props.put("fromVersion", getFromSchemaVersion().getVersion());
+			props.put("toVersion", getToSchemaVersion().getVersion());
 		}
 
 		if (getToMicroschemaVersion() != null) {
 			props.put("microschemaUuid", getToMicroschemaVersion().getSchemaContainer().getUuid());
-			props.put("fromMicroschemaVersionUuid", getFromMicroschemaVersion().getUuid());
-			props.put("toMicroschemaVersion", getToMicroschemaVersion().getUuid());
+			props.put("fromVersion", getFromMicroschemaVersion().getVersion());
+			props.put("toVersion", getToMicroschemaVersion().getVersion());
 		}
 		return response;
 	}

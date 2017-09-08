@@ -22,6 +22,9 @@ public class JobExamples extends AbstractExamples {
 		response.setCreated(createTimestamp());
 		response.setType(MigrationType.release);
 		response.getProperties().put("releaseUuid", randomUUID());
+		response.getProperties().put("schemaUuid", randomUUID());
+		response.getProperties().put("fromVersion", "1.0");
+		response.getProperties().put("toVersion", "2.0");
 		return response;
 	}
 
