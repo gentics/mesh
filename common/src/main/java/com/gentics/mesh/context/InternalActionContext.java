@@ -132,4 +132,11 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 */
 	boolean matches(String entityTag, boolean isWeak);
 
+	/**
+	 * Check whether the current context is in fact a migration context. The migration context is only used during node migration.
+	 * 
+	 * @return
+	 */
+	boolean isMigrationContext();
+
 }

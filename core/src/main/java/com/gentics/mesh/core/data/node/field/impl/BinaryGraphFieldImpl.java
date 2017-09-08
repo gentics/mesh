@@ -44,7 +44,9 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		BinaryField binaryField = fieldMap.getBinaryField(fieldKey);
 		boolean isBinaryFieldSetToNull = fieldMap.hasField(fieldKey) && binaryField == null && graphBinaryField != null;
+
 		GraphField.failOnDeletionOfRequiredField(graphBinaryField, isBinaryFieldSetToNull, fieldSchema, fieldKey, schema);
+
 		boolean restIsNull = binaryField == null;
 		// The required check for binary fields is not enabled since binary fields can only be created using the field api
 
@@ -248,7 +250,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	@Override
 	public Future<Buffer> getFileBuffer() {
 		Future<Buffer> future = Future.future();
-		//TODO use only a few chunks of the file in memory 
+		// TODO use only a few chunks of the file in memory
 		Mesh.vertx().fileSystem().readFile(getFilePath(), rh -> {
 			if (rh.succeeded()) {
 				future.complete(rh.result());

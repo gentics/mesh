@@ -41,7 +41,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		if (graphNodeField == null) {
 			return null;
 		} else {
-			//TODO check permissions
+			// TODO check permissions
 			return graphNodeField.transformToRest(ac, fieldKey, languageTags, level);
 		}
 	};
@@ -52,7 +52,11 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		boolean isNodeFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeField == null);
 		GraphField.failOnDeletionOfRequiredField(graphNodeField, isNodeFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = nodeField == null;
-		GraphField.failOnMissingRequiredField(graphNodeField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(graphNodeField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle Deletion - Remove the field if the field has been explicitly set to null
 		if (graphNodeField != null && isNodeFieldSetToNull) {

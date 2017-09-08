@@ -42,7 +42,11 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 		boolean isHtmlListFieldSetToNull = fieldMap.hasField(fieldKey) && htmlList == null;
 		GraphField.failOnDeletionOfRequiredField(graphHtmlFieldList, isHtmlListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = htmlList == null;
-		GraphField.failOnMissingRequiredField(graphHtmlFieldList, htmlList == null, fieldSchema, fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(graphHtmlFieldList, htmlList == null, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle Deletion
 		if (isHtmlListFieldSetToNull && graphHtmlFieldList != null) {
@@ -55,9 +59,9 @@ public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGrap
 			return;
 		}
 
-		// Always create a new list. 
-		// This will effectively unlink the old list and create a new one. 
-		// Otherwise the list which is linked to old versions would be updated. 
+		// Always create a new list.
+		// This will effectively unlink the old list and create a new one.
+		// Otherwise the list which is linked to old versions would be updated.
 		graphHtmlFieldList = container.createHTMLList(fieldKey);
 
 		// Add items from rest model

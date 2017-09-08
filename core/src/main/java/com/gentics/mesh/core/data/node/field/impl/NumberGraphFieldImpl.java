@@ -34,7 +34,11 @@ public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implem
 		boolean isNumberFieldSetToNull = fieldMap.hasField(fieldKey) && (numberField == null || numberField.getNumber() == null);
 		GraphField.failOnDeletionOfRequiredField(numberGraphField, isNumberFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = numberField == null || numberField.getNumber() == null;
-		GraphField.failOnMissingRequiredField(numberGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(numberGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle Deletion
 		if (isNumberFieldSetToNull && numberGraphField != null) {

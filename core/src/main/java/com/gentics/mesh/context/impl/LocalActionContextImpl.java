@@ -235,4 +235,9 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 		return future;
 	}
 
+	@Override
+	public boolean isMigrationContext() {
+		return false;
+	}
+
 }

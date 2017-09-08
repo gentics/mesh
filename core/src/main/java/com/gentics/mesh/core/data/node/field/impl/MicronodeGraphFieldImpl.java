@@ -44,8 +44,8 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 
 	private static final Logger log = LoggerFactory.getLogger(MicronodeGraphFieldImpl.class);
 
-	public static FieldTransformator<MicronodeField> MICRONODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema,
-			languageTags, level, parentNode) -> {
+	public static FieldTransformator<MicronodeField> MICRONODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level,
+			parentNode) -> {
 		MicronodeGraphField micronodeGraphField = container.getMicronode(fieldKey);
 		if (micronodeGraphField == null) {
 			return null;
@@ -59,11 +59,13 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 		MicronodeFieldSchema microschemaFieldSchema = (MicronodeFieldSchema) fieldSchema;
 		MicronodeField micronodeRestField = fieldMap.getMicronodeField(fieldKey);
 		boolean isMicronodeFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeRestField == null;
-		GraphField.failOnDeletionOfRequiredField(micronodeGraphField, isMicronodeFieldSetToNull, fieldSchema, fieldKey,
-				schema);
+		GraphField.failOnDeletionOfRequiredField(micronodeGraphField, isMicronodeFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = micronodeRestField == null;
-		GraphField.failOnMissingRequiredField(container.getMicronode(fieldKey), restIsNullOrEmpty, fieldSchema,
-				fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(container.getMicronode(fieldKey), restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle Deletion - Remove the field if the field has been explicitly set to null
 		if (isMicronodeFieldSetToNull && micronodeGraphField != null) {
@@ -81,21 +83,18 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 			throw error(BAD_REQUEST, "micronode_error_missing_reference", fieldKey);
 		}
 
-		MicroschemaContainerVersion microschemaContainerVersion = ac.getProject().getMicroschemaContainerRoot()
-				.fromReference(microschemaReference, ac.getRelease());
+		MicroschemaContainerVersion microschemaContainerVersion = ac.getProject().getMicroschemaContainerRoot().fromReference(microschemaReference,
+				ac.getRelease());
 
 		Micronode micronode = null;
 
 		// check whether microschema is allowed
 		// TODO should we allow all microschemas if the list is empty?
 		if (ArrayUtils.isEmpty(microschemaFieldSchema.getAllowedMicroSchemas())
-				|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas())
-						.contains(microschemaContainerVersion.getName())) {
+				|| !Arrays.asList(microschemaFieldSchema.getAllowedMicroSchemas()).contains(microschemaContainerVersion.getName())) {
 			log.error("Node update not allowed since the microschema {" + microschemaContainerVersion.getName()
-					+ "} is now allowed. Allowed microschemas {" + microschemaFieldSchema.getAllowedMicroSchemas()
-					+ "}");
-			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey,
-					microschemaContainerVersion.getName());
+					+ "} is now allowed. Allowed microschemas {" + microschemaFieldSchema.getAllowedMicroSchemas() + "}");
+			throw error(BAD_REQUEST, "node_error_invalid_microschema_field_value", fieldKey, microschemaContainerVersion.getName());
 		}
 
 		// Always create a new micronode field since each update must create a new field instance. The old field must be detached from the given container.
@@ -130,8 +129,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	}
 
 	@Override
-	public MicronodeField transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags,
-			int level) {
+	public MicronodeField transformToRest(InternalActionContext ac, String fieldKey, List<String> languageTags, int level) {
 		Micronode micronode = getMicronode();
 		if (micronode == null) {
 			// TODO is this correct?
@@ -162,8 +160,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 	public GraphField cloneTo(GraphFieldContainer container) {
 		Micronode micronode = getMicronode();
 
-		MicronodeGraphField field = getGraph().addFramedEdge(container, micronode, HAS_FIELD,
-				MicronodeGraphFieldImpl.class);
+		MicronodeGraphField field = getGraph().addFramedEdge(container, micronode, HAS_FIELD, MicronodeGraphFieldImpl.class);
 		field.setFieldKey(getFieldKey());
 		return field;
 	}
@@ -221,8 +218,8 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 					}
 				} catch (Exception e) {
 					// TODO i18n
-					throw error(INTERNAL_SERVER_ERROR, "Can't load rest field {" + fieldSchema.getName()
-							+ "} from micronode {" + getFieldKey() + "}", e);
+					throw error(INTERNAL_SERVER_ERROR, "Can't load rest field {" + fieldSchema.getName() + "} from micronode {" + getFieldKey() + "}",
+							e);
 				}
 			}
 			return changes;

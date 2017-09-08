@@ -186,4 +186,9 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 		return project;
 	}
 
+	@Override
+	public boolean isMigrationContext() {
+		return false;
+	}
+
 }

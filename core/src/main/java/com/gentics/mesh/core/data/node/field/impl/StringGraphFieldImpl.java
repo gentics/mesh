@@ -54,7 +54,11 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 		boolean isStringFieldSetToNull = fieldMap.hasField(fieldKey) && (stringField == null || stringField.getString() == null);
 		GraphField.failOnDeletionOfRequiredField(graphStringField, isStringFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = stringField == null || stringField.getString() == null;
-		GraphField.failOnMissingRequiredField(graphStringField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(graphStringField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle Deletion
 		if (isStringFieldSetToNull && graphStringField != null) {

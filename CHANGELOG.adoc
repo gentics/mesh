@@ -15,6 +15,8 @@ icon:plus[] REST: Added new endpoints `/api/v1/admin/jobs` to list and check que
 
 icon:check[] Migration: Interrupted migrations will now automatically be started again after the server has been started.
 
+icon:check[] Migration: Migrations will no longer fail if a required field was added. The field will be created and no value will be set. Custom migration scripts can still be used to add a custom default value during migration.
+
 [source,json]
 ----
 {

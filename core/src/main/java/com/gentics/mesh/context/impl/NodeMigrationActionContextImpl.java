@@ -888,4 +888,9 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		return false;
 	}
 
+	@Override
+	public boolean isMigrationContext() {
+		return true;
+	}
+
 }

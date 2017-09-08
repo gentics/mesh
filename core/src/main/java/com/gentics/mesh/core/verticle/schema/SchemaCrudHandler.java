@@ -218,32 +218,29 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		db.operateTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			if (ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
-				SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
-				Tuple<SearchQueueBatch, Single<SchemaResponse>> tuple = db.tx(() -> {
-					SearchQueueBatch batch = searchQueue.create();
-
-					SchemaContainerRoot root = project.getSchemaContainerRoot();
-					// Assign the schema to the project
-					if (!root.contains(schema)) {
-						root.addSchemaContainer(schema);
-						String releaseUuid = project.getLatestRelease().getUuid();
-						SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
-						batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
-						batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED,
-								schemaContainerVersion.getSchema());
-						return Tuple.tuple(batch, schema.transformToRest(ac, 0));
-					} else {
-						// Schema has already been assigned. No need to create indices
-						return Tuple.tuple(batch, schema.transformToRest(ac, 0));
-					}
-				});
-				tuple.v1().processSync();
-				return tuple.v2();
-			} else {
+			if (!ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
+			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
+			SchemaContainerRoot root = project.getSchemaContainerRoot();
+			if (root.contains(schema)) {
+				// Schema has already been assigned. No need to create indices
+				return schema.transformToRest(ac, 0);
+			}
 
+			Tuple<SearchQueueBatch, Single<SchemaResponse>> tuple = db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
+
+				// Assign the schema to the project
+				root.addSchemaContainer(schema);
+				String releaseUuid = project.getLatestRelease().getUuid();
+				SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
+				batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
+				batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED, schemaContainerVersion.getSchema());
+				return Tuple.tuple(batch, schema.transformToRest(ac, 0));
+			});
+			tuple.v1().processSync();
+			return tuple.v2();
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}

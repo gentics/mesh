@@ -46,7 +46,11 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 		boolean isHtmlFieldSetToNull = fieldMap.hasField(fieldKey) && (htmlField == null || htmlField.getHTML() == null);
 		GraphField.failOnDeletionOfRequiredField(htmlGraphField, isHtmlFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean isHtmlFieldNull = htmlField == null || htmlField.getHTML() == null;
-		GraphField.failOnMissingRequiredField(htmlGraphField, isHtmlFieldNull, fieldSchema, fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(htmlGraphField, isHtmlFieldNull, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle Deletion - The field was explicitly set to null and is currently set within the graph thus we must remove it.
 		if (isHtmlFieldSetToNull && htmlGraphField != null) {

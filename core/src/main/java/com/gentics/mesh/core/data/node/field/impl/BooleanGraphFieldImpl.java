@@ -15,7 +15,8 @@ import com.syncleus.ferma.AbstractVertexFrame;
 
 public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> implements BooleanGraphField {
 
-	public static FieldTransformator<BooleanField> BOOLEAN_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	public static FieldTransformator<BooleanField> BOOLEAN_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level,
+			parentNode) -> {
 		BooleanGraphField graphBooleanField = container.getBoolean(fieldKey);
 		if (graphBooleanField == null) {
 			return null;
@@ -30,7 +31,11 @@ public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> impl
 		boolean isBooleanFieldSetToNull = fieldMap.hasField(fieldKey) && (booleanField == null || booleanField.getValue() == null);
 		GraphField.failOnDeletionOfRequiredField(booleanGraphField, isBooleanFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = booleanField == null || booleanField.getValue() == null;
-		GraphField.failOnMissingRequiredField(booleanGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(booleanGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle deletion
 		if (isBooleanFieldSetToNull && booleanGraphField != null) {

@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.job.JobRoot;
+import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -188,8 +189,15 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
 			MicroschemaContainer microschema = getRootVertex(ac).loadObjectByUuid(ac, microschemaUuid, READ_PERM);
-			return db.tx(() -> {
-				project.getMicroschemaContainerRoot().addMicroschema(microschema);
+			MicroschemaContainerRoot root = project.getMicroschemaContainerRoot();
+			if (root.contains(microschema)) {
+				// Microschema has already been assigned. No need to do anything
+				return microschema.transformToRest(ac, 0);
+			}
+
+			return  db.tx(() -> {
+				// Assign the microschema to the project
+				root.addMicroschema(microschema);
 				return microschema.transformToRest(ac, 0);
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);

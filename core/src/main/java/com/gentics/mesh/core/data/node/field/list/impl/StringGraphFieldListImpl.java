@@ -43,7 +43,11 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 		boolean isStringListFieldSetToNull = fieldMap.hasField(fieldKey) && (stringList == null || stringList.getItems() == null);
 		GraphField.failOnDeletionOfRequiredField(graphStringList, isStringListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = stringList == null;
-		GraphField.failOnMissingRequiredField(graphStringList, restIsNull, fieldSchema, fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(graphStringList, restIsNull, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle Deletion
 		if (isStringListFieldSetToNull && graphStringList != null) {
@@ -56,9 +60,9 @@ public class StringGraphFieldListImpl extends AbstractBasicGraphFieldList<String
 			return;
 		}
 
-		// Always create a new list. 
-		// This will effectively unlink the old list and create a new one. 
-		// Otherwise the list which is linked to old versions would be updated. 
+		// Always create a new list.
+		// This will effectively unlink the old list and create a new one.
+		// Otherwise the list which is linked to old versions would be updated.
 		graphStringList = container.createStringList(fieldKey);
 
 		// Handle Update

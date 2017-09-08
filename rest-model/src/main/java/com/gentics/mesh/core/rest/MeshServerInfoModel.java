@@ -26,7 +26,7 @@ public class MeshServerInfoModel implements RestModel {
 	@JsonPropertyDescription("Used search implementation version.")
 	private String searchVersion;
 
-	@JsonPropertyDescription("Used vert.x version.")
+	@JsonPropertyDescription("Used Vert.x version.")
 	private String vertxVersion;
 
 	public MeshServerInfoModel() {

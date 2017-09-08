@@ -49,12 +49,12 @@ public class MigrationInfo implements RestModel, Comparable<MigrationInfo> {
 	private int completed;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("The target version of the element which was used to start the migration.")
-	private String targetVersion;
-
-	@JsonProperty(required = false)
 	@JsonPropertyDescription("The source version of the element which was used to start the migration.")
 	private String sourceVersion;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("The target version of the element which was used to start the migration.")
+	private String targetVersion;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The current migration status.")
