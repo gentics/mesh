@@ -214,9 +214,9 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				tx.success();
 				return sqb;
 			} catch (Exception e1) {
+				tx.failure();
 				log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
 				errorsDetected.add(e1);
-				tx.failure();
 				return null;
 			}
 		});

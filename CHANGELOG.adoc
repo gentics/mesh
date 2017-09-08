@@ -2,18 +2,18 @@
 
 = Gentics Mesh Changelog
 
-== 0.10.1 (TBD)
+== 0.10.1 (08.09.2017)
 
 icon:plus[] Clustering: Added link:https://getmesh.io/docs/beta/clustering.html#_node_discovery[documentation] and support for cluster configurations which use a list of static IPs instead of multicast discovery.
 
 icon:plus[] Node Migration: The node migration performance has been increased.
 
+icon:plus[] REST: Added new endpoints `/api/v1/admin/jobs` to list and check queued migration jobs. The new endpoints are described in the link:/docs/beta/features.html#_schema_microschema_migration[feature documentation].
+
 icon:check[] Search: The `raw` field will no longer be added by default to the search index. Instead it can be added using the new `searchIndex.addRaw` flag within the schema field.
              Please note that the raw field value in the search index will be automatically truncated to a size of 32KB. Otherwise the value can't be added to search index.
 
-icon:plus[] REST: Added new endpoints `/api/v1/admin/jobs` to list and check queued migration jobs. The new endpoints are described in the link:/docs/beta/features.html#_schema_microschema_migration[feature documentation].
-
-icon:check[] Migration: Interrupted migrations will now automatically be started again after the server has been started.
+icon:check[] Migration: Interrupted migrations will now automatically be started again after the server has been started. Failed migration jobs can be purged or reset via the `/api/v1/admin/jobs` endpoint.
 
 icon:check[] Migration: Migrations will no longer fail if a required field was added. The field will be created and no value will be set. Custom migration scripts can still be used to add a custom default value during migration.
 

@@ -386,11 +386,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			verticleLoader.apply(Mesh.vertx());
 		}
 
-		try (Tx tx = db.tx()) {
-			userRoot().findByName("admin").setPassword("admin");
-			tx.success();
-		}
-
 		// Initialise routes for existing projects
 		try (Tx tx = db.tx()) {
 			initProjects();
