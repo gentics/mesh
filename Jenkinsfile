@@ -61,7 +61,7 @@ node("jenkins-slave") {
 						}
 						echo "Setting correct inclusions file ${postfix}"
 						sh "mv includes-${postfix} inclusions.txt"
-						sh "echo "Inclusions:"
+						sh "echo Inclusions:"
 						sh "cat inclusions.txt"
 						sshagent(["git"]) {
 							try {
