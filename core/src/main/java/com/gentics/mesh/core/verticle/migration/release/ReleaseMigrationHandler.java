@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.INITIAL;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -22,6 +23,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationHandler;
+import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 
@@ -40,9 +42,10 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 	 * 
 	 * @param newRelease
 	 *            new release
+	 * @param status
 	 * @return Completable which will be invoked once the migration has completed.
 	 */
-	public Completable migrateRelease(Release newRelease) {
+	public Completable migrateRelease(Release newRelease, MigrationStatusHandler status) {
 		if (newRelease.isMigrated()) {
 			throw error(BAD_REQUEST, "Release {" + newRelease.getName() + "} is already migrated");
 		}
@@ -60,6 +63,11 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 		String newReleaseUuid = newRelease.getUuid();
 		Project project = oldRelease.getProject();
 		List<Completable> batches = new ArrayList<>();
+
+		if (status != null) {
+			status.getInfo().setStatus(RUNNING);
+			status.updateStatus();
+		}
 
 		// Add the needed indices and mappings
 		SearchQueueBatch indexCreationBatch = searchQueue.create();
