@@ -15,6 +15,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.util.CompareUtils;
@@ -80,6 +81,9 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				}
 				if (fieldInB instanceof MicronodeFieldSchema) {
 					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((MicronodeFieldSchema) fieldInB).getAllowedMicroSchemas());
+				}
+				if (fieldInB instanceof NodeFieldSchema) {
+					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((NodeFieldSchema)fieldInB).getAllowedSchemas());
 				}
 
 				if (i - 1 >= 0) {

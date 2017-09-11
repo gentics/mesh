@@ -2,9 +2,9 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ADD_FIELD_AFTER_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ALLOW_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LIST_TYPE_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TYPE_KEY;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ALLOW_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -13,6 +13,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
@@ -106,7 +107,9 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 			field = new BinaryFieldSchemaImpl();
 			break;
 		case "node":
-			field = new NodeFieldSchemaImpl();
+			NodeFieldSchema nodeField = new NodeFieldSchemaImpl();
+			nodeField.setAllowedSchemas(getAllowProp());
+			field = nodeField;
 			break;
 		case "micronode":
 			MicronodeFieldSchema micronodeFieldSchema = new MicronodeFieldSchemaImpl();
