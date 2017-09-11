@@ -1478,8 +1478,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				throw error(BAD_REQUEST, "node_error_version_missing");
 			}
 
-			// Make sure the container was already migrated. Otherwise the
-			// update can't proceed.
+			// Make sure the container was already migrated. Otherwise the update can't proceed.
 			SchemaContainerVersion schemaContainerVersion = latestDraftVersion.getSchemaContainerVersion();
 			if (!latestDraftVersion.getSchemaContainerVersion().equals(release.getVersion(schemaContainerVersion.getSchemaContainer()))) {
 				throw error(BAD_REQUEST, "node_error_migration_incomplete");
