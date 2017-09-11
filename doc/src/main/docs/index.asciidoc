@@ -275,6 +275,36 @@ ul.doc-toc h2 {
                     </li>
 
                     <li class="section">
+                        <h2><a href="security.html">Security</a></h2>
+                        <ul>
+                            <li>
+                                <a href="security.html#_api_tokens">API Tokens</a>
+                            </li>
+                            <li>
+                                <a href="security.html#_network_security">Network Security</a>
+                            </li>
+                            <li>
+                                <a href="security.html#_database_security">Database Security</a>
+                            </li>
+                            <li>
+                                <a href="security.html#_vulnerability_disclosure_policy">Vulnerability Disclosure Policy</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="section">
+                        <h2><a href="performance.html">Performance Guide</a></h2>
+                        <ul>
+                            <li>
+                                <a href="performance.html#_paging">Paging</a>
+                            </li>
+                            <li>
+                                <a href="performance.html#_contents">Contents</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="section">
                         <h2><a href="platforms.html">Platforms</a></h2>
                         <ul>
                             <li>
