@@ -5,8 +5,10 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.JWTAuthentication;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -21,13 +23,28 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	public static final int DEFAULT_PORT = 8080;
 
-	protected HttpClient client;
+	private Vertx vertx;
+
+	private HttpClientOptions clientOptions;
+
+	private ThreadLocal<HttpClient> localClient = ThreadLocal.withInitial(() -> (vertx.createHttpClient(clientOptions)));
 
 	protected JWTAuthentication authentication;
 
 	protected boolean disableAnonymousAccess = false;
 
 	private String baseUri = DEFAULT_BASEURI;
+
+
+	public AbstractMeshRestHttpClient(String host, int port, boolean ssl, Vertx vertx) {
+		HttpClientOptions options = new HttpClientOptions();
+		options.setDefaultHost(host);
+		options.setTryUseCompression(true);
+		options.setDefaultPort(port);
+		options.setSsl(ssl);
+		this.clientOptions = options;
+		this.vertx = vertx;
+	}
 
 	@Override
 	public MeshRestClient setLogin(String username, String password) {
@@ -44,16 +61,12 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	@Override
 	public HttpClient getClient() {
-		return client;
+		return localClient.get();
 	}
 
 	@Override
 	public void close() {
-		client.close();
-	}
-
-	public void setClient(HttpClient client) {
-		this.client = client;
+		getClient().close();
 	}
 
 	@Override
@@ -172,7 +185,7 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 	 * Set the base URI path to the Mesh-API.
 	 *
 	 * @param baseUri
-	 * 				the base URI
+	 *            the base URI
 	 */
 	public void setBaseUri(String baseUri) {
 		this.baseUri = baseUri;

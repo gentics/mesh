@@ -96,6 +96,7 @@ import com.gentics.mesh.rest.client.handler.impl.WebRootResponseHandler;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
@@ -111,22 +112,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	public MeshRestHttpClientImpl(String host, int port, boolean ssl, Vertx vertx) {
-		HttpClientOptions options = new HttpClientOptions();
-		options.setDefaultHost(host);
-		options.setTryUseCompression(true);
-		options.setDefaultPort(port);
-		options.setSsl(ssl);
-		this.client = vertx.createHttpClient(options);
-		setAuthenticationProvider(new JWTAuthentication());
-	}
-
-	public MeshRestHttpClientImpl(String host, int port, Vertx vertx, boolean useSsl) {
-		HttpClientOptions options = new HttpClientOptions();
-		options.setDefaultHost(host);
-		options.setTryUseCompression(true);
-		options.setDefaultPort(port);
-		options.setSsl(useSsl);
-		this.client = vertx.createHttpClient(options);
+		super(host, port, ssl, vertx);
 		setAuthenticationProvider(new JWTAuthentication());
 	}
 
@@ -721,7 +707,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		// TODO encode path?
 		String requestUri = getBaseUri() + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
 		ResponseHandler<WebRootResponse> handler = new WebRootResponseHandler(HttpMethod.GET, requestUri);
-		HttpClientRequest request = client.request(GET, requestUri, handler);
+		HttpClientRequest request = getClient().request(GET, requestUri, handler);
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "*/*");
 		});
@@ -940,7 +926,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		String uri = getBaseUri() + path;
 
 		MeshBinaryResponseHandler handler = new MeshBinaryResponseHandler(GET, uri);
-		HttpClientRequest request = client.request(GET, uri, handler);
+		HttpClientRequest request = getClient().request(GET, uri, handler);
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "application/json");
 		});
@@ -1028,7 +1014,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public void eventbus(Handler<WebSocket> wsConnect) {
-		client.websocket(getBaseUri() + "/eventbus/websocket", wsConnect);
+		getClient().websocket(getBaseUri() + "/eventbus/websocket", wsConnect);
 	}
 
 	@Override
