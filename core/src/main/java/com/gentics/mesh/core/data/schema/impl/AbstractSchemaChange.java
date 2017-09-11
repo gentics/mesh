@@ -99,7 +99,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public void setRestProperty(String key, Object value) {
-		if(value instanceof List) {
+		if (value instanceof List) {
 			value = ((List) value).toArray();
 		}
 		setProperty(REST_PROPERTY_PREFIX_KEY + key, value);

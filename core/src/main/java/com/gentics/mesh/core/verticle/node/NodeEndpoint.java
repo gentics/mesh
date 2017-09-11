@@ -390,7 +390,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		});
 
 		Endpoint putEndpoint = createEndpoint();
-		putEndpoint.description("Publish the node with the given uuid.");
+		putEndpoint.description("Publish all language specific contents of the node with the given uuid.");
 		putEndpoint.path("/:nodeUuid/published");
 		putEndpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		putEndpoint.method(POST);

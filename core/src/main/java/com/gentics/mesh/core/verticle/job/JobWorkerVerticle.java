@@ -71,6 +71,7 @@ public class JobWorkerVerticle extends AbstractVerticle {
 
 	private void registerJobHandler() {
 		jobConsumer = vertx.eventBus().consumer(JOB_WORKER_ADDRESS, (message) -> {
+			log.info("Got job processing request. Getting lock to execute the request.");
 			processJobs();
 		});
 	}

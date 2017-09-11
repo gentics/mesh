@@ -27,6 +27,7 @@ public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Sch
 
 	@Override
 	public List<SchemaChangeModel> diff(Schema schemaA, Schema schemaB) {
+		// diff fields
 		List<SchemaChangeModel> changes = super.diff(schemaA, schemaB, Schema.class);
 
 		// segmentField

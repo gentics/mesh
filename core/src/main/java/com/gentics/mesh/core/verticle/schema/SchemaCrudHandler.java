@@ -88,7 +88,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			// 2. Diff the schema with the latest version
 			SchemaChangesListModel model = new SchemaChangesListModel();
-			model.getChanges().addAll(MeshInternal.get().schemaComparator().diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
+			model.getChanges().addAll(comparator.diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
 			String schemaName = schemaContainer.getName();
 
 			// No changes -> done
