@@ -305,7 +305,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 				if (release == null) {
 					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} cannot be found.");
 				}
-				MeshInternal.get().releaseMigrationHandler().migrateRelease(release).await();
+				MeshInternal.get().releaseMigrationHandler().migrateRelease(release, status).await();
 				status.done();
 			}
 		} catch (Exception e) {

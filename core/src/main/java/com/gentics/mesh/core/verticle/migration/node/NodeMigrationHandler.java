@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.migration.node;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -85,6 +86,11 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 		SchemaModel newSchema = toVersion.getSchema();
 		List<Exception> errorsDetected = new ArrayList<>();
+
+		if (status != null) {
+			status.getInfo().setStatus(RUNNING);
+			status.updateStatus();
+		}
 
 		// The node migration needs to write into a new index. Lets prepare the creation of that index
 		SearchQueueBatch indexCreatingBatch = searchQueue.create();

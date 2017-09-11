@@ -2,6 +2,7 @@ package com.gentics.mesh.core.verticle.migration.micronode;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -92,6 +93,11 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 		List<Completable> batches = new ArrayList<>();
 		List<Exception> errorsDetected = new ArrayList<>();
+
+		if (status != null) {
+			status.getInfo().setStatus(RUNNING);
+			status.updateStatus();
+		}
 
 		for (NodeGraphFieldContainer container : fieldContainers) {
 			SearchQueueBatch batch = db.tx(() -> {
