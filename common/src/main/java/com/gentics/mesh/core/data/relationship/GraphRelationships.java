@@ -137,6 +137,10 @@ public class GraphRelationships {
 	public static final String HAS_RELEASE_ROOT = "HAS_RELEASE_ROOT";
 	public static final String HAS_JOB_ROOT = "HAS_JOB_ROOT";
 
+	// Asset root
+	public static final String HAS_ASSET_BINARY_ROOT = "HAS_ASSET_BINARY_ROOT";
+	public static final String HAS_ASSET_BINARY = "HAS_ASSET_BINARY";
+
 	public static final String HAS_FIELD = "HAS_FIELD";
 	public static final String HAS_ITEM = "HAS_ITEM";
 

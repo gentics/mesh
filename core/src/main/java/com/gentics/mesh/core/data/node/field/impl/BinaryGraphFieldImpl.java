@@ -29,6 +29,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 
 	public static void init(Database database) {
 		database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
+		//database.addVertexIndex(BinaryGraphFieldImpl.class, true, BINARY_SHA512SUM_PROPERTY_KEY);
 	}
 
 	public static FieldTransformator<BinaryField> BINARY_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
