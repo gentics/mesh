@@ -184,6 +184,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			Path pathResult = webrootService.findByProjectPath(gc, path);
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
 			Node nodeOfContainer = container.getParentNode();
+			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
 			return new NodeContent(nodeOfContainer, container);
 		}
 		return null;
