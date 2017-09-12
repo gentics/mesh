@@ -4,6 +4,8 @@ import static com.gentics.mesh.Events.EVENT_SCHEMA_CREATED;
 import static com.gentics.mesh.Events.EVENT_SCHEMA_DELETED;
 import static com.gentics.mesh.Events.EVENT_SCHEMA_UPDATED;
 
+import java.util.Iterator;
+
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -27,12 +29,12 @@ public interface SchemaContainerVersion
 	}
 
 	/**
-	 * Return an iterable for {@link NodeGraphFieldContainer}'s that use this schema version and are DRAFT versions for the given release
+	 * Return an iterator for {@link NodeGraphFieldContainer}'s that use this schema version and are DRAFT versions for the given release
 	 * 
 	 * @param releaseUuid
 	 *            release Uuid
 	 * @return
 	 */
-	Iterable<NodeGraphFieldContainer> getFieldContainers(String releaseUuid);
+	Iterator<NodeGraphFieldContainer> getFieldContainers(String releaseUuid);
 
 }

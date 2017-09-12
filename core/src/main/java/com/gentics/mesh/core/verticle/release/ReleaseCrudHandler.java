@@ -43,7 +43,6 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
@@ -285,12 +284,13 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 						break;
 					}
 
-					Job job = jobRoot.enqueueMicroschemaMigration(user,release, currentVersion, latestVersion);
+					Job job = jobRoot.enqueueMicroschemaMigration(user, release, currentVersion, latestVersion);
 					job.process();
 
 					try (Tx tx = db.tx()) {
+						Iterator<? extends NodeGraphFieldContainer> it = currentVersion.getFieldContainers(release.getUuid());
 						log.info("After migration " + microschemaContainer.getName() + ":" + currentVersion.getVersion() + " - "
-								+ currentVersion.getUuid() + "=" + TestUtils.toList(currentVersion.getFieldContainers(release.getUuid())).size());
+								+ currentVersion.getUuid() + "=" + it.hasNext());
 					}
 				}
 
@@ -323,7 +323,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					Job job = jobRoot.enqueueSchemaMigration(user, release, currentVersion, latestVersion);
 					try {
 						job.process();
-						Iterator<NodeGraphFieldContainer> it = currentVersion.getFieldContainers(release.getUuid()).iterator();
+						Iterator<NodeGraphFieldContainer> it = currentVersion.getFieldContainers(release.getUuid());
 						log.info("After migration " + schemaContainer.getName() + ":" + currentVersion.getVersion() + " - " + currentVersion.getUuid()
 								+ " has unmigrated containers: " + it.hasNext());
 					} catch (Exception e) {

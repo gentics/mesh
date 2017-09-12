@@ -70,7 +70,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 		// Get the containers of nodes, that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
 		// versions.
-		Iterable<NodeGraphFieldContainer> fieldContainers = fromVersion.getFieldContainers(release.getUuid());
+		Iterator<NodeGraphFieldContainer> fieldContainers = fromVersion.getFieldContainers(release.getUuid());
 
 		// Prepare the migration - Collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();
@@ -97,16 +97,15 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		indexCreatingBatch.createNodeIndex(project.getUuid(), release.getUuid(), toVersion.getUuid(), DRAFT, newSchema);
 		indexCreatingBatch.createNodeIndex(project.getUuid(), release.getUuid(), toVersion.getUuid(), PUBLISHED, newSchema);
 
-		Iterator<NodeGraphFieldContainer> it = fieldContainers.iterator();
 		// Only create a new index if we actually need to migrate elements.
-		if (it.hasNext()) {
+		if (fieldContainers.hasNext()) {
 			indexCreatingBatch.processSync();
 		}
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();
-		while (it.hasNext()) {
-			NodeGraphFieldContainer container = it.next();
+		while (fieldContainers.hasNext()) {
+			NodeGraphFieldContainer container = fieldContainers.next();
 			migrateContainer(ac, container, toVersion, migrationScripts, release, newSchema, errorsDetected, touchedFields);
 
 			if (status != null) {
