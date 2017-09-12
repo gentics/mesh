@@ -4,6 +4,7 @@ import static com.gentics.mesh.Events.EVENT_MICROSCHEMA_CREATED;
 import static com.gentics.mesh.Events.EVENT_MICROSCHEMA_UPDATED;
 import static com.gentics.mesh.Events.EVENT_SCHEMA_DELETED;
 
+import java.util.Iterator;
 import java.util.List;
 
 import com.gentics.mesh.core.TypeInfo;
@@ -31,14 +32,14 @@ public interface MicroschemaContainerVersion extends
 	}
 
 	/**
-	 * Return a list {@link NodeGraphFieldContainer} that contain at least one micronode field (or list of micronodes field) that uses this schema version for
-	 * the given release.
+	 * Return an iterator over {@link NodeGraphFieldContainer}'s that contain at least one micronode field (or list of micronodes field) that uses this schema
+	 * version for the given release.
 	 *
 	 * @param releaseUuid
 	 *            Uuid of the release
 	 * @return
 	 */
-	List<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid);
+	Iterator<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid);
 
 	/**
 	 * Find a list of micronodes which reference this microschema version.

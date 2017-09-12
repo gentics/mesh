@@ -43,6 +43,7 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
@@ -289,7 +290,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 
 					try (Tx tx = db.tx()) {
 						log.info("After migration " + microschemaContainer.getName() + ":" + currentVersion.getVersion() + " - "
-								+ currentVersion.getUuid() + "=" + currentVersion.getFieldContainers(release.getUuid()).size());
+								+ currentVersion.getUuid() + "=" + TestUtils.toList(currentVersion.getFieldContainers(release.getUuid())).size());
 					}
 				}
 

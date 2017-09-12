@@ -10,13 +10,12 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -41,7 +40,9 @@ import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -307,7 +308,8 @@ public class MicroschemaContainerTest extends AbstractMeshTest implements BasicO
 			NodeGraphFieldContainer containerWithOtherVersion = folder("deals").getGraphFieldContainer("en");
 			containerWithOtherVersion.createMicronode("single", newVCard);
 
-			List<NodeGraphFieldContainer> containers = new ArrayList<>(vcard.getFieldContainers(project().getLatestRelease().getUuid()));
+			Iterator<? extends NodeGraphFieldContainer> it = vcard.getFieldContainers(project().getLatestRelease().getUuid());
+			List<NodeGraphFieldContainer> containers = TestUtils.toList(it);
 			assertThat(containers).containsOnly(containerWithBoth, containerWithField, containerWithList).hasSize(3);
 		}
 	}

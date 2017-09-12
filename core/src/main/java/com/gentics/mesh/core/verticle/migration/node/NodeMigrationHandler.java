@@ -80,12 +80,12 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		} catch (IOException e) {
 			return Completable.error(e);
 		}
+
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
 		ac.setProject(project);
 		ac.setRelease(release);
 
 		SchemaModel newSchema = toVersion.getSchema();
-		List<Exception> errorsDetected = new ArrayList<>();
 
 		if (status != null) {
 			status.getInfo().setStatus(RUNNING);
@@ -104,16 +104,10 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		}
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
+		List<Exception> errorsDetected = new ArrayList<>();
 		while (it.hasNext()) {
 			NodeGraphFieldContainer container = it.next();
-			if (log.isDebugEnabled()) {
-				log.debug("Migrating container {" + container.getUuid() + "}");
-			}
-			SearchQueueBatch batch = migrateContainer(ac, container, toVersion, migrationScripts, release, newSchema, errorsDetected, touchedFields);
-			// Process the search queue batch in order to update the search index
-			if (batch != null) {
-				batch.processSync();
-			}
+			migrateContainer(ac, container, toVersion, migrationScripts, release, newSchema, errorsDetected, touchedFields);
 
 			if (status != null) {
 				status.getInfo().incCompleted();
@@ -127,7 +121,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			count++;
 		}
 		log.info("Migration of " + count + " containers done..");
-		log.info("Encountered {" + errorsDetected.size() + "} errors during migration.");
+		log.info("Encountered {" + errorsDetected.size() + "} errors during node migration.");
 		Completable result = Completable.complete();
 		if (!errorsDetected.isEmpty()) {
 			if (log.isDebugEnabled()) {
@@ -155,14 +149,20 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 	 * @param touchedFields
 	 * @return
 	 */
-	private SearchQueueBatch migrateContainer(NodeMigrationActionContextImpl ac, NodeGraphFieldContainer container, SchemaContainerVersion toVersion,
+	private void migrateContainer(NodeMigrationActionContextImpl ac, NodeGraphFieldContainer container, SchemaContainerVersion toVersion,
 			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Release release, SchemaModel newSchema, List<Exception> errorsDetected,
 			Set<String> touchedFields) {
-		SearchQueueBatch batch = db.tx((tx) -> {
-			String releaseUuid = release.getUuid();
-			SearchQueueBatch sqb = searchQueue.create();
 
-			try {
+		if (log.isDebugEnabled()) {
+			log.debug("Migrating container {" + container.getUuid() + "}");
+		}
+		String releaseUuid = release.getUuid();
+
+		// Run the actual migration in a dedicated transaction
+		try {
+			SearchQueueBatch batch = db.tx((tx) -> {
+				SearchQueueBatch sqb = searchQueue.create();
+
 				Node node = container.getParentNode();
 				String languageTag = container.getLanguage().getLanguageTag();
 				ac.getNodeParameters().setLanguages(languageTag);
@@ -217,16 +217,16 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				if (publish) {
 					sqb.store(node, releaseUuid, PUBLISHED, false);
 				}
-				tx.success();
 				return sqb;
-			} catch (Exception e1) {
-				tx.failure();
-				log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
-				errorsDetected.add(e1);
-				return null;
+			});
+			// Process the search queue batch in order to update the search index
+			if (batch != null) {
+				batch.processSync();
 			}
-		});
-		return batch;
+		} catch (Exception e1) {
+			log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
+			errorsDetected.add(e1);
+		}
 
 	}
 

@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -64,18 +65,13 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 */
 	public Completable migrateMicronodes(Project project, Release release, MicroschemaContainerVersion fromVersion,
 			MicroschemaContainerVersion toVersion, MigrationStatusHandler status) {
-		String releaseUuid = db.tx(release::getUuid);
 
 		// Get the containers, that need to be transformed
-		List<? extends NodeGraphFieldContainer> fieldContainers = db.tx(() -> fromVersion.getFieldContainers(release.getUuid()));
+		Iterator<? extends NodeGraphFieldContainer> fieldContainersIt = db.tx(() -> fromVersion.getFieldContainers(release.getUuid()));
 
 		// No field containers, migration is done
-		if (fieldContainers.isEmpty()) {
+		if (!fieldContainersIt.hasNext()) {
 			return Completable.complete();
-		}
-
-		if (status != null) {
-			status.getInfo().setCompleted(fieldContainers.size());
 		}
 
 		// Collect the migration scripts
@@ -91,82 +87,107 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		ac.setProject(project);
 		ac.setRelease(release);
 
-		List<Completable> batches = new ArrayList<>();
-		List<Exception> errorsDetected = new ArrayList<>();
-
 		if (status != null) {
 			status.getInfo().setStatus(RUNNING);
 			status.updateStatus();
 		}
 
-		for (NodeGraphFieldContainer container : fieldContainers) {
-			SearchQueueBatch batch = db.tx(() -> {
-				SearchQueueBatch sqb = searchQueue.create();
-				try {
-					Node node = container.getParentNode();
-					String languageTag = container.getLanguage().getLanguageTag();
-					ac.getNodeParameters().setLanguages(languageTag);
-					ac.getVersioningParameters().setVersion("draft");
-
-					boolean publish = false;
-					if (container.isPublished(releaseUuid)) {
-						publish = true;
-					} else {
-						// Check whether there is another published version
-						NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, PUBLISHED);
-						if (oldPublished != null) {
-							ac.getVersioningParameters().setVersion("published");
-
-							// Clone the field container
-							NodeGraphFieldContainer migrated = node.createGraphFieldContainer(oldPublished.getLanguage(), release,
-									oldPublished.getEditor(), oldPublished);
-
-							migrated.setVersion(oldPublished.getVersion().nextPublished());
-							node.setPublished(migrated, releaseUuid);
-
-							migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
-							sqb.store(migrated, releaseUuid, PUBLISHED, false);
-							ac.getVersioningParameters().setVersion("draft");
-						}
-					}
-
-					NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release, container.getEditor(),
-							container);
-					if (publish) {
-						migrated.setVersion(container.getVersion().nextPublished());
-						node.setPublished(migrated, releaseUuid);
-					}
-
-					migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
-
-					sqb.store(node, releaseUuid, DRAFT, false);
-					if (publish) {
-						sqb.store(node, releaseUuid, PUBLISHED, false);
-					}
-					return sqb;
-				} catch (Exception e1) {
-					log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
-					errorsDetected.add(e1);
-					return null;
-				}
-			});
-
-			// Process the search queue batch in order to update the search index
-			if (batch != null) {
-				batches.add(batch.processAsync());
-			}
+		// Iterate over all containers and invoke a migration for each one
+		long count = 0;
+		List<Exception> errorsDetected = new ArrayList<>();
+		while (fieldContainersIt.hasNext()) {
+			NodeGraphFieldContainer container = fieldContainersIt.next();
+			migrateMicronodeContainer(ac, release, fromVersion, toVersion, container, touchedFields, migrationScripts, errorsDetected);
 
 			if (status != null) {
 				status.getInfo().incCompleted();
 			}
+			if (count % 50 == 0) {
+				log.info("Migrated micronode containers: " + count);
+				if (status != null) {
+					status.updateStatus();
+				}
+			}
+			count++;
 		}
-
+		log.info("Migration of " + count + " containers done..");
+		log.info("Encountered {" + errorsDetected.size() + "} errors during micronode migration.");
 		Completable result = Completable.complete();
 		if (!errorsDetected.isEmpty()) {
+			if (log.isDebugEnabled()) {
+				for (Exception error : errorsDetected) {
+					log.error("Encountered migration error.", error);
+				}
+			}
 			result = Completable.error(new CompositeException(errorsDetected));
 		}
+		return result;
+	}
 
-		return Completable.merge(batches).andThen(result);
+	private void migrateMicronodeContainer(NodeMigrationActionContextImpl ac, Release release, MicroschemaContainerVersion fromVersion,
+			MicroschemaContainerVersion toVersion, NodeGraphFieldContainer container, Set<String> touchedFields,
+			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, List<Exception> errorsDetected) {
+
+		if (log.isDebugEnabled()) {
+			log.debug("Migrating container {" + container.getUuid() + "}");
+		}
+		String releaseUuid = release.getUuid();
+
+		// Run the actual migration in a dedicated transaction
+		try {
+			SearchQueueBatch batch = db.tx((tx) -> {
+				SearchQueueBatch sqb = searchQueue.create();
+
+				Node node = container.getParentNode();
+				String languageTag = container.getLanguage().getLanguageTag();
+				ac.getNodeParameters().setLanguages(languageTag);
+				ac.getVersioningParameters().setVersion("draft");
+
+				boolean publish = false;
+				if (container.isPublished(releaseUuid)) {
+					publish = true;
+				} else {
+					// Check whether there is another published version
+					NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, PUBLISHED);
+					if (oldPublished != null) {
+						ac.getVersioningParameters().setVersion("published");
+
+						// Clone the field container
+						NodeGraphFieldContainer migrated = node.createGraphFieldContainer(oldPublished.getLanguage(), release,
+								oldPublished.getEditor(), oldPublished);
+
+						migrated.setVersion(oldPublished.getVersion().nextPublished());
+						node.setPublished(migrated, releaseUuid);
+
+						migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
+						sqb.store(migrated, releaseUuid, PUBLISHED, false);
+						ac.getVersioningParameters().setVersion("draft");
+					}
+				}
+
+				NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release, container.getEditor(), container);
+				if (publish) {
+					migrated.setVersion(container.getVersion().nextPublished());
+					node.setPublished(migrated, releaseUuid);
+				}
+
+				migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
+				sqb.store(node, releaseUuid, DRAFT, false);
+				if (publish) {
+					sqb.store(node, releaseUuid, PUBLISHED, false);
+				}
+				return sqb;
+			});
+			// Process the search queue batch in order to update the search index
+			if (batch != null) {
+				batch.processSync();
+			}
+
+		} catch (Exception e1) {
+			log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
+			errorsDetected.add(e1);
+		}
+
 	}
 
 	/**
