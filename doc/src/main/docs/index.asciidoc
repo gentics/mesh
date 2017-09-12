@@ -116,6 +116,19 @@ ul.doc-toc h2 {
                             </li>
                         </ul>
                     </li>
+
+                    <li class="section">
+                        <h2><a href="performance.html">Performance Guide</a></h2>
+                        <ul>
+                            <li>
+                                <a href="performance.html#_paging">Paging</a>
+                            </li>
+                            <li>
+                                <a href="performance.html#_contents">Contents</a>
+                            </li>
+                        </ul>
+                    </li>
+                    
                 </ul>
             </div>
             <div class="col-md-4">
@@ -190,7 +203,25 @@ ul.doc-toc h2 {
                             </li>
                             <li>
                                 <a href="user-interface.html#_configuration">Configuration</a>
-                            </li>                            
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="section">
+                        <h2><a href="platforms.html">Platforms</a></h2>
+                        <ul>
+                            <li>
+                                <a href="platforms.html#_javascript">JavaScript</a>
+                            </li>
+                            <li>
+                                <a href="platforms.html#_java">Java</a>
+                            </li>
+                            <li>
+                                <a href="platforms.html#_go">Go</a>
+                            </li>
+                            <li>
+                                <a href="platforms.html#_php">PHP</a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
@@ -266,10 +297,16 @@ ul.doc-toc h2 {
                                 <a href="clustering.html#_setup">Setup</a>
                             </li>
                             <li>
+                                <a href="clustering.html#_node_discovery">Node discovery</a>
+                            </li>
+                            <li>
                                 <a href="clustering.html#_monitoring">Monitoring</a>
                             </li>
                             <li>
                                 <a href="clustering.html#_faq">FAQ</a>
+                            </li>
+                            <li>
+                                <a href="clustering.html#_limitations">Limitations</a>
                             </li>
                         </ul>
                     </li>
@@ -292,35 +329,6 @@ ul.doc-toc h2 {
                         </ul>
                     </li>
 
-                    <li class="section">
-                        <h2><a href="performance.html">Performance Guide</a></h2>
-                        <ul>
-                            <li>
-                                <a href="performance.html#_paging">Paging</a>
-                            </li>
-                            <li>
-                                <a href="performance.html#_contents">Contents</a>
-                            </li>
-                        </ul>
-                    </li>
-
-                    <li class="section">
-                        <h2><a href="platforms.html">Platforms</a></h2>
-                        <ul>
-                            <li>
-                                <a href="platforms.html#_javascript">JavaScript</a>
-                            </li>
-                            <li>
-                                <a href="platforms.html#_java">Java</a>
-                            </li>
-                            <li>
-                                <a href="platforms.html#_go">Go</a>
-                            </li>
-                            <li>
-                                <a href="platforms.html#_php">PHP</a>
-                            </li>
-                        </ul>
-                    </li>
                 </ul>
             </div>
         </div>

@@ -40,7 +40,7 @@ User passwords are stored as link:https://en.wikipedia.org/wiki/Bcrypt[bcrypt] h
 
 == Vulnerability Disclosure Policy
 
-Please do *not* post security issues to our github issues page. Instead we encourage you to submit security issues to us via security@getmesh.io
+Please do *not* post security issues to our github issues page. Instead we encourage you to submit security issues to us via support@gentics.com
 
 Publicly disclosing a vulnerability can put the entire community which makes use of Gentics Mesh at risk.
 
