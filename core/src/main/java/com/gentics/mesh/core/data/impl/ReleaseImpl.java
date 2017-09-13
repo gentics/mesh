@@ -21,6 +21,10 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
+import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
+import com.gentics.mesh.core.data.release.impl.ReleaseMicroschemaEdgeImpl;
+import com.gentics.mesh.core.data.release.impl.ReleaseSchemaEdgeImpl;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.root.impl.ReleaseRootImpl;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
@@ -163,12 +167,6 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public Release assignSchemaVersion(SchemaContainerVersion schemaContainerVersion) {
-		assign(schemaContainerVersion);
-		return this;
-	}
-
-	@Override
 	public Release unassignSchema(SchemaContainer schemaContainer) {
 		unassign(schemaContainer);
 		return this;
@@ -200,9 +198,36 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public Release assignMicroschemaVersion(MicroschemaContainerVersion microschemaContainerVersion) {
+	public Iterable<? extends ReleaseSchemaEdge> findAllSchemaVersionEdges() {
+		return outE(HAS_SCHEMA_VERSION).frameExplicit(ReleaseSchemaEdgeImpl.class);
+	}
+
+	@Override
+	public Iterable<? extends ReleaseMicroschemaEdge> findAllMicroschemaVersionEdges() {
+		return outE(HAS_MICROSCHEMA_VERSION).frameExplicit(ReleaseMicroschemaEdgeImpl.class);
+	}
+
+	@Override
+	public ReleaseSchemaEdge assignSchemaVersion(SchemaContainerVersion schemaContainerVersion) {
+		assign(schemaContainerVersion);
+		return findReleaseSchemaEdge(schemaContainerVersion);
+	}
+
+	@Override
+	public ReleaseMicroschemaEdge assignMicroschemaVersion(MicroschemaContainerVersion microschemaContainerVersion) {
 		assign(microschemaContainerVersion);
-		return this;
+		return findReleaseMicroschemaEdge(microschemaContainerVersion);
+	}
+
+	@Override
+	public ReleaseSchemaEdge findReleaseSchemaEdge(SchemaContainerVersion schemaContainerVersion) {
+		return outE(HAS_SCHEMA_VERSION).mark().inV().retain(schemaContainerVersion).back().nextOrDefaultExplicit(ReleaseSchemaEdgeImpl.class, null);
+	}
+
+	@Override
+	public ReleaseMicroschemaEdge findReleaseMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion) {
+		return outE(HAS_MICROSCHEMA_VERSION).mark().inV().retain(microschemaContainerVersion).back()
+				.nextOrDefaultExplicit(ReleaseMicroschemaEdgeImpl.class, null);
 	}
 
 	@Override

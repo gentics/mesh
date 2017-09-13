@@ -7,6 +7,8 @@ import static com.gentics.mesh.Events.EVENT_RELEASE_UPDATED;
 import java.util.List;
 
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
+import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -102,9 +104,9 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * Assign the given schema version to the release. This will effectively unassign all other schema versions of the schema.
 	 * 
 	 * @param schemaContainerVersion
-	 * @return Fluent API
+	 * @return Edge between release and schema version
 	 */
-	Release assignSchemaVersion(SchemaContainerVersion schemaContainerVersion);
+	ReleaseSchemaEdge assignSchemaVersion(SchemaContainerVersion schemaContainerVersion);
 
 	/**
 	 * Unassign all schema versions of the given schema from this release.
@@ -152,9 +154,9 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * Assign the given microschema version to the release Unassign all other versions of the microschema.
 	 * 
 	 * @param microschemaContainerVersion
-	 * @return Fluent API
+	 * @return Edge between release and microschema
 	 */
-	Release assignMicroschemaVersion(MicroschemaContainerVersion microschemaContainerVersion);
+	ReleaseMicroschemaEdge assignMicroschemaVersion(MicroschemaContainerVersion microschemaContainerVersion);
 
 	/**
 	 * Unassigns all versions of the given microschema from this release.
@@ -213,5 +215,35 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * @return Fluent API
 	 */
 	Release setProject(Project project);
+
+	/**
+	 * Return all schema versions which are linked to the release.
+	 * 
+	 * @return
+	 */
+	Iterable<? extends ReleaseSchemaEdge> findAllSchemaVersionEdges();
+
+	/**
+	 * Return all microschema versions which are linked to the release.
+	 * 
+	 * @return
+	 */
+	Iterable<? extends ReleaseMicroschemaEdge> findAllMicroschemaVersionEdges();
+
+	/**
+	 * Find the release schema edge for the given version.
+	 * 
+	 * @param schemaContainerVersion
+	 * @return
+	 */
+	ReleaseSchemaEdge findReleaseSchemaEdge(SchemaContainerVersion schemaContainerVersion);
+
+	/**
+	 * Find the release microschema edge for the given version.
+	 * 
+	 * @param microschemaContainerVersion
+	 * @return
+	 */
+	ReleaseMicroschemaEdge findReleaseMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion);
 
 }

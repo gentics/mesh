@@ -5,10 +5,8 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 
 public class ReleaseInfoMicroschemaList implements RestModel {
 

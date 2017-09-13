@@ -8,9 +8,20 @@ public enum MigrationStatus {
 	IDLE,
 
 	/**
+	 * The migration status has not yet been determined
+	 */
+	UNKNOWN,
+
+	/**
+	 * Migration is currently queued
+	 */
+	QUEUED,
+
+	/**
 	 * Migration is currently starting
 	 */
 	STARTING,
+
 	/**
 	 * Migration is currently running
 	 */

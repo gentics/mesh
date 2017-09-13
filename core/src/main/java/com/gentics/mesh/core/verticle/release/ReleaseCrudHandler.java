@@ -3,6 +3,7 @@ package com.gentics.mesh.core.verticle.release;
 import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -26,6 +27,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -38,6 +40,8 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.info.ReleaseInfoMicroschemaList;
 import com.gentics.mesh.core.rest.release.info.ReleaseInfoSchemaList;
+import com.gentics.mesh.core.rest.release.info.ReleaseMicroschemaInfo;
+import com.gentics.mesh.core.rest.release.info.ReleaseSchemaInfo;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
@@ -159,7 +163,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 						throw error(BAD_REQUEST, "release_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
 					}
-					release.assignSchemaVersion(version);
+					release.assignSchemaVersion(version).setMigrationStatus(QUEUED);
 					jobRoot.enqueueSchemaMigration(user, release, assignedVersion, version);
 				}
 
@@ -233,41 +237,43 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	}
 
 	/**
-	 * Get the rest model of the schema versions of the release.
+	 * Get the REST model of the schema versions of the release.
 	 * 
 	 * @param release
 	 *            release
 	 * @return single emitting the rest model
 	 */
 	protected Single<ReleaseInfoSchemaList> getSchemaVersionsInfo(Release release) {
-		try {
-			return Observable.from(release.findAllSchemaVersions()).map(SchemaContainerVersion::transformToReference).collect(() -> {
-				return new ReleaseInfoSchemaList();
-			}, (x, y) -> {
-				x.add(y);
-			}).toSingle();
-		} catch (Exception e) {
-			throw error(INTERNAL_SERVER_ERROR, "Unknown error while getting schema versions", e);
-		}
+		return Observable.from(release.findAllSchemaVersionEdges()).map(edge -> {
+			SchemaReference reference = edge.getSchemaContainerVersion().transformToReference();
+			ReleaseSchemaInfo info = new ReleaseSchemaInfo(reference);
+			info.setMigrationStatus(edge.getMigrationStatus());
+			return info;
+		}).collect(() -> {
+			return new ReleaseInfoSchemaList();
+		}, (x, y) -> {
+			x.getSchemas().add(y);
+		}).toSingle();
 	}
 
 	/**
-	 * Get the rest model of the microschema versions of the release
+	 * Get the REST model of the microschema versions of the release.
 	 * 
 	 * @param release
 	 *            release
 	 * @return single emitting the rest model
 	 */
 	protected Single<ReleaseInfoMicroschemaList> getMicroschemaVersions(Release release) {
-		try {
-			return Observable.from(release.findAllMicroschemaVersions()).map(MicroschemaContainerVersion::transformToReference).collect(() -> {
-				return new ReleaseInfoMicroschemaList();
-			}, (x, y) -> {
-				x.add(y);
-			}).toSingle();
-		} catch (Exception e) {
-			throw error(INTERNAL_SERVER_ERROR, "Unknown error while getting microschema versions", e);
-		}
+		return Observable.from(release.findAllMicroschemaVersionEdges()).map(edge -> {
+			MicroschemaReference reference = edge.getMicroschemaContainerVersion().transformToReference();
+			ReleaseMicroschemaInfo info = new ReleaseMicroschemaInfo(reference);
+			info.setMigrationStatus(edge.getMigrationStatus());
+			return info;
+		}).collect(() -> {
+			return new ReleaseInfoMicroschemaList();
+		}, (x, y) -> {
+			x.getMicroschemas().add(y);
+		}).toSingle();
 	}
 
 	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String releaseUuid) {

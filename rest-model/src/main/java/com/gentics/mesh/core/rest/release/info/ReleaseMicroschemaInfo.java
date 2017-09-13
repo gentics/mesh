@@ -1,11 +1,8 @@
 package com.gentics.mesh.core.rest.release.info;
 
-import com.gentics.mesh.core.rest.common.AbstractNameUuidReference;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 
-public class ReleaseMicroschemaInfo extends AbstractNameUuidReference<MicroschemaReference> implements MicroschemaReference {
-
-	private String version;
+public class ReleaseMicroschemaInfo extends AbstractReleaseSchemaInfo<MicroschemaReference> implements MicroschemaReference {
 
 	public ReleaseMicroschemaInfo() {
 	}
@@ -16,12 +13,9 @@ public class ReleaseMicroschemaInfo extends AbstractNameUuidReference<Microschem
 		this.setVersion(reference.getVersion());
 	}
 
-	public String getVersion() {
-		return version;
-	}
-
+	@Override
 	public ReleaseMicroschemaInfo setVersion(String version) {
-		this.version = version;
+		super.setVersion(version);
 		return this;
 	}
 
@@ -36,4 +30,5 @@ public class ReleaseMicroschemaInfo extends AbstractNameUuidReference<Microschem
 		super.setName(name);
 		return this;
 	}
+
 }

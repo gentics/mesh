@@ -90,6 +90,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		if (status != null) {
 			status.getInfo().setStatus(RUNNING);
 			status.updateStatus();
+			Tx.getActive().getGraph().commit();
 		}
 
 		// The node migration needs to write into a new index. Lets prepare the creation of that index
@@ -115,6 +116,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				log.info("Migrated containers: " + count);
 				if (status != null) {
 					status.updateStatus();
+					Tx.getActive().getGraph().commit();
 				}
 			}
 			count++;

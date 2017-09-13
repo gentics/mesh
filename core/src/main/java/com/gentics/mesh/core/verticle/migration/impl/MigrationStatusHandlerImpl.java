@@ -15,6 +15,7 @@ import javax.management.ObjectName;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.release.ReleaseVersionEdge;
 import com.gentics.mesh.core.rest.admin.migration.MigrationInfo;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
@@ -41,6 +42,8 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	private Vertx vertx;
 
 	private MigrationInfo info;
+
+	private ReleaseVersionEdge versionEdge;
 
 	public MigrationStatusHandlerImpl(String uuid, Vertx vertx, MigrationType type) {
 		this.vertx = vertx;
@@ -102,6 +105,9 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 			} else {
 				map.put("data", response);
 			}
+		}
+		if (versionEdge != null) {
+			versionEdge.setMigrationStatus(info.getStatus());
 		}
 		return this;
 
@@ -207,6 +213,9 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		updateStatus();
 		JsonObject result = new JsonObject().put("type", "completed");
 		vertx.eventBus().publish(MESH_MIGRATION, result);
+		if (versionEdge != null) {
+			versionEdge.setMigrationStatus(info.getStatus());
+		}
 		return this;
 	}
 
@@ -228,12 +237,20 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		info.setError(failureMessage + "\n\n" + ExceptionUtils.getStackTrace(error));
 		updateStatus();
 		vertx.eventBus().publish(MESH_MIGRATION, new JsonObject().put("type", "failed"));
+		if (versionEdge != null) {
+			versionEdge.setMigrationStatus(info.getStatus());
+		}
 		return this;
 	}
 
 	@Override
 	public MigrationInfo getInfo() {
 		return info;
+	}
+
+	@Override
+	public void setVersionEdge(ReleaseVersionEdge versionEdge) {
+		this.versionEdge = versionEdge;
 	}
 
 }

@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -255,10 +256,12 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 				if (release == null) {
 					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} not found");
 				}
+
 				SchemaContainerVersion fromContainerVersion = getFromSchemaVersion();
 				if (fromContainerVersion == null) {
 					throw error(BAD_REQUEST, "Source schema version for job {" + getUuid() + "} could not be found.");
 				}
+
 				SchemaContainerVersion toContainerVersion = getToSchemaVersion();
 				if (toContainerVersion == null) {
 					throw error(BAD_REQUEST, "Target schema version for job {" + getUuid() + "} could not be found.");
@@ -268,10 +271,14 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 				if (schemaContainer == null) {
 					throw error(BAD_REQUEST, "Schema container for job {" + getUuid() + "} can't be found.");
 				}
+
 				Project project = release.getProject();
 				if (project == null) {
 					throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
 				}
+
+				ReleaseSchemaEdge releaseVersionEdge = release.findReleaseSchemaEdge(toContainerVersion);
+				statusHandler.setVersionEdge(releaseVersionEdge);
 
 				log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
 						+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + release.getUuid()
@@ -282,10 +289,12 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 				statusHandler.getInfo().setSourceVersion(fromContainerVersion.getVersion());
 				statusHandler.getInfo().setTargetVersion(toContainerVersion.getVersion());
 				statusHandler.updateStatus();
+				tx.getGraph().commit();
 
 				MeshInternal.get().nodeMigrationHandler().migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusHandler)
 						.await();
 				statusHandler.done();
+				tx.success();
 			}
 		} catch (Exception e) {
 			statusHandler.error(e, "Error while preparing node migration.");
@@ -323,19 +332,23 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 				if (release == null) {
 					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} not found");
 				}
+
 				MicroschemaContainerVersion fromContainerVersion = getFromMicroschemaVersion();
 				if (fromContainerVersion == null) {
 					throw error(BAD_REQUEST, "Source version of microschema for job {" + getUuid() + "} could not be found.");
 				}
+
 				MicroschemaContainerVersion toContainerVersion = getToMicroschemaVersion();
 				if (toContainerVersion == null) {
 					throw error(BAD_REQUEST, "Target version of microschema for job {" + getUuid() + "} could not be found.");
 				}
+
 				MicroschemaContainer schemaContainer = fromContainerVersion.getSchemaContainer();
 				if (log.isDebugEnabled()) {
 					log.debug("Micronode migration for microschema {" + schemaContainer.getUuid() + "} from version {"
 							+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} was requested");
 				}
+
 				Project project = release.getProject();
 				if (project == null) {
 					throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");

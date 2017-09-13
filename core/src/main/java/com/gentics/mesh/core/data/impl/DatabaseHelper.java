@@ -20,6 +20,8 @@ import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
+import com.gentics.mesh.core.data.release.impl.ReleaseMicroschemaEdgeImpl;
+import com.gentics.mesh.core.data.release.impl.ReleaseSchemaEdgeImpl;
 import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.core.data.root.impl.LanguageRootImpl;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
@@ -72,6 +74,8 @@ public final class DatabaseHelper {
 		GraphFieldContainerEdgeImpl.init(database);
 		MicronodeGraphFieldImpl.init(database);
 		TagEdgeImpl.init(database);
+		ReleaseSchemaEdgeImpl.init(database);
+		ReleaseMicroschemaEdgeImpl.init(database);
 
 		// Aggregation nodes
 		MeshRootImpl.init(database);

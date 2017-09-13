@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.migration;
 
+import com.gentics.mesh.core.data.release.ReleaseVersionEdge;
 import com.gentics.mesh.core.rest.admin.migration.MigrationInfo;
 
 /**
@@ -41,5 +42,11 @@ public interface MigrationStatusHandler {
 	 * @return
 	 */
 	MigrationInfo getInfo();
+
+	/**
+	 * Set the version edge which will store the migration status.
+	 * @param versionEdge
+	 */
+	void setVersionEdge(ReleaseVersionEdge versionEdge);
 
 }

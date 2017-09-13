@@ -21,9 +21,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -47,9 +47,7 @@ import com.gentics.mesh.core.rest.release.info.ReleaseInfoMicroschemaList;
 import com.gentics.mesh.core.rest.release.info.ReleaseInfoSchemaList;
 import com.gentics.mesh.core.rest.release.info.ReleaseMicroschemaInfo;
 import com.gentics.mesh.core.rest.release.info.ReleaseSchemaInfo;
-import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -533,33 +531,37 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testAssignSchemaVersion() throws Exception {
-		try (Tx tx = tx()) {
-			// create version 1 of a schema
-			SchemaResponse schema = createSchema("schemaname");
+		// create version 1 of a schema
+		SchemaResponse schema = createSchema("schemaname");
 
-			// assign schema to project
-			call(() -> client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()));
+		// assign schema to project
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()));
 
-			// generate version 2
-			updateSchema(schema.getUuid(), "newschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false));
+		// generate version 2
+		updateSchema(schema.getUuid(), "newschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false));
 
-			// generate version 3
-			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false));
+		// generate version 3
+		updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false));
 
-			// check that version 1 is assigned to release
-			ReleaseInfoSchemaList list = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));
-			assertThat(list.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
-					.contains(new ReleaseSchemaInfo().setName("schemaname").setUuid(schema.getUuid()).setVersion("1.0"));
+		// check that version 1 is assigned to release
+		ReleaseInfoSchemaList list = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));
+		assertThat(list.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+				.contains(new ReleaseSchemaInfo().setName("schemaname").setUuid(schema.getUuid()).setVersion("1.0"));
 
-			// assign version 2 to the release
-			ReleaseInfoSchemaList info = new ReleaseInfoSchemaList();
-			info.getSchemas().add(new ReleaseSchemaInfo().setUuid(schema.getUuid()).setVersion("2.0"));
+		// assign version 2 to the release
+		ReleaseInfoSchemaList info = new ReleaseInfoSchemaList();
+		info.getSchemas().add(new ReleaseSchemaInfo().setUuid(schema.getUuid()).setVersion("2.0"));
+		waitForMigration(() -> {
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), info));
+		}, COMPLETED, 1);
 
-			list = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));
-			assertThat(list.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
-					.contains(new ReleaseSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
-		}
+		ReleaseInfoSchemaList schemaList = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));
+		ReleaseSchemaInfo schemaInfo = schemaList.getSchemas().stream().filter(s -> s.getUuid().equals(schema.getUuid())).findFirst().get();
+		assertEquals(COMPLETED, schemaInfo.getMigrationStatus());
+
+		list = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));
+		assertThat(list.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
+				.contains(new ReleaseSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
 	}
 
 	@Test
@@ -669,8 +671,10 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testReadMicroschemaVersions() throws Exception {
-		ReleaseMicroschemaInfo vcard = new ReleaseMicroschemaInfo(db().tx(() -> microschemaContainer("vcard").getLatestVersion().transformToReference()));
-		ReleaseMicroschemaInfo captionedImage = new ReleaseMicroschemaInfo(db().tx(() -> microschemaContainer("captionedImage").getLatestVersion().transformToReference()));
+		ReleaseMicroschemaInfo vcard = new ReleaseMicroschemaInfo(
+				db().tx(() -> microschemaContainer("vcard").getLatestVersion().transformToReference()));
+		ReleaseMicroschemaInfo captionedImage = new ReleaseMicroschemaInfo(
+				db().tx(() -> microschemaContainer("captionedImage").getLatestVersion().transformToReference()));
 		ReleaseInfoMicroschemaList list = call(() -> client().getReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid()));
 		assertThat(list.getMicroschemas()).as("release microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
 				.containsOnly(vcard, captionedImage);
@@ -694,7 +698,8 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// check that version 1 is assigned to release
 			ReleaseInfoMicroschemaList list = call(() -> client().getReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid()));
 			assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
-					.contains(new ReleaseMicroschemaInfo(new MicroschemaReferenceImpl().setName("microschemaname").setUuid(microschema.getUuid()).setVersion("1.0")));
+					.contains(new ReleaseMicroschemaInfo(
+							new MicroschemaReferenceImpl().setName("microschemaname").setUuid(microschema.getUuid()).setVersion("1.0")));
 
 			ReleaseInfoMicroschemaList info = new ReleaseInfoMicroschemaList();
 			info.add(new MicroschemaReferenceImpl().setUuid(microschema.getUuid()).setVersion("2.0"));
@@ -707,7 +712,8 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// assert
 			list = call(() -> client().getReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid()));
 			assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
-					.contains(new ReleaseMicroschemaInfo(new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion("2.0")));
+					.contains(new ReleaseMicroschemaInfo(
+							new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion("2.0")));
 		}
 	}
 
@@ -733,7 +739,8 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// check that version 3 is assigned to release
 			ReleaseInfoMicroschemaList list = call(() -> client().getReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid()));
 			assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
-					.contains(new ReleaseMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewmicroschemaname").setUuid(microschema.getUuid()).setVersion("3.0")));
+					.contains(new ReleaseMicroschemaInfo(
+							new MicroschemaReferenceImpl().setName("anothernewmicroschemaname").setUuid(microschema.getUuid()).setVersion("3.0")));
 
 			// assign version 2 to the release
 			// call(() -> getClient().assignReleaseMicroschemaVersions(PROJECT_NAME, releaseUuid(),
@@ -825,7 +832,8 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// Assert that version 2 is assigned to release
 			ReleaseInfoMicroschemaList list = call(() -> client().getReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid()));
 			assertThat(list.getMicroschemas()).as("Initial microschema versions").usingElementComparatorOnFields("name", "uuid", "version")
-					.contains(new ReleaseMicroschemaInfo(new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion("2.0")));
+					.contains(new ReleaseMicroschemaInfo(
+							new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion("2.0")));
 
 			// Generate version 3 which should not be auto assigned to the project release
 			updateMicroschema(microschema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false));
@@ -833,7 +841,8 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// Assert that version 2 is still assigned to release
 			list = call(() -> client().getReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid()));
 			assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
-					.contains(new ReleaseMicroschemaInfo(new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion("2.0")));
+					.contains(new ReleaseMicroschemaInfo(
+							new MicroschemaReferenceImpl().setName("newmicroschemaname").setUuid(microschema.getUuid()).setVersion("2.0")));
 
 			// Generate version 4
 			updateMicroschema(microschema.getUuid(), "anothernewschemaname1",
@@ -842,7 +851,8 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// Assert that version 4 is assigned to the release
 			list = call(() -> client().getReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid()));
 			assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
-					.contains(new ReleaseMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname1").setUuid(microschema.getUuid()).setVersion("4.0")));
+					.contains(new ReleaseMicroschemaInfo(
+							new MicroschemaReferenceImpl().setName("anothernewschemaname1").setUuid(microschema.getUuid()).setVersion("4.0")));
 
 			// Generate version 5
 			waitForMigration(() -> {
@@ -852,7 +862,8 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// Assert that version 5
 			list = call(() -> client().getReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid()));
 			assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
-					.contains(new ReleaseMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname2").setUuid(microschema.getUuid()).setVersion("5.0")));
+					.contains(new ReleaseMicroschemaInfo(
+							new MicroschemaReferenceImpl().setName("anothernewschemaname2").setUuid(microschema.getUuid()).setVersion("5.0")));
 
 			// Generate version 6
 			updateMicroschema(microschema.getUuid(), "anothernewschemaname3",
@@ -861,7 +872,8 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			// Assert that version 4 is still assigned to the release since non of the names matches the project release
 			list = call(() -> client().getReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid()));
 			assertThat(list.getMicroschemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")
-					.contains(new ReleaseMicroschemaInfo(new MicroschemaReferenceImpl().setName("anothernewschemaname2").setUuid(microschema.getUuid()).setVersion("5.0")));
+					.contains(new ReleaseMicroschemaInfo(
+							new MicroschemaReferenceImpl().setName("anothernewschemaname2").setUuid(microschema.getUuid()).setVersion("5.0")));
 		}
 	}
 }
