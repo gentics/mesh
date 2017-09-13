@@ -38,6 +38,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.job.JobListResponse;
+import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
@@ -531,6 +533,9 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testAssignSchemaVersion() throws Exception {
+		// Grant admin perm
+		tx(() -> group().addRole(roles().get("admin")));
+
 		// create version 1 of a schema
 		SchemaResponse schema = createSchema("schemaname");
 
@@ -555,9 +560,14 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), info));
 		}, COMPLETED, 1);
 
+		JobListResponse jobList = call(() -> client().findJobs());
+		System.out.println(		jobList.toJson());
+		JobResponse job = jobList.getData().stream().filter(j -> j.getProperties().get("schemaUuid").equals(schema.getUuid())).findAny().get();
+
 		ReleaseInfoSchemaList schemaList = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));
 		ReleaseSchemaInfo schemaInfo = schemaList.getSchemas().stream().filter(s -> s.getUuid().equals(schema.getUuid())).findFirst().get();
 		assertEquals(COMPLETED, schemaInfo.getMigrationStatus());
+		assertEquals(job.getUuid(), schemaInfo.getJobUuid());
 
 		list = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));
 		assertThat(list.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version")

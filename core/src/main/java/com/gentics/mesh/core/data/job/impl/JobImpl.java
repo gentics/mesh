@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
 import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -32,6 +33,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
@@ -50,11 +52,6 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 
 	public static void init(Database database) {
 		database.addVertexType(JobImpl.class, MeshVertexImpl.class);
-	}
-
-	@Override
-	protected void init() {
-		super.init();
 	}
 
 	@Override
@@ -89,6 +86,10 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 		response.setErrorMessage(getErrorMessage());
 		response.setErrorDetail(getErrorDetail());
 		response.setType(getType());
+		response.setStatus(getStatus());
+		response.setStopDate(getStopDate());
+		response.setStartDate(getStartDate());
+		response.setCompletionCount(getCompletionCount());
 
 		Map<String, String> props = response.getProperties();
 		props.put("releaseUuid", getRelease().getUuid());
@@ -125,6 +126,36 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 		} else {
 			return MigrationType.valueOf(type);
 		}
+	}
+
+	@Override
+	public long getStartTimestamp() {
+		return getProperty(START_TIMESTAMP_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setStartTimestamp(long date) {
+		setProperty(START_TIMESTAMP_PROPERTY_KEY, date);
+	}
+
+	@Override
+	public long getStopTimestamp() {
+		return getProperty(STOP_TIMESTAMP_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setStopTimestamp(long date) {
+		setProperty(STOP_TIMESTAMP_PROPERTY_KEY, date);
+	}
+
+	@Override
+	public long getCompletionCount() {
+		return getProperty(COMPLETION_COUNT_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setCompletionCount(long count) {
+		setProperty(COMPLETION_COUNT_PROPERTY_KEY, count);
 	}
 
 	@Override
@@ -180,6 +211,16 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	@Override
 	public void delete(SearchQueueBatch batch) {
 		remove();
+	}
+
+	@Override
+	public MigrationStatus getStatus() {
+		return MigrationStatus.valueOf(getProperty(STATUS_PROPERTY_KEY));
+	}
+
+	@Override
+	public void setStatus(MigrationStatus status) {
+		setProperty(STATUS_PROPERTY_KEY, status.name());
 	}
 
 	@Override
@@ -248,7 +289,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	}
 
 	private void handleNodeMigration() {
-		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(getUuid(), Mesh.vertx(), MigrationType.schema);
+		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.schema);
 		try {
 
 			try (Tx tx = db.tx()) {
@@ -302,7 +343,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	}
 
 	private void handleReleaseMigration() {
-		MigrationStatusHandler status = new MigrationStatusHandlerImpl(getUuid(), Mesh.vertx(), MigrationType.release);
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.release);
 		try {
 
 			if (log.isDebugEnabled()) {
@@ -324,7 +365,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	}
 
 	private void handleMicroschemaMigration() {
-		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(getUuid(), Mesh.vertx(), MigrationType.microschema);
+		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.microschema);
 		try {
 
 			try (Tx tx = db.tx()) {
@@ -344,18 +385,23 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 				}
 
 				MicroschemaContainer schemaContainer = fromContainerVersion.getSchemaContainer();
+				ReleaseMicroschemaEdge releaseVersionEdge = release.findReleaseMicroschemaEdge(toContainerVersion);
+				statusHandler.setVersionEdge(releaseVersionEdge);
+
 				if (log.isDebugEnabled()) {
 					log.debug("Micronode migration for microschema {" + schemaContainer.getUuid() + "} from version {"
 							+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} was requested");
 				}
 
-				Project project = release.getProject();
-				if (project == null) {
-					throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
-				}
+				statusHandler.getInfo().setSourceName(schemaContainer.getName());
+				statusHandler.getInfo().setSourceUuid(schemaContainer.getUuid());
+				statusHandler.getInfo().setSourceVersion(fromContainerVersion.getVersion());
+				statusHandler.getInfo().setTargetVersion(toContainerVersion.getVersion());
+				statusHandler.updateStatus();
+				tx.getGraph().commit();
 
-				MeshInternal.get().micronodeMigrationHandler()
-						.migrateMicronodes(project, release, fromContainerVersion, toContainerVersion, statusHandler).await();
+				MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(release, fromContainerVersion, toContainerVersion, statusHandler)
+						.await();
 				statusHandler.done();
 			}
 		} catch (Exception e) {

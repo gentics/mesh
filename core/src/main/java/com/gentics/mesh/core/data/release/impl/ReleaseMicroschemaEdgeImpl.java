@@ -8,6 +8,9 @@ import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.annotations.GraphElement;
 
+/**
+ * @see ReleaseMicroschemaEdge
+ */
 @GraphElement
 public class ReleaseMicroschemaEdgeImpl extends AbstractVersionEdge implements ReleaseMicroschemaEdge {
 
@@ -20,4 +23,5 @@ public class ReleaseMicroschemaEdgeImpl extends AbstractVersionEdge implements R
 	public MicroschemaContainerVersion getMicroschemaContainerVersion() {
 		return inV().nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
+
 }

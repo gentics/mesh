@@ -8,6 +8,9 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.annotations.GraphElement;
 
+/**
+ * @see ReleaseSchemaEdge
+ */
 @GraphElement
 public class ReleaseSchemaEdgeImpl extends AbstractVersionEdge implements ReleaseSchemaEdge {
 

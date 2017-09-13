@@ -15,6 +15,8 @@ public abstract class AbstractVersionEdge extends AbstractEdgeFrame implements R
 
 	public static final String MIGRATION_STATUS_PROPERTY_KEY = "migrationStatus";
 
+	public static final String JOB_UUID_PROPERTY_KEY = "jobUuid";
+
 	@Override
 	public void setMigrationStatus(MigrationStatus status) {
 		setProperty(MIGRATION_STATUS_PROPERTY_KEY, status.name());
@@ -32,6 +34,16 @@ public abstract class AbstractVersionEdge extends AbstractEdgeFrame implements R
 	@Override
 	public Release getRelease() {
 		return outV().nextOrDefaultExplicit(ReleaseImpl.class, null);
+	}
+
+	@Override
+	public String getJobUuid() {
+		return getProperty(JOB_UUID_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setJobUuid(String uuid) {
+		setProperty(JOB_UUID_PROPERTY_KEY, uuid);
 	}
 
 }

@@ -15,6 +15,10 @@ public class AbstractReleaseSchemaInfo<T> extends AbstractNameUuidReference<T> {
 	@JsonPropertyDescription("Status of the migration which was triggered when the schema/microschema was added to the release.")
 	private MigrationStatus migrationStatus;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Uuid of the migration job.")
+	private String jobUuid;
+
 	public String getVersion() {
 		return version;
 	}
@@ -30,5 +34,13 @@ public class AbstractReleaseSchemaInfo<T> extends AbstractNameUuidReference<T> {
 
 	public void setMigrationStatus(MigrationStatus status) {
 		this.migrationStatus = status;
+	}
+
+	public String getJobUuid() {
+		return jobUuid;
+	}
+
+	public void setJobUuid(String jobUuid) {
+		this.jobUuid = jobUuid;
 	}
 }

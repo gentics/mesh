@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 
 /**
- * Common class for schema and microschema edge methods.
+ * Common class for {@link ReleaseSchemaEdge} and {@link ReleaseMicroschemaEdge} edges
  */
 public interface ReleaseVersionEdge {
 
@@ -28,5 +28,19 @@ public interface ReleaseVersionEdge {
 	 * @return
 	 */
 	Release getRelease();
+
+	/**
+	 * Return the referenced job.
+	 * 
+	 * @return
+	 */
+	String getJobUuid();
+
+	/**
+	 * Set the references job.
+	 * 
+	 * @param uuid
+	 */
+	void setJobUuid(String uuid);
 
 }

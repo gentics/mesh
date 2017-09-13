@@ -5,8 +5,10 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.util.DateUtils;
 
 /**
  * A job can be added to the {@link JobRoot} vertex. Jobs are used to persist information about long running tasks.
@@ -18,6 +20,14 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	public static final String ERROR_DETAIL_PROPERTY_KEY = "error_detail";
 
 	public static final String ERROR_MSG_PROPERTY_KEY = "error_msg";
+
+	public static final String START_TIMESTAMP_PROPERTY_KEY = "startDate";
+
+	public static final String STOP_TIMESTAMP_PROPERTY_KEY = "stopDate";
+
+	public static final String COMPLETION_COUNT_PROPERTY_KEY = "completionCount";
+
+	public static final String STATUS_PROPERTY_KEY = "status";
 
 	/**
 	 * Return the job type.
@@ -161,5 +171,74 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * @return
 	 */
 	boolean hasFailed();
+
+	/**
+	 * Return the start date of the job.
+	 * 
+	 * @return
+	 */
+	default String getStartDate() {
+		return DateUtils.toISO8601(getStartTimestamp(), 0);
+	}
+
+	/**
+	 * Return the start timestamp of the job.
+	 * 
+	 * @return
+	 */
+	long getStartTimestamp();
+
+	/**
+	 * Set the start timestamp of the job.
+	 * 
+	 * @param date
+	 */
+	void setStartTimestamp(long date);
+
+	/**
+	 * Return the stop date of the job.
+	 * 
+	 * @return
+	 */
+	default String getStopDate() {
+		return DateUtils.toISO8601(getStopTimestamp(), 0);
+	}
+
+	long getStopTimestamp();
+
+	/**
+	 * Set the stop date of the job.
+	 * 
+	 * @param date
+	 */
+	void setStopTimestamp(long date);
+
+	/**
+	 * Return the amount of elements which have already been processed.
+	 * 
+	 * @return
+	 */
+	long getCompletionCount();
+
+	/**
+	 * Set the count of total processed elements.
+	 * 
+	 * @param count
+	 */
+	void setCompletionCount(long count);
+
+	/**
+	 * Get migration status.
+	 * 
+	 * @return
+	 */
+	MigrationStatus getStatus();
+
+	/**
+	 * Set migration status.
+	 * 
+	 * @param status
+	 */
+	void setStatus(MigrationStatus status);
 
 }

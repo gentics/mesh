@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.job.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -125,8 +124,6 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 				}
 				try (Tx tx = db.tx()) {
 					job.process();
-					// Job is done. Remove it from the root
-					job.remove();
 					tx.success();
 				}
 			} catch (Exception e) {

@@ -8,7 +8,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.Iterator;
@@ -27,6 +26,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
 import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -163,8 +163,10 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 						throw error(BAD_REQUEST, "release_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
 					}
-					release.assignSchemaVersion(version).setMigrationStatus(QUEUED);
-					jobRoot.enqueueSchemaMigration(user, release, assignedVersion, version);
+					ReleaseSchemaEdge edge = release.assignSchemaVersion(version);
+					edge.setMigrationStatus(QUEUED);
+					Job job = jobRoot.enqueueSchemaMigration(user, release, assignedVersion, version);
+					edge.setJobUuid(job.getUuid());
 				}
 
 				return Tuple.tuple(getSchemaVersionsInfo(release), batch);
@@ -224,8 +226,10 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 						throw error(BAD_REQUEST, "release_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
 					}
-					release.assignMicroschemaVersion(version);
-					jobRoot.enqueueMicroschemaMigration(user, release, assignedVersion, version);
+					ReleaseMicroschemaEdge edge = release.assignMicroschemaVersion(version);
+					edge.setMigrationStatus(QUEUED);
+					Job job = jobRoot.enqueueMicroschemaMigration(user, release, assignedVersion, version);
+					edge.setJobUuid(job.getUuid());
 				}
 				return getMicroschemaVersions(release);
 			});
@@ -248,6 +252,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			SchemaReference reference = edge.getSchemaContainerVersion().transformToReference();
 			ReleaseSchemaInfo info = new ReleaseSchemaInfo(reference);
 			info.setMigrationStatus(edge.getMigrationStatus());
+			info.setJobUuid(edge.getJobUuid());
 			return info;
 		}).collect(() -> {
 			return new ReleaseInfoSchemaList();
@@ -268,6 +273,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			MicroschemaReference reference = edge.getMicroschemaContainerVersion().transformToReference();
 			ReleaseMicroschemaInfo info = new ReleaseMicroschemaInfo(reference);
 			info.setMigrationStatus(edge.getMigrationStatus());
+			info.setJobUuid(edge.getJobUuid());
 			return info;
 		}).collect(() -> {
 			return new ReleaseInfoMicroschemaList();
