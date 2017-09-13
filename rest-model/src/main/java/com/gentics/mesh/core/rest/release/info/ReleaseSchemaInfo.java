@@ -1,7 +1,7 @@
-package com.gentics.mesh.core.rest.schema;
+package com.gentics.mesh.core.rest.release.info;
 
 import com.gentics.mesh.core.rest.common.AbstractNameUuidReference;
-import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.SchemaReference;
 
 public class ReleaseSchemaInfo extends AbstractNameUuidReference<SchemaReference> implements SchemaReference {
 
@@ -10,7 +10,7 @@ public class ReleaseSchemaInfo extends AbstractNameUuidReference<SchemaReference
 	public ReleaseSchemaInfo() {
 	}
 
-	public ReleaseSchemaInfo(SchemaReferenceImpl reference) {
+	public ReleaseSchemaInfo(SchemaReference reference) {
 		this.setUuid(reference.getUuid());
 		this.setName(reference.getName());
 		this.setVersion(reference.getVersion());

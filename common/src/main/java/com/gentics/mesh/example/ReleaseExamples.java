@@ -2,8 +2,8 @@ package com.gentics.mesh.example;
 
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
-import com.gentics.mesh.core.rest.schema.ReleaseInfoSchemaList;
-import com.gentics.mesh.core.rest.schema.ReleaseSchemaInfo;
+import com.gentics.mesh.core.rest.release.info.ReleaseInfoSchemaList;
+import com.gentics.mesh.core.rest.release.info.ReleaseSchemaInfo;
 
 public class ReleaseExamples extends AbstractExamples {
 

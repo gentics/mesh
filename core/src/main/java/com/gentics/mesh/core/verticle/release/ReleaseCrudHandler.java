@@ -36,9 +36,9 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
+import com.gentics.mesh.core.rest.release.info.ReleaseInfoMicroschemaList;
+import com.gentics.mesh.core.rest.release.info.ReleaseInfoSchemaList;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.ReleaseInfoMicroschemaList;
-import com.gentics.mesh.core.rest.schema.ReleaseInfoSchemaList;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
@@ -244,7 +244,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			return Observable.from(release.findAllSchemaVersions()).map(SchemaContainerVersion::transformToReference).collect(() -> {
 				return new ReleaseInfoSchemaList();
 			}, (x, y) -> {
-				x.getSchemas().add(y);
+				x.add(y);
 			}).toSingle();
 		} catch (Exception e) {
 			throw error(INTERNAL_SERVER_ERROR, "Unknown error while getting schema versions", e);
@@ -263,7 +263,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			return Observable.from(release.findAllMicroschemaVersions()).map(MicroschemaContainerVersion::transformToReference).collect(() -> {
 				return new ReleaseInfoMicroschemaList();
 			}, (x, y) -> {
-				x.getMicroschemas().add(y);
+				x.add(y);
 			}).toSingle();
 		} catch (Exception e) {
 			throw error(INTERNAL_SERVER_ERROR, "Unknown error while getting microschema versions", e);

@@ -6,7 +6,6 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -47,6 +46,8 @@ import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
+import com.gentics.mesh.core.rest.release.info.ReleaseInfoMicroschemaList;
+import com.gentics.mesh.core.rest.release.info.ReleaseInfoSchemaList;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -56,8 +57,6 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.ReleaseInfoMicroschemaList;
-import com.gentics.mesh.core.rest.schema.ReleaseInfoSchemaList;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
@@ -1087,7 +1086,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	public MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
 			SchemaReference... schemaVersionReferences) {
 		ReleaseInfoSchemaList info = new ReleaseInfoSchemaList();
-		info.getSchemas().addAll(Arrays.asList(schemaVersionReferences));
+		info.add(schemaVersionReferences);
 		return assignReleaseSchemaVersions(projectName, releaseUuid, info);
 	}
 
@@ -1117,7 +1116,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 
 		ReleaseInfoMicroschemaList list = new ReleaseInfoMicroschemaList();
-		list.getMicroschemas().addAll(Arrays.asList(microschemaVersionReferences));
+		list.add(microschemaVersionReferences);
 		return assignReleaseMicroschemaVersions(projectName, releaseUuid, list);
 	}
 
