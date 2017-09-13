@@ -1,5 +1,8 @@
 package com.gentics.mesh.rest.client;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -27,7 +30,13 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	private HttpClientOptions clientOptions;
 
-	private ThreadLocal<HttpClient> localClient = ThreadLocal.withInitial(() -> (vertx.createHttpClient(clientOptions)));
+	private Set<HttpClient> clientSet = new HashSet<>();
+
+	private ThreadLocal<HttpClient> localClient = ThreadLocal.withInitial(() -> {
+		HttpClient client = vertx.createHttpClient(clientOptions);
+		clientSet.add(client);
+		return client;
+	});
 
 	protected JWTAuthentication authentication;
 
@@ -66,7 +75,8 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 
 	@Override
 	public void close() {
-		getClient().close();
+		clientSet.forEach(client -> client.close());
+		clientSet.clear();
 	}
 
 	@Override
