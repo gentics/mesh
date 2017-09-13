@@ -37,7 +37,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -311,7 +311,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			NodeCreateRequest createErrorFolder = new NodeCreateRequest();
-			createErrorFolder.setSchema(new SchemaReference().setName("folder"));
+			createErrorFolder.setSchema(new SchemaReferenceImpl().setName("folder"));
 			createErrorFolder.setParentNodeUuid(project().getBaseNode().getUuid());
 			createErrorFolder.getFields().put("slug", FieldUtil.createStringField("error"));
 			createErrorFolder.setLanguage("en");
@@ -319,7 +319,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			String errorNodeUuid = response.getUuid();
 
 			NodeCreateRequest create404Node = new NodeCreateRequest();
-			create404Node.setSchema(new SchemaReference().setName("content"));
+			create404Node.setSchema(new SchemaReferenceImpl().setName("content"));
 			create404Node.setParentNodeUuid(errorNodeUuid);
 			create404Node.getFields().put("slug", FieldUtil.createStringField("404"));
 			create404Node.getFields().put("teaser", FieldUtil.createStringField("Error Content"));

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.verticle.release;
 
 import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
@@ -36,9 +37,9 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
+import com.gentics.mesh.core.rest.schema.ReleaseInfoMicroschemaList;
+import com.gentics.mesh.core.rest.schema.ReleaseInfoSchemaList;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -122,8 +123,8 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	public void handleGetSchemaVersions(InternalActionContext ac, String uuid) {
 		validateParameter(uuid, "uuid");
 		db.operateTx(() -> {
-			Release release = getRootVertex(ac).loadObjectByUuid(ac, uuid, GraphPermission.READ_PERM);
-			return getSchemaVersions(release);
+			Release release = getRootVertex(ac).loadObjectByUuid(ac, uuid, READ_PERM);
+			return getSchemaVersionsInfo(release);
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
 
@@ -139,17 +140,17 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 		db.operateTx(() -> {
 			RootVertex<Release> root = getRootVertex(ac);
 			Release release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			SchemaReferenceList schemaReferenceList = ac.fromJson(SchemaReferenceList.class);
+			ReleaseInfoSchemaList schemaReferenceList = ac.fromJson(ReleaseInfoSchemaList.class);
 			Project project = ac.getProject();
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 
 			JobRoot jobRoot = boot.jobRoot();
 			User user = ac.getUser();
-			Tuple<Single<SchemaReferenceList>, SearchQueueBatch> tuple = db.tx(() -> {
+			Tuple<Single<ReleaseInfoSchemaList>, SearchQueueBatch> tuple = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
 
 				// Resolve the list of references to graph schema container versions
-				for (SchemaReference reference : schemaReferenceList) {
+				for (SchemaReference reference : schemaReferenceList.getSchemas()) {
 					SchemaContainerVersion version = schemaContainerRoot.fromReference(reference);
 					// Invoke schema migration for each found schema version
 
@@ -162,7 +163,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					jobRoot.enqueueSchemaMigration(user, release, assignedVersion, version);
 				}
 
-				return Tuple.tuple(getSchemaVersions(release), batch);
+				return Tuple.tuple(getSchemaVersionsInfo(release), batch);
 			});
 
 			// 1. Process batch and create need indices
@@ -204,14 +205,14 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 		db.operateTx(() -> {
 			RootVertex<Release> root = getRootVertex(ac);
 			Release release = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
-			MicroschemaReferenceList microschemaReferenceList = ac.fromJson(MicroschemaReferenceList.class);
+			ReleaseInfoMicroschemaList microschemaReferenceList = ac.fromJson(ReleaseInfoMicroschemaList.class);
 			MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
 
 			JobRoot jobRoot = boot.jobRoot();
 			User user = ac.getUser();
-			Single<MicroschemaReferenceList> model = db.tx(() -> {
+			Single<ReleaseInfoMicroschemaList> model = db.tx(() -> {
 				// Transform the list of references into microschema container version vertices
-				for (MicroschemaReference reference : microschemaReferenceList) {
+				for (MicroschemaReference reference : microschemaReferenceList.getMicroschemas()) {
 					MicroschemaContainerVersion version = microschemaContainerRoot.fromReference(reference);
 
 					MicroschemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
@@ -238,12 +239,12 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 *            release
 	 * @return single emitting the rest model
 	 */
-	protected Single<SchemaReferenceList> getSchemaVersions(Release release) {
+	protected Single<ReleaseInfoSchemaList> getSchemaVersionsInfo(Release release) {
 		try {
 			return Observable.from(release.findAllSchemaVersions()).map(SchemaContainerVersion::transformToReference).collect(() -> {
-				return new SchemaReferenceList();
+				return new ReleaseInfoSchemaList();
 			}, (x, y) -> {
-				x.add(y);
+				x.getSchemas().add(y);
 			}).toSingle();
 		} catch (Exception e) {
 			throw error(INTERNAL_SERVER_ERROR, "Unknown error while getting schema versions", e);
@@ -257,12 +258,12 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 *            release
 	 * @return single emitting the rest model
 	 */
-	protected Single<MicroschemaReferenceList> getMicroschemaVersions(Release release) {
+	protected Single<ReleaseInfoMicroschemaList> getMicroschemaVersions(Release release) {
 		try {
 			return Observable.from(release.findAllMicroschemaVersions()).map(MicroschemaContainerVersion::transformToReference).collect(() -> {
-				return new MicroschemaReferenceList();
+				return new ReleaseInfoMicroschemaList();
 			}, (x, y) -> {
-				x.add(y);
+				x.getMicroschemas().add(y);
 			}).toSingle();
 		} catch (Exception e) {
 			throw error(INTERNAL_SERVER_ERROR, "Unknown error while getting microschema versions", e);

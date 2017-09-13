@@ -16,7 +16,7 @@ import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -105,7 +105,7 @@ public class NodeSearchEndpointETest extends AbstractNodeSearchEndpointTest {
 
 		// create a new folder named "bla"
 		NodeCreateRequest create = new NodeCreateRequest();
-		create.setSchema(new SchemaReference().setName("folder").setUuid(db().tx(() -> schemaContainer("folder").getUuid())));
+		create.setSchema(new SchemaReferenceImpl().setName("folder").setUuid(db().tx(() -> schemaContainer("folder").getUuid())));
 		create.setLanguage("en");
 		create.getFields().put("name", FieldUtil.createStringField("bla"));
 		create.setParentNodeUuid(db().tx(() -> folder("2015").getUuid()));

@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 
 public class SchemaResponse extends AbstractGenericRestResponse implements SchemaModel {
 
@@ -123,8 +122,8 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	 * 
 	 * @return
 	 */
-	public SchemaReference toReference() {
-		SchemaReference reference = new SchemaReference();
+	public SchemaReferenceImpl toReference() {
+		SchemaReferenceImpl reference = new SchemaReferenceImpl();
 		reference.setUuid(getUuid());
 		reference.setVersion(getVersion());
 		reference.setName(getName());

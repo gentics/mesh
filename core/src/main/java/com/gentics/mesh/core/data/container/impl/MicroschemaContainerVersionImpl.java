@@ -26,6 +26,7 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -103,8 +104,8 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public MicroschemaReference transformToReference() {
-		MicroschemaReference reference = new MicroschemaReference();
+	public MicroschemaReferenceImpl transformToReference() {
+		MicroschemaReferenceImpl reference = new MicroschemaReferenceImpl();
 		reference.setName(getName());
 		reference.setUuid(getSchemaContainer().getUuid());
 		reference.setVersion(getVersion());

@@ -59,7 +59,7 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
@@ -84,7 +84,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName("Test1234");
 		call(() -> client().createProject(request), BAD_REQUEST, "project_error_no_schema_reference");
 
-		request.setSchema(new SchemaReference());
+		request.setSchema(new SchemaReferenceImpl());
 		call(() -> client().createProject(request), BAD_REQUEST, "project_error_no_schema_reference");
 	}
 
@@ -92,7 +92,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testCreateBogusSchemaReference() {
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("Test1234");
-		request.setSchema(new SchemaReference().setName("bogus42"));
+		request.setSchema(new SchemaReferenceImpl().setName("bogus42"));
 		call(() -> client().createProject(request), BAD_REQUEST, "error_schema_reference_not_found", "bogus42", "-", "-");
 	}
 
@@ -101,7 +101,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String name = "Tä\u1F921 üst";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchema(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 		ProjectResponse restProject = call(() -> client().createProject(request));
 		assertEquals("The name of the project did not match.", name, restProject.getName());
@@ -123,7 +123,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		for (String name : names) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName(name);
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			call(() -> client().createProject(request), BAD_REQUEST, "project_error_name_already_reserved", name);
 		}
 	}
@@ -134,7 +134,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchema(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 		ProjectResponse restProject = call(() -> client().createProject(request));
 
@@ -163,7 +163,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchema(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 		try (Tx tx = tx()) {
 			role().revokePermissions(meshRoot().getProjectRoot(), CREATE_PERM);
@@ -182,7 +182,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("New Name");
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 			assertThat(dummySearchProvider()).hasNoStoreEvents();
 			ProjectResponse restProject = call(() -> client().createProject(uuid, request));
@@ -202,7 +202,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("New Name");
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 			assertThat(dummySearchProvider()).hasNoStoreEvents();
 			call(() -> client().createProject(uuid, request), INTERNAL_SERVER_ERROR, "error_internal");
@@ -223,7 +223,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchema(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 		try (Tx tx = tx()) {
 			// Create a new project
@@ -322,7 +322,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			final String name = "test12345_" + i;
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName(name);
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			call(() -> client().createProject(request));
 		}
 
@@ -625,7 +625,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		for (int i = 0; i < nJobs; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("test12345_" + i);
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			set.add(client().createProject(request).invoke());
 		}
 		validateCreation(set, null);

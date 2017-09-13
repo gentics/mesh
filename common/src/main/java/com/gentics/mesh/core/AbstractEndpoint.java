@@ -15,6 +15,7 @@ import com.gentics.mesh.example.MicroschemaExamples;
 import com.gentics.mesh.example.MiscExamples;
 import com.gentics.mesh.example.NodeExamples;
 import com.gentics.mesh.example.ProjectExamples;
+import com.gentics.mesh.example.ReleaseExamples;
 import com.gentics.mesh.example.RoleExamples;
 import com.gentics.mesh.example.SchemaExamples;
 import com.gentics.mesh.example.TagExamples;
@@ -48,6 +49,7 @@ public abstract class AbstractEndpoint {
 	protected GraphQLExamples graphqlExamples = new GraphQLExamples();
 	protected AdminExamples adminExamples = new AdminExamples();
 	protected JobExamples jobExamples = new JobExamples();
+	protected ReleaseExamples releaseExamples = new ReleaseExamples();
 
 	protected Router localRouter = null;
 	protected String basePath;

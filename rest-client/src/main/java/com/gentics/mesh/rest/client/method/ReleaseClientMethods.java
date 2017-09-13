@@ -5,9 +5,9 @@ import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
+import com.gentics.mesh.core.rest.schema.ReleaseInfoMicroschemaList;
+import com.gentics.mesh.core.rest.schema.ReleaseInfoSchemaList;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 
@@ -74,7 +74,7 @@ public interface ReleaseClientMethods {
 	 * @param releaseUuid
 	 * @return
 	 */
-	MeshRequest<SchemaReferenceList> getReleaseSchemaVersions(String projectName, String releaseUuid);
+	MeshRequest<ReleaseInfoSchemaList> getReleaseSchemaVersions(String projectName, String releaseUuid);
 
 	/**
 	 * Assign the given schema versions to the release.
@@ -84,7 +84,7 @@ public interface ReleaseClientMethods {
 	 * @param schemaVersionReferences
 	 * @return
 	 */
-	MeshRequest<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid, SchemaReferenceList schemaVersionReferences);
+	MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid, ReleaseInfoSchemaList schemaVersionReferences);
 
 	/**
 	 * Assign the given schema versions to the release.
@@ -94,7 +94,7 @@ public interface ReleaseClientMethods {
 	 * @param schemaVersionReferences
 	 * @return
 	 */
-	MeshRequest<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid, SchemaReference... schemaVersionReferences);
+	MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid, SchemaReference... schemaVersionReferences);
 
 	/**
 	 * Get microschema versions assigned to a release.
@@ -103,7 +103,7 @@ public interface ReleaseClientMethods {
 	 * @param releaseUuid
 	 * @return
 	 */
-	MeshRequest<MicroschemaReferenceList> getReleaseMicroschemaVersions(String projectName, String releaseUuid);
+	MeshRequest<ReleaseInfoMicroschemaList> getReleaseMicroschemaVersions(String projectName, String releaseUuid);
 
 	/**
 	 * Assign the given microschema versions to the release
@@ -113,8 +113,8 @@ public interface ReleaseClientMethods {
 	 * @param microschemaVersionReferences
 	 * @return
 	 */
-	MeshRequest<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
-			MicroschemaReferenceList microschemaVersionReferences);
+	MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+			ReleaseInfoMicroschemaList microschemaVersionReferences);
 
 	/**
 	 * Assign the given microschema versions to the release
@@ -124,6 +124,6 @@ public interface ReleaseClientMethods {
 	 * @param microschemaVersionReferences
 	 * @return
 	 */
-	MeshRequest<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+	MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
 			MicroschemaReference... microschemaVersionReferences);
 }

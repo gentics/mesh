@@ -2,8 +2,10 @@ package com.gentics.mesh.core.rest.node;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 
 /**
@@ -17,6 +19,7 @@ public class NodeCreateRequest implements FieldContainer {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the schema of the node.")
+	@JsonDeserialize(as = SchemaReferenceImpl.class)
 	private SchemaReference schema;
 
 	@JsonProperty(required = true)
@@ -131,7 +134,7 @@ public class NodeCreateRequest implements FieldContainer {
 	 * @return
 	 */
 	public NodeCreateRequest setSchemaName(String schemaName) {
-		SchemaReference schemaReference = new SchemaReference();
+		SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
 		schemaReference.setName(schemaName);
 		setSchema(schemaReference);
 		return this;

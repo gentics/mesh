@@ -20,6 +20,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -111,8 +112,8 @@ public class SchemaContainerVersionImpl
 	}
 
 	@Override
-	public SchemaReference transformToReference() {
-		SchemaReference reference = new SchemaReference();
+	public SchemaReferenceImpl transformToReference() {
+		SchemaReferenceImpl reference = new SchemaReferenceImpl();
 		reference.setName(getName());
 		reference.setUuid(getSchemaContainer().getUuid());
 		reference.setVersion(getVersion());

@@ -1,7 +1,11 @@
 package com.gentics.mesh.core.rest.schema;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+
 public class SchemaReferenceInfo {
 
+	@JsonDeserialize(as = SchemaReferenceImpl.class)
 	private SchemaReference schema;
 
 	/**

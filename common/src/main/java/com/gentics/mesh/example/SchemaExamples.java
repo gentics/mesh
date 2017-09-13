@@ -13,7 +13,7 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
+import com.gentics.mesh.core.rest.schema.ReleaseInfoSchemaList;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -145,14 +145,6 @@ public class SchemaExamples extends AbstractExamples {
 		model.getChanges().add(updateSchemaChange);
 
 		return model;
-	}
-
-	public SchemaReferenceList createSchemaReferenceList() {
-		SchemaReferenceList schemas = new SchemaReferenceList();
-		schemas.add(getSchemaReference("content"));
-		schemas.add(getSchemaReference("folder"));
-		schemas.add(getSchemaReference("binary-data"));
-		return schemas;
 	}
 
 }

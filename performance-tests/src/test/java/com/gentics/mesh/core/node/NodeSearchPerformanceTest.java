@@ -15,7 +15,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -44,7 +44,7 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
-			request.setSchema(new SchemaReference().setName("content"));
+			request.setSchema(new SchemaReferenceImpl().setName("content"));
 			request.getFields().put("name", FieldUtil.createStringField("someNode_" + i));
 			request.getFields().put("content", FieldUtil.createHtmlField("someContent"));
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
@@ -98,7 +98,7 @@ public class NodeSearchPerformanceTest extends AbstractMeshTest {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
-			request.setSchema(new SchemaReference().setName("content"));
+			request.setSchema(new SchemaReferenceImpl().setName("content"));
 			request.getFields().put("name", FieldUtil.createStringField("someNode_" + i));
 			request.getFields().put("content", FieldUtil.createHtmlField("someContent"));
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));

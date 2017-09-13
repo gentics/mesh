@@ -2,8 +2,10 @@ package com.gentics.mesh.core.rest.project;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 
 public class ProjectCreateRequest implements RestModel {
 
@@ -13,6 +15,7 @@ public class ProjectCreateRequest implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the schema of the root node. Creating a project will also automatically create the base node of the project and link the schema to the initial release of the project.")
+	@JsonDeserialize(as = SchemaReferenceImpl.class)
 	private SchemaReference schema;
 
 	/**
@@ -65,7 +68,7 @@ public class ProjectCreateRequest implements RestModel {
 	 * @return
 	 */
 	public ProjectCreateRequest setSchemaRef(String schemaName) {
-		setSchema(new SchemaReference().setName(schemaName));
+		setSchema(new SchemaReferenceImpl().setName(schemaName));
 		return this;
 	}
 

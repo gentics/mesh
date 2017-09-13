@@ -30,7 +30,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -201,7 +201,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 				futures.add(service.submit(() -> {
 					NodeCreateRequest create = new NodeCreateRequest();
 					create.setLanguage("en");
-					create.setSchema(new SchemaReference().setName("folder"));
+					create.setSchema(new SchemaReferenceImpl().setName("folder"));
 					create.setParentNodeUuid(baseNodeUuid);
 					call(() -> client().createNode(projectName, create));
 					createdNode.mark();

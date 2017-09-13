@@ -9,17 +9,17 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
-import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
+import com.gentics.mesh.core.rest.schema.ReleaseInfoMicroschemaList;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.util.UUIDUtil;
 
 public class MicroschemaExamples extends AbstractExamples {
 
-	public MicroschemaReferenceList createMicroschemaReferenceList() {
-		MicroschemaReferenceList microschemas = new MicroschemaReferenceList();
-		microschemas.add(getMicroschemaReference("vcard", "2.0"));
-		microschemas.add(getMicroschemaReference("geolocation", "1.0"));
+	public ReleaseInfoMicroschemaList createMicroschemaReferenceList() {
+		ReleaseInfoMicroschemaList microschemas = new ReleaseInfoMicroschemaList();
+		microschemas.getMicroschemas().add(getMicroschemaReference("vcard", "2.0"));
+		microschemas.getMicroschemas().add(getMicroschemaReference("geolocation", "1.0"));
 		return microschemas;
 	}
 

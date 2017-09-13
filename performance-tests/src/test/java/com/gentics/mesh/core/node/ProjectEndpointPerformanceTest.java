@@ -7,7 +7,7 @@ import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -22,7 +22,7 @@ public class ProjectEndpointPerformanceTest extends AbstractMeshTest {
 		for (int i = 0; i < 200; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("NewProject" + i);
-			request.setSchema(new SchemaReference().setName("content"));
+			request.setSchema(new SchemaReferenceImpl().setName("content"));
 			call(() -> client().createProject(request));
 		}
 	}
@@ -48,7 +48,7 @@ public class ProjectEndpointPerformanceTest extends AbstractMeshTest {
 		loggingStopWatch(logger, "project.create", 200, (step) -> {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("Project" + step);
-			request.setSchema(new SchemaReference().setName("content"));
+			request.setSchema(new SchemaReferenceImpl().setName("content"));
 			call(() -> client().createProject(request));
 		});
 	}

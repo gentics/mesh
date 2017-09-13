@@ -37,8 +37,8 @@ import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -362,7 +362,7 @@ public class DemoDataProvider {
 			} else {
 				nodeCreateRequest.setParentNode(project.getRootNode());
 			}
-			nodeCreateRequest.setSchema(new SchemaReference().setUuid(schema.getUuid()));
+			nodeCreateRequest.setSchema(new SchemaReferenceImpl().setUuid(schema.getUuid()));
 			nodeCreateRequest.getFields().put("name", FieldUtil.createStringField(name));
 
 			// Add the segment field value
@@ -472,7 +472,7 @@ public class DemoDataProvider {
 
 			log.info("Creating project {" + name + "}");
 			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			request.setName(name);
 			ProjectResponse project = call(() -> client.createProject(request));
 			projects.put(name, project);
