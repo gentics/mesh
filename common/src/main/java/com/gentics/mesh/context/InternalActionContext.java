@@ -139,4 +139,11 @@ public interface InternalActionContext extends ActionContext, ParameterProviderC
 	 */
 	boolean isMigrationContext();
 
+	/**
+	 * Set the webroot response type.
+	 * 
+	 * @param type
+	 */
+	void setWebrootResponseType(String type);
+
 }

@@ -1,13 +1,11 @@
 package com.gentics.mesh.rest.client.handler.impl;
 
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
-
 import com.gentics.mesh.core.rest.node.NodeDownloadResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
+import com.gentics.mesh.http.MeshHeaders;
 
 import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.http.HttpMethod;
 
 /**
@@ -25,8 +23,12 @@ public class WebRootResponseHandler extends ModelResponseHandler<WebRootResponse
 
 		WebRootResponse response = new WebRootResponse();
 		NodeDownloadResponse downloadResponse = new NodeDownloadResponse();
-		String contentType = rh.getHeader(HttpHeaders.CONTENT_TYPE.toString());
-		if (contentType.startsWith(APPLICATION_JSON)) {
+		String contentType = rh.getHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE);
+		if (contentType == null) {
+			future.fail("The {" + MeshHeaders.WEBROOT_RESPONSE_TYPE + "} header was not set correctly.");
+			return;
+		}
+		if (contentType.startsWith("node")) {
 			// Delegate the response to the json handler
 			ModelResponseHandler<NodeResponse> handler = new ModelResponseHandler<>(NodeResponse.class, getMethod(), contentType);
 			handler.handle(rh);

@@ -74,14 +74,18 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	private Lazy<BootstrapInitializer> boot;
 
+	private BinaryFieldResponseHandler binaryFieldResponseHandler;
+
 	private SearchQueue searchQueue;
 
 	@Inject
-	public BinaryFieldHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue) {
+	public BinaryFieldHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
+			BinaryFieldResponseHandler binaryFieldResponseHandler) {
 		this.imageManipulator = imageManipulator;
 		this.db = db;
 		this.boot = boot;
 		this.searchQueue = searchQueue;
+		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 	}
 
 	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
@@ -105,13 +109,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 			}
 			return Single.just(binaryField);
-		})
-				.subscribe(binaryField -> {
-					db.tx(() -> {
-						BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
-						handler.handle(binaryField);
-					});
-				}, ac::fail);
+		}).subscribe(binaryField -> {
+			db.tx(() -> {
+				binaryFieldResponseHandler.handle(rc, binaryField);
+			});
+		}, ac::fail);
 	}
 
 	/**

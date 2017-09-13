@@ -25,6 +25,7 @@ import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.verticle.node.BinaryFieldResponseHandler;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
@@ -41,13 +42,17 @@ public class WebRootHandler {
 
 	private ImageManipulator imageManipulator;
 
+	private BinaryFieldResponseHandler binaryFieldResponseHandler;
+
 	private Database db;
 
 	@Inject
-	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootService webrootService) {
+	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootService webrootService,
+			BinaryFieldResponseHandler binaryFieldResponseHandler) {
 		this.db = database;
 		this.imageManipulator = imageManipulator;
 		this.webrootService = webrootService;
+		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 	}
 
 	/**
@@ -95,9 +100,7 @@ public class WebRootHandler {
 					return Single.error(new NotModifiedException());
 				} else {
 					try (Tx tx = db.tx()) {
-						// TODO move binary handler outside of event loop scope to avoid bogus object creation
-						BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
-						handler.handle(binaryField);
+						binaryFieldResponseHandler.handle(rc, binaryField);
 						return null;
 					}
 				}
@@ -112,6 +115,7 @@ public class WebRootHandler {
 					List<String> languageTags = new ArrayList<>();
 					languageTags.add(lastSegment.getLanguageTag());
 					languageTags.addAll(ac.getNodeParameters().getLanguageList());
+					ac.setWebrootResponseType("node");
 					return node.transformToRest(ac, 0, languageTags.toArray(new String[0]));
 				}
 			}
