@@ -96,9 +96,11 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 		// 2. Add micronode field to content schema
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
+		tx(() -> group().addRole(roles().get("admin")));
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
 		}, COMPLETED, 1);
+		tx(() -> group().removeRole(roles().get("admin")));
 
 		NodeListResponse response2 = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
@@ -125,9 +127,12 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		microschemaUpdate.setName("TestMicroschema");
 		microschemaUpdate.addField(FieldUtil.createStringFieldSchema("textNew"));
 		microschemaUpdate.addField(FieldUtil.createNodeFieldSchema("nodeRefNew").setAllowedSchemas("content"));
+		
+		tx(() -> group().addRole(roles().get("admin")));
 		waitForJobs(() -> {
 			call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
 		}, COMPLETED, 1);
+		tx(() -> group().removeRole(roles().get("admin")));
 
 		// Update the node and populate the new fields
 		NodeUpdateRequest updateRequest = new NodeUpdateRequest();

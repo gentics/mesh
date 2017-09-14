@@ -392,7 +392,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		});
 
 		tx(() -> microschemaContainer("vcard").getLatestVersion().remove());
-		triggerAndWaitForMigration(jobUuid, FAILED);
+		triggerAndWaitForJob(jobUuid, FAILED);
 
 		JobListResponse status = call(() -> client().findJobs());
 		assertThat(status).listsAll(FAILED).hasInfos(1);

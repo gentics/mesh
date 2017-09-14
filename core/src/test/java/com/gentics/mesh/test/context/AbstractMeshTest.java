@@ -218,7 +218,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	 * 
 	 */
 	protected JobListResponse triggerAndWaitForJob(String jobUuid) {
-		return triggerAndWaitForMigration(jobUuid, COMPLETED);
+		return triggerAndWaitForJob(jobUuid, COMPLETED);
 	}
 
 	/**
@@ -228,9 +228,9 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	 * @param jobUuid
 	 *            Uuid of the job we should wait for
 	 * @param status
-	 *            Expected status for all migrations
+	 *            Expected status for all jobs
 	 */
-	protected JobListResponse triggerAndWaitForMigration(String jobUuid, MigrationStatus status) {
+	protected JobListResponse triggerAndWaitForJob(String jobUuid, MigrationStatus status) {
 		waitForJob(() -> {
 			vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
 		}, jobUuid, status);

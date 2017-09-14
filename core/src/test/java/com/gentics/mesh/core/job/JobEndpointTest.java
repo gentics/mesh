@@ -1,6 +1,8 @@
 package com.gentics.mesh.core.job;
 
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
@@ -46,6 +48,18 @@ public class JobEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testPeriodicProcessing() {
+		String jobUuid = tx(() -> boot().jobRoot().enqueueReleaseMigration(user(), initialRelease()).getUuid());
+		tx(() -> group().addRole(roles().get("admin")));
+		assertEquals(QUEUED, call(() -> client().findJobByUuid(jobUuid)).getStatus());
+		
+		// Wait the initial startup delay and after that the periodic delay
+		TestUtils.sleep(30_000 + 30_000);
+
+		assertEquals(FAILED, call(() -> client().findJobByUuid(jobUuid)).getStatus());
+	}
+
+	@Test
 	public void testDeleteFailedJob() {
 
 		String jobUuid = tx(() -> boot().jobRoot().enqueueReleaseMigration(user(), initialRelease()).getUuid());
@@ -56,7 +70,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		call(() -> client().deleteJob(jobUuid), BAD_REQUEST, "job_error_invalid_state", jobUuid);
 
-		triggerAndWaitForMigration(jobUuid, FAILED);
+		triggerAndWaitForJob(jobUuid, FAILED);
 
 		call(() -> client().deleteJob(jobUuid));
 
@@ -161,7 +175,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		tx(() -> group().addRole(roles().get("admin")));
 
-		triggerAndWaitForMigration(jobUuid, FAILED);
+		triggerAndWaitForJob(jobUuid, FAILED);
 
 		JobResponse jobResonse = call(() -> client().findJobByUuid(jobUuid));
 		assertNotNull(jobResonse.getErrorMessage());

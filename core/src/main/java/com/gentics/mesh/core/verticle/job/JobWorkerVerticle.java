@@ -112,7 +112,7 @@ public class JobWorkerVerticle extends AbstractVerticle {
 			vertx.sharedData().getLock(GLOBAL_JOB_LOCK_NAME, rh -> {
 				if (rh.failed()) {
 					Throwable cause = rh.cause();
-					log.error("Error while acquiring global migration lock", cause);
+					log.error("Error while acquiring global migration lock {" + GLOBAL_JOB_LOCK_NAME + "}", cause);
 					errorAction.call(cause);
 				} else {
 					Lock lock = rh.result();

@@ -46,6 +46,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
 		vertx().deployVerticle(meshDagger().jobWorkerVerticle(), options);
+		tx(() -> group().addRole(roles().get("admin")));
 	}
 
 	@Test
@@ -122,7 +123,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartForInitial() throws Throwable {
 		try (Tx tx = tx()) {
-			triggerAndWaitForMigration(requestReleaseMigration(initialRelease()), FAILED);
+			triggerAndWaitForJob(requestReleaseMigration(initialRelease()), FAILED);
 		}
 	}
 
@@ -133,16 +134,14 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 			newRelease = project().getReleaseRoot().create("newrelease", user());
 			tx.success();
 		}
+		String jobUuidA = requestReleaseMigration(newRelease);
+		triggerAndWaitForJob(jobUuidA, COMPLETED);
 
-		try (Tx tx = tx()) {
-
-			triggerAndWaitForMigration(requestReleaseMigration(newRelease), COMPLETED);
-
-			String jobUuid = requestReleaseMigration(newRelease);
-			JobListResponse response = triggerAndWaitForMigration(jobUuid, null);
-			List<MigrationStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
-			assertThat(status).containsExactly(COMPLETED, FAILED);
-		}
+		// The second job should fail because the release has already been migrated.
+		String jobUuidB = requestReleaseMigration(newRelease);
+		JobListResponse response = triggerAndWaitForJob(jobUuidB, FAILED);
+		List<MigrationStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+		assertThat(status).contains(COMPLETED, FAILED);
 
 	}
 
@@ -159,15 +158,15 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			triggerAndWaitForMigration(requestReleaseMigration(newestRelease), FAILED);
+			triggerAndWaitForJob(requestReleaseMigration(newestRelease), FAILED);
 
-			JobListResponse response = triggerAndWaitForMigration(requestReleaseMigration(newRelease), COMPLETED);
+			JobListResponse response = triggerAndWaitForJob(requestReleaseMigration(newRelease), COMPLETED);
 			List<MigrationStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
-			assertThat(status).containsExactly(FAILED, COMPLETED);
+			assertThat(status).contains(FAILED, COMPLETED);
 
-			response = triggerAndWaitForMigration(requestReleaseMigration(newestRelease), COMPLETED);
+			response = triggerAndWaitForJob(requestReleaseMigration(newestRelease), COMPLETED);
 			status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
-			assertThat(status).containsExactly(FAILED, COMPLETED, COMPLETED);
+			assertThat(status).contains(FAILED, COMPLETED, COMPLETED);
 		}
 	}
 
