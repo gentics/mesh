@@ -90,15 +90,10 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	public MigrationStatusHandler done() {
 		setStatus(COMPLETED);
 		log.info("Migration completed without errors.");
-		commitStatus();
 		JsonObject result = new JsonObject().put("type", "completed");
 		vertx.eventBus().publish(MESH_MIGRATION, result);
-		if (versionEdge != null) {
-			versionEdge.setMigrationStatus(status);
-		}
 		job.setStopTimestamp();
-		job.setStatus(status);
-		job.setCompletionCount(completionCount);
+		commitStatus();
 		return this;
 	}
 
@@ -118,11 +113,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		log.error("Error handling migration", error);
 
 		vertx.eventBus().publish(MESH_MIGRATION, new JsonObject().put("type", status.name()));
-		if (versionEdge != null) {
-			versionEdge.setMigrationStatus(status);
-		}
 		job.setStopTimestamp();
-		job.setStatus(status);
 		job.setError(error);
 		commitStatus();
 		return this;
