@@ -15,6 +15,7 @@ import javax.management.ObjectName;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.release.ReleaseVersionEdge;
 import com.gentics.mesh.core.rest.admin.migration.MigrationInfo;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
@@ -45,11 +46,14 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 
 	private ReleaseVersionEdge versionEdge;
 
-	public MigrationStatusHandlerImpl(String uuid, Vertx vertx, MigrationType type) {
+	private Job job;
+
+	public MigrationStatusHandlerImpl(Job job, Vertx vertx, MigrationType type) {
 		this.vertx = vertx;
 		String startDate = DateUtils.toISO8601(System.currentTimeMillis());
 		String nodeName = Mesh.mesh().getOptions().getNodeName();
-		this.info = new MigrationInfo(uuid, type, startDate, nodeName);
+		this.info = new MigrationInfo(job.getUuid(), type, startDate, nodeName);
+		this.job = job;
 	}
 
 	@Override
@@ -109,6 +113,8 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		if (versionEdge != null) {
 			versionEdge.setMigrationStatus(info.getStatus());
 		}
+		job.setCompletionCount(info.getCompleted());
+		job.setStatus(info.getStatus());
 		return this;
 
 	}
@@ -216,6 +222,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		if (versionEdge != null) {
 			versionEdge.setMigrationStatus(info.getStatus());
 		}
+		job.setStopTimestamp(System.currentTimeMillis());
 		return this;
 	}
 
@@ -240,6 +247,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		if (versionEdge != null) {
 			versionEdge.setMigrationStatus(info.getStatus());
 		}
+		job.setStopTimestamp(System.currentTimeMillis());
 		return this;
 	}
 

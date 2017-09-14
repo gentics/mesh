@@ -46,7 +46,7 @@ public class MigrationInfo implements RestModel, Comparable<MigrationInfo> {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The amount of elements which have already been processed.")
-	private int completed;
+	private long completed;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("The source version of the element which was used to start the migration.")
@@ -287,7 +287,7 @@ public class MigrationInfo implements RestModel, Comparable<MigrationInfo> {
 	 * 
 	 * @return
 	 */
-	public int getCompleted() {
+	public long getCompleted() {
 		return completed;
 	}
 
@@ -296,7 +296,7 @@ public class MigrationInfo implements RestModel, Comparable<MigrationInfo> {
 	 * 
 	 * @param completed
 	 */
-	public void setCompleted(int completed) {
+	public void setCompleted(long completed) {
 		this.completed = completed;
 	}
 

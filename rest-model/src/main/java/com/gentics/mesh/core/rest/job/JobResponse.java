@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
 import com.gentics.mesh.core.rest.user.UserReference;
@@ -35,8 +36,24 @@ public class JobResponse extends AbstractResponse {
 	private MigrationType type;
 
 	@JsonProperty(required = true)
+	@JsonPropertyDescription("Migration status.")
+	private MigrationStatus status;
+
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Properties of the job.")
 	private Map<String, String> properties = new HashMap<>();
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("The stop date of the job.")
+	private String stopDate;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("The start date of the job.")
+	private String startDate;
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("The completion count of the job. This indicates how many items the job has processed.")
+	private long completionCount;
 
 	public void setErrorMessage(String errorMessage) {
 		this.errorMessage = errorMessage;
@@ -80,6 +97,34 @@ public class JobResponse extends AbstractResponse {
 
 	public void setCreator(UserReference creator) {
 		this.creator = creator;
+	}
+
+	public MigrationStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(MigrationStatus status) {
+		this.status = status;
+	}
+
+	public String getStartDate() {
+		return startDate;
+	}
+
+	public void setStartDate(String startDate) {
+		this.startDate = startDate;
+	}
+
+	public String getStopDate() {
+		return stopDate;
+	}
+
+	public void setStopDate(String stopDate) {
+		this.stopDate = stopDate;
+	}
+
+	public void setCompletionCount(long completionCount) {
+		this.completionCount = completionCount;
 	}
 
 }

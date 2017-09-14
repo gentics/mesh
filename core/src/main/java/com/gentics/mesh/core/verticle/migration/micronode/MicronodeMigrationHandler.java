@@ -51,8 +51,6 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	/**
 	 * Migrate all micronodes referencing the given microschema container to the latest version
 	 * 
-	 * @param project
-	 *            project
 	 * @param release
 	 *            release
 	 * @param fromVersion
@@ -63,7 +61,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 *            Migration status
 	 * @return Completable which will be completed once the migration has completed
 	 */
-	public Completable migrateMicronodes(Project project, Release release, MicroschemaContainerVersion fromVersion,
+	public Completable migrateMicronodes(Release release, MicroschemaContainerVersion fromVersion,
 			MicroschemaContainerVersion toVersion, MigrationStatusHandler status) {
 
 		// Get the containers, that need to be transformed
@@ -84,7 +82,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		}
 
 		NodeMigrationActionContextImpl ac = new NodeMigrationActionContextImpl();
-		ac.setProject(project);
+		ac.setProject(release.getProject());
 		ac.setRelease(release);
 
 		if (status != null) {
