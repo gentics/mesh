@@ -878,8 +878,11 @@ Valid links:
 
 * {{mesh.link(\"2f2de9297c8143e8ade9297c8193e8fc\", \"en\")}}
 
+* {{mesh.link(2f2de9297c8143e8ade9297c8193e8fc, en)}}
+
 * {{mesh.link("2f2de9297c8143e8ade9297c8193e8fc")}} (link to default language)
 
+* {{mesh.link(2f2de9297c8143e8ade9297c8193e8fc)}} (link to default language)
 
 [[imagemanipulation]]
 == Image Manipulation
