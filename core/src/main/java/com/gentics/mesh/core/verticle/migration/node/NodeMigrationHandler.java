@@ -90,7 +90,6 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		if (status != null) {
 			status.setStatus(RUNNING);
 			status.commitStatus();
-
 		}
 
 		// The node migration needs to write into a new index. Lets prepare the creation of that index
@@ -116,13 +115,13 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				log.info("Migrated containers: " + count);
 				if (status != null) {
 					status.commitStatus();
-					Tx.getActive().getGraph().commit();
 				}
 			}
 			count++;
 		}
 		log.info("Migration of " + count + " containers done..");
 		log.info("Encountered {" + errorsDetected.size() + "} errors during node migration.");
+		// TODO prepare errors. They should be easy to understand and to grasp
 		Completable result = Completable.complete();
 		if (!errorsDetected.isEmpty()) {
 			if (log.isDebugEnabled()) {

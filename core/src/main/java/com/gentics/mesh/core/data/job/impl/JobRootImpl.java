@@ -103,6 +103,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		Job job = getGraph().addFramedVertex(JobImpl.class);
 		job.setCreated(creator);
 		job.setType(MigrationType.release);
+		job.setStatus(QUEUED);
 		job.setRelease(release);
 		addItem(job);
 		if (log.isDebugEnabled()) {

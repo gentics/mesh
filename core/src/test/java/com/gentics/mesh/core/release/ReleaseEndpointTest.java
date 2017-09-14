@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -65,6 +66,12 @@ import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
+
+	@Before
+	public void addAdminPerms() {
+		// Grant admin perms. Otherwise we can't check the jobs
+		tx(() -> group().addRole(roles().get("admin")));
+	}
 
 	@Override
 	public void testUpdateMultithreaded() throws Exception {
@@ -561,7 +568,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}, COMPLETED, 1);
 
 		JobListResponse jobList = call(() -> client().findJobs());
-		System.out.println(		jobList.toJson());
+		System.out.println(jobList.toJson());
 		JobResponse job = jobList.getData().stream().filter(j -> j.getProperties().get("schemaUuid").equals(schema.getUuid())).findAny().get();
 
 		ReleaseInfoSchemaList schemaList = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));

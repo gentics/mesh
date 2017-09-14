@@ -1813,7 +1813,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 3. migrate nodes
-			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null).await();
+			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(initialRelease.getUuid())));
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(newRelease.getUuid())));
 
@@ -1844,7 +1844,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 4. migrate nodes
-			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null).await();
+			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(initialRelease.getUuid())));
 			call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft().setRelease(newRelease.getUuid())));
 

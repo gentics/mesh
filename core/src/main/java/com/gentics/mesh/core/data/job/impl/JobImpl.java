@@ -97,16 +97,21 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 		response.setNodeName(getNodeName());
 
 		Map<String, String> props = response.getProperties();
+		props.put("releaseName", getRelease().getName());
 		props.put("releaseUuid", getRelease().getUuid());
 
 		if (getToSchemaVersion() != null) {
-			props.put("schemaUuid", getToSchemaVersion().getSchemaContainer().getUuid());
+			SchemaContainer container = getToSchemaVersion().getSchemaContainer();
+			props.put("schemaName", container.getName());
+			props.put("schemaUuid", container.getUuid());
 			props.put("fromVersion", getFromSchemaVersion().getVersion());
 			props.put("toVersion", getToSchemaVersion().getVersion());
 		}
 
 		if (getToMicroschemaVersion() != null) {
-			props.put("microschemaUuid", getToMicroschemaVersion().getSchemaContainer().getUuid());
+			MicroschemaContainer container = getToMicroschemaVersion().getSchemaContainer();
+			props.put("microschemaName", container.getName());
+			props.put("microschemaUuid", container.getUuid());
 			props.put("fromVersion", getFromMicroschemaVersion().getVersion());
 			props.put("toVersion", getToMicroschemaVersion().getVersion());
 		}
@@ -367,13 +372,14 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 			if (log.isDebugEnabled()) {
 				log.debug("Release migration for job {" + getUuid() + "} was requested");
 			}
+			status.commitStatus();
 
 			try (Tx tx = db.tx()) {
 				Release release = getRelease();
 				if (release == null) {
 					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} cannot be found.");
 				}
-				MeshInternal.get().releaseMigrationHandler().migrateRelease(release, status).await();
+				MeshInternal.get().releaseMigrationHandler().migrateRelease(release, status);
 				status.done();
 			}
 		} catch (Exception e) {

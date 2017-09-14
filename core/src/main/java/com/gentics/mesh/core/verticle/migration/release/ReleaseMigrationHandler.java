@@ -27,10 +27,14 @@ import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
 
 @Singleton
 public class ReleaseMigrationHandler extends AbstractMigrationHandler {
+
+	private static final Logger log = LoggerFactory.getLogger(ReleaseMigrationHandler.class);
 
 	@Inject
 	public ReleaseMigrationHandler(Database db, SearchQueue searchQueue, BinaryFieldHandler nodeFieldAPIHandler) {
@@ -43,9 +47,8 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 	 * @param newRelease
 	 *            new release
 	 * @param status
-	 * @return Completable which will be invoked once the migration has completed.
 	 */
-	public Completable migrateRelease(Release newRelease, MigrationStatusHandler status) {
+	public void migrateRelease(Release newRelease, MigrationStatusHandler status) {
 		if (newRelease.isMigrated()) {
 			throw error(BAD_REQUEST, "Release {" + newRelease.getName() + "} is already migrated");
 		}
@@ -62,7 +65,6 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 
 		String newReleaseUuid = newRelease.getUuid();
 		Project project = oldRelease.getProject();
-		List<Completable> batches = new ArrayList<>();
 
 		if (status != null) {
 			status.setStatus(RUNNING);
@@ -76,21 +78,35 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 			indexCreationBatch.createNodeIndex(project.getUuid(), newReleaseUuid, schemaVersion.getUuid(), PUBLISHED, schema);
 			indexCreationBatch.createNodeIndex(project.getUuid(), newReleaseUuid, schemaVersion.getUuid(), DRAFT, schema);
 		}
+		indexCreationBatch.processSync();
 
-		// // Migrate each node individually
-		List<? extends Node> nodes = project.getNodeRoot().findAll();
-		for (Node node : nodes) {
+		long count = 0; 
+		Iterable<? extends Node> it = project.getNodeRoot().findAllIt();
+		for (Node node : it) {
 			SearchQueueBatch sqb = db.tx(() -> {
 				return migrateNode(node, oldRelease, newRelease);
 			});
-			batches.add(sqb.processAsync());
+			sqb.processSync();
+			if (status != null) {
+				status.incCompleted();
+			}
+			if (count % 50 == 0) {
+				log.info("Migrated nodes: " + count);
+				if (status != null) {
+					status.commitStatus();
+				}
+			}
+			count++;
 		}
 
+		//TODO track migration errors
+
+		log.info("Migration of " + count + " node done..");
 		db.tx(() -> {
 			newRelease.setMigrated(true);
 		});
 
-		return indexCreationBatch.processAsync().andThen(Completable.merge(batches));
+
 	}
 
 	/**

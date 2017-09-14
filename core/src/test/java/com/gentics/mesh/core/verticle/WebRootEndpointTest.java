@@ -438,7 +438,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// 1. create new release and migrate node
 		db().tx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
-			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null).await();
+			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
 		});
 
 		// 2. update nodes in new release

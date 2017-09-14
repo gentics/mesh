@@ -4,14 +4,12 @@ import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.util.TestUtils.sleep;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
-import org.elasticsearch.index.mapper.internal.AllFieldMapper;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
@@ -136,12 +134,12 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	 * @param action
 	 *            Action to be invoked. This action should trigger the migrations
 	 * @param status
-	 *            Expected migration status for all migrations. No assertion will be performed when the status is null
-	 * @param expectedMigrations
-	 *            Amount of expected migrations
+	 *            Expected job status for all migrations. No assertion will be performed when the status is null
+	 * @param expectedJobs
+	 *            Amount of expected jobs
 	 * @return Migration status
 	 */
-	protected JobListResponse waitForJobs(Action0 action, MigrationStatus status, int expectedMigrations) {
+	protected JobListResponse waitForJobs(Action0 action, MigrationStatus status, int expectedJobs) {
 		// Load a status just before the action
 		JobListResponse before = call(() -> client().findJobs());
 
@@ -152,7 +150,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 		final int MAX_WAIT = 120;
 		for (int i = 0; i < MAX_WAIT; i++) {
 			JobListResponse response = call(() -> client().findJobs());
-			if (response.getMetainfo().getTotalCount() == before.getMetainfo().getTotalCount() + expectedMigrations) {
+			if (response.getMetainfo().getTotalCount() == before.getMetainfo().getTotalCount() + expectedJobs) {
 				if (status != null) {
 					boolean allMatching = true;
 					for (JobResponse info : response.getData()) {
@@ -239,7 +237,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 		return call(() -> client().findJobs());
 	}
 
-	protected void triggerAndWaitForAllJobs() {
+	protected void triggerAndWaitForAllJobs(MigrationStatus expectedStatus) {
 		vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
 
 		// Now poll the migration status and check the response
@@ -249,7 +247,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 			boolean allDone = true;
 			for (JobResponse info : response.getData()) {
-				if (!info.getStatus().equals(COMPLETED)) {
+				if (!info.getStatus().equals(expectedStatus)) {
 					allDone = false;
 				}
 			}

@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.job;
 
-import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
 import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.ClientHelper.call;
@@ -79,10 +78,10 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 		tx(() -> group().addRole(roles().get("admin")));
 
-		waitForJobs(() -> {
+		waitForJob(() -> {
 			GenericMessageResponse msg = call(() -> client().invokeJobProcessing());
 			assertMessage(msg, "job_processing_invoked");
-		}, FAILED, 1);
+		}, jobUuid, FAILED);
 
 		call(() -> client().invokeJobProcessing());
 		TestUtils.sleep(5_000);
@@ -94,30 +93,24 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testLoadBogusJob() {
-		try (Tx tx = tx()) {
-			group().addRole(roles().get("admin"));
-			tx.success();
-		}
+		tx(() -> group().addRole(roles().get("admin")));
 
 		call(() -> client().findJobByUuid("bogus"), NOT_FOUND, "object_not_found_for_uuid", "bogus");
 	}
 
 	@Test
 	public void testManualInvoke() {
-		String jobUuid = tx(() -> {
-			Job job = boot().jobRoot().enqueueReleaseMigration(user(), initialRelease());
-			return job.getUuid();
-		});
+		String jobUuid = tx(() -> boot().jobRoot().enqueueReleaseMigration(user(), initialRelease()).getUuid());
 
 		call(() -> client().invokeJobProcessing(), FORBIDDEN, "error_admin_permission_required");
 
 		tx(() -> group().addRole(roles().get("admin")));
 
-		JobListResponse response = waitForJobs(() -> {
+		JobResponse response = waitForJob(() -> {
 			GenericMessageResponse msg = call(() -> client().invokeJobProcessing());
 			assertMessage(msg, "job_processing_invoked");
-		}, FAILED, 1);
-		assertEquals("The job uuid of the job should match up with the migration status info uuid.", jobUuid, response.getData().get(0).getUuid());
+		}, jobUuid, FAILED);
+		assertEquals("The job uuid of the job should match up with the migration status info uuid.", jobUuid, response.getUuid());
 
 	}
 
@@ -151,10 +144,6 @@ public class JobEndpointTest extends AbstractMeshTest {
 			assertEquals(schema.getLatestVersion().getVersion(), jobResponse.getProperties().get("toVersion"));
 		}
 
-		waitForJobs(() -> {
-			vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
-		}, null, 3);
-
 		jobResponse = call(() -> client().findJobByUuid(jobUuid));
 		assertEquals(initialReleaseUuid(), jobResponse.getProperties().get("releaseUuid"));
 
@@ -168,11 +157,11 @@ public class JobEndpointTest extends AbstractMeshTest {
 			return job.getUuid();
 		});
 
-		triggerAndWaitForMigration(jobUuid, FAILED);
-
 		call(() -> client().resetJob(jobUuid), FORBIDDEN, "error_admin_permission_required");
 
 		tx(() -> group().addRole(roles().get("admin")));
+
+		triggerAndWaitForMigration(jobUuid, FAILED);
 
 		JobResponse jobResonse = call(() -> client().findJobByUuid(jobUuid));
 		assertNotNull(jobResonse.getErrorMessage());
@@ -186,6 +175,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testJobStatusWithNoMigrationRunning() {
+		tx(() -> group().addRole(roles().get("admin")));
 		JobListResponse status = call(() -> client().findJobs());
 		assertEquals(0, status.getMetainfo().getTotalCount());
 	}

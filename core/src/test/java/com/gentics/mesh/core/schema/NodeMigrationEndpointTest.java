@@ -413,11 +413,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 				return boot().jobRoot().enqueueSchemaMigration(user(), initialRelease(), version, version);
 			});
 		}
-		triggerAndWaitForAllJobs();
+		triggerAndWaitForAllJobs(COMPLETED);
 
 		// Verify that the expected amount of jobs is listed
 		JobListResponse status = call(() -> client().findJobs());
-		assertThat(status).listsAll(MigrationStatus.COMPLETED).hasInfos(100);
+		assertThat(status).listsAll(COMPLETED).hasInfos(100);
 
 	}
 
