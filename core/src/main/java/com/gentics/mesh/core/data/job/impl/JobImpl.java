@@ -139,7 +139,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	}
 
 	@Override
-	public void setStartTimestamp(long date) {
+	public void setStartTimestamp(Long date) {
 		setProperty(START_TIMESTAMP_PROPERTY_KEY, date);
 	}
 
@@ -149,7 +149,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	}
 
 	@Override
-	public void setStopTimestamp(long date) {
+	public void setStopTimestamp(Long date) {
 		setProperty(STOP_TIMESTAMP_PROPERTY_KEY, date);
 	}
 
@@ -270,7 +270,9 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	}
 
 	@Override
-	public void removeErrorState() {
+	public void resetJob() {
+		setStartTimestamp(null);
+		setStopTimestamp(null);
 		setErrorDetail(null);
 		setErrorMessage(null);
 	}

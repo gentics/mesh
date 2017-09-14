@@ -11,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
+import org.elasticsearch.index.mapper.internal.AllFieldMapper;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
@@ -153,11 +154,16 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 			JobListResponse response = call(() -> client().findJobs());
 			if (response.getMetainfo().getTotalCount() == before.getMetainfo().getTotalCount() + expectedMigrations) {
 				if (status != null) {
+					boolean allMatching = true;
 					for (JobResponse info : response.getData()) {
-						assertEquals("One migration did not finish {\n" + info.toJson() + "\n} with the expected status.", status, info.getStatus());
+						if (!status.equals(info.getStatus())) {
+							allMatching = false;
+						}
+					}
+					if (allMatching) {
+						return response;
 					}
 				}
-				return response;
 			}
 			if (i > 30) {
 				System.out.println(response.toJson());
@@ -235,7 +241,7 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 	protected void triggerAndWaitForAllJobs() {
 		vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
-		
+
 		// Now poll the migration status and check the response
 		final int MAX_WAIT = 120;
 		for (int i = 0; i < MAX_WAIT; i++) {
@@ -243,23 +249,23 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 			boolean allDone = true;
 			for (JobResponse info : response.getData()) {
-				if(!info.getStatus().equals(COMPLETED) ) {
-					allDone=false;
+				if (!info.getStatus().equals(COMPLETED)) {
+					allDone = false;
 				}
 			}
-			if(allDone) {
+			if (allDone) {
 				break;
 			}
 
 			if (i > 30) {
-						System.out.println(response.toJson());
-					}
-
-					if (i == MAX_WAIT) {
-						throw new RuntimeException("Job did not complete within " + MAX_WAIT + " seconds");
-					}
-					sleep(1000);
+				System.out.println(response.toJson());
 			}
+
+			if (i == MAX_WAIT) {
+				throw new RuntimeException("Job did not complete within " + MAX_WAIT + " seconds");
+			}
+			sleep(1000);
+		}
 
 	}
 

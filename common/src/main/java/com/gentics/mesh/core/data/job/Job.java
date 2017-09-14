@@ -166,7 +166,7 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	/**
 	 * Removes the error information from the job and thus it can be processed again.
 	 */
-	void removeErrorState();
+	void resetJob();
 
 	/**
 	 * Check whether the job has failed.
@@ -200,7 +200,7 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * 
 	 * @param date
 	 */
-	void setStartTimestamp(long date);
+	void setStartTimestamp(Long date);
 
 	/**
 	 * Set the current start timestamp.
@@ -229,7 +229,7 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * 
 	 * @param date
 	 */
-	void setStopTimestamp(long date);
+	void setStopTimestamp(Long date);
 
 	/**
 	 * Set the current stop timestamp.

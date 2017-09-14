@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -22,8 +23,10 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -155,10 +158,13 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						SchemaContainerVersion previouslyReferencedVersion = releaseEntry.getValue();
 
 						// Assign the new version to the release
-						release.assignSchemaVersion(createdVersion);
+						ReleaseSchemaEdge edge = release.assignSchemaVersion(createdVersion);
+						edge.setMigrationStatus(QUEUED);
 
 						// Enqueue the job so that the worker can process it later on
-						jobRoot.enqueueSchemaMigration(user, release, previouslyReferencedVersion, createdVersion);
+						Job job = jobRoot.enqueueSchemaMigration(user, release, previouslyReferencedVersion, createdVersion);
+						edge.setJobUuid(job.getUuid());
+
 					}
 				}
 				return Tuple.tuple(batch, createdVersion.getVersion());
