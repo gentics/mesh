@@ -203,7 +203,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		SchemaUpdateRequest request = tx(
 				() -> JsonUtil.readValue(content().getSchemaContainer().getLatestVersion().getJson(), SchemaUpdateRequest.class));
 		request.getField("teaser").setIndexOptions(new IndexOptions().setAddRaw(true));
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaUuid, request));
 		}, COMPLETED, 1);
 	}

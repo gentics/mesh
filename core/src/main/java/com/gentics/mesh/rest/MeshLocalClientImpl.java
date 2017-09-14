@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -862,12 +861,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<ClusterStatusResponse> clusterStatus() {
 		LocalActionContextImpl<ClusterStatusResponse> ac = createContext(ClusterStatusResponse.class);
 		adminHandler.handleClusterStatus(ac);
-		return new MeshLocalRequestImpl<>(ac.getFuture());
-	}
-
-	@Override
-	public MeshRequest<MigrationStatusResponse> migrationStatus() {
-		LocalActionContextImpl<MigrationStatusResponse> ac = createContext(MigrationStatusResponse.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 

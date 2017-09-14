@@ -10,11 +10,11 @@ import com.gentics.mesh.assertj.impl.FieldMapAssert;
 import com.gentics.mesh.assertj.impl.FieldSchemaContainerAssert;
 import com.gentics.mesh.assertj.impl.GenericRestExceptionAssert;
 import com.gentics.mesh.assertj.impl.GroupResponseAssert;
+import com.gentics.mesh.assertj.impl.JobListResponseAssert;
 import com.gentics.mesh.assertj.impl.JsonArrayAssert;
 import com.gentics.mesh.assertj.impl.JsonObjectAssert;
 import com.gentics.mesh.assertj.impl.MicronodeAssert;
 import com.gentics.mesh.assertj.impl.MicronodeResponseAssert;
-import com.gentics.mesh.assertj.impl.MigrationStatusResponseAssert;
 import com.gentics.mesh.assertj.impl.NavigationResponseAssert;
 import com.gentics.mesh.assertj.impl.NodeAssert;
 import com.gentics.mesh.assertj.impl.NodeGraphFieldContainerAssert;
@@ -43,10 +43,10 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.FieldMap;
@@ -195,7 +195,7 @@ public class MeshAssertions extends Assertions {
 		return new GenericRestExceptionAssert(actual);
 	}
 	
-	public static MigrationStatusResponseAssert assertThat(MigrationStatusResponse actual) {
-		return new MigrationStatusResponseAssert(actual);
+	public static JobListResponseAssert assertThat(JobListResponse actual) {
+		return new JobListResponseAssert(actual);
 	}
 }

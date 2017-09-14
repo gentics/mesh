@@ -13,7 +13,6 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -849,11 +848,6 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeRestore() {
 		return prepareRequest(POST, "/admin/graphdb/restore", GenericMessageResponse.class);
-	}
-
-	@Override
-	public MeshRequest<MigrationStatusResponse> migrationStatus() {
-		return prepareRequest(GET, "/admin/status/migrations", MigrationStatusResponse.class);
 	}
 
 	@Override

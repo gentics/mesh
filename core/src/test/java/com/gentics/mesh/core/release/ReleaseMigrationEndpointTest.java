@@ -28,7 +28,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
@@ -85,8 +85,8 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 						.isEmpty();
 			});
 		});
-		requestReleaseMigration(newRelease);
-		triggerAndWaitForMigration();
+
+		triggerAndWaitForJob(requestReleaseMigration(newRelease));
 
 		try (Tx tx = tx()) {
 			assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(true);
@@ -122,8 +122,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartForInitial() throws Throwable {
 		try (Tx tx = tx()) {
-			requestReleaseMigration(initialRelease());
-			triggerAndWaitForMigration(MigrationStatus.FAILED);
+			triggerAndWaitForMigration(requestReleaseMigration(initialRelease()), FAILED);
 		}
 	}
 
@@ -136,13 +135,13 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			requestReleaseMigration(newRelease);
-			triggerAndWaitForMigration(MigrationStatus.COMPLETED);
 
-			requestReleaseMigration(newRelease);
-			MigrationStatusResponse response = triggerAndWaitForMigration(null);
-			List<MigrationStatus> status = response.getMigrations().stream().map(e -> e.getStatus()).collect(Collectors.toList());
-			assertThat(status).containsExactly(MigrationStatus.COMPLETED, MigrationStatus.FAILED);
+			triggerAndWaitForMigration(requestReleaseMigration(newRelease), COMPLETED);
+
+			String jobUuid = requestReleaseMigration(newRelease);
+			JobListResponse response = triggerAndWaitForMigration(jobUuid, null);
+			List<MigrationStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+			assertThat(status).containsExactly(COMPLETED, FAILED);
 		}
 
 	}
@@ -160,17 +159,14 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			requestReleaseMigration(newestRelease);
-			triggerAndWaitForMigration(FAILED);
+			triggerAndWaitForMigration(requestReleaseMigration(newestRelease), FAILED);
 
-			requestReleaseMigration(newRelease);
-			MigrationStatusResponse response = triggerAndWaitForMigration(null);
-			List<MigrationStatus> status = response.getMigrations().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+			JobListResponse response = triggerAndWaitForMigration(requestReleaseMigration(newRelease), COMPLETED);
+			List<MigrationStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
 			assertThat(status).containsExactly(FAILED, COMPLETED);
 
-			requestReleaseMigration(newestRelease);
-			response = triggerAndWaitForMigration(null);
-			status = response.getMigrations().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+			response = triggerAndWaitForMigration(requestReleaseMigration(newestRelease), COMPLETED);
+			status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
 			assertThat(status).containsExactly(FAILED, COMPLETED, COMPLETED);
 		}
 	}
@@ -217,8 +213,8 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		requestReleaseMigration(newRelease);
-		triggerAndWaitForMigration();
+		String jobUuid = requestReleaseMigration(newRelease);
+		triggerAndWaitForJob(jobUuid);
 	}
 
 	/**
@@ -227,9 +223,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	 * @param release
 	 * @return future
 	 */
-	protected void requestReleaseMigration(Release release) {
-		tx(() -> {
-			boot().jobRoot().enqueueReleaseMigration(user(), release);
-		});
+	protected String requestReleaseMigration(Release release) {
+		return tx(() -> boot().jobRoot().enqueueReleaseMigration(user(), release).getUuid());
 	}
 }

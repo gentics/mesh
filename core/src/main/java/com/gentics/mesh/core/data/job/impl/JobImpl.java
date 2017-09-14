@@ -4,6 +4,9 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.STARTING;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -35,6 +38,7 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusHandlerImpl;
@@ -90,6 +94,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 		response.setStopDate(getStopDate());
 		response.setStartDate(getStartDate());
 		response.setCompletionCount(getCompletionCount());
+		response.setNodeName(getNodeName());
 
 		Map<String, String> props = response.getProperties();
 		props.put("releaseUuid", getRelease().getUuid());
@@ -129,7 +134,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	}
 
 	@Override
-	public long getStartTimestamp() {
+	public Long getStartTimestamp() {
 		return getProperty(START_TIMESTAMP_PROPERTY_KEY);
 	}
 
@@ -139,7 +144,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	}
 
 	@Override
-	public long getStopTimestamp() {
+	public Long getStopTimestamp() {
 		return getProperty(STOP_TIMESTAMP_PROPERTY_KEY);
 	}
 
@@ -150,7 +155,8 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 
 	@Override
 	public long getCompletionCount() {
-		return getProperty(COMPLETION_COUNT_PROPERTY_KEY);
+		Long value = getProperty(COMPLETION_COUNT_PROPERTY_KEY);
+		return value == null ? 0 : value;
 	}
 
 	@Override
@@ -215,7 +221,11 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 
 	@Override
 	public MigrationStatus getStatus() {
-		return MigrationStatus.valueOf(getProperty(STATUS_PROPERTY_KEY));
+		String status = getProperty(STATUS_PROPERTY_KEY);
+		if (status == null) {
+			return UNKNOWN;
+		}
+		return MigrationStatus.valueOf(status);
 	}
 
 	@Override
@@ -244,7 +254,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	}
 
 	@Override
-	public void setError(Exception e) {
+	public void setError(Throwable e) {
 		setErrorDetail(ExceptionUtils.getStackTrace(e));
 		setErrorMessage(e.getMessage());
 	}
@@ -273,6 +283,11 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 	@Override
 	public void process() {
 		log.info("Processing job {" + getUuid() + "}");
+		db.tx(() -> {
+			setStartTimestamp();
+			setStatus(STARTING);
+			setNodeName();
+		});
 		switch (getType()) {
 		case schema:
 			handleNodeMigration();
@@ -284,7 +299,13 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 			handleReleaseMigration();
 			break;
 		default:
-			throw error(INTERNAL_SERVER_ERROR, "Unknown job type {" + getType() + "}");
+			GenericRestException e = error(INTERNAL_SERVER_ERROR, "Unknown job type {" + getType() + "}");
+			db.tx(() -> {
+				setStopTimestamp();
+				setStatus(FAILED);
+				setError(e);
+			});
+			throw e;
 		}
 	}
 
@@ -325,12 +346,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 						+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + release.getUuid()
 						+ "} in project {" + project.getUuid() + "}");
 
-				statusHandler.getInfo().setSourceName(schemaContainer.getName());
-				statusHandler.getInfo().setSourceUuid(schemaContainer.getUuid());
-				statusHandler.getInfo().setSourceVersion(fromContainerVersion.getVersion());
-				statusHandler.getInfo().setTargetVersion(toContainerVersion.getVersion());
-				statusHandler.updateStatus();
-				tx.getGraph().commit();
+				statusHandler.commitStatus();
 
 				MeshInternal.get().nodeMigrationHandler().migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusHandler)
 						.await();
@@ -393,12 +409,7 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 							+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} was requested");
 				}
 
-				statusHandler.getInfo().setSourceName(schemaContainer.getName());
-				statusHandler.getInfo().setSourceUuid(schemaContainer.getUuid());
-				statusHandler.getInfo().setSourceVersion(fromContainerVersion.getVersion());
-				statusHandler.getInfo().setTargetVersion(toContainerVersion.getVersion());
-				statusHandler.updateStatus();
-				tx.getGraph().commit();
+				statusHandler.commitStatus();
 
 				MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(release, fromContainerVersion, toContainerVersion, statusHandler)
 						.await();
@@ -407,6 +418,16 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 		} catch (Exception e) {
 			statusHandler.error(e, "Error while preparing micronode migration.");
 		}
+	}
+
+	@Override
+	public String getNodeName() {
+		return getProperty(NODE_NAME_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setNodeName(String nodeName) {
+		setProperty(NODE_NAME_PROPERTY_KEY, nodeName);
 	}
 
 }

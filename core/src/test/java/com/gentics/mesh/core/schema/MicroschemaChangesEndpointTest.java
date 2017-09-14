@@ -64,7 +64,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		// 3. Invoke migration
 		call(() -> client().applyChangesToMicroschema(microschemaUuid, listOfChanges));
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
 					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 		}, COMPLETED, 1);
@@ -125,7 +125,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(vcardUuid));
 
 		// 2. Invoke migration
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
 					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 		}, COMPLETED, 1);

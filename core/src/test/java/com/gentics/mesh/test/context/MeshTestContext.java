@@ -6,9 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
@@ -20,7 +18,6 @@ import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
-import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerTestMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
@@ -44,7 +41,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 
 public class MeshTestContext extends TestWatcher {
 
@@ -89,20 +85,6 @@ public class MeshTestContext extends TestWatcher {
 				}
 				if (settings.startServer()) {
 					setupRestEndpoints();
-				}
-				if (settings.clusterMode()) {
-					CompletableFuture<Void> fut = new CompletableFuture<>();
-					vertx.sharedData().getClusterWideMap(MigrationStatusHandler.MIGRATION_DATA_MAP_KEY, rh -> {
-						rh.result().clear(ch -> {
-							fut.complete(null);
-						});
-					});
-					fut.get(10, TimeUnit.SECONDS);
-				} else {
-					LocalMap<Object, Object> map = vertx.sharedData().getLocalMap(MigrationStatusHandler.MIGRATION_DATA_MAP_KEY);
-					if (map != null) {
-						map.clear();
-					}
 				}
 			}
 		} catch (Exception e) {

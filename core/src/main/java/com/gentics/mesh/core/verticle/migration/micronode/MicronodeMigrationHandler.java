@@ -16,7 +16,6 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.context.impl.NodeMigrationActionContextImpl;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -86,8 +85,8 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 		ac.setRelease(release);
 
 		if (status != null) {
-			status.getInfo().setStatus(RUNNING);
-			status.updateStatus();
+			status.setStatus(RUNNING);
+			status.commitStatus();
 		}
 
 		// Iterate over all containers and invoke a migration for each one
@@ -98,12 +97,12 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 			migrateMicronodeContainer(ac, release, fromVersion, toVersion, container, touchedFields, migrationScripts, errorsDetected);
 
 			if (status != null) {
-				status.getInfo().incCompleted();
+				status.incCompleted();
 			}
 			if (count % 50 == 0) {
 				log.info("Migrated micronode containers: " + count);
 				if (status != null) {
-					status.updateStatus();
+					status.commitStatus();
 				}
 			}
 			count++;

@@ -1,6 +1,10 @@
 package com.gentics.mesh.core.data.job.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -19,6 +23,7 @@ import com.gentics.mesh.core.data.root.impl.AbstractRootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
@@ -49,6 +54,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setType(MigrationType.schema);
 		job.setCreated(creator);
 		job.setRelease(release);
+		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
 		job.setToSchemaVersion(toVersion);
 		addItem(job);
@@ -65,6 +71,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setType(MigrationType.microschema);
 		job.setCreated(creator);
 		job.setRelease(release);
+		job.setStatus(QUEUED);
 		job.setFromMicroschemaVersion(fromVersion);
 		job.setToMicroschemaVersion(toVersion);
 		addItem(job);
@@ -81,6 +88,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setCreated(creator);
 		job.setType(MigrationType.release);
 		job.setRelease(release);
+		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
 		job.setToSchemaVersion(toVersion);
 		addItem(job);
@@ -118,8 +126,9 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		Iterable<? extends Job> it = findAllIt();
 		for (Job job : it) {
 			try {
-				// Don't execute failed jobs again
-				if (job.hasFailed()) {
+				// Don't execute failed or completed jobs again
+				MigrationStatus jobStatus = job.getStatus();
+				if (job.hasFailed() || (jobStatus == COMPLETED || jobStatus == FAILED || jobStatus == UNKNOWN)) {
 					continue;
 				}
 				try (Tx tx = db.tx()) {

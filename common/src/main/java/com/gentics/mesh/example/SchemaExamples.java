@@ -7,7 +7,6 @@ import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
-import com.gentics.mesh.core.rest.release.info.ReleaseInfoSchemaList;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;

@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data.job;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Release;
@@ -28,6 +29,8 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	public static final String COMPLETION_COUNT_PROPERTY_KEY = "completionCount";
 
 	public static final String STATUS_PROPERTY_KEY = "status";
+
+	public static final String NODE_NAME_PROPERTY_KEY = "nodeName";
 
 	/**
 	 * Return the job type.
@@ -130,7 +133,7 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * 
 	 * @param e
 	 */
-	void setError(Exception e);
+	void setError(Throwable e);
 
 	/**
 	 * Return the human readable error message.
@@ -178,7 +181,11 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * @return
 	 */
 	default String getStartDate() {
-		return DateUtils.toISO8601(getStartTimestamp(), 0);
+		Long timestamp = getStartTimestamp();
+		if (timestamp == null) {
+			return null;
+		}
+		return DateUtils.toISO8601(timestamp);
 	}
 
 	/**
@@ -186,7 +193,7 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * 
 	 * @return
 	 */
-	long getStartTimestamp();
+	Long getStartTimestamp();
 
 	/**
 	 * Set the start timestamp of the job.
@@ -196,15 +203,26 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	void setStartTimestamp(long date);
 
 	/**
+	 * Set the current start timestamp.
+	 */
+	default void setStartTimestamp() {
+		setStartTimestamp(System.currentTimeMillis());
+	}
+
+	/**
 	 * Return the stop date of the job.
 	 * 
 	 * @return
 	 */
 	default String getStopDate() {
-		return DateUtils.toISO8601(getStopTimestamp(), 0);
+		Long timestamp = getStopTimestamp();
+		if (timestamp == null) {
+			return null;
+		}
+		return DateUtils.toISO8601(timestamp);
 	}
 
-	long getStopTimestamp();
+	Long getStopTimestamp();
 
 	/**
 	 * Set the stop date of the job.
@@ -212,6 +230,13 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * @param date
 	 */
 	void setStopTimestamp(long date);
+
+	/**
+	 * Set the current stop timestamp.
+	 */
+	default void setStopTimestamp() {
+		setStopTimestamp(System.currentTimeMillis());
+	}
 
 	/**
 	 * Return the amount of elements which have already been processed.
@@ -240,5 +265,27 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * @param status
 	 */
 	void setStatus(MigrationStatus status);
+
+	/**
+	 * Return the name of the node on which the job is being executed.
+	 * 
+	 * @return
+	 */
+	String getNodeName();
+
+	/**
+	 * Set the name of the node on which the job is being executed.
+	 * 
+	 * @param nodeName
+	 */
+	void setNodeName(String nodeName);
+
+	/**
+	 * Set the current node name.
+	 */
+	default void setNodeName() {
+		String nodeName = Mesh.mesh().getOptions().getNodeName();
+		setNodeName(nodeName);
+	}
 
 }

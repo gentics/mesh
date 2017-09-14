@@ -246,7 +246,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
 		request.setDescription("New description");
 		request.addField(FieldUtil.createHtmlFieldSchema("someHtml"));
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().updateSchema(uuid, request));
 		}, MigrationStatus.COMPLETED, 1);
 
@@ -352,7 +352,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		// 2. Add micronode field to content schema
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
 
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
 		}, MigrationStatus.COMPLETED, 1);
 

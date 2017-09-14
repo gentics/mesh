@@ -88,9 +88,9 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 		SchemaModel newSchema = toVersion.getSchema();
 
 		if (status != null) {
-			status.getInfo().setStatus(RUNNING);
-			status.updateStatus();
-			Tx.getActive().getGraph().commit();
+			status.setStatus(RUNNING);
+			status.commitStatus();
+
 		}
 
 		// The node migration needs to write into a new index. Lets prepare the creation of that index
@@ -110,12 +110,12 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			migrateContainer(ac, container, toVersion, migrationScripts, release, newSchema, errorsDetected, touchedFields);
 
 			if (status != null) {
-				status.getInfo().incCompleted();
+				status.incCompleted();
 			}
 			if (count % 50 == 0) {
 				log.info("Migrated containers: " + count);
 				if (status != null) {
-					status.updateStatus();
+					status.commitStatus();
 					Tx.getActive().getGraph().commit();
 				}
 			}

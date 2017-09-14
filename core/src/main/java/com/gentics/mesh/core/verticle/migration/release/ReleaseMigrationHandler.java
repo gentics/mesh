@@ -65,8 +65,8 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 		List<Completable> batches = new ArrayList<>();
 
 		if (status != null) {
-			status.getInfo().setStatus(RUNNING);
-			status.updateStatus();
+			status.setStatus(RUNNING);
+			status.commitStatus();
 		}
 
 		// Add the needed indices and mappings

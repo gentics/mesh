@@ -96,7 +96,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 		// 2. Add micronode field to content schema
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
 		}, COMPLETED, 1);
 
@@ -125,7 +125,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		microschemaUpdate.setName("TestMicroschema");
 		microschemaUpdate.addField(FieldUtil.createStringFieldSchema("textNew"));
 		microschemaUpdate.addField(FieldUtil.createNodeFieldSchema("nodeRefNew").setAllowedSchemas("content"));
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
 		}, COMPLETED, 1);
 

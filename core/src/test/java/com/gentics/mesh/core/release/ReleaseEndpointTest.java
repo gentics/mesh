@@ -166,7 +166,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ReleaseCreateRequest request = new ReleaseCreateRequest();
 		request.setName(releaseName);
 
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			ReleaseResponse response = call(() -> client().createRelease(PROJECT_NAME, request));
 			assertThat(response).as("Release Response").isNotNull().hasName(releaseName).isActive().isNotMigrated();
 		}, COMPLETED, 1);
@@ -235,7 +235,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String releaseName = "New Release";
 		request.setName(releaseName);
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().createRelease(PROJECT_NAME, request));
 		}, COMPLETED, 1);
 		failingLatch(latch);
@@ -251,7 +251,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		ReleaseCreateRequest request = new ReleaseCreateRequest();
 		request.setName(releaseName);
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().createRelease(PROJECT_NAME, request));
 		}, COMPLETED, 1);
 		failingLatch(latch);
@@ -262,7 +262,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		createProject.setName(newProjectName);
 		createProject.setSchema(new SchemaReferenceImpl().setName("folder"));
 		call(() -> client().createProject(createProject));
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().createRelease(newProjectName, request));
 		}, COMPLETED, 1);
 		failingLatch(latch);
@@ -483,7 +483,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			call(() -> client().assignSchemaToProject(PROJECT_NAME, schema.getUuid()));
 
 			// Generate version 2
-			waitForMigration(() -> {
+			waitForJobs(() -> {
 				updateSchema(schema.getUuid(), "newschemaname");
 			}, COMPLETED, 1);
 
@@ -510,7 +510,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 					.contains(new ReleaseSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
 
 			// Generate version 4
-			waitForMigration(() -> {
+			waitForJobs(() -> {
 				updateSchema(schema.getUuid(), "anothernewschemaname2", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true));
 			}, COMPLETED, 1);
 
@@ -556,7 +556,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		// assign version 2 to the release
 		ReleaseInfoSchemaList info = new ReleaseInfoSchemaList();
 		info.getSchemas().add(new ReleaseSchemaInfo().setUuid(schema.getUuid()).setVersion("2.0"));
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), info));
 		}, COMPLETED, 1);
 
@@ -715,7 +715,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			info.add(new MicroschemaReferenceImpl().setUuid(microschema.getUuid()).setVersion("2.0"));
 
 			// assign version 2 to the release
-			waitForMigration(() -> {
+			waitForJobs(() -> {
 				call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(), info));
 			}, COMPLETED, 1);
 
@@ -737,12 +737,12 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschema.getUuid()));
 
 			// generate version 2
-			waitForMigration(() -> {
+			waitForJobs(() -> {
 				updateMicroschema(microschema.getUuid(), "newmicroschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true));
 			}, COMPLETED, 1);
 
 			// generate version 3
-			waitForMigration(() -> {
+			waitForJobs(() -> {
 				updateMicroschema(microschema.getUuid(), "anothernewmicroschemaname");
 			}, COMPLETED, 1);
 
@@ -835,7 +835,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschema.getUuid()));
 
 			// Generate version 2
-			waitForMigration(() -> {
+			waitForJobs(() -> {
 				updateMicroschema(microschema.getUuid(), "newmicroschemaname");
 			}, COMPLETED, 1);
 
@@ -865,7 +865,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 							new MicroschemaReferenceImpl().setName("anothernewschemaname1").setUuid(microschema.getUuid()).setVersion("4.0")));
 
 			// Generate version 5
-			waitForMigration(() -> {
+			waitForJobs(() -> {
 				updateMicroschema(microschema.getUuid(), "anothernewschemaname2", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true));
 			}, COMPLETED, 1);
 

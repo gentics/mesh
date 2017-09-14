@@ -51,7 +51,6 @@ public class AdminEndpoint extends AbstractEndpoint {
 	@Override
 	public void registerEndPoints() {
 		addMeshStatusHandler();
-		addMigrationStatusHandler();
 
 		secureAll();
 		addBackupHandler();
@@ -88,18 +87,6 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.exampleResponse(OK, miscExamples.createConsistencyCheckResponse(), "Consistency check report");
 		endpoint.handler(rc -> {
 			consistencyHandler.invokeCheck(new InternalRoutingActionContextImpl(rc));
-		});
-	}
-
-	private void addMigrationStatusHandler() {
-		Endpoint endpoint = createEndpoint();
-		endpoint.path("/status/migrations");
-		endpoint.method(GET);
-		endpoint.description("Return the current schema or node migration status.");
-		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, adminExamples.createMigrationStatusResponse(), "Migration status.");
-		endpoint.handler(rc -> {
-			adminHandler.handleMigrationStatus(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
