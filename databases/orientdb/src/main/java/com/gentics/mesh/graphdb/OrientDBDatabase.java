@@ -116,7 +116,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
 
-	private int maxRetry = 535;
+	private int maxRetry = 100;
 
 	@Override
 	public void stop() {

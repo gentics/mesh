@@ -1,6 +1,8 @@
 package com.gentics.mesh.etc.config;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -25,6 +27,10 @@ public class ElasticSearchOptions {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configures the elasticsarch transport.tcp.port setting.")
 	private String transportPort = "9300-9400";
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Additional set of search parameters.")
+	private Map<String, Object> parameters = new HashMap<>();
 
 	/**
 	 * Check whether the http server should be enabled.
@@ -87,6 +93,15 @@ public class ElasticSearchOptions {
 	public ElasticSearchOptions setTransportPort(String transportPort) {
 		this.transportPort = transportPort;
 		return this;
+	}
+
+	/**
+	 * Return the set of custom parameters.
+	 * 
+	 * @return
+	 */
+	public Map<String, Object> getParameters() {
+		return parameters;
 	}
 
 	public void validate(MeshOptions meshOptions) {

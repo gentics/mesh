@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -121,6 +122,10 @@ public class ElasticSearchProvider implements SearchProvider {
 			builder.put("node.local", true);
 		}
 
+		// Add custom properties
+		for (Entry<String, Object> entry : searchOptions.getParameters().entrySet()) {
+			builder.put(entry.getKey(), entry.getValue());
+		}
 		Settings settings = builder.build();
 
 		Set<Class<? extends Plugin>> classpathPlugins = new HashSet<>();

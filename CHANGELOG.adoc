@@ -4,6 +4,10 @@
 
 == 0.10.3 (TBD)
 
+icon:plus[] Logging: The `logback.xml` default logging configuration file will now by placed in the `config` folder which can be used to customize the logging configuration.
+
+icon:plus[] Configuration: It is now possible to set custom properties within the elasticsearch setting. 
+
 icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.27
 
 icon:plus[] REST: It is now possible to set and read permissions using paths which contain the project name. Example:  `GET /api/v1/roles/:roleUuid/permissions/:projectName/...`
