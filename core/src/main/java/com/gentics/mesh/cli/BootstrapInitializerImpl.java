@@ -257,8 +257,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			boolean active = false;
 			while (!active) {
 				log.info("Waiting for hazelcast to become active");
-				Thread.sleep(1000);
 				active = manager.getHazelcastInstance().getLifecycleService().isRunning();
+				if (active) {
+					break;
+				}
+				Thread.sleep(1000);
 			}
 		} else {
 
@@ -341,7 +344,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.setClusterPublicPort(vertxClusterPort);
 
 		if (log.isDebugEnabled()) {
-			log.debug("Using these vert.x options for vertx {\n" + JsonUtil.toJson(vertxOptions) + "\n}");
+			log.debug("Using vert.x cluster port {" + vertxClusterPort + "}");
+			log.debug("Using vert.x cluster public port {" + vertxClusterPort + "}");
+			log.debug("Binding vert.x on host {" + localIp + "}");
 		}
 		CompletableFuture<Vertx> fut = new CompletableFuture<>();
 		Vertx.clusteredVertx(vertxOptions, rh -> {

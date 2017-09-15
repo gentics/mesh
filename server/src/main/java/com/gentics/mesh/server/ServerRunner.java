@@ -1,5 +1,7 @@
 package com.gentics.mesh.server;
 
+import java.io.File;
+
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
@@ -18,6 +20,8 @@ import io.vertx.core.json.JsonObject;
 public class ServerRunner {
 
 	static {
+		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
+		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
 		System.setProperty("storage.trackChangedRecordsInWAL", "true");
 	}
 

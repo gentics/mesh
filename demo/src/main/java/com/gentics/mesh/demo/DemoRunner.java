@@ -8,6 +8,7 @@ import java.io.IOException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
+import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
@@ -28,17 +29,17 @@ import net.lingala.zip4j.exception.ZipException;
  */
 public class DemoRunner {
 
-	private static final Logger log;
+	private static Logger log;
 
 	static {
-		// Use slf4j instead of jul
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
-		log = LoggerFactory.getLogger(DemoRunner.class);
+		System.setProperty("storage.trackChangedRecordsInWAL", "true");
 	}
 
 	public static void main(String[] args) throws Exception {
+		LoggingConfigurator.init();
+		log = LoggerFactory.getLogger(DemoRunner.class);
 		// Extract dump file on first time startup to speedup startup
 		setupDemo();
 
@@ -50,8 +51,8 @@ public class DemoRunner {
 		options.getHttpServerOptions().setCorsAllowCredentials(false);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
 		// For Mesh UI Dev
-		//options.getHttpServerOptions().setCorsAllowCredentials(true);
-		//options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
+		// options.getHttpServerOptions().setCorsAllowCredentials(true);
+		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setStartServer(true);
 		// options.getSearchOptions().setHttpEnabled(true);
