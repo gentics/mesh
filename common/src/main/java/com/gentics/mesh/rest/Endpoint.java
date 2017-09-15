@@ -155,6 +155,23 @@ public interface Endpoint extends Comparable<Endpoint> {
 	Endpoint exampleResponse(HttpResponseStatus status, Object model, String description);
 
 	/**
+	 * Add the given response to the example responses.
+	 * 
+	 * @param status
+	 *            Status code of the example response
+	 * @param description
+	 *            Description of the example
+	 * @param headerName
+	 *            Name of the header value
+	 * @param example
+	 *            Example header value
+	 * @param headerDescription
+	 *            Description of the header
+	 * @return
+	 */
+	Endpoint exampleResponse(HttpResponseStatus status, String description, String headerName, String example, String headerDescription);
+
+	/**
 	 * Create a blocking handler for the endpoint.
 	 * 
 	 * @param requestHandler

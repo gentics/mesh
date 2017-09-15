@@ -23,6 +23,7 @@ import java.util.Stack;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
@@ -334,22 +335,29 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			}
 		}
 		String rootNodeSegment = stack.pop();
-		switch (rootNodeSegment) {
-		case ProjectRoot.TYPE:
-			return root.getProjectRoot().resolveToElement(stack);
-		case UserRoot.TYPE:
-			return root.getUserRoot().resolveToElement(stack);
-		case GroupRoot.TYPE:
-			return root.getGroupRoot().resolveToElement(stack);
-		case RoleRoot.TYPE:
-			return root.getRoleRoot().resolveToElement(stack);
-		case MicroschemaContainerRoot.TYPE:
-			return root.getMicroschemaContainerRoot().resolveToElement(stack);
-		case SchemaContainerRoot.TYPE:
-			return root.getSchemaContainerRoot().resolveToElement(stack);
-		default:
-			// TOOO i18n
-			throw error(NOT_FOUND, "Could not resolve given path. Unknown element {" + rootNodeSegment + "}");
+
+		// Check whether the root segment is a project name
+		Project project = root.getProjectRoot().findByName(rootNodeSegment);
+		if (project != null) {
+			return project;
+		} else {
+			switch (rootNodeSegment) {
+			case ProjectRoot.TYPE:
+				return root.getProjectRoot().resolveToElement(stack);
+			case UserRoot.TYPE:
+				return root.getUserRoot().resolveToElement(stack);
+			case GroupRoot.TYPE:
+				return root.getGroupRoot().resolveToElement(stack);
+			case RoleRoot.TYPE:
+				return root.getRoleRoot().resolveToElement(stack);
+			case MicroschemaContainerRoot.TYPE:
+				return root.getMicroschemaContainerRoot().resolveToElement(stack);
+			case SchemaContainerRoot.TYPE:
+				return root.getSchemaContainerRoot().resolveToElement(stack);
+			default:
+				// TOOO i18n
+				throw error(NOT_FOUND, "Could not resolve given path. Unknown element {" + rootNodeSegment + "}");
+			}
 		}
 	}
 

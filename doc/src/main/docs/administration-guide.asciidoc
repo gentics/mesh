@@ -63,9 +63,14 @@ On first startup, Gentics Mesh will create all files and folders.
     graphdb
     searchindex
     tmp
- keystore.jceks
- mesh-ui-config.js
- mesh.yml
+ conf
+    keystore.jceks
+    default-distributed-db-config.json
+    orientdb-server-config.xml
+    security.json
+    hazelcast.xml
+    mesh-ui-config.js
+    mesh.yml
 
 Gentics Mesh ships with two configuration files:
 

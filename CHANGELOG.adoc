@@ -4,11 +4,17 @@
 
 == 0.10.3 (TBD)
 
-icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.27 
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.27
+
+icon:plus[] REST: It is now possible to set and read permissions using paths which contain the project name. Example:  `GET /api/v1/roles/:roleUuid/permissions/:projectName/...`
 
 == 0.10.2 (14.09.2017)
 
+icon:book[] Documentation: The new link:https://getmesh.io/docs/beta/security.html[security] and link:https://getmesh.io/docs/beta/performance.html[performance] sections have been added to our documentation.
+
 icon:check[] Java REST Client: A potential threading issue within the Java REST Client has been fixed. Vert.x http clients will no longer be shared across multiple threads.
+
+icon:check[] Memory: Reduce memory footprint of microschema migrations.
 
 icon:check[] Fixed handling "required" and "allow" properties of schema fields when adding fields to schemas.
 
@@ -26,7 +32,7 @@ icon:plus[] Clustering: Added link:https://getmesh.io/docs/beta/clustering.html#
 
 icon:plus[] Node Migration: The node migration performance has been increased.
 
-icon:plus[] REST: Added new endpoints `/api/v1/admin/jobs` to list and check queued migration jobs. The new endpoints are described in the link:/docs/beta/features.html#_executing_migrations[feature documentation].
+icon:plus[] REST: Added new endpoints `/api/v1/admin/jobs` to list and check queued migration jobs. The new endpoints are described in the link:https://getmesh.io/docs/beta/features.html#_executing_migrations[feature documentation].
 
 icon:check[] Search: The `raw` field will no longer be added by default to the search index. Instead it can be added using the new `searchIndex.addRaw` flag within the schema field.
              Please note that the raw field value in the search index will be automatically truncated to a size of 32KB. Otherwise the value can't be added to search index.
@@ -209,7 +215,7 @@ icon:plus[] API: The version field of node responses and publish status response
 
 == 0.9.16 (19.06.2017)
 
-icon:plus[] Documentation: Huge documentation update.
+icon:book[] Documentation: Huge documentation update.
 
 == 0.9.15 (19.06.2017)
 

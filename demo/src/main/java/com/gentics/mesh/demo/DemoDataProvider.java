@@ -74,8 +74,6 @@ public class DemoDataProvider {
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
-	private static final String ANONYMOUS_UUID = "5fb9654c0b734e87b9654c0b736e8701";
-
 	private Database db;
 
 	private MeshLocalClientImpl client;
@@ -303,28 +301,31 @@ public class DemoDataProvider {
 	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (e.g.: admin groups, roles, users)
 	 * 
 	 * @throws InterruptedException
+	 * @throws IOException 
 	 */
-	private void addBootstrappedData() throws InterruptedException {
+	private void addBootstrappedData() throws InterruptedException, IOException {
+
+		JsonObject mappingData = loadJson("uuid-mapping");
 
 		MeshResponse<GroupListResponse> groupsFuture = client.findGroups().invoke();
 		latchFor(groupsFuture);
 		for (GroupResponse group : groupsFuture.result().getData()) {
 			groups.put(group.getName(), group);
+			uuidMapping.put(group.getUuid(), mappingData.getString("group/" + group.getName()));
 		}
 
 		MeshResponse<UserListResponse> usersFuture = client.findUsers().invoke();
 		latchFor(usersFuture);
 		for (UserResponse user : usersFuture.result().getData()) {
-			if (user.getUsername().equals("anonymous")) {
-				uuidMapping.put(user.getUuid(), ANONYMOUS_UUID);
-			}
 			users.put(user.getUsername(), user);
+			uuidMapping.put(user.getUuid(), mappingData.getString("group/" + user.getUsername()));
 		}
 
 		MeshResponse<RoleListResponse> rolesFuture = client.findRoles().invoke();
 		latchFor(rolesFuture);
 		for (RoleResponse role : rolesFuture.result().getData()) {
 			roles.put(role.getName(), role);
+			uuidMapping.put(role.getUuid(), mappingData.getString("role/" + role.getName()));
 		}
 
 		MeshResponse<SchemaListResponse> schemasFuture = client.findSchemas().invoke();
