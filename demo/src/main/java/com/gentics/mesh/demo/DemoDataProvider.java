@@ -318,7 +318,7 @@ public class DemoDataProvider {
 		latchFor(usersFuture);
 		for (UserResponse user : usersFuture.result().getData()) {
 			users.put(user.getUsername(), user);
-			uuidMapping.put(user.getUuid(), mappingData.getString("group/" + user.getUsername()));
+			uuidMapping.put(user.getUuid(), mappingData.getString("user/" + user.getUsername()));
 		}
 
 		MeshResponse<RoleListResponse> rolesFuture = client.findRoles().invoke();
