@@ -24,7 +24,7 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.search.SearchHit;
 
-import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
@@ -44,12 +44,14 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.Transformator;
-import com.tinkerpop.gremlin.Tokens.T;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.RxHelper;
 import rx.Completable;
+import rx.Scheduler;
 
 /**
  * Abstract class for index handlers.
@@ -188,6 +190,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 		final String normalizedDocumentType = documentType.toLowerCase();
 		if (searchProvider.getNode() != null) {
+			Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
+
 			return Completable.create(sub -> {
 
 				org.elasticsearch.node.Node node = getESNode();
@@ -213,7 +217,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 						sub.onError(e);
 					}
 				});
-			});
+			}).observeOn(scheduler);
 		} else {
 			return Completable.complete();
 		}

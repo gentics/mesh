@@ -772,7 +772,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				log.error("Error handling transaction", e);
 				throw new RuntimeException("Transaction error", e);
 			}
-			if (log.isDebugEnabled()) {
+			if (!handlerFinished && log.isDebugEnabled()) {
 				log.debug("Retrying .. {" + retry + "}");
 			}
 			if (handlerFinished) {
