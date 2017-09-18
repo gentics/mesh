@@ -135,7 +135,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 
 		Endpoint createMappings = createEndpoint();
 		createMappings.path("/createMappings");
-		createMappings.method(GET);
+		createMappings.method(POST);
 		createMappings.produces(APPLICATION_JSON);
 		createMappings.description("Create search index mappings.");
 		createMappings.exampleResponse(OK, miscExamples.createMessageResponse(), "Create all mappings.");
@@ -146,7 +146,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 
 		Endpoint reindexEndpoint = createEndpoint();
 		reindexEndpoint.path("/reindex");
-		reindexEndpoint.method(GET);
+		reindexEndpoint.method(POST);
 		reindexEndpoint.produces(APPLICATION_JSON);
 		reindexEndpoint.description("Invokes a full reindex of the search indices. This operation may take some time to complete.");
 		reindexEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Invoked reindex command for all elements.");

@@ -2,6 +2,13 @@
 
 = Gentics Mesh Changelog
 
+
+[[0.10.4]]
+== 0.10.4 (TBD)
+
+icon:plus[] REST: The `/api/v1/admin/reindex` and `/api/v1/admin/createMappings` have been changed from `GET` to `POST`.
+
+[[0.10.3]]
 == 0.10.3 (18.09.2017)
 
 icon:plus[] Logging: The `logback.xml` default logging configuration file will now be placed in the `config` folder. The file can be used to customize the logging configuration.
