@@ -30,7 +30,7 @@ public class HtmlGraphFieldImpl extends AbstractBasicField<HtmlField> implements
 			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 				Project project = ac.getProject();
 				if (project == null) {
-					project = parentNode.getProject();
+					project = parentNode.get().getProject();
 				}
 				field.setHTML(MeshInternal.get().webRootLinkReplacer().replace(ac.getRelease().getUuid(),
 						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), field.getHTML(),

@@ -327,7 +327,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 			List<String> languageTags, int level) {
 		GraphFieldTypes type = GraphFieldTypes.valueByFieldSchema(fieldSchema);
 		if (type != null) {
-			return type.getRestFieldFromGraph(this, ac, fieldKey, fieldSchema, languageTags, level, getParentNode());
+			return type.getRestFieldFromGraph(this, ac, fieldKey, fieldSchema, languageTags, level, () -> getParentNode());
 		} else {
 			throw error(BAD_REQUEST, "type unknown");
 		}

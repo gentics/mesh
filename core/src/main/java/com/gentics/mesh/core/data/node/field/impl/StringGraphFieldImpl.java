@@ -37,7 +37,7 @@ public class StringGraphFieldImpl extends AbstractBasicField<StringField> implem
 			if (ac.getNodeParameters().getResolveLinks() != LinkType.OFF) {
 				Project project = ac.getProject();
 				if (project == null) {
-					project = parentNode.getProject();
+					project = parentNode.get().getProject();
 				}
 				field.setString(MeshInternal.get().webRootLinkReplacer().replace(ac.getRelease().getUuid(),
 						ContainerType.forVersion(ac.getVersioningParameters().getVersion()), field.getString(),
