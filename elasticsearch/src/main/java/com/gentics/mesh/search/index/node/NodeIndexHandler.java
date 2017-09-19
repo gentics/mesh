@@ -23,15 +23,11 @@ import javax.inject.Singleton;
 
 import com.gentics.mesh.search.ElasticSearchUtil;
 import org.codehaus.jettison.json.JSONObject;
-import org.elasticsearch.action.ActionListener;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.unit.TimeValue;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -59,6 +55,7 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.MeshSearchHit;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -143,7 +140,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Map<String, String> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
-			boot.meshRoot().getProjectRoot().reload();
 			List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
 			for (Project project : projects) {
 				List<? extends Release> releases = project.getReleaseRoot().findAll();
@@ -321,6 +317,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			obs.add(updateNodeIndexMapping(indexName, entry.getSchema()));
 			return searchProvider.createIndex(indexName).andThen(Completable.merge(obs));
 		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Only found indices:");
+				for (String idx : indexInfo.keySet()) {
+					log.debug("Index name {" + idx + "}");
+				}
+			}
 			throw error(INTERNAL_SERVER_ERROR, "error_index_unknown", indexName);
 		}
 	}
@@ -366,42 +368,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @return
 	 */
 	public Completable updateNodeIndexMapping(String indexName, Schema schema) {
-
-		// String type = schema.getName() + "-" + schema.getVersion();
-		String type = NodeGraphFieldContainer.composeIndexType();
-		// Check whether the search provider is a dummy provider or not
-		if (searchProvider.getNode() == null) {
-			return Completable.complete();
-		}
-		return Completable.create(sub -> {
-			org.elasticsearch.node.Node esNode = getESNode();
-			PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
-			mappingRequestBuilder.setType(type);
-
-			try {
-				JsonObject mappingJson = transformator.getMapping(schema, type);
-				if (log.isDebugEnabled()) {
-					log.debug(mappingJson.toString());
-				}
-				mappingRequestBuilder.setSource(mappingJson.toString());
-				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
-
-					@Override
-					public void onResponse(PutMappingResponse response) {
-						sub.onCompleted();
-					}
-
-					@Override
-					public void onFailure(Exception e) {
-						sub.onError(e);
-					}
-				});
-
-			} catch (Exception e) {
-				sub.onError(e);
+		return Completable.defer(() -> {
+			String type = NodeGraphFieldContainer.composeIndexType();
+			JsonObject mappingJson = transformator.getMapping(schema, type);
+			if (log.isDebugEnabled()) {
+				log.debug(mappingJson.toString());
 			}
+			return searchProvider.updateMapping(indexName, type, mappingJson);
 		});
-
 	}
 
 	@Override
@@ -471,20 +445,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		builder = client.prepareSearch(indices.toArray(new String[indices.size()]));
 		try {
 			JSONObject queryStringObject = new JSONObject(query);
-			/**
-			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more
-			 * efficient ways to do deep scrolling.
-			 */
-			// queryStringObject.put("from", 0);
-			// queryStringObject.put("size", Integer.MAX_VALUE);
-			// builder.setSource(queryStringObject.toString());
 			builder.setSource(ElasticSearchUtil.parseQuery(query));
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
 		// Only load the documentId we don't care about the indexed contents. The graph is our source of truth here.
 		builder.setFetchSource(false);
-		// builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
 		builder.setSize(INITIAL_BATCH_SIZE);
 		builder.setScroll(new TimeValue(60000));
 		SearchResponse scrollResp = builder.execute().actionGet();

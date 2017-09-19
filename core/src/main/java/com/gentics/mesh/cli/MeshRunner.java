@@ -7,7 +7,7 @@ import com.gentics.mesh.etc.config.MeshOptions;
 public class MeshRunner {
 
 	public static void main(String[] args) throws Exception {
-		MeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 		Mesh mesh = Mesh.mesh(options);
 		mesh.run();
 	}

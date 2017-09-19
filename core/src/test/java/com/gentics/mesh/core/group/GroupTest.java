@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.group;
 
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.util.MeshAssert.assertElement;
+import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -12,7 +12,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;

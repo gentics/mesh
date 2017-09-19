@@ -2,11 +2,11 @@ package com.gentics.mesh.core.tag;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
+import static com.gentics.mesh.test.ClientHelper.callETag;
 import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;

@@ -11,15 +11,15 @@ import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.validateDeletion;
+import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateSet;
-import static com.gentics.mesh.util.MeshAssert.assertElement;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.util.MeshAssert.assertElement;
+import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -40,13 +40,14 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -66,7 +67,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
-import com.gentics.mesh.test.performance.TestUtils;
+import com.gentics.mesh.test.util.TestUtils;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -76,9 +77,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreate() throws GenericRestException, Exception {
 		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
 
-		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0, 0);
 		SchemaResponse restSchema = call(() -> client().createSchema(createRequest));
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		assertThat(dummySearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeIndexType(),
 				SchemaContainer.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
@@ -122,11 +123,11 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateReadDelete() throws GenericRestException, Exception {
 
 		try (Tx tx = tx()) {
-			assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0, 0);
 			SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 
 			SchemaResponse restSchema = call(() -> client().createSchema(schema));
-			assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
 			assertThat(schema).matches(restSchema);
 			assertElement(boot().meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
 			call(() -> client().findSchemaByUuid(restSchema.getUuid()));
@@ -134,7 +135,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			dummySearchProvider().clear();
 			call(() -> client().deleteSchema(restSchema.getUuid()));
 			// Only schemas which are not in use can be delete and also removed from the index
-			assertThat(dummySearchProvider()).hasEvents(0, 1, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(0, 1, 0, 0, 0);
 		}
 
 	}
@@ -245,7 +246,12 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
 		request.setDescription("New description");
 		request.addField(FieldUtil.createHtmlFieldSchema("someHtml"));
-		call(() -> client().updateSchema(uuid, request));
+		
+		tx(() -> group().addRole(roles().get("admin")));
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(uuid, request));
+		}, MigrationStatus.COMPLETED, 1);
+		tx(() -> group().removeRole(roles().get("admin")));
 
 		// Load the previous version
 		restSchema = call(() -> client().findSchemaByUuid(uuid, new VersioningParametersImpl().setVersion(latestVersion)));
@@ -348,7 +354,12 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 
 		// 2. Add micronode field to content schema
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
-		call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+
+		tx(() -> group().addRole(roles().get("admin")));
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		}, MigrationStatus.COMPLETED, 1);
+		tx(() -> group().removeRole(roles().get("admin")));
 
 		filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream()
 				.filter(microschema -> microschema.getUuid().equals(microschemaUuid)).collect(Collectors.toList());
@@ -418,7 +429,6 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		call(() -> client().deleteSchema(uuid));
 
 		try (Tx tx = tx()) {
-			boot().schemaContainerRoot().reload();
 			SchemaContainer reloaded = boot().schemaContainerRoot().findByUuid(uuid);
 			assertNull("The schema should have been deleted.", reloaded);
 		}

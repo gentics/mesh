@@ -133,35 +133,39 @@ public class RestAPIVerticle extends AbstractVerticle {
 		HttpServerOptions options = new HttpServerOptions();
 		options.setPort(port);
 		options.setCompressionSupported(true);
-		//		MeshOptions meshOptions = Mesh.mesh().getOptions();
-		//		HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
-		//		if (httpServerOptions.isSsl()) {
-		//			if (log.isErrorEnabled()) {
-		//				log.debug("Setting ssl server options");
-		//			}
-		//			options.setSsl(true);
-		//			PemKeyCertOptions keyOptions = new PemKeyCertOptions();
-		//			if (isEmpty(httpServerOptions.getCertPath()) || isEmpty(httpServerOptions.getKeyPath())) {
-		//				throw new MeshConfigurationException("SSL is enabled but either the server key or the cert path was not specified.");
-		//			}
-		//			keyOptions.setKeyPath(httpServerOptions.getKeyPath());
-		//			keyOptions.setCertPath(httpServerOptions.getCertPath());
-		//			options.setPemKeyCertOptions(keyOptions);
-		//		}
+		// MeshOptions meshOptions = Mesh.mesh().getOptions();
+		// HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
+		// if (httpServerOptions.isSsl()) {
+		// if (log.isErrorEnabled()) {
+		// log.debug("Setting ssl server options");
+		// }
+		// options.setSsl(true);
+		// PemKeyCertOptions keyOptions = new PemKeyCertOptions();
+		// if (isEmpty(httpServerOptions.getCertPath()) || isEmpty(httpServerOptions.getKeyPath())) {
+		// throw new MeshConfigurationException("SSL is enabled but either the server key or the cert path was not specified.");
+		// }
+		// keyOptions.setKeyPath(httpServerOptions.getKeyPath());
+		// keyOptions.setCertPath(httpServerOptions.getCertPath());
+		// options.setPemKeyCertOptions(keyOptions);
+		// }
 
 		log.info("Starting http server in verticle {" + getClass().getName() + "} on port {" + options.getPort() + "}");
 		server = vertx.createHttpServer(options);
 		server.requestHandler(routerStorage.getRootRouter()::accept);
 		server.listen(rh -> {
-			if (log.isInfoEnabled()) {
-				log.info("Started http server.. Port: " + config().getInteger("port"));
-			}
-			try {
-				registerEndPoints();
-				startFuture.complete();
-			} catch (Exception e) {
-				e.printStackTrace();
-				startFuture.fail(e);
+			if (rh.failed()) {
+				startFuture.fail(rh.cause());
+			} else {
+				if (log.isInfoEnabled()) {
+					log.info("Started http server.. Port: " + config().getInteger("port"));
+				}
+				try {
+					registerEndPoints();
+					startFuture.complete();
+				} catch (Exception e) {
+					e.printStackTrace();
+					startFuture.fail(e);
+				}
 			}
 		});
 

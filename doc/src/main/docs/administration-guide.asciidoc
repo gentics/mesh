@@ -63,9 +63,14 @@ On first startup, Gentics Mesh will create all files and folders.
     graphdb
     searchindex
     tmp
- keystore.jceks
- mesh-ui-config.js
- mesh.yml
+ conf
+    keystore.jceks
+    default-distributed-db-config.json
+    orientdb-server-config.xml
+    security.json
+    hazelcast.xml
+    mesh-ui-config.js
+    mesh.yml
 
 Gentics Mesh ships with two configuration files:
 
@@ -161,6 +166,11 @@ openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 90 -nodes
 | ```httpServerOptions.keyPath```                   | Path      | SSL key path.
 |======
 
+=== Cluster Options
+
+include::includes/cluster-options.inc[]
+
+
 === Storage Options
 
 By default all specified directories are relative to the installation directory.
@@ -175,14 +185,36 @@ By default all specified directories are relative to the installation directory.
 | ```storageOptions.parameters```      | JSON      | Additional JSON parameters that will be passed on to the used graph database implementation.
 |======
 
+=== Search Options
+
+[options="header"]
+|======
+| Configuration              | Type      | Description
+| ```search.directory```     | Path      | Path to the elasticsearch storage location.
+| ```search.httpEnabled```   | Boolean   | Enable the elasticsearch http endpoint.
+| ```search.transportPort``` | String    | Range for the binary transport ports
+|======
+
 === Upload Options
 
 [options="header"]
 |======
-| Configuration                       | Type   | Description
+| Configuration                      | Type   | Description
 | ```uploadOptions.byteLimit```      | Number | Upload limit in bytes.
 | ```uploadOptions.directory```      | Path   | Filesystem directory for uploaded binary data.
 | ```uploadOptions.tempDirectory```  | Path   | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory.
+|======
+
+=== Security Options
+
+[options="header"]
+|======
+| Configuration                        | Type    | Description
+| ```security.tokenExpirationTime```   | Number  | The JWT expiration timeout.
+| ```security.keystorePath```          | Path    | Path to Java keystore file.
+| ```security.keystorePassword```      | String  | Password for the Java keystore file.
+| ```security.algorithm```             | String  | Hashing algorithm used to sign, verify and generate tokens.
+| ```security.enableAnonymousAccess``` | Boolean | Flag to be used to enable the anonymous access feature.
 |======
 
 === Cache Options

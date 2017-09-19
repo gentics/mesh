@@ -14,6 +14,11 @@ public class MeshFactoryImpl implements MeshFactory {
 	private static Mesh instance;
 
 	@Override
+	public boolean isInitalized() {
+		return instance != null;
+	}
+
+	@Override
 	public Mesh mesh() {
 		if (instance == null) {
 			instance = new MeshImpl(OptionsLoader.createOrloadOptions());

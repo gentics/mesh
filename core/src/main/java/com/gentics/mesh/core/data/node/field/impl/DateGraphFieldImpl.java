@@ -36,7 +36,11 @@ public class DateGraphFieldImpl extends AbstractBasicField<DateField> implements
 		boolean isDateFieldSetToNull = fieldMap.hasField(fieldKey) && (dateField == null || dateField.getDate() == null);
 		GraphField.failOnDeletionOfRequiredField(dateGraphField, isDateFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNullOrEmpty = dateField == null || dateField.getDate() == null;
-		GraphField.failOnMissingRequiredField(dateGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(dateGraphField, restIsNullOrEmpty, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle Deletion - The field was explicitly set to null and is currently set in the graph so we can remove the field from the given container
 		if (isDateFieldSetToNull && dateGraphField != null) {

@@ -140,11 +140,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public String getType() {
-				return User.TYPE;
-			}
-
-			@Override
 			public String getName() {
 				return "node_migration";
 			}
@@ -171,11 +166,6 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public void setUuid(String uuid) {
-
-			}
-
-			@Override
-			public void reload() {
 
 			}
 
@@ -769,11 +759,9 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 
 			@Override
 			public Single<UserResponse> transformToRest(InternalActionContext ac, int level, String... languageTags) {
-				return MeshInternal.get()
-						.database()
-						.operateTx(() -> {
-							return Single.just(transformToRestSync(ac, level, languageTags));
-						});
+				return MeshInternal.get().database().operateTx(() -> {
+					return Single.just(transformToRestSync(ac, level, languageTags));
+				});
 			}
 
 			@Override
@@ -806,13 +794,22 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			@Override
 			public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
 				// TODO Auto-generated method stub
-
 			}
 
 			@Override
 			public PermissionInfo getPermissionInfo(MeshVertex vertex) {
 				// TODO Auto-generated method stub
 				return null;
+			}
+
+			@Override
+			public void onCreated() {
+				// TODO Auto-generated method stub
+			}
+
+			@Override
+			public void onUpdated() {
+				// TODO Auto-generated method stub
 			}
 		};
 		return user;
@@ -889,6 +886,16 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	@Override
 	public boolean matches(String etag, boolean isWeak) {
 		return false;
+	}
+
+	@Override
+	public boolean isMigrationContext() {
+		return true;
+	}
+
+	@Override
+	public void setWebrootResponseType(String type) {
+		// Not supported
 	}
 
 }

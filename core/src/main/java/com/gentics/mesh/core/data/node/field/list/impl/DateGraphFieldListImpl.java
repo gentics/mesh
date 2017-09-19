@@ -44,7 +44,11 @@ public class DateGraphFieldListImpl extends AbstractBasicGraphFieldList<DateGrap
 		boolean isDateListFieldSetToNull = fieldMap.hasField(fieldKey) && (dateList == null);
 		GraphField.failOnDeletionOfRequiredField(graphDateFieldList, isDateListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = dateList == null;
-		GraphField.failOnMissingRequiredField(graphDateFieldList, restIsNull, fieldSchema, fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(graphDateFieldList, restIsNull, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle Deletion
 		if (isDateListFieldSetToNull && graphDateFieldList != null) {

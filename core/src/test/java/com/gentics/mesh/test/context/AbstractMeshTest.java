@@ -1,5 +1,9 @@
 package com.gentics.mesh.test.context;
 
+import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.util.TestUtils.sleep;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -9,21 +13,26 @@ import org.apache.commons.io.IOUtils;
 import org.junit.ClassRule;
 import org.junit.Rule;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.IndexHandler;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.gentics.mesh.core.rest.job.JobListResponse;
+import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.test.TestDataProvider;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
+import rx.functions.Action0;
 
 public abstract class AbstractMeshTest implements TestHelperMethods {
 
@@ -65,19 +74,8 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().value());
 	}
 
-	/**
-	 * Return the json data from classpath.
-	 * 
-	 * @param name
-	 * @return
-	 * @throws IOException
-	 */
-	public String getJson(String name) throws IOException {
-		return IOUtils.toString(getClass().getResourceAsStream("/json/" + name));
-	}
-
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
-		RoutingContext rc = mockRoutingContext();
+		RoutingContext rc = tx(() -> mockRoutingContext());
 
 		try (Tx tx = tx()) {
 			role().grantPermissions(element, perm);
@@ -128,6 +126,145 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	 */
 	protected String getESQuery(String name) throws IOException {
 		return IOUtils.toString(getClass().getResourceAsStream("/elasticsearch/" + name));
+	}
+
+	/**
+	 * Execute the action and check that the jobs are executed and yields the given status.
+	 * 
+	 * @param action
+	 *            Action to be invoked. This action should trigger the migrations
+	 * @param status
+	 *            Expected job status for all migrations. No assertion will be performed when the status is null
+	 * @param expectedJobs
+	 *            Amount of expected jobs
+	 * @return Migration status
+	 */
+	protected JobListResponse waitForJobs(Action0 action, MigrationStatus status, int expectedJobs) {
+		// Load a status just before the action
+		JobListResponse before = call(() -> client().findJobs());
+
+		// Invoke the action
+		action.call();
+
+		// Now poll the migration status and check the response
+		final int MAX_WAIT = 120;
+		for (int i = 0; i < MAX_WAIT; i++) {
+			JobListResponse response = call(() -> client().findJobs());
+			if (response.getMetainfo().getTotalCount() == before.getMetainfo().getTotalCount() + expectedJobs) {
+				if (status != null) {
+					boolean allMatching = true;
+					for (JobResponse info : response.getData()) {
+						if (!status.equals(info.getStatus())) {
+							allMatching = false;
+						}
+					}
+					if (allMatching) {
+						return response;
+					}
+				}
+			}
+			if (i > 30) {
+				System.out.println(response.toJson());
+			}
+			if (i == MAX_WAIT) {
+				throw new RuntimeException("Migration did not complete within " + MAX_WAIT + " seconds");
+			}
+			sleep(1000);
+		}
+		return null;
+	}
+
+	/**
+	 * Execute the action and check that the migration is executed and yields the given status.
+	 * 
+	 * @param action
+	 *            Action to be invoked. This action should trigger the jobs
+	 * @param status
+	 *            Expected job status
+	 * @return Job status
+	 */
+	protected JobResponse waitForJob(Action0 action, String jobUuid, MigrationStatus status) {
+		// Invoke the action
+		action.call();
+
+		// Now poll the migration status and check the response
+		final int MAX_WAIT = 120;
+		for (int i = 0; i < MAX_WAIT; i++) {
+			JobResponse response = call(() -> client().findJobByUuid(jobUuid));
+
+			if (response.getStatus().equals(status)) {
+				return response;
+			}
+
+			if (i > 30) {
+				System.out.println(response.toJson());
+			}
+
+			if (i == MAX_WAIT) {
+				throw new RuntimeException("Job did not complete within " + MAX_WAIT + " seconds");
+			}
+			sleep(1000);
+		}
+
+		return null;
+
+	}
+
+	/**
+	 * Inform the job worker that new jobs have been enqueued and block until all jobs complete or the timeout has been reached.
+	 * 
+	 * @param jobUuid
+	 *            Uuid of the job we should wait for
+	 * 
+	 */
+	protected JobListResponse triggerAndWaitForJob(String jobUuid) {
+		return triggerAndWaitForJob(jobUuid, COMPLETED);
+	}
+
+	/**
+	 * Inform the job worker that new jobs are enqueued and check the migration status. This method will block until the migration finishes or a timeout has
+	 * been reached.
+	 * 
+	 * @param jobUuid
+	 *            Uuid of the job we should wait for
+	 * @param status
+	 *            Expected status for all jobs
+	 */
+	protected JobListResponse triggerAndWaitForJob(String jobUuid, MigrationStatus status) {
+		waitForJob(() -> {
+			vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
+		}, jobUuid, status);
+		return call(() -> client().findJobs());
+	}
+
+	protected void triggerAndWaitForAllJobs(MigrationStatus expectedStatus) {
+		vertx().eventBus().send(JOB_WORKER_ADDRESS, null);
+
+		// Now poll the migration status and check the response
+		final int MAX_WAIT = 120;
+		for (int i = 0; i < MAX_WAIT; i++) {
+			JobListResponse response = call(() -> client().findJobs(new PagingParametersImpl().setPerPage(200)));
+
+			boolean allDone = true;
+			for (JobResponse info : response.getData()) {
+				if (!info.getStatus().equals(expectedStatus)) {
+					allDone = false;
+				}
+			}
+			if (allDone) {
+				break;
+			}
+
+			if (i > 30) {
+				System.out.println(response.toJson());
+			}
+
+			if (i == MAX_WAIT) {
+				throw new RuntimeException("Job did not complete within " + MAX_WAIT + " seconds");
+			}
+			sleep(1000);
+		}
+
 	}
 
 }

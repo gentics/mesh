@@ -1,13 +1,12 @@
 package com.gentics.mesh.linkrenderer;
 
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Arrays;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -16,7 +15,9 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonObject;
+
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.ClientHelper.call;
 
 /**
  * Test cases for link rendering using the Utility Verticle

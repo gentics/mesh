@@ -5,12 +5,14 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.AL
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 
 public class StringFieldSchemaImpl extends AbstractFieldSchema implements StringFieldSchema {
 
 	@JsonProperty("allow")
+	@JsonPropertyDescription("List of allowed string values. Only one of the listed values will be accepted during update and create requests.")
 	private String[] allowedValues;
 
 	@Override

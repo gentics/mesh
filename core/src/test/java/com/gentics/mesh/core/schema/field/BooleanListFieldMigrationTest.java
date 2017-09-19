@@ -22,10 +22,10 @@ import javax.script.ScriptException;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
 import com.gentics.mesh.core.field.bool.BooleanListFieldHelper;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest implements BooleanListFieldHelper {
@@ -181,7 +181,6 @@ public class BooleanListFieldMigrationTest extends AbstractFieldMigrationTest im
 				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
 					BooleanGraphFieldList field = container.getBooleanList(name);
 					assertThat(field).as(NEWFIELD).isNotNull();
-					field.reload();
 					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(false, true);
 				});
 	}

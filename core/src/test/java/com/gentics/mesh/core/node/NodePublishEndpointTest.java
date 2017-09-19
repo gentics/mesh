@@ -4,9 +4,9 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
@@ -17,7 +17,6 @@ import java.util.Map.Entry;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -30,12 +29,13 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodePublishEndpointTest extends AbstractMeshTest {
@@ -69,7 +69,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		NodeCreateRequest requestA = new NodeCreateRequest();
 		requestA.setLanguage("en");
 		requestA.setParentNodeUuid(subFolderUuid);
-		requestA.setSchema(new SchemaReference().setName("content"));
+		requestA.setSchema(new SchemaReferenceImpl().setName("content"));
 		requestA.getFields().put("teaser", FieldUtil.createStringField("nodeA"));
 		requestA.getFields().put("slug", FieldUtil.createStringField("nodeA"));
 		NodeResponse nodeA = call(() -> client().createNode(PROJECT_NAME, requestA));
@@ -77,7 +77,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		// 3. Publish the created node - It should fail since the parentfolder is not published
 		dummySearchProvider().clear();
 		call(() -> client().publishNode(PROJECT_NAME, nodeA.getUuid()), BAD_REQUEST, "node_error_parent_containers_not_published", subFolderUuid);
-		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0, 0);
 
 		// 4. Publish the parent folder
 		call(() -> client().publishNode(PROJECT_NAME, subFolderUuid));
@@ -101,7 +101,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference().setName("content"));
+		request.setSchema(new SchemaReferenceImpl().setName("content"));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
@@ -152,7 +152,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 					NodeGraphFieldContainer.composeIndexName(projectUuid(), releaseUuid, schemaContainerVersionUuid, PUBLISHED),
 					NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(nodeUuid, "en"));
 			// The draft of the node must still remain in the index
-			assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		}
 	}
@@ -260,7 +260,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setLanguage("en");
 		request.setParentNodeUuid(uuid);
-		request.setSchema(new SchemaReference().setName("content"));
+		request.setSchema(new SchemaReferenceImpl().setName("content"));
 		request.getFields().put("teaser", FieldUtil.createStringField("some-teaser"));
 		request.getFields().put("slug", FieldUtil.createStringField("some-slug"));
 		request.getFields().put("content", FieldUtil.createHtmlField("someContent"));

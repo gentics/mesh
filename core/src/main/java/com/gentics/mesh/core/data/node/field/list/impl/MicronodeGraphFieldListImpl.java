@@ -56,7 +56,11 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 		boolean isMicronodeListFieldSetToNull = fieldMap.hasField(fieldKey) && micronodeList == null;
 		GraphField.failOnDeletionOfRequiredField(micronodeGraphFieldList, isMicronodeListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = micronodeList == null;
-		GraphField.failOnMissingRequiredField(micronodeGraphFieldList, restIsNull, fieldSchema, fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(micronodeGraphFieldList, restIsNull, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle Deletion
 		if (isMicronodeListFieldSetToNull && micronodeGraphFieldList != null) {
@@ -69,13 +73,13 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 			return;
 		}
 
-		// Always create a new list. 
-		// This will effectively unlink the old list and create a new one. 
-		// Otherwise the list which is linked to old versions would be updated. 
+		// Always create a new list.
+		// This will effectively unlink the old list and create a new one.
+		// Otherwise the list which is linked to old versions would be updated.
 		micronodeGraphFieldList = container.createMicronodeFieldList(fieldKey);
 
 		// Handle Update
-		//TODO instead this method should also return an observable 
+		// TODO instead this method should also return an observable
 		micronodeGraphFieldList.update(ac, micronodeList).toBlocking().value();
 	};
 
@@ -122,7 +126,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 			return a;
 		}));
 
-		return Observable.<Boolean> create(subscriber -> {
+		return Observable.<Boolean>create(subscriber -> {
 			Observable.from(list.getItems()).flatMap(item -> {
 				if (item == null) {
 					throw error(BAD_REQUEST, "field_list_error_null_not_allowed", getFieldKey());

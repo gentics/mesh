@@ -11,7 +11,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -29,8 +29,8 @@ import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
 
@@ -61,13 +61,13 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 
 			MicronodeFieldListImpl field = new MicronodeFieldListImpl();
 			MicronodeResponse micronodeA = new MicronodeResponse();
-			micronodeA.setMicroschema(new MicroschemaReference().setName("vcard"));
+			micronodeA.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
 			micronodeA.getFields().put("firstName", FieldUtil.createStringField("updatedFirstname1"));
 			micronodeA.getFields().put("lastName", FieldUtil.createStringField("updatedLastname1"));
 			field.getItems().add(micronodeA);
 
 			MicronodeResponse micronodeB = new MicronodeResponse();
-			micronodeB.setMicroschema(new MicroschemaReference().setName("vcard"));
+			micronodeB.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
 			micronodeB.getFields().put("firstName", FieldUtil.createStringField("updatedFirstname2"));
 			micronodeB.getFields().put("lastName", FieldUtil.createStringField("updatedLastname2"));
 			field.getItems().add(micronodeB);
@@ -269,13 +269,13 @@ public class MicronodeListFieldTest extends AbstractFieldTest<ListFieldSchema> {
 			invokeUpdateFromRestValidSimpleValueTestcase(MICRONODE_LIST, FILL, (container) -> {
 				MicronodeFieldListImpl field = new MicronodeFieldListImpl();
 				MicronodeResponse micronodeA = new MicronodeResponse();
-				micronodeA.setMicroschema(new MicroschemaReference().setName("vcard"));
+				micronodeA.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
 				micronodeA.getFields().put("firstName", FieldUtil.createStringField("updatedFirstname1"));
 				micronodeA.getFields().put("lastName", FieldUtil.createStringField("updatedLastname1"));
 				field.getItems().add(micronodeA);
 
 				MicronodeResponse micronodeB = new MicronodeResponse();
-				micronodeB.setMicroschema(new MicroschemaReference().setName("vcard"));
+				micronodeB.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
 				micronodeB.getFields().put("firstName", FieldUtil.createStringField("updatedFirstname2"));
 				micronodeB.getFields().put("lastName", FieldUtil.createStringField("updatedLastname2"));
 				field.getItems().add(micronodeB);

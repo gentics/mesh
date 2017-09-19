@@ -1,10 +1,11 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
@@ -12,7 +13,7 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
@@ -23,14 +24,14 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
-import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.performance.TestUtils;
+import com.gentics.mesh.test.util.TestUtils;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
@@ -91,21 +92,16 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
 		String microschemaUuid = microschemaResponse.getUuid();
 		// Assigning the microschema to the project is not needed since this is done during schema update
-		
-//		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaUuid));
+		// call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaUuid));
 
 		// 2. Add micronode field to content schema
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
-		call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		tx(() -> group().addRole(roles().get("admin")));
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
+		}, COMPLETED, 1);
+		tx(() -> group().removeRole(roles().get("admin")));
 
-		// 3. Search directly for existing content
-		NodeListResponse response = call(
-				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
-		assertThat(response.getData()).as("Search result").isEmpty();
-
-		// 4. Wait until the migration is complete and search again
-		failingLatch(latch);
 		NodeListResponse response2 = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
 		assertThat(response2.getData()).as("Search result").isNotEmpty();
@@ -114,12 +110,12 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("en");
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(folderUuid));
-		nodeCreateRequest.setSchema(new SchemaReference().setName("content"));
+		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("content"));
 		nodeCreateRequest.getFields().put("title", FieldUtil.createStringField("someTitle"));
 		nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("someTeaser"));
 		nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("someSlug"));
 		MicronodeResponse micronodeField = new MicronodeResponse();
-		micronodeField.setMicroschema(new MicroschemaReference().setName("TestMicroschema"));
+		micronodeField.setMicroschema(new MicroschemaReferenceImpl().setName("TestMicroschema"));
 		micronodeField.getFields().put("text", FieldUtil.createStringField("someText"));
 		micronodeField.getFields().put("nodeRef", FieldUtil.createNodeField(contentUuid));
 		nodeCreateRequest.getFields().put("micro", micronodeField);
@@ -131,9 +127,12 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		microschemaUpdate.setName("TestMicroschema");
 		microschemaUpdate.addField(FieldUtil.createStringFieldSchema("textNew"));
 		microschemaUpdate.addField(FieldUtil.createNodeFieldSchema("nodeRefNew").setAllowedSchemas("content"));
-		latch = TestUtils.latchForMigrationCompleted(client());
-		call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
-		failingLatch(latch);
+		
+		tx(() -> group().addRole(roles().get("admin")));
+		waitForJobs(() -> {
+			call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
+		}, COMPLETED, 1);
+		tx(() -> group().removeRole(roles().get("admin")));
 
 		// Update the node and populate the new fields
 		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
@@ -141,7 +140,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		// The migration bumped the version to 0.2
 		updateRequest.setVersion("0.2");
 		micronodeField = new MicronodeResponse();
-		micronodeField.setMicroschema(new MicroschemaReference().setName("TestMicroschema"));
+		micronodeField.setMicroschema(new MicroschemaReferenceImpl().setName("TestMicroschema"));
 		micronodeField.getFields().put("textNew", FieldUtil.createStringField("someNewText"));
 		micronodeField.getFields().put("nodeRefNew", FieldUtil.createNodeField(contentUuid));
 		updateRequest.getFields().put("micro", micronodeField);
@@ -151,7 +150,8 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		NodeResponse nodeResponse2 = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeResponse.getUuid()));
 		assertEquals("someNewText", nodeResponse2.getFields().getMicronodeField("micro").getFields().getStringField("textNew").getString());
 
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
+		NodeListResponse response = call(
+				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
 		assertThat(response.getData()).as("Search result").isNotEmpty();
 
 	}
@@ -162,21 +162,21 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		String uuid = db().tx(() -> content("concorde").getUuid());
+		String uuid = tx(() -> content("concorde").getUuid());
 		NodeResponse concorde = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new VersioningParametersImpl().draft()));
 		call(() -> client().publishNode(PROJECT_NAME, uuid));
 
+		// Create a new release and migrate the nodes
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
+		String releaseName = "newrelease";
 		ReleaseCreateRequest createRelease = new ReleaseCreateRequest();
-		createRelease.setName("newrelease");
+		createRelease.setName(releaseName);
 		call(() -> client().createRelease(PROJECT_NAME, createRelease));
 		failingLatch(latch);
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic")));
-		assertThat(response.getData()).as("Search result").isEmpty();
-
-		response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
-				new VersioningParametersImpl().setRelease(db().tx(() -> project().getInitialRelease().getName()))));
+		// Assert that the node can be found within the publish index witin the new release
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"),
+				new VersioningParametersImpl().setRelease(releaseName).setVersion("published")));
 		assertThat(response.getData()).as("Search result").usingElementComparatorOnFields("uuid").containsOnly(concorde);
 	}
 

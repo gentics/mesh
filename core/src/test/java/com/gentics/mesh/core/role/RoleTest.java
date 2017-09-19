@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.util.MeshAssert.assertElement;
+import static com.gentics.mesh.test.util.MeshAssert.assertElement;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -18,7 +18,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -211,10 +211,8 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node parentNode = folder("news");
 			assertNotNull(parentNode);
 
-			parentNode.reload();
 			// Grant all permissions to all roles
 			for (Role role : roles().values()) {
-				role.reload();
 				for (GraphPermission perm : GraphPermission.values()) {
 					role.grantPermissions(parentNode, perm);
 				}

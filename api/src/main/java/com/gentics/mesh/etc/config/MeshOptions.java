@@ -2,6 +2,7 @@ package com.gentics.mesh.etc.config;
 
 import java.io.File;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.doc.GenerateDocumentation;
@@ -12,16 +13,9 @@ import com.gentics.mesh.doc.GenerateDocumentation;
 @GenerateDocumentation
 public class MeshOptions {
 
-	public static final boolean ENABLED = true;
-	public static final boolean DISABLED = false;
-	public static final boolean DEFAULT_CLUSTER_MODE = DISABLED;
 	public static final String DEFAULT_LANGUAGE = "en";
 	public static final String DEFAULT_DIRECTORY_NAME = "graphdb";
 	public static final int DEFAULT_MAX_DEPTH = 10;
-
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("Flag to enable or disable the cluster mode. (Not yet fully implemented)")
-	private boolean clusterMode = DEFAULT_CLUSTER_MODE;
 
 	private int defaultMaxDepth = DEFAULT_MAX_DEPTH;
 
@@ -31,11 +25,15 @@ public class MeshOptions {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Turn on or off the update checker.")
-	private boolean updateCheck = ENABLED;
+	private boolean updateCheck = true;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Http server options.")
 	private HttpServerConfig httpServerOptions = new HttpServerConfig();
+
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Cluster options.")
+	private ClusterOptions clusterOptions = new ClusterOptions();
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Graph database options.")
@@ -61,28 +59,15 @@ public class MeshOptions {
 	@JsonPropertyDescription("Path to the central tmp directory.")
 	private String tempDirectory = "data" + File.separator + "tmp";
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Name of the cluster node instance. If not specified a name will be generated.")
+	private String nodeName;
+
+	/* EXTRA Command Line Arguments */
+	@JsonIgnore
+	private boolean isInitCluster = false;
+
 	public MeshOptions() {
-	}
-
-	/**
-	 * Return the cluster mode flag.
-	 * 
-	 * @return Flag value
-	 */
-	public boolean isClusterMode() {
-		return clusterMode;
-	}
-
-	/**
-	 * Set the flag which can toggle the cluster mode.
-	 * 
-	 * @param clusterMode
-	 *            Flag value
-	 * @return Fluent API
-	 */
-	public MeshOptions setClusterMode(boolean clusterMode) {
-		this.clusterMode = clusterMode;
-		return this;
 	}
 
 	/**
@@ -152,6 +137,15 @@ public class MeshOptions {
 	@JsonProperty("httpServer")
 	public HttpServerConfig getHttpServerOptions() {
 		return httpServerOptions;
+	}
+
+	@JsonProperty("cluster")
+	public ClusterOptions getClusterOptions() {
+		return clusterOptions;
+	}
+
+	public void setClusterOptions(ClusterOptions clusterOptions) {
+		this.clusterOptions = clusterOptions;
 	}
 
 	/**
@@ -267,6 +261,60 @@ public class MeshOptions {
 	public MeshOptions setUpdateCheck(boolean updateCheck) {
 		this.updateCheck = updateCheck;
 		return this;
+	}
+
+	/**
+	 * Set the node name.
+	 * 
+	 * @param nodeName
+	 * @return
+	 */
+	public MeshOptions setNodeName(String nodeName) {
+		this.nodeName = nodeName;
+		return this;
+	}
+
+	/**
+	 * Return the node name.
+	 * 
+	 * @return
+	 */
+	public String getNodeName() {
+		return nodeName;
+	}
+
+	@JsonIgnore
+	public boolean isInitClusterMode() {
+		return isInitCluster;
+	}
+
+	@JsonIgnore
+	public MeshOptions setInitCluster(boolean isInitCluster) {
+		this.isInitCluster = isInitCluster;
+		return this;
+	}
+
+	public void validate() {
+		if (getClusterOptions() != null) {
+			getClusterOptions().validate(this);
+		}
+		if (getStorageOptions() != null) {
+			getStorageOptions().validate(this);
+		}
+		if (getSearchOptions() != null) {
+			getSearchOptions().validate(this);
+		}
+		if (getHttpServerOptions() != null) {
+			getHttpServerOptions().validate(this);
+		}
+		if (getAuthenticationOptions() != null) {
+			getAuthenticationOptions().validate(this);
+		}
+		if (getImageOptions() != null) {
+			getImageOptions().validate(this);
+		}
+
+		// TODO check for other invalid characters in node name
 	}
 
 }

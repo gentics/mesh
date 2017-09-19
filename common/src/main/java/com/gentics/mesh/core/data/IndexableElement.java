@@ -20,11 +20,4 @@ public interface IndexableElement extends MeshElement {
 		// By default no related elements are handled
 	}
 
-	/**
-	 * Return the type of the indexable element.
-	 * 
-	 * @return
-	 */
-	String getType();
-
 }

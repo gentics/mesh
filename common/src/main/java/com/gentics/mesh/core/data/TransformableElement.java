@@ -12,6 +12,7 @@ import rx.Single;
  * @param <T>
  *            RestModel response class
  */
+@SuppressWarnings("unused")
 public interface TransformableElement<T extends RestModel> extends MeshElement {
 
 	/**
@@ -33,7 +34,9 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 * @param languageTags
 	 *            optional list of language tags to be used for language fallback
 	 */
-	Single<T> transformToRest(InternalActionContext ac, int level, String... languageTags);
+	default Single<T> transformToRest(InternalActionContext ac, int level, String... languageTags) {
+		return Single.just(transformToRestSync(ac, level, languageTags));
+	}
 
 	/**
 	 * Transform the element into the matching rest model response synchronously.

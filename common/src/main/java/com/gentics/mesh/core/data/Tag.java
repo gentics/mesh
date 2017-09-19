@@ -1,8 +1,13 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.Events.EVENT_TAG_CREATED;
+import static com.gentics.mesh.Events.EVENT_TAG_DELETED;
+import static com.gentics.mesh.Events.EVENT_TAG_UPDATED;
+
 import java.util.List;
 import java.util.Objects;
 
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.rest.tag.TagReference;
@@ -20,6 +25,8 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 * Type Value: {@value #TYPE}
 	 */
 	static final String TYPE = "tag";
+
+	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_TAG_CREATED, EVENT_TAG_UPDATED, EVENT_TAG_DELETED);
 
 	/**
 	 * Compose the index name for tags. Use the projectUuid in order to create a project specific index.
@@ -54,8 +61,8 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	}
 
 	@Override
-	default String getType() {
-		return TYPE;
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
 	}
 
 	/**

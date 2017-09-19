@@ -59,7 +59,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 				"projects/" + UUIDUtil.randomUUID() + "\nprojects/" + UUIDUtil.randomUUID() + "/nodes/" + UUIDUtil.randomUUID());
 		permissionSetEndpoint.method(POST);
 		permissionSetEndpoint.description("Set the permissions between role and the targeted element.");
-		permissionSetEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Permissions were set.");
+		permissionSetEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Permissions were set.");
 		permissionSetEndpoint.exampleRequest(roleExamples.getRolePermissionRequest());
 		permissionSetEndpoint.consumes(APPLICATION_JSON);
 		permissionSetEndpoint.produces(APPLICATION_JSON).handler(rc -> {

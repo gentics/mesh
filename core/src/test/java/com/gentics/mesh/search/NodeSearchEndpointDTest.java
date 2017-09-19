@@ -1,23 +1,21 @@
 package com.gentics.mesh.search;
 
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -33,7 +31,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -46,7 +44,7 @@ import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.performance.TestUtils;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 
@@ -91,12 +89,13 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		//TODO this test should work once the lowercase filter has been applied
+		// TODO this test should work once the lowercase filter has been applied
 		JsonObject query = new JsonObject().put("min_score", 1.0).put("query",
 				new JsonObject().put("match_phrase", new JsonObject().put("fields.content", new JsonObject().put("query", "Hersteller"))));
 
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query.toString(),
-				new PagingParametersImpl().setPage(1).setPerPage(2), new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("de")));
+		NodeListResponse response = call(
+				() -> client().searchNodes(PROJECT_NAME, query.toString(), new PagingParametersImpl().setPage(1).setPerPage(2),
+						new VersioningParametersImpl().draft(), new NodeParametersImpl().setLanguages("de")));
 		assertEquals(1, response.getData().size());
 
 		String name = response.getData().get(0).getFields().getStringField("teaser").getString();
@@ -113,7 +112,6 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 
 		// 2. Assert that the the en, de variant of the node could be found in the search index
 		String uuid = db().tx(() -> content("concorde").getUuid());
-		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
 		NodeListResponse response = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleTermQuery("uuid", uuid), new PagingParametersImpl().setPage(1).setPerPage(10),
 						new NodeParametersImpl().setLanguages("en", "de"), new VersioningParametersImpl().draft()));
@@ -135,17 +133,20 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		// 4. Invoke the schema migration
 		GenericMessageResponse message = call(
 				() -> client().updateSchema(schemaUuid, schema, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
-		expectResponseMessage(message, "migration_invoked", "content");
+		assertMessage(message, "schema_updated_migration_deferred", "content", "2.0");
 
 		// 5. Assign the new schema version to the release
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
-		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, db().tx(() -> project().getLatestRelease().getUuid()),
-				new SchemaReference().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
 
 		// Wait for migration to complete
-		failingLatch(latch);
+		tx(() -> group().addRole(roles().get("admin")));
+		waitForJobs(() -> {
+			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, db().tx(() -> project().getLatestRelease().getUuid()),
+					new SchemaReferenceImpl().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
+		}, COMPLETED, 1);
+		tx(() -> group().removeRole(roles().get("admin")));
 
-		searchProvider().refreshIndex();
+		// searchProvider().refreshIndex();
 
 		// 6. Assert that the two migrated language variations can be found
 		response = call(
@@ -177,7 +178,6 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 				vcardField.getMicronode().createString("lastName").setString("Mouse");
 				role().grantPermissions(node, GraphPermission.READ_PERM);
 			}
-			MeshInternal.get().boot().meshRoot().getNodeRoot().reload();
 			recreateIndices();
 
 			NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("Mickey"),
@@ -232,13 +232,13 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 					() -> client().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParametersImpl().draft()));
 
 			ProjectCreateRequest createProject = new ProjectCreateRequest();
-			createProject.setSchema(new SchemaReference().setName("folder"));
+			createProject.setSchema(new SchemaReferenceImpl().setName("folder"));
 			createProject.setName("mynewproject");
 			ProjectResponse projectResponse = call(() -> client().createProject(createProject));
 
 			NodeCreateRequest createNode = new NodeCreateRequest();
 			createNode.setLanguage("en");
-			createNode.setSchema(new SchemaReference().setName("folder"));
+			createNode.setSchema(new SchemaReferenceImpl().setName("folder"));
 			createNode.setParentNode(projectResponse.getRootNode());
 			createNode.getFields().put("name", FieldUtil.createStringField("Concorde"));
 			NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
@@ -268,13 +268,13 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		// 1. Create a new project and a folder schema
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName("mynewproject");
-		createProject.setSchema(new SchemaReference().setName("folder"));
+		createProject.setSchema(new SchemaReferenceImpl().setName("folder"));
 		ProjectResponse projectResponse = call(() -> client().createProject(createProject));
 
 		// 2. Create a new node in the base of the project
 		NodeCreateRequest createNode = new NodeCreateRequest();
 		createNode.setLanguage("en");
-		createNode.setSchema(new SchemaReference().setName("folder"));
+		createNode.setSchema(new SchemaReferenceImpl().setName("folder"));
 		createNode.setParentNode(projectResponse.getRootNode());
 		createNode.getFields().put("name", FieldUtil.createStringField("AwesomeString"));
 		NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
@@ -311,13 +311,13 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		// 1. Create a new project and a folder schema
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName("mynewproject");
-		createProject.setSchema(new SchemaReference().setName("folder"));
+		createProject.setSchema(new SchemaReferenceImpl().setName("folder"));
 		ProjectResponse projectResponse = call(() -> client().createProject(createProject));
 
 		// 2. Create a new node in the base of the project
 		NodeCreateRequest createNode = new NodeCreateRequest();
 		createNode.setLanguage("en");
-		createNode.setSchema(new SchemaReference().setName("folder"));
+		createNode.setSchema(new SchemaReferenceImpl().setName("folder"));
 		createNode.setParentNodeUuid(projectResponse.getRootNode().getUuid());
 		createNode.getFields().put("name", FieldUtil.createStringField("AwesomeString"));
 		NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));

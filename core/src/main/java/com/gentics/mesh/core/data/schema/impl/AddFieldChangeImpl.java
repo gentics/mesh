@@ -2,9 +2,9 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ADD_FIELD_AFTER_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ALLOW_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LIST_TYPE_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.TYPE_KEY;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ALLOW_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -13,6 +13,8 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
@@ -87,6 +89,11 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 	}
 
 	@Override
+	public Boolean getRequired() {
+		return getRestProperty(SchemaChangeModel.REQUIRED_KEY);
+	}
+
+	@Override
 	public FieldSchemaContainer apply(FieldSchemaContainer container) {
 
 		String position = getInsertAfterPosition();
@@ -97,7 +104,9 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 			field = new HtmlFieldSchemaImpl();
 			break;
 		case "string":
-			field = new StringFieldSchemaImpl();
+			StringFieldSchema stringField = new StringFieldSchemaImpl();
+			stringField.setAllowedValues(getAllowProp());
+			field = stringField;
 			break;
 		case "number":
 			field = new NumberFieldSchemaImpl();
@@ -106,7 +115,9 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 			field = new BinaryFieldSchemaImpl();
 			break;
 		case "node":
-			field = new NodeFieldSchemaImpl();
+			NodeFieldSchema nodeField = new NodeFieldSchemaImpl();
+			nodeField.setAllowedSchemas(getAllowProp());
+			field = nodeField;
 			break;
 		case "micronode":
 			MicronodeFieldSchema micronodeFieldSchema = new MicronodeFieldSchemaImpl();
@@ -123,12 +134,22 @@ public class AddFieldChangeImpl extends AbstractSchemaFieldChange implements Add
 			ListFieldSchema listField = new ListFieldSchemaImpl();
 			listField.setListType(getListType());
 			field = listField;
+			switch (getListType()) {
+			case "node":
+			case "micronode":
+				listField.setAllowedSchemas(getAllowProp());
+				break;
+			}
 			break;
 		default:
 			throw error(BAD_REQUEST, "Unknown type");
 		}
 		field.setName(getFieldName());
 		field.setLabel(getLabel());
+		Boolean required = getRequired();
+		if (required != null) {
+			field.setRequired(required);
+		}
 		container.addField(field, position);
 		return container;
 	}

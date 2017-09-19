@@ -9,16 +9,16 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.expectException;
+import static com.gentics.mesh.test.ClientHelper.validateDeletion;
+import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateSet;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -39,7 +39,6 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -60,6 +59,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -199,7 +199,11 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 	@Override
 	public void testUpdate() throws Exception {
 		Tag tag = tag("vehicle");
+		String tagUuid = tx(() -> tag.getUuid());
+
 		TagFamily parentTagFamily = tagFamily("basic");
+		String parentTagFamilyUuid = tx(() -> parentTagFamily.getUuid());
+
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		List<? extends Node> nodes;
 
@@ -225,10 +229,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			tx.success();
 		}
 
+		TagResponse tag2 = call(() -> client().updateTag(PROJECT_NAME, parentTagFamilyUuid, tagUuid, tagUpdateRequest));
 		try (Tx tx = tx()) {
-			String tagUuid = tag.getUuid();
-			TagResponse tag2 = call(() -> client().updateTag(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid, tagUpdateRequest));
-			tag.reload();
 			assertThat(tag2).matches(tag);
 			assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(project().getUuid()), Tag.composeIndexType(),
 					Tag.composeDocumentId(tag2.getUuid()));
@@ -248,7 +250,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			}
 			assertThat(dummySearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeTypeName(),
 					TagFamily.composeDocumentId(parentTagFamily.getUuid()));
-			assertThat(dummySearchProvider()).hasEvents(2 + (nodes.size() * 4), 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(2 + (nodes.size() * 4), 0, 0, 0, 0);
 
 			// 4. read the tag again and verify that it was changed
 			TagResponse reloadedTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
@@ -345,7 +347,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 						NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, ContainerType.DRAFT),
 						NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
 			}
-			assertThat(dummySearchProvider()).hasEvents(4, 1, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(4, 1, 0, 0, 0);
 
 			tag = boot().tagRoot().findByUuid(uuid);
 			assertNull("The tag should have been deleted", tag);
@@ -408,7 +410,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		assertEquals("SomeName", response.getName());
 		assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(projectUuid), Tag.composeIndexType(),
 				Tag.composeDocumentId(response.getUuid()));
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		try (Tx tx = tx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
 		}

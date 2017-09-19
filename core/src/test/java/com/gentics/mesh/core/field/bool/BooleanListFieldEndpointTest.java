@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
@@ -106,7 +106,7 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 			listField.add(false);
 			NodeResponse firstResponse = updateNode(FIELD_NAME, listField);
 
-			//2. Read the node
+			// 2. Read the node
 			NodeResponse response = readNode(PROJECT_NAME, firstResponse.getUuid());
 			BooleanFieldListImpl deserializedBooleanField = response.getFields().getBooleanFieldList(FIELD_NAME);
 			assertNotNull(deserializedBooleanField);
@@ -117,27 +117,31 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() throws IOException {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
+		Node node = folder("2015");
 
-			List<List<Boolean>> valueCombinations = Arrays.asList(Arrays.asList(true, false, false), Arrays.asList(false, false, true),
-					Collections.emptyList(), Arrays.asList(true, false), Arrays.asList(false));
+		List<List<Boolean>> valueCombinations = Arrays.asList(Arrays.asList(true, false, false), Arrays.asList(false, false, true),
+				Collections.emptyList(), Arrays.asList(true, false), Arrays.asList(false));
 
-			for (int i = 0; i < 20; i++) {
-				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
-				List<Boolean> oldValue = getListValues(container, BooleanGraphFieldListImpl.class, FIELD_NAME);
-				List<Boolean> newValue = valueCombinations.get(i % valueCombinations.size());
+		for (int i = 0; i < 20; i++) {
+			BooleanFieldListImpl list = new BooleanFieldListImpl();
+			NodeGraphFieldContainer container;
+			List<Boolean> oldValue;
+			List<Boolean> newValue;
 
-				BooleanFieldListImpl list = new BooleanFieldListImpl();
+			try (Tx tx = tx()) {
+				container = node.getGraphFieldContainer("en");
+				oldValue = getListValues(container, BooleanGraphFieldListImpl.class, FIELD_NAME);
+				newValue = valueCombinations.get(i % valueCombinations.size());
+
 				for (Boolean value : newValue) {
 					list.add(value);
 				}
-				NodeResponse response = updateNode(FIELD_NAME, list);
-				BooleanFieldListImpl field = response.getFields().getBooleanFieldList(FIELD_NAME);
-				assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
-				node.reload();
-				container.reload();
+			}
+			NodeResponse response = updateNode(FIELD_NAME, list);
+			BooleanFieldListImpl field = response.getFields().getBooleanFieldList(FIELD_NAME);
+			assertThat(field.getItems()).as("Updated field").containsExactlyElementsOf(list.getItems());
 
+			try (Tx tx = tx()) {
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getListValues(container, BooleanGraphFieldListImpl.class, FIELD_NAME));
 			}
@@ -147,20 +151,19 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		BooleanFieldListImpl list = new BooleanFieldListImpl();
+		list.add(true);
+		list.add(false);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
+		String oldVersion = firstResponse.getVersion();
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+		assertThat(secondResponse.getFields().getBooleanFieldList(FIELD_NAME)).as("Updated Field").isNull();
+		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion());
+
+		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			BooleanFieldListImpl list = new BooleanFieldListImpl();
-			list.add(true);
-			list.add(false);
-			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-			String oldVersion = firstResponse.getVersion();
-
-			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
-			assertThat(secondResponse.getFields().getBooleanFieldList(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion());
-
-			// Assert that the old version was not modified
 			Node node = folder("2015");
-			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getBooleanList(FIELD_NAME)).isNull();
@@ -178,24 +181,20 @@ public class BooleanListFieldEndpointTest extends AbstractListFieldEndpointTest 
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (Tx tx = tx()) {
-			BooleanFieldListImpl list = new BooleanFieldListImpl();
-			list.add(true);
-			list.add(false);
-			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-			String oldVersion = firstResponse.getVersion();
+		BooleanFieldListImpl list = new BooleanFieldListImpl();
+		list.add(true);
+		list.add(false);
+		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
+		String oldVersion = firstResponse.getVersion();
 
-			BooleanFieldListImpl emptyField = new BooleanFieldListImpl();
-			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
-			assertThat(secondResponse.getFields().getBooleanFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
-			assertThat(secondResponse.getFields().getBooleanFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
-			assertThat(secondResponse.getVersion()).as("New version number should be generated").isNotEqualTo(oldVersion);
+		BooleanFieldListImpl emptyField = new BooleanFieldListImpl();
+		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
+		assertThat(secondResponse.getFields().getBooleanFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
+		assertThat(secondResponse.getFields().getBooleanFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
+		assertThat(secondResponse.getVersion()).as("New version number should be generated").isNotEqualTo(oldVersion);
 
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
-			assertThat(secondResponse.getVersion()).as("No new version number should be generated")
-					.isEqualTo(secondResponse.getVersion());
-		}
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(), secondResponse.getVersion());
+		assertThat(secondResponse.getVersion()).as("No new version number should be generated").isEqualTo(secondResponse.getVersion());
 	}
 }

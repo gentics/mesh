@@ -21,11 +21,14 @@ verticles/admin-gui/bower_components
 npm-debug.log*
 core/data
 server/data
+server/config
+server/data-*
 examples/demo-java/data
 core/tmp
 orient-plugins
 mesh-searchindex
 mesh-graphdb
+orientdb-plugins
 keystore.jceks
 /bower_components/
 mesh.lock
@@ -37,6 +40,7 @@ mesh.lock
 binaryImageCache
 .factorypath
 mesh-ui-config.js
+*/config/security.json
 doc/src/main/docs/changelog.asciidoc
 alltests
 inclusions.txt

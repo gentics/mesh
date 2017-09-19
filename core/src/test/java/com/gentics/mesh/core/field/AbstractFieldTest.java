@@ -8,7 +8,7 @@ import static org.junit.Assert.fail;
 
 import org.elasticsearch.common.collect.Tuple;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
@@ -90,7 +90,6 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		NodeGraphFieldContainer container = createNode(false, null).v2();
 		dummyFieldCreator.set(container, fieldName);
 		updater.call(container);
-		container.reload();
 		assertNull("The field should have been deleted by setting it to null", fetcher.fetch(container, fieldName));
 	}
 
@@ -98,7 +97,6 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		InternalActionContext ac = mockActionContext();
 		NodeGraphFieldContainer container = createNode(false, null).v2();
 		updateContainer(ac, container, fieldName, null);
-		container.reload();
 		assertNull("No field should have been created", fetcher.fetch(container, fieldName));
 	}
 
@@ -156,7 +154,6 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 			assertThat(e.getI18nParameters()).containsExactly(fieldName, "dummySchema");
 
 			// verify that the container was not modified
-			container.reload();
 			assertNull("No field should have been created", fetcher.fetch(container, fieldName));
 		}
 	}
@@ -178,7 +175,6 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		NodeGraphFieldContainer container = createNode(false, null).v2();
 		createDummyData.set(container, fieldName);
 		updater.call(container);
-		container.reload();
 		asserter.call(container);
 	}
 

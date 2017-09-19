@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.util.ETag;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
@@ -85,6 +86,11 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	@Override
 	public void setEtag(String entityTag, boolean isWeak) {
 		rc.response().putHeader(HttpHeaders.ETAG, ETag.prepareHeader(entityTag, isWeak));
+	}
+
+	@Override
+	public void setWebrootResponseType(String type) {
+		rc.response().putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, type);
 	}
 
 	@Override
@@ -184,6 +190,11 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 			project = get(RouterStorage.PROJECT_CONTEXT_KEY);
 		}
 		return project;
+	}
+
+	@Override
+	public boolean isMigrationContext() {
+		return false;
 	}
 
 }

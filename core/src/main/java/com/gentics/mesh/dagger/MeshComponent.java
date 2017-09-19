@@ -6,14 +6,16 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.core.data.node.handler.NodeMigrationHandler;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.service.ServerSchemaStorage;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.link.WebRootLinkReplacer;
+import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
+import com.gentics.mesh.core.verticle.migration.micronode.MicronodeMigrationHandler;
+import com.gentics.mesh.core.verticle.migration.node.NodeMigrationHandler;
+import com.gentics.mesh.core.verticle.migration.release.ReleaseMigrationHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.module.ConsoleModule;
 import com.gentics.mesh.dagger.module.ExtraModule;
 import com.gentics.mesh.dagger.module.MeshModule;
@@ -61,13 +63,17 @@ public interface MeshComponent {
 
 	MeshAuthHandler authenticationHandler();
 
-	NodeMigrationVerticle nodeMigrationVerticle();
+	JobWorkerVerticle jobWorkerVerticle();
 
 	ServerSchemaStorage serverSchemaStorage();
 
 	NodeIndexHandler nodeContainerIndexHandler();
 
 	NodeMigrationHandler nodeMigrationHandler();
+
+	ReleaseMigrationHandler releaseMigrationHandler();
+
+	MicronodeMigrationHandler micronodeMigrationHandler();
 
 	MeshLocalClientImpl meshLocalClientImpl();
 
@@ -98,5 +104,7 @@ public interface MeshComponent {
 	SchemaComparator schemaComparator();
 
 	RestAPIVerticle restApiVerticle();
+
+
 
 }

@@ -10,7 +10,7 @@ import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -18,6 +18,7 @@ import com.gentics.mesh.graphql.type.QueryTypeProvider;
 import com.gentics.mesh.json.JsonUtil;
 
 import graphql.ExceptionWhileDataFetching;
+import graphql.ExecutionInput;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.GraphQLError;
@@ -54,7 +55,9 @@ public class GraphQLHandler {
 			JsonObject queryJson = new JsonObject(body);
 			String query = queryJson.getString("query");
 			GraphQL graphQL = newGraphQL(typeProvider.getRootSchema(gc.getProject())).build();
-			ExecutionResult result = graphQL.execute(query, gc, extractVariables(queryJson));
+			ExecutionInput executionInput = ExecutionInput.newExecutionInput().query(query).context(gc).variables(extractVariables(queryJson))
+					.build();
+			ExecutionResult result = graphQL.execute(executionInput);
 			List<GraphQLError> errors = result.getErrors();
 			JsonObject response = new JsonObject();
 			if (!errors.isEmpty()) {

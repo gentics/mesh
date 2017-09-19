@@ -44,7 +44,7 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	SchemaContainer create(SchemaModel schema, User creator, String uuid) throws MeshSchemaException;
 
 	/**
-	 * Add the schema to the aggregation node.
+	 * Add the schema to the aggregation node and assign it to all releases of the project to which the root belongs.
 	 * 
 	 * @param schemaContainer
 	 */

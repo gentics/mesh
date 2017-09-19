@@ -9,7 +9,7 @@ import java.util.Map;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;

@@ -44,7 +44,11 @@ public class NumberGraphFieldListImpl extends AbstractBasicGraphFieldList<Number
 		boolean isNumberListFieldSetToNull = fieldMap.hasField(fieldKey) && numberList == null;
 		GraphField.failOnDeletionOfRequiredField(graphNumberFieldList, isNumberListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = numberList == null;
-		GraphField.failOnMissingRequiredField(graphNumberFieldList, restIsNull, fieldSchema, fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(graphNumberFieldList, restIsNull, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle Deletion
 		if (isNumberListFieldSetToNull && graphNumberFieldList != null) {

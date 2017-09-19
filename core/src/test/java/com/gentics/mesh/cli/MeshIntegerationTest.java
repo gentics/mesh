@@ -1,5 +1,6 @@
 package com.gentics.mesh.cli;
 
+import static com.gentics.mesh.Events.STARTUP_EVENT_ADDRESS;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -30,7 +31,7 @@ public class MeshIntegerationTest extends AbstractIntegrationTest {
 		long timeout = DEFAULT_TIMEOUT_SECONDS * 20;
 		final CountDownLatch latch = new CountDownLatch(2);
 		final Mesh mesh = Mesh.mesh();
-		mesh.getVertx().eventBus().consumer(Mesh.STARTUP_EVENT_ADDRESS, mh -> {
+		mesh.getVertx().eventBus().consumer(STARTUP_EVENT_ADDRESS, mh -> {
 			latch.countDown();
 		});
 		mesh.setCustomLoader((vertx) -> {

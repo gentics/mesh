@@ -1,16 +1,24 @@
 package com.gentics.mesh;
 
+import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
+import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.io.FileUtils;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.gentics.mesh.cli.MeshCLI;
+import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.util.UUIDUtil;
 
@@ -24,17 +32,66 @@ public final class OptionsLoader {
 
 	private static final Logger log = LoggerFactory.getLogger(OptionsLoader.class);
 
-	public static final String MESH_CONF_FILENAME = "mesh.yml";
-
 	private OptionsLoader() {
 
 	}
 
 	/**
 	 * Load the main mesh configuration file.
+	 * 
+	 * @param args
 	 */
-	public static MeshOptions createOrloadOptions() {
-		File confFile = new File(MESH_CONF_FILENAME);
+	public static MeshOptions createOrloadOptions(String... args) {
+		MeshOptions options = loadMeshOptions();
+		applyCommandLineArgs(options, args);
+		options.validate();
+		return options;
+	}
+
+	/**
+	 * Parse the command line arguments and update the mesh options accordingly.
+	 * 
+	 * @param options
+	 * @param args
+	 */
+	private static void applyCommandLineArgs(MeshOptions options, String... args) {
+		try {
+			CommandLine commandLine = MeshCLI.parse(args);
+			options.setInitCluster(commandLine.hasOption(MeshCLI.INIT_CLUSTER));
+			// Check whether a custom node parameter has been set
+			String cliNodeName = commandLine.getOptionValue(MeshCLI.NODE_NAME);
+			if (!isEmpty(cliNodeName)) {
+				options.setNodeName(cliNodeName);
+			}
+
+			// Check whether a custom cluster parameter has been set
+			String cliClusterName = commandLine.getOptionValue(MeshCLI.CLUSTER_NAME);
+			if (!isEmpty(cliClusterName)) {
+				options.getClusterOptions().setClusterName(cliClusterName);
+				options.getClusterOptions().setEnabled(true);
+			}
+
+			String httpPort = commandLine.getOptionValue(MeshCLI.HTTP_PORT);
+			if (!isEmpty(httpPort)) {
+				options.getHttpServerOptions().setPort(Integer.valueOf(httpPort));
+			}
+		} catch (ParseException e) {
+			log.error("Error while parsing arguments {" + e.getMessage() + "}");
+			if (log.isDebugEnabled()) {
+				log.debug("Error while parsing argument", e);
+			}
+			throw new RuntimeException("Error while parsing arguments {" + e.getMessage() + "}");
+		}
+	}
+
+	/**
+	 * Try to load the mesh options from different locations (classpath, config folder). Otherwise a default configuration will be generated.
+	 * 
+	 * @return
+	 */
+	private static MeshOptions loadMeshOptions() {
+
+		File confFile = new File(CONFIG_FOLDERNAME, MESH_CONF_FILENAME);
 		MeshOptions options = null;
 		InputStream ins = Mesh.class.getResourceAsStream("/" + MESH_CONF_FILENAME);
 		// 1. Try to load from classpath
@@ -61,7 +118,7 @@ public final class OptionsLoader {
 				log.error("Could not load configuration file {" + confFile.getAbsolutePath() + "}.", e);
 			}
 		} else {
-			log.info("Configuration file {" + MESH_CONF_FILENAME + "} was not found within filesystem.");
+			log.info("Configuration file {" + CONFIG_FOLDERNAME + "/" + MESH_CONF_FILENAME + "} was not found within filesystem.");
 
 			ObjectMapper mapper = getYAMLMapper();
 			try {
@@ -76,6 +133,7 @@ public final class OptionsLoader {
 		// 2. No luck - use default config
 		log.info("Loading default configuration.");
 		return options;
+
 	}
 
 	/**
@@ -86,6 +144,7 @@ public final class OptionsLoader {
 	private static MeshOptions generateDefaultConfig() {
 		MeshOptions options = new MeshOptions();
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
+		options.setNodeName(MeshNameProvider.getInstance().getRandomName());
 		return options;
 	}
 

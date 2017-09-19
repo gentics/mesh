@@ -80,7 +80,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 		logoutEndpoint.method(GET);
 		logoutEndpoint.produces(APPLICATION_JSON);
 		logoutEndpoint.description("Logout and delete the currently active session.");
-		logoutEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "User was successfully logged out.");
+		logoutEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "User was successfully logged out.");
 		logoutEndpoint.handler(rc -> {
 			authRestHandler.handleLogout(new InternalRoutingActionContextImpl(rc));
 		});

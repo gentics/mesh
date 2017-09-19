@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
@@ -178,8 +178,6 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			Release initialRelease = project.getInitialRelease();
 			initialRelease.setName("New Release Name");
 			initialRelease.setActive(false);
-			initialRelease.reload();
-
 			assertThat(initialRelease).as("Release").isNamed("New Release Name").isInactive();
 		}
 	}
@@ -289,9 +287,6 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			// assign the schema to the project
 			project.getSchemaContainerRoot().addSchemaContainer(schemaContainer);
 
-			initialRelease.reload();
-			newRelease.reload();
-
 			for (Release release : Arrays.asList(initialRelease, newRelease)) {
 				assertThat(release).as(release.getName()).hasSchema(schemaContainer).hasSchemaVersion(latestVersion)
 						.hasNotSchemaVersion(previousVersion);
@@ -315,9 +310,6 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			Release newRelease = project.getReleaseRoot().create("New Release", user());
 
 			project.getSchemaContainerRoot().removeSchemaContainer(schemaContainer);
-			initialRelease.reload();
-			newRelease.reload();
-
 			for (Release release : Arrays.asList(initialRelease, newRelease)) {
 				assertThat(release).as(release.getName()).hasNotSchema(schemaContainer).hasNotSchemaVersion(schemaContainer.getLatestVersion());
 			}
@@ -392,9 +384,6 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			// assign the schema to the project
 			project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
 
-			initialRelease.reload();
-			newRelease.reload();
-
 			for (Release release : Arrays.asList(initialRelease, newRelease)) {
 				assertThat(release).as(release.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(latestVersion)
 						.hasNotMicroschemaVersion(previousVersion);
@@ -418,8 +407,6 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			Release newRelease = project.getReleaseRoot().create("New Release", user());
 
 			project.getMicroschemaContainerRoot().removeMicroschema(microschemaContainer);
-			initialRelease.reload();
-			newRelease.reload();
 
 			for (Release release : Arrays.asList(initialRelease, newRelease)) {
 				assertThat(release).as(release.getName()).hasNotMicroschema(microschemaContainer)
@@ -493,7 +480,6 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 		InternalActionContext ac = mockActionContext();
 		SearchQueueBatch batch = createBatch();
 		schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
-		schemaContainer.reload();
 	}
 
 	/**
@@ -534,6 +520,5 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 		InternalActionContext ac = mockActionContext();
 		SearchQueueBatch batch = createBatch();
 		microschemaContainer.getLatestVersion().applyChanges(ac, model, batch);
-		microschemaContainer.reload();
 	}
 }

@@ -1,6 +1,6 @@
 package com.gentics.mesh.graphdb.orientdb.graph;
 
-import com.gentics.ferma.annotation.GraphElement;
+import com.syncleus.ferma.annotations.GraphElement;
 
 @GraphElement
 public class HasJob extends AbstractInterceptingEdgeFrame {

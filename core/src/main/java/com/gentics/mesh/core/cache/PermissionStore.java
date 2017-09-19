@@ -1,15 +1,23 @@
 package com.gentics.mesh.core.cache;
 
+import static com.gentics.mesh.Events.EVENT_CLEAR_PERMISSION_STORE;
+
 import java.util.concurrent.TimeUnit;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Central LRU permission cache which is used to quickly lookup cached permissions.
  */
 public final class PermissionStore {
+
+	private static final Logger log = LoggerFactory.getLogger(PermissionStore.class);
 
 	public static final Cache<String, Boolean> PERM_CACHE = Caffeine.newBuilder().maximumSize(100_000).expireAfterWrite(5, TimeUnit.MINUTES).build();
 
@@ -31,6 +39,18 @@ public final class PermissionStore {
 	}
 
 	/**
+	 * Register the event handler which can be used to invalidate the LRU cache.
+	 */
+	public static void registerEventHandler() {
+		Mesh.vertx().eventBus().consumer(EVENT_CLEAR_PERMISSION_STORE, e -> {
+			if (log.isDebugEnabled()) {
+				log.debug("Clearing permission store due to received event from {" + e.address() + "}");
+			}
+			PERM_CACHE.invalidateAll();
+		});
+	}
+
+	/**
 	 * Create the cache key.
 	 * 
 	 * @param userId
@@ -43,18 +63,23 @@ public final class PermissionStore {
 	}
 
 	/**
-	 * Invalidate the LRU cache
+	 * Invalidate the LRU cache.
 	 */
 	public static void invalidate() {
+		// Invalidate locally and also send the event to inform other to purge the stored permissions
 		PERM_CACHE.invalidateAll();
+		Mesh.vertx().eventBus().publish(EVENT_CLEAR_PERMISSION_STORE, null);
 	}
 
 	/**
 	 * Store a granting permission in the cache.
 	 * 
 	 * @param userId
+	 *            User which currently has roles which grant him the permission on the element
 	 * @param permission
+	 *            Permission which is granted
 	 * @param elementId
+	 *            Id of the element to which a permission is granted
 	 */
 	public static void store(Object userId, GraphPermission permission, Object elementId) {
 		PERM_CACHE.put(createCacheKey(userId, permission, elementId), true);

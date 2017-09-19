@@ -13,20 +13,11 @@ import com.gentics.mesh.core.rest.SortOrder;
 import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.AbstractParameters;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.util.NumberUtils;
 
 /**
  * A {@link PagingParametersImpl} can be used to add additional paging parameters to the rest requests.
  */
 public class PagingParametersImpl extends AbstractParameters implements PagingParameters {
-
-	public static final String PAGE_PARAMETER_KEY = "page";
-	public static final String PER_PAGE_PARAMETER_KEY = "perPage";
-	public static final String SORT_BY_PARAMETER_KEY = "sortBy";
-	public static final String SORT_ORDER_PARAMETER_KEY = "order";
-
-	public static final int DEFAULT_PAGE = 1;
-	public static final int DEFAULT_PAGE_SIZE = 25;
 
 	public PagingParametersImpl(ActionContext ac) {
 		super(ac);
@@ -78,56 +69,6 @@ public class PagingParametersImpl extends AbstractParameters implements PagingPa
 	 */
 	public PagingParametersImpl(int page, int perPage) {
 		this(page, perPage, "uuid", SortOrder.ASCENDING);
-	}
-
-	@Override
-	public int getPage() {
-		return NumberUtils.toInt(getParameter(PAGE_PARAMETER_KEY), DEFAULT_PAGE);
-	}
-
-	@Override
-	public int getPerPage() {
-		return NumberUtils.toInt(getParameter(PER_PAGE_PARAMETER_KEY), DEFAULT_PAGE_SIZE);
-	}
-
-	@Override
-	public PagingParameters setPage(long page) {
-		setParameter(PAGE_PARAMETER_KEY, String.valueOf(page));
-		return this;
-	}
-
-	@Override
-	public PagingParameters setPerPage(int perPage) {
-		setParameter(PER_PAGE_PARAMETER_KEY, String.valueOf(perPage));
-		return this;
-	}
-
-	@Override
-	public PagingParameters setSortOrder(String sortBy) {
-		setParameter(SORT_BY_PARAMETER_KEY, sortBy);
-		return this;
-	}
-
-	@Override
-	public PagingParameters setOrderBy(String orderBy) {
-		setParameter(SORT_BY_PARAMETER_KEY, orderBy);
-		return this;
-	}
-
-	@Override
-	public String getSortBy() {
-		return getParameter(SORT_BY_PARAMETER_KEY);
-	}
-
-	/**
-	 * Return the order parameter value.
-	 * 
-	 * @return Sort order
-	 * @deprecated not yet implemented
-	 */
-	@Deprecated
-	public SortOrder getOrder() {
-		return SortOrder.valueOfName(getParameter(SORT_ORDER_PARAMETER_KEY));
 	}
 
 	@Override

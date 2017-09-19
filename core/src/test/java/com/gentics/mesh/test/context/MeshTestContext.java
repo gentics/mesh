@@ -1,6 +1,6 @@
 package com.gentics.mesh.test.context;
 
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,13 +12,12 @@ import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
+import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerTestMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
@@ -33,8 +32,9 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.search.DummySearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.test.TestSize;
-import com.gentics.mesh.test.performance.TestUtils;
+import com.gentics.mesh.test.util.TestUtils;
 import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
@@ -44,8 +44,10 @@ import io.vertx.core.logging.LoggerFactory;
 
 public class MeshTestContext extends TestWatcher {
 
-	private List<File> tmpFolders = new ArrayList<>();
 	private static final Logger log = LoggerFactory.getLogger(MeshTestContext.class);
+
+	private static final String CONF_PATH = "target/config-" + System.currentTimeMillis();
+	private List<File> tmpFolders = new ArrayList<>();
 	private MeshComponent meshDagger;
 	private TestDataProvider dataProvider;
 	private DummySearchProvider dummySearchProvider;
@@ -57,7 +59,7 @@ public class MeshTestContext extends TestWatcher {
 
 	private RestAPIVerticle restVerticle;
 
-	private NodeMigrationVerticle nodeMigrationVerticle;
+	private JobWorkerVerticle jobWorkerVerticle;
 
 	private List<String> deploymentIds = new ArrayList<>();
 	private RouterStorage routerStorage;
@@ -69,8 +71,10 @@ public class MeshTestContext extends TestWatcher {
 			// Setup the dagger context and orientdb,es once
 			if (description.isSuite()) {
 				removeDataDirectory();
-				init(settings);
-				initDagger(settings.testSize());
+				removeConfigDirectory();
+				MeshOptions options = init(settings);
+				initDagger(options, settings.testSize());
+				meshDagger.boot().registerEventHandlers();
 			} else {
 				if (!settings.inMemoryDB()) {
 					DatabaseHelper.init(meshDagger.database());
@@ -94,6 +98,7 @@ public class MeshTestContext extends TestWatcher {
 			MeshTestSetting settings = getSettings(description);
 			if (description.isSuite()) {
 				removeDataDirectory();
+				removeConfigDirectory();
 			} else {
 				cleanupFolders();
 				if (settings.startServer()) {
@@ -110,6 +115,11 @@ public class MeshTestContext extends TestWatcher {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	private void removeConfigDirectory() throws IOException {
+		FileUtils.deleteDirectory(new File(CONF_PATH));
+		System.setProperty("mesh.confDirName", CONF_PATH);
 	}
 
 	private void removeDataDirectory() throws IOException {
@@ -139,8 +149,7 @@ public class MeshTestContext extends TestWatcher {
 	private void setupRestEndpoints() throws Exception {
 		Mesh.mesh().getOptions().getUploadOptions().setByteLimit(Long.MAX_VALUE);
 
-		port = com.gentics.mesh.test.performance.TestUtils.getRandomPort();
-		vertx = Mesh.vertx();
+		port = com.gentics.mesh.test.util.TestUtils.getRandomPort();
 
 		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);
 		JsonObject config = new JsonObject();
@@ -150,8 +159,8 @@ public class MeshTestContext extends TestWatcher {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
 		CountDownLatch latch = new CountDownLatch(1);
-		nodeMigrationVerticle = meshDagger.nodeMigrationVerticle();
-		vertx.deployVerticle(nodeMigrationVerticle, options, rh -> {
+		jobWorkerVerticle = meshDagger.jobWorkerVerticle();
+		vertx.deployVerticle(jobWorkerVerticle, options, rh -> {
 			String deploymentId = rh.result();
 			deploymentIds.add(deploymentId);
 			latch.countDown();
@@ -170,7 +179,7 @@ public class MeshTestContext extends TestWatcher {
 
 		// Setup the rest client
 		try (Tx tx = db().tx()) {
-			client = MeshRestClient.create("localhost", getPort(), Mesh.vertx());
+			client = MeshRestClient.create("localhost", getPort(), false, Mesh.vertx());
 			client.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
 			client.login().toBlocking().value();
 		}
@@ -211,7 +220,12 @@ public class MeshTestContext extends TestWatcher {
 
 	private void closeClient() throws Exception {
 		if (client != null) {
-			client.close();
+			try {
+				client.close();
+			} catch (IllegalStateException e) {
+				// Ignored
+				e.printStackTrace();
+			}
 		}
 	}
 
@@ -230,7 +244,7 @@ public class MeshTestContext extends TestWatcher {
 			MeshInternal.get().database().stop();
 			File dbDir = new File(Mesh.mesh().getOptions().getStorageOptions().getDirectory());
 			FileUtils.deleteDirectory(dbDir);
-			MeshInternal.get().database().start();
+			MeshInternal.get().database().setupConnectionPool();
 		}
 		long duration = System.currentTimeMillis() - start;
 		log.info("Clearing DB took {" + duration + "} ms.");
@@ -263,9 +277,16 @@ public class MeshTestContext extends TestWatcher {
 	 * @param settings
 	 * @throws Exception
 	 */
-	public void init(MeshTestSetting settings) throws Exception {
+	public MeshOptions init(MeshTestSetting settings) throws Exception {
 		MeshFactoryImpl.clear();
 		MeshOptions options = new MeshOptions();
+
+		// Clustering options
+		if (settings.clusterMode()) {
+			options.getClusterOptions().setEnabled(true);
+			options.setInitCluster(true);
+			options.getClusterOptions().setClusterName("cluster" + System.currentTimeMillis());
+		}
 
 		// Setup the keystore
 		File keystoreFile = new File("target", "keystore_" + UUIDUtil.randomUUID() + ".jceks");
@@ -276,6 +297,7 @@ public class MeshTestContext extends TestWatcher {
 		}
 		options.getAuthenticationOptions().setKeystorePassword(keystorePassword);
 		options.getAuthenticationOptions().setKeystorePath(keystoreFile.getAbsolutePath());
+		options.setNodeName("testNode");
 
 		String uploads = newFolder("testuploads");
 		options.getUploadOptions().setDirectory(uploads);
@@ -296,7 +318,7 @@ public class MeshTestContext extends TestWatcher {
 		// The database provider will switch to in memory mode when no directory has been specified.
 
 		String graphPath = null;
-		if (!settings.inMemoryDB()) {
+		if (!settings.inMemoryDB() || settings.clusterMode()) {
 			graphPath = "target/graphdb_" + UUIDUtil.randomUUID();
 			File directory = new File(graphPath);
 			directory.deleteOnExit();
@@ -312,6 +334,7 @@ public class MeshTestContext extends TestWatcher {
 		searchOptions.setHttpEnabled(settings.startESServer());
 		options.setSearchOptions(searchOptions);
 		Mesh.mesh(options);
+		return options;
 	}
 
 	/**
@@ -333,8 +356,12 @@ public class MeshTestContext extends TestWatcher {
 
 	/**
 	 * Initialise the mesh dagger context and inject the dependencies within the test.
+	 * 
+	 * @param options
+	 * 
+	 * @throws Exception
 	 */
-	public void initDagger(TestSize size) {
+	public void initDagger(MeshOptions options, TestSize size) throws Exception {
 		log.info("Initializing dagger context");
 		meshDagger = DaggerTestMeshComponent.create();
 		MeshInternal.set(meshDagger);
@@ -343,11 +370,13 @@ public class MeshTestContext extends TestWatcher {
 		if (meshDagger.searchProvider() instanceof DummySearchProvider) {
 			dummySearchProvider = meshDagger.dummySearchProvider();
 		}
-		// searchProvider = meshDagger.searchProvider();
-		// schemaStorage = meshDagger.serverSchemaStorage();
-		// boot = meshDagger.boot();
-		Database db = meshDagger.database();
-		DatabaseHelper.init(db);
+		try {
+			meshDagger.boot().init(Mesh.mesh(), false, options, null);
+			vertx = Mesh.vertx();
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
 	}
 
 	public MeshRestClient getClient() {

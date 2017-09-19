@@ -3,12 +3,12 @@ package com.gentics.mesh.core.verticle;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.expectFailureMessage;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectFailureMessage;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
@@ -23,7 +23,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
@@ -38,7 +37,7 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -48,6 +47,7 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.URIUtils;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class WebRootEndpointTest extends AbstractMeshTest {
@@ -311,7 +311,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			NodeCreateRequest createErrorFolder = new NodeCreateRequest();
-			createErrorFolder.setSchema(new SchemaReference().setName("folder"));
+			createErrorFolder.setSchema(new SchemaReferenceImpl().setName("folder"));
 			createErrorFolder.setParentNodeUuid(project().getBaseNode().getUuid());
 			createErrorFolder.getFields().put("slug", FieldUtil.createStringField("error"));
 			createErrorFolder.setLanguage("en");
@@ -319,7 +319,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 			String errorNodeUuid = response.getUuid();
 
 			NodeCreateRequest create404Node = new NodeCreateRequest();
-			create404Node.setSchema(new SchemaReference().setName("content"));
+			create404Node.setSchema(new SchemaReferenceImpl().setName("content"));
 			create404Node.setParentNodeUuid(errorNodeUuid);
 			create404Node.getFields().put("slug", FieldUtil.createStringField("404"));
 			create404Node.getFields().put("teaser", FieldUtil.createStringField("Error Content"));
@@ -438,7 +438,7 @@ public class WebRootEndpointTest extends AbstractMeshTest {
 		// 1. create new release and migrate node
 		db().tx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
-			meshDagger().nodeMigrationHandler().migrateNodes(newRelease).await();
+			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
 		});
 
 		// 2. update nodes in new release

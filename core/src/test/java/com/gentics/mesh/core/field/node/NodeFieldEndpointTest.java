@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.field.node;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -33,8 +33,8 @@ import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -64,10 +64,10 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
-			List<Node> targetNodes = Arrays.asList(folder("news"), folder("deals"));
-			for (int i = 0; i < 20; i++) {
+		Node node = folder("2015");
+		List<Node> targetNodes = Arrays.asList(folder("news"), folder("deals"));
+		for (int i = 0; i < 20; i++) {
+			try (Tx tx = tx()) {
 				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
 				Node oldValue = getNodeValue(container, FIELD_NAME);
 
@@ -77,8 +77,6 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 				NodeResponse response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(newValue.getUuid()));
 				NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
 				assertThat(field.getUuid()).as("New Value").isEqualTo(newValue.getUuid());
-				node.reload();
-				container.reload();
 
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getNodeValue(container, FIELD_NAME));
@@ -147,33 +145,34 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	public void testUpdateNodeFieldWithNodeResponseJson() {
 		Node node = folder("news");
+		String nodeUuid = tx(() -> node.getUuid());
 		Node node2 = folder("deals");
+		String node2Uuid = tx(() -> node2.getUuid());
 		Node updatedNode = folder("2015");
+		String updatedNodeUuid = tx(() -> updatedNode.getUuid());
 
-		try (Tx tx = tx()) {
-			// Load the node so that we can use it to prepare the update request
-			NodeResponse loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
+		// Load the node so that we can use it to prepare the update request
+		NodeResponse loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().draft()));
+		// Update the field to point to node
+		NodeResponse response = updateNode(FIELD_NAME, loadedNode);
+		NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
+		assertEquals(nodeUuid, field.getUuid());
 
-			// Update the field to point to node
-			NodeResponse response = updateNode(FIELD_NAME, loadedNode);
-			NodeResponse field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertEquals(node.getUuid(), field.getUuid());
+		loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNodeUuid, new NodeParametersImpl().setLanguages("en"),
+				new VersioningParametersImpl().draft()));
+		field = loadedNode.getFields().getNodeFieldExpanded(FIELD_NAME);
+		assertEquals(nodeUuid, field.getUuid());
 
-			loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParametersImpl().setLanguages("en"),
-					new VersioningParametersImpl().draft()));
-			field = loadedNode.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertEquals(node.getUuid(), field.getUuid());
+		// Update the field to point to node2
+		response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(node2Uuid));
+		field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
+		assertEquals(node2Uuid, field.getUuid());
 
-			// Update the field to point to node2
-			response = updateNode(FIELD_NAME, new NodeFieldImpl().setUuid(node2.getUuid()));
-			field = response.getFields().getNodeFieldExpanded(FIELD_NAME);
-			assertEquals(node2.getUuid(), field.getUuid());
+		loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNodeUuid, new NodeParametersImpl().setLanguages("en"),
+				new VersioningParametersImpl().draft()));
+		field = loadedNode.getFields().getNodeFieldExpanded("nodeField");
+		assertEquals(node2Uuid, field.getUuid());
 
-			loadedNode = call(() -> client().findNodeByUuid(PROJECT_NAME, updatedNode.getUuid(), new NodeParametersImpl().setLanguages("en"),
-					new VersioningParametersImpl().draft()));
-			field = loadedNode.getFields().getNodeFieldExpanded("nodeField");
-			assertEquals(node2.getUuid(), field.getUuid());
-		}
 	}
 
 	@Test
@@ -366,7 +365,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			// add a node in german and english
 			NodeCreateRequest createGermanNode = new NodeCreateRequest();
-			createGermanNode.setSchema(new SchemaReference().setName("folder"));
+			createGermanNode.setSchema(new SchemaReferenceImpl().setName("folder"));
 			createGermanNode.setParentNodeUuid(folder.getUuid());
 			createGermanNode.setLanguage("de");
 			createGermanNode.getFields().put("name", FieldUtil.createStringField("German Target"));
@@ -386,7 +385,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			// add a node in german (referencing the target node)
 			NodeCreateRequest createSourceNode = new NodeCreateRequest();
-			createSourceNode.setSchema(new SchemaReference().setName("folder"));
+			createSourceNode.setSchema(new SchemaReferenceImpl().setName("folder"));
 			createSourceNode.setParentNodeUuid(folder.getUuid());
 			createSourceNode.setLanguage("de");
 			createSourceNode.getFields().put("name", FieldUtil.createStringField("German Source"));

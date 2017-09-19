@@ -11,8 +11,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
 import com.gentics.mesh.core.rest.user.UserResponse;
@@ -36,7 +36,7 @@ public class UserRestTest {
 
 		NodeResponse nodeResponse = new NodeResponse();
 		nodeResponse.setUuid(UUIDUtil.randomUUID());
-		nodeResponse.setSchema(new SchemaReference().setName("content"));
+		nodeResponse.setSchema(new SchemaReferenceImpl().setName("content"));
 		response.setNodeResponse(nodeResponse);
 		String json = JsonUtil.toJson(response);
 		assertNotNull(json);

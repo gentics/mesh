@@ -4,16 +4,14 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEMICROSCHEMA;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -22,10 +20,9 @@ import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
-import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
@@ -69,10 +66,8 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Microschema request = getMicroschema();
-			MeshResponse<SchemaChangesListModel> future = client().diffMicroschema(microschema.getUuid(), request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			SchemaChangesListModel changes = future.result();
+
+			SchemaChangesListModel changes = call(() -> client().diffMicroschema(microschema.getUuid(), request));
 			assertNotNull(changes);
 			assertThat(changes.getChanges()).isEmpty();
 		}
@@ -86,11 +81,9 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 			StringFieldSchema stringField = FieldUtil.createStringFieldSchema("someField");
 			stringField.setAllowedValues("one", "two");
 			request.addField(stringField);
+			SchemaChangesListModel changes = call(() ->
 
-			MeshResponse<SchemaChangesListModel> future = client().diffMicroschema(microschema.getUuid(), request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			SchemaChangesListModel changes = future.result();
+			client().diffMicroschema(microschema.getUuid(), request));
 			assertNotNull(changes);
 			assertThat(changes.getChanges()).hasSize(2);
 			assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("someField");
@@ -107,9 +100,8 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 			BinaryFieldSchema binaryField = FieldUtil.createBinaryFieldSchema("binaryField");
 			request.addField(binaryField);
 
-			MeshResponse<SchemaChangesListModel> future = client().diffMicroschema(microschema.getUuid(), request).invoke();
-			latchFor(future);
-			expectException(future, BAD_REQUEST, "microschema_error_field_type_not_allowed", "binaryField", "binary");
+			call(() -> client().diffMicroschema(microschema.getUuid(), request), BAD_REQUEST, "microschema_error_field_type_not_allowed",
+					"binaryField", "binary");
 		}
 	}
 
@@ -119,10 +111,8 @@ public class MicroschemaDiffEndpointTest extends AbstractMeshTest {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 			Microschema request = getMicroschema();
 			request.removeField("postcode");
-			MeshResponse<SchemaChangesListModel> future = client().diffMicroschema(microschema.getUuid(), request).invoke();
-			latchFor(future);
-			assertSuccess(future);
-			SchemaChangesListModel changes = future.result();
+
+			SchemaChangesListModel changes = call(() -> client().diffMicroschema(microschema.getUuid(), request));
 			assertNotNull(changes);
 			assertThat(changes.getChanges()).hasSize(2);
 			assertThat(changes.getChanges().get(0)).is(REMOVEFIELD).forField("postcode");

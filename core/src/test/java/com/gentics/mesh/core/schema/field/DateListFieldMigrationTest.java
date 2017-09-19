@@ -181,7 +181,6 @@ public class DateListFieldMigrationTest extends AbstractFieldMigrationTest imple
 				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
 					DateGraphFieldList field = container.getDateList(name);
 					assertThat(field).as(NEWFIELD).isNotNull();
-					field.reload();
 					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(OTHERDATEVALUE, DATEVALUE);
 				});
 	}

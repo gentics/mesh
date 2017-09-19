@@ -196,7 +196,6 @@ public class NumberListFieldMigrationTest extends AbstractFieldMigrationTest imp
 				"function migrate(node, fieldname, convert) {node.fields[fieldname].reverse(); return node;}", (container, name) -> {
 					NumberGraphFieldList field = container.getNumberList(name);
 					assertThat(field).as(NEWFIELD).isNotNull();
-					field.reload();
 					assertThat(field.getValues()).as(NEWFIELDVALUE).containsExactly(OTHERNUMBERVALUE, NUMBERVALUE);
 				});
 	}

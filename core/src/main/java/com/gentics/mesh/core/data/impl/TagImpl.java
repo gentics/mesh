@@ -245,4 +245,5 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
+
 }

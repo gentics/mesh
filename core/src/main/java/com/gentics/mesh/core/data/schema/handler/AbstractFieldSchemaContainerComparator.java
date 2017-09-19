@@ -15,7 +15,9 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.util.CompareUtils;
 
@@ -76,11 +78,20 @@ public abstract class AbstractFieldSchemaContainerComparator<FC extends FieldSch
 				}
 				SchemaChangeModel change = SchemaChangeModel.createAddFieldChange(fieldInB.getName(), fieldInB.getType(), fieldInB.getLabel());
 				if (fieldInB instanceof ListFieldSchema) {
-					change.setProperty(SchemaChangeModel.LIST_TYPE_KEY, ((ListFieldSchema) fieldInB).getListType());
+					ListFieldSchema listFieldInB = (ListFieldSchema) fieldInB;
+					change.setProperty(SchemaChangeModel.LIST_TYPE_KEY, listFieldInB.getListType());
+					change.setProperty(SchemaChangeModel.ALLOW_KEY, listFieldInB.getAllowedSchemas());
 				}
 				if (fieldInB instanceof MicronodeFieldSchema) {
 					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((MicronodeFieldSchema) fieldInB).getAllowedMicroSchemas());
 				}
+				if (fieldInB instanceof NodeFieldSchema) {
+					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((NodeFieldSchema)fieldInB).getAllowedSchemas());
+				}
+				if (fieldInB instanceof StringFieldSchema) {
+					change.setProperty(SchemaChangeModel.ALLOW_KEY, ((StringFieldSchema)fieldInB).getAllowedValues());
+				}
+				change.setProperty(SchemaChangeModel.REQUIRED_KEY, fieldInB.isRequired());
 
 				if (i - 1 >= 0) {
 					FieldSchema fieldBefore = containerB.getFields().get(i - 1);

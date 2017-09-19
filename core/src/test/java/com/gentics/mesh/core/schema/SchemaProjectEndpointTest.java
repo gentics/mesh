@@ -4,7 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -13,14 +13,14 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -49,7 +49,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			SchemaContainer schema = schemaContainer("content");
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			request.setName(name);
 
 			ProjectResponse restProject = call(() -> client().createProject(request));
@@ -68,7 +68,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("extraProject");
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			ProjectResponse created = call(() -> client().createProject(request));
 			extraProject = projectRoot.findByUuid(created.getUuid());
 
@@ -81,7 +81,6 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			call(() -> client().assignSchemaToProject(extraProject.getName(), schema.getUuid()));
 			// assertThat(restSchema).matches(schema);
-			extraProject.getSchemaContainerRoot().reload();
 			assertNotNull("The schema should be added to the extra project", extraProject.getSchemaContainerRoot().findByUuid(schema.getUuid()));
 		}
 	}
@@ -97,7 +96,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("extraProject");
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			ProjectResponse response = call(() -> client().createProject(request));
 			projectUuid = response.getUuid();
 			extraProject = projectRoot.findByUuid(projectUuid);
@@ -132,7 +131,6 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			// final String removedProjectName = project.getName();
 			assertEquals("The removed schema should not be listed in the response", 0,
 					list.getData().stream().filter(s -> s.getUuid().equals(schema.getUuid())).count());
-			project.getSchemaContainerRoot().reload();
 			assertFalse("The schema should no longer be assigned to the project.", project.getSchemaContainerRoot().contains(schema));
 		}
 	}

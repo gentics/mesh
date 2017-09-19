@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.performance.StopWatch.loggingStopWatch;
 
 import org.junit.Test;
@@ -10,7 +10,7 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -30,7 +30,7 @@ public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 			NodeCreateRequest request = new NodeCreateRequest();
 			request.setLanguage("en");
 			request.setParentNodeUuid(uuid);
-			request.setSchema(new SchemaReference().setName("content"));
+			request.setSchema(new SchemaReferenceImpl().setName("content"));
 			request.getFields().put("name", FieldUtil.createStringField("someNode_" + i));
 			request.getFields().put("content", FieldUtil.createHtmlField("someContent"));
 			NodeResponse response = call(() -> client().createNode(PROJECT_NAME, request));
@@ -77,7 +77,7 @@ public class NodeEndpointPerformanceTest extends AbstractMeshTest {
 		String uuid = db().tx(() -> folder("news").getUuid());
 		loggingStopWatch(logger, "node.create", 200, (step) -> {
 			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("content"));
+			request.setSchema(new SchemaReferenceImpl().setName("content"));
 			request.setLanguage("en");
 			request.getFields().put("title", FieldUtil.createStringField("some title"));
 			request.getFields().put("name", FieldUtil.createStringField("some name"));

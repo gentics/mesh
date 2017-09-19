@@ -9,7 +9,7 @@ import java.util.Set;
 
 import org.reflections.Reflections;
 
-import com.gentics.ferma.annotation.GraphElement;
+import com.syncleus.ferma.annotations.GraphElement;
 
 public class SimpleReflectionCache extends Reflections {
 

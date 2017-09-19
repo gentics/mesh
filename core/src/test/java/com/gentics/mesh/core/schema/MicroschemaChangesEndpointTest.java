@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.schema;
 
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -10,9 +12,9 @@ import static org.junit.Assert.assertNull;
 
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -23,56 +25,135 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.performance.TestUtils;
+import com.gentics.mesh.test.util.TestUtils;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
+	@Before
+	public void addAdminPerms() {
+		// Grant admin perms. Otherwise we can't check the jobs
+		tx(() -> group().addRole(roles().get("admin")));
+	}
+
 	@Test
 	public void testRemoveField() throws Exception {
+		// 1. Create node that uses the microschema
+		Node node;
+		MicroschemaContainer microschemaContainer = microschemaContainer("vcard");
+		MicroschemaContainerVersion beforeVersion;
 		try (Tx tx = tx()) {
-			// 1. Setup eventbus bridge latch
-			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
+			node = createMicronodeNode();
+			beforeVersion = microschemaContainer.getLatestVersion();
+			assertNull("The microschema should not yet have any changes", microschemaContainer.getLatestVersion().getNextChange());
+			tx.success();
+		}
+		String microschemaUuid = tx(() -> microschemaContainer.getUuid());
+		// 2. Create changes
+		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+		SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange("firstName");
+		listOfChanges.getChanges().add(change);
 
-			// 2. Create node that uses the microschema
-			Node node = createMicronodeNode();
-			MicroschemaContainer container = microschemaContainer("vcard");
-			MicroschemaContainerVersion currentVersion = container.getLatestVersion();
-			assertNull("The microschema should not yet have any changes", container.getLatestVersion().getNextChange());
+		try (Tx tx = tx()) {
+			assertNull("The schema should not yet have any changes", microschemaContainer.getLatestVersion().getNextChange());
+		}
 
-			// 3. Create changes
-			SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-			SchemaChangeModel change = SchemaChangeModel.createRemoveFieldChange("firstName");
-			listOfChanges.getChanges().add(change);
+		// 3. Invoke migration
+		call(() -> client().applyChangesToMicroschema(microschemaUuid, listOfChanges));
+		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
+		waitForJobs(() -> {
+			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
+					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
+		}, COMPLETED, 1);
 
-			// 4. Invoke migration
-			assertNull("The schema should not yet have any changes", container.getLatestVersion().getNextChange());
-			call(() -> client().applyChangesToMicroschema(container.getUuid(), listOfChanges));
-			MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(container.getUuid()));
-			call(() -> client().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
-					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
-
-			// 5. Wait for migration to finish
-			failingLatch(latch);
-
-			container.reload();
-			currentVersion.reload();
-			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
-
-			// 6. Assert migrated node
-			node.reload();
+		// 4. Assert migrated node
+		try (Tx tx = tx()) {
+			assertNotNull("The change should have been added to the schema.", beforeVersion.getNextChange());
 			NodeGraphFieldContainer fieldContainer = node.getGraphFieldContainer("en");
-			fieldContainer.reload();
 			assertNotNull("The node should have a micronode graph field", fieldContainer.getMicronode("micronodeField"));
+		}
+	}
+
+	@Test
+	public void testAddField() throws Exception {
+		MicroschemaContainer microschemaContainer = microschemaContainer("vcard");
+
+		// 1. Setup changes
+		MicroschemaContainerVersion beforeVersion;
+		try (Tx tx = tx()) {
+			beforeVersion = microschemaContainer.getLatestVersion();
+			assertNull("The microschema should not yet have any changes", beforeVersion.getNextChange());
+		}
+		String microschemaUuid = tx(() -> microschemaContainer.getUuid());
+
+		SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
+		SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html", "fieldLabel");
+		listOfChanges.getChanges().add(change);
+
+		// 2. Setup eventbus bridged latch
+		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
+
+		// 3. Invoke migration
+		call(() -> client().applyChangesToMicroschema(microschemaUuid, listOfChanges));
+		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
+		call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
+				new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
+
+		// 4. Latch for completion
+		failingLatch(latch);
+		try (Tx tx = tx()) {
+			assertNotNull("The change should have been added to the schema.", beforeVersion.getNextChange());
+			assertNotNull("The container should now have a new version", beforeVersion.getNextVersion());
+		}
+
+	}
+
+	@Test
+	public void testUpdateName() throws Exception {
+		String name = "new_name";
+
+		String vcardUuid = tx(() -> microschemaContainers().get("vcard").getUuid());
+		MicroschemaContainerVersion beforeVersion = tx(() -> microschemaContainers().get("vcard").getLatestVersion());
+
+		// 1. Setup new microschema
+		MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
+		request.setName(name);
+		call(() -> client().updateMicroschema(vcardUuid, request, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
+		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(vcardUuid));
+
+		// 2. Invoke migration
+		waitForJobs(() -> {
+			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
+					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
+		}, COMPLETED, 1);
+
+		try (Tx tx = tx()) {
+			assertEquals("The name of the microschema was not updated", name, beforeVersion.getNextVersion().getName());
+		}
+	}
+
+	@Test
+	public void testUpdateWithConflictingName() {
+		try (Tx tx = tx()) {
+			String name = "captionedImage";
+			String originalSchemaName = "vcard";
+			MicroschemaContainer microschema = microschemaContainers().get(originalSchemaName);
+			assertNotNull(microschema);
+			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
+			request.setName(name);
+
+			call(() -> client().updateMicroschema(microschema.getUuid(), request), CONFLICT, "schema_conflicting_name", name);
+			assertEquals("The name of the microschema was updated but it should not.", originalSchemaName, microschema.getName());
 		}
 	}
 
@@ -89,7 +170,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 		// 2. Create node with vcard micronode
 		MicronodeResponse micronode = new MicronodeResponse();
-		MicroschemaReference ref = new MicroschemaReference();
+		MicroschemaReferenceImpl ref = new MicroschemaReferenceImpl();
 		ref.setName("vcard");
 		micronode.setMicroschema(ref);
 		micronode.getFields().put("firstName", new StringFieldImpl().setString("Max"));
@@ -101,80 +182,6 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 		return node;
 
-	}
-
-	@Test
-	public void testAddField() throws Exception {
-		try (Tx tx = tx()) {
-			// 1. Setup changes
-			MicroschemaContainer container = microschemaContainer("vcard");
-			MicroschemaContainerVersion currentVersion = container.getLatestVersion();
-			assertNull("The microschema should not yet have any changes", currentVersion.getNextChange());
-			SchemaChangesListModel listOfChanges = new SchemaChangesListModel();
-			SchemaChangeModel change = SchemaChangeModel.createAddFieldChange("newField", "html", "fieldLabel");
-			listOfChanges.getChanges().add(change);
-
-			// 2. Setup eventbus bridged latch
-			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-
-			// 3. Invoke migration
-			call(() -> client().applyChangesToMicroschema(container.getUuid(), listOfChanges));
-			MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(container.getUuid()));
-			call(() -> client().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
-					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
-
-			// 4. Latch for completion
-			failingLatch(latch);
-			container.reload();
-			currentVersion.reload();
-			assertNotNull("The change should have been added to the schema.", currentVersion.getNextChange());
-			assertNotNull("The container should now have a new version", currentVersion.getNextVersion());
-		}
-	}
-
-	@Test
-	public void testUpdateName() throws Exception {
-		try (Tx tx = tx()) {
-			String name = "new_name";
-			MicroschemaContainer vcardContainer = microschemaContainers().get("vcard");
-			MicroschemaContainerVersion currentVersion = vcardContainer.getLatestVersion();
-			assertNotNull(vcardContainer);
-
-			// 1. Setup new microschema
-			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
-			request.setName(name);
-
-			// 2. Setup eventbus bridged latch
-			CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-
-			// 3. Invoke migration
-			call(() -> client().updateMicroschema(vcardContainer.getUuid(), request, new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false)));
-			MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(vcardContainer.getUuid()));
-			call(() -> client().assignReleaseMicroschemaVersions(project().getName(), project().getLatestRelease().getUuid(),
-					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
-
-			// 4. Wait and assert
-			failingLatch(latch);
-			vcardContainer.reload();
-			currentVersion.reload();
-			assertEquals("The name of the microschema was not updated", name, currentVersion.getNextVersion().getName());
-		}
-	}
-
-	@Test
-	public void testUpdateWithConflictingName() {
-		try (Tx tx = tx()) {
-			String name = "captionedImage";
-			String originalSchemaName = "vcard";
-			MicroschemaContainer microschema = microschemaContainers().get(originalSchemaName);
-			assertNotNull(microschema);
-			MicroschemaUpdateRequest request = new MicroschemaUpdateRequest();
-			request.setName(name);
-
-			call(() -> client().updateMicroschema(microschema.getUuid(), request), CONFLICT, "schema_conflicting_name", name);
-			microschema.reload();
-			assertEquals("The name of the microschema was updated but it should not.", originalSchemaName, microschema.getName());
-		}
 	}
 
 }

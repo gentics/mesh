@@ -8,7 +8,6 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 
@@ -43,7 +42,7 @@ public class MeshTypeProvider {
 
 		// .meshNodeId
 		root.field(newFieldDefinition().name("meshNodeId").description("Node id of this mesh instance").type(GraphQLString).dataFetcher((env) -> {
-			return MeshNameProvider.getInstance().getName();
+			return Mesh.mesh().getOptions().getNodeName();
 		}));
 
 		// .databaseVendor

@@ -30,8 +30,8 @@ public class UserExamples extends AbstractExamples {
 		UserResponse user2 = getUserResponse1("jroe");
 		user2.setFirstname("Jane");
 		user2.setLastname("Roe");
-		user2.setEdited(getTimestamp());
-		user2.setCreated(getTimestamp());
+		user2.setEdited(createTimestamp());
+		user2.setCreated(createTimestamp());
 		user2.setEmailAddress("j.roe@nowhere.com");
 		user2.getGroups().add(new GroupReference().setName("super-editors").setUuid(randomUUID()));
 		user2.getGroups().add(new GroupReference().setName("editors").setUuid(randomUUID()));
@@ -48,10 +48,10 @@ public class UserExamples extends AbstractExamples {
 	public UserResponse getUserResponse1(String username) {
 		UserResponse user = new UserResponse();
 		user.setUuid(randomUUID());
-		user.setCreated(getTimestamp());
-		user.setCreator(getUserReference());
-		user.setEdited(getTimestamp());
-		user.setEditor(getUserReference());
+		user.setCreated(createTimestamp());
+		user.setCreator(createUserReference());
+		user.setEdited(createTimestamp());
+		user.setEditor(createUserReference());
 		user.setUsername(username);
 		user.setFirstname("Joe");
 		user.setLastname("Doe");
@@ -109,7 +109,7 @@ public class UserExamples extends AbstractExamples {
 	}
 
 	public UserResetTokenResponse getTokenResponse() {
-		return new UserResetTokenResponse().setToken(randomToken()).setCreated(getTimestamp());
+		return new UserResetTokenResponse().setToken(randomToken()).setCreated(createTimestamp());
 	}
 
 	public UserAPITokenResponse getAPIKeyResponse() {

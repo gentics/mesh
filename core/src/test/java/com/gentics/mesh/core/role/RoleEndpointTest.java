@@ -5,15 +5,15 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.validateDeletion;
+import static com.gentics.mesh.test.ClientHelper.validateFutures;
+import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateFutures;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateSet;
-import static com.gentics.mesh.util.MeshAssert.assertElement;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.util.MeshAssert.assertElement;
+import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -35,7 +35,7 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -69,7 +69,7 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		RoleResponse restRole = call(() -> client().createRole(request));
 		assertThat(dummySearchProvider()).hasStore(Role.composeIndexName(), Role.composeIndexType(), restRole.getUuid());
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			Role createdRole = meshRoot().getRoleRoot().findByUuid(restRole.getUuid());
@@ -349,7 +349,6 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Check that the extra role was updated as expected
 			RoleRoot roleRoot = meshRoot().getRoleRoot();
 			Role reloadedRole = roleRoot.findByUuid(extraRoleUuid);
-			reloadedRole.reload();
 			assertEquals("The role should have been renamed", request.getName(), reloadedRole.getName());
 		}
 	}
@@ -411,7 +410,6 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		// Check that the role was updated
 		try (Tx tx = tx()) {
 			Role reloadedRole = boot().roleRoot().findByUuid(roleUuid());
-			reloadedRole.reload();
 			assertEquals(restRole.getName(), reloadedRole.getName());
 		}
 
@@ -434,10 +432,9 @@ public class RoleEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().deleteRole(extraRoleUuid));
 		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), groupUuid());
 		assertThat(dummySearchProvider()).hasDelete(Role.composeIndexName(), Role.composeIndexType(), extraRoleUuid);
-		assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0, 0);
 
 		try (Tx tx = tx()) {
-			meshRoot().getRoleRoot().reload();
 			assertElement(meshRoot().getRoleRoot(), extraRoleUuid, false);
 		}
 

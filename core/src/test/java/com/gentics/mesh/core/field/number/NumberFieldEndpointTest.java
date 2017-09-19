@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.field.number;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -13,7 +13,7 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
@@ -26,8 +26,8 @@ import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -70,7 +70,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 			Node node = folder("2015");
 			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 			nodeCreateRequest.setParentNodeUuid(node.getUuid());
-			nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
+			nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
 			nodeCreateRequest.setLanguage("en");
 			nodeCreateRequest.getFields().put(fieldKey, field);
 
@@ -82,19 +82,21 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
-			for (int i = 0; i < 20; i++) {
-				NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
-				Number oldValue = getNumberValue(container, FIELD_NAME);
-				Number newValue = Integer.valueOf(i + 42);
+		Node node = folder("2015");
+		for (int i = 0; i < 20; i++) {
+			NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+			Number oldValue;
+			Number newValue;
+			try (Tx tx = tx()) {
+				oldValue = getNumberValue(container, FIELD_NAME);
+				newValue = Integer.valueOf(i + 42);
+			}
 
-				NodeResponse response = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(newValue));
-				NumberFieldImpl field = response.getFields().getNumberField(FIELD_NAME);
-				assertEquals(newValue, field.getNumber());
-				node.reload();
-				container.reload();
+			NodeResponse response = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(newValue));
+			NumberFieldImpl field = response.getFields().getNumberField(FIELD_NAME);
+			assertEquals(newValue, field.getNumber());
 
+			try (Tx tx = tx()) {
 				assertEquals("Check version number", container.getVersion().nextDraft().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getNumberValue(container, FIELD_NAME));
 			}

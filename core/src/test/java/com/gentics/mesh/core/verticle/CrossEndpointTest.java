@@ -1,14 +1,14 @@
 package com.gentics.mesh.core.verticle;
 
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.ClientHelper.call;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class CrossEndpointTest extends AbstractMeshTest {
@@ -17,7 +17,7 @@ public class CrossEndpointTest extends AbstractMeshTest {
 	public void testAccessNewProjectRoute() {
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
-		request.setSchema(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 		request.setName(name);
 
 		call(() -> client().createProject(request));

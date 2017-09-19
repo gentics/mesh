@@ -183,7 +183,6 @@ public class MicronodeFieldMigrationTest extends AbstractFieldMigrationTest {
 					assertThat(field).as(NEWFIELD).isNotNull();
 					Micronode micronode = field.getMicronode();
 					assertThat(micronode).as(NEWFIELDVALUE).isNotNull();
-					micronode.reload();
 					assertThat(micronode).as(NEWFIELDVALUE).containsStringField("firstName", "Dagobert").containsStringField("lastName", "Duck");
 				});
 	}

@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NODE_ROOT;
@@ -22,7 +23,10 @@ import java.util.Stack;
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.job.JobRoot;
+import com.gentics.mesh.core.data.job.impl.JobRootImpl;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -47,8 +51,6 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	private static Logger log = LoggerFactory.getLogger(MeshRootImpl.class);
 
-	private static MeshRoot instance;
-
 	private static UserRoot userRoot;
 	private static GroupRoot groupRoot;
 	private static RoleRoot roleRoot;
@@ -62,14 +64,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 
 	private static SchemaContainerRoot schemaContainerRoot;
 	private static MicroschemaContainerRoot microschemaContainerRoot;
-
-	public static MeshRoot getInstance() {
-		return instance;
-	}
-
-	public static void setInstance(MeshRoot meshRoot) {
-		instance = meshRoot;
-	}
+	private static JobRoot jobRoot;
 
 	public static void init(Database database) {
 		database.addVertexType(MeshRootImpl.class, MeshVertexImpl.class);
@@ -83,6 +78,25 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	@Override
 	public void setMeshVersion(String version) {
 		setProperty(MESH_VERSION, version);
+	}
+
+	@Override
+	public JobRoot getJobRoot() {
+		if (jobRoot == null) {
+			synchronized (MeshRootImpl.class) {
+				JobRoot foundJobRoot = out(HAS_JOB_ROOT).nextOrDefaultExplicit(JobRootImpl.class, null);
+				if (foundJobRoot == null) {
+					jobRoot = getGraph().addFramedVertex(JobRootImpl.class);
+					linkOut(jobRoot, HAS_JOB_ROOT);
+					if (log.isInfoEnabled()) {
+						log.info("Created job queue {" + jobRoot.getUuid() + "}");
+					}
+				} else {
+					jobRoot = foundJobRoot;
+				}
+			}
+		}
+		return jobRoot;
 	}
 
 	@Override
@@ -294,6 +308,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 		MeshRootImpl.tagFamilyRoot = null;
 		MeshRootImpl.microschemaContainerRoot = null;
 		MeshRootImpl.languageRoot = null;
+		MeshRootImpl.jobRoot = null;
 	}
 
 	@Override
@@ -320,28 +335,29 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 			}
 		}
 		String rootNodeSegment = stack.pop();
-		switch (rootNodeSegment) {
-		case ProjectRoot.TYPE:
-			root.getProjectRoot().reload();
-			return root.getProjectRoot().resolveToElement(stack);
-		case UserRoot.TYPE:
-			root.getUserRoot().reload();
-			return root.getUserRoot().resolveToElement(stack);
-		case GroupRoot.TYPE:
-			root.getGroupRoot().reload();
-			return root.getGroupRoot().resolveToElement(stack);
-		case RoleRoot.TYPE:
-			root.getRoleRoot().reload();
-			return root.getRoleRoot().resolveToElement(stack);
-		case MicroschemaContainerRoot.TYPE:
-			root.getMicroschemaContainerRoot().reload();
-			return root.getMicroschemaContainerRoot().resolveToElement(stack);
-		case SchemaContainerRoot.TYPE:
-			root.getSchemaContainerRoot().reload();
-			return root.getSchemaContainerRoot().resolveToElement(stack);
-		default:
-			// TOOO i18n
-			throw error(NOT_FOUND, "Could not resolve given path. Unknown element {" + rootNodeSegment + "}");
+
+		// Check whether the root segment is a project name
+		Project project = root.getProjectRoot().findByName(rootNodeSegment);
+		if (project != null) {
+			return project;
+		} else {
+			switch (rootNodeSegment) {
+			case ProjectRoot.TYPE:
+				return root.getProjectRoot().resolveToElement(stack);
+			case UserRoot.TYPE:
+				return root.getUserRoot().resolveToElement(stack);
+			case GroupRoot.TYPE:
+				return root.getGroupRoot().resolveToElement(stack);
+			case RoleRoot.TYPE:
+				return root.getRoleRoot().resolveToElement(stack);
+			case MicroschemaContainerRoot.TYPE:
+				return root.getMicroschemaContainerRoot().resolveToElement(stack);
+			case SchemaContainerRoot.TYPE:
+				return root.getSchemaContainerRoot().resolveToElement(stack);
+			default:
+				// TOOO i18n
+				throw error(NOT_FOUND, "Could not resolve given path. Unknown element {" + rootNodeSegment + "}");
+			}
 		}
 	}
 

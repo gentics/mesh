@@ -21,6 +21,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -304,7 +305,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.addQueryParameters(NodeParametersImpl.class);
 		readOne.handler(rc -> {
-			String uuid = rc.request().params().get("nodeUuid");
+			String uuid = rc.request().getParam("nodeUuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
 			} else {
@@ -337,6 +338,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.description("Delete the node with the given uuid.");
 		endpoint.method(DELETE);
 		endpoint.produces(APPLICATION_JSON);
+		endpoint.addQueryParameters(DeleteParametersImpl.class);
 		endpoint.exampleResponse(NO_CONTENT, "Deletion was successful.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -363,7 +365,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.exampleRequest(nodeExamples.getNodeUpdateRequest());
 		endpoint.exampleResponse(OK, nodeExamples.getNodeResponse2(), "Updated node.");
-		endpoint.exampleResponse(CONFLICT, miscExamples.getMessageResponse(), "A conflict has been detected.");
+		endpoint.exampleResponse(CONFLICT, miscExamples.createMessageResponse(), "A conflict has been detected.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("nodeUuid");
@@ -388,7 +390,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		});
 
 		Endpoint putEndpoint = createEndpoint();
-		putEndpoint.description("Publish the node with the given uuid.");
+		putEndpoint.description("Publish all language specific contents of the node with the given uuid.");
 		putEndpoint.path("/:nodeUuid/published");
 		putEndpoint.addUriParameter("nodeUuid", "Uuid of the node", UUIDUtil.randomUUID());
 		putEndpoint.method(POST);
@@ -397,7 +399,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		putEndpoint.addQueryParameters(PublishParametersImpl.class);
 		putEndpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			crudHandler.handlePublish(ac, rc.request().getParam("nodeUuid"));
+			String uuid = rc.request().getParam("nodeUuid");
+			crudHandler.handlePublish(ac, uuid);
 		});
 
 		Endpoint deleteEndpoint = createEndpoint();
@@ -410,7 +413,8 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		deleteEndpoint.addQueryParameters(PublishParametersImpl.class);
 		deleteEndpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			crudHandler.handleTakeOffline(ac, rc.request().getParam("nodeUuid"));
+			String uuid = rc.request().getParam("nodeUuid");
+			crudHandler.handleTakeOffline(ac, uuid);
 		});
 
 		// Language specific
@@ -425,7 +429,9 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		getLanguageRoute.exampleResponse(OK, versioningExamples.createPublishStatusModel(), "Publish status of the specific language.");
 		getLanguageRoute.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			crudHandler.handleGetPublishStatus(ac, rc.request().getParam("nodeUuid"), rc.request().getParam("language"));
+			String uuid = rc.request().getParam("nodeUuid");
+			String lang = rc.request().getParam("language");
+			crudHandler.handleGetPublishStatus(ac, uuid, lang);
 		});
 
 		Endpoint putLanguageRoute = createEndpoint();
@@ -438,7 +444,9 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		putLanguageRoute.produces(APPLICATION_JSON);
 		putLanguageRoute.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			crudHandler.handlePublish(ac, rc.request().getParam("nodeUuid"), rc.request().getParam("language"));
+			String uuid = rc.request().getParam("nodeUuid");
+			String lang = rc.request().getParam("language");
+			crudHandler.handlePublish(ac, uuid, lang);
 		});
 
 		Endpoint deleteLanguageRoute = createEndpoint();
@@ -450,7 +458,9 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		deleteLanguageRoute.produces(APPLICATION_JSON);
 		deleteLanguageRoute.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			crudHandler.handleTakeOffline(ac, rc.request().getParam("nodeUuid"), rc.request().getParam("language"));
+			String uuid = rc.request().getParam("nodeUuid");
+			String lang = rc.request().getParam("language");
+			crudHandler.handleTakeOffline(ac, uuid, lang);
 		});
 
 	}

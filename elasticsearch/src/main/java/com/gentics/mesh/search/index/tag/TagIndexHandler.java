@@ -78,7 +78,6 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 		return db.tx(() -> {
 			Map<String, String> indexInfo = new HashMap<>();
 			ProjectRoot projectRoot = boot.meshRoot().getProjectRoot();
-			projectRoot.reload();
 			List<? extends Project> projects = projectRoot.findAll();
 			for (Project project : projects) {
 				indexInfo.put(Tag.composeIndexName(project.getUuid()), Tag.TYPE);

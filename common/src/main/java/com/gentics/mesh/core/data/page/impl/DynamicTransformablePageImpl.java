@@ -8,7 +8,6 @@ import java.util.function.Predicate;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.page.TransformablePage;
@@ -18,6 +17,7 @@ import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -137,7 +137,9 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 		FramedGraph graph = Tx.getActive().getGraph();
 
 		// Only handle elements which are visible to the user
-		stream = stream.filter(item -> requestUser.hasPermissionForId(item.getId(), perm));
+		if (perm != null) {
+			stream = stream.filter(item -> requestUser.hasPermissionForId(item.getId(), perm));
+		}
 
 		if (extraFilter != null) {
 			stream = stream.filter(extraFilter);

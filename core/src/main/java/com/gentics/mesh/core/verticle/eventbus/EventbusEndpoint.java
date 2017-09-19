@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.verticle.eventbus;
 
-import static com.gentics.mesh.core.verticle.eventbus.EventbusAddress.MESH_MIGRATION;
+import static com.gentics.mesh.Events.MESH_MIGRATION;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -45,8 +45,8 @@ public class EventbusEndpoint extends AbstractEndpoint {
 			SockJSHandlerOptions sockJSoptions = new SockJSHandlerOptions().setHeartbeatInterval(2000);
 			handler = SockJSHandler.create(Mesh.vertx(), sockJSoptions);
 			BridgeOptions bridgeOptions = new BridgeOptions();
-			bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION.toString()));
-			bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION.toString()));
+			bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION));
+			bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION));
 			// handler.bridge(bridgeOptions);
 			handler.bridge(bridgeOptions, event -> {
 				// if (event.type() == BridgeEventType.SOCKET_CREATED) {

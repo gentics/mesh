@@ -1,9 +1,11 @@
 package com.gentics.mesh.core.verticle.schema;
 
+import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -11,18 +13,20 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.job.Job;
+import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -34,24 +38,19 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Completable;
 import rx.Single;
 
 public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
@@ -91,7 +90,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			// 2. Diff the schema with the latest version
 			SchemaChangesListModel model = new SchemaChangesListModel();
-			model.getChanges().addAll(MeshInternal.get().schemaComparator().diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
+			model.getChanges().addAll(comparator.diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
 			String schemaName = schemaContainer.getName();
 
 			// No changes -> done
@@ -99,8 +98,10 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				return message(ac, "schema_update_no_difference_detected", schemaName);
 			}
 
-			List<DeliveryOptions> events = new ArrayList<>();
-			Completable searchBatchCompletable = db.tx(() -> {
+			JobRoot jobRoot = boot.get().meshRoot().getJobRoot();
+			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
+			User user = ac.getUser();
+			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
 
 				// Check whether there are any microschemas which are referenced by the schema
 				for (FieldSchema field : requestModel.getFields()) {
@@ -135,17 +136,12 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 					}
 				}
 
-				events.clear();
-				List<Completable> completables = new ArrayList<>();
-				SearchQueueBatch batch = searchQueue.create();
-				completables.add(batch.processAsync());
-
 				// 3. Apply the found changes to the schema
+				SearchQueueBatch batch = searchQueue.create();
 				SchemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				// Check whether the assigned releases of the schema should also directly be updated.
 				// This will trigger a node migration.
-				SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 				if (updateParams.getUpdateAssignedReleases()) {
 					Map<Release, SchemaContainerVersion> referencedReleases = schemaContainer.findReferencedReleases();
 
@@ -162,49 +158,25 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						SchemaContainerVersion previouslyReferencedVersion = releaseEntry.getValue();
 
 						// Assign the new version to the release
-						release.assignSchemaVersion(createdVersion);
+						ReleaseSchemaEdge edge = release.assignSchemaVersion(createdVersion);
+						edge.setMigrationStatus(QUEUED);
 
-						if (log.isDebugEnabled()) {
-							log.debug("Preparing node migration for release {" + releaseEntry.getKey().getUuid() + "}");
-						}
-						String projectUuid = release.getRoot().getProject().getUuid();
-						String fromVersion = previouslyReferencedVersion.getUuid();
-						String toVersion = createdVersion.getUuid();
-						String releaseUuid = release.getUuid();
-						SchemaModel newSchema = createdVersion.getSchema();
-						String schemaUuid = createdVersion.getSchemaContainer().getUuid();
-						if (log.isDebugEnabled()) {
-							log.debug("Migrating nodes from schema version {" + fromVersion + "} to {" + toVersion + "} for schema with uuid {"
-									+ schemaUuid + "}");
-						}
+						// Enqueue the job so that the worker can process it later on
+						Job job = jobRoot.enqueueSchemaMigration(user, release, previouslyReferencedVersion, createdVersion);
+						edge.setJobUuid(job.getUuid());
 
-						// The node migration needs to write into a new index. Lets prepare the creation of that index
-						SearchQueueBatch indexCreatingBatch = searchQueue.create();
-						indexCreatingBatch.createNodeIndex(projectUuid, releaseUuid, toVersion, DRAFT, newSchema);
-						indexCreatingBatch.createNodeIndex(projectUuid, releaseUuid, toVersion, PUBLISHED, newSchema);
-						completables.add(indexCreatingBatch.processAsync());
-
-						// Lets also prepare the invocation of the migration. The migration is delegated to a worker verticle.
-						DeliveryOptions options = new DeliveryOptions();
-						options.addHeader(NodeMigrationVerticle.PROJECT_UUID_HEADER, projectUuid);
-						options.addHeader(NodeMigrationVerticle.RELEASE_UUID_HEADER, releaseUuid);
-						options.addHeader(NodeMigrationVerticle.UUID_HEADER, schemaUuid);
-						options.addHeader(NodeMigrationVerticle.FROM_VERSION_UUID_HEADER, fromVersion);
-						options.addHeader(NodeMigrationVerticle.TO_VERSION_UUID_HEADER, toVersion);
-						events.add(options);
 					}
 				}
-				return Completable.merge(completables);
+				return Tuple.tuple(batch, createdVersion.getVersion());
 			});
 
-			searchBatchCompletable.await();
-
-			// Invoke the node release migration
-			for (DeliveryOptions option : events) {
-				Mesh.vertx().eventBus().send(NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS, null, option);
+			info.v1().processSync();
+			if (updateParams.getUpdateAssignedReleases()) {
+				vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
+				return message(ac, "schema_updated_migration_invoked", schemaName, info.v2());
+			} else {
+				return message(ac, "schema_updated_migration_deferred", schemaName, info.v2());
 			}
-
-			return message(ac, "migration_invoked", schemaName);
 
 		}, model -> ac.send(model, OK));
 	}
@@ -251,51 +223,29 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 		db.operateTx(() -> {
 			Project project = ac.getProject();
 			String projectUuid = project.getUuid();
-			if (ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
-				SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
-				Tuple<SearchQueueBatch, Single<SchemaResponse>> tuple = db.tx(() -> {
-					SearchQueueBatch batch = searchQueue.create();
-
-					SchemaContainerRoot root = project.getSchemaContainerRoot();
-					// Assign the schema to the project
-					if (!root.contains(schema)) {
-						root.addSchemaContainer(schema);
-
-						// // Check whether there are any microschemas which are referenced by the schema
-						// for (FieldSchema field : schema.getLatestVersion().getSchema().getFields()) {
-						// if (field instanceof MicronodeFieldSchema) {
-						// MicronodeFieldSchema microschemaField = (MicronodeFieldSchema) field;
-						// for (String microschemaName : microschemaField.getAllowedMicroSchemas()) {
-						// // schema_error_microschema_reference_no_perm
-						// MicroschemaContainer microschema = ac.getProject().getMicroschemaContainerRoot().findByName(microschemaName);
-						// if (microschema == null) {
-						// throw error(BAD_REQUEST, "schema_error_microschema_reference_not_found", microschemaName, field.getName());
-						// }
-						// if (ac.getUser().hasPermission(microschema, READ_PERM)) {
-						// throw error(BAD_REQUEST, "schema_error_microschema_reference_no_perm", microschemaName, field.getName());
-						// }
-						// project.getMicroschemaContainerRoot().addMicroschema(microschema);
-						// }
-						// }
-						// }
-
-						String releaseUuid = project.getLatestRelease().getUuid();
-						SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
-						batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
-						batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED,
-								schemaContainerVersion.getSchema());
-						return Tuple.tuple(batch, schema.transformToRest(ac, 0));
-					} else {
-						// Schema has already been assigned. No need to create indices
-						return Tuple.tuple(batch, schema.transformToRest(ac, 0));
-					}
-				});
-				tuple.v1().processSync();
-				return tuple.v2();
-			} else {
+			if (!ac.getUser().hasPermission(project, GraphPermission.UPDATE_PERM)) {
 				throw error(FORBIDDEN, "error_missing_perm", projectUuid);
 			}
+			SchemaContainer schema = getRootVertex(ac).loadObjectByUuid(ac, schemaUuid, READ_PERM);
+			SchemaContainerRoot root = project.getSchemaContainerRoot();
+			if (root.contains(schema)) {
+				// Schema has already been assigned. No need to create indices
+				return schema.transformToRest(ac, 0);
+			}
 
+			Tuple<SearchQueueBatch, Single<SchemaResponse>> tuple = db.tx(() -> {
+				SearchQueueBatch batch = searchQueue.create();
+
+				// Assign the schema to the project
+				root.addSchemaContainer(schema);
+				String releaseUuid = project.getLatestRelease().getUuid();
+				SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
+				batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());
+				batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), PUBLISHED, schemaContainerVersion.getSchema());
+				return Tuple.tuple(batch, schema.transformToRest(ac, 0));
+			});
+			tuple.v1().processSync();
+			return tuple.v2();
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 
 	}
@@ -345,12 +295,13 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 		utils.operateTx(ac, () -> {
 			SchemaContainer schema = boot.get().schemaContainerRoot().loadObjectByUuid(ac, schemaUuid, UPDATE_PERM);
-			db.tx(() -> {
+			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				schema.getLatestVersion().applyChanges(ac, batch);
-				return batch;
-			}).processSync();
-			return message(ac, "migration_invoked", schema.getName());
+				SchemaContainerVersion newVersion = schema.getLatestVersion().applyChanges(ac, batch);
+				return Tuple.tuple(batch, newVersion.getVersion());
+			});
+			info.v1().processSync();
+			return message(ac, "schema_changes_applied", schema.getName(), info.v2());
 		}, model -> ac.send(model, OK));
 
 	}

@@ -11,15 +11,15 @@ import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.validateDeletion;
+import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateSet;
-import static com.gentics.mesh.util.MeshAssert.assertElement;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.util.MeshAssert.assertElement;
+import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -40,7 +40,7 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.GroupRoot;
@@ -76,7 +76,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertThat(restGroup).matches(request);
 
 		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), restGroup.getUuid());
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		dummySearchProvider().clear();
 
 		try (Tx tx = tx()) {
@@ -109,7 +109,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		request.setName(name);
 		GroupResponse restGroup = call(() -> client().updateGroup(uuid, request));
 		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), uuid);
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
 
 		try (Tx tx = db().tx()) {
 			assertThat(restGroup).matches(request);
@@ -132,18 +132,17 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 	@Test
 	public void testBatchCreation() {
 		try (Tx tx = tx()) {
-			for (int i = 0; i < 10; i++) {
-				System.out.println(i);
-				final String name = "test_" + i;
-				GroupCreateRequest request = new GroupCreateRequest();
-				request.setName(name);
-				GroupRoot root = meshRoot().getGroupRoot();
-				root.reload();
-				role().grantPermissions(root, CREATE_PERM);
-
-				GroupResponse restGroup = call(() -> client().createGroup(request));
-				assertThat(restGroup).matches(request);
-			}
+			GroupRoot root = meshRoot().getGroupRoot();
+			role().grantPermissions(root, CREATE_PERM);
+			tx.success();
+		}
+		for (int i = 0; i < 10; i++) {
+			System.out.println(i);
+			final String name = "test_" + i;
+			GroupCreateRequest request = new GroupCreateRequest();
+			request.setName(name);
+			GroupResponse restGroup = call(() -> client().createGroup(request));
+			assertThat(restGroup).matches(request);
 		}
 	}
 
@@ -335,7 +334,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupResponse restGroup = call(() -> client().updateGroup(groupUuid, request));
 		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), groupUuid);
 		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), userUuid());
-		assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
@@ -447,7 +446,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		call(() -> client().deleteGroup(groupUuid()));
 		assertThat(dummySearchProvider()).hasDelete(Group.composeIndexName(), Group.composeIndexType(), groupUuid());
 		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), userUuid());
-		assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertElement(boot().groupRoot(), groupUuid(), false);

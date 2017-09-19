@@ -1,46 +1,44 @@
 package com.gentics.mesh.core.data.schema.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 
+import java.util.Iterator;
 import java.util.List;
+import java.util.Spliterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.core.verticle.node.NodeMigrationVerticle;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
+import com.syncleus.ferma.VertexFrame;
 
 import rx.Single;
 
 /**
  * @see SchemaContainerVersion
  */
-public class SchemaContainerVersionImpl extends
-		AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer> implements SchemaContainerVersion {
+public class SchemaContainerVersionImpl
+		extends AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer>
+		implements SchemaContainerVersion {
 
 	public static void init(Database database) {
 		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
-	}
-
-	@Override
-	public String getType() {
-		return SchemaContainerVersion.TYPE;
 	}
 
 	@Override
@@ -54,15 +52,13 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	protected String getMigrationAddress() {
-		return NodeMigrationVerticle.SCHEMA_MIGRATION_ADDRESS;
-	}
-
-	@Override
-	public List<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
-		return in(HAS_SCHEMA_CONTAINER_VERSION).mark().inE(HAS_FIELD_CONTAINER)
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back().toListExplicit(NodeGraphFieldContainerImpl.class);
+	public Iterator<NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
+		Spliterator<VertexFrame> it = in(HAS_SCHEMA_CONTAINER_VERSION).spliterator();
+		Stream<NodeGraphFieldContainer> stream = StreamSupport.stream(it, false).map(frame -> frame.reframe(NodeGraphFieldContainerImpl.class))
+				.filter(e -> {
+					return e.getParentNode(releaseUuid) != null;
+				}).map(e -> (NodeGraphFieldContainer) e);
+		return stream.iterator();
 	}
 
 	@Override
@@ -116,8 +112,8 @@ public class SchemaContainerVersionImpl extends
 	}
 
 	@Override
-	public SchemaReference transformToReference() {
-		SchemaReference reference = new SchemaReference();
+	public SchemaReferenceImpl transformToReference() {
+		SchemaReferenceImpl reference = new SchemaReferenceImpl();
 		reference.setName(getName());
 		reference.setUuid(getSchemaContainer().getUuid());
 		reference.setVersion(getVersion());
@@ -144,6 +140,16 @@ public class SchemaContainerVersionImpl extends
 		return MeshInternal.get().database().operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	@Override
+	public void onCreated() {
+		getSchemaContainer().onCreated();
+	}
+
+	@Override
+	public void onUpdated() {
+		getSchemaContainer().onUpdated();
 	}
 
 }

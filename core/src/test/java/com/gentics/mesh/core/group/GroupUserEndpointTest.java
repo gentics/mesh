@@ -5,7 +5,7 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertEquals;
@@ -21,7 +21,7 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.UserRoot;
@@ -88,16 +88,14 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
+		GroupResponse restGroup = call(() -> client().addUserToGroup(groupUuid(), tx(() -> extraUser.getUuid())));
 		try (Tx tx = tx()) {
-			GroupResponse restGroup = call(() -> client().addUserToGroup(group().getUuid(), extraUser.getUuid()));
 			assertThat(restGroup).matches(group());
 			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), user().getUuid());
 			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), extraUser.getUuid());
 			assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), group().getUuid());
-			assertThat(dummySearchProvider()).hasEvents(3, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(3, 0, 0, 0, 0);
 			dummySearchProvider().clear();
-
-			group().reload();
 			assertTrue("User should be member of the group.", group().hasUser(extraUser));
 		}
 

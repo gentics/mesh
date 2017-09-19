@@ -55,6 +55,7 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.search.index.AbstractTransformator;
+
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -126,18 +127,27 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		for (FieldSchema fieldSchema : fields) {
 			String name = fieldSchema.getName();
 			FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
+			boolean addRaw = fieldSchema.getIndexOptions() != null ? Boolean.valueOf(fieldSchema.getIndexOptions().getAddRaw()) : false;
 
 			switch (type) {
 			case STRING:
 				StringGraphField stringField = container.getString(name);
 				if (stringField != null) {
-					fieldsMap.put(name, stringField.getString());
+					String value = stringField.getString();
+					if (addRaw) {
+						value = truncateRawFieldValue(value);
+					}
+					fieldsMap.put(name, value);
 				}
 				break;
 			case HTML:
 				HtmlGraphField htmlField = container.getHtml(name);
 				if (htmlField != null) {
-					fieldsMap.put(name, htmlField.getHTML());
+					String value = htmlField.getHTML();
+					if (addRaw) {
+						value = truncateRawFieldValue(value);
+					}
+					fieldsMap.put(name, value);
 				}
 				break;
 			case BINARY:
@@ -229,13 +239,14 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 					case "micronode":
 						MicronodeGraphFieldList micronodeGraphFieldList = container.getMicronodeList(fieldSchema.getName());
 						if (micronodeGraphFieldList != null) {
-							// add list of micronode objects
+							// Add list of micronode objects
 							fieldsMap.put(fieldSchema.getName(), Observable.from(micronodeGraphFieldList.getList()).map(item -> {
 								JsonObject itemMap = new JsonObject();
 								Micronode micronode = item.getMicronode();
-								addMicroschema(itemMap, micronode.getSchemaContainerVersion());
-								addFields(itemMap, "fields-" + micronode.getSchemaContainerVersion().getName(), micronode,
-										micronode.getSchemaContainerVersion().getSchema().getFields());
+								MicroschemaContainerVersion microschameContainerVersion = micronode.getSchemaContainerVersion();
+								addMicroschema(itemMap, microschameContainerVersion);
+								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode,
+										microschameContainerVersion.getSchema().getFields());
 								return itemMap;
 							}).toList().toBlocking().single());
 						}
@@ -245,7 +256,11 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 						if (graphStringList != null) {
 							List<String> stringItems = new ArrayList<>();
 							for (StringGraphField listItem : graphStringList.getList()) {
-								stringItems.add(listItem.getString());
+								String value = listItem.getString();
+								if (addRaw) {
+									value = truncateRawFieldValue(value);
+								}
+								stringItems.add(value);
 							}
 							fieldsMap.put(fieldSchema.getName(), stringItems);
 						}
@@ -255,7 +270,11 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 						if (graphHtmlList != null) {
 							List<String> htmlItems = new ArrayList<>();
 							for (HtmlGraphField listItem : graphHtmlList.getList()) {
-								htmlItems.add(listItem.getHTML());
+								String value = listItem.getHTML();
+								if (addRaw) {
+									value = truncateRawFieldValue(value);
+								}
+								htmlItems.add(value);
 							}
 							fieldsMap.put(fieldSchema.getName(), htmlItems);
 						}
@@ -270,7 +289,6 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 				// fieldsMap.put(name, htmlField.getHTML());
 				break;
 			case MICRONODE:
-
 				MicronodeGraphField micronodeGraphField = container.getMicronode(fieldSchema.getName());
 				if (micronodeGraphField != null) {
 					Micronode micronode = micronodeGraphField.getMicronode();
@@ -303,7 +321,7 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 	 */
 	public JsonObject getMappingInfo(FieldSchema fieldSchema) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
-
+		boolean addRaw = fieldSchema.getIndexOptions() != null ? Boolean.valueOf(fieldSchema.getIndexOptions().getAddRaw()) : false;
 		JsonObject fieldInfo = new JsonObject();
 
 		switch (type) {
@@ -312,15 +330,15 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 			fieldInfo.put("type", STRING);
 			fieldInfo.put("index", ANALYZED);
 			fieldInfo.put("analyzer", TRIGRAM_ANALYZER);
-			addRawInfo(fieldInfo, STRING);
+			if (addRaw) {
+				addRawInfo(fieldInfo, STRING);
+			}
 			break;
 		case BOOLEAN:
 			fieldInfo.put("type", BOOLEAN);
-			// addRawInfo(fieldInfo, "boolean");
 			break;
 		case DATE:
 			fieldInfo.put("type", DATE);
-			// addRawInfo(fieldInfo, "date");
 			break;
 		case BINARY:
 			fieldInfo.put("type", OBJECT);
@@ -363,14 +381,27 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 				case "micronode":
 					fieldInfo.put("type", NESTED);
 					fieldInfo.put("dynamic", true);
+
+					// TODO
+					// for(String microschema : listFieldSchema.getAllowedSchemas()) {
+					// 1. Load the microschema version by name from the release to which this schema belongs
+					// 2. Add the fields for the microschema to the mapping using the microschema name as a prefix for the fields
+					// }
+					// TODO Also add index creation to MicronodeMigrationHandler
+
 					// fieldProps.put(field.getName(), fieldInfo);
 					break;
 				case "string":
 					fieldInfo.put("type", STRING);
-					addRawInfo(fieldInfo, STRING);
+					if (addRaw) {
+						addRawInfo(fieldInfo, STRING);
+					}
 					break;
 				case "html":
 					fieldInfo.put("type", STRING);
+					if (addRaw) {
+						addRawInfo(fieldInfo, STRING);
+					}
 					break;
 				default:
 					log.error("Unknown list type {" + listFieldSchema.getListType() + "}");
@@ -391,6 +422,14 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 			microschemaMappingProperties.put(UUID_KEY, notAnalyzedType(STRING));
 			microschemaMapping.put("properties", microschemaMappingProperties);
 			fieldInfo.put("dynamic", true);
+
+			// TODO
+			// for(String microschema : ((MicronodeFieldSchema)fieldSchema).getAllowedMicroSchemas()) {
+			// 1. Load the microschema version by name from the release to which this schema belongs
+			// 2. Add the fields for the microschema to the mapping using the microschema name as a prefix for the fields
+			// }
+			// TODO Also add index creation to MicronodeMigrationHandler
+
 			// TODO add version
 			fieldInfo.put("properties", micronodeMappingProperties);
 			break;
@@ -398,7 +437,7 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 			throw new RuntimeException("Mapping type  for field type {" + type + "} unknown.");
 		}
 
-		//System.out.println(fieldInfo.toString());
+		// System.out.println(fieldInfo.toString());
 		return fieldInfo;
 	}
 
@@ -418,13 +457,14 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 
 	/**
 	 * Transforms tags grouped by tag families
+	 * 
 	 * @param document
 	 * @param tags
 	 */
 	private void addTagFamilies(JsonObject document, List<? extends Tag> tags) {
 		JsonObject familiesObject = new JsonObject();
 
-		for (Tag tag: tags) {
+		for (Tag tag : tags) {
 			TagFamily family = tag.getTagFamily();
 			JsonObject familyObject = familiesObject.getJsonObject(family.getName());
 			if (familyObject == null) {
@@ -433,11 +473,7 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 				familyObject.put("tags", new JsonArray());
 				familiesObject.put(family.getName(), familyObject);
 			}
-			familyObject.getJsonArray("tags").add(
-				new JsonObject()
-					.put("name", tag.getName())
-					.put("uuid", tag.getUuid())
-			);
+			familyObject.getJsonArray("tags").add(new JsonObject().put("name", tag.getName()).put("uuid", tag.getUuid()));
 		}
 
 		document.put("tagFamilies", familiesObject);
@@ -538,29 +574,17 @@ public class NodeContainerTransformator extends AbstractTransformator<NodeGraphF
 		typeProperties.put("tags", tagsMapping);
 
 		// tagFamilies
-		typeProperties.put("tagFamilies", new JsonObject()
-			.put("type", "object")
-			.put("dynamic", true)
-		);
+		typeProperties.put("tagFamilies", new JsonObject().put("type", "object").put("dynamic", true));
 
-		typeMapping.put("dynamic_templates", new JsonArray()
-			.add(new JsonObject().put("tagFamilyUuid", new JsonObject()
-				.put("path_match", "tagFamilies.*.uuid")
-				.put("match_mapping_type", "*")
-				.put("mapping", notAnalyzedType(STRING))
-			))
-			.add(new JsonObject().put("tagFamilyTags", new JsonObject()
-				.put("path_match", "tagFamilies.*.tags")
-				.put("match_mapping_type", "*")
-				.put("mapping", new JsonObject()
-					.put("type", "nested")
-					.put("properties", new JsonObject()
-						.put("name", trigramStringType())
-						.put("uuid", notAnalyzedType(STRING))
-					)
-				)
-			))
-		);
+		typeMapping.put("dynamic_templates",
+				new JsonArray()
+						.add(new JsonObject().put("tagFamilyUuid",
+								new JsonObject().put("path_match", "tagFamilies.*.uuid").put("match_mapping_type", "*").put("mapping",
+										notAnalyzedType(STRING))))
+						.add(new JsonObject().put("tagFamilyTags",
+								new JsonObject().put("path_match", "tagFamilies.*.tags").put("match_mapping_type", "*").put("mapping",
+										new JsonObject().put("type", "nested").put("properties",
+												new JsonObject().put("name", trigramStringType()).put("uuid", notAnalyzedType(STRING)))))));
 
 		// language
 		typeProperties.put("language", notAnalyzedType(STRING));

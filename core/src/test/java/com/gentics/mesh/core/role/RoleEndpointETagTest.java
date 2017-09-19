@@ -1,15 +1,15 @@
 package com.gentics.mesh.core.role;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
+import static com.gentics.mesh.test.ClientHelper.callETag;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.callETag;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;

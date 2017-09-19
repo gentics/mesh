@@ -26,7 +26,6 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.index.common.CreateIndexEntryImpl;
 import com.gentics.mesh.search.index.common.DropIndexEntryImpl;
@@ -232,7 +231,9 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 				Observable<List<Completable>> buffers = obs2.buffer(batchSize);
 				// First ensure that the non-store events are processed before handling the store batches
 				obs = obs.andThen(Completable.concat(buffers.map(i -> Completable.merge(i).doOnCompleted(() -> {
-					log.info("Search queue entry batch completed {" + counter.incrementAndGet() + "/" + totalBatchCount + "}");
+					if (totalBatchCount > 0) {
+						log.info("Search queue entry batch completed {" + counter.incrementAndGet() + "/" + totalBatchCount + "}");
+					}
 				}))));
 			}
 
@@ -242,16 +243,12 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 				}
 				// Clear the batch entries so that the GC can claim the memory
 				clear();
-
-				// Remove the batch from the queue
-				MeshInternal.get().searchQueue().remove(this);
 			}).doOnError(error -> {
 				log.error("Error while processing batch {" + batchId + "}");
 				if (log.isDebugEnabled()) {
 					printDebug();
 				}
 				clear();
-				MeshInternal.get().searchQueue().remove(this);
 			});
 		});
 	}

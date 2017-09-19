@@ -2,8 +2,8 @@ package com.gentics.mesh.search;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -14,7 +14,7 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
@@ -43,7 +43,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 		searchProvider().refreshIndex();
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());
-		expectResponseMessage(message, "search_admin_reindex_invoked");
+		assertMessage(message, "search_admin_reindex_invoked");
 	}
 
 	@Test

@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.field.binary;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -21,7 +21,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
@@ -39,6 +38,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.buffer.Buffer;
 
@@ -93,20 +93,20 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
-			for (int i = 0; i < 20; i++) {
+		for (int i = 0; i < 20; i++) {
+			String newFileName = "somefile" + i + ".dat";
+			String oldFilename = null;
+			NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+			try (Tx tx = tx()) {
 				BinaryGraphField oldValue = container.getBinary("binary");
-				String oldFilename = null;
 				if (oldValue != null) {
 					oldFilename = oldValue.getFileName();
 				}
-				String newFileName = "somefile" + i + ".dat";
+			}
 
-				call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, newFileName));
-				node.reload();
-				container.reload();
+			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, newFileName));
 
+			try (Tx tx = tx()) {
 				NodeGraphFieldContainer newContainer = container.getNextVersion();
 				assertNotNull("No new version was created.", newContainer);
 				assertEquals(newContainer.getUuid(), node.getLatestDraftFieldContainer(english()).getUuid());
@@ -188,11 +188,9 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			// 2. Upload a non-image
 			fileName = "somefile.dat";
 			mimeType = "application/octet-stream";
-			node.reload();
 			response = call(() -> uploadRandomData(node, "en", fieldKey, size, "application/octet-stream", "somefile.dat"));
 			assertNotNull(response);
 
-			node.reload();
 			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			assertNotEquals(originalVersion, response.getVersion());
 			BinaryField binaryField = response.getFields().getBinaryField(fieldKey);
@@ -237,14 +235,12 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			prepareSchema(node, "", "binary");
 			tx.success();
 		}
+		String contentType = "application/octet-stream";
+		String fileName = "somefile.dat";
+		int binaryLen = 10000;
+		call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
 		try (Tx tx = tx()) {
-			String contentType = "application/octet-stream";
-			String fileName = "somefile.dat";
-			int binaryLen = 10000;
-			call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
-
 			// Load the uploaded binary field and return the segment path to the field
-			node.reload();
 			BinaryGraphField binaryField = node.getLatestDraftFieldContainer(english()).getBinary("binary");
 			String uuid = "b677504736ed47a1b7504736ed07a14a";
 			binaryField.setUuid(uuid);
@@ -268,7 +264,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			NodeResponse response = call(() -> uploadRandomData(node, "en", "binary", binaryLen, contentType, fileName));
-			node.reload();
 
 			response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 			BinaryField binaryField = response.getFields().getBinaryField("binary");
@@ -342,8 +337,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			int size = uploadImage(node, "en", fieldName, fileName, contentType);
-
-			node.reload();
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft()));
 
 			BinaryField binaryField = response.getFields().getBinaryField(fieldName);

@@ -12,15 +12,10 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROO
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAGFAMILY_ROOT;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
-
-import javax.naming.InvalidNameException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
@@ -216,7 +211,8 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			}
 		}
 
-		// Create a dummy batch which we will use to handle deletion for elements which must not update the batch since the documents are deleted by dedicated index deletion entries.
+		// Create a dummy batch which we will use to handle deletion for elements which must not update the batch since the documents are deleted by dedicated
+		// index deletion entries.
 		DummySearchQueueBatch dummyBatch = new DummySearchQueueBatch();
 
 		// Remove the tagfamilies from the index
@@ -240,9 +236,11 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	@Override
 	public Project update(InternalActionContext ac, SearchQueueBatch batch) {
 		ProjectUpdateRequest requestModel = ac.fromJson(ProjectUpdateRequest.class);
+		RouterStorage routerStorage = MeshInternal.get().routerStorage();
 
 		String oldName = getName();
 		String newName = requestModel.getName();
+		routerStorage.assertProjectNameValid(newName);
 		if (shouldUpdate(newName, oldName)) {
 			// Check for conflicting project name
 			Project projectWithSameName = MeshInternal.get().boot().meshRoot().getProjectRoot().findByName(newName);
@@ -250,40 +248,12 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 				throw conflict(projectWithSameName.getUuid(), newName, "project_conflicting_name");
 			}
 
-			RouterStorage routerStorage = MeshInternal.get().routerStorage();
-			if (routerStorage.getCoreRouters().containsKey(newName)) {
-				throw error(BAD_REQUEST, "project_error_name_already_reserved", newName);
-			}
-
 			setName(newName);
-			routerStorage.removeProjectRouter(oldName);
-
-			// Old router was removed. Now lets add the new one and revert the change if an error ocures.
-			try {
-				routerStorage.addProjectRouter(newName);
-			} catch (InvalidNameException e) {
-				// Try to restore the old state. Transaction will be rolled back later.
-				try {
-					routerStorage.addProjectRouter(oldName);
-				} catch (InvalidNameException e1) {
-					//TODO i18n
-					throw error(INTERNAL_SERVER_ERROR, "Error while restoring project router for name {" + oldName + "} during rollback", e);
-				}
-				// TODO i18n
-				throw error(BAD_REQUEST, "Error while adding new router for project name {" + newName + "}", e);
-			}
 			setEditor(ac.getUser());
 			setLastEditedTimestamp();
 
 			// Update the project and its nodes in the index
 			batch.store(this, true);
-			// Store all nodes in all releases
-			//			for (Node node : getNodeRoot().findAll()) {
-			//				batch.store(node, false);
-			//			}
-			//			for(Tag tag : getTagRoot().findAll()) {
-			//				
-			//			}
 		}
 		return this;
 	}
@@ -304,7 +274,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		if (getBaseNode() == null) {
 			return;
 		}
-		// All nodes of all releases are related to this project. All nodes/containers must be updated if the project name changes. 
+		// All nodes of all releases are related to this project. All nodes/containers must be updated if the project name changes.
 		for (Node node : getNodeRoot().findAll()) {
 			action.call(node, new HandleContext());
 		}
@@ -366,4 +336,5 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
+
 }

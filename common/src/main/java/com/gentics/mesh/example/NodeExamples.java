@@ -44,7 +44,7 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.util.Tuple;
@@ -58,9 +58,9 @@ public class NodeExamples extends AbstractExamples {
 		parentNodeReference.setUuid(randomUUID());
 		parentNodeReference.setDisplayName("parentNodeDisplayName");
 		nodeResponse.setParentNode(parentNodeReference);
-		nodeResponse.setCreated(getTimestamp());
-		nodeResponse.setEdited(getTimestamp());
-		nodeResponse.setCreator(getUserReference());
+		nodeResponse.setCreated(createTimestamp());
+		nodeResponse.setEdited(createTimestamp());
+		nodeResponse.setCreator(createUserReference());
 		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(randomUUID()).setTagFamily("colors"));
 		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
 		nodeResponse.setAvailableLanguages(Arrays.asList("en", "de"));
@@ -79,7 +79,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("relatedProduct", createNodeField(randomUUID()));
 		fields.put("price", createNumberField(100.1));
 		fields.put("enabled", createBooleanField(true));
-		fields.put("release", createDateField(getTimestamp()));
+		fields.put("release", createDateField(createTimestamp()));
 		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
@@ -159,10 +159,10 @@ public class NodeExamples extends AbstractExamples {
 		parentNodeReference.setDisplayName("parentNodeDisplayName");
 
 		nodeResponse.setParentNode(parentNodeReference);
-		nodeResponse.setCreator(getUserReference());
-		nodeResponse.setCreated(getTimestamp());
-		nodeResponse.setEdited(getTimestamp());
-		nodeResponse.setEditor(getUserReference());
+		nodeResponse.setCreator(createUserReference());
+		nodeResponse.setCreated(createTimestamp());
+		nodeResponse.setEdited(createTimestamp());
+		nodeResponse.setEditor(createUserReference());
 
 		FieldMap fields = nodeResponse.getFields();
 		fields.put("name", createStringField("Name for language tag en"));
@@ -203,7 +203,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("relatedProduct", createNodeField(randomUUID()));
 		fields.put("price", createNumberField(100.1));
 		fields.put("enabled", createBooleanField(true));
-		fields.put("release", createDateField(getTimestamp()));
+		fields.put("release", createDateField(createTimestamp()));
 		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));
@@ -223,7 +223,7 @@ public class NodeExamples extends AbstractExamples {
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("en");
 		nodeCreateRequest.setParentNodeUuid(randomUUID());
-		nodeCreateRequest.setSchema(new SchemaReference().setName("vehicle"));
+		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("vehicle"));
 		nodeCreateRequest.getFields().put("name", new StringFieldImpl().setString("DeLorean DMC-12"));
 		nodeCreateRequest.getFields().put("description", new HtmlFieldImpl().setHTML(
 				"The DeLorean DMC-12 is a sports car manufactured by John DeLorean's DeLorean Motor Company for the American market from 1981–83."));
@@ -259,7 +259,7 @@ public class NodeExamples extends AbstractExamples {
 		fields.put("relatedProduct-", createNodeField(randomUUID()));
 		fields.put("price", createNumberField(100.1));
 		fields.put("enabled", createBooleanField(true));
-		fields.put("release", createDateField(getTimestamp()));
+		fields.put("release", createDateField(createTimestamp()));
 		fields.put("categories", createNodeListField(randomUUID(), randomUUID(), randomUUID()));
 		fields.put("names", createStringListField("Jack", "Joe", "Mary", "Tom"));
 		fields.put("categoryIds", createNumberListField(1, 42, 133, 7));

@@ -3,7 +3,7 @@ package com.gentics.mesh.test.context;
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
@@ -12,11 +12,11 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
-import com.gentics.ferma.Tx;
-import com.gentics.ferma.TxHandler;
-import com.gentics.ferma.TxHandler0;
-import com.gentics.ferma.TxHandler1;
-import com.gentics.ferma.TxHandler2;
+import com.syncleus.ferma.tx.Tx;
+import com.syncleus.ferma.tx.TxAction;
+import com.syncleus.ferma.tx.TxAction0;
+import com.syncleus.ferma.tx.TxAction1;
+import com.syncleus.ferma.tx.TxAction2;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -55,9 +55,9 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
@@ -99,23 +99,29 @@ public interface TestHelperMethods {
 		return MeshInternal.get().database();
 	}
 
+	/**
+	 * Create a new transaction.
+	 * 
+	 * @see Database#tx()
+	 * @return
+	 */
 	default Tx tx() {
 		return db().tx();
 	}
 
-	default void tx(TxHandler0 handler) {
+	default void tx(TxAction0 handler) {
 		db().tx(handler);
 	}
 
-	default <T> T tx(TxHandler1<T> handler) {
+	default <T> T tx(TxAction1<T> handler) {
 		return db().tx(handler);
 	}
 
-	default void tx(TxHandler2 handler) {
+	default void tx(TxAction2 handler) {
 		db().tx(handler);
 	}
 
-	default <T> T tx(TxHandler<T> handler) {
+	default <T> T tx(TxAction<T> handler) {
 		return db().tx(handler);
 	}
 
@@ -148,9 +154,7 @@ public interface TestHelperMethods {
 	}
 
 	default Group group() {
-		Group group = data().getUserInfo().getGroup();
-		group.reload();
-		return group;
+		return data().getUserInfo().getGroup();
 	}
 
 	default String groupUuid() {
@@ -260,7 +264,7 @@ public interface TestHelperMethods {
 
 	default MicroschemaContainer microschemaContainer(String key) {
 		MicroschemaContainer container = data().getMicroschemaContainers().get(key);
-//		container.reload();
+		// container.reload();
 		return container;
 	}
 
@@ -385,10 +389,10 @@ public interface TestHelperMethods {
 	}
 
 	default public MeshRequest<NodeResponse> createNodeAsync(String fieldKey, Field field) {
-		Node parentNode = folder("2015");
+		String parentNodeUuid = tx(() -> folder("2015").getUuid());
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNode.getUuid()));
-		nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
+		nodeCreateRequest.setParentNode(new NodeReference().setUuid(parentNodeUuid));
+		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
 		nodeCreateRequest.setLanguage("en");
 		if (fieldKey != null) {
 			nodeCreateRequest.getFields().put(fieldKey, field);
@@ -469,7 +473,7 @@ public interface TestHelperMethods {
 	default public ProjectResponse createProject(String projectName) {
 		ProjectCreateRequest projectCreateRequest = new ProjectCreateRequest();
 		projectCreateRequest.setName(projectName);
-		projectCreateRequest.setSchema(new SchemaReference().setName("folder"));
+		projectCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
 		return call(() -> client().createProject(projectCreateRequest));
 	}
 
@@ -539,11 +543,11 @@ public interface TestHelperMethods {
 	default public MeshRequest<NodeResponse> uploadRandomData(Node node, String languageTag, String fieldKey, int binaryLen, String contentType,
 			String fileName) {
 
-		VersionNumber version = node.getGraphFieldContainer("en").getVersion();
+		VersionNumber version = tx(() -> node.getGraphFieldContainer("en").getVersion());
+		String uuid = tx(() -> node.getUuid());
 
-		// role().grantPermissions(node, UPDATE_PERM);
 		Buffer buffer = TestUtils.randomBuffer(binaryLen);
-		return client().updateNodeBinaryField(PROJECT_NAME, node.getUuid(), languageTag, version.toString(), fieldKey, buffer, fileName, contentType,
+		return client().updateNodeBinaryField(PROJECT_NAME, uuid, languageTag, version.toString(), fieldKey, buffer, fileName, contentType,
 				new NodeParametersImpl().setResolveLinks(LinkType.FULL));
 	}
 
@@ -595,7 +599,6 @@ public interface TestHelperMethods {
 
 	default public SchemaContainer getSchemaContainer() {
 		SchemaContainer container = data().getSchemaContainer("content");
-		container.reload();
 		return container;
 	}
 

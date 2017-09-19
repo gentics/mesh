@@ -42,15 +42,17 @@ node("jenkins-slave") {
 
 	stage("Test") {
 		if (Boolean.valueOf(params.runTests)) {
-		def splits = 4;
+		def splits = 20;
+			sh "ls -la"
 			sh "find -name \"*Test.java\" | grep -v Abstract | shuf | sed  's/.*java\\/\\(.*\\)/\\1/' > alltests"
+			sh "cat alltests | wc -l"
 			sh "split -a 2 -d -n l/${splits} alltests  includes-"
 			stash includes: '**', name: 'project'
 			def branches = [:]
 			for (int i = 0; i < splits; i++) {
 				def current = i
 				branches["split${i}"] = {
-					node('jenkins-slave') {
+					node('jenkins-slave-worker') {
 						echo "Preparing slave environment for ${current}"
 						unstash 'project'
 						def postfix = current;
@@ -61,7 +63,7 @@ node("jenkins-slave") {
 						sh "mv includes-${postfix} inclusions.txt"
 						sshagent(["git"]) {
 							try {
-								sh "mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!server,!performance-tests' clean test"
+								sh "mvn -fae -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!performance-tests' clean package"
 							} finally {
 								step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 							}

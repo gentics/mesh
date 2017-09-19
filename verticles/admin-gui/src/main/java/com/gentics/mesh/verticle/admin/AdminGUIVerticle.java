@@ -1,5 +1,6 @@
 package com.gentics.mesh.verticle.admin;
 
+import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.vertx.core.http.HttpMethod.GET;
@@ -27,7 +28,6 @@ import com.github.jknack.handlebars.context.MapValueResolver;
 
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.StaticHandler;
-
 
 @Singleton
 public class AdminGUIVerticle extends AbstractWebVerticle {
@@ -79,7 +79,7 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 	private void addMeshConfigHandler() {
 		route("/" + CONF_FILE).method(GET).handler(rc -> {
 			rc.response().putHeader("Content-Type", "application/javascript");
-			rc.response().sendFile(CONF_FILE);
+			rc.response().sendFile(CONFIG_FOLDERNAME + "/" + CONF_FILE);
 		});
 	}
 
@@ -92,11 +92,15 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 	}
 
 	private void saveMeshUiConfig() {
-		File outputFile = new File(CONF_FILE);
+		File parentFolder = new File(CONFIG_FOLDERNAME);
+		if (!parentFolder.exists() && !parentFolder.mkdirs()) {
+			throw error(INTERNAL_SERVER_ERROR, "Could not create configuration folder {" + parentFolder.getAbsolutePath() + "}");
+		}
+		File outputFile = new File(parentFolder, CONF_FILE);
 		if (!outputFile.exists()) {
 			InputStream ins = getClass().getResourceAsStream("/meshui-templates/mesh-ui-config.hbs");
 			if (ins == null) {
-				throw error(INTERNAL_SERVER_ERROR, "Could not find mesh ui config template");
+				throw error(INTERNAL_SERVER_ERROR, "Could not find mesh-ui config template within classpath.");
 			}
 			try {
 				Handlebars handlebars = new Handlebars();
@@ -112,7 +116,7 @@ public class AdminGUIVerticle extends AbstractWebVerticle {
 				template.apply(context, writer);
 				writer.close();
 			} catch (Exception e) {
-				log.error("Could not save configuration file {" + CONF_FILE + "}");
+				log.error("Could not save configuration file {" + outputFile.getAbsolutePath() + "}");
 			}
 		}
 	}

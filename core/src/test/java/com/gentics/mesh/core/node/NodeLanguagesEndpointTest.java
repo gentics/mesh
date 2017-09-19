@@ -4,7 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,9 +13,10 @@ import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.parameter.impl.DeleteParametersImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -48,17 +49,17 @@ public class NodeLanguagesEndpointTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			// Check the deletion
-			node.reload();
 			assertThat(dummySearchProvider()).recordedDeleteEvents(2);
 			assertFalse(node.getAvailableLanguageNames().contains("en"));
 			assertEquals(nLanguagesBefore - 1, node.getAvailableLanguageNames().size());
-
-			// Now delete the remaining german version
-			call(() -> client().deleteNode(PROJECT_NAME, node.getUuid(), "de"));
-			assertThat(dummySearchProvider()).recordedDeleteEvents(2 + 2);
-			call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().published()), NOT_FOUND,
-					"node_error_published_not_found_for_uuid_release_language", contentUuid(), "en", latestRelease().getUuid());
 		}
+
+		// Now delete the remaining german version
+		call(() -> client().deleteNode(PROJECT_NAME, contentUuid(), "de", new DeleteParametersImpl().setRecursive(true)));
+		assertThat(dummySearchProvider()).recordedDeleteEvents(2 + 2);
+		// The node was removed since the node only existed in a single release and had no other languages
+		call(() -> client().findNodeByUuid(PROJECT_NAME, contentUuid(), new VersioningParametersImpl().published()), NOT_FOUND,
+				"object_not_found_for_uuid", contentUuid());
 
 	}
 

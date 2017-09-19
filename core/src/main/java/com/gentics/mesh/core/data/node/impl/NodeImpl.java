@@ -37,8 +37,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -69,7 +70,6 @@ import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
-import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
@@ -95,6 +95,7 @@ import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
@@ -110,8 +111,10 @@ import com.gentics.mesh.util.URIUtils;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.EdgeFrame;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.VertexFrame;
 import com.syncleus.ferma.traversals.EdgeTraversal;
 import com.syncleus.ferma.traversals.VertexTraversal;
+import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 import com.tinkerpop.blueprints.Vertex;
@@ -126,11 +129,12 @@ import rx.Single;
  */
 public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, Node> implements Node {
 
-	public static final String RELEASE_UUID_KEY = "releaseUuid";
-
 	private static final Logger log = LoggerFactory.getLogger(NodeImpl.class);
 
+	public static final String RELEASE_UUID_KEY = "releaseUuid";
+
 	public static void init(Database database) {
+		// Node.EventType.CREATED
 		database.addVertexType(NodeImpl.class, MeshVertexImpl.class);
 		database.addEdgeIndex(HAS_PARENT_NODE);
 		database.addCustomEdgeIndex(HAS_PARENT_NODE, "release", "in", RELEASE_UUID_KEY);
@@ -439,22 +443,27 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public List<? extends Node> getChildren() {
-		return in(HAS_PARENT_NODE).toListExplicit(NodeImpl.class);
+	public Iterable<Node> getChildren() {
+		Iterator<VertexFrame> it = in(HAS_PARENT_NODE).iterator();
+		Iterable<VertexFrame> iterable = () -> it;
+		Stream<Node> stream = StreamSupport.stream(iterable.spliterator(), false).map(frame -> frame.reframe(NodeImpl.class));
+		return () -> stream.iterator();
 	}
 
 	@Override
-	public List<? extends Node> getChildren(String releaseUuid) {
+	public Iterable<Node> getChildren(String releaseUuid) {
 		Database db = MeshInternal.get().database();
 		FramedGraph graph = Tx.getActive().getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + HAS_PARENT_NODE.toLowerCase() + "_release", db.createComposedIndexKey(getId(), releaseUuid));
-		List<Node> nodes = new ArrayList<>();
 		Iterator<Edge> it = edges.iterator();
-		while (it.hasNext()) {
-			Vertex vertex = it.next().getVertex(Direction.OUT);
-			nodes.add(graph.frameElementExplicit(vertex, NodeImpl.class));
-		}
-		return nodes;
+		Iterable<Edge> iterable = () -> it;
+		Stream<Edge> stream = StreamSupport.stream(iterable.spliterator(), false);
+
+		Stream<Node> nstream = stream.map(edge -> {
+			Vertex vertex = edge.getVertex(Direction.OUT);
+			return graph.frameElementExplicit(vertex, NodeImpl.class);
+		});
+		return () -> nstream.iterator();
 	}
 
 	@Override
@@ -621,9 +630,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// reference that points to the container (no version information
 			// will be included)
 			restNode.setSchema(getSchemaContainer().transformToReference());
-			// TODO return a 404 and adapt mesh rest client in order to return a
-			// mesh response
-			// ac.data().put("statuscode", NOT_FOUND.code());
+			// TODO BUG Issue #119 - Actually we would need to throw a 404 in these cases but many current implementations rely on the empty node response. 
+			// The response will also contain information about other languages and general structure information.
+			// We should change this behaviour and update the client implementations.
+			//throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 		} else {
 			Schema schema = fieldContainer.getSchemaContainerVersion().getSchema();
 			restNode.setContainer(schema.isContainer());
@@ -1256,15 +1266,21 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	@Override
 	public void deleteFromRelease(InternalActionContext ac, Release release, SearchQueueBatch batch, boolean ignoreChecks) {
 
+		DeleteParameters parameters = ac.getDeleteParameters();
+
 		// 1. Remove subfolders from release
 		String releaseUuid = release.getUuid();
+
 		for (Node child : getChildren(releaseUuid)) {
+			if (!parameters.isRecursive()) {
+				throw error(BAD_REQUEST, "node_error_delete_failed_node_has_children");
+			}
 			child.deleteFromRelease(ac, release, batch, ignoreChecks);
 		}
 
 		// 2. Delete all language containers
 		for (NodeGraphFieldContainer container : getGraphFieldContainers(release, DRAFT)) {
-			deleteLanguageContainer(ac, release, container.getLanguage(), batch);
+			deleteLanguageContainer(ac, release, container.getLanguage(), batch, false);
 		}
 
 		// 3. Now check if the node has no more field containers in any release. We can delete it in those cases
@@ -1462,8 +1478,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				throw error(BAD_REQUEST, "node_error_version_missing");
 			}
 
-			// Make sure the container was already migrated. Otherwise the
-			// update can't proceed.
+			// Make sure the container was already migrated. Otherwise the update can't proceed.
 			SchemaContainerVersion schemaContainerVersion = latestDraftVersion.getSchemaContainerVersion();
 			if (!latestDraftVersion.getSchemaContainerVersion().equals(release.getVersion(schemaContainerVersion.getSchemaContainer()))) {
 				throw error(BAD_REQUEST, "node_error_migration_incomplete");
@@ -1623,7 +1638,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, SearchQueueBatch batch) {
+	public void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, SearchQueueBatch batch,
+			boolean failForLastContainer) {
 
 		// 1. Check whether the container has also a published variant. We need to take it offline in those cases
 		NodeGraphFieldContainer container = getGraphFieldContainer(language, release, PUBLISHED);
@@ -1637,8 +1653,24 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			throw error(NOT_FOUND, "node_no_language_found", language.getLanguageTag());
 		}
 		container.deleteFromRelease(release, batch);
-
 		// No need to delete the published variant because if the container was published the take offline call handled it
+
+		// 3. Check whether this was be the last container of the node for this release
+		DeleteParameters parameters = ac.getDeleteParameters();
+		if (failForLastContainer) {
+			List<? extends NodeGraphFieldContainer> draftContainers = getGraphFieldContainers(release.getUuid(), DRAFT);
+			List<? extends NodeGraphFieldContainer> publishContainers = getGraphFieldContainers(release.getUuid(), PUBLISHED);
+			boolean wasLastContainer = draftContainers.isEmpty() && publishContainers.isEmpty();
+
+			if (!parameters.isRecursive() && wasLastContainer) {
+				throw error(BAD_REQUEST, "node_error_delete_failed_last_container_for_release");
+			}
+			// Also delete the node and children
+			if (parameters.isRecursive() && wasLastContainer) {
+				deleteFromRelease(ac, release, batch, false);
+			}
+		}
+
 	}
 
 	@Override
@@ -1851,7 +1883,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		 */
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (!isEmpty(roleUuid)) {
-			Role role = MeshRootImpl.getInstance().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
+			Role role = MeshInternal.get().boot().meshRoot().getRoleRoot().loadObjectByUuid(ac, roleUuid, READ_PERM);
 			if (role != null) {
 				Set<GraphPermission> permSet = role.getPermissions(this);
 				Set<String> humanNames = new HashSet<>();

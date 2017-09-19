@@ -47,7 +47,13 @@ public class BuildInfo {
 	 * @return
 	 */
 	public String getVersion() {
-		return version;
+		String overrideVersion = System.getProperty("mesh.internal.version");
+		if (overrideVersion == null) {
+			return version;
+		} else {
+			return overrideVersion;
+		}
+
 	}
 
 	/**

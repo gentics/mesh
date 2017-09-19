@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.data;
 
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.rest.lang.LanguageResponse;
 
 /**
@@ -7,7 +8,14 @@ import com.gentics.mesh.core.rest.lang.LanguageResponse;
  */
 public interface Language extends MeshCoreVertex<LanguageResponse, Language>, NamedElement {
 
-	public static final String TYPE = "language";
+	static final String TYPE = "language";
+
+	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, null, null, null);
+
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
 
 	/**
 	 * Return the native name of the language.

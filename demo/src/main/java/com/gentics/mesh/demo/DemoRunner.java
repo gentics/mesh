@@ -8,11 +8,12 @@ import java.io.IOException;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.OptionsLoader;
-import com.gentics.mesh.crypto.KeyStoreHelper;
+import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.demo.verticle.DemoVerticle;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.graphdb.MissingOrientCredentialFixer;
 import com.gentics.mesh.search.verticle.ElasticsearchHeadVerticle;
 import com.gentics.mesh.util.DeploymentUtil;
 import com.gentics.mesh.verticle.admin.AdminGUIVerticle;
@@ -28,29 +29,35 @@ import net.lingala.zip4j.exception.ZipException;
  */
 public class DemoRunner {
 
-	private static final Logger log;
+	private static Logger log;
 
 	static {
-		// Use slf4j instead of jul
-		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
 		System.setProperty("vertx.httpServiceFactory.cacheDir", "data" + File.separator + "tmp");
 		System.setProperty("vertx.cacheDirBase", "data" + File.separator + "tmp");
-		log = LoggerFactory.getLogger(DemoRunner.class);
+		System.setProperty("storage.trackChangedRecordsInWAL", "true");
 	}
 
 	public static void main(String[] args) throws Exception {
+		LoggingConfigurator.init();
+		log = LoggerFactory.getLogger(DemoRunner.class);
 		// Extract dump file on first time startup to speedup startup
 		setupDemo();
 
-		MeshOptions options = OptionsLoader.createOrloadOptions();
+		MeshOptions options = OptionsLoader.createOrloadOptions(args);
+
+		MissingOrientCredentialFixer.fix(options);
+
 		options.getHttpServerOptions().setEnableCors(true);
 		options.getHttpServerOptions().setCorsAllowCredentials(false);
 		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
+		// For Mesh UI Dev
+		// options.getHttpServerOptions().setCorsAllowCredentials(true);
+		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setStartServer(true);
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setDirectory(null);
-		setupKeystore(options);
+		// options.setClusterMode(true);
 
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
@@ -86,14 +93,4 @@ public class DemoRunner {
 		}
 	}
 
-	private static void setupKeystore(MeshOptions options) throws Exception {
-		String keyStorePath = options.getAuthenticationOptions().getKeystorePath();
-		// Copy the demo keystore file to the destination
-		if (!new File(keyStorePath).exists()) {
-			log.info("Could not find keystore {" + keyStorePath + "}. Creating one for you..");
-			KeyStoreHelper.gen(keyStorePath, options.getAuthenticationOptions().getKeystorePassword());
-			log.info("Keystore {" + keyStorePath + "} created. The keystore password is listed in your {" + OptionsLoader.MESH_CONF_FILENAME
-					+ "} file.");
-		}
-	}
 }

@@ -42,7 +42,8 @@ public class CreateMissingDraftEdges extends AbstractChange {
 		Iterable<Edge> edges = node.getEdges(Direction.OUT, "HAS_FIELD_CONTAINER");
 		Edge referenceEdge = null;
 		Vertex possibleDraftContainer = null;
-		// Determine whether a draft edge exists and locate the publish edge. The publish edge will be copied to create the missing draft edge.
+		// Determine whether a draft edge exists and locate the publish edge. 
+		//The publish edge will be copied to create the missing draft edge.
 		for (Edge edge : edges) {
 			String type = edge.getProperty("edgeType");
 			if ("D".equals(type)) {

@@ -23,7 +23,6 @@ import javax.script.ScriptException;
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
-import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.field.DataProvider;
 import com.gentics.mesh.core.field.binary.BinaryFieldTestHelper;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -199,7 +198,6 @@ public class BinaryFieldMigrationTest extends AbstractFieldMigrationTest impleme
 				(container, name) -> {
 					BinaryGraphField newField = container.getBinary(name);
 					assertThat(newField).as(NEWFIELD).isNotNull();
-					((BinaryGraphFieldImpl) newField).reload();
 					assertThat(newField.getFileName()).as(NEWFIELDVALUE).isEqualTo("bla" + FILENAME);
 					assertThat(newField.getMimeType()).as(NEWFIELDVALUE).isEqualTo(MIMETYPE);
 					assertThat(newField.getSHA512Sum()).as(NEWFIELDVALUE).isEqualTo(sha512Sum);

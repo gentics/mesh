@@ -2,7 +2,7 @@ package com.gentics.mesh.graphdb.orientdb.graph;
 
 import java.util.List;
 
-import com.gentics.ferma.annotation.GraphElement;
+import com.syncleus.ferma.annotations.GraphElement;
 
 @GraphElement
 public class Person extends AbstractInterceptingVertexFrame {

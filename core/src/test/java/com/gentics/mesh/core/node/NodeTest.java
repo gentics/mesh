@@ -4,6 +4,7 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
 import static com.gentics.mesh.core.rest.SortOrder.UNSORTED;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.util.TestUtils.size;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -22,7 +23,7 @@ import java.util.Map;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -47,7 +48,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.util.MeshAssert;
+import com.gentics.mesh.test.util.MeshAssert;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
@@ -85,7 +86,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Node newSubNode;
 			newSubNode = newsNode.create(user(), getSchemaContainer().getLatestVersion(), project());
 
-			assertEquals(1, newsNode.getChildren().size());
+			assertEquals(1, size(newsNode.getChildren()));
 			Node firstChild = newsNode.getChildren().iterator().next();
 			assertEquals(newSubNode.getUuid(), firstChild.getUuid());
 		}
@@ -309,6 +310,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			MeshAssert.assertElement(meshRoot().getNodeRoot(), uuid, true);
 			SearchQueueBatch batch = createBatch();
 			InternalActionContext ac = mockActionContext("");
+			ac.getDeleteParameters().setRecursive(true);
 			try (Tx tx2 = tx()) {
 				node.deleteFromRelease(ac, project().getLatestRelease(), batch, false);
 				tx2.success();
@@ -391,8 +393,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 2. delete folder for initial release
 			SearchQueueBatch batch = createBatch();
 			InternalActionContext ac = mockActionContext("");
+			ac.getDeleteParameters().setRecursive(true);
 			subFolder.deleteFromRelease(ac, initialRelease, batch, false);
-			folder.reload();
 
 			// 3. assert for new release
 			assertThat(folder).as("folder").hasNoChildren(initialRelease);
@@ -433,10 +435,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 3. migrate nodes
-			meshDagger().nodeMigrationHandler().migrateNodes(newRelease).await();
-			folder.reload();
-			subFolder.reload();
-			subSubFolder.reload();
+			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
 
 			// 4. assert nodes in new release
 			assertThat(folder).as("folder").hasOnlyChildren(newRelease, subFolder);
@@ -446,13 +445,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			SearchQueueBatch batch = createBatch();
 			// 5. reverse folders in new release
 			subSubFolder.moveTo(mockActionContext(), folder, batch);
-			folder.reload();
-			subFolder.reload();
-			subSubFolder.reload();
 			subFolder.moveTo(mockActionContext(), subSubFolder, batch);
-			folder.reload();
-			subFolder.reload();
-			subSubFolder.reload();
 
 			// 6. assert for new release
 			assertThat(folder).as("folder").hasChildren(newRelease, subSubFolder);
@@ -467,10 +460,8 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 8. delete folder for initial release
 			batch = createBatch();
 			InternalActionContext ac = mockActionContext("");
+			ac.getDeleteParameters().setRecursive(true);
 			subFolder.deleteFromRelease(ac, initialRelease, batch, false);
-			folder.reload();
-			subFolder.reload();
-			subSubFolder.reload();
 
 			// 9. assert for new release
 			assertThat(folder).as("folder").hasChildren(newRelease, subSubFolder);
@@ -582,7 +573,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 2. create new release and migrate nodes
 			tx(() -> {
 				Release newRelease = project.getReleaseRoot().create("newrelease", user());
-				meshDagger().nodeMigrationHandler().migrateNodes(newRelease).await();
+				meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
 				System.out.println("Release UUID: " + newRelease.getUuid());
 			});
 

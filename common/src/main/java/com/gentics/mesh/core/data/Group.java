@@ -1,8 +1,13 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.Events.EVENT_GROUP_CREATED;
+import static com.gentics.mesh.Events.EVENT_GROUP_DELETED;
+import static com.gentics.mesh.Events.EVENT_GROUP_UPDATED;
+
 import java.util.List;
 import java.util.Objects;
 
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.rest.group.GroupReference;
 import com.gentics.mesh.core.rest.group.GroupResponse;
@@ -18,9 +23,11 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	 */
 	static final String TYPE = "group";
 
+	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_GROUP_CREATED, EVENT_GROUP_UPDATED, EVENT_GROUP_DELETED);
+
 	@Override
-	default String getType() {
-		return Group.TYPE;
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
 	}
 
 	/**

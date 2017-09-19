@@ -10,27 +10,27 @@ import com.gentics.mesh.core.rest.common.RestModel;
 public class UserCreateRequest implements RestModel {
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("New username of the user")
+	@JsonPropertyDescription("Username of the user.")
 	private String username;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("New email address of the user")
+	@JsonPropertyDescription("Email address of the user.")
 	private String emailAddress;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("New lastname of the user")
+	@JsonPropertyDescription("Lastname of the user.")
 	private String lastname;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("New firstname of the user")
+	@JsonPropertyDescription("Firstname of the user.")
 	private String firstname;
 
 	@JsonPropertyDescription("Optional group id for the user. If provided the user will automatically be assigned to the identified group.")
 	@JsonProperty(required = false)
 	private String groupUuid;
 
-	@JsonProperty(required = false)
-	@JsonPropertyDescription("New password of the user")
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Password of the new user.")
 	private String password;
 
 	@JsonProperty(required = false)

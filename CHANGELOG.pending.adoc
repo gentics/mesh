@@ -1,4 +1,0 @@
-icon:check[] REST: Invalid date were not correctly handled. An error will now be thrown if a date string can't be parsed.
-
-icon:plus[] GraphQL: It is now possible to retrieve the unfiltered result count. This count is directly loaded from the search provider and may match up with the exact filtered count.
-            The advantage of this value is that it can be retrieved very fast.

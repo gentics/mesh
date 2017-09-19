@@ -8,6 +8,7 @@ import com.gentics.mesh.rest.client.method.AuthClientMethods;
 import com.gentics.mesh.rest.client.method.EventbusClientMethods;
 import com.gentics.mesh.rest.client.method.GraphQLClientMethods;
 import com.gentics.mesh.rest.client.method.GroupClientMethods;
+import com.gentics.mesh.rest.client.method.JobClientMethods;
 import com.gentics.mesh.rest.client.method.MicroschemaClientMethods;
 import com.gentics.mesh.rest.client.method.NavRootClientMethods;
 import com.gentics.mesh.rest.client.method.NavigationClientMethods;
@@ -30,7 +31,7 @@ import io.vertx.core.http.HttpClient;
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 		SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
 		MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods,
-		EventbusClientMethods, ReleaseClientMethods, ApiInfoClientMethods, GraphQLClientMethods {
+		EventbusClientMethods, ReleaseClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods {
 
 	/**
 	 * The default base URI path to the Mesh-API.
@@ -44,12 +45,14 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 *            Server host
 	 * @param port
 	 *            Server port
+	 * @param ssl
+	 *            Flag which is used to toggle ssl mode
 	 * @param vertx
 	 *            Vert.x instance to be used in combination with the vertx http client
 	 * @return
 	 */
-	static MeshRestClient create(String host, int port, Vertx vertx) {
-		return new MeshRestHttpClientImpl(host, port, vertx);
+	static MeshRestClient create(String host, int port, boolean ssl, Vertx vertx) {
+		return new MeshRestHttpClientImpl(host, port, ssl, vertx);
 	}
 
 	/**
@@ -116,10 +119,8 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 */
 	MeshRestClient setAuthenticationProvider(JWTAuthentication authentication);
 
-
 	/**
-	 * Get the base URI path to the Mesh-API.
-	 * If the base URI is not set, the DEFAULT_BASE_URI is returned.
+	 * Get the base URI path to the Mesh-API. If the base URI is not set, the DEFAULT_BASE_URI is returned.
 	 *
 	 * @return the base URI
 	 */

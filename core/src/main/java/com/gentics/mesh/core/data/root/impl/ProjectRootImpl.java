@@ -13,8 +13,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import java.util.Stack;
 
-import javax.naming.InvalidNameException;
-
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -42,15 +40,10 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-
 /**
  * @see ProjectRoot
  */
 public class ProjectRootImpl extends AbstractRootVertex<Project> implements ProjectRoot {
-
-	private static final Logger log = LoggerFactory.getLogger(ProjectRootImpl.class);
 
 	public static void init(Database database) {
 		database.addVertexType(ProjectRootImpl.class, MeshVertexImpl.class);
@@ -181,9 +174,7 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		if (conflictingProject != null) {
 			throw new NameConflictException("project_conflicting_name", projectName, conflictingProject.getUuid());
 		}
-		if (routerStorage.getCoreRouters().containsKey(requestModel.getName())) {
-			throw error(BAD_REQUEST, "project_error_name_already_reserved", requestModel.getName());
-		}
+		routerStorage.assertProjectNameValid(requestModel.getName());
 
 		if (requestModel.getSchema() == null || !requestModel.getSchema().isSet()) {
 			throw error(BAD_REQUEST, "project_error_no_schema_reference");
@@ -218,18 +209,6 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		// 3. Add created basenode to SQB
 		// NodeGraphFieldContainer baseNodeFieldContainer = project.getBaseNode().getAllInitialGraphFieldContainers().iterator().next();
 		batch.store(project.getBaseNode(), releaseUuid, ContainerType.DRAFT, false);
-
-		try {
-			// TODO BUG project should only be added to router when tx and ES
-			// finished successfully
-			routerStorage.addProjectRouter(projectName);
-			if (log.isInfoEnabled()) {
-				log.info("Registered project {" + projectName + "}");
-			}
-		} catch (InvalidNameException e) {
-			// TODO should we really fail here?
-			throw error(BAD_REQUEST, "Error while adding project to router storage", e);
-		}
 
 		return project;
 

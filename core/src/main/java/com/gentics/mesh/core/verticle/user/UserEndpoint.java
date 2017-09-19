@@ -80,7 +80,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		deleteEndpoint.description("Invalidate the issued API token.");
 		deleteEndpoint.method(DELETE);
 		deleteEndpoint.produces(APPLICATION_JSON);
-		deleteEndpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Message confirming the invalidation of the API token.");
+		deleteEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Message confirming the invalidation of the API token.");
 		deleteEndpoint.blockingHandler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			String uuid = ac.getParameter("userUuid");

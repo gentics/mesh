@@ -12,7 +12,7 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -41,13 +41,17 @@ public class WebRootHandler {
 
 	private ImageManipulator imageManipulator;
 
+	private BinaryFieldResponseHandler binaryFieldResponseHandler;
+
 	private Database db;
 
 	@Inject
-	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootService webrootService) {
+	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootService webrootService,
+			BinaryFieldResponseHandler binaryFieldResponseHandler) {
 		this.db = database;
 		this.imageManipulator = imageManipulator;
 		this.webrootService = webrootService;
+		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 	}
 
 	/**
@@ -95,9 +99,7 @@ public class WebRootHandler {
 					return Single.error(new NotModifiedException());
 				} else {
 					try (Tx tx = db.tx()) {
-						// TODO move binary handler outside of event loop scope to avoid bogus object creation
-						BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
-						handler.handle(binaryField);
+						binaryFieldResponseHandler.handle(rc, binaryField);
 						return null;
 					}
 				}
@@ -112,6 +114,7 @@ public class WebRootHandler {
 					List<String> languageTags = new ArrayList<>();
 					languageTags.add(lastSegment.getLanguageTag());
 					languageTags.addAll(ac.getNodeParameters().getLanguageList());
+					ac.setWebrootResponseType("node");
 					return node.transformToRest(ac, 0, languageTags.toArray(new String[0]));
 				}
 			}

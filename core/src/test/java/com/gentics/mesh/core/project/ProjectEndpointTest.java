@@ -11,21 +11,22 @@ import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.validateDeletion;
+import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateSet;
-import static com.gentics.mesh.util.MeshAssert.assertElement;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.util.MeshAssert.assertElement;
+import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -42,7 +43,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -59,7 +59,7 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
@@ -72,6 +72,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
@@ -83,7 +84,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName("Test1234");
 		call(() -> client().createProject(request), BAD_REQUEST, "project_error_no_schema_reference");
 
-		request.setSchema(new SchemaReference());
+		request.setSchema(new SchemaReferenceImpl());
 		call(() -> client().createProject(request), BAD_REQUEST, "project_error_no_schema_reference");
 	}
 
@@ -91,7 +92,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	public void testCreateBogusSchemaReference() {
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName("Test1234");
-		request.setSchema(new SchemaReference().setName("bogus42"));
+		request.setSchema(new SchemaReferenceImpl().setName("bogus42"));
 		call(() -> client().createProject(request), BAD_REQUEST, "error_schema_reference_not_found", "bogus42", "-", "-");
 	}
 
@@ -100,7 +101,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		String name = "Tä\u1F921 üst";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchema(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 		ProjectResponse restProject = call(() -> client().createProject(request));
 		assertEquals("The name of the project did not match.", name, restProject.getName());
@@ -122,7 +123,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		for (String name : names) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName(name);
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			call(() -> client().createProject(request), BAD_REQUEST, "project_error_name_already_reserved", name);
 		}
 	}
@@ -133,10 +134,11 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchema(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 		ProjectResponse restProject = call(() -> client().createProject(request));
 
+		// Verify that the new routes have been created
 		NodeResponse response = call(
 				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl().setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
@@ -161,7 +163,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchema(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 		try (Tx tx = tx()) {
 			role().revokePermissions(meshRoot().getProjectRoot(), CREATE_PERM);
@@ -180,7 +182,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("New Name");
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 			assertThat(dummySearchProvider()).hasNoStoreEvents();
 			ProjectResponse restProject = call(() -> client().createProject(uuid, request));
@@ -188,7 +190,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			assertThat(restProject).hasUuid(uuid);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
-			reloadedProject.reload();
 			assertEquals("New Name", reloadedProject.getName());
 		}
 	}
@@ -201,7 +202,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("New Name");
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 			assertThat(dummySearchProvider()).hasNoStoreEvents();
 			call(() -> client().createProject(uuid, request), INTERNAL_SERVER_ERROR, "error_internal");
@@ -222,7 +223,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		final String name = "test12345";
 		ProjectCreateRequest request = new ProjectCreateRequest();
 		request.setName(name);
-		request.setSchema(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
 		try (Tx tx = tx()) {
 			// Create a new project
@@ -230,7 +231,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			assertThat(restProject).matches(request);
 			assertThat(restProject.getPermissions()).hasPerm(Permission.values());
 
-			meshRoot().getProjectRoot().reload();
 			assertNotNull("The project should have been created.", meshRoot().getProjectRoot().findByName(name));
 
 			// Read the project
@@ -322,7 +322,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			final String name = "test12345_" + i;
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName(name);
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			call(() -> client().createProject(request));
 		}
 
@@ -417,7 +417,6 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		call(() -> client().findNodes(request.getName()));
 
 		try (Tx tx = tx()) {
-			project().reload();
 			assertEquals(request.getName(), project().getName());
 		}
 
@@ -437,17 +436,27 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Test
 	@Override
 	public void testUpdate() throws Exception {
+		String uuid = projectUuid();
 		try (Tx tx = tx()) {
 			Project project = project();
-			String uuid = project.getUuid();
 			role().grantPermissions(project, UPDATE_PERM);
+			tx.success();
+		}
 
-			ProjectUpdateRequest request = new ProjectUpdateRequest();
-			request.setName("New Name");
+		String oldName = PROJECT_NAME;
+		String newName = "New Name";
+		ProjectUpdateRequest request = new ProjectUpdateRequest();
+		request.setName(newName);
+		assertThat(dummySearchProvider()).hasNoStoreEvents();
+		ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
 
-			assertThat(dummySearchProvider()).hasNoStoreEvents();
-			ProjectResponse restProject = call(() -> client().updateProject(uuid, request));
-			project.reload();
+		// Assert that the routerstorage was updates
+		assertTrue("The new project router should have been added", meshDagger().routerStorage().hasProjectRouter(newName));
+		assertFalse("The old project router should have been removed", meshDagger().routerStorage().hasProjectRouter(oldName));
+		call(() -> client().findNodes(newName));
+
+		try (Tx tx = tx()) {
+			Project project = project();
 			assertThat(restProject).matches(project);
 			// All nodes + project + tags and tag families need to be reindex since the project name is part of the search document.
 			int expectedCount = 1;
@@ -458,12 +467,12 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			expectedCount += project.getTagFamilyRoot().findAll().size();
 
 			assertThat(dummySearchProvider()).hasStore(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
-			assertThat(dummySearchProvider()).hasEvents(expectedCount, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(expectedCount, 0, 0, 0, 0);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
-			reloadedProject.reload();
-			assertEquals("New Name", reloadedProject.getName());
+			assertEquals(newName, reloadedProject.getName());
 		}
+
 	}
 
 	@Test
@@ -530,7 +539,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		for (String index : indices) {
 			assertThat(dummySearchProvider()).hasDrop(index);
 		}
-		assertThat(dummySearchProvider()).hasEvents(0, 1, 2 + indices.size(), 0);
+		assertThat(dummySearchProvider()).hasEvents(0, 1, 2 + indices.size(), 0, 0);
 
 		try (Tx tx = tx()) {
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
@@ -549,7 +558,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 
 		call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid);
-		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			Project project = meshRoot().getProjectRoot().findByUuid(uuid);
@@ -616,7 +625,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		for (int i = 0; i < nJobs; i++) {
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("test12345_" + i);
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			set.add(client().createProject(request).invoke());
 		}
 		validateCreation(set, null);

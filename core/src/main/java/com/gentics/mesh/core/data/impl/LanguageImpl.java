@@ -28,11 +28,6 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 	}
 
 	@Override
-	public String getType() {
-		return Language.TYPE;
-	}
-
-	@Override
 	public String getName() {
 		return getProperty(LANGUAGE_NAME_PROPERTY_KEY);
 	}
@@ -99,5 +94,4 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
 	}
-
 }

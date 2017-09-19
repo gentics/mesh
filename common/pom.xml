@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.9.27-SNAPSHOT</version>
+		<version>0.10.4-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -25,11 +25,6 @@
 		<dependency>
 			<groupId>com.google.guava</groupId>
 			<artifactId>guava</artifactId>
-		</dependency>
-		<dependency>
-			<artifactId>ferma-extensions-api</artifactId>
-			<groupId>com.gentics.ferma</groupId>
-			<version>${ferma.extensions.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.syncleus.ferma</groupId>
@@ -64,13 +59,6 @@
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpcore</artifactId>
 			<version>4.2.5</version>
-		</dependency>
-
-		<!-- UUID Support -->
-		<dependency>
-			<groupId>com.fasterxml.uuid</groupId>
-			<artifactId>java-uuid-generator</artifactId>
-			<version>3.1.4</version>
 		</dependency>
 
 		<!-- YAML -->

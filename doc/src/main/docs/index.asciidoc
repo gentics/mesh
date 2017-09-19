@@ -97,13 +97,13 @@ ul.doc-toc h2 {
                                 <a href="administration-guide.html#_run_with_docker">Run with Docker</a>
                             </li>
                             <li>
-                                <a href="administration-guide.html#_installation_directory">Installation Directory</a>
+                                <a href="administration-guide.html#installdir">Installation Directory</a>
                             </li>                            
                             <li>
                                 <a href="administration-guide.html#_system_requirements">System Requirements</a>
                             </li>
                             <li>
-                                <a href="administration-guide.html#_configuration_settings">Configuration & Settings</a>
+                                <a href="administration-guide.html#conf">Configuration & Settings</a>
                             </li>
                             <li>
                                 <a href="administration-guide.html#_backup_recovery">Backup &amp; Recovery</a>
@@ -116,6 +116,19 @@ ul.doc-toc h2 {
                             </li>
                         </ul>
                     </li>
+
+                    <li class="section">
+                        <h2><a href="performance.html">Performance Guide</a></h2>
+                        <ul>
+                            <li>
+                                <a href="performance.html#_paging">Paging</a>
+                            </li>
+                            <li>
+                                <a href="performance.html#_contents">Contents</a>
+                            </li>
+                        </ul>
+                    </li>
+                    
                 </ul>
             </div>
             <div class="col-md-4">
@@ -174,9 +187,6 @@ ul.doc-toc h2 {
                             <li>
                                 <a href="features.html#_eventbus_bridge_websocket">Eventbus Bridge &amp; Web Socket</a>
                             </li>
-                            <li>
-                                <a href="features.html#_clustering">Clustering</a>
-                            </li>
                         </ul>
                     </li>
                     <li class="section">
@@ -193,7 +203,25 @@ ul.doc-toc h2 {
                             </li>
                             <li>
                                 <a href="user-interface.html#_configuration">Configuration</a>
-                            </li>                            
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="section">
+                        <h2><a href="platforms.html">Platforms</a></h2>
+                        <ul>
+                            <li>
+                                <a href="platforms.html#_javascript">JavaScript</a>
+                            </li>
+                            <li>
+                                <a href="platforms.html#_java">Java</a>
+                            </li>
+                            <li>
+                                <a href="platforms.html#_go">Go</a>
+                            </li>
+                            <li>
+                                <a href="platforms.html#_php">PHP</a>
+                            </li>
                         </ul>
                     </li>
                 </ul>
@@ -258,23 +286,49 @@ ul.doc-toc h2 {
                             </li>
                         </ul>
                     </li>
+                    
                     <li class="section">
-                        <h2><a href="platforms.html">Platforms</a></h2>
+                        <h2><a href="clustering.html">Clustering</a></h2>
                         <ul>
                             <li>
-                                <a href="platforms.html#_javascript">JavaScript</a>
+                                <a href="clustering.html#_configuration">Configuration</a>
                             </li>
                             <li>
-                                <a href="platforms.html#_java">Java</a>
+                                <a href="clustering.html#_setup">Setup</a>
                             </li>
                             <li>
-                                <a href="platforms.html#_go">Go</a>
+                                <a href="clustering.html#_node_discovery">Node discovery</a>
                             </li>
                             <li>
-                                <a href="platforms.html#_php">PHP</a>
+                                <a href="clustering.html#_monitoring">Monitoring</a>
+                            </li>
+                            <li>
+                                <a href="clustering.html#_faq">FAQ</a>
+                            </li>
+                            <li>
+                                <a href="clustering.html#_limitations">Limitations</a>
                             </li>
                         </ul>
                     </li>
+
+                    <li class="section">
+                        <h2><a href="security.html">Security</a></h2>
+                        <ul>
+                            <li>
+                                <a href="security.html#_api_tokens">API Tokens</a>
+                            </li>
+                            <li>
+                                <a href="security.html#_network_security">Network Security</a>
+                            </li>
+                            <li>
+                                <a href="security.html#_database_security">Database Security</a>
+                            </li>
+                            <li>
+                                <a href="security.html#_vulnerability_disclosure_policy">Vulnerability Disclosure Policy</a>
+                            </li>
+                        </ul>
+                    </li>
+
                 </ul>
             </div>
         </div>

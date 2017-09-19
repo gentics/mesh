@@ -3,7 +3,7 @@ package com.gentics.mesh.graphdb.orientdb.graph;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.FramedGraph;
@@ -89,7 +89,6 @@ public class AbstractInterceptingVertexFrame extends AbstractVertexFrame {
 
 	@Override
 	public FramedGraph getGraph() {
-		//return new DelegatingFramedGraph<>(Database.getThreadLocalGraph(), true, false);
 		return Tx.getActive().getGraph();
 	}
 

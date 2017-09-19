@@ -5,6 +5,8 @@ import java.util.Collection;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -55,6 +57,13 @@ public interface BootstrapInitializer {
 	 * @return
 	 */
 	UserRoot userRoot();
+
+	/**
+	 * Return the job root element.
+	 * 
+	 * @return
+	 */
+	JobRoot jobRoot();
 
 	/**
 	 * Return the global node root element. Note that projects have their own node root element.
@@ -148,12 +157,13 @@ public interface BootstrapInitializer {
 	 * <li>Load verticles and setup routes / endpoints
 	 * </ul>
 	 * 
+	 * @param mesh
 	 * @param hasOldLock
 	 * @param configuration
 	 * @param verticleLoader
 	 * @throws Exception
 	 */
-	void init(boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception;
+	void init(Mesh mesh, boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception;
 
 	/**
 	 * Initialize the languages by loading the JSON file and creating the language graph elements.
@@ -199,5 +209,10 @@ public interface BootstrapInitializer {
 	 * Clear all indices and reindex all elements. This is a blocking action and could potentially take a lot of time.
 	 */
 	void reindexAll();
+
+	/**
+	 * Register the eventbus event handlers.
+	 */
+	void registerEventHandlers();
 
 }

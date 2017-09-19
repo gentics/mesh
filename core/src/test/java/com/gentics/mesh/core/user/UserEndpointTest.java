@@ -11,16 +11,16 @@ import static com.gentics.mesh.core.rest.common.Permission.PUBLISH;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.READ_PUBLISHED;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.expectException;
+import static com.gentics.mesh.test.ClientHelper.validateDeletion;
+import static com.gentics.mesh.test.ClientHelper.validateSet;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.PROJECT_AND_NODE;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateDeletion;
-import static com.gentics.mesh.test.context.MeshTestHelper.validateSet;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
@@ -49,7 +49,6 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
@@ -78,6 +77,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.http.HttpHeaders;
 
@@ -417,7 +417,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
 		assertEquals("We did not find the expected page in the list response.", 3, restResponse.getMetainfo().getCurrentPage());
-		assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + currentPerPage + "}",
+		assertEquals(
+				"The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + currentPerPage + "}",
 				totalPages, restResponse.getMetainfo().getPageCount());
 		assertEquals(currentPerPage, restResponse.getMetainfo().getPerPage());
 		assertEquals("The total amount of items does not match the expected one", totalUsers, restResponse.getMetainfo().getTotalCount());
@@ -502,7 +503,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 
 		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), uuid);
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		dummySearchProvider().clear();
 
 		try (Tx tx = tx()) {
@@ -557,23 +558,25 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 	@Test
 	public void testUpdateUserAndSetNodeReference() throws Exception {
+		String nodeUuid = tx(() -> folder("news").getUuid());
+		String userUuid = userUuid();
+		User user = user();
+		UserUpdateRequest updateRequest = new UserUpdateRequest();
+		String username = tx(() -> user.getUsername());
 		try (Tx tx = tx()) {
-			String nodeUuid = folder("news").getUuid();
-			User user = user();
-			String username = user.getUsername();
-			UserUpdateRequest updateRequest = new UserUpdateRequest();
 			updateRequest.setEmailAddress("t.stark@stark-industries.com");
 			updateRequest.setFirstname("Tony Awesome");
 			updateRequest.setLastname("Epic Stark");
 			updateRequest.setUsername("dummy_user_changed");
+		}
 
-			NodeReference userNodeReference = new NodeReference();
-			userNodeReference.setProjectName(PROJECT_NAME);
-			userNodeReference.setUuid(nodeUuid);
-			updateRequest.setNodeReference(userNodeReference);
+		NodeReference userNodeReference = new NodeReference();
+		userNodeReference.setProjectName(PROJECT_NAME);
+		userNodeReference.setUuid(nodeUuid);
+		updateRequest.setNodeReference(userNodeReference);
 
-			UserResponse restUser = call(() -> client().updateUser(user.getUuid(), updateRequest));
-			user().reload();
+		UserResponse restUser = call(() -> client().updateUser(userUuid, updateRequest));
+		try (Tx tx = tx()) {
 			assertNotNull(user().getReferencedNode());
 			assertNotNull(restUser.getNodeReference());
 			assertEquals(PROJECT_NAME, ((NodeReference) restUser.getNodeReference()).getProjectName());
@@ -1170,7 +1173,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			UserResponse restUser = call(() -> client().createUser(newUser));
 			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), restUser.getUuid());
-			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0, 0);
 			dummySearchProvider().clear();
 
 			assertTrue(restUser.getEnabled());
@@ -1189,7 +1192,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			call(() -> client().findUserByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
 			assertThat(dummySearchProvider()).hasDelete(User.composeIndexName(), User.composeIndexType(), uuid);
-			assertThat(dummySearchProvider()).hasEvents(0, 1, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(0, 1, 0, 0, 0);
 		}
 
 	}
@@ -1299,7 +1302,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		latchFor(response);
 		assertSuccess(response);
 		try (Tx tx = tx()) {
-			meshRoot().getUserRoot().reload();
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getRawResponse().statusCode());
@@ -1322,7 +1324,6 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		latchFor(response);
 		assertSuccess(response);
 		try (Tx tx = tx()) {
-			meshRoot().getUserRoot().reload();
 			User user = meshRoot().getUserRoot().findByUsername(name);
 			assertNotNull("User should have been created.", user);
 			assertEquals(CREATED.code(), response.getRawResponse().statusCode());

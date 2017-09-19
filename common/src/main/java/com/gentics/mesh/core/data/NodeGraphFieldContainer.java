@@ -132,6 +132,15 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	Node getParentNode();
 
 	/**
+	 * Return the parent node the container for a specific release. Although a container always has the same container it may not be available in the specified
+	 * release.
+	 * 
+	 * @param uuid
+	 * @return Found node or null if no node could be found.
+	 */
+	Node getParentNode(String uuid);
+
+	/**
 	 * Update the property webroot path info. This will also check for uniqueness conflicts of the webroot path and will throw a
 	 * {@link Errors#conflict(String, String, String, String...)} if one found.
 	 * 

@@ -19,7 +19,7 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.elasticsearch.common.collect.Tuple;
 
-import com.gentics.ferma.TxHandler1;
+import com.syncleus.ferma.tx.TxAction1;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -111,7 +111,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			// Create the batch first since we can't delete the container and access it later in batch creation
 			db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				node.deleteLanguageContainer(ac, ac.getRelease(), language, batch);
+				node.deleteLanguageContainer(ac, ac.getRelease(), language, batch, true);
 				return batch;
 			}).processSync();
 			return null;
@@ -330,7 +330,6 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				node.publish(ac, batch);
 				return batch;
 			});
-			node.reload();
 			return sqb.processAsync().andThen(Single.just(node.transformToPublishStatus(ac)));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
@@ -393,7 +392,6 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 				node.publish(ac, batch, languageTag);
 				return batch;
 			});
-			node.reload();
 			return sqb.processAsync().andThen(Single.just(node.transformToPublishStatus(ac, languageTag)));
 		}).subscribe(model -> ac.send(model, OK), ac::fail);
 	}
@@ -432,7 +430,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 	 * @param handler
 	 *            Handler which provides the root vertex which will be used to locate the node
 	 */
-	protected void readElement(InternalActionContext ac, String uuid, TxHandler1<RootVertex<Node>> handler) {
+	protected void readElement(InternalActionContext ac, String uuid, TxAction1<RootVertex<Node>> handler) {
 		validateParameter(uuid, "uuid");
 
 		utils.operateTx(ac, () -> {

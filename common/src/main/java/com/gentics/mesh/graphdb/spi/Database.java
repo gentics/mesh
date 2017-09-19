@@ -7,21 +7,20 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.gentics.ferma.Tx;
-import com.gentics.ferma.TxHandler;
-import com.gentics.ferma.TxHandler0;
-import com.gentics.ferma.TxHandler1;
-import com.gentics.ferma.TxHandler2;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.etc.config.GraphStorageOptions;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
+import com.syncleus.ferma.tx.Tx;
+import com.syncleus.ferma.tx.TxFactory;
+import com.syncleus.ferma.tx.TxAction;
+import com.syncleus.ferma.tx.TxAction1;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 
 import io.vertx.core.AsyncResult;
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
@@ -29,7 +28,7 @@ import rx.Single;
 /**
  * Main description of a graph database.
  */
-public interface Database {
+public interface Database extends TxFactory {
 
 	static final Logger log = LoggerFactory.getLogger(Database.class);
 
@@ -43,7 +42,12 @@ public interface Database {
 	 * 
 	 * @throws Exception
 	 */
-	void start() throws Exception;
+	void setupConnectionPool() throws Exception;
+
+	/**
+	 * Close the pool and thus stop the graph database.
+	 */
+	void closeConnectionPool();
 
 	/**
 	 * Shortcut for stop/start. This will also drop the graph database.
@@ -57,51 +61,7 @@ public interface Database {
 	 */
 	void clear();
 
-	/**
-	 * Return a new autocloseable transaction handler. This object should be used within a try-with-resource block.
-	 * 
-	 * <pre>
-	 * {
-	 * 	&#64;code
-	 * 	try(Tx tx = db.tx()) {
-	 * 	  // interact with graph db here
-	 *  }
-	 * }
-	 * </pre>
-	 * 
-	 * @return
-	 */
-	Tx tx();
-
-	/**
-	 * Execute the txHandler within the scope of the no transaction and call the result handler once the transaction handler code has finished.
-	 * 
-	 * @param txHandler
-	 *            Handler that will be executed within the scope of the transaction.
-	 * @return Object which was returned by the handler
-	 */
-	<T> T tx(TxHandler<T> txHandler);
-
-	default void tx(TxHandler0 txHandler) {
-		tx((tx) -> {
-			txHandler.handle();
-		});
-	}
-
-	default <T> T tx(TxHandler1<T> txHandler) {
-		return tx((tx) -> {
-			return txHandler.handle();
-		});
-	}
-
-	default void tx(TxHandler2 txHandler) {
-		tx((tx) -> {
-			txHandler.handle(tx);
-			return null;
-		});
-	}
-
-	default <T> Single<T> operateTx(TxHandler1<Single<T>> trxHandler) {
+	default <T> Single<T> operateTx(TxAction1<Single<T>> trxHandler) {
 		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
 		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
 		try {
@@ -146,7 +106,7 @@ public interface Database {
 	 * @param trxHandler
 	 * @return
 	 */
-	default <T> Single<T> operateTx(TxHandler<Single<T>> trxHandler) {
+	default <T> Single<T> operateTx(TxAction<Single<T>> trxHandler) {
 		// Create an exception which we can use to enhance error information in case of timeout or other transaction errors
 		final AtomicReference<Exception> reference = new AtomicReference<Exception>(null);
 		try {
@@ -189,14 +149,14 @@ public interface Database {
 	 * Initialise the database and store the settings.
 	 * 
 	 * @param options
-	 *            Graph database options
-	 * @param vertx
-	 *            Vertx instance used to execute blocking code
+	 *            Mesh options
+	 * @param meshVersion
+	 *            Version of mesh
 	 * @param basePaths
 	 *            Base paths which will be scanned for graph element classes
 	 * @throws Exception
 	 */
-	void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception;
+	void init(MeshOptions options, String meshVersion, String... basePaths) throws Exception;
 
 	/**
 	 * Reload the given mesh element.
@@ -432,5 +392,28 @@ public interface Database {
 	 * @return List of found inbound vertex ids for the found edges
 	 */
 	List<Object> edgeLookup(String edgeLabel, String indexPostfix, Object key);
+
+	/**
+	 * Join the cluster and block until the graph database has been received.
+	 * 
+	 * @throws InterruptedException
+	 */
+	void joinCluster() throws InterruptedException;
+
+	/**
+	 * Start the graph database server which will provide cluster support.
+	 * 
+	 * @throws Exception
+	 */
+	void startServer() throws Exception;
+
+	Object getHazelcast();
+
+	/**
+	 * Return the database cluster status.
+	 * 
+	 * @return
+	 */
+	ClusterStatusResponse getClusterStatus();
 
 }

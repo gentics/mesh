@@ -9,7 +9,6 @@ import java.util.Stack;
 
 import org.apache.commons.lang.NotImplementedException;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
@@ -20,6 +19,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 
 /**
@@ -50,7 +50,7 @@ public class LanguageRootImpl extends AbstractRootVertex<Language> implements La
 
 	@Override
 	public Language create(String languageName, String languageTag, String uuid) {
-		LanguageImpl language = getGraph().addFramedVertex(LanguageImpl.class);
+		Language language = getGraph().addFramedVertex(LanguageImpl.class);
 		if (uuid != null) {
 			language.setUuid(uuid);
 		}

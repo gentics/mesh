@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.schema.change;
 
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_ADD_RAW;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertArrayEquals;
@@ -12,7 +13,7 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
@@ -158,6 +159,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			SchemaChangeModel model = new SchemaChangeModel();
 			model.setMigrationScript("custom");
 			model.setProperty(SchemaChangeModel.REQUIRED_KEY, true);
+			model.setProperty(SchemaChangeModel.INDEX_ADD_RAW, true);
 			model.setProperty(SchemaChangeModel.CONTAINER_FLAG_KEY, true);
 			model.setProperty(SchemaChangeModel.DESCRIPTION_KEY, "description");
 			model.setProperty(SchemaChangeModel.SEGMENT_FIELD_KEY, "segmentField");
@@ -172,6 +174,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			assertEquals("segmentField", change.getSegmentField());
 			assertEquals("displayField", change.getDisplayField());
 			assertEquals("newName", change.getName());
+			assertTrue("Indexer option has not been set correctly", change.getRestProperty(INDEX_ADD_RAW));
 			assertTrue("Container flag should have been set.", change.getContainerFlag());
 			assertEquals(UpdateSchemaChange.OPERATION, change.getOperation());
 			assertArrayEquals(new String[] { "A", "B", "C" }, change.getOrder().toArray());

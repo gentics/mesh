@@ -12,13 +12,11 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
-
-import io.vertx.core.Vertx;
+import com.syncleus.ferma.tx.Tx;
 
 public class OrientDBTxTest extends AbstractOrientDBTest {
 
@@ -27,7 +25,7 @@ public class OrientDBTxTest extends AbstractOrientDBTest {
 
 	@Before
 	public void setup() throws Exception {
-		db.init(null, Vertx.vertx());
+		db.init(null, null);
 	}
 
 	//	@Test

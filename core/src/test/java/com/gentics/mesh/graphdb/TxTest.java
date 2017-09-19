@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -31,19 +31,12 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import com.gentics.mesh.test.performance.TestUtils;
+import com.gentics.mesh.test.util.TestUtils;
 
 import rx.Single;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TxTest extends AbstractMeshTest {
-
-	@Test
-	public void testReload() {
-		try (Tx tx = tx()) {
-			user().reload();
-		}
-	}
 
 	@Test
 	public void testTransaction() throws InterruptedException {

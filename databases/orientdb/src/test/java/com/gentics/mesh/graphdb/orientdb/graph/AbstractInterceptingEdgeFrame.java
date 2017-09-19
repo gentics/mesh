@@ -1,6 +1,6 @@
 package com.gentics.mesh.graphdb.orientdb.graph;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.AbstractEdgeFrame;
 import com.syncleus.ferma.FramedGraph;
@@ -40,7 +40,6 @@ public class AbstractInterceptingEdgeFrame extends AbstractEdgeFrame {
 
 	@Override
 	public FramedGraph getGraph() {
-		// return new DelegatingFramedGraph<>(Database.getThreadLocalGraph(), true, false);
 		return Tx.getActive().getGraph();
 	}
 

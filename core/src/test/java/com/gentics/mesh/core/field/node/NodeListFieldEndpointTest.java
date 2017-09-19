@@ -1,7 +1,8 @@
 package com.gentics.mesh.core.field.node;
 
-import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.ClientHelper.expectException;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -17,7 +18,7 @@ import java.util.stream.Collectors;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.NodeGraphFieldList;
@@ -32,7 +33,6 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NodeFieldListItemImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.MeshTestSetting;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
@@ -103,29 +103,30 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateNodeFieldWithField() {
-		try (Tx tx = tx()) {
-			Node node = folder("2015");
-			Node targetNode = folder("news");
-			Node targetNode2 = folder("deals");
+		Node node = folder("2015");
+		Node targetNode = folder("news");
+		Node targetNode2 = folder("deals");
 
-			List<List<Node>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode),
-					Collections.emptyList(), Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
+		List<List<Node>> valueCombinations = Arrays.asList(Arrays.asList(targetNode), Arrays.asList(targetNode2, targetNode), Collections.emptyList(),
+				Arrays.asList(targetNode, targetNode2), Arrays.asList(targetNode2));
 
-			NodeGraphFieldContainer container = node.getGraphFieldContainer("en");
-			for (int i = 0; i < 20; i++) {
-				List<Node> oldValue = getListValues(container, NodeGraphFieldListImpl.class, FIELD_NAME);
-				List<Node> newValue = valueCombinations.get(i % valueCombinations.size());
-
-				NodeFieldListImpl list = new NodeFieldListImpl();
+		NodeGraphFieldContainer container = tx(() -> node.getGraphFieldContainer("en"));
+		for (int i = 0; i < 20; i++) {
+			List<Node> oldValue;
+			List<Node> newValue;
+			NodeFieldListImpl list = new NodeFieldListImpl();
+			try (Tx tx = tx()) {
+				oldValue = getListValues(container, NodeGraphFieldListImpl.class, FIELD_NAME);
+				newValue = valueCombinations.get(i % valueCombinations.size());
 				for (Node value : newValue) {
 					list.add(new NodeFieldListItemImpl(value.getUuid()));
 				}
-				NodeResponse response = updateNode(FIELD_NAME, list);
-				NodeFieldList field = response.getFields().getNodeFieldList(FIELD_NAME);
-				assertThat(field.getItems()).as("Updated field").usingElementComparatorOnFields("uuid").containsExactlyElementsOf(list.getItems());
-				node.reload();
-				container.reload();
+			}
+			NodeResponse response = updateNode(FIELD_NAME, list);
+			NodeFieldList field = response.getFields().getNodeFieldList(FIELD_NAME);
+			assertThat(field.getItems()).as("Updated field").usingElementComparatorOnFields("uuid").containsExactlyElementsOf(list.getItems());
 
+			try (Tx tx = tx()) {
 				NodeGraphFieldContainer newContainerVersion = container.getNextVersion();
 				assertEquals("Check version number", newContainerVersion.getVersion().toString(), response.getVersion());
 				assertEquals("Check old value", oldValue, getListValues(container, NodeGraphFieldListImpl.class, FIELD_NAME));
@@ -155,23 +156,22 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetNull() {
+		Node targetNode = folder("news");
+		Node targetNode2 = folder("deals");
+
+		NodeFieldListImpl list = new NodeFieldListImpl();
+		list.add(new NodeFieldListItemImpl(tx(() -> targetNode.getUuid())));
+		list.add(new NodeFieldListItemImpl(tx(() -> targetNode2.getUuid())));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
+		String oldVersion = firstResponse.getVersion();
+
+		NodeResponse secondResponse = updateNode(FIELD_NAME, null);
+		assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME)).as("Updated Field").isNull();
+		assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion());
+
+		// Assert that the old version was not modified
 		try (Tx tx = tx()) {
-			Node targetNode = folder("news");
-			Node targetNode2 = folder("deals");
-
-			NodeFieldListImpl list = new NodeFieldListImpl();
-			list.add(new NodeFieldListItemImpl(targetNode.getUuid()));
-			list.add(new NodeFieldListItemImpl(targetNode2.getUuid()));
-			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-			String oldVersion = firstResponse.getVersion();
-
-			NodeResponse secondResponse = updateNode(FIELD_NAME, null);
-			assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME)).as("Updated Field").isNull();
-			assertThat(oldVersion).as("Version should be updated").isNotEqualTo(secondResponse.getVersion());
-
-			// Assert that the old version was not modified
 			Node node = folder("2015");
-			node.reload();
 			NodeGraphFieldContainer latest = node.getLatestDraftFieldContainer(english());
 			assertThat(latest.getVersion().toString()).isEqualTo(secondResponse.getVersion());
 			assertThat(latest.getNodeList(FIELD_NAME)).isNull();
@@ -189,28 +189,24 @@ public class NodeListFieldEndpointTest extends AbstractListFieldEndpointTest {
 	@Test
 	@Override
 	public void testUpdateSetEmpty() {
-		try (Tx tx = tx()) {
-			Node targetNode = folder("news");
-			Node targetNode2 = folder("deals");
+		Node targetNode = folder("news");
+		Node targetNode2 = folder("deals");
 
-			NodeFieldListImpl list = new NodeFieldListImpl();
-			list.add(new NodeFieldListItemImpl(targetNode.getUuid()));
-			list.add(new NodeFieldListItemImpl(targetNode2.getUuid()));
-			NodeResponse firstResponse = updateNode(FIELD_NAME, list);
-			String oldVersion = firstResponse.getVersion();
+		NodeFieldListImpl list = new NodeFieldListImpl();
+		list.add(new NodeFieldListItemImpl(tx(() -> targetNode.getUuid())));
+		list.add(new NodeFieldListItemImpl(tx(() -> targetNode2.getUuid())));
+		NodeResponse firstResponse = updateNode(FIELD_NAME, list);
+		String oldVersion = firstResponse.getVersion();
 
-			NodeFieldListImpl emptyField = new NodeFieldListImpl();
-			NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
-			assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
-			assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
-			assertThat(secondResponse.getVersion()).as("New version number should be generated").isNotEqualTo(oldVersion);
+		NodeFieldListImpl emptyField = new NodeFieldListImpl();
+		NodeResponse secondResponse = updateNode(FIELD_NAME, emptyField);
+		assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME)).as("Updated field list").isNotNull();
+		assertThat(secondResponse.getFields().getNodeFieldList(FIELD_NAME).getItems()).as("Field value should be truncated").isEmpty();
+		assertThat(secondResponse.getVersion()).as("New version number should be generated").isNotEqualTo(oldVersion);
 
-			NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
-			assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(),
-					secondResponse.getVersion());
-			assertThat(secondResponse.getVersion()).as("No new version number should be generated")
-					.isEqualTo(secondResponse.getVersion());
-		}
+		NodeResponse thirdResponse = updateNode(FIELD_NAME, emptyField);
+		assertEquals("The field does not change and thus the version should not be bumped.", thirdResponse.getVersion(), secondResponse.getVersion());
+		assertThat(secondResponse.getVersion()).as("No new version number should be generated").isEqualTo(secondResponse.getVersion());
 	}
 
 	@Test

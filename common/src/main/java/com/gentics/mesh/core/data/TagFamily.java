@@ -1,8 +1,13 @@
 package com.gentics.mesh.core.data;
 
+import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_CREATED;
+import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_DELETED;
+import static com.gentics.mesh.Events.EVENT_TAG_FAMILY_UPDATED;
+
 import java.util.Objects;
 
 import com.gentics.mesh.context.InternalActionContext;
+import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
@@ -24,6 +29,8 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	 * Type Value: {@value #TYPE}
 	 */
 	static final String TYPE = "tagFamily";
+
+	static final TypeInfo TYPE_INFO = new TypeInfo(TYPE, EVENT_TAG_FAMILY_CREATED, EVENT_TAG_FAMILY_UPDATED, EVENT_TAG_FAMILY_DELETED);
 
 	/**
 	 * Construct the index name for tag family indices. Use the projectUuid in order to create a project specific index.
@@ -48,6 +55,11 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 		return TYPE.toLowerCase();
 	}
 
+	@Override
+	default TypeInfo getTypeInfo() {
+		return TYPE_INFO;
+	}
+
 	/**
 	 * Construct the documentId for tag family index documents.
 	 * 
@@ -57,11 +69,6 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 	static String composeDocumentId(String elementUuid) {
 		Objects.requireNonNull(elementUuid, "A elementUuid must be provided.");
 		return elementUuid;
-	}
-
-	@Override
-	default String getType() {
-		return TYPE;
 	}
 
 	/**

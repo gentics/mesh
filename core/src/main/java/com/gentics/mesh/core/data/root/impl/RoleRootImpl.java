@@ -92,7 +92,6 @@ public class RoleRootImpl extends AbstractRootVertex<Role> implements RoleRoot {
 			throw error(FORBIDDEN, "error_missing_perm", this.getUuid());
 		}
 
-		requestUser.reload();
 		Role role = create(requestModel.getName(), requestUser, uuid);
 		requestUser.addCRUDPermissionOnRole(this, CREATE_PERM, role);
 		batch.store(role, true);

@@ -1,6 +1,6 @@
 package com.gentics.mesh.graphdb.orientdb;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -10,7 +10,6 @@ import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Vertex;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 
@@ -27,7 +26,7 @@ public class NestedTransactionTest {
 
 	@Before
 	public void setup() throws Exception {
-		db.init(null, Vertx.vertx());
+		db.init(null, null);
 	}
 
 	/**

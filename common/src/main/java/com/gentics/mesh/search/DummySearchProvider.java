@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.json.JsonObject;
 import rx.Completable;
@@ -22,6 +23,12 @@ public class DummySearchProvider implements SearchProvider {
 	private List<String> getEvents = new ArrayList<>();
 	private List<String> dropIndexEvents = new ArrayList<>();
 	private List<String> createIndexEvents = new ArrayList<>();
+	private Map<String, JsonObject> updateMappingEvents = new HashMap<>();
+
+	@Override
+	public SearchProvider init(MeshOptions options) {
+		return this;
+	}
 
 	@Override
 	public void refreshIndex(String... indices) {
@@ -30,6 +37,12 @@ public class DummySearchProvider implements SearchProvider {
 	@Override
 	public Completable createIndex(String indexName) {
 		createIndexEvents.add(indexName);
+		return Completable.complete();
+	}
+
+	@Override
+	public Completable updateMapping(String indexName, String type, JsonObject mapping) {
+		updateMappingEvents.put(indexName + "-" + type, mapping);
 		return Completable.complete();
 	}
 
@@ -86,9 +99,7 @@ public class DummySearchProvider implements SearchProvider {
 
 	@Override
 	public void reset() {
-		updateEvents.clear();
-		deleteEvents.clear();
-		storeEvents.clear();
+		clear();
 	}
 
 	@Override
@@ -108,6 +119,7 @@ public class DummySearchProvider implements SearchProvider {
 		storeEvents.clear();
 		dropIndexEvents.clear();
 		createIndexEvents.clear();
+		updateMappingEvents.clear();
 	}
 
 	@Override
@@ -143,5 +155,9 @@ public class DummySearchProvider implements SearchProvider {
 
 	public List<String> getDropIndexEvents() {
 		return dropIndexEvents;
+	}
+
+	public Map<String, JsonObject> getUpdateMappingEvents() {
+		return updateMappingEvents;
 	}
 }

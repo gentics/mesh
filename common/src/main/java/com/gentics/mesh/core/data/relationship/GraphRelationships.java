@@ -32,6 +32,7 @@ public class GraphRelationships {
 		db.addEdgeType(HAS_LANGUAGE);
 		db.addEdgeType(HAS_PARENT_NODE);
 		db.addEdgeType(HAS_ROOT_NODE);
+		db.addEdgeType(HAS_JOB_ROOT);
 
 		db.addEdgeType(HAS_SCHEMA_TYPE);
 
@@ -61,6 +62,11 @@ public class GraphRelationships {
 		// Releases
 		db.addEdgeType(HAS_SCHEMA_VERSION);
 		db.addEdgeType(HAS_MICROSCHEMA_VERSION);
+
+		// Jobs
+		db.addEdgeType(HAS_JOB);
+		db.addEdgeType(HAS_FROM_VERSION);
+		db.addEdgeType(HAS_TO_VERSION);
 
 		// Changelog
 		db.addEdgeType(HAS_CHANGELOG_ROOT);
@@ -101,6 +107,11 @@ public class GraphRelationships {
 
 	public static final String HAS_PARENT_NODE = "HAS_PARENT_NODE";
 
+	// Jobs
+	public static final String HAS_JOB = "HAS_JOB";
+	public static final String HAS_TO_VERSION = "HAS_TO_VERSION";
+	public static final String HAS_FROM_VERSION = "HAS_FROM_VERSION";
+
 	/**
 	 * Edge type which is used to connect project and base node
 	 */
@@ -124,6 +135,7 @@ public class GraphRelationships {
 	public static final String HAS_LANGUAGE_ROOT = "HAS_LANGUAGE_ROOT";
 	public static final String HAS_PROJECT_ROOT = "HAS_PROJECT_ROOT";
 	public static final String HAS_RELEASE_ROOT = "HAS_RELEASE_ROOT";
+	public static final String HAS_JOB_ROOT = "HAS_JOB_ROOT";
 
 	public static final String HAS_FIELD = "HAS_FIELD";
 	public static final String HAS_ITEM = "HAS_ITEM";

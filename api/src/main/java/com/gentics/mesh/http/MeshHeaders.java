@@ -10,4 +10,8 @@ public final class MeshHeaders {
 	 */
 	public static final String ANONYMOUS_AUTHENTICATION = "Anonymous-Authentication";
 
+	/**
+	 * Header which will be set by the webroot endpoint. The value will indicate whether the response is either a node or a binary response.
+	 */
+	public static final String WEBROOT_RESPONSE_TYPE = "Webroot-Response-Type";
 }

@@ -2,17 +2,21 @@ package com.gentics.mesh.core.verticle.admin;
 
 import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
+import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.util.UUIDUtil;
 
 /**
  * The admin verticle provides core administration rest endpoints.
@@ -20,12 +24,18 @@ import com.gentics.mesh.rest.Endpoint;
 @Singleton
 public class AdminEndpoint extends AbstractEndpoint {
 
-	private AdminHandler handler;
+	private AdminHandler adminHandler;
+
+	private JobHandler jobHandler;
+
+	private ConsistencyCheckHandler consistencyHandler;
 
 	@Inject
-	public AdminEndpoint(RouterStorage routerStorage, AdminHandler adminHandler) {
+	public AdminEndpoint(RouterStorage routerStorage, AdminHandler adminHandler, JobHandler jobHandler, ConsistencyCheckHandler consistencyHandler) {
 		super("admin", routerStorage);
-		this.handler = adminHandler;
+		this.adminHandler = adminHandler;
+		this.jobHandler = jobHandler;
+		this.consistencyHandler = consistencyHandler;
 	}
 
 	public AdminEndpoint() {
@@ -40,28 +50,43 @@ public class AdminEndpoint extends AbstractEndpoint {
 
 	@Override
 	public void registerEndPoints() {
-		addStatusHandler();
-		addMigrationStatusHandler();
+		addMeshStatusHandler();
 
 		secureAll();
 		addBackupHandler();
 		addRestoreHandler();
-		//addImportHandler();
-		//addExportHandler();
+		addClusterStatusHandler();
+		addConsistencyCheckHandler();
+		// addImportHandler();
+		// addExportHandler();
 		// addVerticleHandler();
 		// addServiceHandler();
+		addJobHandler();
 
 	}
 
-	private void addMigrationStatusHandler() {
+	private void addClusterStatusHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.path("/status/migrations");
+		endpoint.path("/cluster/status");
 		endpoint.method(GET);
-		endpoint.description("Return the current schema or node migration status.");
+		endpoint.description("Loads the cluster status information.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Migration status.");
+		endpoint.exampleResponse(OK, adminExamples.createClusterStatusResponse(), "Cluster status.");
 		endpoint.handler(rc -> {
-			handler.handleMigrationStatus(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleClusterStatus(new InternalRoutingActionContextImpl(rc));
+		});
+
+	}
+
+	private void addConsistencyCheckHandler() {
+		Endpoint endpoint = createEndpoint();
+		endpoint.path("/consistency/check");
+		endpoint.method(GET);
+		endpoint.description("Invokes a consistency check of the graph database and returns a list of found issues");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(OK, miscExamples.createConsistencyCheckResponse(), "Consistency check report");
+		endpoint.handler(rc -> {
+			consistencyHandler.invokeCheck(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
@@ -71,9 +96,9 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.method(POST);
 		endpoint.description("Invoke a orientdb graph database export.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Export process was invoked.");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Export process was invoked.");
 		endpoint.handler(rc -> {
-			handler.handleExport(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleExport(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
@@ -84,9 +109,9 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.description(
 				"Invoke a orientdb graph database import. The latest import file from the import directory will be used for this operation.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Database import command was invoked.");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database import command was invoked.");
 		endpoint.handler(rc -> {
-			handler.handleImport(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleImport(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
@@ -96,10 +121,10 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.description(
 				"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effecivly destroy all previously stored data.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Database restore command was invoked.");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Database restore command was invoked.");
 		endpoint.method(POST);
 		endpoint.handler(rc -> {
-			handler.handleRestore(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleRestore(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
@@ -110,25 +135,26 @@ public class AdminEndpoint extends AbstractEndpoint {
 		endpoint.description(
 				"Invoke a graph database backup and dump the data to the configured backup location. Note that this operation will block all current operation.");
 		endpoint.produces(APPLICATION_JSON);
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "Incremental backup was invoked.");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Incremental backup was invoked.");
 		endpoint.handler(rc -> {
-			handler.handleBackup(new InternalRoutingActionContextImpl(rc));
+			adminHandler.handleBackup(new InternalRoutingActionContextImpl(rc));
 		});
 	}
 
 	/**
 	 * Handler that reacts onto status requests.
 	 */
-	private void addStatusHandler() {
+	private void addMeshStatusHandler() {
 		Endpoint endpoint = createEndpoint();
-		endpoint.description("Return the mesh system status.");
+		endpoint.description("Return the Gentics Mesh server status.");
 		endpoint.path("/status");
 		endpoint.method(GET);
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "System status");
+		endpoint.produces(APPLICATION_JSON);
+		endpoint.exampleResponse(OK, adminExamples.createMeshStatusResponse(MeshStatus.READY), "Status of the Gentics Mesh server.");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			//TODO this is currently polled by apa. We need to update their monitoring as well if we change this
-			handler.handleStatus(ac);
+			// TODO this is currently polled by apa. We need to update their monitoring as well if we change this
+			adminHandler.handleMeshStatus(ac);
 		});
 
 	}
@@ -164,5 +190,65 @@ public class AdminEndpoint extends AbstractEndpoint {
 	// rc.response().end("Undeploy " + rc.request().params().get("clazz"));
 	// });
 	// }
+
+	private void addJobHandler() {
+
+		Endpoint invokeJobWorker = createEndpoint();
+		invokeJobWorker.path("/processJobs");
+		invokeJobWorker.method(POST);
+		invokeJobWorker.description("Invoke the processing of remaining jobs.");
+		invokeJobWorker.produces(APPLICATION_JSON);
+		invokeJobWorker.exampleResponse(OK, miscExamples.createMessageResponse(), "Response message.");
+		invokeJobWorker.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			jobHandler.handleInvokeJobWorker(ac);
+		});
+
+		Endpoint readJobList = createEndpoint();
+		readJobList.path("/jobs");
+		readJobList.method(GET);
+		readJobList.description("List all currently queued jobs.");
+		readJobList.produces(APPLICATION_JSON);
+		readJobList.exampleResponse(OK, jobExamples.createJobList(), "List of jobs.");
+		readJobList.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			jobHandler.handleReadList(ac);
+		});
+
+		Endpoint readJob = createEndpoint();
+		readJob.path("/jobs/:jobUuid");
+		readJob.method(GET);
+		readJob.description("Load a specific job.");
+		readJob.produces(APPLICATION_JSON);
+		readJob.addUriParameter("jobUuid", "Uuid of the job.", UUIDUtil.randomUUID());
+		readJob.exampleResponse(OK, jobExamples.createJobResponse(), "Job information.");
+		readJob.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String uuid = ac.getParameter("jobUuid");
+			jobHandler.handleRead(ac, uuid);
+		});
+
+		Endpoint deleteJob = createEndpoint();
+		deleteJob.path("/jobs/:jobUuid");
+		deleteJob.method(DELETE);
+		deleteJob.description("Deletes the job. Note that it is only possible to delete failed jobs");
+		deleteJob.addUriParameter("jobUuid", "Uuid of the job.", UUIDUtil.randomUUID());
+		deleteJob.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String uuid = ac.getParameter("jobUuid");
+			jobHandler.handleDelete(ac, uuid);
+		});
+
+		Endpoint resetJob = createEndpoint();
+		resetJob.path("/jobs/:jobUuid/error");
+		resetJob.method(DELETE);
+		resetJob.description("Deletes error state from the job. This will make it possible to execute the job once again.");
+		resetJob.addUriParameter("jobUuid", "Uuid of the job.", UUIDUtil.randomUUID());
+		resetJob.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String uuid = ac.getParameter("jobUuid");
+			jobHandler.handleResetJob(ac, uuid);
+		});
+	}
 
 }

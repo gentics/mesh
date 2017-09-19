@@ -5,7 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import org.assertj.core.api.AbstractAssert;
 
@@ -73,7 +76,9 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 * @return fluent API
 	 */
 	public NodeAssert hasChildren(Release release, Node... nodes) {
-		assertThat(new ArrayList<Node>(actual.getChildren(release.getUuid()))).as(descriptionText() + " children")
+		Stream<Node> stream = StreamSupport.stream(actual.getChildren(release.getUuid()).spliterator(), false);
+		List<Node> list = stream.collect(Collectors.toList());
+		assertThat(list).as(descriptionText() + " children")
 				.usingElementComparatorOnFields("uuid").contains(nodes);
 		return this;
 	}
@@ -86,7 +91,9 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 * @return fluent API
 	 */
 	public NodeAssert hasNoChildren(Release release) {
-		assertThat(new ArrayList<Node>(actual.getChildren(release.getUuid()))).as(descriptionText() + " children").isEmpty();
+		Stream<Node> stream = StreamSupport.stream(actual.getChildren(release.getUuid()).spliterator(), false);
+		List<Node> list = stream.collect(Collectors.toList());
+		assertThat(list).as(descriptionText() + " children").hasSize(0);
 		return this;
 	}
 
@@ -100,7 +107,9 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 * @return fluent API
 	 */
 	public NodeAssert hasOnlyChildren(Release release, Node... nodes) {
-		assertThat(new ArrayList<Node>(actual.getChildren(release.getUuid()))).as(descriptionText() + " children")
+		Stream<Node> stream = StreamSupport.stream(actual.getChildren(release.getUuid()).spliterator(), false);
+		List<Node> list = stream.collect(Collectors.toList());
+		assertThat(list).as(descriptionText() + " children")
 				.usingElementComparatorOnFields("uuid").containsOnly(nodes);
 		return this;
 	}
@@ -114,8 +123,8 @@ public class NodeAssert extends AbstractAssert<NodeAssert, Node> {
 	 *            list of nodes
 	 * @return fluent API
 	 */
-	public NodeAssert hasNotchildren(Release release, Node... nodes) {
-		assertThat(new ArrayList<Node>(actual.getChildren(release.getUuid()))).as(descriptionText() + " children")
+	public NodeAssert hasNotChildren(Release release, Node... nodes) {
+		assertThat(actual.getChildren(release.getUuid())).as(descriptionText() + " children")
 				.usingElementComparatorOnFields("uuid").doesNotContain(nodes);
 		return this;
 	}

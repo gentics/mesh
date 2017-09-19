@@ -1,14 +1,13 @@
 package com.gentics.mesh.core;
 
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.MeshNameProvider;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -27,7 +26,7 @@ public class RestInfoEndpointTest extends AbstractMeshTest {
 		assertEquals("orientdb", info.getDatabaseVendor());
 		assertEquals("dummy", info.getSearchVendor());
 		assertEquals(VersionCommand.getVersion(), info.getVertxVersion());
-		assertEquals(MeshNameProvider.getInstance().getName(), info.getMeshNodeId());
+		assertEquals(Mesh.mesh().getOptions().getNodeName(), info.getMeshNodeId());
 		assertEquals("The database version did not match.", OConstants.getVersion(), info.getDatabaseVersion());
 		assertEquals("1.0", info.getSearchVersion());
 	}

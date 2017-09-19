@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.verticle.node;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -74,21 +74,25 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	private Lazy<BootstrapInitializer> boot;
 
+	private BinaryFieldResponseHandler binaryFieldResponseHandler;
+
 	private SearchQueue searchQueue;
 
 	@Inject
-	public BinaryFieldHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue) {
+	public BinaryFieldHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
+			BinaryFieldResponseHandler binaryFieldResponseHandler) {
 		this.imageManipulator = imageManipulator;
 		this.db = db;
 		this.boot = boot;
 		this.searchQueue = searchQueue;
+		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
 	}
 
 	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
 		InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 		db.operateTx(() -> {
 			Project project = ac.getProject();
-			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PERM);
+			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, READ_PUBLISHED_PERM);
 			// Language language = boot.get().languageRoot().findByLanguageTag(languageTag);
 			// if (language == null) {
 			// throw error(NOT_FOUND, "error_language_not_found", languageTag);
@@ -105,14 +109,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(NOT_FOUND, "error_binaryfield_not_found_with_name", fieldName);
 			}
 			return Single.just(binaryField);
-		})
-				.subscribe(binaryField -> {
-					db.tx(() -> {
-						BinaryFieldResponseHandler handler = new BinaryFieldResponseHandler(rc, imageManipulator);
-						handler.handle(binaryField);
-						return null;
-					});
-				}, ac::fail);
+		}).subscribe(binaryField -> {
+			db.tx(() -> {
+				binaryFieldResponseHandler.handle(rc, binaryField);
+			});
+		}, ac::fail);
 	}
 
 	/**

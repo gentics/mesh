@@ -1,16 +1,16 @@
 package com.gentics.mesh.core.node;
 
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.expectException;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectException;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
+import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
@@ -18,7 +18,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -41,7 +41,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest requestA = new NodeCreateRequest();
 			requestA.setLanguage("en");
 			requestA.setParentNodeUuid(folderA.getUuid());
-			requestA.setSchema(new SchemaReference().setName("content"));
+			requestA.setSchema(new SchemaReferenceImpl().setName("content"));
 			requestA.getFields().put("teaser", FieldUtil.createStringField("nodeA"));
 			requestA.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			NodeResponse nodeA = call(() -> client().createNode(PROJECT_NAME, requestA));
@@ -54,7 +54,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest requestB = new NodeCreateRequest();
 			requestB.setLanguage("en");
 			requestB.setParentNodeUuid(folderB.getUuid());
-			requestB.setSchema(new SchemaReference().setName("content"));
+			requestB.setSchema(new SchemaReferenceImpl().setName("content"));
 			requestB.getFields().put("teaser", FieldUtil.createStringField("nodeB"));
 			requestB.getFields().put("slug", FieldUtil.createStringField(conflictingName));
 			NodeResponse nodeB = call(() -> client().createNode(PROJECT_NAME, requestB));
@@ -87,7 +87,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
 			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
 			create.getFields().put("teaser", FieldUtil.createStringField("some name"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
@@ -100,7 +100,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
 			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some other title"));
 			create.getFields().put("teaser", FieldUtil.createStringField("some other name"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
@@ -124,7 +124,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			final NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
 			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
 			create.getFields().put("teaser", FieldUtil.createStringField("some name"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
@@ -135,7 +135,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create2 = new NodeCreateRequest();
 			create2.setParentNodeUuid(parent.getUuid());
 			create2.setLanguage("en");
-			create2.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create2.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create2.getFields().put("title", FieldUtil.createStringField("some title"));
 			create2.getFields().put("teaser", FieldUtil.createStringField("some name"));
 			create2.getFields().put("slug", FieldUtil.createStringField(nonConflictingName));
@@ -164,7 +164,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
 			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
 			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
@@ -200,7 +200,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(parent.getUuid());
 			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
 			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
@@ -212,7 +212,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create2 = new NodeCreateRequest();
 			create2.setParentNodeUuid(otherParent.getUuid());
 			create2.setLanguage("en");
-			create2.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create2.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create2.getFields().put("title", FieldUtil.createStringField("some other title"));
 			create2.getFields().put("teaser", FieldUtil.createStringField("some other teaser"));
 			create2.getFields().put("slug", FieldUtil.createStringField(conflictingName));
@@ -237,7 +237,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 		// 1. Create new release and migrate nodes
 		db().tx(() -> {
 			Release newRelease = project().getReleaseRoot().create(newReleaseName, user());
-			meshDagger().nodeMigrationHandler().migrateNodes(newRelease);
+			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
 			return null;
 		});
 
@@ -246,7 +246,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
 			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
@@ -261,7 +261,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
 			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
@@ -286,7 +286,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
 			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
@@ -309,7 +309,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
 			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
@@ -331,7 +331,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
 			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			create.getFields().put("slug", FieldUtil.createStringField(initialName));
@@ -355,7 +355,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
 			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			create.getFields().put("slug", FieldUtil.createStringField(initialName));
@@ -390,7 +390,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
 			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));
@@ -417,7 +417,7 @@ public class NodeWebRootConflictEndpointTest extends AbstractMeshTest {
 			NodeCreateRequest create = new NodeCreateRequest();
 			create.setParentNodeUuid(folder("2015").getUuid());
 			create.setLanguage("en");
-			create.setSchema(new SchemaReference().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
+			create.setSchema(new SchemaReferenceImpl().setName(contentSchema.getName()).setUuid(contentSchema.getUuid()));
 			create.getFields().put("title", FieldUtil.createStringField("some title"));
 			create.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 			create.getFields().put("slug", FieldUtil.createStringField(conflictingName));

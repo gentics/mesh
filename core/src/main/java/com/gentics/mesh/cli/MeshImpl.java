@@ -1,30 +1,39 @@
 package com.gentics.mesh.cli;
 
+import static com.gentics.mesh.MeshEnv.MESH_CONF_FILENAME;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.Month;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.impl.MeshFactoryImpl;
+import com.gentics.mesh.util.VersionUtil;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
-import io.vertx.core.VertxOptions;
+import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.impl.launcher.commands.VersionCommand;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
@@ -47,6 +56,8 @@ public class MeshImpl implements Mesh {
 	private Vertx vertx;
 	private CountDownLatch latch = new CountDownLatch(1);
 
+	private MeshStatus status = MeshStatus.STARTING;
+
 	static {
 		// Use slf4j instead of jul
 		System.setProperty(LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME, SLF4JLogDelegateFactory.class.getName());
@@ -60,25 +71,25 @@ public class MeshImpl implements Mesh {
 
 	@Override
 	public Vertx getVertx() {
-		if (vertx == null) {
-			VertxOptions options = new VertxOptions();
-			//options.setClustered(true);
-			options.setBlockedThreadCheckInterval(1000 * 60 * 60);
-			// TODO configure worker pool size
-			options.setWorkerPoolSize(12);
-			vertx = Vertx.vertx(options);
-		}
+		// Objects.requireNonNull(vertx, "Vert.x has not yet been initalized");
 		return vertx;
 	}
 
-	/**
-	 * Main entry point for mesh. This method will initialise the dagger context and deploy mandatory verticles and extensions.
-	 * 
-	 * @throws Exception
-	 */
+	public void setVertx(Vertx vertx) {
+		this.vertx = vertx;
+	}
+
 	@Override
 	public void run() throws Exception {
+		run(true);
+	}
+
+	@Override
+	public void run(boolean block) throws Exception {
 		checkSystemRequirements();
+
+		setupKeystore(options);
+
 		registerShutdownHook();
 
 		boolean hasOldLock = hasLockFile();
@@ -91,12 +102,26 @@ public class MeshImpl implements Mesh {
 		} else {
 			printProductInformation();
 		}
+		// Create dagger context and invoke bootstrap init in order to startup mesh
+		MeshInternal.create().boot().init(this, hasOldLock, options, verticleLoader);
+
 		if (options.isUpdateCheckEnabled()) {
 			invokeUpdateCheck();
 		}
-		// Create dagger context and invoke bootstrap init in order to startup mesh
-		MeshInternal.create().boot().init(hasOldLock, options, verticleLoader);
+		setStatus(MeshStatus.READY);
 		dontExit();
+	}
+
+	private void setupKeystore(MeshOptions options) throws Exception {
+		String keyStorePath = options.getAuthenticationOptions().getKeystorePath();
+		File keystoreFile = new File(keyStorePath);
+		// Copy the demo keystore file to the destination
+		if (!keystoreFile.exists()) {
+			keystoreFile.getParentFile().mkdirs();
+			log.info("Could not find keystore {" + keyStorePath + "}. Creating one for you..");
+			KeyStoreHelper.gen(keyStorePath, options.getAuthenticationOptions().getKeystorePassword());
+			log.info("Keystore {" + keyStorePath + "} created. The keystore password is listed in your {" + MESH_CONF_FILENAME + "} file.");
+		}
 	}
 
 	/**
@@ -105,12 +130,8 @@ public class MeshImpl implements Mesh {
 	 * @return
 	 */
 	private boolean isFirstApril() {
-		try {
-			SimpleDateFormat sdf = new SimpleDateFormat("MM-dd");
-			return new DateTime(sdf.parse("01-04")).equals(new DateTime());
-		} catch (Exception e) {
-			return false;
-		}
+		LocalDate now = LocalDate.now();
+		return now.getDayOfMonth() == 1 && now.getMonth() == Month.APRIL;
 	}
 
 	/**
@@ -129,15 +150,26 @@ public class MeshImpl implements Mesh {
 
 	/**
 	 * Send a request to the update checker.
+	 * 
+	 * @return Latest version of Gentics Mesh which is currently released.
 	 */
-	public void invokeUpdateCheck() {
+	public String invokeUpdateCheck() {
+		String currentVersion = Mesh.getPlainVersion();
 		log.info("Checking for updates..");
-
-		HttpClientRequest request = Mesh.vertx().createHttpClient().get("updates.getmesh.io", "/api/updatecheck?v=" + Mesh.getPlainVersion(), rh -> {
-			rh.bodyHandler(bh -> {
-				//JsonObject info = bh.toJsonObject();
-			});
-		});
+		CompletableFuture<JsonObject> fut = new CompletableFuture<>();
+		HttpClientRequest request = Mesh.vertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false)).get(443, "getmesh.io",
+				"/api/updatecheck?v=" + Mesh.getPlainVersion(), rh -> {
+					int code = rh.statusCode();
+					if (code < 200 || code >= 299) {
+						log.error("Update check failed with status code {" + code + "}");
+						fut.complete(null);
+					} else {
+						rh.bodyHandler(bh -> {
+							JsonObject info = bh.toJsonObject();
+							fut.complete(info);
+						});
+					}
+				});
 
 		MultiMap headers = request.headers();
 		headers.set("content-type", "application/json");
@@ -146,6 +178,28 @@ public class MeshImpl implements Mesh {
 			headers.set("X-Hostname", hostname);
 		}
 		request.end();
+		try {
+			JsonObject info = fut.get(1, TimeUnit.SECONDS);
+			String latestVersion = info.getString("latest");
+
+			if (currentVersion.contains("-SNAPSHOT")) {
+				log.warn("You are using a SNAPSHOT version {" + currentVersion
+						+ "}. This is potentially dangerous because this version has never been officially released.");
+				log.info("The latest version of Gentics Mesh is {" + latestVersion + "}");
+			} else {
+				int result = VersionUtil.compareVersions(latestVersion, currentVersion);
+				if (result == 0) {
+					log.info("Great! You are using the latest version");
+				} else if (result > 0) {
+					log.warn("Your Gentics Mesh version is outdated. You are using {" + currentVersion + "} but version {" + latestVersion
+							+ "} is available.");
+				}
+			}
+			return latestVersion;
+		} catch (InterruptedException | ExecutionException | TimeoutException e) {
+			log.warn("Update check failed.", e);
+			return null;
+		}
 	}
 
 	/**
@@ -194,7 +248,10 @@ public class MeshImpl implements Mesh {
 		log.info("#-------------------------------------------------------------#");
 		// log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
 		log.info(infoLine("Vert.x Version: " + getVertxVersion()));
-		log.info(infoLine("Mesh Node Id: " + MeshNameProvider.getInstance().getName()));
+		if (getOptions().getClusterOptions() != null && getOptions().getClusterOptions().isEnabled()) {
+			log.info(infoLine("Cluster Name: " + getOptions().getClusterOptions().getClusterName()));
+		}
+		log.info(infoLine("Mesh Node Name: " + getOptions().getNodeName()));
 		log.info("###############################################################");
 	}
 
@@ -203,7 +260,11 @@ public class MeshImpl implements Mesh {
 			log.info("###############################################################");
 			log.info(infoLine("Booting Skynet Kernel " + Mesh.getBuildInfo()));
 			Thread.sleep(500);
-			log.info(infoLine("Skynet Node Id: " + MeshNameProvider.getInstance().getName()));
+			if (getOptions().getClusterOptions() != null && getOptions().getClusterOptions().isEnabled()) {
+				log.info(infoLine("Skynet Global Name: " + getOptions().getClusterOptions().getClusterName()));
+				Thread.sleep(500);
+			}
+			log.info(infoLine("Skynet Node Name: " + getOptions().getNodeName()));
 			Thread.sleep(500);
 			log.info(infoLine("Skynet uses Vert.x Version: " + getVertxVersion()));
 			log.info("///");
@@ -247,8 +308,9 @@ public class MeshImpl implements Mesh {
 	@Override
 	public void shutdown() throws Exception {
 		log.info("Mesh shutting down...");
+		setStatus(MeshStatus.SHUTTING_DOWN);
 		MeshComponent meshInternal = MeshInternal.get();
-		meshInternal.searchQueue().blockUntilEmpty(120);
+		// meshInternal.searchQueue().blockUntilEmpty(120);
 		meshInternal.database().stop();
 		meshInternal.searchProvider().stop();
 		getVertx().close();
@@ -282,6 +344,17 @@ public class MeshImpl implements Mesh {
 	 */
 	private void deleteLock() {
 		new File(LOCK_FILENAME).delete();
+	}
+
+	@Override
+	public MeshStatus getStatus() {
+		return status;
+	}
+
+	@Override
+	public Mesh setStatus(MeshStatus status) {
+		this.status = status;
+		return this;
 	}
 
 }

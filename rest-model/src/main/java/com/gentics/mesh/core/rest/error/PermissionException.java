@@ -10,7 +10,7 @@ public class PermissionException extends AbstractRestException {
 	private String elementId;
 	private String elementType;
 
-	public PermissionException(String elementId, String elementType) {
+	public PermissionException(String elementType, String elementId) {
 		super(null, i18nKey, elementId, elementType);
 		this.elementId = elementId;
 		this.elementType = elementType;

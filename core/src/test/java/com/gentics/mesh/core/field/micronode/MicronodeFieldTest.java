@@ -19,7 +19,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -48,7 +48,6 @@ import com.gentics.mesh.core.rest.node.FieldMapImpl;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -56,6 +55,7 @@ import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
@@ -270,7 +270,6 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			restFields.put("stringfield", new StringFieldImpl().setString("test"));
 			field.getMicronode().updateFieldsFromRest(ac, restFields);
 
-			field.getMicronode().reload();
 			assertNotNull("The field should have been created.", field.getMicronode().getString("stringfield"));
 			assertEquals("The field did not contain the expected value", "test", field.getMicronode().getString("stringfield").getString());
 		}
@@ -431,7 +430,7 @@ public class MicronodeFieldTest extends AbstractFieldTest<MicronodeFieldSchema> 
 			InternalActionContext ac = mockActionContext();
 			invokeUpdateFromRestValidSimpleValueTestcase(MICRONODE_FIELD, FILL, (container) -> {
 				MicronodeResponse field = new MicronodeResponse();
-				field.setMicroschema(new MicroschemaReference().setName("vcard"));
+				field.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
 				field.getFields().put("firstName", FieldUtil.createStringField("vcard_firstname_value"));
 				field.getFields().put("lastName", FieldUtil.createStringField("vcard_lastname_value"));
 				updateContainer(ac, container, MICRONODE_FIELD, field);

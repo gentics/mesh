@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
 import java.util.List;
+import java.util.function.Supplier;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
@@ -143,7 +144,7 @@ public enum GraphFieldTypes {
 	 * @return
 	 */
 	public Field getRestFieldFromGraph(GraphFieldContainer container, InternalActionContext ac, String fieldKey,
-			FieldSchema fieldSchema, List<String> languageTags, int level, Node parentNode) {
+			FieldSchema fieldSchema, List<String> languageTags, int level, Supplier<Node> parentNode) {
 		return getTransformator().transform(container, ac, fieldKey, fieldSchema, languageTags, level, parentNode);
 	}
 

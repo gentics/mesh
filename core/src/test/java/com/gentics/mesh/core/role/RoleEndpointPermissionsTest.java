@@ -1,11 +1,11 @@
 package com.gentics.mesh.core.role;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
+import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -13,17 +13,20 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
+import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
+import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.ClientHelper.assertMessage;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 
@@ -43,7 +46,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(true);
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid(), request));
-			expectResponseMessage(message, "role_updated_permission", role().getName());
+			assertMessage(message, "role_updated_permission", role().getName());
 			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
 		}
 	}
@@ -61,7 +64,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			RolePermissionRequest request = new RolePermissionRequest();
 			request.setRecursive(true);
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "projects/" + PROJECT_NAME, request));
-			expectResponseMessage(message, "role_updated_permission", role().getName());
+			assertMessage(message, "role_updated_permission", role().getName());
 			assertFalse(role().hasPermission(GraphPermission.READ_PERM, tagFamily("colors")));
 		}
 	}
@@ -83,7 +86,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			request.getPermissions().add(CREATE);
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(),
 					"projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid(), request));
-			expectResponseMessage(message, "role_updated_permission", role().getName());
+			assertMessage(message, "role_updated_permission", role().getName());
 
 			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
 		}
@@ -113,7 +116,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			request.getPermissions().add(UPDATE);
 			request.getPermissions().add(CREATE);
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), "microschemas/" + vcard.getUuid(), request));
-			expectResponseMessage(message, "role_updated_permission", role().getName());
+			assertMessage(message, "role_updated_permission", role().getName());
 
 			assertFalse(role().hasPermission(GraphPermission.DELETE_PERM, vcard));
 			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, vcard));
@@ -135,9 +138,34 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			assertTrue("The role should have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 
 			GenericMessageResponse message = call(() -> client().updateRolePermissions(role().getUuid(), pathToElement, request));
-			expectResponseMessage(message, "role_updated_permission", role().getName());
+			assertMessage(message, "role_updated_permission", role().getName());
 			assertFalse("The role should no longer have delete permission on the group.", role().hasPermission(GraphPermission.DELETE_PERM, group()));
 		}
+
+	}
+
+	@Test
+	public void testGrantPermToProjectByName() {
+		try (Tx tx = tx()) {
+			// Add permission on own role
+			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+		}
+
+		String pathToElement = PROJECT_NAME + "/tagFamilies/" + tx(() -> tagFamily("colors").getUuid());
+		RolePermissionResponse response = call(() -> client().readRolePermissions(roleUuid(), pathToElement));
+		assertThat(response).hasPerm(Permission.values());
+
+		response = call(() -> client().readRolePermissions(roleUuid(), "/" + PROJECT_NAME));
+		assertThat(response).hasPerm(Permission.values());
+
+		tx(() -> role().revokePermissions(project(), DELETE_PERM));
+
+		response = call(() -> client().readRolePermissions(roleUuid(), "/" + PROJECT_NAME));
+		assertThat(response).hasNoPerm(DELETE);
+
+		ProjectResponse projectResponse = call(() -> client().findProjectByUuid(projectUuid()));
+		assertFalse(projectResponse.getPermissions().hasPerm(DELETE));
 
 	}
 
@@ -174,7 +202,7 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			request.getPermissions().add(CREATE);
 			GenericMessageResponse message = call(
 					() -> client().updateRolePermissions(role().getUuid(), "projects/" + project().getUuid() + "/nodes/" + node.getUuid(), request));
-			expectResponseMessage(message, "role_updated_permission", role().getName());
+			assertMessage(message, "role_updated_permission", role().getName());
 
 			assertTrue(role().hasPermission(GraphPermission.UPDATE_PERM, node));
 		}

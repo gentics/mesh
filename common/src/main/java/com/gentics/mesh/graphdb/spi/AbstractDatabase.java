@@ -5,10 +5,10 @@ import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
 
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
+import com.syncleus.ferma.tx.Tx;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -19,8 +19,8 @@ public abstract class AbstractDatabase implements Database {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractDatabase.class);
 
-	protected GraphStorageOptions options;
-	protected Vertx vertx;
+	protected MeshOptions options;
+	protected String meshVersion;
 	protected String[] basePaths;
 
 	@Override
@@ -29,12 +29,8 @@ public abstract class AbstractDatabase implements Database {
 			log.debug("Clearing graph");
 		}
 		try (Tx tx = tx()) {
-			tx.getGraph()
-					.e()
-					.removeAll();
-			tx.getGraph()
-					.v()
-					.removeAll();
+			tx.getGraph().e().removeAll();
+			tx.getGraph().v().removeAll();
 			tx.success();
 		}
 		if (log.isDebugEnabled()) {
@@ -43,11 +39,19 @@ public abstract class AbstractDatabase implements Database {
 	}
 
 	@Override
-	public void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception {
+	public void init(MeshOptions options, String meshVersion, String... basePaths) throws Exception {
 		this.options = options;
-		this.vertx = vertx;
+		this.meshVersion = meshVersion;
 		this.basePaths = basePaths;
-		start();
+	}
+
+	/**
+	 * Return the graph database storage options.
+	 * 
+	 * @return
+	 */
+	public GraphStorageOptions storageOptions() {
+		return options.getStorageOptions();
 	}
 
 	@Override
@@ -57,8 +61,8 @@ public abstract class AbstractDatabase implements Database {
 		}
 		stop();
 		try {
-			if (options.getDirectory() != null) {
-				File storageDirectory = new File(options.getDirectory());
+			if (options.getStorageOptions().getDirectory() != null) {
+				File storageDirectory = new File(options.getStorageOptions().getDirectory());
 				if (storageDirectory.exists()) {
 					FileUtils.deleteDirectory(storageDirectory);
 				}
@@ -66,7 +70,7 @@ public abstract class AbstractDatabase implements Database {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		start();
+		setupConnectionPool();
 	}
 
 }

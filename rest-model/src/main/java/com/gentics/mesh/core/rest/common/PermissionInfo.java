@@ -49,48 +49,110 @@ public class PermissionInfo implements RestModel {
 		return read;
 	}
 
-	public void setRead(Boolean read) {
+	/**
+	 * Set the read permission flag.
+	 * 
+	 * @param read
+	 * @return Fluent API
+	 */
+	public PermissionInfo setRead(Boolean read) {
 		this.read = read;
+		return this;
 	}
 
+	/**
+	 * Return the read permission flag.
+	 * 
+	 * @return
+	 */
 	public Boolean getCreate() {
 		return create;
 	}
 
-	public void setCreate(Boolean create) {
+	/**
+	 * Set the create permission flag.
+	 * 
+	 * @param create
+	 * @return Fluent API
+	 */
+	public PermissionInfo setCreate(Boolean create) {
 		this.create = create;
+		return this;
 	}
 
+	/**
+	 * Return the delete permission flag.
+	 * 
+	 * @return
+	 */
 	public Boolean getDelete() {
 		return delete;
 	}
 
-	public void setDelete(Boolean delete) {
+	/**
+	 * Set the delete permission flag.
+	 * 
+	 * @param delete
+	 * @return Fluent API
+	 */
+	public PermissionInfo setDelete(Boolean delete) {
 		this.delete = delete;
+		return this;
 	}
 
+	/**
+	 * Return the publish permission flag.
+	 * 
+	 * @return
+	 */
 	public Boolean getPublish() {
 		return publish;
 	}
 
-	public void setPublish(Boolean publish) {
+	/**
+	 * Set the publish permission flag.
+	 * 
+	 * @param publish
+	 * @return Fluent API
+	 */
+	public PermissionInfo setPublish(Boolean publish) {
 		this.publish = publish;
+		return this;
 	}
 
+	/**
+	 * Return the read publish permission flag.
+	 * 
+	 * @return
+	 */
 	public Boolean getReadPublished() {
 		return readPublished;
 	}
 
-	public void setReadPublished(Boolean readPublished) {
+	/**
+	 * Set the read publish permission flag.
+	 * 
+	 * @param readPublished
+	 * @return Fluent API
+	 */
+	public PermissionInfo setReadPublished(Boolean readPublished) {
 		this.readPublished = readPublished;
+		return this;
 	}
 
 	public Boolean getUpdate() {
 		return update;
 	}
 
-	public void setUpdate(Boolean update) {
+	/**
+	 * Set the update permission flag.
+	 * 
+	 * @param update
+	 * @return Fluent API
+	 */
+	public PermissionInfo setUpdate(Boolean update) {
 		this.update = update;
+		return this;
 	}
 
 	/**
@@ -107,9 +169,11 @@ public class PermissionInfo implements RestModel {
 	 * Set the given permission.
 	 * 
 	 * @param permission
+	 * @return Fluent API
 	 */
-	public void add(Permission permission) {
+	public PermissionInfo add(Permission permission) {
 		set(permission, true);
+		return this;
 	}
 
 	/**
@@ -117,37 +181,40 @@ public class PermissionInfo implements RestModel {
 	 * 
 	 * @param perm
 	 * @param flag
+	 * @return Fluent API
 	 */
-	public void set(Permission perm, boolean flag) {
+	public PermissionInfo set(Permission perm, boolean flag) {
 		switch (perm) {
 		case CREATE:
 			create = flag;
 		case READ:
 			read = flag;
-			return;
+			break;
 		case UPDATE:
 			update = flag;
-			return;
+			break;
 		case DELETE:
 			delete = flag;
-			return;
+			break;
 		case PUBLISH:
 			publish = flag;
-			return;
+			break;
 		case READ_PUBLISHED:
 			readPublished = flag;
-			return;
+			break;
 		default:
 			throw new RuntimeException("Unknown permission type {" + perm.getName() + "}");
 		}
+		return this;
 	}
 
 	/**
 	 * Set other permissions to the given flag.
 	 * 
 	 * @param flag
+	 * @return Fluent API
 	 */
-	public void setOthers(boolean flag) {
+	public PermissionInfo setOthers(boolean flag) {
 		if (create == null) {
 			create = flag;
 		}
@@ -166,7 +233,7 @@ public class PermissionInfo implements RestModel {
 		if (readPublished == null) {
 			readPublished = flag;
 		}
-
+		return this;
 	}
 
 	/**
@@ -241,33 +308,39 @@ public class PermissionInfo implements RestModel {
 
 	/**
 	 * Set the permissions from an iterable.
+	 * 
 	 * @param iterable
+	 * @return Fluent API
 	 */
-	public void fromIterable(Iterable<Permission> iterable) {
+	public PermissionInfo fromIterable(Iterable<Permission> iterable) {
 		create = false;
 		read = false;
 		update = false;
 		delete = false;
 		publish = false;
 		readPublished = false;
-		for (Permission permission: iterable) {
+		for (Permission permission : iterable) {
 			set(permission, true);
 		}
+		return this;
 	}
 
 	/**
 	 * Set the permissions from an iterable.
+	 * 
 	 * @param iterable
+	 * @return Fluent API
 	 */
-	public void fromArray(Permission... iterable) {
+	public PermissionInfo fromArray(Permission... iterable) {
 		create = false;
 		read = false;
 		update = false;
 		delete = false;
 		publish = false;
 		readPublished = false;
-		for (Permission permission: iterable) {
+		for (Permission permission : iterable) {
 			set(permission, true);
 		}
+		return this;
 	}
 }

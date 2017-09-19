@@ -43,7 +43,11 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 		boolean isBooleanListFieldSetToNull = fieldMap.hasField(fieldKey) && booleanList == null;
 		GraphField.failOnDeletionOfRequiredField(graphBooleanFieldList, isBooleanListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = booleanList == null;
-		GraphField.failOnMissingRequiredField(graphBooleanFieldList, restIsNull, fieldSchema, fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(graphBooleanFieldList, restIsNull, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle Deletion
 		if (isBooleanListFieldSetToNull && graphBooleanFieldList != null) {
@@ -56,9 +60,9 @@ public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<Boole
 			return;
 		}
 
-		// Always create a new list. 
-		// This will effectively unlink the old list and create a new one. 
-		// Otherwise the list which is linked to old versions would be updated. 
+		// Always create a new list.
+		// This will effectively unlink the old list and create a new one.
+		// Otherwise the list which is linked to old versions would be updated.
 		graphBooleanFieldList = container.createBooleanList(fieldKey);
 
 		// Handle Update

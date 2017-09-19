@@ -8,20 +8,19 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
-import com.gentics.ferma.orientdb.DelegatingFramedOrientGraph;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.OrientDBDatabase;
 import com.gentics.mesh.graphdb.orientdb.graph.Group;
 import com.gentics.mesh.graphdb.orientdb.graph.Person;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
+import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
+import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
 import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
-
-import io.vertx.core.Vertx;
 
 public class OrientDBFermaTest extends AbstractOrientDBTest {
 
@@ -31,7 +30,10 @@ public class OrientDBFermaTest extends AbstractOrientDBTest {
 
 	@Before
 	public void setup() throws Exception {
-		db.init(null, Vertx.vertx(), "com.gentics.mesh.graphdb.orientdb.graph");
+		MeshOptions options = new MeshOptions();
+		options.getStorageOptions().setDirectory(null);
+		db.init(options, "com.gentics.mesh.graphdb.orientdb.graph");
+		db.setupConnectionPool();
 	}
 
 	@Test

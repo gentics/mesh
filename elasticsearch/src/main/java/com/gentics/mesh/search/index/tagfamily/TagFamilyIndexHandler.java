@@ -72,7 +72,6 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 		return db.tx(() -> {
 			ProjectRoot root = boot.meshRoot()
 					.getProjectRoot();
-			root.reload();
 			List<? extends Project> projects = root.findAll();
 			Map<String, String> indexInfo = new HashMap<>();
 			for (Project project : projects) {

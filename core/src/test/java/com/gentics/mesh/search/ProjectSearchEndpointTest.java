@@ -1,15 +1,11 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
-import static com.gentics.mesh.util.MeshAssert.assertSuccess;
-import static com.gentics.mesh.util.MeshAssert.latchFor;
 import static org.junit.Assert.assertEquals;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -17,8 +13,14 @@ import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
-import com.gentics.mesh.util.MeshAssert;
+import com.gentics.mesh.test.util.MeshAssert;
+
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import static com.gentics.mesh.test.util.MeshAssert.assertSuccess;
+import static com.gentics.mesh.test.util.MeshAssert.latchFor;
 
 @MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
 public class ProjectSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
@@ -58,11 +60,8 @@ public class ProjectSearchEndpointTest extends AbstractMeshTest implements Basic
 		try (Tx tx = tx()) {
 			MeshAssert.assertElement(boot().projectRoot(), project.getUuid(), true);
 		}
-		MeshResponse<ProjectListResponse> future = client()
-				.searchProjects(getSimpleTermQuery("name.raw", newName), new PagingParametersImpl().setPage(1).setPerPage(2)).invoke();
-		latchFor(future);
-		assertSuccess(future);
-		ProjectListResponse response = future.result();
+		ProjectListResponse response = call(
+				() -> client().searchProjects(getSimpleTermQuery("name.raw", newName), new PagingParametersImpl().setPage(1).setPerPage(2)));
 		assertEquals(1, response.getData().size());
 	}
 

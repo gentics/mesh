@@ -47,10 +47,46 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	public void registerEndPoints() {
 		secureAll();
 		addCreateHandler();
+		addSchemaInfoHandler();
+		addMicroschemaInfoHandler();
 		addReadHandler();
 		addUpdateHandler();
 		addNodeMigrationHandler();
 		addMicronodeMigrationHandler();
+	}
+
+	private void addMicroschemaInfoHandler() {
+		Endpoint readMicroschemas = createEndpoint();
+		readMicroschemas.path("/:releaseUuid/microschemas");
+		readMicroschemas.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
+		readMicroschemas.method(GET);
+		readMicroschemas.description("Load microschemas that are assigned to the release and return a paged list response.");
+		readMicroschemas.produces(APPLICATION_JSON);
+		readMicroschemas.exampleResponse(OK, microschemaExamples.createMicroschemaReferenceList(), "List of microschemas.");
+		readMicroschemas.addQueryParameters(PagingParametersImpl.class);
+		readMicroschemas.handler(rc -> {
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			String uuid = rc.request().getParam("releaseUuid");
+			crudHandler.handleGetMicroschemaVersions(ac, uuid);
+		});
+
+		
+	}
+
+	private void addSchemaInfoHandler() {
+		Endpoint readSchemas = createEndpoint();
+		readSchemas.path("/:releaseUuid/schemas");
+		readSchemas.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
+		readSchemas.method(GET);
+		readSchemas.description("Load schemas that are assigned to the release and return a paged list response.");
+		readSchemas.addQueryParameters(PagingParametersImpl.class);
+		readSchemas.produces(APPLICATION_JSON);
+		readSchemas.exampleResponse(OK, releaseExamples.createSchemaReferenceList(), "Loaded schema list.");
+		readSchemas.handler(rc -> {
+			String uuid = rc.request().getParam("releaseUuid");
+			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
+			crudHandler.handleGetSchemaVersions(ac, uuid);
+		});
 	}
 
 	private void addNodeMigrationHandler() {
@@ -59,7 +95,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		endpoint.method(GET);
 		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		endpoint.description("Invoked the node migration for not yet migrated nodes of schemas that are assigned to the release.");
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "schema_migration_invoked");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -74,7 +110,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		endpoint.method(GET);
 		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		endpoint.description("Invoked the micronode migration for not yet migrated micronodes of microschemas that are assigned to the release.");
-		endpoint.exampleResponse(OK, miscExamples.getMessageResponse(), "schema_migration_invoked");
+		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
 		endpoint.produces(APPLICATION_JSON);
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
@@ -98,33 +134,6 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addReadHandler() {
-		Endpoint readSchemas = createEndpoint();
-		readSchemas.path("/:releaseUuid/schemas");
-		readSchemas.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
-		readSchemas.method(GET);
-		readSchemas.description("Load schemas that are assigned to the release and return a paged list response.");
-		readSchemas.addQueryParameters(PagingParametersImpl.class);
-		readSchemas.produces(APPLICATION_JSON);
-		readSchemas.exampleResponse(OK, schemaExamples.createSchemaReferenceList(), "Loaded schema list.");
-		readSchemas.handler(rc -> {
-			String uuid = rc.request().getParam("releaseUuid");
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			crudHandler.handleGetSchemaVersions(ac, uuid);
-		});
-
-		Endpoint readMicroschemas = createEndpoint();
-		readMicroschemas.path("/:releaseUuid/microschemas");
-		readMicroschemas.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
-		readMicroschemas.method(GET);
-		readMicroschemas.description("Load microschemas that are assigned to the release and return a paged list response.");
-		readMicroschemas.produces(APPLICATION_JSON);
-		readMicroschemas.exampleResponse(OK, microschemaExamples.createMicroschemaReferenceList(), "List of microschemas.");
-		readMicroschemas.addQueryParameters(PagingParametersImpl.class);
-		readMicroschemas.handler(rc -> {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			String uuid = rc.request().getParam("releaseUuid");
-			crudHandler.handleGetMicroschemaVersions(ac, uuid);
-		});
 
 		Endpoint readOne = createEndpoint();
 		readOne.path("/:releaseUuid");
@@ -164,8 +173,8 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 		addSchema.description("Assign a schema version to the release.");
 		addSchema.consumes(APPLICATION_JSON);
 		addSchema.produces(APPLICATION_JSON);
-		addSchema.exampleRequest(schemaExamples.createSchemaReferenceList());
-		addSchema.exampleResponse(OK, schemaExamples.createSchemaReferenceList(), "Updated schema list.");
+		addSchema.exampleRequest(releaseExamples.createSchemaReferenceList());
+		addSchema.exampleResponse(OK, releaseExamples.createSchemaReferenceList(), "Updated schema list.");
 		addSchema.handler(rc -> {
 			String uuid = rc.request().params().get("releaseUuid");
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);

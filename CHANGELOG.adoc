@@ -2,25 +2,153 @@
 
 = Gentics Mesh Changelog
 
+
+[[0.10.4]]
+== 0.10.4 (TBD)
+
+icon:plus[] REST: The `/api/v1/admin/reindex` and `/api/v1/admin/createMappings` have been changed from `GET` to `POST`.
+
+[[0.10.3]]
+== 0.10.3 (18.09.2017)
+
+icon:plus[] Logging: The `logback.xml` default logging configuration file will now be placed in the `config` folder. The file can be used to customize the logging configuration.
+
+icon:plus[] Configuration: It is now possible to set custom properties within the elasticsearch setting.
+
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.27
+
+icon:plus[] REST: It is now possible to set and read permissions using paths which contain the project name. Example:  `GET /api/v1/roles/:roleUuid/permissions/:projectName/...`
+
+icon:check[] Search: A potential race condition has been fixed. This condition previously caused the elasticsearch to no longer accept any changes.
+
+icon:check[] Performance: The REST API performance has been improved by optimizing the JSON generation process. link:https://github.com/gentics/mesh/issues/141[#141]
+
+== 0.10.2 (14.09.2017)
+
+icon:book[] Documentation: The new link:https://getmesh.io/docs/beta/security.html[security] and link:https://getmesh.io/docs/beta/performance.html[performance] sections have been added to our documentation.
+
+icon:plus[] The *Webroot-Response-Type* header can now be used to differentiate between a webroot binary and node responses. The values of this header can either be *binary* or *node*.
+
+icon:plus[] The `/api/v1/admin/status/migrations` endpoint was removed. 
+            The status of a migration job can now be obtained via the `/api/v1/admin/jobs` endpoint. Successfully executed jobs will no longer be removed from the job list.
+
+icon:plus[] The `/api/v1/:projectName/release/:releaseUuid/schemas` and `/api/v1/:projectName/release/:releaseUuid/microschemas` endpoint has been reworked.
+            The response format has been updated. The status and uuid of the job which has been invoked when the migration was started will now also be included in this response. 
+
+icon:check[] Java REST Client: A potential threading issue within the Java REST Client has been fixed. Vert.x http clients will no longer be shared across multiple threads.
+
+icon:check[] Memory: Reduce memory footprint of microschema migrations. link:https://github.com/gentics/mesh/issues/135[#135]
+
+icon:check[] Fixed handling "required" and "allow" properties of schema fields when adding fields to schemas.
+
+== 0.10.1 (08.09.2017)
+
+icon:plus[] Clustering: Added link:https://getmesh.io/docs/beta/clustering.html#_node_discovery[documentation] and support for cluster configurations which use a list of static IPs instead of multicast discovery.
+
+icon:plus[] Node Migration: The node migration performance has been increased.
+
+icon:plus[] REST: Added new endpoints `/api/v1/admin/jobs` to list and check queued migration jobs. The new endpoints are described in the link:https://getmesh.io/docs/beta/features.html#_executing_migrations[feature documentation].
+
+icon:check[] Search: The `raw` field will no longer be added by default to the search index. Instead it can be added using the new `searchIndex.addRaw` flag within the schema field.
+             Please note that the raw field value in the search index will be automatically truncated to a size of 32KB. Otherwise the value can't be added to search index.
+
+icon:check[] Migration: Interrupted migrations will now automatically be started again after the server has been started. Failed migration jobs can be purged or reset via the `/api/v1/admin/jobs` endpoint.
+
+icon:check[] Migration: Migrations will no longer fail if a required field was added. The field will be created and no value will be set. Custom migration scripts can still be used to add a custom default value during migration.
+
+[source,json]
+----
+{
+    "name" : "name",
+    "label" : "Name",
+    "required" : true,
+    "type" : "string",
+    "searchIndex": {
+        "addRaw": true
+    }
+}
+---- 
+
+icon:check[] Java REST Client: Various missing request parameter implementations have been added to the mesh-rest-client module.
+
+icon:check[] Node Migration: A bug has been fixed which prevented node migrations with more then 5000 elements from completing.
+
+icon:check[] GraphQL: Updated graphiql browser to latest version to fix various issues when using aliases.
+
+== 0.10.0 (04.09.2017)
+
+icon:plus[] Clustering: This release introduces the master-master clustering support. You can read more about clustering and the configuration in the link:/docs/beta/clustering.html[clustering documentation].
+
+icon:plus[] Manual Change: Configuration changes. The `clusterMode` setting has been deprecated in favour of the new cluster configuration. This setting must be removed from the `mesh.yml` file.
+
+icon:plus[] Manual Change: The configuration files `mesh.yml`, `keystore.jceks` must be moved to a subfolder `config` folder.
+
+[source,bash]
+----
+mkdir config
+mv mesh.yml config
+mv keystore.jceks config
+----
+
+icon:plus[] Manual Change: The graph database folder needs to be moved. Please create the `storage` subfolder and move the existing data into that folder.
+
+[source,bash]
+----
+mkdir -p data/graphdb/storage
+mv data/graphdb/* data/graphdb/storage/
+----
+
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.26
+
+icon:plus[] REST: The `/api/v1/admin/consistency/check` endpoint has been added. The endpoint can be used to verify the database integrity.
+
+icon:check[] Core: Fixed missing OrientDB roles and users for some older graph databases. Some graph databases did not create the needed OrientDB user and roles. These roles and users are needed for the OrientDB server and are different from Gentics Mesh users and roles.
+
+icon:check[] REST: Invalid date strings were not correctly handled. An error will now be thrown if a date string can't be parsed.
+
+icon:check[] REST: The delete handling has been updated.
+                   It is now possible to specify the `?recursive=true` parameter to recursively delete nodes.
+                   By default `?recursive=false` will be used. Deleting a node which contains children will thus cause an error.
+                   The behaviour of node language deletion has been updated as well. Deleting the last language of a node will also remove this node. This removal will again fail if no `?recursive=true` query parameter has been added.
+
+== 0.9.28 (28.08.2017)
+
+icon:check[] Core: The permission check system has been updated. The elements which have only `readPublished` permission can now also be read if the user has only `read` permission. The `read` permission automatically also grants `readPublished`.
+
+icon:check[] Java REST Client: The classes `NodeResponse` and `MicronodeField` now correctly implement the interface `FieldContainer`.
+
+icon:check[] REST: The endpoint `/api/v1/{projectName}/nodes/{nodeUuid}/binary/{fieldName}` did not correctly handle the read published nodes permission. This has been fixed now. link:https://github.com/gentics/mesh/issues/111[#111]
+
+== 0.9.27 (23.08.2017)
+
+icon:plus[] GraphQL: It is now possible to retrieve the unfiltered result count. This count is directly loaded from the search provider and may not match up with the exact filtered count.
+            The advantage of this value is that it can be retrieved very fast.
+
+icon:plus[] Java REST Client: The client now also supports encrypted connections.
+
+icon:check[] REST: Invalid date were not correctly handled. An error will now be thrown if a date string can't be parsed.
+
+icon:check[] GraphQL: Various errors which occurred when loading a schema of a node via GraphQL have been fixed now.
+
 == 0.9.26 (10.08.2017)
+
+icon:plus[] UI: Added CORS support. Previously CORS was not supported by the UI.
 
 icon:check[] REST API: Added a missing allowed CORS headers which were needed to use the Gentics Mesh UI in a CORS environment.
 
-icon:plus[] UI: Add CORS support. Previously CORS was not supported by the UI.
+icon:check[] UI: Fixed translation action. Previously a error prevented translations from being executed.
 
-icon:check[] UI: Fix translation action. Previously a error prevented translations from being executed.
-
-icon:check[] UI: Fix image handling for binary fields. Previously only the default language image was displayed in the edit view. This has been fixed.
+icon:check[] UI: Fixed image handling for binary fields. Previously only the default language image was displayed in the edit view. This has been fixed.
 
 == 0.9.25 (09.08.2017)
 
-icon:check[] Core: A bug in the schema changes apply code has been fixed. The bug previously prevented schema changes from being applied.
+icon:plus[] Demo: The demo dump extraction will now also work if an empty data exists. This is useful when providing a docker mount for the demo data.
 
 icon:plus[] GraphQL: The paging performance has been improved.
 
 icon:plus[] Core: Various missing permission checks have been added.
 
-icon:plus[] Demo: The demo dump extraction will now also work if an empty data exists. This is useful when providing a docker mount for the demo data.
+icon:check[] Core: A bug in the schema changes apply code has been fixed. The bug previously prevented schema changes from being applied.
 
 == 0.9.24 (03.08.2017)
 
@@ -102,7 +230,7 @@ icon:plus[] API: The version field of node responses and publish status response
 
 == 0.9.16 (19.06.2017)
 
-icon:plus[] Documentation: Huge documentation update.
+icon:book[] Documentation: Huge documentation update.
 
 == 0.9.15 (19.06.2017)
 
@@ -225,7 +353,7 @@ icon:plus[] Auth: The Java keystore file will now automatically be created if no
 
 icon:check[] Core: Migration errors will no longer cause a migration to be aborted. The migration will continue and log the errors. An incomplete migration can be resumed later on.
 
-icon:check[] Core: Fix node migration search index handling. Previous migrations did not correctly update the index. A automatic reindex will be invoked during startup.
+icon:check[] Core: Fixed node migration search index handling. Previous migrations did not correctly update the index. A automatic reindex will be invoked during startup.
 
 == 0.9.5 (13.04.2017)
 
@@ -233,11 +361,11 @@ icon:check[] Core: The schema check for duplicate field labels has been removed.
 
 == 0.9.4 (13.04.2017)
 
-icon:check[] UI: Fix project creation.
+icon:check[] UI: Fixed project creation.
 
-icon:check[] UI: Fix error when attempting to translate a node.
+icon:check[] UI: Fixed error when attempting to translate a node.
 
-icon:check[] UI: Fix incorrect search query.
+icon:check[] UI: Fixed incorrect search query.
 
 icon:check[] UI: Display error when attempting to publish a node with an unpublished ancestor
 
@@ -279,7 +407,7 @@ icon:plus[]  GraphQL: It is now possible to resolve information about the runnin
 
 icon:check[] Various issues with the linkType argument within the GraphQL API have been fixed.
 
-icon:check[] Fix NPE that occurred when loading a container for a language which did not exist.
+icon:check[] Fixed NPE that occurred when loading a container for a language which did not exist.
 
 == 0.9.1 (28.03.2017)
 
@@ -422,14 +550,14 @@ icon:bullhorn[] Content releases support
 
 [quote]
 ____
-This version of Gentics Mesh introduces _Content Releases_. A detailed description of this feature can be found in our http://getmesh.io/docs/beta/index.html[Documentation].
+This version of Gentics Mesh introduces _Content Releases_. A detailed description of this feature can be found in our https://getmesh.io/docs/beta/index.html[Documentation].
 ____
 
 icon:bullhorn[] Versioning support
 
 [quote]
 ____
-This version of Gentics Mesh introduces versioning of contents. A detailed description of the versioning feature can be found in our http://getmesh.io/docs/beta/index.html[Documentation].
+This version of Gentics Mesh introduces versioning of contents. A detailed description of the versioning feature can be found in our https://getmesh.io/docs/beta/index.html[Documentation].
 
 Important changes summary:
 
@@ -552,7 +680,7 @@ icon:plus[] It is now possible to also include non-container nodes in a navigati
 
 icon:check[] A minor issue within the webroot path handling of node references was fixed. CL-425
 
-icon:check[] Fix label and allow field property handling when updating schema fields. CL-357
+icon:check[] Fixed label and allow field property handling when updating schema fields. CL-357
 
 icon:check[] Various concurrency issues have been addressed.
 
@@ -618,7 +746,7 @@ icon:check[] The microschema and schema permission field was always empty for ne
 
 == 0.6.1 (14.03.2016)
 
-icon:plus[] Add mesh-ui to gentics/mesh docker image
+icon:plus[] Added mesh-ui to gentics/mesh docker image
 
 == 0.6.0 (14.03.2016)
 

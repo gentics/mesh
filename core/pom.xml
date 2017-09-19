@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.9.27-SNAPSHOT</version>
+		<version>0.10.4-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -48,6 +48,12 @@
 			<artifactId>logback-classic</artifactId>
 			<version>1.1.2</version>
 		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+			<version>1.7.25</version>
+		</dependency>
+
 
 		<!-- Common Tools -->
 		<dependency>
@@ -92,6 +98,18 @@
 		<dependency>
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-hazelcast</artifactId>
+			<!-- Use the specified hazelcast version instead -->
+			<exclusions>
+				<exclusion>
+					<groupId>com.hazelcast</groupId>
+					<artifactId>hazelcast</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>com.hazelcast</groupId>
+			<artifactId>hazelcast</artifactId>
+			<version>${hazelcast.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>io.vertx</groupId>
@@ -126,12 +144,6 @@
 			<groupId>io.vertx</groupId>
 			<artifactId>vertx-dropwizard-metrics</artifactId>
 			<version>${vertx.version}</version>
-		</dependency>
-
-		<dependency>
-			<groupId>com.gentics.ferma</groupId>
-			<artifactId>ferma-extensions-api</artifactId>
-			<version>${ferma.extensions.version}</version>
 		</dependency>
 
 		<dependency>

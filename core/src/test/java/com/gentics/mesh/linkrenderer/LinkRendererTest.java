@@ -11,7 +11,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -170,6 +170,34 @@ public class LinkRendererTest extends AbstractMeshTest {
 					content, LinkType.FULL, null, null);
 
 			assertEquals("Check rendered content", content, replacedContent);
+		}
+	}
+
+	@Test
+	public void testNoQuote() {
+		try (Tx tx = tx()) {
+			Node newsNode = content("news overview");
+			String uuid = newsNode.getUuid();
+			final String content = "'\"{{mesh.link(" + uuid + ")}}\"'";
+			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
+					content, LinkType.FULL, null, null);
+
+			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'",
+					replacedContent);
+		}
+	}
+
+	@Test
+	public void testNoQuoteGerman() {
+		try (Tx tx = tx()) {
+			Node newsNode = content("news overview");
+			String uuid = newsNode.getUuid();
+			final String content = "'\"{{mesh.link(" + uuid + ", de)}}\"'";
+			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
+					content, LinkType.FULL, null, null);
+
+			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html\"'",
+					replacedContent);
 		}
 	}
 

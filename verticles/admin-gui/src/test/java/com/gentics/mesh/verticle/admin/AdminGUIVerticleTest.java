@@ -1,7 +1,7 @@
 package com.gentics.mesh.verticle.admin;
 
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.util.MeshAssert.failingLatch;
+import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.vertx.core.http.HttpMethod.GET;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

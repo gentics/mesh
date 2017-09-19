@@ -1,11 +1,14 @@
 package com.gentics.mesh.graphdb;
 
+import static com.gentics.mesh.MeshEnv.CONFIG_FOLDERNAME;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,31 +18,36 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringEscapeUtils;
 
-import com.gentics.ferma.Tx;
-import com.gentics.ferma.TxHandler;
-import com.gentics.ferma.orientdb.DelegatingFramedOrientGraph;
-import com.gentics.ferma.orientdb.OrientDBTx;
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
+import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
+import com.gentics.mesh.util.DateUtils;
+import com.hazelcast.core.HazelcastInstance;
+import com.orientechnologies.common.concur.ONeedRetryException;
 import com.orientechnologies.orient.core.OConstants;
 import com.orientechnologies.orient.core.Orient;
 import com.orientechnologies.orient.core.command.OCommandOutputListener;
-import com.orientechnologies.orient.core.db.ODatabase;
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx;
 import com.orientechnologies.orient.core.db.record.OIdentifiable;
 import com.orientechnologies.orient.core.db.tool.ODatabaseExport;
 import com.orientechnologies.orient.core.db.tool.ODatabaseImport;
-import com.orientechnologies.orient.core.exception.OConcurrentModificationException;
 import com.orientechnologies.orient.core.exception.OSchemaException;
 import com.orientechnologies.orient.core.index.OCompositeKey;
 import com.orientechnologies.orient.core.index.OIndex;
@@ -48,13 +56,19 @@ import com.orientechnologies.orient.core.intent.OIntentMassiveInsert;
 import com.orientechnologies.orient.core.intent.OIntentNoCache;
 import com.orientechnologies.orient.core.metadata.schema.OClass;
 import com.orientechnologies.orient.core.metadata.schema.OType;
-import com.orientechnologies.orient.core.metadata.security.OSecurityNull;
 import com.orientechnologies.orient.core.record.impl.ODocument;
 import com.orientechnologies.orient.core.storage.ORecordDuplicatedException;
 import com.orientechnologies.orient.server.OServer;
 import com.orientechnologies.orient.server.OServerMain;
+import com.orientechnologies.orient.server.distributed.ODistributedServerManager;
+import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
+import com.orientechnologies.orient.server.hazelcast.OHazelcastPlugin;
 import com.orientechnologies.orient.server.plugin.OServerPluginManager;
 import com.syncleus.ferma.FramedGraph;
+import com.syncleus.ferma.ext.orientdb.DelegatingFramedOrientGraph;
+import com.syncleus.ferma.ext.orientdb.OrientDBTx;
+import com.syncleus.ferma.tx.Tx;
+import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.typeresolvers.TypeResolver;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.Graph;
@@ -62,14 +76,12 @@ import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.impls.orient.OrientBaseGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientEdgeType;
-import com.tinkerpop.blueprints.impls.orient.OrientGraph;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphFactory;
 import com.tinkerpop.blueprints.impls.orient.OrientGraphNoTx;
 import com.tinkerpop.blueprints.impls.orient.OrientVertex;
 import com.tinkerpop.blueprints.impls.orient.OrientVertexType;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -78,17 +90,41 @@ import io.vertx.core.logging.LoggerFactory;
  */
 public class OrientDBDatabase extends AbstractDatabase {
 
+	private static final String ORIENTDB_SERVER_CONFIG = "orientdb-server-config.xml";
+
+	private static final String ORIENTDB_SECURITY_SERVER_CONFIG = "security.json";
+
+	private static final String ORIENTDB_DISTRIBUTED_CONFIG = "default-distributed-db-config.json";
+
+	private static final String ORIENTDB_HAZELCAST_CONFIG = "hazelcast.xml";
+
 	private static final Logger log = LoggerFactory.getLogger(OrientDBDatabase.class);
 
+	private static final String DB_NAME = "storage";
+
+	private static final String ORIENTDB_STUDIO_ZIP = "orientdb-studio-2.2.26.zip";
+
+	private TopologyEventBridge topologyEventBridge;
+
 	private OrientGraphFactory factory;
+
 	private TypeResolver resolver;
+
+	private OServer server;
+
+	private OHazelcastPlugin hazelcastPlugin;
+
 	private DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
-	private int maxRetry = 25;
+
+	private int maxRetry = 100;
 
 	@Override
 	public void stop() {
 		factory.close();
 		Orient.instance().shutdown();
+		if (server != null) {
+			server.shutdown();
+		}
 		Tx.setActive(null);
 	}
 
@@ -97,37 +133,42 @@ public class OrientDBDatabase extends AbstractDatabase {
 		if (log.isDebugEnabled()) {
 			log.debug("Clearing graph");
 		}
-		// OrientGraphTx tx1 = factory.getTx();
-		// tx1.declareIntent(new OIntentNoCache());
-		// try {
-		// tx1.command(new OCommandSQL("delete vertex V")).execute();
-		// // tx1.commit();
-		// } finally {
-		// tx1.declareIntent(null);
-		// tx1.shutdown();
-		// }
-		OrientGraphNoTx tx = factory.getNoTx();
-		tx.declareIntent(new OIntentNoCache());
+
+		OrientGraphNoTx tx2 = factory.getNoTx();
+		tx2.declareIntent(new OIntentNoCache());
 		try {
-			for (Vertex vertex : tx.getVertices()) {
+			for (Vertex vertex : tx2.getVertices()) {
 				vertex.remove();
 			}
 		} finally {
-			tx.declareIntent(null);
-			tx.shutdown();
+			tx2.declareIntent(null);
+			tx2.shutdown();
 		}
 		if (log.isDebugEnabled()) {
 			log.debug("Cleared graph");
 		}
+
 	}
 
 	@Override
-	public void init(GraphStorageOptions options, Vertx vertx, String... basePaths) throws Exception {
-		super.init(options, vertx);
+	public void init(MeshOptions options, String meshVersion, String... basePaths) throws Exception {
+		super.init(options, meshVersion);
+
+		GraphStorageOptions storageOptions = options.getStorageOptions();
+		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
+		boolean isInMemory = storageOptions.getDirectory() == null;
+
+		if (isInMemory && startOrientServer) {
+			throw new RuntimeException(
+					"Using the graph database server is only possible for non-in-memory databases. You have not specified a graph database directory.");
+		}
+
+		initConfigurationFiles();
+
 		// resolver = new OrientDBTypeResolver(basePaths);
 		resolver = new MeshTypeResolver(basePaths);
-		if (options != null && options.getParameters() != null && options.getParameters().get("maxTransactionRetry") != null) {
-			this.maxRetry = Integer.valueOf(options.getParameters().get("maxTransactionRetry"));
+		if (options != null && storageOptions.getParameters() != null && storageOptions.getParameters().get("maxTransactionRetry") != null) {
+			this.maxRetry = Integer.valueOf(storageOptions.getParameters().get("maxTransactionRetry"));
 			log.info("Using {" + this.maxRetry + "} transaction retries before failing");
 		}
 	}
@@ -148,78 +189,260 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public void start() throws Exception {
-		Orient.instance().startup();
-		if (options == null || options.getDirectory() == null) {
-			log.info("No graph database settings found. Fallback to in memory mode.");
-			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(5, 100);
-		} else {
-			factory = new OrientGraphFactory("plocal:" + options.getDirectory()).setupPool(5, 100);
+	public void joinCluster() throws InterruptedException {
+		// Wait until another node joined the cluster
+		int timeout = 500;
+		log.info("Waiting {" + timeout + "} seconds for other nodes in the cluster.");
+		if (!topologyEventBridge.waitForMainGraphDB(timeout, SECONDS)) {
+			throw new RuntimeException("Waiting for cluster database source timed out after {" + timeout + "} seconds.");
 		}
-		factory.setProperty(ODatabase.OPTIONS.SECURITY.toString(), OSecurityNull.class);
-		if (options != null && options.getStartServer()) {
-			startOrientServer();
-		}
-		configureGraphDB();
-	}
-
-	private InputStream getOrientServerConfig() throws IOException {
-		InputStream configIns = getClass().getResourceAsStream("/config/orientdb-server-config.xml");
-		StringWriter writer = new StringWriter();
-		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
-		String configString = writer.toString();
-		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", "orient-plugins");
-		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "finest");
-		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "fine");
-		String safePath = StringEscapeUtils.escapeJava(StringEscapeUtils.escapeXml11(new File(options.getDirectory()).getAbsolutePath()));
-		configString = configString.replaceAll("%MESH_DB_PATH%", "plocal:" + safePath);
-		if (log.isDebugEnabled()) {
-			log.debug("Effective orientdb server configuration:" + configString);
-		}
-
-		String safeParentDirPath = StringEscapeUtils
-				.escapeJava(StringEscapeUtils.escapeXml11(new File(options.getDirectory()).getParentFile().getAbsolutePath()));
-		configString = configString.replaceAll("%MESH_DB_PARENT_PATH%", safeParentDirPath);
-		if (log.isDebugEnabled()) {
-			log.debug("OrientDB config");
-			log.debug(configString);
-		}
-		InputStream stream = new ByteArrayInputStream(configString.getBytes(StandardCharsets.UTF_8));
-		return stream;
 	}
 
 	/**
-	 * Start the orientdb studio server by extracting the studio plugin zipfile.
+	 * Start the orientdb related process. This will also setup the graph connection pool and handle clustering.
+	 */
+	@Override
+	public void setupConnectionPool() throws Exception {
+		Orient.instance().startup();
+		initGraphDB();
+	}
+
+	/**
+	 * Setup the OrientDB Graph connection
+	 */
+	private void initGraphDB() {
+		GraphStorageOptions storageOptions = options.getStorageOptions();
+		if (storageOptions == null || storageOptions.getDirectory() == null) {
+			log.info("No graph database settings found. Fallback to in memory mode.");
+			factory = new OrientGraphFactory("memory:tinkerpop").setupPool(5, 100);
+		} else {
+			factory = new OrientGraphFactory("plocal:" + new File(storageOptions.getDirectory(), DB_NAME).getAbsolutePath()).setupPool(5, 100);
+		}
+	}
+
+	@Override
+	public void closeConnectionPool() {
+		factory.close();
+		Orient.instance().shutdown();
+	}
+
+	/**
+	 * Create the needed configuration files in the filesystem if they can't be located.
+	 * 
+	 * @throws IOException
+	 */
+	private void initConfigurationFiles() throws IOException {
+
+		File distributedConfigFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_DISTRIBUTED_CONFIG);
+		if (!distributedConfigFile.exists()) {
+			log.info("Creating orientdb distributed server configuration file {" + distributedConfigFile + "}");
+			writeDistributedConfig(distributedConfigFile);
+		}
+
+		File hazelcastConfigFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_HAZELCAST_CONFIG);
+		if (!hazelcastConfigFile.exists()) {
+			log.info("Creating orientdb hazelcast configuration file {" + hazelcastConfigFile + "}");
+			writeHazelcastConfig(hazelcastConfigFile);
+		}
+
+		File serverConfigFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_SERVER_CONFIG);
+		// Check whether the initial configuration needs to be written
+		if (!serverConfigFile.exists()) {
+			log.info("Creating orientdb server configuration file {" + serverConfigFile + "}");
+			writeOrientServerConfig(serverConfigFile);
+		}
+
+		File securityConfigFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_SECURITY_SERVER_CONFIG);
+		// Check whether the initial configuration needs to be written
+		if (!securityConfigFile.exists()) {
+			log.info("Creating orientdb server security configuration file {" + securityConfigFile + "}");
+			writeOrientServerSecurityConfig(securityConfigFile);
+		}
+
+	}
+
+	private void writeOrientServerSecurityConfig(File securityConfigFile) throws IOException {
+		String resourcePath = "/config/" + ORIENTDB_SECURITY_SERVER_CONFIG;
+		InputStream configIns = getClass().getResourceAsStream(resourcePath);
+		if (configIns == null) {
+			log.error("Could not find default orientdb server security configuration file {" + resourcePath + "} within classpath.");
+		}
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
+		String configString = writer.toString();
+		FileUtils.writeStringToFile(securityConfigFile, configString);
+	}
+
+	private void writeHazelcastConfig(File hazelcastConfigFile) throws IOException {
+		String resourcePath = "/config/" + ORIENTDB_HAZELCAST_CONFIG;
+		InputStream configIns = getClass().getResourceAsStream(resourcePath);
+		if (configIns == null) {
+			log.error("Could not find default hazelcast configuration file {" + resourcePath + "} within classpath.");
+		}
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
+		String configString = writer.toString();
+		FileUtils.writeStringToFile(hazelcastConfigFile, configString);
+	}
+
+	private void writeDistributedConfig(File distributedConfigFile) throws IOException {
+		String resourcePath = "/config/" + ORIENTDB_DISTRIBUTED_CONFIG;
+		InputStream configIns = getClass().getResourceAsStream(resourcePath);
+		if (configIns == null) {
+			log.error("Could not find default distributed configuration file {" + resourcePath + "} within classpath.");
+		}
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
+		String configString = writer.toString();
+		FileUtils.writeStringToFile(distributedConfigFile, configString);
+	}
+
+	private String escapeSafe(String text) {
+		return StringEscapeUtils.escapeJava(StringEscapeUtils.escapeXml11(new File(text).getAbsolutePath()));
+	}
+
+	private String getOrientServerConfig() throws Exception {
+		File configFile = new File(CONFIG_FOLDERNAME + "/" + ORIENTDB_SERVER_CONFIG);
+		String configString = FileUtils.readFileToString(configFile);
+
+		// Now replace the parameters within the configuration
+		configString = configString.replaceAll("%PLUGIN_DIRECTORY%", new File("orientdb-plugins").getAbsolutePath());
+		configString = configString.replaceAll("%CONSOLE_LOG_LEVEL%", "info");
+		configString = configString.replaceAll("%FILE_LOG_LEVEL%", "info");
+		configString = configString.replaceAll("%CONFDIR_NAME%", CONFIG_FOLDERNAME);
+		configString = configString.replaceAll("%NODENAME%", getNodeName());
+		String networkHost = options.getClusterOptions().getNetworkHost();
+		if (isEmpty(networkHost)) {
+			networkHost = "0.0.0.0";
+		}
+		configString = configString.replaceAll("%NETWORK_HOST%", networkHost);
+		configString = configString.replaceAll("%DISTRIBUTED%", String.valueOf(options.getClusterOptions().isEnabled()));
+		// Only use the cluster network host if clustering is enabled.
+		String dbDir = storageOptions().getDirectory();
+		if (dbDir != null) {
+			configString = configString.replaceAll("%DB_PARENT_PATH%", escapeSafe(storageOptions().getDirectory()));
+		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Not setting DB_PARENT_PATH because no database dir was configured.");
+			}
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Effective orientdb server configuration:" + configString);
+		}
+		return configString;
+	}
+
+	/**
+	 * Determine the OrientDB Node name.
+	 * 
+	 * @return
+	 */
+	public String getNodeName() {
+		StringBuilder nameBuilder = new StringBuilder();
+		String nodeName = options.getNodeName();
+		nameBuilder.append(nodeName);
+		nameBuilder.append("@");
+		nameBuilder.append(meshVersion);
+
+		// Sanitize the name
+		String name = nameBuilder.toString();
+		name = name.replaceAll(" ", "_");
+		name = name.replaceAll("\\.", "-");
+		return name;
+	}
+
+	private void writeOrientServerConfig(File configFile) throws IOException {
+		String resourcePath = "/config/orientdb-server-config.xml";
+		InputStream configIns = getClass().getResourceAsStream(resourcePath);
+		if (configFile == null) {
+			throw new RuntimeException("Could not find default orientdb server configuration template file {" + resourcePath + "} within classpath.");
+		}
+		StringWriter writer = new StringWriter();
+		IOUtils.copy(configIns, writer, StandardCharsets.UTF_8);
+		String configString = writer.toString();
+		FileUtils.writeStringToFile(configFile, configString);
+	}
+
+	/**
+	 * Start the OrientDB studio server by extracting the studio plugin zipfile.
 	 * 
 	 * @throws Exception
 	 */
-	private void startOrientServer() throws Exception {
+	@Override
+	public void startServer() throws Exception {
+		ClusterOptions clusterOptions = options.getClusterOptions();
+		boolean isClusteringEnabled = clusterOptions != null && clusterOptions.isEnabled();
 		String orientdbHome = new File("").getAbsolutePath();
 		System.setProperty("ORIENTDB_HOME", orientdbHome);
-		System.out.println(orientdbHome);
-		OServer server = OServerMain.create();
-		log.info("Extracting OrientDB Studio");
-		InputStream ins = getClass().getResourceAsStream("/plugins/orientdb-studio-2.2.24.zip");
-		File pluginDirectory = new File("orient-plugins");
-		pluginDirectory.mkdirs();
-		IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "orientdb-studio-2.2.24.zip")));
+		if (server == null) {
+			server = OServerMain.create();
+			updateOrientDBPlugin();
+		}
 
+		if (clusterOptions != null && clusterOptions.isEnabled()) {
+			// This setting will be referenced by the hazelcast configuration
+			System.setProperty("mesh.clusterName", clusterOptions.getClusterName() + "@" + Mesh.getPlainVersion());
+		}
+
+		log.info("Starting OrientDB Server");
 		server.startup(getOrientServerConfig());
 		OServerPluginManager manager = new OServerPluginManager();
 		manager.config(server);
 		server.activate();
+		if (isClusteringEnabled) {
+			ODistributedServerManager distributedManager = server.getDistributedManager();
+			topologyEventBridge = new TopologyEventBridge(this);
+			distributedManager.registerLifecycleListener(topologyEventBridge);
+			if (server.getDistributedManager() instanceof OHazelcastPlugin) {
+				hazelcastPlugin = (OHazelcastPlugin) distributedManager;
+			}
+		}
 		manager.startup();
+		if (isClusteringEnabled) {
+			// The registerLifecycleListener may not have been invoked. We need to redirect the online event manually.
+			postStartupDBEventHandling();
+		}
 	}
 
-	private void configureGraphDB() {
-		log.info("Configuring orientdb...");
-		OrientGraph tx = factory.getTx();
-		try {
-			tx.setUseLightweightEdges(false);
-			tx.setUseVertexFieldsForEdgeLabels(false);
-		} finally {
-			tx.shutdown();
+	/**
+	 * Check the orientdb plugin directory and extract the orientdb studio plugin if needed.
+	 * 
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	private void updateOrientDBPlugin() throws FileNotFoundException, IOException {
+		InputStream ins = getClass().getResourceAsStream("/plugins/" + ORIENTDB_STUDIO_ZIP);
+		File pluginDirectory = new File("orientdb-plugins");
+		pluginDirectory.mkdirs();
+
+		// Remove old plugins
+		boolean currentPluginFound = false;
+		for (File plugin : pluginDirectory.listFiles()) {
+			if (plugin.isFile()) {
+				String filename = plugin.getName();
+				log.debug("Checking orientdb plugin: " + filename);
+				if (filename.equals(ORIENTDB_STUDIO_ZIP)) {
+					currentPluginFound = true;
+					continue;
+				}
+				if (filename.startsWith("orientdb-studio-")) {
+					plugin.delete();
+				}
+			}
 		}
+
+		if (!currentPluginFound) {
+			log.info("Extracting OrientDB Studio");
+			IOUtils.copy(ins, new FileOutputStream(new File(pluginDirectory, "orientdb-studio-2.2.26.zip")));
+		}
+
+	}
+
+	private void postStartupDBEventHandling() {
+		// Get the database status
+		DB_STATUS status = server.getDistributedManager().getDatabaseStatus(getNodeName(), "storage");
+		// Pass it along to the topology event bridge
+		topologyEventBridge.onDatabaseChangeStatus(getNodeName(), "storage", status);
 	}
 
 	@Override
@@ -355,7 +578,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	public void enableMassInsert() {
 		OrientBaseGraph tx = unwrapCurrentGraph();
 		tx.getRawGraph().getTransaction().setUsingLog(false);
-		tx.declareIntent(new OIntentMassiveInsert().setDisableHooks(true).setDisableValidation(true).setDisableSecurity(true));
+		tx.declareIntent(new OIntentMassiveInsert().setDisableHooks(true).setDisableValidation(true));
 	}
 
 	@Override
@@ -508,7 +731,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T> T tx(TxHandler<T> txHandler) {
+	public <T> T tx(TxAction<T> txHandler) {
 		/**
 		 * OrientDB uses the MVCC pattern which requires a retry of the code that manipulates the graph in cases where for example an
 		 * {@link OConcurrentModificationException} is thrown.
@@ -526,13 +749,13 @@ public class OrientDBDatabase extends AbstractDatabase {
 				// TODO maybe we should invoke a metadata getschema reload?
 				// factory.getTx().getRawGraph().getMetadata().getSchema().reload();
 				// Database.getThreadLocalGraph().getMetadata().getSchema().reload();
-			} catch (OConcurrentModificationException e) {
+			} catch (ONeedRetryException e) {
 				if (log.isTraceEnabled()) {
 					log.trace("Error while handling transaction. Retrying " + retry, e);
 				}
 				try {
-					// Delay the retry by 50ms to give the other transaction a chance to finish
-					Thread.sleep(50 + (retry * 5));
+					// Increase the delay for each retry by 25ms to give the other transaction a chance to finish
+					Thread.sleep(50 + (retry * 25));
 				} catch (InterruptedException e1) {
 					e1.printStackTrace();
 				}
@@ -549,7 +772,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				log.error("Error handling transaction", e);
 				throw new RuntimeException("Transaction error", e);
 			}
-			if (log.isDebugEnabled()) {
+			if (!handlerFinished && log.isDebugEnabled()) {
 				log.debug("Retrying .. {" + retry + "}");
 			}
 			if (handlerFinished) {
@@ -667,5 +890,53 @@ public class OrientDBDatabase extends AbstractDatabase {
 	@Override
 	public String getVersion() {
 		return OConstants.getVersion();
+	}
+
+	@Override
+	public HazelcastInstance getHazelcast() {
+		return hazelcastPlugin != null ? hazelcastPlugin.getHazelcastInstance() : null;
+	}
+
+	public ClusterStatusResponse getClusterStatus() {
+		ClusterStatusResponse response = new ClusterStatusResponse();
+		if (hazelcastPlugin != null) {
+			ODocument distribCfg = hazelcastPlugin.getClusterConfiguration();
+
+			Collection<ODocument> members = distribCfg.field("members");
+			if (members != null) {
+				for (ODocument m : members) {
+					if (m == null) {
+						continue;
+					}
+					ClusterInstanceInfo instanceInfo = new ClusterInstanceInfo();
+					String name = m.field("name");
+
+					int idx = name.indexOf("@");
+					if (idx > 0) {
+						name = name.substring(0, idx);
+					}
+
+					instanceInfo.setName(name);
+					instanceInfo.setStatus(m.field("status"));
+					Date date = m.field("startedOn");
+					instanceInfo.setStartDate(DateUtils.toISO8601(date.getTime()));
+
+					String address = null;
+					Collection<Map> listeners = m.field("listeners");
+					if (listeners != null) {
+						for (Map l : listeners) {
+							String protocol = (String) l.get("protocol");
+							if (protocol.equals("ONetworkProtocolBinary")) {
+								address = (String) l.get("listen");
+							}
+						}
+					}
+					instanceInfo.setAddress(address);
+
+					response.getInstances().add(instanceInfo);
+				}
+			}
+		}
+		return response;
 	}
 }

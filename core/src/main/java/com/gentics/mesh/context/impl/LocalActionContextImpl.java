@@ -189,7 +189,6 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	public void setProject(String projectName) {
 		MeshInternal.get().database().tx(() -> {
 			BootstrapInitializer boot = MeshInternal.get().boot();
-			boot.projectRoot().reload();
 			Project project = boot.projectRoot().findByName(projectName);
 			this.project = project;
 			return null;
@@ -234,6 +233,16 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	 */
 	public Future<T> getFuture() {
 		return future;
+	}
+
+	@Override
+	public boolean isMigrationContext() {
+		return false;
+	}
+
+	@Override
+	public void setWebrootResponseType(String type) {
+		// Not supported
 	}
 
 }

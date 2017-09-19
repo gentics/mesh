@@ -1,53 +1,36 @@
 package com.gentics.mesh.core.admin;
 
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
-import static com.gentics.mesh.test.context.MeshTestHelper.expectResponseMessage;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
-
-import org.junit.Ignore;
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
-import com.gentics.mesh.core.rest.common.GenericMessageResponse;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
-@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true, inMemoryDB = false)
+@MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true, inMemoryDB = true)
 public class AdminEndpointTest extends AbstractMeshTest {
 
 	@Test
-	public void testMigrationStatusWithNoMigrationRunning() {
-		GenericMessageResponse message = call(() -> client().schemaMigrationStatus());
-		expectResponseMessage(message, "migration_status_idle");
+	public void testMeshStatus() {
+		Mesh.mesh().setStatus(MeshStatus.WAITING_FOR_CLUSTER);
+		MeshStatusResponse status = call(() -> client().meshStatus());
+		assertEquals(MeshStatus.WAITING_FOR_CLUSTER, status.getStatus());
 	}
 
 	@Test
-	public void testBackupRestore() throws IOException {
-		try (Tx tx = tx()) {
-			group().addRole(roles().get("admin"));
-			tx.success();
-		}
-		GenericMessageResponse message = call(() -> client().invokeBackup());
-		expectResponseMessage(message, "backup_finished");
+	public void testClusterStatusInNoClusterMode() {
+		call(() -> client().clusterStatus(), FORBIDDEN, "error_admin_permission_required");
 
-		message = call(() -> client().invokeRestore());
-		expectResponseMessage(message, "restore_finished");
-	}
+		tx(() -> group().addRole(roles().get("admin")));
 
-	@Test
-	@Ignore("Endpoint disabled")
-	public void testExportImport() {
-		try (Tx tx = tx()) {
-			group().addRole(roles().get("admin"));
-			tx.success();
-		}
-		GenericMessageResponse message = call(() -> client().invokeExport());
-		expectResponseMessage(message, "export_finished");
-
-		message = call(() -> client().invokeImport());
-		expectResponseMessage(message, "import_finished");
+		call(() -> client().clusterStatus(), BAD_REQUEST, "error_cluster_status_only_aviable_in_cluster_mode");
 	}
 
 }

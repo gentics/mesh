@@ -66,13 +66,6 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	 */
 	protected abstract Class<? extends SC> getContainerClass();
 
-	/**
-	 * Return the eventbus migration verticle address.
-	 * 
-	 * @return Eventbus address
-	 */
-	protected abstract String getMigrationAddress();
-
 	@Override
 	public String getVersion() {
 		return getProperty(VERSION_PROPERTY_KEY);
@@ -207,7 +200,6 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 
 		nextVersion.setSchemaContainer(getSchemaContainer());
 		nextVersion.setName(resultingSchema.getName());
-		// TODO avoid updates of schema names - See https://jira.gentics.com/browse/CL-348
 		getSchemaContainer().setName(resultingSchema.getName());
 		setNextVersion(nextVersion);
 
@@ -249,7 +241,7 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	public String toString() {
-		return "handler:" + getType() + "_name:" + getName() + "_uuid:" + getUuid() + "_version:" + getVersion();
+		return "handler:" + getTypeInfo().getType() + "_name:" + getName() + "_uuid:" + getUuid() + "_version:" + getVersion();
 	}
 
 }

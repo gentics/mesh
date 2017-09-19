@@ -46,7 +46,11 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 		boolean isNodeListFieldSetToNull = fieldMap.hasField(fieldKey) && (nodeList == null);
 		GraphField.failOnDeletionOfRequiredField(graphNodeFieldList, isNodeListFieldSetToNull, fieldSchema, fieldKey, schema);
 		boolean restIsNull = nodeList == null;
-		GraphField.failOnMissingRequiredField(graphNodeFieldList, restIsNull, fieldSchema, fieldKey, schema);
+
+		// Skip this check for no migrations
+		if (!ac.isMigrationContext()) {
+			GraphField.failOnMissingRequiredField(graphNodeFieldList, restIsNull, fieldSchema, fieldKey, schema);
+		}
 
 		// Handle Deletion
 		if (isNodeListFieldSetToNull && graphNodeFieldList != null) {
@@ -59,9 +63,9 @@ public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<No
 			return;
 		}
 
-		// Always create a new list. 
-		// This will effectively unlink the old list and create a new one. 
-		// Otherwise the list which is linked to old versions would be updated. 
+		// Always create a new list.
+		// This will effectively unlink the old list and create a new one.
+		// Otherwise the list which is linked to old versions would be updated.
 		graphNodeFieldList = container.createNodeList(fieldKey);
 
 		// Handle Update

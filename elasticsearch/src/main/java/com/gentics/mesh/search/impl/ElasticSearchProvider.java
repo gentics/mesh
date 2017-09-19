@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import com.gentics.mesh.search.ElasticSearchUtil;
@@ -17,6 +18,8 @@ import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
+import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -37,8 +40,10 @@ import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.search.SearchHit;
 
-import com.gentics.mesh.cli.MeshNameProvider;
+import com.gentics.mesh.Mesh;
+import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.ElasticSearchOptions;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
@@ -57,7 +62,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private Node node;
 
-	private ElasticSearchOptions options;
+	private MeshOptions options;
 
 	public static final String DEFAULT_INDEX_SETTINGS_FILENAME = "default-es-index-settings.json";
 
@@ -75,45 +80,64 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (log.isDebugEnabled()) {
 			log.debug("Creating elasticsearch node");
 		}
+
+		ElasticSearchOptions searchOptions = options.getSearchOptions();
 		long start = System.currentTimeMillis();
 		Settings settings = Settings.builder()
 
 				.put("thread_pool.index.queue_size", -1)
 
-				.put("http.enabled", options.isHttpEnabled())
+				.put("http.enabled", searchOptions.isHttpEnabled())
 
 				.put("http.cors.enabled", "true").put("http.cors.allow-origin", "*")
 
-				.put("path.home", options.getDirectory())
+				.put("path.home", searchOptions.getDirectory())
 
-				.put("node.name", MeshNameProvider.getInstance().getName())
+				.put("node.name", options.getNodeName())
 
-				.put("transport.type", "local")
+				.put("transport.tcp.port", searchOptions.getTransportPort())
 
-				.build();
+				.put("plugin.types", DeleteByQueryPlugin.class.getName())
+
+				// .put("index.store.type", "mmapfs")
+
+				.put("index.max_result_window", Integer.MAX_VALUE);
+
+		builder.put("node.meshVersion", Mesh.getPlainVersion());
+		ClusterOptions clusterOptions = options.getClusterOptions();
+		if (clusterOptions.isEnabled()) {
+			// We append the mesh version to the cluster name to ensure that no clusters from different mesh versions can be formed.
+			builder.put("cluster.name", clusterOptions.getClusterName() + "-" + Mesh.getPlainVersion());
+			// We run a multi-master environment. Every node should be able to be elected as master
+			builder.put("node.master", true);
+			builder.put("network.host", clusterOptions.getNetworkHost());
+			builder.put("discovery.zen.ping.multicast.enabled", true);
+			// TODO configure public and bind host
+		} else {
+			builder.put("transport.type", "local")
+		}
+
+		// Add custom properties
+		for (Entry<String, Object> entry : searchOptions.getParameters().entrySet()) {
+			builder.put(entry.getKey(), entry.getValue());
+		}
+		Settings settings = builder.build();
 
 		Set<Class<? extends Plugin>> classpathPlugins = new HashSet<>();
-		// TODO configure ES cluster options
-		node = new Node(settings);
-		try {
-			node.start();
-		} catch (NodeValidationException e) {
-			throw new RuntimeException("Could not start search node", e);
+		classpathPlugins.add(DeleteByQueryPlugin.class);
+		if (clusterOptions.isEnabled()) {
+			classpathPlugins.add(MulticastDiscoveryPlugin.class);
 		}
+		node = new MeshNode(settings, classpathPlugins);
+		node.start();
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 		}
 	}
 
-	/**
-	 * Initialise and start the search provider using the given options.
-	 * 
-	 * @param options
-	 * @return Fluent API
-	 */
-	public ElasticSearchProvider init(ElasticSearchOptions options) {
+	@Override
+	public ElasticSearchProvider init(MeshOptions options) {
 		this.options = options;
-		start();
 		return this;
 	}
 
@@ -129,8 +153,9 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 		stop();
 		try {
-			if (options.getDirectory() != null) {
-				File storageDirectory = new File(options.getDirectory());
+			ElasticSearchOptions searchOptions = options.getSearchOptions();
+			if (searchOptions.getDirectory() != null) {
+				File storageDirectory = new File(searchOptions.getDirectory());
 				if (storageDirectory.exists()) {
 					FileUtils.deleteDirectory(storageDirectory);
 				}
@@ -188,6 +213,35 @@ public class ElasticSearchProvider implements SearchProvider {
 				public void onFailure(Exception e) {
 					sub.onError(e);
 					log.error("Error while creating index {" + indexName + "}", e);
+				}
+			});
+		});
+	}
+
+	@Override
+	public Completable updateMapping(String indexName, String type, JsonObject mapping) {
+		return Completable.create(sub -> {
+			// Check whether the search provider is a dummy provider or not
+			if (getNode() == null) {
+				sub.onCompleted();
+				return;
+			}
+
+			org.elasticsearch.node.Node esNode = getNode();
+			PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
+			mappingRequestBuilder.setType(type);
+
+			mappingRequestBuilder.setSource(mapping.toString());
+			mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
+
+				@Override
+				public void onResponse(PutMappingResponse response) {
+					sub.onCompleted();
+				}
+
+				@Override
+				public void onFailure(Throwable e) {
+					sub.onError(e);
 				}
 			});
 		});

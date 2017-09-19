@@ -2,7 +2,7 @@ package com.gentics.mesh.core.node;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -11,7 +11,7 @@ import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
@@ -19,8 +19,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -94,24 +94,23 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMoveNodeWithPerm() {
-		try (Tx tx = tx()) {
-			String releaseUuid = project().getLatestRelease().getUuid();
-			Node sourceNode = folder("deals");
-			Node targetNode = folder("2015");
-			String oldSourceParentId = sourceNode.getParentNode(releaseUuid).getUuid();
-			assertNotEquals(targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-			call(() -> client().moveNode(PROJECT_NAME, sourceNode.getUuid(), targetNode.getUuid()));
+		Node sourceNode = folder("deals");
+		Node targetNode = folder("2015");
+		String releaseUuid = initialReleaseUuid();
+		String sourceNodeUuid = tx(() -> sourceNode.getUuid());
+		String targetNodeUuid = tx(() -> targetNode.getUuid());
+		String oldSourceParentId = tx(() -> sourceNode.getParentNode(releaseUuid).getUuid());
+		assertNotEquals(targetNodeUuid, tx(() -> sourceNode.getParentNode(releaseUuid).getUuid()));
+		call(() -> client().moveNode(PROJECT_NAME, sourceNodeUuid, targetNodeUuid));
 
-			sourceNode.reload();
-			try (Tx tx2 = tx()) {
-				assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
-						sourceNode.getParentNode(releaseUuid).getUuid());
-				assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
-						targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
-				assertEquals("A store event for each language variation per version should occure", 4, dummySearchProvider().getStoreEvents().size());
-			}
-			// TODO assert entries
+		try (Tx tx2 = tx()) {
+			assertNotEquals("The source node parent uuid should have been updated.", oldSourceParentId,
+					sourceNode.getParentNode(releaseUuid).getUuid());
+			assertEquals("The source node should have been moved and the target uuid should match the parent node uuid of the source node.",
+					targetNode.getUuid(), sourceNode.getParentNode(releaseUuid).getUuid());
+			assertEquals("A store event for each language variation per version should occure", 4, dummySearchProvider().getStoreEvents().size());
 		}
+		// TODO assert entries
 	}
 
 	@Test
@@ -133,14 +132,14 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 			// 3. Assign the schema to the initial release
 			String releaseUuid = project().getLatestRelease().getUuid();
-			SchemaReference reference = new SchemaReference();
+			SchemaReferenceImpl reference = new SchemaReferenceImpl();
 			reference.setName("test");
 			reference.setVersion("1.0");
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid, reference));
 
 			// We don't need to wait for a schema migration because there are no nodes which use the schema
 			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("test"));
+			request.setSchema(new SchemaReferenceImpl().setName("test"));
 			request.getFields().put("stringField", FieldUtil.createStringField("blar"));
 			request.setParentNodeUuid(folder("2015").getUuid());
 			request.setLanguage("en");

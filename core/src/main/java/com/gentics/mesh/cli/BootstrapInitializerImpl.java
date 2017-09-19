@@ -1,20 +1,25 @@
 package com.gentics.mesh.cli;
 
+import static com.gentics.mesh.Events.STARTUP_EVENT_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.PUBLISH_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -25,24 +30,21 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.gentics.ferma.Tx;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
+import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.console.ConsoleProvider;
-import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
-import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
-import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.GroupRoot;
 import com.gentics.mesh.core.data.root.LanguageRoot;
 import com.gentics.mesh.core.data.root.MeshRoot;
@@ -71,16 +73,22 @@ import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.etc.config.ClusterOptions;
+import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.MavenVersionNumber;
+import com.hazelcast.core.HazelcastInstance;
+import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 
 import dagger.Lazy;
 import io.vertx.core.Vertx;
+import io.vertx.core.VertxOptions;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.spi.cluster.hazelcast.HazelcastClusterManager;
@@ -118,6 +126,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public ConsoleProvider console;
 
 	private static MeshRoot meshRoot;
+
+	private MeshImpl mesh;
+
+	private HazelcastClusterManager manager;
 
 	public static boolean isInitialSetup = true;
 
@@ -163,58 +175,214 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	/**
-	 * Use the hazelcast cluster manager to join the cluster of mesh instances.
+	 * Initialize the local data or create the initial dataset if no local data could be found.
+	 * 
+	 * @param isJoiningCluster
+	 *            Flag which indicates that the instance is joining the cluster. In those cases various checks must not be invoked.
+	 * @throws Exception
 	 */
-	private void joinCluster() {
-		log.info("Joining cluster...");
-		HazelcastClusterManager manager = new HazelcastClusterManager();
-		manager.setVertx(Mesh.vertx());
-		manager.join(rh -> {
-			if (!rh.succeeded()) {
-				log.error("Error while joining mesh cluster.", rh.cause());
+	private void initLocalData(boolean isJoiningCluster) throws Exception {
+		boolean isEmptyInstallation = isEmptyInstallation();
+		if (isEmptyInstallation) {
+			// Update graph indices and vertex types (This may take some time)
+			DatabaseHelper.init(db);
+			// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
+			initMandatoryData();
+			initOptionalData(isEmptyInstallation);
+			initPermissions();
+			handleMeshVersion();
+
+			// Mark all changelog entries as applied for new installations
+			markChangelogApplied();
+			createSearchIndicesAndMappings();
+		} else {
+
+			handleMeshVersion();
+			if (!isJoiningCluster) {
+				// Only execute the changelog if there are any elements in the graph
+				invokeChangelog();
+				// Update graph indices and vertex types (This may take some time)
+				DatabaseHelper.init(db);
 			}
-		});
+		}
 	}
 
 	@Override
-	public void init(boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
-		if (configuration.isClusterMode()) {
-			joinCluster();
+	public void init(Mesh mesh, boolean hasOldLock, MeshOptions options, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
+		this.mesh = (MeshImpl) mesh;
+		GraphStorageOptions storageOptions = options.getStorageOptions();
+		boolean isClustered = options.getClusterOptions().isEnabled();
+		boolean isInitMode = options.isInitClusterMode();
+		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
+
+		try {
+			db.init(Mesh.mesh().getOptions(), Mesh.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
+		} catch (Exception e) {
+			throw new RuntimeException(e);
 		}
 
-		boolean isEmptyInstallation = isEmptyInstallation();
-		if (!isEmptyInstallation) {
-			handleMeshVersion();
+		if (isClustered) {
+			ClusterOptions clusterOptions = options.getClusterOptions();
+
+			// Check whether we need to update the settings and use a determined local IP
+			if (clusterOptions.getNetworkHost() == null) {
+				String localIp = getLocalIpForRoutedRemoteIP("8.8.8.8");
+				log.info("No networkHost setting was specified within the cluster settings. Using the determined IP {" + localIp + "}.");
+				clusterOptions.setNetworkHost(localIp);
+			}
+
+			searchProvider.init(options);
+			searchProvider.start();
+
+			if (isInitMode) {
+				log.info("Init cluster flag was found. Creating initial graph database now.");
+				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
+				// handles the clustering.
+				db.setupConnectionPool();
+				initLocalData(false);
+				// db.closeConnectionPool();
+				db.startServer();
+				// db.setupConnectionPool();
+				initVertx(options, isClustered);
+			} else {
+				// We need to wait for other nodes and receive the graphdb
+				db.startServer();
+				initVertx(options, isClustered);
+				Mesh.mesh().setStatus(MeshStatus.WAITING_FOR_CLUSTER);
+				db.joinCluster();
+				isInitialSetup = false;
+				db.setupConnectionPool();
+				initLocalData(true);
+			}
+			boolean active = false;
+			while (!active) {
+				log.info("Waiting for hazelcast to become active");
+				active = manager.getHazelcastInstance().getLifecycleService().isRunning();
+				if (active) {
+					break;
+				}
+				Thread.sleep(1000);
+			}
+		} else {
+
+			searchProvider.init(options);
+			searchProvider.start();
+
+			initVertx(options, isClustered);
+			// No cluster mode - Just setup the connection pool and load or setup the local data
+			db.setupConnectionPool();
+			initLocalData(false);
+			if (startOrientServer) {
+				db.startServer();
+			}
 		}
 
-		// Only execute the changelog if there are any elements in the graph
-		if (!isEmptyInstallation) {
-			invokeChangelog();
+		routerStorage.init();
+		handleLocalData(hasOldLock, options, verticleLoader);
+	}
+
+	/**
+	 * Returns the IP of the network interface that is used to communicate with the given remote host/IP. Let's say we want to reach 8.8.8.8, it would return
+	 * the IP of the local network adapter that is routed into the Internet.
+	 * 
+	 * @param destination
+	 *            The remote host name or IP
+	 * @return An IP of a local network adapter
+	 */
+	protected String getLocalIpForRoutedRemoteIP(String destination) {
+		try {
+			byte[] ipBytes = InetAddress.getByName(destination).getAddress();
+
+			try (DatagramSocket datagramSocket = new DatagramSocket()) {
+				datagramSocket.connect(InetAddress.getByAddress(ipBytes), 0);
+				return datagramSocket.getLocalAddress().getHostAddress();
+			}
+		} catch (Exception e) {
+			log.error("Could not determine local ip ", e);
+			return null;
+		}
+	}
+
+	public void initVertx(MeshOptions options, boolean isClustered) {
+		VertxOptions vertxOptions = new VertxOptions();
+		vertxOptions.setClustered(options.getClusterOptions().isEnabled());
+		vertxOptions.setBlockedThreadCheckInterval(1000 * 60 * 60);
+		// TODO configure worker pool size
+		vertxOptions.setWorkerPoolSize(12);
+		if (vertxOptions.isClustered()) {
+			log.info("Creating clustered vertx instance");
+			mesh.setVertx(createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.getHazelcast()));
+		} else {
+			log.info("Creating non-clustered vertx instance");
+			mesh.setVertx(Vertx.vertx(vertxOptions));
+		}
+	}
+
+	/**
+	 * Create a clustered vert.x instance and block until the instance has been created.
+	 * 
+	 * @param options
+	 *            Mesh options
+	 * @param vertxOptions
+	 *            Vert.x options
+	 * @param hazelcast
+	 *            Hazelcast instance which should be used by vert.x
+	 */
+	private Vertx createClusteredVertx(MeshOptions options, VertxOptions vertxOptions, HazelcastInstance hazelcast) {
+		Objects.requireNonNull(hazelcast, "The hazelcast instance was not yet initialized.");
+		manager = new HazelcastClusterManager(hazelcast);
+		vertxOptions.setClusterManager(manager);
+		String localIp = options.getClusterOptions().getNetworkHost();
+		vertxOptions.getEventBusOptions().setHost(localIp);
+		vertxOptions.getEventBusOptions().setClusterPublicHost(localIp);
+		vertxOptions.setClusterHost(localIp);
+		vertxOptions.setClusterPublicHost(localIp);
+
+		Integer clusterPort = options.getClusterOptions().getVertxPort();
+		int vertxClusterPort = clusterPort == null ? 0 : clusterPort;
+		vertxOptions.setClusterPort(vertxClusterPort);
+		vertxOptions.setClusterPublicPort(vertxClusterPort);
+
+		if (log.isDebugEnabled()) {
+			log.debug("Using vert.x cluster port {" + vertxClusterPort + "}");
+			log.debug("Using vert.x cluster public port {" + vertxClusterPort + "}");
+			log.debug("Binding vert.x on host {" + localIp + "}");
+		}
+		CompletableFuture<Vertx> fut = new CompletableFuture<>();
+		Vertx.clusteredVertx(vertxOptions, rh -> {
+			log.info("Created clustered vert.x instance");
+			if (rh.failed()) {
+				Throwable cause = rh.cause();
+				log.error("Failed to create clustered vert.x instance", cause);
+				fut.completeExceptionally(new RuntimeException("Error while creating clusterd vert.x instance", cause));
+				return;
+			}
+			Vertx vertx = rh.result();
+			fut.complete(vertx);
+		});
+		try {
+			return fut.get(10, SECONDS);
+		} catch (Exception e) {
+			throw new RuntimeException("Error while creating clusterd vert.x instance");
 		}
 
-		// Update graph indices and vertex types (This may take some time)
-		DatabaseHelper.init(db);
+	}
 
-		// Setup mandatory data (e.g.: mesh root, project root, user root etc., admin user/role/group)
-		initMandatoryData();
-		initOptionalData(isEmptyInstallation);
-
-		if (isEmptyInstallation) {
-			handleMeshVersion();
-			initPermissions();
-		}
-
+	/**
+	 * Handle local data and prepare mesh API.
+	 * 
+	 * @param hasOldLock
+	 * @param configuration
+	 * @param commandLine
+	 * @param verticleLoader
+	 * @throws Exception
+	 */
+	private void handleLocalData(boolean hasOldLock, MeshOptions configuration, MeshCustomLoader<Vertx> verticleLoader) throws Exception {
 		// An old lock file has been detected. Normally the lock file should be removed during shutdown.
 		// A old lock file means that mesh did not shutdown in a clean way. We invoke a full reindex of
 		// the ES index in those cases in order to ensure consistency.
 		if (hasOldLock) {
 			reindexAll();
-		}
-
-		// Mark all changelog entries as applied for new installations
-		if (isEmptyInstallation) {
-			markChangelogApplied();
-			createSearchIndicesAndMappings();
 		}
 
 		// Load the verticles
@@ -227,10 +395,18 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		try (Tx tx = db.tx()) {
 			initProjects();
 		}
+		registerEventHandlers();
 
 		// Finally fire the startup event and log that bootstrap has completed
-		log.info("Sending startup completed event to {" + Mesh.STARTUP_EVENT_ADDRESS + "}");
-		Mesh.vertx().eventBus().publish(Mesh.STARTUP_EVENT_ADDRESS, true);
+		log.info("Sending startup completed event to {" + STARTUP_EVENT_ADDRESS + "}");
+		Mesh.vertx().eventBus().publish(STARTUP_EVENT_ADDRESS, true);
+
+	}
+
+	@Override
+	public void registerEventHandlers() {
+		routerStorage.registerEventbusHandlers();
+		PermissionStore.registerEventHandler();
 	}
 
 	@Override
@@ -396,6 +572,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	}
 
 	@Override
+	public JobRoot jobRoot() {
+		return meshRoot.getJobRoot();
+	}
+
+	@Override
 	public LanguageRoot languageRoot() {
 		return meshRoot().getLanguageRoot();
 	}
@@ -420,7 +601,6 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 		try (Tx tx = db.tx()) {
 			meshRoot = meshRoot();
-			MeshRootImpl.setInstance(meshRoot);
 
 			meshRoot.getNodeRoot();
 			meshRoot.getTagRoot();

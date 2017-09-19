@@ -14,14 +14,23 @@ import io.vertx.core.Vertx;
  */
 public interface Mesh {
 
-	static String STARTUP_EVENT_ADDRESS = "mesh-startup-complete";
-
 	static MeshFactory factory = ServiceHelper.loadFactory(MeshFactory.class);
 
 	static AtomicReference<BuildInfo> buildInfo = new AtomicReference<BuildInfo>(null);
 
 	/**
 	 * Returns the initialized instance.
+	 * 
+	 * @param options
+	 * 
+	 * @return Fluent API
+	 */
+	static Mesh mesh(MeshOptions options) {
+		return factory.mesh(options);
+	}
+
+	/**
+	 * Returns the initialized instance of mesh that was created using the given options.
 	 * 
 	 * @return Fluent API
 	 */
@@ -30,13 +39,12 @@ public interface Mesh {
 	}
 
 	/**
-	 * Returns the initialized instance of mesh that was created using the given options.
+	 * Check whether Gentics Mesh has already been initialized.
 	 * 
-	 * @param options
-	 * @return Fluent API
+	 * @return
 	 */
-	static Mesh mesh(MeshOptions options) {
-		return factory.mesh(options);
+	static boolean isInitalized() {
+		return factory.isInitalized();
 	}
 
 	/**
@@ -93,11 +101,21 @@ public interface Mesh {
 	MeshOptions getOptions();
 
 	/**
-	 * Start mesh. This will effectively block until {@link #shutdown()} is called from another thread.
+	 * Start mesh. This will effectively block until {@link #shutdown()} is called from another thread. This method will initialise the dagger context and
+	 * deploy mandatory verticles and extensions.
 	 * 
 	 * @throws Exception
 	 */
 	void run() throws Exception;
+
+	/**
+	 * Start mesh
+	 * 
+	 * @param block
+	 *            Whether or not to block the further execution. This is useful if you want to run mesh from a main method
+	 * @throws Exception
+	 */
+	void run(boolean block) throws Exception;
 
 	/**
 	 * Return the vertx instance for mesh.
@@ -118,5 +136,20 @@ public interface Mesh {
 	public static void main(String[] args) throws Exception {
 		Mesh.mesh().run();
 	}
+
+	/**
+	 * Set the current server status.
+	 * 
+	 * @param status
+	 * @return
+	 */
+	Mesh setStatus(MeshStatus status);
+
+	/**
+	 * Return the current server status.
+	 * 
+	 * @return
+	 */
+	MeshStatus getStatus();
 
 }

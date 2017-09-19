@@ -23,7 +23,7 @@ There are two properties when defining a link:building-blocks.html#_schemas[sche
 [[example]]
 Let us consider the following example on the basis of our demo app to demonstrate how these properties work together to support navigation menus, breadcrumbs and pretty URLs:
 
-image:GenticsMesh-ContentTree-Example.png[Gentics Mesh Example of organizing content in a node tree,role="img-responsive"] 
+image::GenticsMesh-ContentTree-Example.png[Gentics Mesh Example of organizing content in a node tree,role="img-responsive"] 
 
 Within the demo project vehicles are organized in three different categories. The nodes _Automobiles_, _Aircrafts_ and _Yachts_ of type _category_ serve as containers for nodes of type _vehicle_, e.g., the node _Ford GT_ in category _Automobiles_.
 
@@ -41,7 +41,7 @@ Likewise, you can query your content using WebRoot paths instead of using UUIDs 
 
 The ```segmentField``` is used to build the path of a specific node. According to the nodes’ schemas in our <<example,example>>, the path ```/automobiles/ford-gt``` for the node _Ford GT_ is built using the _slug_ field of the _vehicle_ node, i.e. _Ford GT_, and the _slug_ field of the _category_ node, i.e. _Automobiles_.
 
-image:GenticsMesh-PrettyURL-Example.png[Gentics Mesh Example for Building Pretty URLs,role="img-responsive"]
+image::GenticsMesh-PrettyURL-Example.png[Gentics Mesh Example for Building Pretty URLs,role="img-responsive"]
 
 The ```path``` property as well as the ```languagesPath``` property (for available language variants) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` endpoint together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
 For more details see the documentation on link:building-blocks.html#_node[node] and <<webroot,WebRoot API>>, respectively.
@@ -169,7 +169,7 @@ Each endpoint will return a navigation response which contains the nested naviga
 By default, only container nodes are included in a navigation response. The `includeAll` query parameter will include all nodes, if set to `true`.
 The `maxDepth` parameter may be used to limit the navigation depth. In order to include the `path` property in the navigation response, the `resolveLinks` query parameter can be used.
 
-image:GenticsMesh-Navigation-Example.png[Gentics Mesh Example for Building Navigation Menus,role="img-responsive"]
+image::GenticsMesh-Navigation-Example.png[Gentics Mesh Example for Building Navigation Menus,role="img-responsive"]
 
 The demo app includes a navigation object showing just the top-level elements _Automobiles_, _Aircraft_, and _Yachts_ as well as the _Home_ link. All the elements can be easily queried using the available navigation endpoints. In particular, the example uses the ```/api/v1/:projectName/navroot/:path``` API endpoint, with the URL parameter ```:path``` querying the project root node, i.e., ```/``` together with query parameter ```?maxDepth``` limiting the resulting nested JSON object to the top-level nodes.
 
@@ -585,7 +585,7 @@ NOTE: The current node will not be included in the list, since all the informati
 
 In our demo app example, the ```breadcrumb``` property for node _Ford GT_ will therefore include the node _Automobiles_.
 
-image:GenticsMesh-Breadcrumb-Example.png[Gentics Mesh Example for Building Breadcumbs,role="img-responsive"]
+image::GenticsMesh-Breadcrumb-Example.png[Gentics Mesh Example for Building Breadcumbs,role="img-responsive"]
 
 The ```breadcrumb``` property will be returned in all API responses containing nodes. Using the ```resolveLink``` query parameter will also the paths of the nodes listed in the array.
 
@@ -713,7 +713,7 @@ https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?resol
 
 The WebRoot API is an alternative way for fetching content from Gentics Mesh. Other than accessing nodes with their UUID, one can use the way more intuitive WebRoot paths.
 
-image:GenticsMesh-WebRootAPI-Example.png[Gentics Mesh Example for Fetching Content by Path using the WebRoot API,role="img-responsive"]
+image::GenticsMesh-WebRootAPI-Example.png[Gentics Mesh Example for Fetching Content by Path using the WebRoot API,role="img-responsive"]
 
 This functionality builds on top of using the nodes' ```segmentField``` property to build the path of a specific node.
 WebRoot paths of arbitrary depth can be created, in combination with organizing content hierarchically in terms of a <<contenttree,content tree>> by specifying nodes to be ```containers``` for their child nodes.
@@ -824,7 +824,7 @@ include::examples/tables/RolePermissionParametersImpl.adoc[]
 
 Link resolving represents the counterpart of the <<webroot, WebRoot API>> - a node UUID can be resolved into a WebRoot path.
 
-image:GenticsMesh-LinkResolver-Utility-Example.png[Gentics Mesh Example for automatically Resolving Links,role="img-responsive"]
+image::GenticsMesh-LinkResolver-Utility-Example.png[Gentics Mesh Example for automatically Resolving Links,role="img-responsive"]
 
 Typically, editors create content including internal links to other nodes. When fetching content for your apps, however, Gentics Mesh will resolve these internal links for you and return a WebRoot path.
 
@@ -878,8 +878,11 @@ Valid links:
 
 * {{mesh.link(\"2f2de9297c8143e8ade9297c8193e8fc\", \"en\")}}
 
+* {{mesh.link(2f2de9297c8143e8ade9297c8193e8fc, en)}}
+
 * {{mesh.link("2f2de9297c8143e8ade9297c8193e8fc")}} (link to default language)
 
+* {{mesh.link(2f2de9297c8143e8ade9297c8193e8fc)}} (link to default language)
 
 [[imagemanipulation]]
 == Image Manipulation
@@ -1931,6 +1934,29 @@ Finally the changes can be applied by sending the request to ```/api/v1/schemas/
 include::examples/api/request/api/v1/schemas/\{schemaUuid\}/changes/request-body.json[]
 ----
 
+== Executing migrations
+
+Migrations can potentially affect a huge amount of nodes depending on the size of your project. As such the migration could take some time to complete. 
+This is why we designed migrations in ways that they can be executed asynchronously.
+Various operations in Gentics Mesh (eg. Schema update, assigning versions to releases, creating releases) may trigger migrations. 
+Before the migration is being executed a job is added to the job queue. You can view the queue via the `/api/v1/admin/jobs` endpoint. 
+These jobs will be processed and execute the actual migration.
+
+By default updating a schema will create a new schema version and the nodes will be migrated to that new version. 
+If you want to deferre this operation you can set the `updateAssignedReleases` query parameter to false when updating a schema/microschema. 
+This leads to a new schema version being created but the version would not be linked to your current release and no migration would be invoked.
+
+Once a job has been queued and a migration has been invoked the status can be checked via the `/api/v1/admin/status/migrations` endpoint.
+
+A job will only be removed from the job list when the job completed without any error. Erroneous jobs will stay in the job list.
+This way interrupted migrations can be picked up and executed once again.
+
+Intermediate errors may cause a job to fail. In those cases it is possible to reset the error flag of a job by executing `DELETE /api/v1/admin/jobs/:jobUuid/error`.
+The job can run again once the error flag has been cleared. It is possible to invoke `POST /api/v1/admin/processJobs` to trigger a manual event which will start the job processing.
+
+Jobs which keep failing can be permanently removed from the job queue via the `DELETE /api/v1/admin/jobs/:jobUuid` endpoint. 
+Please note that it is only possible to remove jobs which have failed. Jobs which don't fail will automatically be removed from the list.
+
 == Eventbus Bridge & Websocket
 
 The ```/api/v1/eventbus``` endpoint allows clients to access the eventbus. This may be useful if you want to react on specific events.
@@ -1946,6 +1972,4 @@ The endpoint is https://github.com/sockjs[SockJS]  compliant. It is also possibl
 
 == Clustering
 
-Clustering support is still in development.
-
-It will be possible to use master/master replication for OrientDB. Clustering for the Elasticsearch nodes and the Vert.x event message bus.
+Clustering is described in detail in our dedicated link:clustering.html[clustering documentation].

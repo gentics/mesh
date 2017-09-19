@@ -123,7 +123,6 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 	@Override
 	public Node loadObjectByUuid(InternalActionContext ac, String uuid, GraphPermission perm) {
-		reload();
 		Node element = findByUuid(uuid);
 		if (element == null) {
 			throw error(NOT_FOUND, "object_not_found_for_uuid", uuid);
@@ -132,6 +131,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		MeshAuthUser requestUser = ac.getUser();
 		if (perm == READ_PUBLISHED_PERM) {
 			Release release = ac.getRelease(element.getProject());
+
 			List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 			NodeGraphFieldContainer fieldContainer = element.findNextMatchingFieldContainer(requestedLanguageTags, release.getUuid(),
 					ac.getVersioningParameters().getVersion());
@@ -141,7 +141,11 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 						release.getUuid());
 			}
 			// Additionally check whether the read published permission could grant read perm for published nodes
-			if (fieldContainer.isPublished(release.getUuid()) && requestUser.hasPermission(element, READ_PUBLISHED_PERM)) {
+			boolean isPublished = fieldContainer.isPublished(release.getUuid());
+			if (isPublished && requestUser.hasPermission(element, READ_PUBLISHED_PERM)) {
+				return element;
+			// The container could be a draft. Check whether READ perm is granted.
+			} else if (!isPublished && requestUser.hasPermission(element, READ_PERM)) {
 				return element;
 			} else {
 				throw error(FORBIDDEN, "error_missing_perm", uuid);

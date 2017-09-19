@@ -3,7 +3,6 @@ package com.gentics.mesh.core.schema;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.context.MeshTestHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -13,7 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.gentics.ferma.Tx;
+import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -21,10 +20,11 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.ClientHelper.call;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
@@ -51,7 +51,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			MicroschemaContainer microschema = microschemaContainer("vcard");
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			request.setName(name);
 
 			ProjectResponse restProject = call(() -> client().createProject(request));
@@ -69,7 +69,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			request.setName("extraProject");
 			ProjectResponse created = call(() -> client().createProject(request));
 			extraProject = projectRoot.findByUuid(created.getUuid());
@@ -82,8 +82,6 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			MicroschemaResponse restMicroschema = call(() -> client().assignMicroschemaToProject(extraProject.getName(), microschema.getUuid()));
 			assertThat(restMicroschema.getUuid()).isEqualTo(microschema.getUuid());
-			extraProject.reload();
-			extraProject.getMicroschemaContainerRoot().reload();
 			assertNotNull("The microschema should be added to the extra project",
 					extraProject.getMicroschemaContainerRoot().findByUuid(microschema.getUuid()));
 		}
@@ -100,7 +98,7 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("extraProject");
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			ProjectResponse response = call(() -> client().createProject(request));
 			projectUuid = response.getUuid();
 			extraProject = projectRoot.findByUuid(projectUuid);
@@ -134,7 +132,6 @@ public class MicroschemaProjectEndpointTest extends AbstractMeshTest {
 
 			assertEquals("The removed microschema should not be listed in the response", 0,
 					list.getData().stream().filter(s -> s.getUuid().equals(microschema.getUuid())).count());
-			project.getMicroschemaContainerRoot().reload();
 			assertFalse("The microschema should no longer be assigned to the project.", project.getMicroschemaContainerRoot().contains(microschema));
 		}
 	}

@@ -11,9 +11,8 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.image.spi.ImageManipulatorService;
-import com.gentics.mesh.etc.config.ElasticSearchOptions;
-import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.HttpServerConfig;
+import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.DatabaseService;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.impl.MeshBodyHandlerImpl;
@@ -69,13 +68,7 @@ public class MeshModule {
 			log.error(message);
 			throw new RuntimeException(message);
 		}
-		try {
-			GraphStorageOptions options = Mesh.mesh().getOptions().getStorageOptions();
-			database.init(options, Mesh.vertx(), "com.gentics.mesh.core.data");
-			return database;
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
+		return database;
 	}
 
 	@Provides
@@ -142,14 +135,14 @@ public class MeshModule {
 	@Provides
 	@Singleton
 	public static SearchProvider searchProvider() {
-		ElasticSearchOptions options = Mesh.mesh().getOptions().getSearchOptions();
+		MeshOptions options = Mesh.mesh().getOptions();
 		SearchProvider searchProvider = null;
 		// Automatically select the dummy search provider if no directory or
 		// options have been specified
-		if (options == null || options.getDirectory() == null) {
+		if (options.getSearchOptions() == null || options.getSearchOptions().getDirectory() == null) {
 			searchProvider = new DummySearchProvider();
 		} else {
-			searchProvider = new ElasticSearchProvider().init(options);
+			searchProvider = new ElasticSearchProvider();
 		}
 		return searchProvider;
 	}

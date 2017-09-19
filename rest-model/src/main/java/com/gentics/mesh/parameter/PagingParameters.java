@@ -1,22 +1,35 @@
 package com.gentics.mesh.parameter;
 
 import com.gentics.mesh.core.rest.SortOrder;
+import com.gentics.mesh.util.NumberUtils;
 
 public interface PagingParameters extends ParameterProvider {
+
+	public static final String PAGE_PARAMETER_KEY = "page";
+	public static final String PER_PAGE_PARAMETER_KEY = "perPage";
+	public static final String SORT_BY_PARAMETER_KEY = "sortBy";
+	public static final String SORT_ORDER_PARAMETER_KEY = "order";
+
+	public static final int DEFAULT_PAGE = 1;
+	public static final int DEFAULT_PAGE_SIZE = 25;
 
 	/**
 	 * Return the current page.
 	 * 
 	 * @return Current page number
 	 */
-	int getPage();
+	default int getPage() {
+		return NumberUtils.toInt(getParameter(PAGE_PARAMETER_KEY), DEFAULT_PAGE);
+	}
 
 	/**
 	 * Return the per page count.
 	 * 
 	 * @return Per page count
 	 */
-	int getPerPage();
+	default int getPerPage() {
+		return NumberUtils.toInt(getParameter(PER_PAGE_PARAMETER_KEY), DEFAULT_PAGE_SIZE);
+	}
 
 	/**
 	 * Set the current page.
@@ -25,7 +38,10 @@ public interface PagingParameters extends ParameterProvider {
 	 *            Current page number
 	 * @return Fluent API
 	 */
-	PagingParameters setPage(long page);
+	default PagingParameters setPage(long page) {
+		setParameter(PAGE_PARAMETER_KEY, String.valueOf(page));
+		return this;
+	}
 
 	/**
 	 * Set the per page count.
@@ -34,7 +50,10 @@ public interface PagingParameters extends ParameterProvider {
 	 *            Per page count
 	 * @return Fluent API
 	 */
-	PagingParameters setPerPage(int perPage);
+	default PagingParameters setPerPage(int perPage) {
+		setParameter(PER_PAGE_PARAMETER_KEY, String.valueOf(perPage));
+		return this;
+	}
 
 	/**
 	 * Return the sort by parameter value.
@@ -43,7 +62,9 @@ public interface PagingParameters extends ParameterProvider {
 	 * @deprecated not yet implemented
 	 */
 	@Deprecated
-	String getSortBy();
+	default String getSortBy() {
+		return getParameter(SORT_BY_PARAMETER_KEY);
+	}
 
 	/**
 	 * Return the sortorder.
@@ -52,7 +73,10 @@ public interface PagingParameters extends ParameterProvider {
 	 * @deprecated not yet implemented
 	 */
 	@Deprecated
-	SortOrder getOrder();
+	default SortOrder getOrder() {
+		return SortOrder.valueOfName(getParameter(SORT_ORDER_PARAMETER_KEY));
+
+	}
 
 	/**
 	 * Set the order by parameter.
@@ -62,7 +86,10 @@ public interface PagingParameters extends ParameterProvider {
 	 * @deprecated not yet implemented
 	 */
 	@Deprecated
-	PagingParameters setOrderBy(String orderBy);
+	default PagingParameters setOrderBy(String orderBy) {
+		setParameter(SORT_BY_PARAMETER_KEY, orderBy);
+		return this;
+	}
 
 	/**
 	 * Set the used sort order.
@@ -74,6 +101,9 @@ public interface PagingParameters extends ParameterProvider {
 	 * 
 	 */
 	@Deprecated
-	PagingParameters setSortOrder(String sortBy);
+	default PagingParameters setSortOrder(String sortBy) {
+		setParameter(SORT_BY_PARAMETER_KEY, sortBy);
+		return this;
+	}
 
 }

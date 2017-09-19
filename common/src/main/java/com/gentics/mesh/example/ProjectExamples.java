@@ -9,7 +9,7 @@ import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectListResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.project.ProjectUpdateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 
 public class ProjectExamples extends AbstractExamples {
 
@@ -17,10 +17,10 @@ public class ProjectExamples extends AbstractExamples {
 		ProjectResponse project = new ProjectResponse();
 		project.setUuid(randomUUID());
 		project.setName(name);
-		project.setCreated(getTimestamp());
-		project.setCreator(getUserReference());
-		project.setEdited(getTimestamp());
-		project.setEditor(getUserReference());
+		project.setCreated(createTimestamp());
+		project.setCreator(createUserReference());
+		project.setEdited(createTimestamp());
+		project.setEditor(createUserReference());
 		project.setPermissions(READ, DELETE, CREATE);
 		project.setRootNode(createNodeReference());
 		return project;
@@ -30,10 +30,10 @@ public class ProjectExamples extends AbstractExamples {
 		ProjectResponse project2 = new ProjectResponse();
 		project2.setUuid(randomUUID());
 		project2.setName("Dummy Project (Mobile)");
-		project2.setCreated(getTimestamp());
-		project2.setCreator(getUserReference());
-		project2.setEdited(getTimestamp());
-		project2.setEditor(getUserReference());
+		project2.setCreated(createTimestamp());
+		project2.setCreator(createUserReference());
+		project2.setEdited(createTimestamp());
+		project2.setEditor(createUserReference());
 		project2.setPermissions(READ, DELETE, CREATE);
 		project2.setRootNode(createNodeReference());
 		return project2;
@@ -56,7 +56,7 @@ public class ProjectExamples extends AbstractExamples {
 	public ProjectCreateRequest getProjectCreateRequest(String name) {
 		ProjectCreateRequest projectCreate = new ProjectCreateRequest();
 		projectCreate.setName(name);
-		projectCreate.setSchema(new SchemaReference().setName("folder").setUuid(randomUUID()));
+		projectCreate.setSchema(new SchemaReferenceImpl().setName("folder").setUuid(randomUUID()));
 		return projectCreate;
 	}
 

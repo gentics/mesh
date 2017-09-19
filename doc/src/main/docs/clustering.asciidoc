@@ -1,0 +1,183 @@
+= Clustering
+
+== Basics
+
+It is possible to run Gentics Mesh in a cluster mode. 
+When done so all changes to your data with one exception are automatically being distributed to other instances. 
+Binary data (uploads) are currently not being handled by our cluster implementation and need dedicated handling.
+
+At its core Gentics Mesh makes use of the OrientDB clustering mode which allows run multiple instances in a master-master mode.
+This means that each instance is able to receive data which is in turn automatically being distributed to other instances.
+
+Clustering is also a way to increase redundancy and fault tolerance since each instance can still run independently in case of a network failure or hardware fault of other instances.
+
+== Configuration
+
+include::includes/cluster-options.inc[]
+
+.mesh.yml
+[source,yaml]
+----
+nodeName: "nodeA"
+cluster:
+  networkHost: "192.168.10.20"
+  clusterName: "mesh.testing"
+  vertxPort: 0
+  enabled: true
+----
+
+=== Port Mapping
+
+Clustering involves the following components: Vert.x, ElasticSearch and OrientDB, Hazelcast. Each component utilize different ports.
+
+.Table Port Mappings
+[options="header",cols="5%,30%,20%,45%"]
+|===
+|Component | Default Port |Protocol | Configuration file
+
+| Vert.x
+| 0  (random, eventbus server)
+| TCP
+| `mesh.yml` - `cluster/vertxPort`
+
+|ElasticSearch
+|9200 (REST), 9300-9400 (Clustering)
+|TCP, UDP
+| `mesh.yml` - `search/transportPort`
+
+|OrientDB
+|2424-2430 (binary), 2480-2490 (HTTP)
+|TCP
+| `orientdb-server-config.xml` - `network/listeners/listener`
+
+| Hazelcast
+| 2434 (dynamic)
+| TCP, UDP
+| `hazelcast.xml` - `network/port`
+
+|===
+
+
+== Setup
+
+* Initial setup
+
+If you have not yet run Gentics Mesh with clustering mode disabled you need to setup a database first. You can either start Gentics Mesh in single mode and stop it and start it again in clustering mode or start Gentics Mesh directly using the `-initCluster` command line argument.
+Similar to the first time when you start Gentics Mesh in single mode a new data directory will be created for you. The only difference is that new instances will be able to connect to your instance right away.
+
+* Adding slaves
+
+If you have not yet setup a database and just start Gentics Mesh with clustering enabled not much will happen. It will wait for other instances in the cluster which can provide a database for it.
+
+You can start up additional instances once your initial cluster instance is up and running.
+
+* Enable clusering on an non-clustered instance
+
+Just set the `cluster.enabled` flag and specifiy a `cluster.clusterName` within your `mesh.yml`.
+
+== Node discovery
+
+By default all nodes will be discovered using link:https://en.wikipedia.org/wiki/Multicast_Source_Discovery_Protocol[multicast discovery].
+In that configuration all instances must share the same network and be able to receive multicast broadcast messages.
+
+Alternatively it is also possible to hardcode the IP addresses of the cluster instances within the `hazelcast.xml` file. Just replace the existing join section with the following one:
+
+.hazelcast.xml
+[source,xml]
+----
+...
+  <join>
+    <multicast enabled="false"></multicast>
+      <tcp-ip enabled="true">
+   	  <member>192.168.10.100</member> <!-- instance A -->
+   	  <member>192.168.10.101</member> <!-- instance B -->
+    </tcp-ip>
+  </join>
+...
+----
+
+  
+== Session distribution
+
+Since Gentics Mesh is not using sessions it is not needed to distribute sessions across the cluster. A link:https://jwt.io/introduction/[JWT] will be used to authenticate the user. 
+Each instance of Gentics Mesh is able to validate the JWT by using the crypographic key which has been stored in the `config/keystore.jceks` file. This means the same `keystore.jceks` must be available on each instance.
+
+== Handling binary data
+
+File uploads are currently not automatically being distributed. This means that it is required to share the data of the upload directory manually.
+One option would be to use a clustering filesystem like link:https://en.wikipedia.org/wiki/GlusterFS[GlusterFS] or link:https://en.wikipedia.org/wiki/Network_File_System[NFS].
+The only directory which needs to be shared across the cluster is the upload directory which can be configured in the `mesh.yml` file.
+
+.mesh.yml
+[source,yaml]
+----
+upload:
+  directory: "data/binaryFiles"
+----
+
+== Transaction handling / Change propagation
+
+Transactions are directly being handled by link:http://orientdb.com/docs/2.2.x/Transactions.html[OrientDB].
+
+The distribution of data (write) is executed synchronous and will be directly visible on other instances. 
+Operations which modify permissions are handled asynchronous and may take a few miliseconds to propagate throughout the cluster.
+Operations which invoke node, micronode or release migrations can only be executed seperately throughout the cluster. 
+A running migration on one instance will cause the other instances of the cluster to reject any migration request as long as a migration is active.
+
+== Upgrading a cluster
+
+Upgrading the used Gentics Mesh version is straightforward. First you stop a single instance within your cluster. Next you start the instance up again using the new Gentics Mesh version.
+This instance will not join the existing cluster because the used Gentics Mesh version is different. Any changelog entry which is being executed may alter the data format in a way which would make it incompatible with older Gentics Mesh versions.
+
+Once you validated that the new version is still working fine with your implementation you can startup new instances to join the newly formed cluster.
+
+NOTE: Make sure that the new instances are not reusing the data directory from the old instance.
+
+You can rollback at any time by just removing the newly formed cluster instances. This is also very useful if you just want to quickly test a new version before upgrading the whole cluster.
+
+== AWS / GCE / Kubernetes support
+
+There is currently no build-in support for these platforms.
+
+== FAQ
+
+[qanda]
+What happens if my initial instances crashes?::
+The cluster automatically realigns itself and operation can continue normally.
+
+Can I add new instances at any time?::
+Yes. New instances can be added at any time.
+
+Are my changes directly visible on other instances?::
+The replication handles this as fast as the network allows but by default replication is happening synchronous to fullfill the `writeQuorum` and asynchronous once the quorum has been satisfied.
+which means that it could take a few moments until your changes are propagated throughout the cluster.
+This behaviour is configureable via the OrientDB `writeQuorum` setting. Take a look at the link:https://orientdb.com/docs/2.2/Distributed-Configuration.html[OrientDB distributed configuration] if you want to know more.
+Our tests currently only cover the `writeQuorum` and `readQuorum` of *1*.
+
+What happens if the network between my instances fails?::
+The instances will continue to operate normally but will no longer be able to see each other's changes.
+Once the network issue is resolved the instances will update themself and resume normal operation.
+
+I want to use a load balancer to distribute load across my instances. Do I need to handle sticky sessions?::
+Gentics Mesh does not use sessions. Instead a stateless JWT mechanism is used. This means you can direct your traffic to any of clustered instances. No need to setup something special.
+
+Can I use sharding to split up my data across multiple data centers?::
+No. Sharding is not supported but you are still able to span a cluster across multiple datacenters.
+
+Can I split a single cluster into one or more clusters?::
+Yes. This can be done by starting a new cluster using a different `cluster.clusterName` setting within the `mesh.yml` file.
+
+== Monitoring
+
+The `/api/v1/admin/cluster/status` endpoint can be used to retrieve information about the cluster topology and status of instances within the cluster.
+
+Additionally it is possible to access the JMX beans of OrientDB and ElasticSearch.
+
+== Limitations
+
+* Binary data (uploads) are currently not automatically being distributed to other nodes.
+  You may use a clustering filesystem or NFS to share this data.
+* All cluster instances must use the same Gentics Mesh version.
+  Checks have been added to prevent instances from joining a cluster if the Gentics Mesh version does not match up. 
+* It is currently not possible to configure network bind host and different network host announce host.
+  The node must currently bind to the same network which is also used to connect to the host.
