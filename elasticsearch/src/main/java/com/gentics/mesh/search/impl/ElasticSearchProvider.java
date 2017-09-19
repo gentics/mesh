@@ -4,8 +4,10 @@ import static org.elasticsearch.client.Requests.refreshRequest;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -33,11 +35,9 @@ import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.xcontent.NamedXContentRegistry;
 import org.elasticsearch.common.xcontent.XContentType;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeValidationException;
-import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.Mesh;
@@ -49,7 +49,6 @@ import com.gentics.mesh.search.SearchProvider;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.elasticsearch.search.builder.SearchSourceBuilder;
 import rx.Completable;
 import rx.Single;
 
@@ -83,7 +82,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 		ElasticSearchOptions searchOptions = options.getSearchOptions();
 		long start = System.currentTimeMillis();
-		Settings settings = Settings.builder()
+		Settings.Builder builder = Settings.builder()
 
 				.put("thread_pool.index.queue_size", -1)
 
@@ -95,15 +94,10 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				.put("node.name", options.getNodeName())
 
-				.put("transport.tcp.port", searchOptions.getTransportPort())
-
-				.put("plugin.types", DeleteByQueryPlugin.class.getName())
+				.put("transport.tcp.port", searchOptions.getTransportPort());
 
 				// .put("index.store.type", "mmapfs")
 
-				.put("index.max_result_window", Integer.MAX_VALUE);
-
-		builder.put("node.meshVersion", Mesh.getPlainVersion());
 		ClusterOptions clusterOptions = options.getClusterOptions();
 		if (clusterOptions.isEnabled()) {
 			// We append the mesh version to the cluster name to ensure that no clusters from different mesh versions can be formed.
@@ -111,10 +105,9 @@ public class ElasticSearchProvider implements SearchProvider {
 			// We run a multi-master environment. Every node should be able to be elected as master
 			builder.put("node.master", true);
 			builder.put("network.host", clusterOptions.getNetworkHost());
-			builder.put("discovery.zen.ping.multicast.enabled", true);
 			// TODO configure public and bind host
 		} else {
-			builder.put("transport.type", "local")
+			builder.put("transport.type", "local");
 		}
 
 		// Add custom properties
@@ -123,13 +116,13 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 		Settings settings = builder.build();
 
-		Set<Class<? extends Plugin>> classpathPlugins = new HashSet<>();
-		classpathPlugins.add(DeleteByQueryPlugin.class);
-		if (clusterOptions.isEnabled()) {
-			classpathPlugins.add(MulticastDiscoveryPlugin.class);
+		node = new Node(settings);
+		try {
+			node.start();
+		} catch (NodeValidationException e) {
+			throw new RuntimeException("Could not start search node", e);
 		}
-		node = new MeshNode(settings, classpathPlugins);
-		node.start();
+
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 		}
@@ -231,7 +224,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
 			mappingRequestBuilder.setType(type);
 
-			mappingRequestBuilder.setSource(mapping.toString());
+			mappingRequestBuilder.setSource(mapping.toString(), XContentType.JSON);
 			mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
 
 				@Override
@@ -240,7 +233,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 
 				@Override
-				public void onFailure(Throwable e) {
+				public void onFailure(Exception e) {
 					sub.onError(e);
 				}
 			});
@@ -352,7 +345,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				String documentId = entry.getKey();
 				JsonObject document = entry.getValue();
 				IndexRequestBuilder indexRequestBuilder = getSearchClient().prepareIndex(index, type, documentId);
-				indexRequestBuilder.setSource(document.toString());
+				indexRequestBuilder.setSource(document.toString(), XContentType.JSON);
 				bulk.add(indexRequestBuilder);
 			}
 
@@ -386,7 +379,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 			IndexRequestBuilder builder = getSearchClient().prepareIndex(index, type, uuid);
 
-			builder.setSource(document.toString());
+			builder.setSource(document.toString(), XContentType.JSON);
 			builder.execute(new ActionListener<IndexResponse>() {
 
 				@Override

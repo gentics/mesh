@@ -205,7 +205,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 				// Generate the mapping for the specific type
 				JsonObject mapping = getTransformator().getMapping(normalizedDocumentType);
-				mappingRequestBuilder.setSource(mapping.toString());
+				mappingRequestBuilder.setSource(mapping.toString(), XContentType.JSON);
 
 				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
 
