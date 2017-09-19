@@ -827,7 +827,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeReindex() {
-		return prepareRequest(GET, "/search/reindex", GenericMessageResponse.class);
+		return prepareRequest(POST, "/search/reindex", GenericMessageResponse.class);
 	}
 
 	@Override
