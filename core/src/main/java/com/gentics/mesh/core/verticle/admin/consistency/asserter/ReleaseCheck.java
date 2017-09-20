@@ -17,8 +17,8 @@ public class ReleaseCheck implements ConsistencyCheck {
 
 	@Override
 	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-		for (Project project : boot.projectRoot().findAll()) {
-			for (Release release : project.getReleaseRoot().findAll()) {
+		for (Project project : boot.projectRoot().findAllIt()) {
+			for (Release release : project.getReleaseRoot().findAllIt()) {
 				checkRelease(release, response);
 			}
 		}

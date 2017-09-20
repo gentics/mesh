@@ -176,9 +176,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				// know which indices must be searched. In that case we just
 				// iterate over all projects and collect index names per
 				// release.
-				List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
-				for (Project currentProject : projects) {
-					for (Release release : currentProject.getReleaseRoot().findAll()) {
+				for (Project currentProject : boot.meshRoot().getProjectRoot().findAllIt()) {
+					for (Release release : currentProject.getReleaseRoot().findAllIt()) {
 						for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
 							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), release.getUuid(), version.getUuid(),
 									ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
@@ -219,7 +218,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	private void store(Set<Single<String>> obs, Node node, HandleContext context) {
 		if (context.getReleaseUuid() == null) {
-			for (Release release : node.getProject().getReleaseRoot().findAll()) {
+			for (Release release : node.getProject().getReleaseRoot().findAllIt()) {
 				store(obs, node, release.getUuid(), context);
 			}
 		} else {
@@ -387,19 +386,16 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * Update all node specific index mappings for all projects and all releases.
 	 */
 	public void updateNodeIndexMappings() {
-		List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
-		projects.forEach((project) -> {
-			List<? extends Release> releases = project.getReleaseRoot().findAll();
+		for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
 			// Add the draft and published index names per release to the map
-			for (Release release : releases) {
-				// Each release specific index has also document type specific
-				// mappings
+			for (Release release : project.getReleaseRoot().findAllIt()) {
+				// Each release specific index has also document type specific mappings
 				for (SchemaContainerVersion containerVersion : release.findAllSchemaVersions()) {
 					updateNodeIndexMapping(project, release, containerVersion, DRAFT, containerVersion.getSchema()).await();
 					updateNodeIndexMapping(project, release, containerVersion, PUBLISHED, containerVersion.getSchema()).await();
 				}
 			}
-		});
+		}
 	}
 
 	/**

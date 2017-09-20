@@ -45,6 +45,7 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
+import com.gentics.mesh.util.VersionUtil;
 
 import rx.Single;
 
@@ -190,6 +191,15 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	public SchemaContainerVersion getVersion(SchemaContainer schemaContainer) {
 		return out(HAS_SCHEMA_VERSION).mark().in(HAS_PARENT_CONTAINER).has("uuid", schemaContainer.getUuid()).back()
 				.nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+	}
+
+	@Override
+	public SchemaContainerVersion findLatestSchemaVersion(SchemaContainer schemaContainer) {
+		return out(HAS_SCHEMA_VERSION).mark().in(HAS_PARENT_CONTAINER).retain(schemaContainer).back().order((o1,o2)-> {
+			String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
+			String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
+			return VersionUtil.compareVersions(v1, v2);
+		}).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
 	@Override

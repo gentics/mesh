@@ -132,7 +132,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		batch.delete(this, true);
 
 		// Nodes which used this tag must be updated in the search index for all releases
-		for (Release release : getProject().getReleaseRoot().findAll()) {
+		for (Release release : getProject().getReleaseRoot().findAllIt()) {
 			String releaseUuid = release.getUuid();
 			for (Node node : getNodes(release)) {
 				batch.store(node, releaseUuid);
@@ -206,7 +206,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	@Override
 	public void handleRelatedEntries(HandleElementAction action) {
 		// Locate all nodes that use the tag across all releases and update these nodes
-		for (Release release : getProject().getReleaseRoot().findAll()) {
+		for (Release release : getProject().getReleaseRoot().findAllIt()) {
 			for (Node node : getNodes(release)) {
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
 					HandleContext context = new HandleContext();

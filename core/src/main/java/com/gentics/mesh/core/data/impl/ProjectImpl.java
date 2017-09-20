@@ -199,7 +199,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		batch.dropIndex(Tag.composeIndexName(getUuid()));
 
 		// Drop all node indices for all releases and all schema versions
-		for (Release release : getReleaseRoot().findAll()) {
+		for (Release release : getReleaseRoot().findAllIt()) {
 			for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					String pubIndex = NodeGraphFieldContainer.composeIndexName(getUuid(), release.getUuid(), version.getUuid(), type);
@@ -222,7 +222,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		getNodeRoot().delete(dummyBatch);
 
 		// Unassign the schema from the container
-		for (SchemaContainer container : getSchemaContainerRoot().findAll()) {
+		for (SchemaContainer container : getSchemaContainerRoot().findAllIt()) {
 			getSchemaContainerRoot().removeSchemaContainer(container);
 		}
 
@@ -275,17 +275,17 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 			return;
 		}
 		// All nodes of all releases are related to this project. All nodes/containers must be updated if the project name changes.
-		for (Node node : getNodeRoot().findAll()) {
+		for (Node node : getNodeRoot().findAllIt()) {
 			action.call(node, new HandleContext());
 		}
 
-		for (TagFamily family : getTagFamilyRoot().findAll()) {
-			for (Tag tag : family.findAll()) {
+		for (TagFamily family : getTagFamilyRoot().findAllIt()) {
+			for (Tag tag : family.findAllIt()) {
 				action.call(tag, new HandleContext().setProjectUuid(getUuid()));
 			}
 		}
 
-		for (TagFamily tagFamily : getTagFamilyRoot().findAll()) {
+		for (TagFamily tagFamily : getTagFamilyRoot().findAllIt()) {
 			action.call(tagFamily, new HandleContext().setProjectUuid(getUuid()));
 		}
 	}

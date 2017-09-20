@@ -15,7 +15,7 @@ public class GroupCheck implements ConsistencyCheck {
 
 	@Override
 	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-		for (Group group : boot.groupRoot().findAll()) {
+		for (Group group : boot.groupRoot().findAllIt()) {
 			checkGroup(group, response);
 		}
 	}

@@ -197,13 +197,13 @@ public class TestDataProvider {
 	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (eg. admin groups, roles, users)
 	 */
 	private void addBootstrappedData() {
-		for (Group group : root.getGroupRoot().findAll()) {
+		for (Group group : root.getGroupRoot().findAllIt()) {
 			groups.put(group.getName(), group);
 		}
-		for (User user : root.getUserRoot().findAll()) {
+		for (User user : root.getUserRoot().findAllIt()) {
 			users.put(user.getUsername(), user);
 		}
-		for (Role role : root.getRoleRoot().findAll()) {
+		for (Role role : root.getRoleRoot().findAllIt()) {
 			roles.put(role.getName(), role);
 		}
 	}

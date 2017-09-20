@@ -2,8 +2,6 @@ package com.gentics.mesh.core.data.root.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_ROOT;
 
-import java.util.List;
-
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -34,8 +32,7 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 		super.addMicroschema(microschema);
 
 		// assign the latest schema version to all releases of the project
-		List<? extends Release> releases = getProject().getReleaseRoot().findAll();
-		for (Release release : releases) {
+		for (Release release : getProject().getReleaseRoot().findAllIt()) {
 			release.assignMicroschemaVersion(microschema.getLatestVersion());
 		}
 	}
@@ -45,8 +42,7 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 		super.removeMicroschema(microschema);
 
 		// unassign the schema from all releases
-		List<? extends Release> releases = getProject().getReleaseRoot().findAll();
-		for (Release release : releases) {
+		for (Release release : getProject().getReleaseRoot().findAllIt()) {
 			release.unassignMicroschema(microschema);
 		}
 	}

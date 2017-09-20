@@ -246,4 +246,12 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 */
 	ReleaseMicroschemaEdge findReleaseMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion);
 
+	/**
+	 * Find the latest schema version which is assigned to the release which matches the provided schema container
+	 * 
+	 * @param schemaByUuid
+	 * @return Found version or null if no version could be found.
+	 */
+	SchemaContainerVersion findLatestSchemaVersion(SchemaContainer schemaContainer);
+
 }

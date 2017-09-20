@@ -12,8 +12,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -80,14 +78,12 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, release);
 
 		// assign the newest schema versions of all project schemas to the release
-		List<? extends SchemaContainer> projectSchemas = getProject().getSchemaContainerRoot().findAll();
-		for (SchemaContainer schemaContainer : projectSchemas) {
+		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAllIt()) {
 			release.assignSchemaVersion(schemaContainer.getLatestVersion());
 		}
 
 		// ... same for microschemas
-		List<? extends MicroschemaContainer> projectMicroschemas = getProject().getMicroschemaContainerRoot().findAll();
-		for (MicroschemaContainer microschemaContainer : projectMicroschemas) {
+		for (MicroschemaContainer microschemaContainer : getProject().getMicroschemaContainerRoot().findAllIt()) {
 			release.assignMicroschemaVersion(microschemaContainer.getLatestVersion());
 		}
 

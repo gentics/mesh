@@ -156,7 +156,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			assertThat(new ArrayList<Release>(releaseRoot.findAll())).usingElementComparatorOnFields("uuid").containsExactly(initialRelease,
 					firstNewRelease, secondNewRelease, thirdNewRelease);
 
-			for (SchemaContainer schema : project.getSchemaContainerRoot().findAll()) {
+			for (SchemaContainer schema : project.getSchemaContainerRoot().findAllIt()) {
 				for (Release release : Arrays.asList(initialRelease, firstNewRelease, secondNewRelease, thirdNewRelease)) {
 					assertThat(release).as(release.getName()).hasSchema(schema).hasSchemaVersion(schema.getLatestVersion());
 				}

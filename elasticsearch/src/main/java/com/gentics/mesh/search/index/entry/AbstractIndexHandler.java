@@ -252,7 +252,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			log.info("Handling full reindex entry");
 			SearchQueueBatch batch = searchQueue.create();
 			// Add all elements from the root vertex of the handler to the created batch
-			for (T element : getRootVertex().findAll()) {
+			for (T element : getRootVertex().findAllIt()) {
 				if (element instanceof IndexableElement) {
 					IndexableElement indexableElement = (IndexableElement) element;
 					log.info("Invoking reindex in handler {" + getClass().getName() + "} for element {" + indexableElement.getUuid() + "}");

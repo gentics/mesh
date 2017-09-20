@@ -92,12 +92,12 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			i++;
 
 			// Project tagFamilies
-			for (TagFamily tagFamily : project().getTagFamilyRoot().findAll()) {
+			for (TagFamily tagFamily : project().getTagFamilyRoot().findAllIt()) {
 				batchEnttries.put("project tagfamily " + tagFamily.getName(),
 						new ElementEntry(DROP_INDEX, tagFamily.getUuid()));
 
 				// tags
-				for (Tag tag : tagFamily.findAll()) {
+				for (Tag tag : tagFamily.findAllIt()) {
 					batchEnttries.put("project tag " + tag.getName(), new ElementEntry(DROP_INDEX, tag.getUuid()));
 				}
 			}

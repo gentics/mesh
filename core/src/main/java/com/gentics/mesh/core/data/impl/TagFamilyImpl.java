@@ -169,7 +169,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		}
 
 		// Delete all the tags of the tag root
-		for (Tag tag : findAll()) {
+		for (Tag tag : findAllIt()) {
 			tag.delete(batch);
 		}
 		batch.delete(this, false);
@@ -199,7 +199,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	@Override
 	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
-			for (Tag tag : findAll()) {
+			for (Tag tag : findAllIt()) {
 				tag.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
 		}
@@ -208,7 +208,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void handleRelatedEntries(HandleElementAction action) {
-		for (Tag tag : findAll()) {
+		for (Tag tag : findAllIt()) {
 			HandleContext context = new HandleContext();
 			context.setProjectUuid(tag.getProject().getUuid());
 			action.call(tag, context);
@@ -216,7 +216,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 			// To prevent nodes from being handled multiple times
 			HashSet<String> handledNodes = new HashSet<>();
 
-			for (Release release : tag.getProject().getReleaseRoot().findAll()) {
+			for (Release release : tag.getProject().getReleaseRoot().findAllIt()) {
 				for (Node node : tag.getNodes(release)) {
 					if (!handledNodes.contains(node.getUuid())) {
 						handledNodes.add(node.getUuid());

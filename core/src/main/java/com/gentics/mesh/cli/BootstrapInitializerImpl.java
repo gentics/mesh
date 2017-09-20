@@ -166,7 +166,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @throws InvalidNameException
 	 */
 	private void initProjects() throws InvalidNameException {
-		for (Project project : meshRoot().getProjectRoot().findAll()) {
+		for (Project project : meshRoot().getProjectRoot().findAllIt()) {
 			routerStorage.addProjectRouter(project.getName());
 			if (log.isDebugEnabled()) {
 				log.debug("Initalized project {" + project.getName() + "}");
@@ -826,7 +826,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public Collection<? extends String> getAllLanguageTags() {
 		if (allLanguageTags.isEmpty()) {
-			for (Language l : languageRoot().findAll()) {
+			for (Language l : languageRoot().findAllIt()) {
 				String tag = l.getLanguageTag();
 				allLanguageTags.add(tag);
 			}
