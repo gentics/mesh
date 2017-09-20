@@ -68,7 +68,7 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	/**
 	 * Return the tag family to which the tag belongs.
 	 * 
-	 * @return
+	 * @return Tag family of the tag
 	 */
 	TagFamily getTagFamily();
 
@@ -85,7 +85,7 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	 * @param release
 	 *            release
 	 * 
-	 * @return
+	 * @return List of nodes
 	 */
 	List<? extends Node> getNodes(Release release);
 
@@ -119,7 +119,7 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 	/**
 	 * Return the project to which the tag was assigned to
 	 * 
-	 * @return
+	 * @return Project of the tag
 	 */
 	Project getProject();
 

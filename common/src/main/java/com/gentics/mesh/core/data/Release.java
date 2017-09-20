@@ -96,7 +96,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	/**
 	 * Get the root vertex.
 	 * 
-	 * @return
+	 * @return release root to which the release belongs
 	 */
 	ReleaseRoot getRoot();
 
@@ -130,7 +130,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 *
 	 * @param schemaContainerVersion
 	 *            schema container version
-	 * @return true iff assigned
+	 * @return true if assigned
 	 */
 	boolean contains(SchemaContainerVersion schemaContainerVersion);
 
@@ -204,7 +204,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	/**
 	 * Project to which the release belongs.
 	 * 
-	 * @return
+	 * @return Project of the release
 	 */
 	Project getProject();
 
@@ -234,7 +234,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * Find the release schema edge for the given version.
 	 * 
 	 * @param schemaContainerVersion
-	 * @return
+	 * @return Found edge between release and version
 	 */
 	ReleaseSchemaEdge findReleaseSchemaEdge(SchemaContainerVersion schemaContainerVersion);
 
@@ -242,7 +242,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * Find the release microschema edge for the given version.
 	 * 
 	 * @param microschemaContainerVersion
-	 * @return
+	 * @return Found edge between release and version
 	 */
 	ReleaseMicroschemaEdge findReleaseMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion);
 
