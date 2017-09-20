@@ -6,6 +6,8 @@
 [[0.10.4]]
 == 0.10.4 (TBD)
 
+icon:plus[] Config: It is now possible to configure the host to which the Gentics Mesh http server should bind to. Default is still 0.0.0.0 (all interfaces).
+
 icon:plus[] REST: The `/api/v1/admin/reindex` and `/api/v1/admin/createMappings` have been changed from `GET` to `POST`.
 
 [[0.10.3]]

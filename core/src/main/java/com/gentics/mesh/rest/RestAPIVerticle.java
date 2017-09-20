@@ -127,11 +127,13 @@ public class RestAPIVerticle extends AbstractVerticle {
 		// throw new MeshConfigurationException("The local router was not setup correctly. Startup failed.");
 		// }
 		int port = config().getInteger("port");
+		String host = config().getString("host");
 		if (log.isInfoEnabled()) {
-			log.info("Starting http server on port {" + port + "}..");
+			log.info("Starting http server on {" + host + ":" + port + "}..");
 		}
 		HttpServerOptions options = new HttpServerOptions();
 		options.setPort(port);
+		options.setHost(host);
 		options.setCompressionSupported(true);
 		// MeshOptions meshOptions = Mesh.mesh().getOptions();
 		// HttpServerConfig httpServerOptions = meshOptions.getHttpServerOptions();
