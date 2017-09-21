@@ -8,6 +8,12 @@ import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
  */
 public interface ReleaseVersionEdge {
 
+	public static final String ACTIVE_PROPERTY_KEY = "active";
+
+	public static final String MIGRATION_STATUS_PROPERTY_KEY = "migrationStatus";
+
+	public static final String JOB_UUID_PROPERTY_KEY = "jobUuid";
+
 	/**
 	 * Return the migration status for the edge. This will indicate whether the connected schema or microschema has been fully migrated.
 	 * 
@@ -42,5 +48,19 @@ public interface ReleaseVersionEdge {
 	 * @param uuid
 	 */
 	void setJobUuid(String uuid);
+
+	/**
+	 * Check whether the version is active and thus should be considered when handling release schema versions.
+	 * 
+	 * @return
+	 */
+	boolean isActive();
+
+	/**
+	 * Set the active flag of the edge to indicate that the version should no longer be used when considering release schema versions.
+	 * 
+	 * @param flag
+	 */
+	void setActive(boolean flag);
 
 }

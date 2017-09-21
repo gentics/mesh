@@ -135,11 +135,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Map<String, String> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
-			List<? extends Project> projects = boot.meshRoot().getProjectRoot().findAll();
-			for (Project project : projects) {
-				List<? extends Release> releases = project.getReleaseRoot().findAll();
+			for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
 				// Add the draft and published index names per release to the map
-				for (Release release : releases) {
+				for (Release release : project.getReleaseRoot().findAllIt()) {
 					// Each release specific index has also document type specific mappings
 					for (SchemaContainerVersion containerVersion : release.findAllSchemaVersions()) {
 						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
@@ -167,18 +165,17 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			Project project = ac.getProject();
 			if (project != null) {
 				Release release = ac.getRelease();
-				for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+				// Locate all schema versions which need to be taken into consideration when choosing the indices
+				for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), version.getUuid(),
 							ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
 				}
 			} else {
-				// The project was not specified. Maybe a global search wants to
-				// know which indices must be searched. In that case we just
-				// iterate over all projects and collect index names per
-				// release.
+				// The project was not specified. Maybe a global search wants to know which indices must be searched.
+				// In that case we just iterate over all projects and collect index names per release.
 				for (Project currentProject : boot.meshRoot().getProjectRoot().findAllIt()) {
 					for (Release release : currentProject.getReleaseRoot().findAllIt()) {
-						for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+						for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 							indices.add(NodeGraphFieldContainer.composeIndexName(currentProject.getUuid(), release.getUuid(), version.getUuid(),
 									ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
 						}

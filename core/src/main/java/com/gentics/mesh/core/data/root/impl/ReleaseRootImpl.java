@@ -79,12 +79,12 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 
 		// assign the newest schema versions of all project schemas to the release
 		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAllIt()) {
-			release.assignSchemaVersion(schemaContainer.getLatestVersion());
+			release.assignSchemaVersion(creator, schemaContainer.getLatestVersion());
 		}
 
 		// ... same for microschemas
 		for (MicroschemaContainer microschemaContainer : getProject().getMicroschemaContainerRoot().findAllIt()) {
-			release.assignMicroschemaVersion(microschemaContainer.getLatestVersion());
+			release.assignMicroschemaVersion(creator, microschemaContainer.getLatestVersion());
 		}
 
 		return release;

@@ -13,10 +13,6 @@ import com.syncleus.ferma.AbstractEdgeFrame;
  */
 public abstract class AbstractVersionEdge extends AbstractEdgeFrame implements ReleaseVersionEdge {
 
-	public static final String MIGRATION_STATUS_PROPERTY_KEY = "migrationStatus";
-
-	public static final String JOB_UUID_PROPERTY_KEY = "jobUuid";
-
 	@Override
 	public void setMigrationStatus(MigrationStatus status) {
 		setProperty(MIGRATION_STATUS_PROPERTY_KEY, status.name());
@@ -44,6 +40,16 @@ public abstract class AbstractVersionEdge extends AbstractEdgeFrame implements R
 	@Override
 	public void setJobUuid(String uuid) {
 		setProperty(JOB_UUID_PROPERTY_KEY, uuid);
+	}
+
+	@Override
+	public boolean isActive() {
+		return getProperty(ACTIVE_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setActive(boolean active) {
+		setProperty(ACTIVE_PROPERTY_KEY, active);
 	}
 
 }

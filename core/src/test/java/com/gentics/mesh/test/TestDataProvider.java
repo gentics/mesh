@@ -19,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.Language;
@@ -48,6 +47,7 @@ import com.gentics.mesh.demo.UserInfo;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.MeshJsonException;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -333,9 +333,10 @@ public class TestDataProvider {
 		project = root.getProjectRoot().create(PROJECT_NAME, userInfo.getUser(), getSchemaContainer("folder").getLatestVersion());
 		project.addLanguage(getEnglish());
 		project.addLanguage(getGerman());
-		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("folder"));
-		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("content"));
-		project.getSchemaContainerRoot().addSchemaContainer(getSchemaContainer("binary_content"));
+		User jobUser = userInfo.getUser();
+		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("folder"));
+		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("content"));
+		project.getSchemaContainerRoot().addSchemaContainer(jobUser, getSchemaContainer("binary_content"));
 		projectUuid = project.getUuid();
 		releaseUuid = project.getInitialRelease().getUuid();
 
@@ -445,7 +446,7 @@ public class TestDataProvider {
 
 		MicroschemaContainer vcardMicroschemaContainer = boot.microschemaContainerRoot().create(vcardMicroschema, userInfo.getUser());
 		microschemaContainers.put(vcardMicroschemaContainer.getName(), vcardMicroschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(vcardMicroschemaContainer);
+		project.getMicroschemaContainerRoot().addMicroschema(user(), vcardMicroschemaContainer);
 	}
 
 	/**
@@ -473,7 +474,7 @@ public class TestDataProvider {
 
 		MicroschemaContainer microschemaContainer = boot.microschemaContainerRoot().create(captionedImageMicroschema, userInfo.getUser());
 		microschemaContainers.put(captionedImageMicroschema.getName(), microschemaContainer);
-		project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
+		project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer);
 	}
 
 	public Node addFolder(Node rootNode, String englishName, String germanName) {

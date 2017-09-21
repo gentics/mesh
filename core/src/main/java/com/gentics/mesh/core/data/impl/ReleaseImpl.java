@@ -8,6 +8,8 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEX
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
 
@@ -19,8 +21,10 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
 import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
+import com.gentics.mesh.core.data.release.ReleaseVersionEdge;
 import com.gentics.mesh.core.data.release.impl.ReleaseMicroschemaEdgeImpl;
 import com.gentics.mesh.core.data.release.impl.ReleaseSchemaEdgeImpl;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
@@ -209,6 +213,11 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
+	public Iterable<? extends SchemaContainerVersion> findActiveSchemaVersions() {
+		return outE(HAS_SCHEMA_VERSION).has(ReleaseVersionEdge.ACTIVE_PROPERTY_KEY, true).outV().frameExplicit(SchemaContainerVersionImpl.class);
+	}
+
+	@Override
 	public Iterable<? extends ReleaseSchemaEdge> findAllSchemaVersionEdges() {
 		return outE(HAS_SCHEMA_VERSION).frameExplicit(ReleaseSchemaEdgeImpl.class);
 	}
@@ -237,26 +246,50 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public ReleaseSchemaEdge assignSchemaVersion(SchemaContainerVersion schemaContainerVersion) {
+	public Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion) {
 		ReleaseSchemaEdge edge = findReleaseSchemaEdge(schemaContainerVersion);
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
-			setUniqueLinkOutTo(schemaContainerVersion, HAS_SCHEMA_VERSION);
-			return findReleaseSchemaEdge(schemaContainerVersion);
+			edge = addFramedEdgeExplicit(HAS_SCHEMA_VERSION, schemaContainerVersion, ReleaseSchemaEdgeImpl.class);
+			// Enqueue the schema migration for each found schema version
+			SchemaContainerVersion currentVersion = findLatestSchemaVersion(schemaContainerVersion.getSchemaContainer());
+			edge.setActive(true);
+			if (currentVersion != null) {
+				Job job = MeshInternal.get().boot().jobRoot().enqueueSchemaMigration(user, this, currentVersion, schemaContainerVersion);
+				edge.setMigrationStatus(QUEUED);
+				edge.setJobUuid(job.getUuid());
+				return job;
+			} else {
+				// No migration needed since there was no previous version assigned.
+				edge.setMigrationStatus(COMPLETED);
+				return null;
+			}
 		} else {
-			return edge;
+			return null;
 		}
 	}
 
 	@Override
-	public ReleaseMicroschemaEdge assignMicroschemaVersion(MicroschemaContainerVersion microschemaContainerVersion) {
+	public Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion) {
 		ReleaseMicroschemaEdge edge = findReleaseMicroschemaEdge(microschemaContainerVersion);
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
-			setUniqueLinkOutTo(microschemaContainerVersion, HAS_MICROSCHEMA_VERSION);
-			return findReleaseMicroschemaEdge(microschemaContainerVersion);
+			edge = addFramedEdgeExplicit(HAS_MICROSCHEMA_VERSION, microschemaContainerVersion, ReleaseMicroschemaEdgeImpl.class);
+			// Enqueue the job so that the worker can process it later on
+			MicroschemaContainerVersion currentVersion = findLatestMicroschemaVersion(microschemaContainerVersion.getSchemaContainer());
+			edge.setActive(true);
+			if (currentVersion != null) {
+				Job job = MeshInternal.get().boot().jobRoot().enqueueMicroschemaMigration(user, this, currentVersion, microschemaContainerVersion);
+				edge.setMigrationStatus(QUEUED);
+				edge.setJobUuid(job.getUuid());
+				return job;
+			} else {
+				// No migration needed since there was no previous version assigned.
+				edge.setMigrationStatus(COMPLETED);
+				return null;
+			}
 		} else {
-			return edge;
+			return null;
 		}
 	}
 

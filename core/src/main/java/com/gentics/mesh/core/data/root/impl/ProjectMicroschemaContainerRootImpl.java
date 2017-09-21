@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MIC
 
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ProjectImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -28,12 +29,12 @@ public class ProjectMicroschemaContainerRootImpl extends MicroschemaContainerRoo
 	}
 
 	@Override
-	public void addMicroschema(MicroschemaContainer microschema) {
-		super.addMicroschema(microschema);
+	public void addMicroschema(User user, MicroschemaContainer microschema) {
+		super.addMicroschema(user, microschema);
 
 		// assign the latest schema version to all releases of the project
 		for (Release release : getProject().getReleaseRoot().findAllIt()) {
-			release.assignMicroschemaVersion(microschema.getLatestVersion());
+			release.assignMicroschemaVersion(user, microschema.getLatestVersion());
 		}
 	}
 

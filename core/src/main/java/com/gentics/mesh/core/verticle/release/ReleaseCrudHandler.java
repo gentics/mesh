@@ -27,7 +27,6 @@ import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
-import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -148,8 +147,6 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			Project project = ac.getProject();
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 
-			JobRoot jobRoot = boot.jobRoot();
-			User user = ac.getUser();
 			Tuple<Single<ReleaseInfoSchemaList>, SearchQueueBatch> tuple = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
 
@@ -161,11 +158,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 						throw error(BAD_REQUEST, "release_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
 					}
-					ReleaseSchemaEdge edge = release.assignSchemaVersion(version);
-					edge.setMigrationStatus(QUEUED);
-					// Queue the schema migration for each found schema version
-					Job job = jobRoot.enqueueSchemaMigration(user, release, assignedVersion, version);
-					edge.setJobUuid(job.getUuid());
+					release.assignSchemaVersion(ac.getUser(), version);
 				}
 
 				return Tuple.tuple(getSchemaVersionsInfo(release), batch);
@@ -213,7 +206,6 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			ReleaseInfoMicroschemaList microschemaReferenceList = ac.fromJson(ReleaseInfoMicroschemaList.class);
 			MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
 
-			JobRoot jobRoot = boot.jobRoot();
 			User user = ac.getUser();
 			Single<ReleaseInfoMicroschemaList> model = db.tx(() -> {
 				// Transform the list of references into microschema container version vertices
@@ -225,10 +217,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 						throw error(BAD_REQUEST, "release_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
 					}
-					ReleaseMicroschemaEdge edge = release.assignMicroschemaVersion(version);
-					edge.setMigrationStatus(QUEUED);
-					Job job = jobRoot.enqueueMicroschemaMigration(user, release, assignedVersion, version);
-					edge.setJobUuid(job.getUuid());
+					release.assignMicroschemaVersion(user, version);
 				}
 				return getMicroschemaVersions(release);
 			});

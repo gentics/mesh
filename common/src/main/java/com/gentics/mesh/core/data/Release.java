@@ -5,6 +5,7 @@ import static com.gentics.mesh.Events.EVENT_RELEASE_DELETED;
 import static com.gentics.mesh.Events.EVENT_RELEASE_UPDATED;
 
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
 import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
@@ -112,12 +113,13 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	ReleaseRoot getRoot();
 
 	/**
-	 * Assign the given schema version to the release. This will effectively unassign all other schema versions of the schema.
+	 * Assign the given schema version to the release and queue a job which will trigger the migration.
 	 * 
+	 * @param user
 	 * @param schemaContainerVersion
-	 * @return Edge between release and schema version
+	 * @return Job which was created to trigger the migration or null if no job was created because the version has already been assigned before
 	 */
-	ReleaseSchemaEdge assignSchemaVersion(SchemaContainerVersion schemaContainerVersion);
+	Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion);
 
 	/**
 	 * Unassign all schema versions of the given schema from this release.
@@ -146,19 +148,20 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	boolean contains(SchemaContainerVersion schemaContainerVersion);
 
 	/**
-	 * Get an iterable of all latest schema container versions.
+	 * Get an iterable of all schema container versions.
 	 * 
 	 * @return Iterable
 	 */
 	Iterable<? extends SchemaContainerVersion> findAllSchemaVersions();
 
 	/**
-	 * Assign the given microschema version to the release Unassign all other versions of the microschema.
+	 * Assign the given microschema version to the release and queue a job which executes the migration.
+	 * @param user 
 	 * 
 	 * @param microschemaContainerVersion
-	 * @return Edge between release and microschema
+	 * @return Job which has been created if the version has not yet been assigned. Otherwise null will be returned.
 	 */
-	ReleaseMicroschemaEdge assignMicroschemaVersion(MicroschemaContainerVersion microschemaContainerVersion);
+	Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion);
 
 	/**
 	 * Unassigns all versions of the given microschema from this release.
@@ -199,6 +202,14 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * @return Iterable
 	 */
 	Iterable<? extends ReleaseMicroschemaEdge> findAllLatestMicroschemaVersionEdges();
+
+	/**
+	 * Get an iterable over all active schema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which
+	 * is queued and will soon contain containers due to an executed node migration.
+	 * 
+	 * @return Iterable
+	 */
+	Iterable<? extends SchemaContainerVersion> findActiveSchemaVersions();
 
 	/**
 	 * Get an iterable of all latest schema container versions.

@@ -124,10 +124,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
-			project().getLatestRelease().assignSchemaVersion(versionA);
+			User user = user();
+			project().getLatestRelease().assignSchemaVersion(user, versionA);
 
 			// create a node based on the old schema
-			User user = user();
 			Language english = english();
 			Node parentNode = folder("2015");
 			firstNode = parentNode.create(user, versionA, project());
@@ -140,7 +140,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 					user);
 			secondEnglishContainer.createString(fieldName).setString("second content");
 
-			project().getLatestRelease().assignSchemaVersion(versionB);
+			project().getLatestRelease().assignSchemaVersion(user, versionB);
 			tx.success();
 		}
 
@@ -221,10 +221,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
-			project().getLatestRelease().assignSchemaVersion(versionA);
+			User user = user();
+			project().getLatestRelease().assignSchemaVersion(user, versionA);
 
 			// create a node based on the old schema
-			User user = user();
 			Language english = english();
 			Node parentNode = folder("2015");
 			firstNode = parentNode.create(user, versionA, project());
@@ -233,7 +233,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			firstEnglishContainer.createString(fieldName).setString("first content");
 
 			// do the schema migration twice
-			project().getLatestRelease().assignSchemaVersion(versionB);
+			project().getLatestRelease().assignSchemaVersion(user, versionB);
 			tx.success();
 		}
 		Thread.sleep(1000);
@@ -266,7 +266,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
-			project().getLatestRelease().assignSchemaVersion(versionA);
+			project().getLatestRelease().assignSchemaVersion(user(), versionA);
 
 			// create a node and publish
 			node = folder("2015").create(user(), versionA, project());
@@ -276,7 +276,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
 			node.publish(ac, createBatch(), "en");
 
-			project().getLatestRelease().assignSchemaVersion(versionB);
+			project().getLatestRelease().assignSchemaVersion(user(), versionB);
 			tx.success();
 		}
 
@@ -434,7 +434,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 
-			project().getLatestRelease().assignSchemaVersion(versionA);
+			project().getLatestRelease().assignSchemaVersion(user(), versionA);
 
 			// create a node and publish
 			node = folder("2015").create(user(), versionA, project());
@@ -453,7 +453,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			NodeGraphFieldContainer updatedEnglishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
 			updatedEnglishContainer.getString(fieldName).setString("new content");
-			project().getLatestRelease().assignSchemaVersion(versionB);
+			project().getLatestRelease().assignSchemaVersion(user(), versionB);
 			tx.success();
 		}
 
@@ -473,7 +473,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	private SchemaContainer createDummySchemaWithChanges(String fieldName, boolean setAddRaw) {
 
 		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
-		boot().schemaContainerRoot().addSchemaContainer(container);
+		boot().schemaContainerRoot().addSchemaContainer(user(), container);
 
 		// create version 1 of the schema
 		SchemaContainerVersion versionA = Tx.getActive().getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
@@ -520,7 +520,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		// Link everything together
 		container.setLatestVersion(versionB);
 		versionA.setNextVersion(versionB);
-		boot().schemaContainerRoot().addSchemaContainer(container);
+		boot().schemaContainerRoot().addSchemaContainer(user(), container);
 		return container;
 
 	}
@@ -535,6 +535,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	 * @throws Throwable
 	 */
 	private void doSchemaMigration(SchemaContainerVersion versionA, SchemaContainerVersion versionB) throws Throwable {
+		// TODO remove job scheduling
 		String jobUuid = tx(() -> boot().jobRoot().enqueueSchemaMigration(user(), project().getLatestRelease(), versionA, versionB).getUuid());
 		triggerAndWaitForJob(jobUuid);
 	}
@@ -554,6 +555,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			call(() -> client().takeNodeOffline(PROJECT_NAME, project().getBaseNode().getUuid(), new PublishParametersImpl().setRecursive(true)));
 
+			User user = user();
 			// create version 1 of the microschema
 			container = tx.getGraph().addFramedVertex(MicroschemaContainerImpl.class);
 			versionA = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
@@ -567,7 +569,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot().microschemaContainerRoot().addMicroschema(container);
+			boot().microschemaContainerRoot().addMicroschema(user, container);
 
 			// create version 2 of the microschema (with the field renamed)
 			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
@@ -666,7 +668,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot().microschemaContainerRoot().addMicroschema(container);
+			boot().microschemaContainerRoot().addMicroschema(user(), container);
 
 			// create version 2 of the microschema (with the field renamed)
 			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);
@@ -780,7 +782,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			microschemaA.addField(oldField);
 			versionA.setName("migratedSchema");
 			versionA.setSchema(microschemaA);
-			boot().microschemaContainerRoot().addMicroschema(container);
+			boot().microschemaContainerRoot().addMicroschema(user(), container);
 
 			// create version 2 of the microschema (with the field renamed)
 			versionB = tx.getGraph().addFramedVertex(MicroschemaContainerVersionImpl.class);

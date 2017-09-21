@@ -42,6 +42,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.util.TestUtils;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -295,7 +296,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			}
 
 			// assign the schema to the project
-			project.getSchemaContainerRoot().addSchemaContainer(schemaContainer);
+			project.getSchemaContainerRoot().addSchemaContainer(user(), schemaContainer);
 
 			for (Release release : Arrays.asList(initialRelease, newRelease)) {
 				assertThat(release).as(release.getName()).hasSchema(schemaContainer).hasSchemaVersion(latestVersion)
@@ -327,6 +328,20 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	}
 
 	@Test
+	public void testFindActiveSchemaVersions() {
+		try (Tx tx = tx()) {
+
+			Project project = project();
+			Release release = latestRelease();
+			List<SchemaContainerVersion> versions = project.getSchemaContainerRoot().findAll().stream().map(SchemaContainer::getLatestVersion)
+					.collect(Collectors.toList());
+
+			List<SchemaContainerVersion> activeVersions = TestUtils.toList(release.findActiveSchemaVersions());
+			assertThat(activeVersions).as("List of schema versions").usingElementComparatorOnFields("uuid", "name", "version").containsAll(versions);
+		}
+	}
+
+	@Test
 	public void testReleaseSchemaVersion() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
@@ -335,7 +350,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			SchemaContainerVersion firstVersion = schemaContainer.getLatestVersion();
 
 			// assign the schema to the project
-			project.getSchemaContainerRoot().addSchemaContainer(schemaContainer);
+			project.getSchemaContainerRoot().addSchemaContainer(user(), schemaContainer);
 
 			// update schema
 			updateSchema(schemaContainer, "newfield");
@@ -392,7 +407,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			}
 
 			// assign the schema to the project
-			project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
+			project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer);
 
 			for (Release release : Arrays.asList(initialRelease, newRelease)) {
 				assertThat(release).as(release.getName()).hasMicroschema(microschemaContainer).hasMicroschemaVersion(latestVersion)
@@ -434,7 +449,7 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 			MicroschemaContainerVersion firstVersion = microschemaContainer.getLatestVersion();
 
 			// assign the microschema to the project
-			project.getMicroschemaContainerRoot().addMicroschema(microschemaContainer);
+			project.getMicroschemaContainerRoot().addMicroschema(user(), microschemaContainer);
 
 			// update microschema
 			updateMicroschema(microschemaContainer, "newfield");

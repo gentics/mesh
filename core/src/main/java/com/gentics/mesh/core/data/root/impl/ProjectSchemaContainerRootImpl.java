@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.data.root.impl;
 
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -15,12 +16,12 @@ public class ProjectSchemaContainerRootImpl extends SchemaContainerRootImpl {
 	}
 
 	@Override
-	public void addSchemaContainer(SchemaContainer schema) {
-		super.addSchemaContainer(schema);
+	public void addSchemaContainer(User user, SchemaContainer schema) {
+		super.addSchemaContainer(user, schema);
 
 		// assign the latest schema version to all releases of the project
 		for (Release release : getProject().getReleaseRoot().findAllIt()) {
-			release.assignSchemaVersion(schema.getLatestVersion());
+			release.assignSchemaVersion(user, schema.getLatestVersion());
 		}
 	}
 
