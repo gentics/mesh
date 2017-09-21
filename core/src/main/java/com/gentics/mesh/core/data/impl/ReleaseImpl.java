@@ -3,6 +3,8 @@ package com.gentics.mesh.core.data.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_MICROSCHEMA_VERSION;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LATEST_SCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_NEXT_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
@@ -45,7 +47,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
-import com.gentics.mesh.util.VersionUtil;
 
 import rx.Single;
 
@@ -175,46 +176,43 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public boolean contains(SchemaContainer schemaContainer) {
-		SchemaContainer foundSchemaContainer = out(HAS_SCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", schemaContainer.getUuid())
+		SchemaContainer foundSchemaContainer = out(HAS_LATEST_SCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", schemaContainer.getUuid())
 				.nextOrDefaultExplicit(SchemaContainerImpl.class, null);
 		return foundSchemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(SchemaContainerVersion schemaContainerVersion) {
-		SchemaContainerVersion foundSchemaContainerVersion = out(HAS_SCHEMA_VERSION).has("uuid", schemaContainerVersion.getUuid())
+		SchemaContainerVersion foundSchemaContainerVersion = out(HAS_LATEST_SCHEMA_VERSION).has("uuid", schemaContainerVersion.getUuid())
 				.nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 		return foundSchemaContainerVersion != null;
 	}
 
 	@Override
-	public SchemaContainerVersion getVersion(SchemaContainer schemaContainer) {
-		return out(HAS_SCHEMA_VERSION).mark().in(HAS_PARENT_CONTAINER).has("uuid", schemaContainer.getUuid()).back()
+	public SchemaContainerVersion findLatestSchemaVersion(SchemaContainer schemaContainer) {
+		return out(HAS_LATEST_SCHEMA_VERSION).mark().in(HAS_PARENT_CONTAINER).retain(schemaContainer).back()
 				.nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
 	@Override
-	public SchemaContainerVersion findLatestSchemaVersion(SchemaContainer schemaContainer) {
-		return out(HAS_SCHEMA_VERSION).mark().in(HAS_PARENT_CONTAINER).retain(schemaContainer).back().order((o1,o2)-> {
-			String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
-			String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
-			return VersionUtil.compareVersions(v1, v2);
-		}).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
+	public MicroschemaContainerVersion findLatestMicroschemaVersion(MicroschemaContainer schemaContainer) {
+		return out(HAS_LATEST_SCHEMA_VERSION).mark().in(HAS_PARENT_CONTAINER).retain(schemaContainer).back()
+				.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
 	@Override
 	public List<? extends SchemaContainerVersion> findAllSchemaVersions() {
-		return out(HAS_SCHEMA_VERSION).toListExplicit(SchemaContainerVersionImpl.class);
+		return out(HAS_LATEST_SCHEMA_VERSION).toListExplicit(SchemaContainerVersionImpl.class);
 	}
 
 	@Override
 	public Iterable<? extends ReleaseSchemaEdge> findAllSchemaVersionEdges() {
-		return outE(HAS_SCHEMA_VERSION).frameExplicit(ReleaseSchemaEdgeImpl.class);
+		return outE(HAS_LATEST_SCHEMA_VERSION).frameExplicit(ReleaseSchemaEdgeImpl.class);
 	}
 
 	@Override
 	public Iterable<? extends ReleaseMicroschemaEdge> findAllMicroschemaVersionEdges() {
-		return outE(HAS_MICROSCHEMA_VERSION).frameExplicit(ReleaseMicroschemaEdgeImpl.class);
+		return outE(HAS_LATEST_MICROSCHEMA_VERSION).frameExplicit(ReleaseMicroschemaEdgeImpl.class);
 	}
 
 	@Override
@@ -230,17 +228,6 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	}
 
 	@Override
-	public ReleaseSchemaEdge findReleaseSchemaEdge(SchemaContainerVersion schemaContainerVersion) {
-		return outE(HAS_SCHEMA_VERSION).mark().inV().retain(schemaContainerVersion).back().nextOrDefaultExplicit(ReleaseSchemaEdgeImpl.class, null);
-	}
-
-	@Override
-	public ReleaseMicroschemaEdge findReleaseMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion) {
-		return outE(HAS_MICROSCHEMA_VERSION).mark().inV().retain(microschemaContainerVersion).back()
-				.nextOrDefaultExplicit(ReleaseMicroschemaEdgeImpl.class, null);
-	}
-
-	@Override
 	public Release unassignMicroschema(MicroschemaContainer microschemaContainer) {
 		unassign(microschemaContainer);
 		return this;
@@ -248,31 +235,25 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public boolean contains(MicroschemaContainer microschema) {
-		MicroschemaContainer foundMicroschemaContainer = out(HAS_MICROSCHEMA_VERSION).in(HAS_PARENT_CONTAINER).has("uuid", microschema.getUuid())
-				.nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
+		MicroschemaContainer foundMicroschemaContainer = out(HAS_LATEST_MICROSCHEMA_VERSION).in(HAS_PARENT_CONTAINER)
+				.has("uuid", microschema.getUuid()).nextOrDefaultExplicit(MicroschemaContainerImpl.class, null);
 		return foundMicroschemaContainer != null;
 	}
 
 	@Override
 	public boolean contains(MicroschemaContainerVersion microschemaContainerVersion) {
-		MicroschemaContainerVersion foundMicroschemaContainerVersion = out(HAS_MICROSCHEMA_VERSION).has("uuid", microschemaContainerVersion.getUuid())
-				.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
+		MicroschemaContainerVersion foundMicroschemaContainerVersion = out(HAS_LATEST_MICROSCHEMA_VERSION)
+				.has("uuid", microschemaContainerVersion.getUuid()).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 		return foundMicroschemaContainerVersion != null;
 	}
 
 	@Override
-	public MicroschemaContainerVersion getVersion(MicroschemaContainer microschemaContainer) {
-		return out(HAS_MICROSCHEMA_VERSION).mark().in(HAS_PARENT_CONTAINER).has("uuid", microschemaContainer.getUuid()).back()
-				.nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
-	}
-
-	@Override
 	public List<? extends MicroschemaContainerVersion> findAllMicroschemaVersions() throws InvalidArgumentException {
-		return out(HAS_MICROSCHEMA_VERSION).toListExplicit(MicroschemaContainerVersionImpl.class);
+		return out(HAS_LATEST_MICROSCHEMA_VERSION).toListExplicit(MicroschemaContainerVersionImpl.class);
 	}
 
 	/**
-	 * Assign the given schema container version to this release and unassign all other versions.
+	 * Assign the given schema container version to this release.
 	 * 
 	 * @param version
 	 *            Version to assign
@@ -280,31 +261,35 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	protected <R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>> void assign(
 			GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC> version) {
 		String edgeLabel = null;
+		String latestEdgeLabel = null;
 		if (version instanceof SchemaContainerVersion) {
 			edgeLabel = HAS_SCHEMA_VERSION;
+			latestEdgeLabel = HAS_LATEST_SCHEMA_VERSION;
 		}
 		if (version instanceof MicroschemaContainerVersion) {
 			edgeLabel = HAS_MICROSCHEMA_VERSION;
+			latestEdgeLabel = HAS_LATEST_MICROSCHEMA_VERSION;
 		}
 
 		setUniqueLinkOutTo(version, edgeLabel);
+		setUniqueLinkOutTo(version, latestEdgeLabel);
 
-		// unlink all other versions
+		// Unlink all latest other versions. This is done so that only one latest version edge remains to the version.
 		SCV previous = version.getPreviousVersion();
 		while (previous != null) {
-			unlinkOut(previous, edgeLabel);
+			unlinkOut(previous, latestEdgeLabel);
 			previous = previous.getPreviousVersion();
 		}
 
 		SCV next = version.getNextVersion();
 		while (next != null) {
-			unlinkOut(next, edgeLabel);
+			unlinkOut(next, latestEdgeLabel);
 			next = next.getNextVersion();
 		}
 	}
 
 	/**
-	 * Unassigns all version of the container from the release.
+	 * Unassigns the latest version of the container from the release.
 	 * 
 	 * @param container
 	 *            Container to handle
@@ -314,14 +299,15 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 		SCV version = container.getLatestVersion();
 		String edgeLabel = null;
 		if (version instanceof SchemaContainerVersion) {
-			edgeLabel = HAS_SCHEMA_VERSION;
+			edgeLabel = HAS_LATEST_SCHEMA_VERSION;
 		}
 		if (version instanceof MicroschemaContainerVersion) {
-			edgeLabel = HAS_MICROSCHEMA_VERSION;
+			edgeLabel = HAS_LATEST_MICROSCHEMA_VERSION;
 		}
 
 		// Iterate over all versions of the container and unassign it from the
-		// release
+		// release. We don't know which version was assigned to the release
+		// so we just unassign all versions of the container.
 		while (version != null) {
 			unlinkOut(version, edgeLabel);
 			version = version.getPreviousVersion();
@@ -364,6 +350,17 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 		return db.operateTx(() -> {
 			return Single.just(transformToRestSync(ac, level, languageTags));
 		});
+	}
+
+	@Override
+	public ReleaseSchemaEdge findReleaseSchemaEdge(SchemaContainerVersion schemaContainerVersion) {
+		return outE(HAS_SCHEMA_VERSION).mark().inV().retain(schemaContainerVersion).back().nextOrDefaultExplicit(ReleaseSchemaEdgeImpl.class, null);
+	}
+
+	@Override
+	public ReleaseMicroschemaEdge findReleaseMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion) {
+		return outE(HAS_MICROSCHEMA_VERSION).mark().inV().retain(microschemaContainerVersion).back()
+				.nextOrDefaultExplicit(ReleaseMicroschemaEdgeImpl.class, null);
 	}
 
 }

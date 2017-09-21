@@ -336,7 +336,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			container.setEditor(user);
 			container.setLastEditedTimestamp();
 			container.setLanguage(language);
-			container.setSchemaContainerVersion(release.getVersion(getSchemaContainer()));
+			// We need create a new container with no reference. So use the latest version available to use.
+			container.setSchemaContainerVersion(release.findLatestSchemaVersion(getSchemaContainer()));
 		}
 		if (previous != null) {
 			// set the next version number
@@ -1480,7 +1481,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Make sure the container was already migrated. Otherwise the update can't proceed.
 			SchemaContainerVersion schemaContainerVersion = latestDraftVersion.getSchemaContainerVersion();
-			if (!latestDraftVersion.getSchemaContainerVersion().equals(release.getVersion(schemaContainerVersion.getSchemaContainer()))) {
+			if (!latestDraftVersion.getSchemaContainerVersion().equals(release.findLatestSchemaVersion(schemaContainerVersion.getSchemaContainer()))) {
 				throw error(BAD_REQUEST, "node_error_migration_incomplete");
 			}
 

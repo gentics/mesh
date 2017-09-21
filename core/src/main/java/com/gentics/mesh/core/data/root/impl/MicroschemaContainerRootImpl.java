@@ -124,7 +124,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		MicroschemaContainerVersion foundVersion = null;
 
 		if (release != null) {
-			foundVersion = release.getVersion(container);
+			foundVersion = release.findLatestMicroschemaVersion(container);
 		} else if (version != null) {
 			foundVersion = container.findVersionByRev(version);
 		} else {

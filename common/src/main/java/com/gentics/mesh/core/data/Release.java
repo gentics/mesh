@@ -23,6 +23,20 @@ import com.gentics.mesh.error.InvalidArgumentException;
  *
  * A release is a bundle of specific schema versions which are used within a project. Releases can be used to create multiple tree structures within a single
  * project.
+ * 
+ * The release will keep track of assigned versions and also store the information which schema version has ever been assigned to the release.
+ * 
+ * A release has the following responsibilities:
+ * 
+ * <ul>
+ * <li>Manage assigned releases for the REST API</li>
+ * <li>Provide information for node migration handlers. A handler must know what version needs to be migrated.</li>
+ * <li>Provide information to the search index handler so that a list of indices can be compiled which should be used when searching</li>
+ * <ul>
+ * 
+ * The latest version will be used for the creation of new nodes and should never be be downgraded. The other assigned versions will be used to manage
+ * migrations and identify which release specific search indices should be used when using the search indices.
+ * 
  */
 public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, NamedElement, ReferenceableElement<ReleaseReference>, UserTrackingVertex {
 
@@ -57,7 +71,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	/**
 	 * Get whether all nodes of the previous release have been migrated.
 	 * 
-	 * @return true iff all nodes have been migrated
+	 * @return true if all nodes have been migrated
 	 */
 	boolean isMigrated();
 
@@ -65,7 +79,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * Set whether all nodes have been migrated.
 	 * 
 	 * @param migrated
-	 *            true iff all nodes have been migrated
+	 *            true if all nodes have been migrated
 	 * @return Fluent API
 	 */
 	Release setMigrated(boolean migrated);
@@ -135,16 +149,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	boolean contains(SchemaContainerVersion schemaContainerVersion);
 
 	/**
-	 * Get the schema container version of the given schema container, that is assigned to this release or null if not assigned at all.
-	 * 
-	 * @param schemaContainer
-	 *            schema container
-	 * @return assigned version or null
-	 */
-	SchemaContainerVersion getVersion(SchemaContainer schemaContainer);
-
-	/**
-	 * Get list of all schema container versions.
+	 * Get list of all latest schema container versions.
 	 * 
 	 * @return list
 	 */
@@ -183,15 +188,6 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * @return true iff assigned
 	 */
 	boolean contains(MicroschemaContainerVersion microschemaContainerVersion);
-
-	/**
-	 * Get the microschema container version of the given microschema container, that is assigned to this release or null if not assigned at all.
-	 * 
-	 * @param microschemaContainer
-	 *            schema container
-	 * @return assigned version or null
-	 */
-	MicroschemaContainerVersion getVersion(MicroschemaContainer microschemaContainer);
 
 	/**
 	 * Get list of all microschema container versions.
@@ -249,9 +245,17 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	/**
 	 * Find the latest schema version which is assigned to the release which matches the provided schema container
 	 * 
-	 * @param schemaByUuid
+	 * @param schemaContainer
 	 * @return Found version or null if no version could be found.
 	 */
 	SchemaContainerVersion findLatestSchemaVersion(SchemaContainer schemaContainer);
+
+	/**
+	 * Find the latest microschema version which is assigned to the release which matches the provided microschema container
+	 * 
+	 * @param schemaContainer
+	 * @return Found version or null if no version could be found.
+	 */
+	MicroschemaContainerVersion findLatestMicroschemaVersion(MicroschemaContainer schemaContainer);
 
 }

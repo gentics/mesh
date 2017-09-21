@@ -156,15 +156,14 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList.getSchemas()) {
 					SchemaContainerVersion version = schemaContainerRoot.fromReference(reference);
-					// Invoke schema migration for each found schema version
-
-					SchemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
+					SchemaContainerVersion assignedVersion = release.findLatestSchemaVersion(version.getSchemaContainer());
 					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 						throw error(BAD_REQUEST, "release_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
 					}
 					ReleaseSchemaEdge edge = release.assignSchemaVersion(version);
 					edge.setMigrationStatus(QUEUED);
+					// Queue the schema migration for each found schema version
 					Job job = jobRoot.enqueueSchemaMigration(user, release, assignedVersion, version);
 					edge.setJobUuid(job.getUuid());
 				}
@@ -221,7 +220,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 				for (MicroschemaReference reference : microschemaReferenceList.getMicroschemas()) {
 					MicroschemaContainerVersion version = microschemaContainerRoot.fromReference(reference);
 
-					MicroschemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
+					MicroschemaContainerVersion assignedVersion = release.findLatestMicroschemaVersion(version.getSchemaContainer());
 					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 						throw error(BAD_REQUEST, "release_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());

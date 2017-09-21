@@ -25,6 +25,7 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
  *            Schema container version type
  * @param <SC>
  *            Schema container type
+ *            
  */
 public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
 		extends MeshCoreVertex<R, SCV>, ReferenceableElement<RE> {
