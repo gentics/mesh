@@ -1,5 +1,5 @@
 ## Gentics Mesh Version, operating system, or hardware.
-- v0.9.x
+- v0.10.x
 
 ## Operating System
 - Linux

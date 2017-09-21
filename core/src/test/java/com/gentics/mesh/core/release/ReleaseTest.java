@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.release;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,6 +20,7 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
+import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
@@ -26,6 +28,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.handler.MicroschemaComparator;
 import com.gentics.mesh.core.data.schema.handler.SchemaComparator;
+import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.service.BasicObjectTestcases;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
@@ -235,27 +238,34 @@ public class ReleaseTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreateDelete() throws Exception {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Override
 	public void testCRUDPermissions() throws Exception {
 		// TODO Auto-generated method stub
-
 	}
 
 	@Test
 	public void testReadSchemaVersions() throws Exception {
 		try (Tx tx = tx()) {
 			Project project = project();
-			List<SchemaContainerVersion> versions = project.getSchemaContainerRoot().findAll().stream().map(SchemaContainer::getLatestVersion)
-					.collect(Collectors.toList());
+			Release release = latestRelease();
+			List<SchemaContainerVersion> versions = project.getSchemaContainerRoot().findAll().stream().filter(v -> !v.getName().equals("content"))
+					.map(SchemaContainer::getLatestVersion).collect(Collectors.toList());
+
+			SchemaContainerVersionImpl newVersion = tx.getGraph().addFramedVertexExplicit(SchemaContainerVersionImpl.class);
+			newVersion.setVersion("4.0");
+			newVersion.setName("content");
+			versions.add(newVersion);
+			newVersion.setSchemaContainer(schemaContainer("content"));
+			release.linkOut(newVersion, HAS_SCHEMA_VERSION);
 
 			List<SchemaContainerVersion> found = new ArrayList<>();
-			for (SchemaContainerVersion version : project.getInitialRelease().findAllSchemaVersions()) {
-				found.add(version);
+			for (ReleaseSchemaEdge versionedge : release.findAllLatestSchemaVersionEdges()) {
+				found.add(versionedge.getSchemaContainerVersion());
 			}
-			assertThat(found).as("List of schema versions").usingElementComparatorOnFields("uuid", "name", "version").containsAll(versions);
+			assertThat(found).as("List of schema versions").usingElementComparatorOnFields("uuid", "name", "version")
+					.containsOnlyElementsOf(versions);
 		}
 	}
 

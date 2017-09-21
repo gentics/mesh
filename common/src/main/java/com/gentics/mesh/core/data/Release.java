@@ -4,8 +4,6 @@ import static com.gentics.mesh.Events.EVENT_RELEASE_CREATED;
 import static com.gentics.mesh.Events.EVENT_RELEASE_DELETED;
 import static com.gentics.mesh.Events.EVENT_RELEASE_UPDATED;
 
-import java.util.List;
-
 import com.gentics.mesh.core.TypeInfo;
 import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
 import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
@@ -16,7 +14,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.release.ReleaseReference;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
-import com.gentics.mesh.error.InvalidArgumentException;
 
 /**
  * The Release domain model interface.
@@ -149,11 +146,11 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	boolean contains(SchemaContainerVersion schemaContainerVersion);
 
 	/**
-	 * Get list of all latest schema container versions.
+	 * Get an iterable of all latest schema container versions.
 	 * 
-	 * @return list
+	 * @return Iterable
 	 */
-	List<? extends SchemaContainerVersion> findAllSchemaVersions();
+	Iterable<? extends SchemaContainerVersion> findAllSchemaVersions();
 
 	/**
 	 * Assign the given microschema version to the release Unassign all other versions of the microschema.
@@ -190,12 +187,25 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	boolean contains(MicroschemaContainerVersion microschemaContainerVersion);
 
 	/**
-	 * Get list of all microschema container versions.
+	 * Get an iterable of all microschema container versions.
 	 * 
-	 * @return list
-	 * @throws InvalidArgumentException
+	 * @return Iterable
 	 */
-	List<? extends MicroschemaContainerVersion> findAllMicroschemaVersions() throws InvalidArgumentException;
+	Iterable<? extends MicroschemaContainerVersion> findAllMicroschemaVersions();
+
+	/**
+	 * Get an iterable of all latest microschema container versions.
+	 * 
+	 * @return Iterable
+	 */
+	Iterable<? extends ReleaseMicroschemaEdge> findAllLatestMicroschemaVersionEdges();
+
+	/**
+	 * Get an iterable of all latest schema container versions.
+	 * 
+	 * @return Iterable
+	 */
+	Iterable<? extends ReleaseSchemaEdge> findAllLatestSchemaVersionEdges();
 
 	/**
 	 * Project to which the release belongs.

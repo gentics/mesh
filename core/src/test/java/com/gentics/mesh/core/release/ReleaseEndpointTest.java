@@ -572,6 +572,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 		JobResponse job = jobList.getData().stream().filter(j -> j.getProperties().get("schemaUuid").equals(schema.getUuid())).findAny().get();
 
 		ReleaseInfoSchemaList schemaList = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));
+		System.out.println(schemaList.toJson());
 		ReleaseSchemaInfo schemaInfo = schemaList.getSchemas().stream().filter(s -> s.getUuid().equals(schema.getUuid())).findFirst().get();
 		assertEquals(COMPLETED, schemaInfo.getMigrationStatus());
 		assertEquals(job.getUuid(), schemaInfo.getJobUuid());
@@ -804,21 +805,21 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 	@Test
 	public void testAssignOlderMicroschemaVersion() throws Exception {
-		try (Tx tx = tx()) {
-			// create version 1 of a microschema
-			MicroschemaResponse microschema = createMicroschema("microschemaname");
 
-			// generate version 2
-			updateMicroschema(microschema.getUuid(), "newmicroschemaname");
+		// create version 1 of a microschema
+		MicroschemaResponse microschema = createMicroschema("microschemaname");
 
-			// assign microschema to project
-			call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschema.getUuid()));
+		// generate version 2
+		updateMicroschema(microschema.getUuid(), "newmicroschemaname");
 
-			// try to downgrade microschema version
-			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
-					new MicroschemaReferenceImpl().setUuid(microschema.getUuid()).setVersion("1.0")), BAD_REQUEST,
-					"release_error_downgrade_microschema_version", "microschemaname", "2.0", "1.0");
-		}
+		// assign microschema to project
+		call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschema.getUuid()));
+
+		// try to downgrade microschema version
+		call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
+				new MicroschemaReferenceImpl().setUuid(microschema.getUuid()).setVersion("1.0")), BAD_REQUEST,
+				"release_error_downgrade_microschema_version", "microschemaname", "2.0", "1.0");
+
 	}
 
 	@Test

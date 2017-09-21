@@ -62,8 +62,6 @@ public class GraphRelationships {
 		// Releases
 		db.addEdgeType(HAS_SCHEMA_VERSION);
 		db.addEdgeType(HAS_MICROSCHEMA_VERSION);
-		db.addEdgeType(HAS_LATEST_SCHEMA_VERSION);
-		db.addEdgeType(HAS_LATEST_MICROSCHEMA_VERSION);
 
 		// Jobs
 		db.addEdgeType(HAS_JOB);
@@ -152,9 +150,6 @@ public class GraphRelationships {
 	// Releases
 	public static final String HAS_SCHEMA_VERSION = "HAS_SCHEMA_VERSION";
 	public static final String HAS_MICROSCHEMA_VERSION = "HAS_MICROSCHEMA_VERSION";
-
-	public static final String HAS_LATEST_SCHEMA_VERSION = "HAS_LATEST_SCHEMA_VERSION";
-	public static final String HAS_LATEST_MICROSCHEMA_VERSION = "HAS_LATEST_MICROSCHEMA_VERSION";
 
 	// Changelog system
 	private static final String HAS_CHANGELOG_ROOT = "HAS_CHANGELOG_ROOT";

@@ -11,6 +11,7 @@ import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.util.VersionUtil;
 
 /**
  * A {@link GraphFieldSchemaContainerVersion} stores the versioned data for a {@link GraphFieldSchemaContainer} element.
@@ -25,10 +26,10 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
  *            Schema container version type
  * @param <SC>
  *            Schema container type
- *            
+ * 
  */
 public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainer, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
-		extends MeshCoreVertex<R, SCV>, ReferenceableElement<RE> {
+		extends MeshCoreVertex<R, SCV>, ReferenceableElement<RE>, Comparable<SCV> {
 
 	public static final String VERSION_PROPERTY_KEY = "version";
 
@@ -38,6 +39,13 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 * @return
 	 */
 	String getVersion();
+
+	/**
+	 * Set the version.
+	 * 
+	 * @param version
+	 */
+	void setVersion(String version);
 
 	/**
 	 * Return the schema model that is stored within the container.
@@ -177,4 +185,12 @@ public interface GraphFieldSchemaContainerVersion<R extends FieldSchemaContainer
 	 */
 	void setJson(String json);
 
+	/**
+	 * Compare two versions.
+	 * 
+	 * @param version
+	 */
+	default int compareTo(SCV version) {
+		return VersionUtil.compareVersions(getVersion(), version.getVersion());
+	}
 }

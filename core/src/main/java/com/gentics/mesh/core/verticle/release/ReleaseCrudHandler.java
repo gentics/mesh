@@ -247,7 +247,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 * @return single emitting the rest model
 	 */
 	protected Single<ReleaseInfoSchemaList> getSchemaVersionsInfo(Release release) {
-		return Observable.from(release.findAllSchemaVersionEdges()).map(edge -> {
+		return Observable.from(release.findAllLatestSchemaVersionEdges()).map(edge -> {
 			SchemaReference reference = edge.getSchemaContainerVersion().transformToReference();
 			ReleaseSchemaInfo info = new ReleaseSchemaInfo(reference);
 			info.setMigrationStatus(edge.getMigrationStatus());
@@ -268,7 +268,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 * @return single emitting the rest model
 	 */
 	protected Single<ReleaseInfoMicroschemaList> getMicroschemaVersions(Release release) {
-		return Observable.from(release.findAllMicroschemaVersionEdges()).map(edge -> {
+		return Observable.from(release.findAllLatestMicroschemaVersionEdges()).map(edge -> {
 			MicroschemaReference reference = edge.getMicroschemaContainerVersion().transformToReference();
 			ReleaseMicroschemaInfo info = new ReleaseMicroschemaInfo(reference);
 			info.setMigrationStatus(edge.getMigrationStatus());

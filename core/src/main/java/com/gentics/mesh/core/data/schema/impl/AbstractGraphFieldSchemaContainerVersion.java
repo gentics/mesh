@@ -70,6 +70,11 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	}
 
 	@Override
+	public void setVersion(String version) {
+		setProperty(VERSION_PROPERTY_KEY, version);
+	}
+
+	@Override
 	public SchemaChange<?> getNextChange() {
 		return (SchemaChange<?>) out(HAS_SCHEMA_CONTAINER).nextOrDefault(null);
 	}
