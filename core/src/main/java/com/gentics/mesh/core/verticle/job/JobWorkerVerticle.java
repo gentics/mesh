@@ -46,6 +46,10 @@ public class JobWorkerVerticle extends AbstractVerticle {
 
 	private Long periodicTimerId;
 
+	private long timerId;
+
+	private boolean stopped = false;
+
 	@Inject
 	public JobWorkerVerticle(Database db, Lazy<BootstrapInitializer> boot) {
 		this.db = db;
@@ -57,10 +61,11 @@ public class JobWorkerVerticle extends AbstractVerticle {
 		if (log.isDebugEnabled()) {
 			log.debug("Starting verticle {" + getClass().getName() + "}");
 		}
+		stopped = false;
 		registerJobHandler();
 
 		// The verticle has been deployed. Now wait a few seconds and schedule the periodic execution of jobs
-		vertx.setTimer(30_000, rh -> {
+		timerId = vertx.setTimer(30_000, rh -> {
 			periodicTimerId = vertx.setPeriodic(15_000, th -> {
 				processJobs();
 			});
@@ -78,10 +83,12 @@ public class JobWorkerVerticle extends AbstractVerticle {
 
 	private void processJobs() {
 		executeLocked(() -> {
-			db.tx(() -> {
-				JobRoot jobRoot = boot.get().jobRoot();
-				jobRoot.process();
-			});
+			if (!stopped) {
+				db.tx(() -> {
+					JobRoot jobRoot = boot.get().jobRoot();
+					jobRoot.process();
+				});
+			}
 		}, error -> {
 			log.error("Error while processing jobs", error);
 		});
@@ -92,9 +99,11 @@ public class JobWorkerVerticle extends AbstractVerticle {
 		if (jobConsumer != null) {
 			jobConsumer.unregister();
 		}
+		vertx.cancelTimer(timerId);
 		if (periodicTimerId != null) {
 			vertx.cancelTimer(periodicTimerId);
 		}
+		stopped = true;
 		super.stop();
 	}
 

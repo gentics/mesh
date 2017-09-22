@@ -233,4 +233,9 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		log.info("Purged {" + count + "} failed jobs.");
 	}
 
+	@Override
+	public void clear() {
+		out(HAS_JOB).removeAll();
+	}
+
 }

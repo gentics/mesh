@@ -69,6 +69,23 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	}
 
 	/**
+	 * Verify that the search provider recorded the given create event.
+	 * 
+	 * @param indexName
+	 * @return Fluent API
+	 */
+	public DummySearchProviderAssert hasCreate(String indexName) {
+		boolean hasKey = actual.getCreateIndexEvents().contains(indexName);
+		if (!hasKey) {
+			for (String event : actual.getCreateIndexEvents()) {
+				System.out.println("Recorded create event: " + event);
+			}
+		}
+		assertTrue("The create event could not be found. {" + indexName + "}", hasKey);
+		return this;
+	}
+
+	/**
 	 * Verify that the search provider recorded the given delete event.
 	 * 
 	 * @param indexName

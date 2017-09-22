@@ -1,8 +1,11 @@
 package com.gentics.mesh.core.schema;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
@@ -11,6 +14,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,7 +29,6 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
-import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -33,6 +36,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
+import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -55,8 +59,10 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.IndexOptions;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
@@ -78,21 +84,103 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		tx(() -> group().addRole(roles().get("admin")));
 	}
 
+	/**
+	 * Create a schema model and assign it to the project/release. Assert that an index has been created.
+	 * 
+	 * @throws Exception
+	 */
+	@Test
+	public void testInitialAssignment() throws Exception {
+		tx(() -> boot().jobRoot().clear());
+
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName("dummy");
+		request.addField(FieldUtil.createStringFieldSchema("text"));
+		request.setSegmentField("text");
+		request.setDisplayField("text");
+		request.validate();
+		SchemaResponse schemaResponse = call(() -> client().createSchema(request));
+		String versionUuid = tx(() -> boot().schemaContainerRoot().findByName("dummy").getLatestVersion().getUuid());
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
+		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), schemaResponse.toReference()));
+
+		// Assert that the index was created and that no job was scheduled. We need no job since no migration is required
+		ReleaseSchemaEdge edge1;
+		try (Tx tx = tx()) {
+			edge1 = initialRelease().findReleaseSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
+			assertEquals(COMPLETED, edge1.getMigrationStatus());
+			assertNull(edge1.getJobUuid());
+			assertTrue("The assignment should be active.", edge1.isActive());
+		}
+		assertThat(call(() -> client().findJobs())).isEmpty();
+		assertThat(dummySearchProvider())
+				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid, DRAFT));
+		assertThat(dummySearchProvider())
+				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid, PUBLISHED));
+
+		// Stop the job worker so that we can inspect the job in detail
+		getTestContext().getJobWorkerVerticle().stop();
+		// Update the schema again.
+		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
+		updateRequest.setName("dummy");
+		updateRequest.addField(FieldUtil.createStringFieldSchema("text"));
+		updateRequest.addField(FieldUtil.createStringFieldSchema("text2"));
+		updateRequest.setSegmentField("text");
+		updateRequest.setDisplayField("text");
+		updateRequest.validate();
+		call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
+		String versionBUuid = tx(() -> boot().schemaContainerRoot().findByName("dummy").getLatestVersion().getUuid());
+		assertNotEquals(versionUuid, versionBUuid);
+
+		// Assert that the indices have been created and the job has been queued
+		ReleaseSchemaEdge edge2;
+		try (Tx tx = tx()) {
+			edge2 = initialRelease().findReleaseSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
+			assertNotNull(edge2.getJobUuid());
+			assertEquals("The migration should be queued", QUEUED, edge2.getMigrationStatus());
+			assertTrue("The assignment should be active.", edge2.isActive());
+		}
+
+		// Now start the worker again
+		getTestContext().getJobWorkerVerticle().start();
+		triggerAndWaitForAllJobs(COMPLETED);
+
+		assertThat(dummySearchProvider())
+				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT));
+		assertThat(dummySearchProvider())
+				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, PUBLISHED));
+		assertThat(call(() -> client().findJobs())).hasInfos(1);
+
+		try (Tx tx = tx()) {
+			assertNotNull(edge2.getJobUuid());
+			assertEquals(COMPLETED, edge2.getMigrationStatus());
+			assertTrue("The assignment should be active.", edge2.isActive());
+		}
+
+	}
+
 	@Test
 	public void testEmptyMigration() throws Throwable {
 		SchemaContainer container;
 		SchemaContainerVersion versionA;
 		SchemaContainerVersion versionB;
+		String versionBUuid;
 		try (Tx tx = tx()) {
 			String fieldName = "changedfield";
 			container = createDummySchemaWithChanges(fieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
 			project().getSchemaContainerRoot().addSchemaContainer(user(), container);
+			versionBUuid = versionB.getUuid();
 			// No job should be scheduled since this is the first time we assign the container to the project/release
 			assertEquals(0, TestUtils.toList(boot().jobRoot().findAllIt()).size());
 			tx.success();
 		}
+
+		assertThat(dummySearchProvider())
+				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT));
+		assertThat(dummySearchProvider())
+				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, PUBLISHED));
 
 		// TODO BUG FIXME assert that index exists!
 

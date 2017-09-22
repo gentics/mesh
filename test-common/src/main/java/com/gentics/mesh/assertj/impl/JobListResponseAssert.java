@@ -55,4 +55,14 @@ public class JobListResponseAssert extends AbstractAssert<JobListResponseAssert,
 		return this;
 	}
 
+	/**
+	 * Assert that the response lists no jobs.
+	 * 
+	 * @return Fluent API
+	 */
+	public JobListResponseAssert isEmpty() {
+		assertEquals(0, actual.getMetainfo().getTotalCount());
+		return this;
+	}
+
 }

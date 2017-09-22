@@ -3,15 +3,15 @@ package com.gentics.mesh.core.data.release.impl;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
 
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
 import com.gentics.mesh.core.data.release.ReleaseVersionEdge;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.syncleus.ferma.AbstractEdgeFrame;
 
 /**
  * Abstract implementation for {@link ReleaseMicroschemaEdgeImpl} and {@link ReleaseSchemaEdgeImpl}.
  */
-public abstract class AbstractVersionEdge extends AbstractEdgeFrame implements ReleaseVersionEdge {
+public abstract class AbstractVersionEdge extends MeshEdgeImpl implements ReleaseVersionEdge {
 
 	@Override
 	public void setMigrationStatus(MigrationStatus status) {

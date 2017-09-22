@@ -2,11 +2,12 @@ package com.gentics.mesh.core.data.release;
 
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
+import com.syncleus.ferma.EdgeFrame;
 
 /**
  * Common class for {@link ReleaseSchemaEdge} and {@link ReleaseMicroschemaEdge} edges
  */
-public interface ReleaseVersionEdge {
+public interface ReleaseVersionEdge extends EdgeFrame  {
 
 	public static final String ACTIVE_PROPERTY_KEY = "active";
 
