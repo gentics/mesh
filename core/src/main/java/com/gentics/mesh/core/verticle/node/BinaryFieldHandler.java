@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.RxUtil.readEntireFile;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -350,7 +351,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 					// 1. Resize the original image and store the result in the filesystem
 					Single<TransformationResult> obsTransformation = imageManipulator
-							.handleResize(initialField.getFile(), field.getSHA512Sum(), imageManipulationParameter).flatMap(buffer -> {
+							.handleResize(initialField.getFile(), field.getSHA512Sum(), imageManipulationParameter)
+							.compose(readEntireFile)
+							.flatMap(buffer -> {
 								// 2. Hash the resized image data and store it using the computed fieldUuid + hash
 								String hash = hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath);
 								// 3. The image was stored and hashed. Now we need to load the stored file again and check the image properties

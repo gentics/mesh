@@ -17,10 +17,9 @@ import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.util.ETag;
 
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpHeaders;
+import io.vertx.core.streams.Pump;
 import io.vertx.ext.web.RoutingContext;
-import rx.Single;
 
 /**
  * Handler which will accept {@link BinaryGraphField} elements and return the binary data using the given context.
@@ -66,21 +65,21 @@ public class BinaryFieldResponseHandler {
 				rc.response().setStatusCode(NOT_MODIFIED.code()).end();
 			} else if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
 				// Resize the image if needed
-				Single<Buffer> buffer = imageManipulator.handleResize(binaryField.getFile(), binaryField.getSHA512Sum(), ac.getImageParameters());
-				buffer.subscribe(imageBuffer -> {
-					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(imageBuffer.length()));
+				imageManipulator.handleResize(binaryField.getFile(), binaryField.getSHA512Sum(), ac.getImageParameters())
+				.subscribe(file -> {
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
 					rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
 					rc.response().putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
 					// TODO encode filename?
 					rc.response().putHeader("content-disposition", "inline; filename=" + fileName);
-					rc.response().end(imageBuffer);
-				}, error -> {
-					rc.fail(error);
-				});
+					file.endHandler(ignore -> {
+						rc.response().end();
+						file.close();
+					});
+					Pump.pump(file, rc.response()).start();
+				}, rc::fail);
 			} else {
-				binaryField.getFileBuffer().setHandler(bh -> {
-					Buffer buffer = bh.result();
+				binaryField.getFileStream().subscribe(file -> {
 					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
 					rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
@@ -88,8 +87,13 @@ public class BinaryFieldResponseHandler {
 					// TODO encode filename?
 					// TODO images and pdf files should be shown in inline format
 					rc.response().putHeader("content-disposition", "attachment; filename=" + fileName);
-					rc.response().end(buffer);
-				});
+
+					file.endHandler(ignore -> {
+						rc.response().end();
+						file.close();
+					});
+					Pump.pump(file, rc.response()).start();
+				}, rc::fail);
 			}
 		}
 

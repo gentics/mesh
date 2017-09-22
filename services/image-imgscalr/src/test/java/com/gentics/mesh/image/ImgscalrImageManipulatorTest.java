@@ -1,6 +1,7 @@
 package com.gentics.mesh.image;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.util.RxUtil.readEntireFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -67,7 +68,8 @@ public class ImgscalrImageManipulatorTest {
 
 		checkImages((imageName, width, height, color, refImage, ins) -> {
 			log.debug("Handling " + imageName);
-			Single<Buffer> obs = manipulator.handleResize(ins.call(), imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180));
+			Single<Buffer> obs = manipulator.handleResize(ins.call(), imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
+				.compose(readEntireFile);
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(buffer -> {
 				try {

@@ -22,8 +22,9 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 
-import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.AsyncFile;
+import io.vertx.core.file.OpenOptions;
+import rx.Single;
 
 public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphField {
 
@@ -248,17 +249,10 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public Future<Buffer> getFileBuffer() {
-		Future<Buffer> future = Future.future();
-		// TODO use only a few chunks of the file in memory
-		Mesh.vertx().fileSystem().readFile(getFilePath(), rh -> {
-			if (rh.succeeded()) {
-				future.complete(rh.result());
-			} else {
-				future.fail(rh.cause());
-			}
-		});
-		return future;
+	public Single<AsyncFile> getFileStream() {
+		return Single.create(new io.vertx.rx.java.SingleOnSubscribeAdapter<AsyncFile>(fut -> {
+			Mesh.vertx().fileSystem().open(getFilePath(), new OpenOptions().setRead(true), fut);
+		}));
 	}
 
 	@Override

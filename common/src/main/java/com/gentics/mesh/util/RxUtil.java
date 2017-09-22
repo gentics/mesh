@@ -3,6 +3,8 @@ package com.gentics.mesh.util;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.AsyncFile;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
@@ -77,4 +79,14 @@ public final class RxUtil {
 		});
 	}
 
+	/**
+	 * Reads the entire AsyncFile object and returns its contents as a buffer.
+	 * Use this with {@link rx.Single#compose Single.compose}.
+	 */
+	public static Single.Transformer<AsyncFile, Buffer> readEntireFile = src -> src.flatMap(file ->
+		new io.vertx.rxjava.core.file.AsyncFile(file).toObservable()
+			.reduce((a, b) -> a.appendBuffer(b))
+			.toSingle()
+			.map(it -> it.getDelegate())
+	);
 }
