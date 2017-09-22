@@ -1371,7 +1371,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return false;
 			}
 			return true;
-		});
+		}, true);
 	}
 
 	@Override

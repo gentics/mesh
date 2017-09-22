@@ -7,15 +7,20 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
+import com.gentics.mesh.core.data.job.impl.MicronodeMigrationJobImpl;
+import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
+import com.gentics.mesh.core.data.job.impl.ReleaseMigrationJobImpl;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.util.TestUtils;
 import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
@@ -43,7 +48,7 @@ public class JobTest extends AbstractMeshTest {
 
 		try (Tx tx = tx()) {
 			JobRoot root = boot().jobRoot();
-			List<? extends Job> list = root.findAll();
+			List<? extends Job> list = TestUtils.toList(root.findAllIt());
 			assertThat(list).hasSize(1);
 			Job job = list.get(0);
 			assertEquals("some error", job.getErrorMessage());
@@ -56,6 +61,20 @@ public class JobTest extends AbstractMeshTest {
 			assertEquals(job.getType(), response.getType());
 			assertEquals(job.getCreationDate(), response.getCreated());
 			assertEquals(user().getUuid(), response.getCreator().getUuid());
+		}
+	}
+
+	@Test
+	public void testJobRootTypeHandling() {
+		try (Tx tx = tx()) {
+			JobRoot root = boot().jobRoot();
+			root.addItem(tx.addVertex(NodeMigrationJobImpl.class));
+			root.addItem(tx.addVertex(MicronodeMigrationJobImpl.class));
+			root.addItem(tx.addVertex(ReleaseMigrationJobImpl.class));
+
+			List<String> list = TestUtils.toList(root.findAllIt()).stream().map(i -> i.getClass().getName()).collect(Collectors.toList());
+			assertThat(list).containsExactly(NodeMigrationJobImpl.class.getName(), MicronodeMigrationJobImpl.class.getName(),
+					ReleaseMigrationJobImpl.class.getName());
 		}
 	}
 }

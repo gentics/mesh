@@ -102,7 +102,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, perm, (item) -> {
 			return matchesReleaseAndType(item.getId(), releaseUuid, type.getCode());
-		});
+		}, true);
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			boolean isPublished = fieldContainer.isPublished(release.getUuid());
 			if (isPublished && requestUser.hasPermission(element, READ_PUBLISHED_PERM)) {
 				return element;
-			// The container could be a draft. Check whether READ perm is granted.
+				// The container could be a draft. Check whether READ perm is granted.
 			} else if (!isPublished && requestUser.hasPermission(element, READ_PERM)) {
 				return element;
 			} else {

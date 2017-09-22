@@ -4,32 +4,23 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CRE
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FROM_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_RELEASE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TO_VERSION;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.STARTING;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Map;
 
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
 import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
-import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -38,25 +29,18 @@ import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.job.JobResponse;
-import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
-import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusHandlerImpl;
-import com.gentics.mesh.dagger.MeshInternal;
-import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
-import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements Job {
+/**
+ * @see Job
+ */
+public abstract class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements Job {
 
 	private static final Logger log = LoggerFactory.getLogger(JobImpl.class);
-
-	public static void init(Database database) {
-		database.addVertexType(JobImpl.class, MeshVertexImpl.class);
-	}
 
 	@Override
 	public Job update(InternalActionContext ac, SearchQueueBatch batch) {
@@ -295,138 +279,14 @@ public class JobImpl extends AbstractMeshCoreVertex<JobResponse, Job> implements
 			setStatus(STARTING);
 			setNodeName();
 		});
-		switch (getType()) {
-		case schema:
-			handleNodeMigration();
-			break;
-		case microschema:
-			handleMicroschemaMigration();
-			break;
-		case release:
-			handleReleaseMigration();
-			break;
-		default:
-			GenericRestException e = error(INTERNAL_SERVER_ERROR, "Unknown job type {" + getType() + "}");
-			db.tx(() -> {
-				setStopTimestamp();
-				setStatus(FAILED);
-				setError(e);
-			});
-			throw e;
-		}
+
+		processTask();
 	}
 
-	private void handleNodeMigration() {
-		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.schema);
-		try {
-
-			try (Tx tx = db.tx()) {
-				Release release = getRelease();
-				if (release == null) {
-					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} not found");
-				}
-
-				SchemaContainerVersion fromContainerVersion = getFromSchemaVersion();
-				if (fromContainerVersion == null) {
-					throw error(BAD_REQUEST, "Source schema version for job {" + getUuid() + "} could not be found.");
-				}
-
-				SchemaContainerVersion toContainerVersion = getToSchemaVersion();
-				if (toContainerVersion == null) {
-					throw error(BAD_REQUEST, "Target schema version for job {" + getUuid() + "} could not be found.");
-				}
-
-				SchemaContainer schemaContainer = toContainerVersion.getSchemaContainer();
-				if (schemaContainer == null) {
-					throw error(BAD_REQUEST, "Schema container for job {" + getUuid() + "} can't be found.");
-				}
-
-				Project project = release.getProject();
-				if (project == null) {
-					throw error(BAD_REQUEST, "Project for job {" + getUuid() + "} not found");
-				}
-
-				ReleaseSchemaEdge releaseVersionEdge = release.findReleaseSchemaEdge(toContainerVersion);
-				statusHandler.setVersionEdge(releaseVersionEdge);
-
-				log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
-						+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + release.getUuid()
-						+ "} in project {" + project.getUuid() + "}");
-
-				statusHandler.commitStatus();
-
-				MeshInternal.get().nodeMigrationHandler().migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusHandler)
-						.await();
-				statusHandler.done();
-				tx.success();
-			}
-		} catch (Exception e) {
-			statusHandler.error(e, "Error while preparing node migration.");
-		}
-	}
-
-	private void handleReleaseMigration() {
-		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.release);
-		try {
-
-			if (log.isDebugEnabled()) {
-				log.debug("Release migration for job {" + getUuid() + "} was requested");
-			}
-			status.commitStatus();
-
-			try (Tx tx = db.tx()) {
-				Release release = getRelease();
-				if (release == null) {
-					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} cannot be found.");
-				}
-				MeshInternal.get().releaseMigrationHandler().migrateRelease(release, status);
-				status.done();
-			}
-		} catch (Exception e) {
-			status.error(e, "Error while preparing release migration.");
-			throw e;
-		}
-	}
-
-	private void handleMicroschemaMigration() {
-		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.microschema);
-		try {
-
-			try (Tx tx = db.tx()) {
-				Release release = getRelease();
-				if (release == null) {
-					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} not found");
-				}
-
-				MicroschemaContainerVersion fromContainerVersion = getFromMicroschemaVersion();
-				if (fromContainerVersion == null) {
-					throw error(BAD_REQUEST, "Source version of microschema for job {" + getUuid() + "} could not be found.");
-				}
-
-				MicroschemaContainerVersion toContainerVersion = getToMicroschemaVersion();
-				if (toContainerVersion == null) {
-					throw error(BAD_REQUEST, "Target version of microschema for job {" + getUuid() + "} could not be found.");
-				}
-
-				MicroschemaContainer schemaContainer = fromContainerVersion.getSchemaContainer();
-				ReleaseMicroschemaEdge releaseVersionEdge = release.findReleaseMicroschemaEdge(toContainerVersion);
-				statusHandler.setVersionEdge(releaseVersionEdge);
-
-				if (log.isDebugEnabled()) {
-					log.debug("Micronode migration for microschema {" + schemaContainer.getUuid() + "} from version {"
-							+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} was requested");
-				}
-
-				statusHandler.commitStatus();
-
-				MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(release, fromContainerVersion, toContainerVersion, statusHandler)
-						.await();
-				statusHandler.done();
-			}
-		} catch (Exception e) {
-			statusHandler.error(e, "Error while preparing micronode migration.");
-		}
-	}
+	/**
+	 * Actual implementation of the task which the job executes.
+	 */
+	protected abstract void processTask();
 
 	@Override
 	public String getNodeName() {

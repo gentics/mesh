@@ -36,10 +36,13 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 
 	private Predicate<Vertex> extraFilter;
 
-	private DynamicTransformablePageImpl(User requestUser, PagingParameters pagingInfo, Predicate<Vertex> extraFilter) {
+	private boolean frameExplicitly;
+
+	private DynamicTransformablePageImpl(User requestUser, PagingParameters pagingInfo, Predicate<Vertex> extraFilter, boolean frameExplicitly) {
 		super(pagingInfo);
 		this.extraFilter = extraFilter;
 		this.requestUser = requestUser;
+		this.frameExplicitly = frameExplicitly;
 	}
 
 	/**
@@ -53,7 +56,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *            Paging information which contains the perPage and page information
 	 */
 	public DynamicTransformablePageImpl(User requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo) {
-		this(requestUser, root, pagingInfo, READ_PERM, null);
+		this(requestUser, root, pagingInfo, READ_PERM, null, true);
 	}
 
 	/**
@@ -69,11 +72,13 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *            Permission used to filter elements by
 	 * @param extraFilter
 	 *            Optional extra filter to filter by
+	 * @param frameExplicitly
+	 *            Whether to frame the found value explicitily
 	 * 
 	 */
 	public DynamicTransformablePageImpl(User requestUser, RootVertex<? extends T> root, PagingParameters pagingInfo, GraphPermission perm,
-			Predicate<Vertex> extraFilter) {
-		this(requestUser, pagingInfo, extraFilter);
+			Predicate<Vertex> extraFilter, boolean frameExplicitly) {
+		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
 		init(root.getPersistanceClass(), "e." + root.getRootLabel().toLowerCase() + "_out", root.getId(), Direction.IN, root.getGraph(), perm);
 	}
 
@@ -92,8 +97,8 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 *            Paging parameters
 	 */
 	public DynamicTransformablePageImpl(User requestUser, String indexName, Object indexKey, Class<T> clazz, PagingParameters pagingInfo,
-			GraphPermission perm, Predicate<Vertex> extraFilter) {
-		this(requestUser, pagingInfo, extraFilter);
+			GraphPermission perm, Predicate<Vertex> extraFilter, boolean frameExplicitly) {
+		this(requestUser, pagingInfo, extraFilter, frameExplicitly);
 		init(clazz, indexName, indexKey, Direction.OUT, Tx.getActive().getGraph(), perm);
 	}
 
@@ -113,7 +118,7 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 	 */
 	public DynamicTransformablePageImpl(User user, VertexTraversal<?, ?, ?> traversal, PagingParameters pagingInfo, GraphPermission perm,
 			Class<? extends T> clazz) {
-		this(user, pagingInfo, null);
+		this(user, pagingInfo, null, true);
 		init(clazz, traversal, perm);
 	}
 
@@ -159,7 +164,14 @@ public class DynamicTransformablePageImpl<T extends TransformableElement<? exten
 					// Only add elements to the list if those elements are part of selected the page
 					long elementsInPage = pageCounter.get();
 					if (elementsInPage < perPage) {
-						T element = graph.frameElementExplicit(item, clazz);
+						T element = null;
+
+						// Check how we need to frame the found element
+						if (frameExplicitly) {
+							element = graph.frameElementExplicit(item, clazz);
+						} else {
+							element = graph.frameElement(item, clazz);
+						}
 						elementsOfPage.add(element);
 						pageCounter.incrementAndGet();
 						return element;
