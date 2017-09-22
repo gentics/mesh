@@ -262,6 +262,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			getSchemaContainerRoot().applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+			getMicroschemaContainerRoot().applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 			getTagFamilyRoot().applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 			getNodeRoot().applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 		}
