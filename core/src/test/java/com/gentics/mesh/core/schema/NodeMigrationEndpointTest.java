@@ -25,6 +25,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
@@ -87,11 +88,15 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			container = createDummySchemaWithChanges(fieldName, false);
 			versionB = container.getLatestVersion();
 			versionA = versionB.getPreviousVersion();
+			project().getSchemaContainerRoot().addSchemaContainer(user(), container);
+			// No job should be scheduled since this is the first time we assign the container to the project/release
+			assertEquals(0, TestUtils.toList(boot().jobRoot().findAllIt()).size());
 			tx.success();
 		}
 
-		String jobUuid = tx(() -> boot().jobRoot().enqueueSchemaMigration(user(), initialRelease(), versionA, versionB).getUuid());
-		triggerAndWaitForJob(jobUuid);
+		// TODO BUG FIXME assert that index exists!
+
+		triggerAndWaitForAllJobs(COMPLETED);
 
 		JobListResponse status = call(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
