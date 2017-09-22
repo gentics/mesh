@@ -92,15 +92,6 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			status.commitStatus();
 		}
 
-		// The node migration needs to write into a new index. Lets prepare the creation of that index
-		SearchQueueBatch indexCreatingBatch = searchQueue.create();
-		indexCreatingBatch.createNodeIndex(project.getUuid(), release.getUuid(), toVersion.getUuid(), DRAFT, newSchema);
-		indexCreatingBatch.createNodeIndex(project.getUuid(), release.getUuid(), toVersion.getUuid(), PUBLISHED, newSchema);
-
-		// Only create a new index if we actually need to migrate elements.
-		if (fieldContainers.hasNext()) {
-			indexCreatingBatch.processSync();
-		}
 		// Iterate over all containers and invoke a migration for each one
 		long count = 0;
 		List<Exception> errorsDetected = new ArrayList<>();

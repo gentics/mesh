@@ -29,7 +29,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 
 	@Override
 	public void prepare() {
-
+		// NOP
 	}
 
 	protected void processTask() {

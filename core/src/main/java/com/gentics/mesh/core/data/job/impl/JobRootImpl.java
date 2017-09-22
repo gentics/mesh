@@ -81,7 +81,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 			Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
 					database().createComposedIndexKey(potentialElement.getId(), getId()));
 			if (edges.iterator().hasNext()) {
-				//Don't frame explicitly since multiple types can be returned
+				// Don't frame explicitly since multiple types can be returned
 				return graph.frameElement(potentialElement, getPersistanceClass());
 			}
 		}
@@ -96,13 +96,14 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 
 	@Override
 	public Job enqueueSchemaMigration(User creator, Release release, SchemaContainerVersion fromVersion, SchemaContainerVersion toVersion) {
-		Job job = getGraph().addFramedVertex(NodeMigrationJobImpl.class);
+		NodeMigrationJobImpl job = getGraph().addFramedVertex(NodeMigrationJobImpl.class);
 		job.setType(MigrationType.schema);
 		job.setCreated(creator);
 		job.setRelease(release);
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
 		job.setToSchemaVersion(toVersion);
+		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued schema migration job {" + job.getUuid() + "}");
@@ -113,13 +114,14 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	@Override
 	public Job enqueueMicroschemaMigration(User creator, Release release, MicroschemaContainerVersion fromVersion,
 			MicroschemaContainerVersion toVersion) {
-		Job job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
+		MicronodeMigrationJobImpl job = getGraph().addFramedVertex(MicronodeMigrationJobImpl.class);
 		job.setType(MigrationType.microschema);
 		job.setCreated(creator);
 		job.setRelease(release);
 		job.setStatus(QUEUED);
 		job.setFromMicroschemaVersion(fromVersion);
 		job.setToMicroschemaVersion(toVersion);
+		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued microschema migration job {" + job.getUuid() + "} - " + toVersion.getSchemaContainer().getName() + " "
@@ -137,6 +139,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setStatus(QUEUED);
 		job.setFromSchemaVersion(fromVersion);
 		job.setToSchemaVersion(toVersion);
+		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued release migration job {" + job.getUuid() + "} for release {" + release.getUuid() + "}");
@@ -151,6 +154,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 		job.setType(MigrationType.release);
 		job.setStatus(QUEUED);
 		job.setRelease(release);
+		job.prepare();
 		addItem(job);
 		if (log.isDebugEnabled()) {
 			log.debug("Enqueued release migration job {" + job.getUuid() + "} for release {" + release.getUuid() + "}");
@@ -195,8 +199,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 	public TransformablePage<? extends Job> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, null, false);
 	}
-	
-	
+
 	@Override
 	public void process() {
 		Iterable<? extends Job> it = findAllIt();

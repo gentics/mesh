@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.job.impl;
 
+import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
@@ -10,7 +12,9 @@ import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -30,9 +34,21 @@ public class NodeMigrationJobImpl extends JobImpl {
 		database.addVertexType(NodeMigrationJobImpl.class, MeshVertexImpl.class);
 	}
 
+	/**
+	 * Create the needed indices.
+	 */
 	@Override
 	public void prepare() {
+		Release release = getRelease();
+		Project project = release.getProject();
+		SchemaContainerVersion toVersion = getToSchemaVersion();
+		SchemaModel newSchema = toVersion.getSchema();
 
+		// New indices need to be created
+		SearchQueueBatch batch = MeshInternal.get().searchQueue().create();
+		batch.createNodeIndex(project.getUuid(), release.getUuid(), toVersion.getUuid(), DRAFT, newSchema);
+		batch.createNodeIndex(project.getUuid(), release.getUuid(), toVersion.getUuid(), PUBLISHED, newSchema);
+		batch.processSync();
 	}
 
 	protected void processTask() {
