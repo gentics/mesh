@@ -21,7 +21,6 @@ import com.gentics.mesh.verticle.admin.AdminGUIVerticle;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import net.lingala.zip4j.exception.ZipException;
 
 /**

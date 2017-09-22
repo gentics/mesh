@@ -163,11 +163,10 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 	 *            Optional type of the node containers to filter by
 	 * @return Traversal which can be used to locate the nodes
 	 */
-	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(Release release, List<String> languageTags,
-			ContainerType type) {
+	protected VertexTraversal<?, ?, ?> getTaggedNodesTraversal(Release release, List<String> languageTags, ContainerType type) {
 
-		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release).mark().outE(HAS_FIELD_CONTAINER)
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid());
+		EdgeTraversal<?, ?, ? extends VertexTraversal<?, ?, ?>> traversal = TagEdgeImpl.getNodeTraversal(this, release).mark()
+				.outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, release.getUuid());
 
 		if (type != null) {
 			traversal = traversal.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());

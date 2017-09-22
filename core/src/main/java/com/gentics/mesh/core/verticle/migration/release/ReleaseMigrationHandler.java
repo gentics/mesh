@@ -8,9 +8,6 @@ import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -29,7 +26,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Completable;
 
 @Singleton
 public class ReleaseMigrationHandler extends AbstractMigrationHandler {

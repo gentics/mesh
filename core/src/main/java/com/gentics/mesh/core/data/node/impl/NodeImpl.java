@@ -631,10 +631,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// reference that points to the container (no version information
 			// will be included)
 			restNode.setSchema(getSchemaContainer().transformToReference());
-			// TODO BUG Issue #119 - Actually we would need to throw a 404 in these cases but many current implementations rely on the empty node response. 
+			// TODO BUG Issue #119 - Actually we would need to throw a 404 in these cases but many current implementations rely on the empty node response.
 			// The response will also contain information about other languages and general structure information.
 			// We should change this behaviour and update the client implementations.
-			//throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
+			// throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 		} else {
 			Schema schema = fieldContainer.getSchemaContainerVersion().getSchema();
 			restNode.setContainer(schema.isContainer());
@@ -1481,7 +1481,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Make sure the container was already migrated. Otherwise the update can't proceed.
 			SchemaContainerVersion schemaContainerVersion = latestDraftVersion.getSchemaContainerVersion();
-			if (!latestDraftVersion.getSchemaContainerVersion().equals(release.findLatestSchemaVersion(schemaContainerVersion.getSchemaContainer()))) {
+			if (!latestDraftVersion.getSchemaContainerVersion()
+					.equals(release.findLatestSchemaVersion(schemaContainerVersion.getSchemaContainer()))) {
 				throw error(BAD_REQUEST, "node_error_migration_incomplete");
 			}
 

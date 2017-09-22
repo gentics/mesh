@@ -1,6 +1,7 @@
 package com.gentics.mesh.assertj.impl;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
@@ -12,6 +13,15 @@ public class MicronodeAssert extends AbstractObjectAssert<MicronodeAssert, Micro
 		super(actual, MicronodeAssert.class);
 	}
 
+	/**
+	 * Assert that the micronode contains the string field with the given value.
+	 * 
+	 * @param name
+	 *            Name of the string field
+	 * @param value
+	 *            Value of the string
+	 * @return Fluent API
+	 */
 	public MicronodeAssert containsStringField(String name, String value) {
 		assertThat(actual).as(descriptionText()).isNotNull();
 		assertThat(actual.getString(name)).as(descriptionText() + " string field '" + name + "'").isNotNull();
@@ -20,12 +30,14 @@ public class MicronodeAssert extends AbstractObjectAssert<MicronodeAssert, Micro
 	}
 
 	/**
-	 * Assert that the micronode uses the given microschema
-	 * @param microschemaContainer microschema container
-	 * @return fluent API
+	 * Assert that the micronode uses the given microschema.
+	 * 
+	 * @param microschemaContainerVersion
+	 *            microschema container
+	 * @return Fluent API
 	 */
-	public MicronodeAssert isOf(MicroschemaContainerVersion microschemaContainer) {
-		assertThat(actual.getSchemaContainerVersion()).as(descriptionText() + " Microschema").equals(microschemaContainer);
+	public MicronodeAssert isOf(MicroschemaContainerVersion microschemaContainerVersion) {
+		assertTrue(actual.getSchemaContainerVersion().getUuid().equals(microschemaContainerVersion.getUuid()));
 		return this;
 	}
 

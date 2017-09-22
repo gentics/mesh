@@ -1,6 +1,10 @@
 package com.gentics.mesh.assertj.impl;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.assertj.core.api.AbstractAssert;
 
@@ -33,7 +37,21 @@ public class JobListResponseAssert extends AbstractAssert<JobListResponseAssert,
 	 * @return Fluent API
 	 */
 	public JobListResponseAssert hasInfos(int count) {
-		assertEquals("The status did not contain the expected amount of infos.", count, actual.getMetainfo().getTotalCount());
+		assertEquals("The status did not contain the expected amount of infos. Json {\n" + actual.toJson() + "\n}", count,
+				actual.getMetainfo().getTotalCount());
+		return this;
+	}
+
+	/**
+	 * 
+	 * Assert that the given jobs are listed within the response.g
+	 * 
+	 * @param jobUuids
+	 * @return Fluent API
+	 */
+	public JobListResponseAssert containsJobs(String... jobUuids) {
+		List<String> list = actual.getData().stream().map(info -> info.getUuid()).collect(Collectors.toList());
+		assertThat(list).as("List of jobs").contains(jobUuids);
 		return this;
 	}
 

@@ -91,6 +91,8 @@ public class DemoDataProvider {
 
 	private BootstrapInitializer boot;
 
+	private JsonObject mappingData;
+
 	@Inject
 	public DemoDataProvider(Database database, MeshLocalClientImpl client, BootstrapInitializer boot) {
 		this.db = database;
@@ -99,6 +101,8 @@ public class DemoDataProvider {
 	}
 
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
+		mappingData = loadJson("uuid-mapping");
+
 		MeshAuthUser user = db.tx(() -> {
 			return MeshInternal.get().boot().meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
 		});
@@ -301,11 +305,9 @@ public class DemoDataProvider {
 	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (e.g.: admin groups, roles, users)
 	 * 
 	 * @throws InterruptedException
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	private void addBootstrappedData() throws InterruptedException, IOException {
-
-		JsonObject mappingData = loadJson("uuid-mapping");
 
 		MeshResponse<GroupListResponse> groupsFuture = client.findGroups().invoke();
 		latchFor(groupsFuture);
@@ -478,6 +480,7 @@ public class DemoDataProvider {
 			ProjectResponse project = call(() -> client.createProject(request));
 			projects.put(name, project);
 			uuidMapping.put(project.getUuid(), uuid);
+			uuidMapping.put(project.getRootNode().getUuid(), mappingData.getString("node/root"));
 		}
 	}
 

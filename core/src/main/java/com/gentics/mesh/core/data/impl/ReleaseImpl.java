@@ -194,7 +194,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 		return out(HAS_SCHEMA_VERSION).mark().in(HAS_PARENT_CONTAINER).retain(schemaContainer).back().order((o1, o2) -> {
 			String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
 			String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
-			return VersionUtil.compareVersions(v1, v2);
+			return VersionUtil.compareVersions(v2, v1);
 		}).nextOrDefaultExplicit(SchemaContainerVersionImpl.class, null);
 	}
 
@@ -203,7 +203,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 		return out(HAS_MICROSCHEMA_VERSION).mark().in(HAS_PARENT_CONTAINER).retain(schemaContainer).back().order((o1, o2) -> {
 			String v1 = o1.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
 			String v2 = o2.getProperty(GraphFieldSchemaContainerVersion.VERSION_PROPERTY_KEY);
-			return VersionUtil.compareVersions(v1, v2);
+			return VersionUtil.compareVersions(v2, v1);
 		}).nextOrDefaultExplicit(MicroschemaContainerVersionImpl.class, null);
 	}
 
@@ -250,9 +250,9 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 		ReleaseSchemaEdge edge = findReleaseSchemaEdge(schemaContainerVersion);
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
+			SchemaContainerVersion currentVersion = findLatestSchemaVersion(schemaContainerVersion.getSchemaContainer());
 			edge = addFramedEdgeExplicit(HAS_SCHEMA_VERSION, schemaContainerVersion, ReleaseSchemaEdgeImpl.class);
 			// Enqueue the schema migration for each found schema version
-			SchemaContainerVersion currentVersion = findLatestSchemaVersion(schemaContainerVersion.getSchemaContainer());
 			edge.setActive(true);
 			if (currentVersion != null) {
 				Job job = MeshInternal.get().boot().jobRoot().enqueueSchemaMigration(user, this, currentVersion, schemaContainerVersion);
@@ -274,9 +274,9 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 		ReleaseMicroschemaEdge edge = findReleaseMicroschemaEdge(microschemaContainerVersion);
 		// Don't remove any existing edge. Otherwise the edge properties are lost
 		if (edge == null) {
+			MicroschemaContainerVersion currentVersion = findLatestMicroschemaVersion(microschemaContainerVersion.getSchemaContainer());
 			edge = addFramedEdgeExplicit(HAS_MICROSCHEMA_VERSION, microschemaContainerVersion, ReleaseMicroschemaEdgeImpl.class);
 			// Enqueue the job so that the worker can process it later on
-			MicroschemaContainerVersion currentVersion = findLatestMicroschemaVersion(microschemaContainerVersion.getSchemaContainer());
 			edge.setActive(true);
 			if (currentVersion != null) {
 				Job job = MeshInternal.get().boot().jobRoot().enqueueMicroschemaMigration(user, this, currentVersion, microschemaContainerVersion);

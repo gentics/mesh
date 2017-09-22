@@ -22,7 +22,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -95,7 +94,6 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				return message(ac, "schema_update_no_difference_detected", schemaName);
 			}
 
-			JobRoot jobRoot = boot.get().meshRoot().getJobRoot();
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 			User user = ac.getUser();
 			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
