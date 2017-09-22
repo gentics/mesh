@@ -9,6 +9,17 @@ public class ETag {
 	/**
 	 * Hash the given key in order to generate a uniform etag hash.
 	 * 
+	 * @param builder
+	 *            builder which provides the keys of the string that will be hashed
+	 * @return Computed hash
+	 */
+	public static String hash(StringBuilder builder) {
+		return hash(builder.toString());
+	}
+
+	/**
+	 * Hash the given key in order to generate a uniform etag hash.
+	 * 
 	 * @param key
 	 *            Key which should be hashed
 	 * @return Computed hash

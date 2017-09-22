@@ -221,7 +221,11 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp() + "-" + ac.getRelease(getProject()).getUuid());
+		StringBuilder keyBuilder = new StringBuilder();
+		keyBuilder.append(super.getETag(ac));
+		keyBuilder.append(getLastEditedTimestamp());
+		keyBuilder.append(ac.getRelease(getProject()).getUuid());
+		return ETag.hash(keyBuilder);
 	}
 
 	@Override

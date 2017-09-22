@@ -1745,6 +1745,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	@Override
 	public String getETag(InternalActionContext ac) {
+		String superkey = super.getETag(ac);
+
 		// Parameters
 		Release release = ac.getRelease(getProject());
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
@@ -1755,14 +1757,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				ac.getVersioningParameters().getVersion());
 
 		StringBuilder keyBuilder = new StringBuilder();
-
-		/**
-		 * node uuid
-		 * 
-		 * The node uuid must be part of the etag computation.
-		 */
-		keyBuilder.append(getUuid());
-		keyBuilder.append("-");
+		keyBuilder.append(superkey);
 
 		/**
 		 * release uuid
