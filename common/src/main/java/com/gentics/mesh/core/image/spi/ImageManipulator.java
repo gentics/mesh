@@ -7,7 +7,7 @@ import java.util.Map;
 
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 
-import io.vertx.core.file.AsyncFile;
+import com.gentics.mesh.util.PropReadFileStream;
 import rx.Single;
 import rx.functions.Func0;
 
@@ -25,7 +25,7 @@ public interface ImageManipulator {
 	 * @param imageRequestParameter
 	 * @return
 	 */
-	Single<AsyncFile> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters imageRequestParameter);
+	Single<PropReadFileStream> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters imageRequestParameter);
 
 	/**
 	 * Read the {@link InputStream} and resize the image data.
@@ -33,9 +33,9 @@ public interface ImageManipulator {
 	 * @param ins
 	 * @param sha512sum
 	 * @param parameters
-	 * @return AsyncFile which contains the resized image data
+	 * @return PropReadFileStream which contains the resized image data
 	 */
-	Single<AsyncFile> handleResize(InputStream ins, String sha512sum, ImageManipulationParameters parameters);
+	Single<PropReadFileStream> handleResize(InputStream ins, String sha512sum, ImageManipulationParameters parameters);
 
 	/**
 	 * Return the cache file for the given sha512 checksum and image manipulation parameters.

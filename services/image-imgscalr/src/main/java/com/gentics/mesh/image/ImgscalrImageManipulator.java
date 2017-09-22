@@ -15,8 +15,7 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import io.vertx.core.file.OpenOptions;
-import io.vertx.core.file.AsyncFile;
+import com.gentics.mesh.util.PropReadFileStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
@@ -122,13 +121,12 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 	}
 
 	@Override
-	public Single<AsyncFile> handleResize(InputStream ins, String sha512sum, ImageManipulationParameters parameters) {
+	public Single<PropReadFileStream> handleResize(InputStream ins, String sha512sum, ImageManipulationParameters parameters) {
 		File cacheFile = getCacheFile(sha512sum, parameters);
 
 		// 1. Check the cache file directory
 		if (cacheFile.exists()) {
-			return vertx.fileSystem().rxOpen(cacheFile.getAbsolutePath(), new OpenOptions().setRead(true))
-				.map(file -> file.getDelegate());
+			return PropReadFileStream.openFile(cacheFile.getAbsolutePath());
 		}
 
 		// 2. Read the image
@@ -178,8 +176,7 @@ public class ImgscalrImageManipulator extends AbstractImageManipulator {
 		}
 
 		// 5. Return buffer to written cache file
-		return vertx.fileSystem().rxOpen(cacheFile.getAbsolutePath(), new OpenOptions().setRead(true))
-			.map(file -> file.getDelegate());
+		return PropReadFileStream.openFile(cacheFile.getAbsolutePath());
 	}
 
 	@Override

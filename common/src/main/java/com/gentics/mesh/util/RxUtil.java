@@ -81,12 +81,11 @@ public final class RxUtil {
 
 	/**
 	 * Reads the entire AsyncFile object and returns its contents as a buffer.
-	 * Use this with {@link rx.Single#compose Single.compose}.
 	 */
-	public static Single.Transformer<AsyncFile, Buffer> readEntireFile = src -> src.flatMap(file ->
-		new io.vertx.rxjava.core.file.AsyncFile(file).toObservable()
+	public static Single<Buffer> readEntireFile(AsyncFile file) {
+		return new io.vertx.rxjava.core.file.AsyncFile(file).toObservable()
 			.reduce((a, b) -> a.appendBuffer(b))
 			.toSingle()
-			.map(it -> it.getDelegate())
-	);
+			.map(it -> it.getDelegate());
+	}
 }

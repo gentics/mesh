@@ -158,6 +158,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 
 			BinaryGraphField binaryField = container.getBinary(fieldName);
 			if (binaryField != null && !binaryField.getFile().exists() && filePaths.containsKey(sha512Sum)) {
+				// FIXME Don't read entire file to memory!
 				Buffer buffer = Mesh.vertx().fileSystem().readFileBlocking(filePaths.get(sha512Sum));
 				binaryFieldHandler.hashAndStoreBinaryFile(buffer, binaryField.getUuid(), binaryField.getSegmentedPath());
 				binaryField.setSHA512Sum(sha512Sum);

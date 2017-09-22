@@ -17,6 +17,7 @@ import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.util.ETag;
 
+import io.vertx.core.file.AsyncFile;
 import io.vertx.core.http.HttpHeaders;
 import io.vertx.core.streams.Pump;
 import io.vertx.ext.web.RoutingContext;
@@ -66,12 +67,14 @@ public class BinaryFieldResponseHandler {
 			} else if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
 				// Resize the image if needed
 				imageManipulator.handleResize(binaryField.getFile(), binaryField.getSHA512Sum(), ac.getImageParameters())
-				.subscribe(file -> {
+				.subscribe(fileWithProps -> {
+					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
 					rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
 					rc.response().putHeader(MeshHeaders.WEBROOT_RESPONSE_TYPE, "binary");
 					// TODO encode filename?
 					rc.response().putHeader("content-disposition", "inline; filename=" + fileName);
+					AsyncFile file = fileWithProps.getFile();
 					file.endHandler(ignore -> {
 						rc.response().end();
 						file.close();
