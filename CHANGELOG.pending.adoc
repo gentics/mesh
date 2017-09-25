@@ -1,0 +1,1 @@
+icon:check[] Performance: Removing permissions has been optimized.
