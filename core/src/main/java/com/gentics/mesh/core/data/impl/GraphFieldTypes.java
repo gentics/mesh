@@ -7,7 +7,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
@@ -36,60 +36,60 @@ import com.gentics.mesh.core.rest.schema.ListFieldSchema;
  */
 public enum GraphFieldTypes {
 
-	STRING("string", StringGraphFieldImpl.STRING_TRANSFORMATOR, StringGraphFieldImpl.STRING_UPDATER,
+	STRING("string", StringGraphFieldImpl.STRING_TRANSFORMER, StringGraphFieldImpl.STRING_UPDATER,
 			StringGraphFieldImpl.STRING_GETTER),
 
-	STRING_LIST("list.string", StringGraphFieldListImpl.STRING_LIST_TRANSFORMATOR,
+	STRING_LIST("list.string", StringGraphFieldListImpl.STRING_LIST_TRANSFORMER,
 			StringGraphFieldListImpl.STRING_LIST_UPDATER, StringGraphFieldListImpl.STRING_LIST_GETTER),
 
-	NUMBER("number", NumberGraphFieldImpl.NUMBER_TRANSFORMATOR, NumberGraphFieldImpl.NUMBER_UPDATER,
+	NUMBER("number", NumberGraphFieldImpl.NUMBER_TRANSFORMER, NumberGraphFieldImpl.NUMBER_UPDATER,
 			NumberGraphFieldImpl.NUMBER_GETTER),
 
-	NUMBER_LIST("list.number", NumberGraphFieldListImpl.NUMBER_LIST_TRANSFORMATOR,
+	NUMBER_LIST("list.number", NumberGraphFieldListImpl.NUMBER_LIST_TRANSFORMER,
 			NumberGraphFieldListImpl.NUMBER_LIST_UPDATER, NumberGraphFieldListImpl.NUMBER_LIST_GETTER),
 
-	DATE("date", DateGraphFieldImpl.DATE_TRANSFORMATOR, DateGraphFieldImpl.DATE_UPDATER,
+	DATE("date", DateGraphFieldImpl.DATE_TRANSFORMER, DateGraphFieldImpl.DATE_UPDATER,
 			DateGraphFieldImpl.DATE_GETTER),
 
-	DATE_LIST("list.date", DateGraphFieldListImpl.DATE_LIST_TRANSFORMATOR, DateGraphFieldListImpl.DATE_LIST_UPDATER,
+	DATE_LIST("list.date", DateGraphFieldListImpl.DATE_LIST_TRANSFORMER, DateGraphFieldListImpl.DATE_LIST_UPDATER,
 			DateGraphFieldListImpl.DATE_LIST_GETTER),
 
-	BOOLEAN("boolean", BooleanGraphFieldImpl.BOOLEAN_TRANSFORMATOR, BooleanGraphFieldImpl.BOOLEAN_UPDATER,
+	BOOLEAN("boolean", BooleanGraphFieldImpl.BOOLEAN_TRANSFORMER, BooleanGraphFieldImpl.BOOLEAN_UPDATER,
 			BooleanGraphFieldImpl.BOOLEAN_GETTER),
 
-	BOOLEAN_LIST("list.boolean", BooleanGraphFieldListImpl.BOOLEAN_LIST_TRANSFORMATOR,
+	BOOLEAN_LIST("list.boolean", BooleanGraphFieldListImpl.BOOLEAN_LIST_TRANSFORMER,
 			BooleanGraphFieldListImpl.BOOLEAN_LIST_UPDATER, BooleanGraphFieldListImpl.BOOLEAN_LIST_GETTER),
 
-	HTML("html", HtmlGraphFieldImpl.HTML_TRANSFORMATOR, HtmlGraphFieldImpl.HTML_UPDATER,
+	HTML("html", HtmlGraphFieldImpl.HTML_TRANSFORMER, HtmlGraphFieldImpl.HTML_UPDATER,
 			HtmlGraphFieldImpl.HTML_GETTER),
 
-	HTML_LIST("list.html", HtmlGraphFieldListImpl.HTML_LIST_TRANSFORMATOR, HtmlGraphFieldListImpl.HTML_LIST_UPDATER,
+	HTML_LIST("list.html", HtmlGraphFieldListImpl.HTML_LIST_TRANSFORMER, HtmlGraphFieldListImpl.HTML_LIST_UPDATER,
 			HtmlGraphFieldListImpl.HTML_LIST_GETTER),
 
-	MICRONODE("micronode", MicronodeGraphFieldImpl.MICRONODE_TRANSFORMATOR, MicronodeGraphFieldImpl.MICRONODE_UPDATER,
+	MICRONODE("micronode", MicronodeGraphFieldImpl.MICRONODE_TRANSFORMER, MicronodeGraphFieldImpl.MICRONODE_UPDATER,
 			MicronodeGraphFieldImpl.MICRONODE_GETTER),
 
-	MICRONODE_LIST("list.micronode", MicronodeGraphFieldListImpl.MICRONODE_LIST_TRANSFORMATOR,
+	MICRONODE_LIST("list.micronode", MicronodeGraphFieldListImpl.MICRONODE_LIST_TRANSFORMER,
 			MicronodeGraphFieldListImpl.MICRONODE_LIST_UPDATER, MicronodeGraphFieldListImpl.MICRONODE_LIST_GETTER),
 
-	NODE("node", NodeGraphFieldImpl.NODE_TRANSFORMATOR, NodeGraphFieldImpl.NODE_UPDATER,
+	NODE("node", NodeGraphFieldImpl.NODE_TRANSFORMER, NodeGraphFieldImpl.NODE_UPDATER,
 			NodeGraphFieldImpl.NODE_GETTER),
 
-	NODE_LIST("list.node", NodeGraphFieldListImpl.NODE_LIST_TRANSFORMATOR, NodeGraphFieldListImpl.NODE_LIST_UPDATER,
+	NODE_LIST("list.node", NodeGraphFieldListImpl.NODE_LIST_TRANSFORMER, NodeGraphFieldListImpl.NODE_LIST_UPDATER,
 			NodeGraphFieldListImpl.NODE_LIST_GETTER),
 
-	BINARY("binary", BinaryGraphFieldImpl.BINARY_TRANSFORMATOR, BinaryGraphFieldImpl.BINARY_UPDATER,
+	BINARY("binary", BinaryGraphFieldImpl.BINARY_TRANSFORMER, BinaryGraphFieldImpl.BINARY_UPDATER,
 			BinaryGraphFieldImpl.BINARY_GETTER);
 
 	private String combinedType;
-	private FieldTransformator transformator;
+	private FieldTransformer transformer;
 	private FieldUpdater updater;
 	private FieldGetter getter;
 
-	private GraphFieldTypes(String combinedType, FieldTransformator transformator, FieldUpdater updater,
+	private GraphFieldTypes(String combinedType, FieldTransformer transformer, FieldUpdater updater,
 			FieldGetter getter) {
 		this.combinedType = combinedType;
-		this.transformator = transformator;
+		this.transformer = transformer;
 		this.updater = updater;
 		this.getter = getter;
 	}
@@ -104,12 +104,12 @@ public enum GraphFieldTypes {
 	}
 
 	/**
-	 * Return the field specific transformator.
+	 * Return the field specific transformer.
 	 * 
 	 * @return
 	 */
-	public FieldTransformator<? extends Field> getTransformator() {
-		return transformator;
+	public FieldTransformer<? extends Field> getTransformer() {
+		return transformer;
 	}
 
 	public static GraphFieldTypes valueByFieldSchema(FieldSchema schema) {
@@ -126,7 +126,7 @@ public enum GraphFieldTypes {
 	}
 
 	/**
-	 * Invoke the type specific field transformator using the provided information.
+	 * Invoke the type specific field transformer using the provided information.
 	 * 
 	 * @param container
 	 *            Field container which will be used to load the fields
@@ -145,7 +145,7 @@ public enum GraphFieldTypes {
 	 */
 	public Field getRestFieldFromGraph(GraphFieldContainer container, InternalActionContext ac, String fieldKey,
 			FieldSchema fieldSchema, List<String> languageTags, int level, Supplier<Node> parentNode) {
-		return getTransformator().transform(container, ac, fieldKey, fieldSchema, languageTags, level, parentNode);
+		return getTransformer().transform(container, ac, fieldKey, fieldSchema, languageTags, level, parentNode);
 	}
 
 	/**

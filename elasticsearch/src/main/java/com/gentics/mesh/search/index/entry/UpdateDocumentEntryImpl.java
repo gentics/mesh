@@ -3,11 +3,11 @@ package com.gentics.mesh.search.index.entry;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 
 import rx.Completable;
 
@@ -16,11 +16,11 @@ import rx.Completable;
  * 
  * @see UpdateBatcheEntry
  */
-public class UpdateDocumentEntryImpl extends AbstractEntry implements UpdateDocumentEntry {
+public class UpdateDocumentEntryImpl extends AbstractEntry<GenericEntryContext> implements UpdateDocumentEntry {
 
 	private String elementUuid;
 	private IndexHandler<?> indexHandler;
-	private HandleContext context;
+	private GenericEntryContext context;
 
 	/**
 	 * Create a new batch entry.
@@ -30,7 +30,7 @@ public class UpdateDocumentEntryImpl extends AbstractEntry implements UpdateDocu
 	 * @param context
 	 * @param action
 	 */
-	public UpdateDocumentEntryImpl(IndexHandler<?> indexHandler, IndexableElement element, HandleContext context, SearchQueueEntryAction action) {
+	public UpdateDocumentEntryImpl(IndexHandler<?> indexHandler, IndexableElement element, GenericEntryContext context, SearchQueueEntryAction action) {
 		super(action);
 		this.context = context;
 		this.elementUuid = element.getUuid();
@@ -58,7 +58,7 @@ public class UpdateDocumentEntryImpl extends AbstractEntry implements UpdateDocu
 	}
 
 	@Override
-	public HandleContext getContext() {
+	public GenericEntryContext getContext() {
 		return context;
 	}
 

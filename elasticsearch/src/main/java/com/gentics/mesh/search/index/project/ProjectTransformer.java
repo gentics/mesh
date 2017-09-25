@@ -7,18 +7,18 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.search.index.AbstractTransformator;
+import com.gentics.mesh.search.index.AbstractTransformer;
 
 import io.vertx.core.json.JsonObject;
 
 /**
- * Transformator for project search index documents.
+ * Transformer for project search index documents.
  */
 @Singleton
-public class ProjectTransformator extends AbstractTransformator<Project> {
+public class ProjectTransformer extends AbstractTransformer<Project> {
 
 	@Inject
-	public ProjectTransformator() {
+	public ProjectTransformer() {
 	}
 
 	@Override

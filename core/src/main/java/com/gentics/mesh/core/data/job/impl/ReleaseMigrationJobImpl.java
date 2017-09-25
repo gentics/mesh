@@ -55,7 +55,7 @@ public class ReleaseMigrationJobImpl extends JobImpl {
 			if (log.isDebugEnabled()) {
 				log.debug("Release migration for job {" + getUuid() + "} was requested");
 			}
-			status.commitStatus();
+			status.commit();
 
 			try (Tx tx = db.tx()) {
 				Release release = getRelease();

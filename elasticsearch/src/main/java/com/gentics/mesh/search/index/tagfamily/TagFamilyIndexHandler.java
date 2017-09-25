@@ -26,7 +26,7 @@ import rx.Completable;
 public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Inject
-	TagFamilyTransformator transformator;
+	TagFamilyTransformer transformer;
 
 	@Inject
 	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -38,8 +38,8 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 		return TagFamily.class;
 	}
 
-	public TagFamilyTransformator getTransformator() {
-		return transformator;
+	public TagFamilyTransformer getTransformer() {
+		return transformer;
 	}
 
 	@Override

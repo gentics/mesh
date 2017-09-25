@@ -8,18 +8,18 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
-import com.gentics.mesh.search.index.AbstractTransformator;
+import com.gentics.mesh.search.index.AbstractTransformer;
 
 import io.vertx.core.json.JsonObject;
 
 /**
- * Transformator for microschema search index documents.
+ * Transformer for microschema search index documents.
  */
 @Singleton
-public class MicroschemaTransformator extends AbstractTransformator<MicroschemaContainer> {
+public class MicroschemaTransformer extends AbstractTransformer<MicroschemaContainer> {
 
 	@Inject
-	public MicroschemaTransformator() {
+	public MicroschemaTransformer() {
 	}
 
 	@Override

@@ -572,7 +572,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public JobRoot jobRoot() {
-		return meshRoot.getJobRoot();
+		return meshRoot().getJobRoot();
 	}
 
 	@Override

@@ -24,7 +24,7 @@ import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaContainer> {
 
 	@Inject
-	SchemaTransformator transformator;
+	SchemaTransformer transformer;
 
 	@Inject
 	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -52,8 +52,8 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
-	public SchemaTransformator getTransformator() {
-		return transformator;
+	public SchemaTransformer getTransformer() {
+		return transformer;
 	}
 
 	@Override

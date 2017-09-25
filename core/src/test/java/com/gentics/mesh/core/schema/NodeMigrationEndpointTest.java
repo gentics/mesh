@@ -11,6 +11,7 @@ import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -52,6 +53,7 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
+import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
@@ -93,6 +95,9 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	public void testInitialAssignment() throws Exception {
 		tx(() -> boot().jobRoot().clear());
 
+		/**
+		 * 1. Create the initial schema and assign it to the release. Make sure that an index has been created. No job should be queued.
+		 */
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("dummy");
 		request.addField(FieldUtil.createStringFieldSchema("text"));
@@ -118,6 +123,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		assertThat(dummySearchProvider())
 				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid, PUBLISHED));
 
+		/**
+		 * 2. Stop the job worker and update the schema again. The new version should be assigned to the release and a migration job should be queued. Make sure
+		 * both indices exist.
+		 */
+
 		// Stop the job worker so that we can inspect the job in detail
 		getTestContext().getJobWorkerVerticle().stop();
 		// Update the schema again.
@@ -141,21 +151,92 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertTrue("The assignment should be active.", edge2.isActive());
 		}
 
+		assertThat(dummySearchProvider())
+				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT)).hasNoDropEvents();
+		assertThat(dummySearchProvider())
+				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, PUBLISHED)).hasNoDropEvents();
+		assertThat(call(() -> client().findJobs())).hasInfos(1);
+
+		/**
+		 * 3. Start the job worker and verify that the job has been completed. Make sure that initial index was removed since the new index now takes its place.
+		 */
 		// Now start the worker again
 		getTestContext().getJobWorkerVerticle().start();
 		triggerAndWaitForAllJobs(COMPLETED);
-
-		assertThat(dummySearchProvider())
-				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT));
-		assertThat(dummySearchProvider())
-				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, PUBLISHED));
-		assertThat(call(() -> client().findJobs())).hasInfos(1);
 
 		try (Tx tx = tx()) {
 			assertNotNull(edge2.getJobUuid());
 			assertEquals(COMPLETED, edge2.getMigrationStatus());
 			assertTrue("The assignment should be active.", edge2.isActive());
+			assertFalse("The previous assignment should be inactive.", edge1.isActive());
 		}
+
+		// The initial index should have been removed
+		assertThat(dummySearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid, DRAFT));
+		assertThat(dummySearchProvider())
+				.hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid, PUBLISHED));
+
+		/**
+		 * 4. Create a node and update the schema again. This node should be migrated. A deleteDocument call must be recorded for the old index. A store event
+		 * must be recorded for the new index.
+		 */
+		dummySearchProvider().clear();
+		getTestContext().getJobWorkerVerticle().stop();
+
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setSchemaName("dummy");
+		nodeCreateRequest.setParentNodeUuid(tx(() -> folder("2015").getUuid()));
+		nodeCreateRequest.getFields().put("text", new StringFieldImpl().setString("text_value"));
+		nodeCreateRequest.getFields().put("text2", new StringFieldImpl().setString("text2_value"));
+		NodeResponse response = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+
+		assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT),
+				NodeGraphFieldContainer.composeIndexType(), response.getUuid() + "-en");
+
+		updateRequest.addField(FieldUtil.createStringFieldSchema("text3"));
+		call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
+		String versionCUuid = tx(() -> boot().schemaContainerRoot().findByName("dummy").getLatestVersion().getUuid());
+		assertNotEquals("A new latest version should have been created.", versionBUuid, versionCUuid);
+		ReleaseSchemaEdge edge3;
+		try (Tx tx = tx()) {
+			edge3 = initialRelease().findReleaseSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
+			assertNotNull(edge3.getJobUuid());
+			assertEquals(QUEUED, edge3.getMigrationStatus());
+			assertFalse("The previous assignment should be inactive.", edge1.isActive());
+			assertTrue("The previous assignment should be active since it has not yet been migrated.", edge2.isActive());
+			assertTrue("The assignment should be active.", edge3.isActive());
+		}
+
+		assertThat(dummySearchProvider())
+				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid, DRAFT)).hasNoDropEvents();
+		assertThat(dummySearchProvider())
+				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid, PUBLISHED)).hasNoDropEvents();
+		assertThat(call(() -> client().findJobs())).hasInfos(2);
+
+		// Now start the worker again
+		getTestContext().getJobWorkerVerticle().start();
+		triggerAndWaitForAllJobs(COMPLETED);
+
+		try (Tx tx = tx()) {
+			assertNotNull(edge3.getJobUuid());
+			assertEquals(COMPLETED, edge3.getMigrationStatus());
+			assertFalse("The previous assignment should be inactive.", edge1.isActive());
+			assertFalse("The previous assignment should be inactive since it has been been migrated.", edge2.isActive());
+			assertTrue("The assignment should be active.", edge3.isActive());
+		}
+
+		// The old index should have been removed
+		assertThat(dummySearchProvider()).hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT));
+		assertThat(dummySearchProvider())
+				.hasDrop(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, PUBLISHED));
+
+		// The node should have been removed from the old index and placed in the new one
+		assertThat(dummySearchProvider()).hasDelete(
+				NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT),
+				NodeGraphFieldContainer.composeIndexType(), response.getUuid() + "-en");
+		assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid, DRAFT),
+				NodeGraphFieldContainer.composeIndexType(), response.getUuid() + "-en");
 
 	}
 

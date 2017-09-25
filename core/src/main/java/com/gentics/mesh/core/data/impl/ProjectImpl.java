@@ -20,7 +20,6 @@ import java.util.Set;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -48,6 +47,7 @@ import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.impl.DummySearchQueueBatch;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
@@ -277,17 +277,17 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		}
 		// All nodes of all releases are related to this project. All nodes/containers must be updated if the project name changes.
 		for (Node node : getNodeRoot().findAllIt()) {
-			action.call(node, new HandleContext());
+			action.call(node, new GenericEntryContextImpl());
 		}
 
 		for (TagFamily family : getTagFamilyRoot().findAllIt()) {
 			for (Tag tag : family.findAllIt()) {
-				action.call(tag, new HandleContext().setProjectUuid(getUuid()));
+				action.call(tag, new GenericEntryContextImpl().setProjectUuid(getUuid()));
 			}
 		}
 
 		for (TagFamily tagFamily : getTagFamilyRoot().findAllIt()) {
-			action.call(tagFamily, new HandleContext().setProjectUuid(getUuid()));
+			action.call(tagFamily, new GenericEntryContextImpl().setProjectUuid(getUuid()));
 		}
 	}
 

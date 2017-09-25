@@ -89,7 +89,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 		if (status != null) {
 			status.setStatus(RUNNING);
-			status.commitStatus();
+			status.commit();
 		}
 
 		// Iterate over all containers and invoke a migration for each one
@@ -105,7 +105,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 			if (count % 50 == 0) {
 				log.info("Migrated containers: " + count);
 				if (status != null) {
-					status.commitStatus();
+					status.commit();
 				}
 			}
 			count++;
@@ -204,9 +204,9 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 				migrate(ac, migrated, restModel, toVersion, touchedFields, migrationScripts, NodeUpdateRequest.class);
 
 				// Ensure the search index is updated accordingly
-				sqb.store(node, releaseUuid, DRAFT, false);
+				sqb.move(container, migrated, releaseUuid, DRAFT);
 				if (publish) {
-					sqb.store(node, releaseUuid, PUBLISHED, false);
+					sqb.move(container, migrated, releaseUuid, PUBLISHED);
 				}
 				return sqb;
 			});

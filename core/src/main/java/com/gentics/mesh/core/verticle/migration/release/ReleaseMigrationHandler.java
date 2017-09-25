@@ -59,7 +59,7 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 
 		if (status != null) {
 			status.setStatus(RUNNING);
-			status.commitStatus();
+			status.commit();
 		}
 
 		long count = 0;
@@ -77,7 +77,7 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 			if (count % 50 == 0) {
 				log.info("Migrated nodes: " + count);
 				if (status != null) {
-					status.commitStatus();
+					status.commit();
 				}
 			}
 			count++;

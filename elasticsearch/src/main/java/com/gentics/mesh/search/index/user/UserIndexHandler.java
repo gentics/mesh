@@ -23,7 +23,7 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	private final static Set<String> indices = Collections.singleton(User.TYPE);
 
 	@Inject
-	UserTransformator transformator;
+	UserTransformer transformer;
 
 	@Inject
 	public UserIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -51,8 +51,8 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
-	public UserTransformator getTransformator() {
-		return transformator;
+	public UserTransformer getTransformer() {
+		return transformer;
 	}
 
 	@Override

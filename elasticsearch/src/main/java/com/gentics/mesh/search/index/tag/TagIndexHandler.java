@@ -34,7 +34,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
 
 	@Inject
-	TagTransformator transformator;
+	TagTransformer transforer;
 
 	@Inject
 	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -47,8 +47,8 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	protected TagTransformator getTransformator() {
-		return transformator;
+	protected TagTransformer getTransformer() {
+		return transforer;
 	}
 
 	@Override

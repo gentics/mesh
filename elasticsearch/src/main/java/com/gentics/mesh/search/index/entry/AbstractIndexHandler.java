@@ -43,7 +43,7 @@ import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.index.Transformator;
+import com.gentics.mesh.search.index.Transformer;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
@@ -87,11 +87,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	abstract protected RootVertex<T> getRootVertex();
 
 	/**
-	 * Return the index specific transformator which is used to generate the search document and mappings.
+	 * Return the index specific transformer which is used to generate the search document and mappings.
 	 * 
 	 * @return
 	 */
-	abstract protected Transformator getTransformator();
+	abstract protected Transformer getTransformer();
 
 	/**
 	 * Return the class of elements which can be handled by this handler.
@@ -136,7 +136,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
 		String indexType = composeIndexTypeFromEntry(entry);
-		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformator().toDocument(object)).doOnCompleted(() -> {
+		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformer().toDocument(object)).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
 			}
@@ -199,7 +199,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				mappingRequestBuilder.setType(normalizedDocumentType);
 
 				// Generate the mapping for the specific type
-				JsonObject mapping = getTransformator().getMapping(normalizedDocumentType);
+				JsonObject mapping = getTransformer().getMapping(normalizedDocumentType);
 				mappingRequestBuilder.setSource(mapping.toString());
 
 				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {

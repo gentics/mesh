@@ -13,7 +13,7 @@ public interface MigrationStatusHandler {
 	 * 
 	 * @return Fluent API
 	 */
-	MigrationStatusHandler commitStatus();
+	MigrationStatusHandler commit();
 
 	/**
 	 * Update status and inform all the channels.

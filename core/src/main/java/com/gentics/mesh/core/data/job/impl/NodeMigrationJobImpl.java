@@ -6,6 +6,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -19,13 +20,12 @@ import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.syncleus.ferma.annotations.GraphElement;
+import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-@GraphElement
 public class NodeMigrationJobImpl extends JobImpl {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeMigrationJobImpl.class);
@@ -52,7 +52,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 	}
 
 	protected void processTask() {
-		MigrationStatusHandler statusHandler = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.schema);
+		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.schema);
 		try {
 
 			try (Tx tx = db.tx()) {
@@ -82,22 +82,51 @@ public class NodeMigrationJobImpl extends JobImpl {
 				}
 
 				ReleaseSchemaEdge releaseVersionEdge = release.findReleaseSchemaEdge(toContainerVersion);
-				statusHandler.setVersionEdge(releaseVersionEdge);
+				status.setVersionEdge(releaseVersionEdge);
 
 				log.info("Handling node migration request for schema {" + schemaContainer.getUuid() + "} from version {"
 						+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} for release {" + release.getUuid()
 						+ "} in project {" + project.getUuid() + "}");
 
-				statusHandler.commitStatus();
+				status.commit();
+				while (true) {
+					MeshInternal.get().nodeMigrationHandler().migrateNodes(project, release, fromContainerVersion, toContainerVersion, status)
+							.await();
+					// Check migration result
+					boolean stillHasContainers = fromContainerVersion.getFieldContainers(release.getUuid()).hasNext();
+					if (stillHasContainers) {
+						log.info("Found not yet migrated containers for schema version {" + fromContainerVersion.getName() + "@"
+								+ fromContainerVersion.getVersion() + "} invoking migration again.");
+					} else {
+						break;
+					}
+				}
 
-				MeshInternal.get().nodeMigrationHandler().migrateNodes(project, release, fromContainerVersion, toContainerVersion, statusHandler)
-						.await();
-				statusHandler.done();
+				finallizeMigration(project, release, fromContainerVersion);
+				status.done();
 				tx.success();
 			}
 		} catch (Exception e) {
-			statusHandler.error(e, "Error while preparing node migration.");
+			status.error(e, "Error while preparing node migration.");
 		}
+	}
+
+	private void finallizeMigration(Project project, Release release, SchemaContainerVersion fromContainerVersion) {
+		// Deactivate edge
+		try (Tx tx = db.tx()) {
+			ReleaseSchemaEdge edge = release.findReleaseSchemaEdge(fromContainerVersion);
+			edge.setActive(false);
+			tx.success();
+		}
+		// Remove old indices
+		MeshInternal.get().searchProvider()
+				.deleteIndex(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), fromContainerVersion.getUuid(), DRAFT))
+				.await();
+		MeshInternal.get().searchProvider()
+				.deleteIndex(
+						NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), fromContainerVersion.getUuid(), PUBLISHED))
+				.await();
+
 	}
 
 }

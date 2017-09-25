@@ -219,4 +219,14 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 		return this;
 	}
 
+	/**
+	 * Assert that no drop event was recorded.
+	 * 
+	 * @return Fluent API
+	 */
+	public DummySearchProviderAssert hasNoDropEvents() {
+		assertThat(actual.getDropIndexEvents()).isEmpty();
+		return this;
+	}
+
 }

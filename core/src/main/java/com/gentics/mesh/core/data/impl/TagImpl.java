@@ -18,7 +18,6 @@ import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -33,6 +32,7 @@ import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -208,7 +208,7 @@ public class TagImpl extends AbstractMeshCoreVertex<TagResponse, Tag> implements
 		for (Release release : getProject().getReleaseRoot().findAllIt()) {
 			for (Node node : getNodes(release)) {
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
-					HandleContext context = new HandleContext();
+					GenericEntryContextImpl context = new GenericEntryContextImpl();
 					context.setContainerType(type);
 					context.setReleaseUuid(release.getUuid());
 					context.setProjectUuid(node.getProject().getUuid());

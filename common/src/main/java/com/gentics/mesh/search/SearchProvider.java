@@ -195,4 +195,6 @@ public interface SearchProvider {
 	 */
 	Completable updateMapping(String indexName, String type, JsonObject mapping);
 
+
+
 }

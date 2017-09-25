@@ -7,7 +7,7 @@ import java.util.Locale;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.NumberGraphField;
@@ -19,7 +19,7 @@ import com.syncleus.ferma.AbstractVertexFrame;
 
 public class NumberGraphFieldImpl extends AbstractBasicField<NumberField> implements NumberGraphField {
 
-	public static FieldTransformator<NumberField> NUMBER_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	public static FieldTransformer<NumberField> NUMBER_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NumberGraphField graphNumberField = container.getNumber(fieldKey);
 		if (graphNumberField == null) {
 			return null;

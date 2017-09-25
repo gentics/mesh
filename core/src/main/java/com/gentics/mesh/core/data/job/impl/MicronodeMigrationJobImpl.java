@@ -61,7 +61,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 							+ fromContainerVersion.getUuid() + "} to version {" + toContainerVersion.getUuid() + "} was requested");
 				}
 
-				statusHandler.commitStatus();
+				statusHandler.commit();
 
 				MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(release, fromContainerVersion, toContainerVersion, statusHandler)
 						.await();

@@ -28,6 +28,7 @@ public final class ChangesList {
 		list.add(new SanitizeSchemaNames());
 		list.add(new CreateMissingDraftEdges());
 		list.add(new RemoveBogusWebrootProperty());
+		list.add(new PurgeOldJobs());
 		// ADD NEW CHANGES HERE!
 		return list;
 	}

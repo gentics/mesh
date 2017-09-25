@@ -86,7 +86,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 
 		if (status != null) {
 			status.setStatus(RUNNING);
-			status.commitStatus();
+			status.commit();
 		}
 
 		// Iterate over all containers and invoke a migration for each one
@@ -102,7 +102,7 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 			if (count % 50 == 0) {
 				log.info("Migrated micronode containers: " + count);
 				if (status != null) {
-					status.commitStatus();
+					status.commit();
 				}
 			}
 			count++;

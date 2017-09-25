@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data;
 
+import com.gentics.mesh.core.data.search.context.GenericEntryContext;
+
 public interface HandleElementAction {
 
 	/**
@@ -10,6 +12,6 @@ public interface HandleElementAction {
 	 * @param context
 	 *            Context to be used when handling the element
 	 */
-	void call(IndexableElement element, HandleContext context);
+	void call(IndexableElement element, GenericEntryContext context);
 
 }

@@ -54,7 +54,7 @@ import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
-import com.gentics.mesh.search.index.AbstractTransformator;
+import com.gentics.mesh.search.index.AbstractTransformer;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -63,18 +63,18 @@ import io.vertx.core.logging.LoggerFactory;
 import rx.Observable;
 
 /**
- * Transformator which can be used to transform a {@link NodeGraphFieldContainer} into a elasticsearch document. Additionally the matching mapping can also be
+ * Transformer which can be used to transform a {@link NodeGraphFieldContainer} into a elasticsearch document. Additionally the matching mapping can also be
  * generated using this class.
  */
 @Singleton
-public class NodeContainerTransformator extends AbstractTransformator<NodeGraphFieldContainer> {
+public class NodeContainerTransformer extends AbstractTransformer<NodeGraphFieldContainer> {
 
-	private static final Logger log = LoggerFactory.getLogger(NodeContainerTransformator.class);
+	private static final Logger log = LoggerFactory.getLogger(NodeContainerTransformer.class);
 
 	private static final String VERSION_KEY = "version";
 
 	@Inject
-	public NodeContainerTransformator() {
+	public NodeContainerTransformer() {
 	}
 
 	/**
