@@ -4,6 +4,7 @@ import com.gentics.mesh.Mesh;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.file.OpenOptions;
+import io.vertx.rxjava.core.Vertx;
 import io.vertx.rxjava.core.file.FileSystem;
 import rx.Single;
 
@@ -26,8 +27,8 @@ public class PropReadFileStream {
 	 * @param path Path to the file
 	 * @return
 	 */
-	public static Single<PropReadFileStream> openFile(String path) {
-		FileSystem fs = new FileSystem(Mesh.vertx().fileSystem());
+	public static Single<PropReadFileStream> openFile(Vertx vertx, String path) {
+		FileSystem fs = vertx.fileSystem();
 		return Single.zip(
 			fs.rxProps(path).map(props -> props.getDelegate()),
 			fs.rxOpen(path, openOptions).map(file -> file.getDelegate()),
