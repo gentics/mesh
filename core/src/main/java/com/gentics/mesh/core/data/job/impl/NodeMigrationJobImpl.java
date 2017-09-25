@@ -89,12 +89,15 @@ public class NodeMigrationJobImpl extends JobImpl {
 						+ "} in project {" + project.getUuid() + "}");
 
 				status.commit();
-				while (true) {
+				for (int i = 0; i < 3; i++) {
 					MeshInternal.get().nodeMigrationHandler().migrateNodes(project, release, fromContainerVersion, toContainerVersion, status)
 							.await();
 					// Check migration result
-					boolean stillHasContainers = fromContainerVersion.getFieldContainers(release.getUuid()).hasNext();
-					if (stillHasContainers) {
+					boolean hasRemainingContainers = fromContainerVersion.getFieldContainers(release.getUuid()).hasNext();
+					if (i == 3 && hasRemainingContainers) {
+						log.error("There were still not yet migrated containers after {" + i + "} migration runs.");
+						break;
+					} else if (hasRemainingContainers) {
 						log.info("Found not yet migrated containers for schema version {" + fromContainerVersion.getName() + "@"
 								+ fromContainerVersion.getVersion() + "} invoking migration again.");
 					} else {
