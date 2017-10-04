@@ -20,7 +20,6 @@ import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusHandlerImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
@@ -93,7 +92,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 					MeshInternal.get().nodeMigrationHandler().migrateNodes(project, release, fromContainerVersion, toContainerVersion, status)
 							.await();
 					// Check migration result
-					boolean hasRemainingContainers = fromContainerVersion.getFieldContainers(release.getUuid()).hasNext();
+					boolean hasRemainingContainers = fromContainerVersion.getEditableFieldContainers(release.getUuid()).hasNext();
 					if (i == 3 && hasRemainingContainers) {
 						log.error("There were still not yet migrated containers after {" + i + "} migration runs.");
 						break;

@@ -180,13 +180,59 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			// Add permission on own role
 			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
 			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			tx.success();
+		}
 
-			String pathToElement = "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid();
-			RolePermissionResponse response = call(() -> client().readRolePermissions(role().getUuid(), pathToElement));
-			assertNotNull(response);
-			assertThat(response).hasPerm(Permission.values());
+		String pathToElement = tx(() -> "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid());
+		RolePermissionResponse response = call(() -> client().readRolePermissions(roleUuid(), pathToElement));
+		assertNotNull(response);
+		assertThat(response).hasPerm(Permission.values());
+	}
+
+	@Test
+	public void testApplyPermissionsOnTag() {
+		try (Tx tx = tx()) {
+			// Add permission on own role
+			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			role().revokePermissions(tag("red"), DELETE_PERM);
+			tx.success();
+		}
+
+		String pathToElement = tx(
+				() -> "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags/" + tag("red").getUuid());
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(false);
+		request.getPermissions().setDelete(true);
+		call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
+
+		try (Tx tx = tx()) {
+			assertTrue(role().hasPermission(DELETE_PERM, tag("red")));
 		}
 	}
+
+	@Test
+	public void testApplyPermissionsOnTags() {
+		try (Tx tx = tx()) {
+			// Add permission on own role
+			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+			assertTrue(role().hasPermission(GraphPermission.DELETE_PERM, tagFamily("colors")));
+			role().revokePermissions(tag("red"), DELETE_PERM);
+			tx.success();
+		}
+
+		String pathToElement = tx(
+				() -> "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags");
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(false);
+		request.getPermissions().setDelete(true);
+		call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
+
+		try (Tx tx = tx()) {
+			assertTrue(role().hasPermission(DELETE_PERM, tag("red")));
+		}
+	}
+	
 
 	@Test
 	public void testAddRecursivePermissionsToNodes() {

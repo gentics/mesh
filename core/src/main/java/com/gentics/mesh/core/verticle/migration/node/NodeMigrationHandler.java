@@ -70,7 +70,7 @@ public class NodeMigrationHandler extends AbstractMigrationHandler {
 
 		// Get the containers of nodes, that need to be transformed. Containers which need to be transformed are those which are still linked to older schema
 		// versions.
-		Iterator<NodeGraphFieldContainer> fieldContainers = fromVersion.getFieldContainers(release.getUuid());
+		Iterator<? extends NodeGraphFieldContainer> fieldContainers = fromVersion.getEditableFieldContainers(release.getUuid());
 
 		// Prepare the migration - Collect the migration scripts
 		List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts = new ArrayList<>();

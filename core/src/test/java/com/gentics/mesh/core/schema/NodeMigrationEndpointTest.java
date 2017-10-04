@@ -24,7 +24,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.ContainerType;
@@ -45,13 +44,12 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.impl.UpdateFieldChangeImpl;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.job.JobListResponse;
-import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
+import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.MicronodeField;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
@@ -139,23 +137,26 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		updateRequest.setDisplayField("text");
 		updateRequest.validate();
 		call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
-		String versionBUuid = tx(() -> boot().schemaContainerRoot().findByName("dummy").getLatestVersion().getUuid());
-		assertNotEquals(versionUuid, versionBUuid);
 
 		// Assert that the indices have been created and the job has been queued
 		ReleaseSchemaEdge edge2;
+		SchemaContainerVersion versionB;
+		String versionBUuid;
 		try (Tx tx = tx()) {
+			versionB = boot().schemaContainerRoot().findByName("dummy").getLatestVersion();
+			versionBUuid = versionB.getUuid();
+			assertNotEquals(versionUuid, versionBUuid);
 			edge2 = initialRelease().findReleaseSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
 			assertNotNull(edge2.getJobUuid());
 			assertEquals("The migration should be queued", QUEUED, edge2.getMigrationStatus());
 			assertTrue("The assignment should be active.", edge2.isActive());
+			assertThat(dummySearchProvider())
+					.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT)).hasNoDropEvents();
+			assertThat(dummySearchProvider())
+					.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, PUBLISHED))
+					.hasNoDropEvents();
+			assertThat(call(() -> client().findJobs())).hasInfos(1);
 		}
-
-		assertThat(dummySearchProvider())
-				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT)).hasNoDropEvents();
-		assertThat(dummySearchProvider())
-				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, PUBLISHED)).hasNoDropEvents();
-		assertThat(call(() -> client().findJobs())).hasInfos(1);
 
 		/**
 		 * 3. Start the job worker and verify that the job has been completed. Make sure that initial index was removed since the new index now takes its place.
@@ -196,23 +197,30 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		updateRequest.addField(FieldUtil.createStringFieldSchema("text3"));
 		call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
-		String versionCUuid = tx(() -> boot().schemaContainerRoot().findByName("dummy").getLatestVersion().getUuid());
-		assertNotEquals("A new latest version should have been created.", versionBUuid, versionCUuid);
+
 		ReleaseSchemaEdge edge3;
+		SchemaContainerVersion versionC;
+		String versionCUuid;
 		try (Tx tx = tx()) {
+			versionC = tx(() -> boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
+			versionCUuid = versionC.getUuid();
+			assertTrue("There should be editable containers (one draft) which should be linked to the version.",
+					versionB.getEditableFieldContainers(initialReleaseUuid()).hasNext());
+			assertNotEquals("A new latest version should have been created.", versionBUuid, versionCUuid);
+
 			edge3 = initialRelease().findReleaseSchemaEdge(boot().schemaContainerRoot().findByName("dummy").getLatestVersion());
 			assertNotNull(edge3.getJobUuid());
 			assertEquals(QUEUED, edge3.getMigrationStatus());
 			assertFalse("The previous assignment should be inactive.", edge1.isActive());
 			assertTrue("The previous assignment should be active since it has not yet been migrated.", edge2.isActive());
 			assertTrue("The assignment should be active.", edge3.isActive());
+			assertThat(dummySearchProvider())
+					.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid, DRAFT)).hasNoDropEvents();
+			assertThat(dummySearchProvider())
+					.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid, PUBLISHED))
+					.hasNoDropEvents();
+			assertThat(call(() -> client().findJobs())).hasInfos(2);
 		}
-
-		assertThat(dummySearchProvider())
-				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid, DRAFT)).hasNoDropEvents();
-		assertThat(dummySearchProvider())
-				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionCUuid, PUBLISHED)).hasNoDropEvents();
-		assertThat(call(() -> client().findJobs())).hasInfos(2);
 
 		// Now start the worker again
 		getTestContext().getJobWorkerVerticle().start();
@@ -224,6 +232,12 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			assertFalse("The previous assignment should be inactive.", edge1.isActive());
 			assertFalse("The previous assignment should be inactive since it has been been migrated.", edge2.isActive());
 			assertTrue("The assignment should be active.", edge3.isActive());
+			assertFalse(
+					"There should no longer be an editable container (one draft) linked to the version since the migration should have updated the link.",
+					versionB.getEditableFieldContainers(initialReleaseUuid()).hasNext());
+			assertTrue("There should now be versions linked to the new schema version instead.",
+					versionC.getEditableFieldContainers(initialReleaseUuid()).hasNext());
+
 		}
 
 		// The old index should have been removed
@@ -242,47 +256,28 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testEmptyMigration() throws Throwable {
-		SchemaContainer container;
-		SchemaContainerVersion versionA;
-		SchemaContainerVersion versionB;
-		String versionBUuid;
+
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName("dummy");
+		request.addField(FieldUtil.createStringFieldSchema("text"));
+		request.setSegmentField("text");
+		request.setDisplayField("text");
+		request.validate();
+		SchemaResponse schemaResponse = call(() -> client().createSchema(request));
+		String versionUuid = tx(() -> boot().schemaContainerRoot().findByName("dummy").getLatestVersion().getUuid());
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
+		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), schemaResponse.toReference()));
+
 		try (Tx tx = tx()) {
-			String fieldName = "changedfield";
-			container = createDummySchemaWithChanges(fieldName, false);
-			versionB = container.getLatestVersion();
-			versionA = versionB.getPreviousVersion();
-			project().getSchemaContainerRoot().addSchemaContainer(user(), container);
-			versionBUuid = versionB.getUuid();
 			// No job should be scheduled since this is the first time we assign the container to the project/release
 			assertEquals(0, TestUtils.toList(boot().jobRoot().findAllIt()).size());
-			tx.success();
 		}
 
 		assertThat(dummySearchProvider())
-				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, DRAFT));
+				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid, DRAFT));
 		assertThat(dummySearchProvider())
-				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionBUuid, PUBLISHED));
+				.hasCreate(NodeGraphFieldContainer.composeIndexName(projectUuid(), initialReleaseUuid(), versionUuid, PUBLISHED));
 
-		// TODO BUG FIXME assert that index exists!
-
-		triggerAndWaitForAllJobs(COMPLETED);
-
-		JobListResponse status = call(() -> client().findJobs());
-		assertThat(status).listsAll(COMPLETED).hasInfos(1);
-
-		// Check the status info
-		JobResponse info = status.getData().get(0);
-		assertEquals(MigrationStatus.COMPLETED, info.getStatus());
-		try (Tx tx = tx()) {
-			assertEquals(container.getName(), info.getProperties().get("sourceName"));
-			assertEquals(container.getUuid(), info.getProperties().get("schemaUuid"));
-			assertEquals(versionA.getVersion(), info.getProperties().get("fromVersion"));
-			assertEquals(versionB.getVersion(), info.getProperties().get("toVersion"));
-			String nodeName = Mesh.mesh().getOptions().getNodeName();
-			assertEquals("The node name of the migration did not match up.", nodeName, info.getNodeName());
-			assertEquals("The migration should not have affected any elements.", 0, info.getCompletionCount());
-			assertNotNull("The start date has not been set.", info.getStartDate());
-		}
 	}
 
 	@Test
@@ -603,51 +598,57 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 	@Test
 	public void testMigrateDraftAndPublished() throws Throwable {
-		String fieldName = "changedfield";
-		Node node;
-		SchemaContainerVersion versionA;
-		SchemaContainerVersion versionB;
-		SchemaContainer container;
-		String jobUuid;
 
-		try (Tx tx = tx()) {
-			container = createDummySchemaWithChanges(fieldName, false);
-			versionB = container.getLatestVersion();
-			versionA = versionB.getPreviousVersion();
-			assertNull("No job should have been created since this is the first time we assign the version to the release. No need for a migration",
-					project().getLatestRelease().assignSchemaVersion(user(), versionA));
+		// Create schema
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName("dummy");
+		request.addField(FieldUtil.createStringFieldSchema("text"));
+		request.setSegmentField("text");
+		request.setDisplayField("text");
+		request.validate();
+		SchemaResponse schemaResponse = call(() -> client().createSchema(request));
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
+		call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(), schemaResponse.toReference()));
 
-			// create a node and publish
-			node = folder("2015").create(user(), versionA, project());
-			NodeGraphFieldContainer englishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
-			englishContainer.createString("name").setString("someName");
-			englishContainer.createString(fieldName).setString("content");
-			tx.success();
-		}
+		// Create node
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setSchemaName("dummy");
+		nodeCreateRequest.setParentNodeUuid(tx(() -> folder("2015").getUuid()));
+		nodeCreateRequest.getFields().put("text", new StringFieldImpl().setString("text_value"));
+		NodeResponse draftResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+		assertThat(draftResponse).hasVersion("0.1");
 
-		try (Tx tx = tx()) {
-			InternalActionContext ac = new InternalRoutingActionContextImpl(mockRoutingContext());
-			node.publish(ac, createBatch(), "en");
-			tx.success();
-		}
+		// Publish node
+		call(() -> client().publishNode(PROJECT_NAME, draftResponse.getUuid()));
 
-		try (Tx tx = tx()) {
-			NodeGraphFieldContainer updatedEnglishContainer = node.createGraphFieldContainer(english(), project().getLatestRelease(), user());
-			updatedEnglishContainer.getString(fieldName).setString("new content");
-			jobUuid = project().getLatestRelease().assignSchemaVersion(user(), versionB).getUuid();
-			tx.success();
-		}
+		// Update it again so that the draft version is different from the pub version
+		NodeUpdateRequest nodeUpdateRequest = new NodeUpdateRequest();
+		nodeUpdateRequest.setLanguage("en");
+		nodeUpdateRequest.setVersion("0.1");
+		nodeUpdateRequest.getFields().put("text", new StringFieldImpl().setString("text2_value"));
+		call(() -> client().updateNode(PROJECT_NAME, draftResponse.getUuid(), nodeUpdateRequest));
 
-		triggerAndWaitForJob(jobUuid);
+		assertThat(call(() -> client().updateNode(PROJECT_NAME, draftResponse.getUuid(), nodeUpdateRequest))).hasVersion("1.1");
+		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid(), new VersioningParametersImpl().published())))
+				.hasVersion("1.0");
 
-		try (Tx tx = tx()) {
-			assertThat(node.getGraphFieldContainer("en")).as("Migrated draft").isOf(versionB).hasVersion("2.1");
-			assertThat(node.getGraphFieldContainer("en", project().getLatestRelease().getUuid(), ContainerType.PUBLISHED)).as("Migrated published")
-					.isOf(versionB).hasVersion("2.0");
-		}
+		// Update the schema again.
+		SchemaUpdateRequest updateRequest = new SchemaUpdateRequest();
+		updateRequest.setName("dummy");
+		updateRequest.addField(FieldUtil.createStringFieldSchema("text"));
+		updateRequest.addField(FieldUtil.createStringFieldSchema("text2"));
+		updateRequest.setSegmentField("text");
+		updateRequest.setDisplayField("text");
+		updateRequest.validate();
+		call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
 
+		triggerAndWaitForAllJobs(COMPLETED);
 		JobListResponse status = call(() -> client().findJobs());
-		assertThat(status).listsAll(COMPLETED).hasInfos(1).containsJobs(jobUuid);
+		assertThat(status).listsAll(COMPLETED).hasInfos(1);
+
+		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasVersion("2.1").hasStringField("text", "text2_value");
+		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid(), new VersioningParametersImpl().published()))).hasVersion("2.0").hasStringField("text", "text_value");
 
 	}
 
