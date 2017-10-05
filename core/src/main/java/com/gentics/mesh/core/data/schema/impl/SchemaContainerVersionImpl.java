@@ -1,7 +1,6 @@
 package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
-import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
@@ -57,23 +56,12 @@ public class SchemaContainerVersionImpl
 	}
 
 	@Override
-	public Iterator<? extends NodeGraphFieldContainer> getEditableFieldContainers(String releaseUuid) {
-		return getFieldContainers(releaseUuid);
-		//return in(HAS_SCHEMA_CONTAINER_VERSION)
-		
-//		return in(HAS_SCHEMA_CONTAINER_VERSION)
-//
-//				.mark().inE(HAS_FIELD_CONTAINER)
-//
-//				.filter(e -> {
-//					GraphFieldContainerEdgeImpl edge = e.reframeExplicit(GraphFieldContainerEdgeImpl.class);
-//					ContainerType type = edge.getType();
-//					System.out.println(type);
-//					//return releaseUuid.equals(edge.getReleaseUuid()) && (DRAFT == type || PUBLISHED == type);
-//					return true;
-//				})
-//
-//				.back().frameExplicit(NodeGraphFieldContainerImpl.class).iterator();
+	public Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String releaseUuid) {
+		return in(HAS_SCHEMA_CONTAINER_VERSION).inE(HAS_FIELD_CONTAINER).filter(e -> {
+			GraphFieldContainerEdgeImpl edge = e.reframeExplicit(GraphFieldContainerEdgeImpl.class);;
+			ContainerType type = edge.getType();
+			return releaseUuid.equals(edge.getReleaseUuid()) && (DRAFT == type);
+		}).inV().frameExplicit(NodeGraphFieldContainerImpl.class).iterator();
 	}
 
 	@Override

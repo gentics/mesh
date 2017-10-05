@@ -308,32 +308,36 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user) {
-		return createGraphFieldContainer(language, release, user, null);
+	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User editor) {
+		return createGraphFieldContainer(language, release, editor, null, true);
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user, NodeGraphFieldContainer original) {
+	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User editor, NodeGraphFieldContainer original,
+			boolean handleDraftEdge) {
 		NodeGraphFieldContainerImpl previous = null;
 		EdgeFrame draftEdge = null;
 		String languageTag = language.getLanguageTag();
 		String releaseUuid = release.getUuid();
 
 		// check whether there is a current draft version
-		draftEdge = getGraphFieldContainerEdge(languageTag, releaseUuid, DRAFT);
-		if (draftEdge != null) {
-			previous = draftEdge.inV().nextOrDefault(NodeGraphFieldContainerImpl.class, null);
+
+		if (handleDraftEdge) {
+			draftEdge = getGraphFieldContainerEdge(languageTag, releaseUuid, DRAFT);
+			if (draftEdge != null) {
+				previous = draftEdge.inV().nextOrDefault(NodeGraphFieldContainerImpl.class, null);
+			}
 		}
 
 		// Create the new container
 		NodeGraphFieldContainerImpl container = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		if (original != null) {
-			container.setEditor(user);
+			container.setEditor(editor);
 			container.setLastEditedTimestamp();
 			container.setLanguage(language);
 			container.setSchemaContainerVersion(original.getSchemaContainerVersion());
 		} else {
-			container.setEditor(user);
+			container.setEditor(editor);
 			container.setLastEditedTimestamp();
 			container.setLanguage(language);
 			// We need create a new container with no reference. So use the latest version available to use.
@@ -365,11 +369,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// node graph field container.
 		container.updateDisplayFieldValue();
 
-		// create a new draft edge
-		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-		edge.setLanguageTag(languageTag);
-		edge.setReleaseUuid(releaseUuid);
-		edge.setType(DRAFT);
+		if (handleDraftEdge) {
+			// create a new draft edge
+			GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+			edge.setLanguageTag(languageTag);
+			edge.setReleaseUuid(releaseUuid);
+			edge.setType(DRAFT);
+		}
 
 		// if there is no initial edge, create one
 		if (getGraphFieldContainerEdge(languageTag, releaseUuid, INITIAL) == null) {
@@ -1536,7 +1542,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (!requestModel.getFields().isEmpty()) {
 
 				// Create new field container as clone of the existing
-				NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+				NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
 				// Update the existing fields
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 				latestDraftVersion = newDraftVersion;

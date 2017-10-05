@@ -191,4 +191,8 @@ public final class TestUtils {
 	public static <T> List<T> toList(Iterable<? extends T> it) {
 		return toList(it.iterator());
 	}
+
+	public static long size(Iterator<?> it) {
+		return toList(it).size();
+	}
 }

@@ -54,7 +54,7 @@ public class MicroschemaContainerVersionImpl extends
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public Iterator<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
+	public Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String releaseUuid) {
 		Iterator<? extends NodeGraphFieldContainer> it = in(HAS_MICROSCHEMA_CONTAINER)
 				.copySplit(
 						(a) -> a.in(HAS_FIELD).mark().inE(HAS_FIELD_CONTAINER)
@@ -68,8 +68,8 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public List<? extends Micronode> findMicronodes() {
-		return in(HAS_MICROSCHEMA_CONTAINER).toListExplicit(MicronodeImpl.class);
+	public Iterator<? extends Micronode> findMicronodes() {
+		return in(HAS_MICROSCHEMA_CONTAINER).frameExplicit(MicronodeImpl.class).iterator();
 	}
 
 	@Override

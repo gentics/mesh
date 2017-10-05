@@ -84,7 +84,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	}
 
 	/**
-	 * Migrate the given container. This will also set the new version to the container
+	 * Migrate the given container. This will also set the new version to the container.
 	 * 
 	 * @param ac
 	 *            context

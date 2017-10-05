@@ -55,7 +55,7 @@ public class MicroschemaContainerImpl extends
 	@Override
 	public void delete(SearchQueueBatch batch) {
 		for (MicroschemaContainerVersion version : findAll()) {
-			if (!version.findMicronodes().isEmpty()) {
+			if (version.findMicronodes().hasNext()) {
 				throw error(BAD_REQUEST, "microschema_delete_still_in_use", getUuid());
 			}
 		}

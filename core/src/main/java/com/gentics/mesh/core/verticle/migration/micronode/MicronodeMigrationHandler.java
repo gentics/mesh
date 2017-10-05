@@ -30,6 +30,7 @@ import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.Tuple;
+import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
@@ -60,11 +61,11 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 	 *            Migration status
 	 * @return Completable which will be completed once the migration has completed
 	 */
-	public Completable migrateMicronodes(Release release, MicroschemaContainerVersion fromVersion,
-			MicroschemaContainerVersion toVersion, MigrationStatusHandler status) {
+	public Completable migrateMicronodes(Release release, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
+			MigrationStatusHandler status) {
 
 		// Get the containers, that need to be transformed
-		Iterator<? extends NodeGraphFieldContainer> fieldContainersIt = db.tx(() -> fromVersion.getFieldContainers(release.getUuid()));
+		Iterator<? extends NodeGraphFieldContainer> fieldContainersIt = db.tx(() -> fromVersion.getDraftFieldContainers(release.getUuid()));
 
 		// No field containers, migration is done
 		if (!fieldContainersIt.hasNext()) {
@@ -139,40 +140,19 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 				String languageTag = container.getLanguage().getLanguageTag();
 				ac.getNodeParameters().setLanguages(languageTag);
 				ac.getVersioningParameters().setVersion("draft");
+				NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, PUBLISHED);
 
-				boolean publish = false;
-				if (container.isPublished(releaseUuid)) {
-					publish = true;
-				} else {
-					// Check whether there is another published version
-					NodeGraphFieldContainer oldPublished = node.getGraphFieldContainer(languageTag, releaseUuid, PUBLISHED);
-					if (oldPublished != null) {
-						ac.getVersioningParameters().setVersion("published");
-
-						// Clone the field container
-						NodeGraphFieldContainer migrated = node.createGraphFieldContainer(oldPublished.getLanguage(), release,
-								oldPublished.getEditor(), oldPublished);
-
-						migrated.setVersion(oldPublished.getVersion().nextPublished());
-						node.setPublished(migrated, releaseUuid);
-
-						migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
-						sqb.store(migrated, releaseUuid, PUBLISHED, false);
-						ac.getVersioningParameters().setVersion("draft");
-					}
+				VersionNumber nextDraftVersion = null;
+				// 1. Check whether there is any other published container which we need to handle separately
+				if (oldPublished != null && !oldPublished.equals(container)) {
+					nextDraftVersion = migratePublishedContainer(ac, sqb, release, node, container, fromVersion, toVersion, touchedFields,
+							migrationScripts);
+					nextDraftVersion = nextDraftVersion.nextDraft();
 				}
 
-				NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release, container.getEditor(), container);
-				if (publish) {
-					migrated.setVersion(container.getVersion().nextPublished());
-					node.setPublished(migrated, releaseUuid);
-				}
+				// 2. Migrate the draft container. This will also update the draft edge.
+				migrateDraftContainer(ac, sqb, release, node, container, fromVersion, toVersion, touchedFields, migrationScripts, nextDraftVersion);
 
-				migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
-				sqb.store(node, releaseUuid, DRAFT, false);
-				if (publish) {
-					sqb.store(node, releaseUuid, PUBLISHED, false);
-				}
 				return sqb;
 			});
 			// Process the search queue batch in order to update the search index
@@ -184,6 +164,88 @@ public class MicronodeMigrationHandler extends AbstractMigrationHandler {
 			log.error("Error while handling container {" + container.getUuid() + "} during schema migration.", e1);
 			errorsDetected.add(e1);
 		}
+
+	}
+
+	/**
+	 * Migrate the draft container. Internally we will also check whether the container is also the published container and handle this case correctly.
+	 * 
+	 * @param ac
+	 * @param sqb
+	 * @param release
+	 * @param node
+	 * @param container
+	 * @param fromVersion
+	 * @param toVersion
+	 * @param touchedFields
+	 * @param migrationScripts
+	 * @param nextDraftVersion
+	 * @throws Exception
+	 */
+	private void migrateDraftContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch sqb, Release release, Node node,
+			NodeGraphFieldContainer container, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
+			Set<String> touchedFields, List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, VersionNumber nextDraftVersion)
+			throws Exception {
+
+		String releaseUuid = release.getUuid();
+		ac.getVersioningParameters().setVersion("draft");
+
+		boolean publish = container.isPublished(releaseUuid);
+
+		// Clone the field container. This will also update the draft edge
+		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release, container.getEditor(), container, true);
+		if (publish) {
+			migrated.setVersion(container.getVersion().nextPublished());
+			// Ensure that the publish edge is also updated correctly
+			node.setPublished(migrated, releaseUuid);
+		} else {
+			if (nextDraftVersion == null) {
+				nextDraftVersion = container.getVersion().nextDraft();
+			}
+			migrated.setVersion(nextDraftVersion);
+		}
+
+		migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
+
+		// Ensure the search index is updated accordingly
+		sqb.store(node, releaseUuid, DRAFT, false);
+		if (publish) {
+			sqb.store(node, releaseUuid, PUBLISHED, false);
+		}
+	}
+
+	/**
+	 * Migrate the published container.
+	 * 
+	 * @param ac
+	 * @param sqb
+	 *            Batch to be used to update the search index
+	 * @param release
+	 * @param node
+	 *            Node of the container
+	 * @param container
+	 *            Container to be migrated
+	 * @param fromVersion
+	 * @param toVersion
+	 * @param touchedFields
+	 * @param migrationScripts
+	 * @return Version of the new published container
+	 * @throws Exception
+	 */
+	private VersionNumber migratePublishedContainer(NodeMigrationActionContextImpl ac, SearchQueueBatch sqb, Release release, Node node,
+			NodeGraphFieldContainer container, MicroschemaContainerVersion fromVersion, MicroschemaContainerVersion toVersion,
+			Set<String> touchedFields, List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts) throws Exception {
+
+		String releaseUuid = release.getUuid();
+		ac.getVersioningParameters().setVersion("published");
+
+		NodeGraphFieldContainer migrated = node.createGraphFieldContainer(container.getLanguage(), release, container.getEditor(), container, false);
+		migrated.setVersion(container.getVersion().nextPublished());
+		node.setPublished(migrated, releaseUuid);
+
+		migrateMicronodeFields(ac, migrated, fromVersion, toVersion, touchedFields, migrationScripts);
+		sqb.store(migrated, releaseUuid, PUBLISHED, false);
+		return migrated.getVersion();
 
 	}
 

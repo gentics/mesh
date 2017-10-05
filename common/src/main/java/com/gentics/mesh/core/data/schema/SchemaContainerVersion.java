@@ -43,6 +43,6 @@ public interface SchemaContainerVersion
 	 * @param releaseUuid Release Uuid
 	 * @return
 	 */
-	Iterator<? extends NodeGraphFieldContainer> getEditableFieldContainers(String releaseUuid);
+	Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String releaseUuid);
 
 }

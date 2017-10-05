@@ -287,7 +287,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					job.process();
 
 					try (Tx tx = db.tx()) {
-						Iterator<? extends NodeGraphFieldContainer> it = currentVersion.getFieldContainers(release.getUuid());
+						Iterator<? extends NodeGraphFieldContainer> it = currentVersion.getDraftFieldContainers(release.getUuid());
 						log.info("After migration " + microschemaContainer.getName() + ":" + currentVersion.getVersion() + " - "
 								+ currentVersion.getUuid() + "=" + it.hasNext());
 					}
