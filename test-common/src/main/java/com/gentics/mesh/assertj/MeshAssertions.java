@@ -28,7 +28,6 @@ import com.gentics.mesh.assertj.impl.ReleaseResponseAssert;
 import com.gentics.mesh.assertj.impl.RoleResponseAssert;
 import com.gentics.mesh.assertj.impl.SchemaChangeModelAssert;
 import com.gentics.mesh.assertj.impl.SchemaContainerAssert;
-import com.gentics.mesh.assertj.impl.SchemaContainerVersionAssert;
 import com.gentics.mesh.assertj.impl.SchemaCreateRequestAssert;
 import com.gentics.mesh.assertj.impl.SchemaResponseAssert;
 import com.gentics.mesh.assertj.impl.SearchQueueBatchAssert;
@@ -41,7 +40,6 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainer;
-import com.gentics.mesh.core.data.schema.GraphFieldSchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
@@ -141,10 +139,6 @@ public class MeshAssertions extends Assertions {
 
 	public static SchemaContainerAssert assertThat(GraphFieldSchemaContainer<?, ?, ?, ?> actual) {
 		return new SchemaContainerAssert(actual);
-	}
-
-	public static SchemaContainerVersionAssert assertThat(GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> actual) {
-		return new SchemaContainerVersionAssert(actual);
 	}
 
 	public static SchemaChangeModelAssert assertThat(SchemaChangeModel actual) {
