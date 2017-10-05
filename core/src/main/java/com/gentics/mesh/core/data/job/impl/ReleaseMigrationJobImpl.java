@@ -34,8 +34,7 @@ public class ReleaseMigrationJobImpl extends JobImpl {
 	public void prepare() {
 		Release newRelease = getRelease();
 		String newReleaseUuid = newRelease.getUuid();
-		Release oldRelease = newRelease.getPreviousRelease();
-		Project project = oldRelease.getProject();
+		Project project = newRelease.getProject();
 
 		// Add the needed indices and mappings
 		SearchQueueBatch indexCreationBatch = MeshInternal.get().searchQueue().create();
