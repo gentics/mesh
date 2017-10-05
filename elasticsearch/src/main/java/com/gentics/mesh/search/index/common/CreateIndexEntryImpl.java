@@ -7,6 +7,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.search.index.entry.AbstractEntry;
@@ -16,7 +17,7 @@ import rx.Completable;
 /**
  * @see CreateIndexEntry
  */
-public class CreateIndexEntryImpl extends AbstractEntry implements CreateIndexEntry {
+public class CreateIndexEntryImpl extends AbstractEntry<GenericEntryContext> implements CreateIndexEntry {
 
 	private String indexName;
 	private Schema schema;

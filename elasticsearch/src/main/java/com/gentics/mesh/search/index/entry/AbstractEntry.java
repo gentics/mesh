@@ -6,7 +6,6 @@ import com.gentics.mesh.core.data.search.context.EntryContext;
 
 /**
  * Abstract implementation for {@link SearchQueueEntry}'s. Please use this class if you want to build your own entry types.
- * 
  */
 public abstract class AbstractEntry<T extends EntryContext> implements SearchQueueEntry<T> {
 
