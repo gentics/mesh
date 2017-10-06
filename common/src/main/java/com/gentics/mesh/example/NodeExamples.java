@@ -37,6 +37,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -63,7 +64,14 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setCreator(createUserReference());
 		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(randomUUID()).setTagFamily("colors"));
 		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
-		nodeResponse.setAvailableLanguages(Arrays.asList("en", "de"));
+		Map<String, PublishStatusModel> languageInfo = new HashMap<>();
+
+		languageInfo.put("de",
+				new PublishStatusModel().setVersion("1.0").setPublished(true).setPublishDate(createTimestamp()).setPublisher(createUserReference()));
+		languageInfo.put("en",
+				new PublishStatusModel().setVersion("1.1").setPublished(false).setPublishDate(createTimestamp()).setPublisher(createUserReference()));
+
+		nodeResponse.setAvailableLanguages(languageInfo);
 		HashMap<String, String> languagePaths = new HashMap<>();
 		languagePaths.put("en", "/api/v1/yourProject/webroot/Images");
 		languagePaths.put("de", "/api/v1/yourProject/webroot/Bilder");
@@ -98,7 +106,7 @@ public class NodeExamples extends AbstractExamples {
 
 		// breadcrumb
 		Deque<NodeReference> breadcrumb = new ArrayDeque<>();
-		//		breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
+		// breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
 		breadcrumb.add(new NodeReference().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
 		breadcrumb.add(new NodeReference().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
 		nodeResponse.setBreadcrumb(breadcrumb);
@@ -174,7 +182,7 @@ public class NodeExamples extends AbstractExamples {
 
 		// breadcrumb
 		Deque<NodeReference> breadcrumb = new ArrayDeque<>();
-		//		breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
+		// breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
 		breadcrumb.add(new NodeReference().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
 		breadcrumb.add(new NodeReference().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
 		nodeResponse.setBreadcrumb(breadcrumb);

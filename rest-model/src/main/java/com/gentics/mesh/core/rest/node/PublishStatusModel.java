@@ -95,7 +95,7 @@ public class PublishStatusModel implements RestModel {
 	}
 
 	/**
-	 * Set the publishing date
+	 * Set the publishing date.
 	 * 
 	 * @param publishDate
 	 * @return Fluent API

@@ -97,6 +97,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.NavigationParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
@@ -532,16 +533,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Increment level for each node transformation to avoid stackoverflow situations
 		level = level + 1;
-		VersioningParameters versioiningParameters = ac.getVersioningParameters();
-
 		NodeResponse restNode = new NodeResponse();
 		SchemaContainer container = getSchemaContainer();
 		if (container == null) {
 			throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 		}
 		Release release = ac.getRelease(getProject());
-		restNode.setAvailableLanguages(getAvailableLanguageNames(release, forVersion(versioiningParameters.getVersion())));
-
+		restNode.setAvailableLanguages(getLanguageInfo(ac));
 		setFields(ac, release, restNode, level, languageTags);
 		setParentNodeInfo(ac, release, restNode);
 		setRolePermissions(ac, restNode);
@@ -941,7 +939,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
 			return Observable.merge(obsList).last().toSingle();
 		}
-		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
+		NavigationParameters parameters = new NavigationParametersImpl(ac);
 		// Add children
 		for (Node child : nodes) {
 			// TODO assure that the schema version is correct?
@@ -1002,10 +1000,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public PublishStatusResponse transformToPublishStatus(InternalActionContext ac) {
-		Release release = ac.getRelease(getProject());
 		PublishStatusResponse publishStatus = new PublishStatusResponse();
-		Map<String, PublishStatusModel> languages = new HashMap<>();
+		Map<String, PublishStatusModel> languages = getLanguageInfo(ac);
 		publishStatus.setAvailableLanguages(languages);
+		return publishStatus;
+	}
+
+	private Map<String, PublishStatusModel> getLanguageInfo(InternalActionContext ac) {
+		Map<String, PublishStatusModel> languages = new HashMap<>();
+		Release release = ac.getRelease(getProject());
 
 		getGraphFieldContainers(release, PUBLISHED).stream().forEach(c -> {
 
@@ -1020,8 +1023,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			PublishStatusModel status = new PublishStatusModel().setPublished(false).setVersion(c.getVersion().toString());
 			languages.put(c.getLanguage().getLanguageTag(), status);
 		});
-
-		return publishStatus;
+		return languages;
 	}
 
 	@Override

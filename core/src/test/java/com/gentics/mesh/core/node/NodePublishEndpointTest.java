@@ -374,7 +374,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 
 		// Assert that german is published and english is offline
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"),
-				new VersioningParametersImpl().published())).getAvailableLanguages()).containsOnly("de");
+				new VersioningParametersImpl().published())).getAvailableLanguages().keySet()).containsOnly("de");
 		assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isPublished("de").hasVersion("de", "1.0")
 				.isNotPublished("en").hasVersion("en", "2.0");
 

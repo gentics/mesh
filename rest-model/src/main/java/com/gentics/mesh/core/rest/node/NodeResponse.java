@@ -34,8 +34,8 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	private String language;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("List of languages for which content is available.")
-	private List<String> availableLanguages;
+	@JsonPropertyDescription("Map of languages for which content is available and their publish status.")
+	private Map<String, PublishStatusModel> availableLanguages;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Map of webroot paths per language. This property will only be populated if the "
@@ -245,21 +245,21 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	}
 
 	/**
-	 * Return a list of language tags which are available for the node.
+	 * Return a map of language tags which are available for the node.
 	 * 
-	 * @return List of language tags
+	 * @return Map of language tags
 	 */
-	public List<String> getAvailableLanguages() {
+	public Map<String, PublishStatusModel> getAvailableLanguages() {
 		return availableLanguages;
 	}
 
 	/**
-	 * Set a list of language tags which are available for the node.
+	 * Set a map of language tags which are available for the node and their publish status.
 	 * 
 	 * @param availableLanguages
 	 *            List of language tags
 	 */
-	public void setAvailableLanguages(List<String> availableLanguages) {
+	public void setAvailableLanguages(Map<String, PublishStatusModel> availableLanguages) {
 		this.availableLanguages = availableLanguages;
 	}
 
