@@ -214,7 +214,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	@Override
 	public Iterable<? extends SchemaContainerVersion> findActiveSchemaVersions() {
-		return outE(HAS_SCHEMA_VERSION).has(ReleaseVersionEdge.ACTIVE_PROPERTY_KEY, true).outV().frameExplicit(SchemaContainerVersionImpl.class);
+		return outE(HAS_SCHEMA_VERSION).has(ReleaseVersionEdge.ACTIVE_PROPERTY_KEY, true).inV().frameExplicit(SchemaContainerVersionImpl.class);
 	}
 
 	@Override

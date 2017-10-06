@@ -232,6 +232,12 @@ public class ElasticSearchProvider implements SearchProvider {
 				sub.onCompleted();
 				return;
 			}
+			if (log.isDebugEnabled()) {
+				log.debug("Creating mapping for index {" + indexName + "} and type {" + type + "}");
+			}
+			if (log.isTraceEnabled()) {
+				log.trace("Using mapping:\n" + mapping.encodePrettily());
+			}
 
 			org.elasticsearch.node.Node esNode = getNode();
 			PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
@@ -247,6 +253,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onFailure(Throwable e) {
+					log.error("Error while updating mapping for index {" + indexName + "} and type {" + type + "}", e);
 					sub.onError(e);
 				}
 			});

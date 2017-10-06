@@ -117,8 +117,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Override
 	public Completable init() {
-		Completable superCompletable = super.init();
-		return superCompletable.andThen(Completable.create(sub -> {
+		return super.init().andThen(Completable.create(sub -> {
 			db.tx(() -> {
 				updateNodeIndexMappings();
 				sub.onCompleted();
@@ -141,7 +140,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				// Add the draft and published index names per release to the map
 				for (Release release : project.getReleaseRoot().findAllIt()) {
 					// Each release specific index has also document type specific mappings
-					for (SchemaContainerVersion containerVersion : release.findAllSchemaVersions()) {
+					for (SchemaContainerVersion containerVersion : release.findActiveSchemaVersions()) {
 						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
 								containerVersion.getUuid(), DRAFT);
 						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
@@ -331,12 +330,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public Completable createIndex(CreateIndexEntry entry) {
 		String indexName = entry.getIndexName();
 		Map<String, String> indexInfo = getIndices();
+		// Only create indices which should be existing
 		if (indexInfo.containsKey(indexName)) {
-			// Iterate over all document types of the found index and add
-			// completables which will create/update the mapping
-			Set<Completable> obs = new HashSet<>();
-			obs.add(updateNodeIndexMapping(indexName, entry.getSchema()));
-			return searchProvider.createIndex(indexName).andThen(Completable.merge(obs));
+			return searchProvider.createIndex(indexName).andThen(updateNodeIndexMapping(indexName, entry.getSchema()));
 		} else {
 			if (log.isDebugEnabled()) {
 				log.debug("Only found indices:");
@@ -353,7 +349,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * 
 	 * @param schema
 	 *            schema
-	 * @return observable
+	 * @return Completable
 	 */
 	public Completable updateNodeIndexMapping(Schema schema) {
 		Set<Completable> obs = new HashSet<>();
@@ -392,9 +388,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return Completable.defer(() -> {
 			String type = NodeGraphFieldContainer.composeIndexType();
 			JsonObject mappingJson = transformer.getMapping(schema, type);
-			if (log.isDebugEnabled()) {
-				log.debug(mappingJson.toString());
-			}
 			return searchProvider.updateMapping(indexName, type, mappingJson);
 		});
 	}
