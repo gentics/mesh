@@ -200,7 +200,7 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 
 		// Drop all node indices for all releases and all schema versions
 		for (Release release : getReleaseRoot().findAllIt()) {
-			for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+			for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
 					String pubIndex = NodeGraphFieldContainer.composeIndexName(getUuid(), release.getUuid(), version.getUuid(), type);
 					if (log.isDebugEnabled()) {

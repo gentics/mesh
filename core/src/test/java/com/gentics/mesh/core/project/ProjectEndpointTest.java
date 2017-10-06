@@ -521,7 +521,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 
 			// 1. Determine a list all project indices which must be dropped
 			for (Release release : project.getReleaseRoot().findAllIt()) {
-				for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+				for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 					String schemaContainerVersionUuid = version.getUuid();
 					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, release.getUuid(), schemaContainerVersionUuid, PUBLISHED));
 					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, release.getUuid(), schemaContainerVersionUuid, DRAFT));

@@ -410,7 +410,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			// Add the draft and published index names per release to the map
 			for (Release release : project.getReleaseRoot().findAllIt()) {
 				// Each release specific index has also document type specific mappings
-				for (SchemaContainerVersion containerVersion : release.findAllSchemaVersions()) {
+				for (SchemaContainerVersion containerVersion : release.findActiveSchemaVersions()) {
 					updateNodeIndexMapping(project, release, containerVersion, DRAFT, containerVersion.getSchema()).await();
 					updateNodeIndexMapping(project, release, containerVersion, PUBLISHED, containerVersion.getSchema()).await();
 				}

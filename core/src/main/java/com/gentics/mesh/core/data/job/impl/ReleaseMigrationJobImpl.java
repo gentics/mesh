@@ -38,7 +38,7 @@ public class ReleaseMigrationJobImpl extends JobImpl {
 
 		// Add the needed indices and mappings
 		SearchQueueBatch indexCreationBatch = MeshInternal.get().searchQueue().create();
-		for (SchemaContainerVersion schemaVersion : newRelease.findAllSchemaVersions()) {
+		for (SchemaContainerVersion schemaVersion : newRelease.findActiveSchemaVersions()) {
 			SchemaModel schema = schemaVersion.getSchema();
 			indexCreationBatch.createNodeIndex(project.getUuid(), newReleaseUuid, schemaVersion.getUuid(), PUBLISHED, schema);
 			indexCreationBatch.createNodeIndex(project.getUuid(), newReleaseUuid, schemaVersion.getUuid(), DRAFT, schema);

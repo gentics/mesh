@@ -285,25 +285,16 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	public Completable init() {
 		// 1. Create the indices
 		Map<String, String> indexInfo = getIndices();
-		Set<Completable> indexCreationObs = new HashSet<>();
+		Set<Completable> obs = new HashSet<>();
 
 		for (String indexKey : indexInfo.keySet()) {
 			if (log.isDebugEnabled()) {
 				log.debug("Creating index {" + indexKey + "}");
 			}
-			indexCreationObs.add(searchProvider.createIndex(indexKey));
+			String documentType = indexInfo.get(indexKey);
+			obs.add(searchProvider.createIndex(indexKey).andThen(updateMapping(indexKey, documentType)));
 		}
-		if (indexCreationObs.isEmpty()) {
-			return Completable.complete();
-		} else {
-			// 2. Create the mappings
-			Set<Completable> mappingUpdateObs = new HashSet<>();
-			for (String indexName : indexInfo.keySet()) {
-				String documentType = indexInfo.get(indexName);
-				mappingUpdateObs.add(updateMapping(indexName, documentType));
-			}
-			return Completable.merge(indexCreationObs).andThen(Completable.merge(mappingUpdateObs));
-		}
+		return Completable.merge(obs);
 	}
 
 	@Override

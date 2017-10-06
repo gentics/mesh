@@ -395,7 +395,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
-				log.debug("Adding object {" + uuid + ":" + type + "} to index.");
+				log.debug("Adding object {" + uuid + ":" + type + "} to index {" + index + "}");
 			}
 			IndexRequestBuilder builder = getSearchClient().prepareIndex(index, type, uuid);
 

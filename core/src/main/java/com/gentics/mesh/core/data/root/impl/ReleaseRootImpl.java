@@ -130,7 +130,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		Release release = create(createRequest.getName(), requestUser, uuid);
 
 		// A new release was created - We also need to create new indices for the nodes within the release
-		for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+		for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 			batch.addNodeIndex(project, release, version, DRAFT);
 			batch.addNodeIndex(project, release, version, PUBLISHED);
 		}
