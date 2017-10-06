@@ -10,7 +10,6 @@ import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 import org.apache.commons.lang3.StringUtils;
@@ -147,8 +146,6 @@ public class MeshImpl implements Mesh {
 
 	/**
 	 * Send a request to the update checker.
-	 * 
-	 * @return Latest version of Gentics Mesh which is currently released.
 	 */
 	public void invokeUpdateCheck() {
 		String currentVersion = Mesh.getPlainVersion();
