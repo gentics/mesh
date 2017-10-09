@@ -672,7 +672,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 		}
 		OrientGraphNoTx noTx = factory.getNoTx();
 		try {
-			noTx.dropVertexType(typeName);
+			OrientVertexType type = noTx.getVertexType(typeName);
+			if (type != null) {
+				noTx.dropVertexType(typeName);
+			}
 		} finally {
 			noTx.shutdown();
 		}
