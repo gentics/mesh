@@ -94,6 +94,8 @@ icon:check[] GraphQL: Updated graphiql browser to latest version to fix various 
 
 icon:plus[] Clustering: This release introduces the master-master clustering support. You can read more about clustering and the configuration in the link:/docs/beta/clustering.html[clustering documentation].
 
+icon:plus[] Manual Change: Configuration changes. For already existing `mesh.yml` files, the `nodeName` setting has to be added. Choose any name for the mesh instance.
+
 icon:plus[] Manual Change: Configuration changes. The `clusterMode` setting has been deprecated in favour of the new cluster configuration. This setting must be removed from the `mesh.yml` file.
 
 icon:plus[] Manual Change: The configuration files `mesh.yml`, `keystore.jceks` must be moved to a subfolder `config` folder.
