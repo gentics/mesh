@@ -72,7 +72,7 @@ public class MicronodeFieldTypeProvider extends AbstractTypeProvider {
 	private Map<String, GraphQLObjectType> generateMicroschemaFieldType(Project project) {
 		Map<String, GraphQLObjectType> schemaTypes = new HashMap<>();
 		List<GraphQLObjectType> list = new ArrayList<>();
-		for (MicroschemaContainer container : project.getMicroschemaContainerRoot().findAll()) {
+		for (MicroschemaContainer container : project.getMicroschemaContainerRoot().findAllIt()) {
 			MicroschemaContainerVersion version = container.getLatestVersion();
 			Microschema microschema = version.getSchema();
 			Builder microschemaType = newObject();

@@ -23,7 +23,7 @@ public class MeshImplTest {
 		Mesh mesh = new MeshFactoryImpl().mesh();
 		// This would normally be set during init of mesh
 		((MeshImpl) mesh).setVertx(Vertx.vertx());
-		assertNotNull("Update check failed", ((MeshImpl) mesh).invokeUpdateCheck());
+		((MeshImpl) mesh).invokeUpdateCheck();
 	}
 
 }

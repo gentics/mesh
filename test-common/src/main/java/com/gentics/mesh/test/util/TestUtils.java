@@ -6,6 +6,7 @@ import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -168,7 +169,7 @@ public final class TestUtils {
 	 * @throws IOException
 	 */
 	public static String getJson(String name) throws IOException {
-		return IOUtils.toString(TestUtils.class.getResourceAsStream("/json/" + name));
+		return IOUtils.toString(TestUtils.class.getResourceAsStream("/json/" + name), Charset.defaultCharset());
 	}
 
 	public static void sleep(long millis) {
@@ -185,5 +186,13 @@ public final class TestUtils {
 			list.add(it.next());
 		}
 		return list;
+	}
+
+	public static <T> List<T> toList(Iterable<? extends T> it) {
+		return toList(it.iterator());
+	}
+
+	public static long size(Iterator<?> it) {
+		return toList(it).size();
 	}
 }

@@ -3,19 +3,15 @@ package com.gentics.mesh.core.data.release.impl;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.UNKNOWN;
 
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
 import com.gentics.mesh.core.data.release.ReleaseVersionEdge;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.syncleus.ferma.AbstractEdgeFrame;
 
 /**
  * Abstract implementation for {@link ReleaseMicroschemaEdgeImpl} and {@link ReleaseSchemaEdgeImpl}.
  */
-public abstract class AbstractVersionEdge extends AbstractEdgeFrame implements ReleaseVersionEdge {
-
-	public static final String MIGRATION_STATUS_PROPERTY_KEY = "migrationStatus";
-
-	public static final String JOB_UUID_PROPERTY_KEY = "jobUuid";
+public abstract class AbstractVersionEdge extends MeshEdgeImpl implements ReleaseVersionEdge {
 
 	@Override
 	public void setMigrationStatus(MigrationStatus status) {
@@ -44,6 +40,16 @@ public abstract class AbstractVersionEdge extends AbstractEdgeFrame implements R
 	@Override
 	public void setJobUuid(String uuid) {
 		setProperty(JOB_UUID_PROPERTY_KEY, uuid);
+	}
+
+	@Override
+	public boolean isActive() {
+		return getProperty(ACTIVE_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setActive(boolean active) {
+		setProperty(ACTIVE_PROPERTY_KEY, active);
 	}
 
 }

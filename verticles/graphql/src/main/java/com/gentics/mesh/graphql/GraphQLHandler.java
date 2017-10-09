@@ -6,6 +6,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -60,10 +61,19 @@ public class GraphQLHandler {
 			ExecutionResult result = graphQL.execute(executionInput);
 			List<GraphQLError> errors = result.getErrors();
 			JsonObject response = new JsonObject();
-			if (!errors.isEmpty()) {
-				log.error("Could not execute query {" + query + "}");
-			}
 			addErrors(errors, response);
+			if (!errors.isEmpty()) {
+				log.warn("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
+				if (log.isDebugEnabled()) {
+					for (GraphQLError error : errors) {
+						String loc = "unknown location";
+						if (error.getLocations() != null) {
+							loc = error.getLocations().stream().map(Object::toString).collect(Collectors.joining(","));
+						}
+						log.debug("Error: " + error.getErrorType() + ":" + error.getMessage() + ":" + loc);
+					}
+				}
+			}
 			if (result.getData() != null) {
 				Map<String, Object> data = (Map<String, Object>) result.getData();
 				response.put("data", new JsonObject(JsonUtil.toJson(data)));

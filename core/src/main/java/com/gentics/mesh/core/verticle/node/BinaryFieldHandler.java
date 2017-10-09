@@ -229,7 +229,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			return db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
 				// Create a new node version field container to store the upload
-				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
 				BinaryGraphField field = newDraftVersion.createBinary(fieldName);
 				String fieldUuid = field.getUuid();
 
@@ -342,7 +342,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					Release release = ac.getRelease();
 
 					// Create a new node version field container to store the upload
-					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
 					BinaryGraphField field = newDraftVersion.createBinary(fieldName);
 					String fieldUuid = field.getUuid();
 					String fieldSegmentedPath = field.getSegmentedPath();

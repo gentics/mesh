@@ -3,7 +3,6 @@ package com.gentics.mesh.core.verticle.release;
 import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -26,8 +25,6 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
-import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -148,25 +145,18 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			Project project = ac.getProject();
 			SchemaContainerRoot schemaContainerRoot = project.getSchemaContainerRoot();
 
-			JobRoot jobRoot = boot.jobRoot();
-			User user = ac.getUser();
 			Tuple<Single<ReleaseInfoSchemaList>, SearchQueueBatch> tuple = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
 
 				// Resolve the list of references to graph schema container versions
 				for (SchemaReference reference : schemaReferenceList.getSchemas()) {
 					SchemaContainerVersion version = schemaContainerRoot.fromReference(reference);
-					// Invoke schema migration for each found schema version
-
-					SchemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
+					SchemaContainerVersion assignedVersion = release.findLatestSchemaVersion(version.getSchemaContainer());
 					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 						throw error(BAD_REQUEST, "release_error_downgrade_schema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
 					}
-					ReleaseSchemaEdge edge = release.assignSchemaVersion(version);
-					edge.setMigrationStatus(QUEUED);
-					Job job = jobRoot.enqueueSchemaMigration(user, release, assignedVersion, version);
-					edge.setJobUuid(job.getUuid());
+					release.assignSchemaVersion(ac.getUser(), version);
 				}
 
 				return Tuple.tuple(getSchemaVersionsInfo(release), batch);
@@ -214,22 +204,18 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			ReleaseInfoMicroschemaList microschemaReferenceList = ac.fromJson(ReleaseInfoMicroschemaList.class);
 			MicroschemaContainerRoot microschemaContainerRoot = ac.getProject().getMicroschemaContainerRoot();
 
-			JobRoot jobRoot = boot.jobRoot();
 			User user = ac.getUser();
 			Single<ReleaseInfoMicroschemaList> model = db.tx(() -> {
 				// Transform the list of references into microschema container version vertices
 				for (MicroschemaReference reference : microschemaReferenceList.getMicroschemas()) {
 					MicroschemaContainerVersion version = microschemaContainerRoot.fromReference(reference);
 
-					MicroschemaContainerVersion assignedVersion = release.getVersion(version.getSchemaContainer());
+					MicroschemaContainerVersion assignedVersion = release.findLatestMicroschemaVersion(version.getSchemaContainer());
 					if (assignedVersion != null && Double.valueOf(assignedVersion.getVersion()) > Double.valueOf(version.getVersion())) {
 						throw error(BAD_REQUEST, "release_error_downgrade_microschema_version", version.getName(), assignedVersion.getVersion(),
 								version.getVersion());
 					}
-					ReleaseMicroschemaEdge edge = release.assignMicroschemaVersion(version);
-					edge.setMigrationStatus(QUEUED);
-					Job job = jobRoot.enqueueMicroschemaMigration(user, release, assignedVersion, version);
-					edge.setJobUuid(job.getUuid());
+					release.assignMicroschemaVersion(user, version);
 				}
 				return getMicroschemaVersions(release);
 			});
@@ -248,7 +234,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 * @return single emitting the rest model
 	 */
 	protected Single<ReleaseInfoSchemaList> getSchemaVersionsInfo(Release release) {
-		return Observable.from(release.findAllSchemaVersionEdges()).map(edge -> {
+		return Observable.from(release.findAllLatestSchemaVersionEdges()).map(edge -> {
 			SchemaReference reference = edge.getSchemaContainerVersion().transformToReference();
 			ReleaseSchemaInfo info = new ReleaseSchemaInfo(reference);
 			info.setMigrationStatus(edge.getMigrationStatus());
@@ -269,7 +255,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 * @return single emitting the rest model
 	 */
 	protected Single<ReleaseInfoMicroschemaList> getMicroschemaVersions(Release release) {
-		return Observable.from(release.findAllMicroschemaVersionEdges()).map(edge -> {
+		return Observable.from(release.findAllLatestMicroschemaVersionEdges()).map(edge -> {
 			MicroschemaReference reference = edge.getMicroschemaContainerVersion().transformToReference();
 			ReleaseMicroschemaInfo info = new ReleaseMicroschemaInfo(reference);
 			info.setMigrationStatus(edge.getMigrationStatus());
@@ -301,7 +287,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 					job.process();
 
 					try (Tx tx = db.tx()) {
-						Iterator<? extends NodeGraphFieldContainer> it = currentVersion.getFieldContainers(release.getUuid());
+						Iterator<? extends NodeGraphFieldContainer> it = currentVersion.getDraftFieldContainers(release.getUuid());
 						log.info("After migration " + microschemaContainer.getName() + ":" + currentVersion.getVersion() + " - "
 								+ currentVersion.getUuid() + "=" + it.hasNext());
 					}

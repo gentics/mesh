@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
@@ -31,7 +31,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 		database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
 	}
 
-	public static FieldTransformator<BinaryField> BINARY_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	public static FieldTransformer<BinaryField> BINARY_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		if (graphBinaryField == null) {
 			return null;

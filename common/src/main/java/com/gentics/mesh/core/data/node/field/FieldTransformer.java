@@ -10,7 +10,7 @@ import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
 @FunctionalInterface
-public interface FieldTransformator<T extends Field> {
+public interface FieldTransformer<T extends Field> {
 
 	/**
 	 * Load the field with the given key from the container and transform it to its rest representation.

@@ -22,7 +22,7 @@ public class NodeCheck implements ConsistencyCheck {
 	@Override
 	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
 
-		for (Node node : boot.nodeRoot().findAll()) {
+		for (Node node : boot.nodeRoot().findAllIt()) {
 			checkNode(node, response);
 		}
 	}
@@ -49,7 +49,7 @@ public class NodeCheck implements ConsistencyCheck {
 		}
 
 		// Verify that the node has a parent for all releases
-		for (Release release : project.getReleaseRoot().findAll()) {
+		for (Release release : project.getReleaseRoot().findAllIt()) {
 			Node parentNode = node.getParentNode(release.getUuid());
 			if (isBaseNode && parentNode != null) {
 				response.addInconsistency("The project base node must not have a parent.", uuid, HIGH);
@@ -67,7 +67,7 @@ public class NodeCheck implements ConsistencyCheck {
 			response.addInconsistency("The node has no initial field containers", uuid, HIGH);
 		}
 
-		for (Release release : project.getReleaseRoot().findAll()) {
+		for (Release release : project.getReleaseRoot().findAllIt()) {
 			List<? extends NodeGraphFieldContainer> draftContainers = node.getGraphFieldContainers(release, ContainerType.DRAFT);
 			if (draftContainers.isEmpty()) {
 				response.addInconsistency("The node did not have any draft containers within release {" + release.getUuid() + "}", uuid, HIGH);

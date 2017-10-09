@@ -163,11 +163,16 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @param language
 	 * @param release
-	 * @param user
+	 * @param editor
+	 *            User which will be set as editor
 	 * @param original
-	 * @return
+	 *            Container to be used as a source for the new container
+	 * @param handleDraftEdge
+	 *            Whether to move the existing draft edge or create a new draft edge to the new container
+	 * @return Created container
 	 */
-	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user, NodeGraphFieldContainer original);
+	NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User editor, NodeGraphFieldContainer original,
+			boolean handleDraftEdge);
 
 	/**
 	 * Return a list of draft graph field containers for the node in the latest release.
@@ -477,7 +482,8 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * @param language
 	 *            Language which will be used to find the field container which should be deleted
 	 * @param batch
-	 * @param failForLastContainer Whether to execute the last container check and fail or not.
+	 * @param failForLastContainer
+	 *            Whether to execute the last container check and fail or not.
 	 */
 	void deleteLanguageContainer(InternalActionContext ac, Release release, Language language, SearchQueueBatch batch, boolean failForLastContainer);
 

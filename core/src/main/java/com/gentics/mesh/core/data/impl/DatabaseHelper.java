@@ -5,8 +5,10 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.job.impl.JobImpl;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
+import com.gentics.mesh.core.data.job.impl.MicronodeMigrationJobImpl;
+import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
+import com.gentics.mesh.core.data.job.impl.ReleaseMigrationJobImpl;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
@@ -122,7 +124,11 @@ public final class DatabaseHelper {
 		MicroschemaContainerImpl.init(database);
 		SchemaContainerVersionImpl.init(database);
 		MicroschemaContainerVersionImpl.init(database);
-		JobImpl.init(database);
+
+		// Jobs
+		NodeMigrationJobImpl.init(database);
+		MicronodeMigrationJobImpl.init(database);
+		ReleaseMigrationJobImpl.init(database);
 
 		// Field changes
 		FieldTypeChangeImpl.init(database);

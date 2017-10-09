@@ -4,9 +4,8 @@ import static com.gentics.mesh.Events.EVENT_RELEASE_CREATED;
 import static com.gentics.mesh.Events.EVENT_RELEASE_DELETED;
 import static com.gentics.mesh.Events.EVENT_RELEASE_UPDATED;
 
-import java.util.List;
-
 import com.gentics.mesh.core.TypeInfo;
+import com.gentics.mesh.core.data.job.Job;
 import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
 import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.root.ReleaseRoot;
@@ -16,13 +15,26 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.release.ReleaseReference;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
-import com.gentics.mesh.error.InvalidArgumentException;
 
 /**
  * The Release domain model interface.
  *
  * A release is a bundle of specific schema versions which are used within a project. Releases can be used to create multiple tree structures within a single
  * project.
+ * 
+ * The release will keep track of assigned versions and also store the information which schema version has ever been assigned to the release.
+ * 
+ * A release has the following responsibilities:
+ * 
+ * <ul>
+ * <li>Manage assigned releases for the REST API</li>
+ * <li>Provide information for node migration handlers. A handler must know what version needs to be migrated.</li>
+ * <li>Provide information to the search index handler so that a list of indices can be compiled which should be used when searching</li>
+ * <ul>
+ * 
+ * The latest version will be used for the creation of new nodes and should never be be downgraded. The other assigned versions will be used to manage
+ * migrations and identify which release specific search indices should be used when using the search indices.
+ * 
  */
 public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, NamedElement, ReferenceableElement<ReleaseReference>, UserTrackingVertex {
 
@@ -57,7 +69,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	/**
 	 * Get whether all nodes of the previous release have been migrated.
 	 * 
-	 * @return true iff all nodes have been migrated
+	 * @return true if all nodes have been migrated
 	 */
 	boolean isMigrated();
 
@@ -65,7 +77,7 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * Set whether all nodes have been migrated.
 	 * 
 	 * @param migrated
-	 *            true iff all nodes have been migrated
+	 *            true if all nodes have been migrated
 	 * @return Fluent API
 	 */
 	Release setMigrated(boolean migrated);
@@ -101,12 +113,13 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	ReleaseRoot getRoot();
 
 	/**
-	 * Assign the given schema version to the release. This will effectively unassign all other schema versions of the schema.
+	 * Assign the given schema version to the release and queue a job which will trigger the migration.
 	 * 
+	 * @param user
 	 * @param schemaContainerVersion
-	 * @return Edge between release and schema version
+	 * @return Job which was created to trigger the migration or null if no job was created because the version has already been assigned before
 	 */
-	ReleaseSchemaEdge assignSchemaVersion(SchemaContainerVersion schemaContainerVersion);
+	Job assignSchemaVersion(User user, SchemaContainerVersion schemaContainerVersion);
 
 	/**
 	 * Unassign all schema versions of the given schema from this release.
@@ -135,28 +148,20 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	boolean contains(SchemaContainerVersion schemaContainerVersion);
 
 	/**
-	 * Get the schema container version of the given schema container, that is assigned to this release or null if not assigned at all.
+	 * Get an iterable of all schema container versions.
 	 * 
-	 * @param schemaContainer
-	 *            schema container
-	 * @return assigned version or null
+	 * @return Iterable
 	 */
-	SchemaContainerVersion getVersion(SchemaContainer schemaContainer);
+	Iterable<? extends SchemaContainerVersion> findAllSchemaVersions();
 
 	/**
-	 * Get list of all schema container versions.
-	 * 
-	 * @return list
-	 */
-	List<? extends SchemaContainerVersion> findAllSchemaVersions();
-
-	/**
-	 * Assign the given microschema version to the release Unassign all other versions of the microschema.
+	 * Assign the given microschema version to the release and queue a job which executes the migration.
+	 * @param user 
 	 * 
 	 * @param microschemaContainerVersion
-	 * @return Edge between release and microschema
+	 * @return Job which has been created if the version has not yet been assigned. Otherwise null will be returned.
 	 */
-	ReleaseMicroschemaEdge assignMicroschemaVersion(MicroschemaContainerVersion microschemaContainerVersion);
+	Job assignMicroschemaVersion(User user, MicroschemaContainerVersion microschemaContainerVersion);
 
 	/**
 	 * Unassigns all versions of the given microschema from this release.
@@ -185,21 +190,33 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	boolean contains(MicroschemaContainerVersion microschemaContainerVersion);
 
 	/**
-	 * Get the microschema container version of the given microschema container, that is assigned to this release or null if not assigned at all.
+	 * Get an iterable of all microschema container versions.
 	 * 
-	 * @param microschemaContainer
-	 *            schema container
-	 * @return assigned version or null
+	 * @return Iterable
 	 */
-	MicroschemaContainerVersion getVersion(MicroschemaContainer microschemaContainer);
+	Iterable<? extends MicroschemaContainerVersion> findAllMicroschemaVersions();
 
 	/**
-	 * Get list of all microschema container versions.
+	 * Get an iterable of all latest microschema container versions.
 	 * 
-	 * @return list
-	 * @throws InvalidArgumentException
+	 * @return Iterable
 	 */
-	List<? extends MicroschemaContainerVersion> findAllMicroschemaVersions() throws InvalidArgumentException;
+	Iterable<? extends ReleaseMicroschemaEdge> findAllLatestMicroschemaVersionEdges();
+
+	/**
+	 * Get an iterable over all active schema container versions. An active version is one which still contains {@link NodeGraphFieldContainer}'s or one which
+	 * is queued and will soon contain containers due to an executed node migration.
+	 * 
+	 * @return Iterable
+	 */
+	Iterable<? extends SchemaContainerVersion> findActiveSchemaVersions();
+
+	/**
+	 * Get an iterable of all latest schema container versions.
+	 * 
+	 * @return Iterable
+	 */
+	Iterable<? extends ReleaseSchemaEdge> findAllLatestSchemaVersionEdges();
 
 	/**
 	 * Project to which the release belongs.
@@ -245,5 +262,21 @@ public interface Release extends MeshCoreVertex<ReleaseResponse, Release>, Named
 	 * @return Found edge between release and version
 	 */
 	ReleaseMicroschemaEdge findReleaseMicroschemaEdge(MicroschemaContainerVersion microschemaContainerVersion);
+
+	/**
+	 * Find the latest schema version which is assigned to the release which matches the provided schema container
+	 * 
+	 * @param schemaContainer
+	 * @return Found version or null if no version could be found.
+	 */
+	SchemaContainerVersion findLatestSchemaVersion(SchemaContainer schemaContainer);
+
+	/**
+	 * Find the latest microschema version which is assigned to the release which matches the provided microschema container
+	 * 
+	 * @param schemaContainer
+	 * @return Found version or null if no version could be found.
+	 */
+	MicroschemaContainerVersion findLatestMicroschemaVersion(MicroschemaContainer schemaContainer);
 
 }

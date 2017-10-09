@@ -11,7 +11,9 @@ public enum SearchQueueEntryAction {
 
 	DELETE_ACTION("delete", 80),
 
-	STORE_ACTION("store", 60);
+	STORE_ACTION("store", 60),
+
+	MOVE_ACTION("move", 50);
 
 	private String name;
 
@@ -70,7 +72,7 @@ public enum SearchQueueEntryAction {
 	 * @return
 	 */
 	public int compareOrder(SearchQueueEntryAction o) {
-		//TODO handle null
+		// TODO handle null
 		return getPriority().compareTo(o.getPriority());
 	}
 

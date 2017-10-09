@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
@@ -13,6 +12,7 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.rest.schema.Schema;
 
 import rx.Completable;
@@ -44,12 +44,17 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch store(IndexableElement element, HandleContext context, boolean addRelatedEntries) {
+	public SearchQueueBatch store(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries) {
 		return this;
 	}
 
 	@Override
-	public SearchQueueBatch delete(IndexableElement element, HandleContext context, boolean addRelatedEntries) {
+	public SearchQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String releaseUuid, ContainerType type) {
+		return this;
+	}
+
+	@Override
+	public SearchQueueBatch delete(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries) {
 		return this;
 	}
 

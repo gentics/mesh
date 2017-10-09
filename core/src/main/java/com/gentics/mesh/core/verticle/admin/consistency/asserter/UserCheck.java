@@ -16,8 +16,7 @@ public class UserCheck implements ConsistencyCheck {
 
 	@Override
 	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-		for (User user : boot.userRoot().findAll()) {
-
+		for (User user : boot.userRoot().findAllIt()) {
 			checkUser(user, response);
 		}
 	}

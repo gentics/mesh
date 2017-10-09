@@ -57,7 +57,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 	}
 
 	@Override
-	public void addSchemaContainer(SchemaContainer schema) {
+	public void addSchemaContainer(User user, SchemaContainer schema) {
 		addItem(schema);
 	}
 
@@ -84,7 +84,7 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 		container.setCreated(creator);
 		container.setName(schema.getName());
 
-		addSchemaContainer(container);
+		addSchemaContainer(creator, container);
 		return container;
 	}
 

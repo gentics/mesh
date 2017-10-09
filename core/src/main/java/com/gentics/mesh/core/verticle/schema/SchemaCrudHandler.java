@@ -5,7 +5,6 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -23,10 +22,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.release.ReleaseSchemaEdge;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -98,7 +94,6 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				return message(ac, "schema_update_no_difference_detected", schemaName);
 			}
 
-			JobRoot jobRoot = boot.get().meshRoot().getJobRoot();
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 			User user = ac.getUser();
 			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
@@ -129,7 +124,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 							for (SchemaContainerRoot roots : schemaContainer.getRoots()) {
 								Project project = roots.getProject();
 								if (project != null) {
-									project.getMicroschemaContainerRoot().addMicroschema(microschema);
+									project.getMicroschemaContainerRoot().addMicroschema(user, microschema);
 								}
 							}
 						}
@@ -155,16 +150,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 							continue;
 						}
 
-						SchemaContainerVersion previouslyReferencedVersion = releaseEntry.getValue();
-
 						// Assign the new version to the release
-						ReleaseSchemaEdge edge = release.assignSchemaVersion(createdVersion);
-						edge.setMigrationStatus(QUEUED);
-
-						// Enqueue the job so that the worker can process it later on
-						Job job = jobRoot.enqueueSchemaMigration(user, release, previouslyReferencedVersion, createdVersion);
-						edge.setJobUuid(job.getUuid());
-
+						release.assignSchemaVersion(user,createdVersion);
 					}
 				}
 				return Tuple.tuple(batch, createdVersion.getVersion());
@@ -237,7 +224,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				SearchQueueBatch batch = searchQueue.create();
 
 				// Assign the schema to the project
-				root.addSchemaContainer(schema);
+				root.addSchemaContainer(ac.getUser(), schema);
 				String releaseUuid = project.getLatestRelease().getUuid();
 				SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
 				batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());

@@ -18,15 +18,15 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.search.index.AbstractTransformator;
+import com.gentics.mesh.search.index.AbstractTransformer;
 
 import io.vertx.core.json.JsonObject;
 
 /**
- * Transformator for user search index documents.
+ * Transformer for user search index documents.
  */
 @Singleton
-public class UserTransformator extends AbstractTransformator<User> {
+public class UserTransformer extends AbstractTransformer<User> {
 
 	public static final String EMAIL_KEY = "emailaddress";
 	public static final String USERNAME_KEY = "username";
@@ -36,7 +36,7 @@ public class UserTransformator extends AbstractTransformator<User> {
 	public static final String GROUPS_KEY = "groups";
 
 	@Inject
-	public UserTransformator() {
+	public UserTransformer() {
 	}
 
 	@Override

@@ -183,10 +183,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		addRawToSchemaField();
 
 		// Add the user to the admin group - this way the user is in fact an admin.
-		try (Tx tx = tx()) {
-			user().addGroup(groups().get("admin"));
-			tx.success();
-		}
+		tx(() -> user().addGroup(groups().get("admin")));
 		searchProvider().refreshIndex();
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());

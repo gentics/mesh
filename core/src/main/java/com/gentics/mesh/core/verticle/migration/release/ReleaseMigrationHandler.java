@@ -8,9 +8,6 @@ import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.RUNNING
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -18,10 +15,8 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.verticle.migration.AbstractMigrationHandler;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
@@ -29,7 +24,6 @@ import com.gentics.mesh.graphdb.spi.Database;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Completable;
 
 @Singleton
 public class ReleaseMigrationHandler extends AbstractMigrationHandler {
@@ -63,24 +57,14 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 					+ oldRelease.getName() + "} is not fully migrated yet.");
 		}
 
-		String newReleaseUuid = newRelease.getUuid();
-		Project project = oldRelease.getProject();
-
 		if (status != null) {
 			status.setStatus(RUNNING);
-			status.commitStatus();
+			status.commit();
 		}
 
-		// Add the needed indices and mappings
-		SearchQueueBatch indexCreationBatch = searchQueue.create();
-		for (SchemaContainerVersion schemaVersion : newRelease.findAllSchemaVersions()) {
-			SchemaModel schema = schemaVersion.getSchema();
-			indexCreationBatch.createNodeIndex(project.getUuid(), newReleaseUuid, schemaVersion.getUuid(), PUBLISHED, schema);
-			indexCreationBatch.createNodeIndex(project.getUuid(), newReleaseUuid, schemaVersion.getUuid(), DRAFT, schema);
-		}
-		indexCreationBatch.processSync();
-
-		long count = 0; 
+		long count = 0;
+		// Iterate over all nodes of the project and migrate them to the new release
+		Project project = oldRelease.getProject();
 		Iterable<? extends Node> it = project.getNodeRoot().findAllIt();
 		for (Node node : it) {
 			SearchQueueBatch sqb = db.tx(() -> {
@@ -93,19 +77,18 @@ public class ReleaseMigrationHandler extends AbstractMigrationHandler {
 			if (count % 50 == 0) {
 				log.info("Migrated nodes: " + count);
 				if (status != null) {
-					status.commitStatus();
+					status.commit();
 				}
 			}
 			count++;
 		}
 
-		//TODO track migration errors
+		// TODO track migration errors
 
 		log.info("Migration of " + count + " node done..");
 		db.tx(() -> {
 			newRelease.setMigrated(true);
 		});
-
 
 	}
 

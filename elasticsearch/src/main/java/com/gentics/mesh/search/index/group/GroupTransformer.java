@@ -7,18 +7,18 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Group;
-import com.gentics.mesh.search.index.AbstractTransformator;
+import com.gentics.mesh.search.index.AbstractTransformer;
 
 import io.vertx.core.json.JsonObject;
 
 /**
- * Transformator for group search index documents.
+ * Transformer for group search index documents.
  */
 @Singleton
-public class GroupTransformator extends AbstractTransformator<Group> {
+public class GroupTransformer extends AbstractTransformer<Group> {
 
 	@Inject
-	public GroupTransformator() {
+	public GroupTransformer() {
 	}
 
 	@Override

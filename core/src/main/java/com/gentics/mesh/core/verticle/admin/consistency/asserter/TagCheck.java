@@ -16,7 +16,7 @@ public class TagCheck implements ConsistencyCheck {
 
 	@Override
 	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-		for (Tag tag : boot.tagRoot().findAll()) {
+		for (Tag tag : boot.tagRoot().findAllIt()) {
 			checkTag(tag, response);
 		}
 	}

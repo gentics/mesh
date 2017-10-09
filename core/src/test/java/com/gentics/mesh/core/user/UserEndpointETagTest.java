@@ -1,18 +1,19 @@
 package com.gentics.mesh.core.user;
 
-import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.test.ClientHelper.callETag;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotEquals;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class UserEndpointETagTest extends AbstractMeshTest {
@@ -20,14 +21,29 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 	@Test
 	public void testReadMultiple() {
 		try (Tx tx = tx()) {
-			User user = user();
-			assertNotNull("The UUID of the user must not be null.", user.getUuid());
-
 			String etag = callETag(() -> client().findUsers());
 			callETag(() -> client().findUsers(), etag, true, 304);
 			callETag(() -> client().findUsers(new PagingParametersImpl().setPage(2)), etag, true, 200);
 
 		}
+	}
+
+	@Test
+	public void testEtagPermissionHandling() {
+		String etag = callETag(() -> client().findUsers());
+		String etag2 = callETag(() -> client().findUsers());
+		callETag(() -> client().findUsers(), etag, true, 304);
+		assertEquals(etag, etag2);
+
+		try (Tx tx = tx()) {
+			role().revokePermissions(user(), UPDATE_PERM);
+			tx.success();
+		}
+
+		callETag(() -> client().findUsers(), etag, true, 200);
+
+		String etag3 = callETag(() -> client().findUsers());
+		assertNotEquals(etag, etag3);
 	}
 
 	@Test

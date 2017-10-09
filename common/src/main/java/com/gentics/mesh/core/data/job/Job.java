@@ -117,6 +117,11 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	void setToMicroschemaVersion(MicroschemaContainerVersion toVersion);
 
 	/**
+	 * Prepare the job.
+	 */
+	void prepare();
+
+	/**
 	 * Process the job.
 	 */
 	void process();

@@ -7,7 +7,7 @@ import io.vertx.core.json.JsonObject;
  * 
  * @param <T>
  */
-public interface Transformator<T> {
+public interface Transformer<T> {
 
 	JsonObject toDocument(T object);
 

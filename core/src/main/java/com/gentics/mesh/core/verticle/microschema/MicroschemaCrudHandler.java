@@ -3,7 +3,6 @@ package com.gentics.mesh.core.verticle.microschema;
 import static com.gentics.mesh.Events.JOB_WORKER_ADDRESS;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
@@ -20,9 +19,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.job.Job;
-import com.gentics.mesh.core.data.job.JobRoot;
-import com.gentics.mesh.core.data.release.ReleaseMicroschemaEdge;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -88,7 +84,6 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				JobRoot jobRoot = boot.get().jobRoot();
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				if (updateParams.getUpdateAssignedReleases()) {
@@ -104,15 +99,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 							continue;
 						}
 
-						MicroschemaContainerVersion previouslyReferencedVersion = releaseEntry.getValue();
-
 						// Assign the new version to the release
-						ReleaseMicroschemaEdge edge = release.assignMicroschemaVersion(createdVersion);
-						edge.setMigrationStatus(QUEUED);
-
-						// Enqueue the job so that the worker can process it later on
-						Job job = jobRoot.enqueueMicroschemaMigration(user, release, previouslyReferencedVersion, createdVersion);
-						edge.setJobUuid(job.getUuid());
+						release.assignMicroschemaVersion(user, createdVersion);
 					}
 				}
 				return Tuple.tuple(batch, createdVersion.getVersion());
@@ -200,9 +188,9 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				return microschema.transformToRest(ac, 0);
 			}
 
-			return  db.tx(() -> {
+			return db.tx(() -> {
 				// Assign the microschema to the project
-				root.addMicroschema(microschema);
+				root.addMicroschema(ac.getUser(), microschema);
 				return microschema.transformToRest(ac, 0);
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);

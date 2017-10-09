@@ -460,7 +460,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			assertThat(restProject).matches(project);
 			// All nodes + project + tags and tag families need to be reindex since the project name is part of the search document.
 			int expectedCount = 1;
-			for (Node node : project().getNodeRoot().findAll()) {
+			for (Node node : project().getNodeRoot().findAllIt()) {
 				expectedCount += node.getGraphFieldContainerCount();
 			}
 			expectedCount += meshRoot().getTagRoot().findAll().size();
@@ -520,8 +520,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			Project project = project();
 
 			// 1. Determine a list all project indices which must be dropped
-			for (Release release : project.getReleaseRoot().findAll()) {
-				for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+			for (Release release : project.getReleaseRoot().findAllIt()) {
+				for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 					String schemaContainerVersionUuid = version.getUuid();
 					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, release.getUuid(), schemaContainerVersionUuid, PUBLISHED));
 					indices.add(NodeGraphFieldContainer.composeIndexName(uuid, release.getUuid(), schemaContainerVersionUuid, DRAFT));

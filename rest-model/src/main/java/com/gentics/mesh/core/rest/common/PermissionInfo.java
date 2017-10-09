@@ -343,4 +343,30 @@ public class PermissionInfo implements RestModel {
 		}
 		return this;
 	}
+
+	/**
+	 * Generate a hash over the permissions.
+	 * 
+	 * @return Generated hash string
+	 */
+	@JsonIgnore
+	public String getHash() {
+		StringBuilder builder = new StringBuilder();
+		builder.append(valueOf(create));
+		builder.append(valueOf(update));
+		builder.append(valueOf(delete));
+		builder.append(valueOf(publish));
+		builder.append(valueOf(readPublished));
+		return builder.toString();
+	}
+
+	private int valueOf(Boolean b) {
+		if (b == null) {
+			return 2;
+		} else if (b == true) {
+			return 1;
+		} else {
+			return 0;
+		}
+	}
 }

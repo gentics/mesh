@@ -16,7 +16,7 @@ public class ProjectCheck implements ConsistencyCheck {
 
 	@Override
 	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-		for (Project project : boot.projectRoot().findAll()) {
+		for (Project project : boot.projectRoot().findAllIt()) {
 			checkProject(project, response);
 		}
 	}

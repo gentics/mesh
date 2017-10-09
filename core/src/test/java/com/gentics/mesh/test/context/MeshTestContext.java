@@ -384,4 +384,8 @@ public class MeshTestContext extends TestWatcher {
 	public MeshRestClient getClient() {
 		return client;
 	}
+
+	public JobWorkerVerticle getJobWorkerVerticle() {
+		return jobWorkerVerticle;
+	}
 }

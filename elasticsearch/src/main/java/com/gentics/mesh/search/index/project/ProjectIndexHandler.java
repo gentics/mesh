@@ -24,7 +24,7 @@ import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
 	@Inject
-	ProjectTransformator transformator;
+	ProjectTransformer transformer;
 
 	@Inject
 	public ProjectIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -52,8 +52,8 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
-	public ProjectTransformator getTransformator() {
-		return transformator;
+	public ProjectTransformer getTransformer() {
+		return transformer;
 	}
 
 	@Override

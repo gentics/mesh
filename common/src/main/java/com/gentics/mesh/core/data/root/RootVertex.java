@@ -39,7 +39,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	Database database();
 
 	/**
-	 * Return a list of all elements.
+	 * Return a list of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
 	 * 
 	 * @deprecated Use {@link #findAllIt()} instead.
 	 * @return
@@ -50,12 +50,22 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	}
 
 	/**
-	 * Return an iterator of all elements.
+	 * Return an iterator of all elements. Only use this method if you know that the root->item relation only yields a specific kind of item.
 	 * 
 	 * @return
 	 */
 	default public Iterable<? extends T> findAllIt() {
 		return out(getRootLabel()).frameExplicit(getPersistanceClass());
+	}
+
+	/**
+	 * Return an iterator of all elements and use the stored type information to load the items. The {@link #findAllIt()} will use explicit typing and thus will
+	 * be faster. Only use that method if you know that your relation only yields a specific kind of item.
+	 * 
+	 * @return
+	 */
+	default public Iterable<? extends T> findAllDynamic() {
+		return out(getRootLabel()).frame(getPersistanceClass());
 	}
 
 	/**
@@ -69,7 +79,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	default public TransformablePage<? extends T> findAll(InternalActionContext ac, PagingParameters pagingInfo) {
-		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, null);
+		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, READ_PERM, null, true);
 	}
 
 	/**
@@ -83,7 +93,7 @@ public interface RootVertex<T extends MeshCoreVertex<? extends RestModel, T>> ex
 	 * @return
 	 */
 	default public TransformablePage<? extends T> findAllNoPerm(InternalActionContext ac, PagingParameters pagingInfo) {
-		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, null);
+		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, null, null, true);
 	}
 
 	/**

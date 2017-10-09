@@ -63,6 +63,18 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	}
 
 	/**
+	 * Return the index name for the given parameters.
+	 * 
+	 * @param projectUuid
+	 * @param releaseUuid
+	 * @param type
+	 * @return
+	 */
+	default String getIndexName(String projectUuid, String releaseUuid, ContainerType type) {
+		return composeIndexName(projectUuid, releaseUuid, getSchemaContainerVersion().getUuid(), type);
+	}
+
+	/**
 	 * Compose the index type
 	 * <p>
 	 * <ul>
@@ -74,6 +86,15 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 */
 	static String composeIndexType() {
 		return Node.TYPE;
+	}
+
+	/**
+	 * Return the index type of the container.
+	 * 
+	 * @return
+	 */
+	default String getIndexType() {
+		return composeIndexType();
 	}
 
 	/**
@@ -99,6 +120,15 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 		id.append("-");
 		id.append(languageTag);
 		return id.toString();
+	}
+
+	/**
+	 * Return the document id for the container.
+	 * 
+	 * @return
+	 */
+	default String getDocumentId() {
+		return composeDocumentId(getParentNode().getUuid(), getLanguage().getLanguageTag());
 	}
 
 	/**

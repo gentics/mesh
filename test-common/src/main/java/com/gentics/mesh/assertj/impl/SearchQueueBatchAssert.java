@@ -1,7 +1,7 @@
 package com.gentics.mesh.assertj.impl;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -9,12 +9,13 @@ import java.util.Map;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.syncleus.ferma.tx.Tx;
-import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.context.EntryContext;
+import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.node.ElementEntry;
+import com.syncleus.ferma.tx.Tx;
 
 public class SearchQueueBatchAssert extends AbstractAssert<SearchQueueBatchAssert, SearchQueueBatch> {
 
@@ -54,36 +55,39 @@ public class SearchQueueBatchAssert extends AbstractAssert<SearchQueueBatchAsser
 
 						SearchQueueEntry foundMatch = null;
 						for (SearchQueueEntry currentEntry : actual.getEntries()) {
-							HandleContext context = currentEntry.getContext();
-							if (entry.getProjectUuid() != null && !entry.getProjectUuid().equals(context.getProjectUuid())) {
-								// Project uuid does not match up - check next
-								continue;
-							}
-							if (entry.getReleaseUuid() != null && !entry.getReleaseUuid().equals(context.getReleaseUuid())) {
-								// Release uuid does not match up - check next
-								continue;
-							}
-							if (entry.getType() != null && !entry.getType().equals(context.getContainerType())) {
-								// type does not match up - check next
-								continue;
-							}
-
-							// Check whether the languages of the entry does not match up.
-							if (context.getLanguageTag() != null && !language.equals(context.getLanguageTag())) {
-								// Language does not match up - check next
-								continue;
-							}
-							if (currentEntry instanceof UpdateDocumentEntry) {
-								UpdateDocumentEntry be = (UpdateDocumentEntry) currentEntry;
-								if (!be.getElementUuid().equals(entry.getUuid())) {
-									// Element uuid does not match up - check next
+							EntryContext context = currentEntry.getContext();
+							if (context instanceof GenericEntryContext) {
+								GenericEntryContext genericContext = (GenericEntryContext)context;
+								if (entry.getProjectUuid() != null && !entry.getProjectUuid().equals(genericContext.getProjectUuid())) {
+									// Project uuid does not match up - check next
 									continue;
 								}
+								if (entry.getReleaseUuid() != null && !entry.getReleaseUuid().equals(genericContext.getReleaseUuid())) {
+									// Release uuid does not match up - check next
+									continue;
+								}
+								if (entry.getType() != null && !entry.getType().equals(genericContext.getContainerType())) {
+									// type does not match up - check next
+									continue;
+								}
+
+								// Check whether the languages of the entry does not match up.
+								if (genericContext.getLanguageTag() != null && !language.equals(genericContext.getLanguageTag())) {
+									// Language does not match up - check next
+									continue;
+								}
+								if (currentEntry instanceof UpdateDocumentEntry) {
+									UpdateDocumentEntry be = (UpdateDocumentEntry) currentEntry;
+									if (!be.getElementUuid().equals(entry.getUuid())) {
+										// Element uuid does not match up - check next
+										continue;
+									}
+								}
+								if (genericContext.getLanguageTag() == null) {
+									System.out.println("HALT");
+								}
+								foundMatch = currentEntry;
 							}
-							if (context.getLanguageTag() == null) {
-								System.out.println("HALT");
-							}
-							foundMatch = currentEntry;
 							break;
 						}
 
