@@ -132,12 +132,24 @@ public interface SearchProvider {
 	void clear();
 
 	/**
+	 * Delete the given index and don't fail if the index is not existing.
+	 * 
+	 * @param indexName Name of the index which should be deleted
+	 * @return
+	 */
+	default Completable deleteIndex(String indexName) {
+		return deleteIndex(indexName, false);
+	}
+
+	/**
 	 * Delete the given index.
 	 * 
 	 * @param indexName
+	 *            Name of the index which should be deleted
+	 * @param failOnMissingIndex
 	 * @return
 	 */
-	Completable deleteIndex(String indexName);
+	Completable deleteIndex(String indexName, boolean failOnMissingIndex);
 
 	/**
 	 * Delete all documents which were found using the query.
@@ -194,7 +206,5 @@ public interface SearchProvider {
 	 * @return
 	 */
 	Completable updateMapping(String indexName, String type, JsonObject mapping);
-
-
 
 }

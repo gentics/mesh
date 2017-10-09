@@ -421,7 +421,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable deleteIndex(String indexName) {
+	public Completable deleteIndex(String indexName, boolean failOnMissingIndex) {
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
@@ -438,8 +438,12 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
-					sub.onError(e);
+					if (e instanceof IndexNotFoundException && !failOnMissingIndex) {
+						sub.onCompleted();
+					} else {
+						log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
+						sub.onError(e);
+					}
 				}
 			});
 		});

@@ -102,7 +102,6 @@ public class NodeMigrationJobImpl extends JobImpl {
 					} else {
 						break;
 					}
-					break;
 				}
 
 				finalizeMigration(project, release, fromContainerVersion);
@@ -118,7 +117,9 @@ public class NodeMigrationJobImpl extends JobImpl {
 		// Deactivate edge
 		try (Tx tx = db.tx()) {
 			ReleaseSchemaEdge edge = release.findReleaseSchemaEdge(fromContainerVersion);
-			edge.setActive(false);
+			if (edge != null) {
+				edge.setActive(false);
+			}
 			tx.success();
 		}
 		// Remove old indices

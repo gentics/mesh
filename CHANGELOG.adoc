@@ -2,7 +2,6 @@
 
 = Gentics Mesh Changelog
 
-
 [[0.10.4]]
 == 0.10.4 (TBD)
 
@@ -12,11 +11,17 @@ icon:check[] REST: Fixed a bug in the permission system. Permissions on microsch
 
 icon:check[] REST: ETags will now be updated if the permission on the element changes.
 
-icon:plus[] Config: It is now possible to configure the host to which the Gentics Mesh http server should bind to. Default is still 0.0.0.0 (all interfaces).
+icon:plus[] Config: It is now possible to configure the host to which the Gentics Mesh http server should bind to via the `httpServer.host` setting in the `mesh.yml` file. Default is still 0.0.0.0 (all interfaces).
 
-icon:plus[] REST: The `/api/v1/admin/reindex` and `/api/v1/admin/createMappings` have been changed from `GET` to `POST`.
+icon:plus[] REST: The `/api/v1/:projectName/releases/:releaseUuid/migrateSchemas` and `/api/v1/:projectName/releases/:releaseUuid/migrateMicroschemas` endpoints have been changed from `GET` to `POST`.
+
+icon:plus[] REST: The `/api/v1/admin/reindex` and `/api/v1/admin/createMappings` endpoints have been changed from `GET` to `POST`.
 
 icon:plus[] CLI: It is now possible to reset the admin password using the `-resetAdminPassword` command line argument.
+
+icon:plus[] GraphQL: The underlying graphql-java library was updated to version 5.0
+
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.29
 
 [[0.10.3]]
 == 0.10.3 (18.09.2017)

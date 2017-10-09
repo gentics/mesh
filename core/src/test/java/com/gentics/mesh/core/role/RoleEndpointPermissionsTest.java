@@ -1,6 +1,7 @@
 package com.gentics.mesh.core.role;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
@@ -31,6 +32,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
+import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
@@ -223,16 +225,46 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 
 		// TODO - This action will currently only affect the tag family. We need to decide how we want to change this behaviour:
 		// https://github.com/gentics/mesh/issues/154
-		String pathToElement = tx(
-				() -> "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags");
+		String pathToElement = tx(() -> "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags");
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(false);
 		request.getPermissions().setDelete(true);
 		call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
 		try (Tx tx = tx()) {
-			assertFalse("The perm of the tag should not change since the action currently only affects the tag family itself", role().hasPermission(DELETE_PERM, tag("red")));
+			assertFalse("The perm of the tag should not change since the action currently only affects the tag family itself",
+					role().hasPermission(DELETE_PERM, tag("red")));
 			assertTrue("The tag family perm did not change", role().hasPermission(DELETE_PERM, tagFamily("colors")));
 		}
+	}
+
+	@Test
+	public void testApplyCreatePermissionsOnTagFamily() {
+		try (Tx tx = tx()) {
+			// Add permission on own role
+			role().grantPermissions(role(), GraphPermission.UPDATE_PERM);
+			role().revokePermissions(tagFamily("colors"), CREATE_PERM);
+			role().revokePermissions(tag("red"), CREATE_PERM);
+			assertFalse(role().hasPermission(GraphPermission.CREATE_PERM, tagFamily("colors")));
+			tx.success();
+		}
+
+		String tagFamilyUuid = tx(() -> tagFamily("colors").getUuid());
+		TagFamilyResponse tagFamilyResponse = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, tagFamilyUuid));
+		assertFalse(tagFamilyResponse.getPermissions().hasPerm(CREATE));
+
+		String pathToElement = tx(() -> "projects/" + project().getUuid() + "/tagFamilies/" + tagFamilyUuid);
+		RolePermissionRequest request = new RolePermissionRequest();
+		request.setRecursive(false);
+		request.getPermissions().setOthers(true);
+		call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
+		try (Tx tx = tx()) {
+			assertFalse("The perm of the tag should not change since the action currently only affects the tag family itself",
+					role().hasPermission(CREATE_PERM, tag("red")));
+			assertTrue("The tag family perm did not change", role().hasPermission(CREATE_PERM, tagFamily("colors")));
+		}
+
+		tagFamilyResponse = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, tagFamilyUuid));
+		assertTrue(tagFamilyResponse.getPermissions().hasPerm(CREATE));
 	}
 
 	@Test

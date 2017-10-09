@@ -148,13 +148,12 @@ include::examples/models/mesh-config.yml[]
 
 [options="header"]
 |======
-| Configuration            | Type   | Description
-| ```clusterMode```        | Flag   | The internal hazelcast in-memory data grid will be enabled if this flag is set to true.
-| ```updateCheck```        | Flag   | An update check to the Gentics Mesh update server will be invoked during startup if this flag is set to true.
-| ```defaultPageSize```    | Number | Default page size.
-| ```defaultLanguage```    | String | Default language which serves as a fallback when no language has been specified within a request.
-| ```verticles```          | List   | List of vert.x java verticle classes which will be loaded during startup.
-| ```tempDirectory```      | Path   | Path to the main temporary filesystem directory.
+| Configuration            | Type   | Default  | Description
+| ```updateCheck```        | Flag   | true     | An update check to the Gentics Mesh update server will be invoked during startup if this flag is set to true.
+| ```defaultPageSize```    | Number | 25       | Default page size.
+| ```defaultLanguage```    | String | en       | Default language which serves as a fallback when no language has been specified within a request.
+| ```verticles```          | List   | -        | List of Vert.x java verticle classes which will be loaded during startup.
+| ```tempDirectory```      | Path   | data/tmp | Path to the main temporary filesystem directory.
 |======
 
 === HTTPS/SSL
@@ -172,19 +171,20 @@ openssl req -x509 -newkey rsa:2048 -keyout key.pem -out cert.pem -days 90 -nodes
 
 [options="header"]
 |======
-| Configuration                                     | Type      | Description
-| ```httpServerOptions.port```                      | Number    | HTTP Port number.
-| ```httpServerOptions.ssl```                       | Boolean   | Enable or disable SSL support.
-| ```httpServerOptions.corsAllowedOriginPattern```  | RegEx     | Regex which will validate the origin CORS header.
-| ```httpServerOptions.enableCors```                | Boolean   | Enable CORS support.
-| ```httpServerOptions.certPath```                  | Path      | SSL certificate path.
-| ```httpServerOptions.keyPath```                   | Path      | SSL key path.
+| Configuration                              | Type    | Default | Description 
+| ```httpServer.port```                      | Number  | 8080    | HTTP Port number.
+| ```httpServer.host```                      | String  | 0.0.0.0 | Host to bind mesh to
+| ```httpServer.ssl```                       | Boolean | false   | Enable or disable SSL support.
+| ```httpServer.corsAllowedOriginPattern```  | RegEx   | -       | Regex which will validate the origin CORS header.
+| ```httpServer.scorsAllowCredentials```     | Boolean | false   | Enable CORS credential support.
+| ```httpServer.enableCors```                | Boolean | false   | Enable CORS support.
+| ```httpServer.certPath```                  | Path    | -       | SSL certificate path.
+| ```httpServer.keyPath```                   | Path    | -       | SSL key path.
 |======
 
 === Cluster Options
 
 include::includes/cluster-options.inc[]
-
 
 === Storage Options
 
@@ -192,49 +192,49 @@ By default all specified directories are relative to the installation directory.
 
 [options="header"]
 |======
-| Configuration                        | Type      | Description
-| ```storageOptions.directory```       | Path      | Path to the graph database storage location.
-| ```storageOptions.backupDirectory``` | Path      | Backup directory.
-| ```storageOptions.exportDirectory``` | Path      | Export directory.
-| ```storageOptions.startServer```     | Boolean   | Flag that indicates whether the graph database server component should be started. By default only an embedded graph database is used which does not start a graph server.
-| ```storageOptions.parameters```      | JSON      | Additional JSON parameters that will be passed on to the used graph database implementation.
+| Configuration                   | Type    | Default      | Description
+| ```storage.directory```         | Path    | data/graphdb | Path to the graph database storage location.
+| ```storage.backupDirectory```   | Path    | data/backup  | Backup directory.
+| ```storage.exportDirectory```   | Path    | data/export  | Export directory.
+| ```storage.startServer```       | Boolean | false        | Flag that indicates whether the graph database server component should be started. By default only an embedded graph database is used which does not start a graph server.
+| ```storage.parameters```        | JSON    | -            | Additional JSON parameters that will be passed on to the used graph database implementation.
 |======
 
 === Search Options
 
 [options="header"]
 |======
-| Configuration              | Type      | Description
-| ```search.directory```     | Path      | Path to the elasticsearch storage location.
-| ```search.httpEnabled```   | Boolean   | Enable the elasticsearch http endpoint.
-| ```search.transportPort``` | String    | Range for the binary transport ports
+| Configuration              | Type     | Default          | Description
+| ```search.directory```     | Path     | data/searchindex | Path to the elasticsearch storage location.
+| ```search.httpEnabled```   | Boolean  | false            | Enable the elasticsearch http endpoint. Enabling this has security implications! See security guide for more information.
+| ```search.transportPort``` | String   | 9300-9400        | Range for the binary transport ports
 |======
 
 === Upload Options
 
 [options="header"]
 |======
-| Configuration                      | Type   | Description
-| ```uploadOptions.byteLimit```      | Number | Upload limit in bytes.
-| ```uploadOptions.directory```      | Path   | Filesystem directory for uploaded binary data.
-| ```uploadOptions.tempDirectory```  | Path   | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory.
+| Configuration               | Type   | Default               | Description
+| ```upload.byteLimit```      | Number | 262144000 (250 MB)    | Upload limit in bytes.
+| ```upload.directory```      | Path   | data/binaryFiles      | Filesystem directory for uploaded binary data.
+| ```upload.tempDirectory```  | Path   | data/tmp/file-uploads | Temporary directory for uploaded binary data. Finished files will be moved to the upload directory.
 |======
 
 === Security Options
 
 [options="header"]
 |======
-| Configuration                        | Type    | Description
-| ```security.tokenExpirationTime```   | Number  | The JWT expiration timeout.
-| ```security.keystorePath```          | Path    | Path to Java keystore file.
-| ```security.keystorePassword```      | String  | Password for the Java keystore file.
-| ```security.algorithm```             | String  | Hashing algorithm used to sign, verify and generate tokens.
-| ```security.enableAnonymousAccess``` | Boolean | Flag to be used to enable the anonymous access feature.
+| Configuration                        | Type    | Default               | Description
+| ```security.tokenExpirationTime```   | Number  | 3600 (1h)             | The JWT expiration timeout in seconds.
+| ```security.keystorePath```          | Path    | config/keystore.jceks | Path to Java keystore file.
+| ```security.keystorePassword```      | String  | -                     | Password for the Java keystore file.
+| ```security.algorithm```             | String  | HS256                 | Hashing algorithm used to sign, verify and generate tokens.
+| ```security.enableAnonymousAccess``` | Boolean | true                  | Flag to be used to enable the anonymous access feature.
 |======
 
 === Cache Options
 
-Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying graph and Elasticsearch database cache settings.
+Gentics Mesh does not manage any cache structure but it is possible to tweak the underlying OrientDB and Elasticsearch database cache settings.
 
 == Backup & Recovery
 

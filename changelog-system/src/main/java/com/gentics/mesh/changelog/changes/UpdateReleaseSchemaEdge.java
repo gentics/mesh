@@ -29,6 +29,7 @@ public class UpdateReleaseSchemaEdge extends AbstractChange {
 			Iterator<Vertex> it = project.getVertices(Direction.OUT, "HAS_RELEASE_ROOT").iterator();
 			if (it.hasNext()) {
 				Vertex releaseRoot = it.next();
+				// Iterate over all releases
 				for (Vertex release : releaseRoot.getVertices(Direction.OUT, "HAS_RELEASE")) {
 					processRelease(release);
 				}
@@ -37,9 +38,19 @@ public class UpdateReleaseSchemaEdge extends AbstractChange {
 
 	}
 
+	/**
+	 * Add the new properties to the schema and microschema version edges
+	 * 
+	 * @param release
+	 */
 	private void processRelease(Vertex release) {
 		for (Edge edge : release.getEdges(OUT, "HAS_SCHEMA_VERSION")) {
-				edge.setProperty("active", true);
+			edge.setProperty("active", true);
+			edge.setProperty("migrationStatus", "COMPLETED");
+		}
+		for (Edge edge : release.getEdges(OUT, "HAS_MICROSCHEMA_VERSION")) {
+			edge.setProperty("active", true);
+			edge.setProperty("migrationStatus", "COMPLETED");
 		}
 	}
 
