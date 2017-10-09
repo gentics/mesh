@@ -221,18 +221,19 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 			tx.success();
 		}
 
+		// TODO - This action will currently only affect the tag family. We need to decide how we want to change this behaviour:
+		// https://github.com/gentics/mesh/issues/154
 		String pathToElement = tx(
 				() -> "projects/" + project().getUuid() + "/tagFamilies/" + tagFamily("colors").getUuid() + "/tags");
 		RolePermissionRequest request = new RolePermissionRequest();
 		request.setRecursive(false);
 		request.getPermissions().setDelete(true);
 		call(() -> client().updateRolePermissions(roleUuid(), pathToElement, request));
-
 		try (Tx tx = tx()) {
-			assertTrue(role().hasPermission(DELETE_PERM, tag("red")));
+			assertFalse("The perm of the tag should not change since the action currently only affects the tag family itself", role().hasPermission(DELETE_PERM, tag("red")));
+			assertTrue("The tag family perm did not change", role().hasPermission(DELETE_PERM, tagFamily("colors")));
 		}
 	}
-	
 
 	@Test
 	public void testAddRecursivePermissionsToNodes() {
