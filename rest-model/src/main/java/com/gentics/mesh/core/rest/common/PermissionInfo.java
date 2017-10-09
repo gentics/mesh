@@ -349,6 +349,7 @@ public class PermissionInfo implements RestModel {
 	 * 
 	 * @return Generated hash string
 	 */
+	@JsonIgnore
 	public String getHash() {
 		StringBuilder builder = new StringBuilder();
 		builder.append(valueOf(create));

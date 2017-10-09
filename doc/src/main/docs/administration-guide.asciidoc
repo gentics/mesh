@@ -7,7 +7,7 @@
 |======
 | Component                                                    | Type                 | Version
 | http://orientdb.com/[OrientDB]                               | Graph Database       | 2.2.x
-| https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.2.x
+| https://github.com/Syncleus/Ferma[Ferma]                     | OGM                  | 2.4.x
 | https://www.elastic.co/products/elasticsearch[Elasticsearch] | Search Engine        | 2.4.x
 | http://vertx.io/[Vert.x]                                     | Core Framework       | 3.4.x
 | https://hazelcast.com/[Hazelcast]                            | In-Memory Data Grid  | 3.5.x
