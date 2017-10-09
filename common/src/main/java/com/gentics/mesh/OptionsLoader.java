@@ -57,6 +57,10 @@ public final class OptionsLoader {
 	private static void applyCommandLineArgs(MeshOptions options, String... args) {
 		try {
 			CommandLine commandLine = MeshCLI.parse(args);
+
+			String adminPassword = commandLine.getOptionValue(MeshCLI.RESET_ADMIN_PASSWORD);
+			options.setAdminPassword(adminPassword);
+
 			options.setInitCluster(commandLine.hasOption(MeshCLI.INIT_CLUSTER));
 			// Check whether a custom node parameter has been set
 			String cliNodeName = commandLine.getOptionValue(MeshCLI.NODE_NAME);

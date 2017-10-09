@@ -17,6 +17,8 @@ public final class MeshCLI {
 
 	public static final String HTTP_PORT = "httpPort";
 
+	public static final String RESET_ADMIN_PASSWORD = "resetAdminPassword";
+
 	/**
 	 * Parse the given command line arguments and return the parsed representation.
 	 * 
@@ -29,6 +31,9 @@ public final class MeshCLI {
 
 		Option help = new Option("help", "print this message");
 		options.addOption(help);
+
+		Option resetAdminPassword = new Option(RESET_ADMIN_PASSWORD, true, "Reset the admin password");
+		options.addOption(resetAdminPassword);
 
 		Option initCluster = new Option(INIT_CLUSTER, false, "Flag which can be used to initialise the first instance of a cluster.");
 		options.addOption(initCluster);

@@ -67,6 +67,9 @@ public class MeshOptions {
 	@JsonIgnore
 	private boolean isInitCluster = false;
 
+	@JsonIgnore
+	private String adminPassword;
+
 	public MeshOptions() {
 	}
 
@@ -291,6 +294,17 @@ public class MeshOptions {
 	@JsonIgnore
 	public MeshOptions setInitCluster(boolean isInitCluster) {
 		this.isInitCluster = isInitCluster;
+		return this;
+	}
+
+	@JsonIgnore
+	public String getAdminPassword() {
+		return adminPassword;
+	}
+
+	@JsonIgnore
+	public MeshOptions setAdminPassword(String adminPassword) {
+		this.adminPassword = adminPassword;
 		return this;
 	}
 

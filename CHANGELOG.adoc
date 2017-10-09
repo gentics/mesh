@@ -16,6 +16,8 @@ icon:plus[] Config: It is now possible to configure the host to which the Gentic
 
 icon:plus[] REST: The `/api/v1/admin/reindex` and `/api/v1/admin/createMappings` have been changed from `GET` to `POST`.
 
+icon:plus[] CLI: It is now possible to reset the admin password using the `-resetAdminPassword` command line argument.
+
 [[0.10.3]]
 == 0.10.3 (18.09.2017)
 
