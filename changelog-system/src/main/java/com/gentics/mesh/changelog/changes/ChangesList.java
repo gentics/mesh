@@ -29,6 +29,7 @@ public final class ChangesList {
 		list.add(new CreateMissingDraftEdges());
 		list.add(new RemoveBogusWebrootProperty());
 		list.add(new PurgeOldJobs());
+		list.add(new UpdateReleaseSchemaEdge());
 		// ADD NEW CHANGES HERE!
 		return list;
 	}
