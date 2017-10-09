@@ -367,7 +367,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		JobListResponse status = call(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
-		assertThat(dummySearchProvider()).hasEvents(size+size+1, size+size, 2, 2, 2);
+		assertThat(dummySearchProvider()).hasEvents(size + size + 1, size + size, 2, 2, 2);
 		for (JsonObject mapping : dummySearchProvider().getUpdateMappingEvents().values()) {
 			assertThat(mapping).has("$.node.properties.fields.properties.teaser.fields.raw.type", "string",
 					"The mapping should include a raw field for the teaser field");
@@ -647,7 +647,10 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		updateRequest.setSegmentField("text");
 		updateRequest.setDisplayField("text");
 		updateRequest.validate();
-		call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
+
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
+		}, COMPLETED, 1);
 		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasVersion("1.1").hasStringField("text",
 				"text2_value");
 
@@ -703,13 +706,15 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		updateRequest.setSegmentField("text");
 		updateRequest.setDisplayField("text");
 		updateRequest.validate();
-		call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
+
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
+		}, COMPLETED, 1);
 
 		// Assert that the draft version stays in sync with the publish version. Both must have version 1.0 since they are using the same NGFC.
-		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasVersion("1.0").hasStringField("text", "text_value")
-				.hasSchemaVersion("dummy", "1.0");
+		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasVersion("2.0").hasStringField("text", "text_value")
+				.hasSchemaVersion("dummy", "2.0");
 
-		triggerAndWaitForAllJobs(COMPLETED);
 		JobListResponse status = call(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
 
