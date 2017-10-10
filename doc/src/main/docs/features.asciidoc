@@ -1001,12 +1001,12 @@ NOTE: In order to work properly, the fallback mechanism requires all nodes to ha
 
 === Overview
 
-Permissions allow to equip different groups of users with access to content of your project. 
+Permissions allow to equip different groups of users with access to the content of your project. 
 
 In Gentics Mesh, we distinguish the concepts of 
 link:building-blocks.html#_user[user], link:building-blocks.html#_group[group], and link:building-blocks.html#_role[role] for managing different needs of access.
 
-* A user represents a physical person or a client app that needs to interact with your contents.
+* A user represents a physical person or a client app that needs to interact with your content.
 * Groups are used to gather users of same content needs and access levels, e.g. administrators, editors, and users of your app. 
 * A role describes a set of permissions on other elements in Gentics Mesh, e.g. nodes, tags, schemas, users.
 
@@ -1015,8 +1015,7 @@ By assigning a role to a group, the role's permissions are efficiently granted t
 NOTE: For reasons of readability, we will describe granting permissions to users though technically, permissions are granted to a specific role and applied to users via groups. 
 
 // TODO image (anonymous, and other roles having different permissions)
-
-
+//image::GenticsMesh-User-Groups-Roles-Demo.png[How User, Groups, Roles & Permissions are organized in Gentics Mesh Demo Example,role="img-responsive"] 
 
 [caption=]
 .Permissions in Gentics Mesh
@@ -1033,14 +1032,16 @@ NOTE: For reasons of readability, we will describe granting permissions to users
 
 NOTE: The ```publish``` and ```readPublish``` permissions are specifically available for node elements.
 
-Most API responses within Gentics Mesh contain a list of permissions. This list indicates which permissions have been granted on the returned element(s) to the requesting user.
+Most API responses within Gentics Mesh contain a list of permissions. This list indicates which permissions the requesting user has been granted on the returned element(s).
 
 ==== Example
 
 .Try the example
 [TIP]
+Permission of user ```anonymous``` on node ```Delorean```
 https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?version=published
 // TODO provide new example node, remove read permission for this example node only, add ?version=published to example code
+// TODO provide image with user - group - role for anonymous and permissions to specified node
 
 
 [source,json]
@@ -1058,6 +1059,7 @@ https://demo.getmesh.io/api/v1/demo/nodes/fc3c85be82584ae2bc85be82588ae2b0?versi
 ...  
 -----
 
+
 The example above shows that the requesting user ```anonymous``` has the ```readPublish``` permission on the requested node, only. This means the user is allowed to read the published version of the node but not previous versions or a draft version of the requested element.
 
 Furthermore the user is not allowed to
@@ -1071,7 +1073,7 @@ Furthermore the user is not allowed to
 IMPORTANT: Gentics Mesh by default returns the ```draft``` version of nodes. This means for supporting the ```anonymous``` user and public content, you need to add the ```?version=published``` query parameter on all requests for nodes to avoid _"Missing permissions on object"_ errors. Find out more in the <<versioning,Versioning>> section.
 
 
-Following, we will discuss how to query, assign and revoke permissions in Gentics Mesh including the available API endpoints.
+Following, we will discuss how to query, assign and revoke permissions in Gentics Mesh including the available API endpoints:
 
 [caption=]
 .API endpoints for querying, assigning, and revoking permissions
@@ -1081,27 +1083,29 @@ Following, we will discuss how to query, assign and revoke permissions in Gentic
 | Description
 | API endpoint
 
-| Read the user permissions on the element that can be located by the specified path.
+| Read the user permissions on element(s) that can be located by the specified path.
 | link:raml/#users__userUuid__permissions__path__get[```GET /api/v1/users/:userUuid/permissions/:path```]
 
-| Load the permissions between given role and the targeted element.
+| Load the permissions between given role and the targeted element(s).
 | link:raml/#roles__roleUuid__permissions__pathToElement__get[```GET /api/v1/roles/:roleUuid/permissions/:path```]
 
-| Set the permissions between role and the targeted element.
+| Set the permissions between role and the targeted element(s).
 | link:raml#roles__roleUuid__permissions__pathToElement__post[```POST /api/v1/roles/:roleUuid/permissions/:path```]
 
 |======
+
+The examples provided subsequently, rely on our demo project.
 
 === Querying Permissions
 
 There are dedicated API endpoints for querying permissions on elements.
 
-NOTE: The following example links, require prior authentication with user ```admin``` (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication section] to learn about the different authentication mechanisms provided by Gentics Mesh. The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en[Postman] Chrome extension can be used to build and invoke requests from your browser to Gentics Mesh.
+NOTE: The following example links, require prior authentication with user ```admin``` (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication section] to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 ==== Querying Role Permissions
 The link:raml/#roles__roleUuid__permissions__pathToElement__get[```GET /api/v1/roles/:roleUuid/permissions/:path```] endpoint can be used to query a role's permission on a specific element or set of elements.
 
-For example, the link:references.html#_authentication[authenticated] ```admin``` user is able to find out the configured permissions for role ```anonymous``` on node ```fc3c85be82584ae2bc85be82588ae2b0```.
+For example, the link:references.html#_authentication[authenticated] ```admin``` user is able to find out the configured permissions for role ```Public User``` on node ```fc3c85be82584ae2bc85be82588ae2b0```.
 
 .Try the example with user ```admin```
 [TIP]
@@ -1196,7 +1200,7 @@ TIP: If you need to grant permission on users of a specific group, please use th
 The following example shows how to grant the ```Editor Role``` role the permission to read all users. Since this is an operation to be performed on a set of users, the element path ```/users``` needs to be used together with property ```recursive=true```.
 
 
-NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en[Postman] Chrome extension can be used to build and invoke requests from your browser to Gentics Mesh.
+NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 [source,bash]
 -----
@@ -1253,7 +1257,7 @@ Permissions on a single or multiple groups are applied via ```/groups/:uuid``` p
 The following example shows how to grant the ```Editor Role``` role the permission to read a specific group (i.e. ```Client Group```) and its users (i.e. ```webclient```). This operation needs to be applied recursively (i.e., ```recursive=true```), otherwise ```read``` permissions would be granted to the group, only.
 
 
-NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en[Postman] Chrome extension can be used to build and invoke requests from your browser to Gentics Mesh.
+NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 [source,bash]
 -----
@@ -1294,7 +1298,7 @@ All possible role permissions on groups are summarized in the following table.
 .Role permissions on a specific group and multiple groups
 [options="header"]
 |======
-| Role permission        | Element path        | Permission  | Recursive
+| Role permission        | Element path         | Permission  | Recursive
 | Can create new groups  | ```/groups```        | Create      | false 
 | Can read all groups    | ```/groups```        | Read        | true 
 | Can update all groups  | ```/groups```        | Update      | true 
@@ -1317,7 +1321,7 @@ By granting permissions on roles, you effectively grant users the right to chang
 ===== Example
 The following example shows how to grant the ```Editor Role``` role permissions to create new roles and subsequently manage them (i.e., ```read```, ```update```, ```delete```) but no access to existing roles. 
 
-NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en[Postman] Chrome extension can be used to build and invoke requests from your browser to Gentics Mesh.
+NOTE: Links used in the example require prior authentication with user admin (credentials: admin/admin). Please refer to the link:references.html#_authentication[authentication] section to learn about the different authentication mechanisms provided by Gentics Mesh. The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 [source,bash]
 -----
@@ -1398,7 +1402,7 @@ Permissions on a single or multiple microschemas are applied via ```/microschema
 .Role permissions on a specific microschema and multiple microschemas
 [options="header"]
 |======
-| Role permission                                     | Element path          | Permission  | Recursive
+| Role permission                                     | Element path               | Permission  | Recursive
 | Can create new microschemas                         | ```/microschemas```        | Create      | false 
 | Can read all microschemas, and create micronodes    | ```/microschemas```        | Read        | true 
 | Can update all microschemas                         | ```/microschemas```        | Update      | true 
@@ -1464,6 +1468,7 @@ In order to grant permission on tag families the ```/:projectName/tagFamilies```
 
 In order to grant permission on tags the ```/:projectName/tagFamilies/:uuid/tags``` and ```/:projectName/tagFamilies/:uuid/tags/:uuid``` paths can be used.
 
+* Currently, using path ```/:projectName/tagFamilies/:uuid/tags``` works same as using path ```/:projectName/tagFamilies/:uuid```
 * Granting permissions on ```/:projectName/tagFamilies/:uuid/tags``` together with property ```recursive=true``` allows setting permissions for tags of a tag family, otherwise the property has no effect.
 
 [caption=]
@@ -1472,9 +1477,12 @@ In order to grant permission on tags the ```/:projectName/tagFamilies/:uuid/tags
 |======
 | Role permission                | Element path                                     | Permission     | Recursive
 | Can create tags in tag family  | ```/:projectName/tagFamilies/:uuid/tags```       | Create         | false 
-| Can read tags in tag family    | ```/:projectName/tagFamilies/:uuid/tags```       | Read           | true 
-| Can update tags in tag family  | ```/:projectName/tagFamilies/:uuid/tags```       | Update         | true 
-| Can delete tags in tag family  | ```/:projectName/tagFamilies/:uuid/tags```       | Delete         | true 
+| Can read tag family            | ```/:projectName/tagFamilies/:uuid/tags```       | Read           | false 
+| Can update tag family          | ```/:projectName/tagFamilies/:uuid/tags```       | Update         | false 
+| Can delete tag family          | ```/:projectName/tagFamilies/:uuid/tags```       | Delete         | false 
+| Can read tag family and tags   | ```/:projectName/tagFamilies/:uuid/tags```       | Read           | true 
+| Can update tag family and tags | ```/:projectName/tagFamilies/:uuid/tags```       | Update         | true 
+| Can delete tag family and tags | ```/:projectName/tagFamilies/:uuid/tags```       | Delete         | true 
 | Can read tag                   | ```/:projectName/tagFamilies/:uuid/tags/:uuid``` | Read           | false 
 | Can update tag                 | ```/:projectName/tagFamilies/:uuid/tags/:uuid``` | Update         | false 
 | Can delete tag                 | ```/:projectName/tagFamilies/:uuid/tags/:uuid``` | Delete         | false 
@@ -1509,7 +1517,7 @@ Permissions on a single or multiple nodes are applied via ```/:projectName/nodes
 | Can read specified node & sub nodes                       | ```/:projectName/nodes/:uuid``` | Read          | true 
 | Can update specified node & sub nodes                     | ```/:projectName/nodes/:uuid``` | Update        | true 
 | Can delete specified node & sub nodes                     | ```/:projectName/nodes/:uuid``` | Delete        | true 
-| Can read the published version specified node & sub nodes | ```/:projectName/nodes/:uuid``` | readPublished | true 
+| Can read the published version specified node & sub nodes | ```/:projectName/nodes/:uuid``` | ReadPublished | true 
 | Can publish/unpublish specified node & sub nodes          | ```/:projectName/nodes/:uuid``` | Publish       | true 
 
 |======
