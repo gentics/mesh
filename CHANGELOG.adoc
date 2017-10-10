@@ -4,11 +4,15 @@
 
 == 0.10.4 (10.10.2017)
 
-icon:bullhorn[] REST: The `availableLanguages` field now also contains the publish information of the languages of a node.
+CAUTION: REST: The `availableLanguages` field now also contains the publish information of the languages of a node.
 
 icon:check[] REST: Fixed a bug in the permission system. Permissions on microschemas will now correctly be updated when applying permission recursively on projects.
 
 icon:check[] REST: ETags will now be updated if the permission on the element changes.
+
+icon:check[] Core: Various bugs within the schema / microschema migration code have been addressed and fixed.
+
+icon:check[] Core: The search index handling has been updated. A differential synchronization will be run to update the new search index and thus the old index data can still be used.
 
 icon:plus[] UI: A new action was added to the node action context menu. It is now possible to unpublish nodes.
 
@@ -94,13 +98,14 @@ icon:check[] GraphQL: Updated graphiql browser to latest version to fix various 
 
 == 0.10.0 (04.09.2017)
 
-icon:plus[] Clustering: This release introduces the master-master clustering support. You can read more about clustering and the configuration in the link:/docs/beta/clustering.html[clustering documentation].
 
-icon:plus[] Manual Change: Configuration changes. For already existing `mesh.yml` files, the `nodeName` setting has to be added. Choose any name for the mesh instance.
+CAUTION: Manual Change: Configuration changes. For already existing `mesh.yml` files, the `nodeName` setting has to be added. Choose any name for the mesh instance.
 
-icon:plus[] Manual Change: Configuration changes. The `clusterMode` setting has been deprecated in favour of the new cluster configuration. This setting must be removed from the `mesh.yml` file.
+CAUTION: Manual Change: Configuration changes. The `clusterMode` setting has been deprecated in favour of the new cluster configuration. This setting must be removed from the `mesh.yml` file.
 
-icon:plus[] Manual Change: The configuration files `mesh.yml`, `keystore.jceks` must be moved to a subfolder `config` folder.
+[CAUTION]
+=====================================================================
+Manual Change: The configuration files `mesh.yml`, `keystore.jceks` must be moved to a subfolder `config` folder.
 
 [source,bash]
 ----
@@ -108,14 +113,20 @@ mkdir config
 mv mesh.yml config
 mv keystore.jceks config
 ----
+=====================================================================
 
-icon:plus[] Manual Change: The graph database folder needs to be moved. Please create the `storage` subfolder and move the existing data into that folder.
+[CAUTION]
+=====================================================================
+Manual Change: The graph database folder needs to be moved. Please create the `storage` subfolder and move the existing data into that folder.
 
 [source,bash]
 ----
 mkdir -p data/graphdb/storage
 mv data/graphdb/* data/graphdb/storage/
 ----
+=====================================================================
+
+icon:plus[] Clustering: This release introduces the master-master clustering support. You can read more about clustering and the configuration in the link:/docs/beta/clustering.html[clustering documentation].
 
 icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.26
 
