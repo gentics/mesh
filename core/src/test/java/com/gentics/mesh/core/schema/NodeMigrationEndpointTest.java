@@ -588,8 +588,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 	 */
 	@Test
 	public void testMigrationInfoCleanup() throws Exception {
-		// Run 100 migrations which should all fail
-		for (int i = 0; i < 100; i++) {
+		// Run 10 migrations which should all fail
+		for (int i = 0; i < 10; i++) {
 			tx(() -> {
 				SchemaContainerVersion version = schemaContainer("content").getLatestVersion();
 				return boot().jobRoot().enqueueSchemaMigration(user(), initialRelease(), version, version);
@@ -599,7 +599,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		// Verify that the expected amount of jobs is listed
 		JobListResponse status = call(() -> client().findJobs());
-		assertThat(status).listsAll(COMPLETED).hasInfos(100);
+		assertThat(status).listsAll(COMPLETED).hasInfos(10);
 
 	}
 
@@ -651,7 +651,8 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaResponse.getUuid(), updateRequest));
 		}, COMPLETED, 1);
-		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasVersion("1.1").hasStringField("text",
+		// Now load the node again and verify that the draft has been migrated from 1.1 to 2.1 (2.1 since 2.0 is the new published version)
+		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, draftResponse.getUuid()))).hasVersion("2.1").hasStringField("text",
 				"text2_value");
 
 		triggerAndWaitForAllJobs(COMPLETED);
