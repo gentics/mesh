@@ -57,7 +57,7 @@ https://demo.getmesh.io/api/v1/demo/nodes/df8beb3922c94ea28beb3922c94ea2f6/binar
 [TIP]
 https://demo.getmesh.io/api/v1/demo/webroot/images/ford-gt.jpg?width=400
 
-TIP: The https://chrome.google.com/webstore/detail/postman/fhbjgbiflinjbdggehcddcbncdddomop?hl=en[Postman] chrome extension can be used to build and invoke requests from your browser to Gentics Mesh.
+TIP: The https://insomnia.rest/[Insomnia] REST client can be used to build and invoke requests from your browser to Gentics Mesh.
 
 == HTTP details
 
