@@ -3,7 +3,7 @@
 = Gentics Mesh Changelog
 
 [[0.10.4]]
-== 0.10.4 (TBD)
+== 0.10.4 (10.10.2017)
 
 icon:bullhorn[] REST: The `availableLanguages` field now also contains the publish information of the languages of a node.
 
