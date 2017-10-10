@@ -46,7 +46,7 @@ image::GenticsMesh-PrettyURL-Example.png[Gentics Mesh Example for Building Prett
 The ```path``` property as well as the ```languagesPath``` property (for available language variants) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` endpoint together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
 For more details see the documentation on link:building-blocks.html#_node[node] and <<webroot,WebRoot API>>, respectively.
 
-==== API endpoints
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
@@ -1042,7 +1042,7 @@ NOTE: The ```publish``` and ```readPublish``` permissions are specifically avail
 
 Following, we will discuss how to query, assign and revoke permissions in Gentics Mesh including the available API endpoints.
 
-==== API endpoints
+=== API endpoints
 
 [options="header",cols="2*"]
 |======
