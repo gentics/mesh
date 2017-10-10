@@ -7,9 +7,13 @@
 
 icon:bullhorn[] REST: The `availableLanguages` field now also contains the publish information of the languages of a node.
 
-icon:check[] REST: Fixed a bug in the permission system. Permissions on microschemas will now correctly be updated when applying permission recursively on projects. 
+icon:check[] REST: Fixed a bug in the permission system. Permissions on microschemas will now correctly be updated when applying permission recursively on projects.
 
 icon:check[] REST: ETags will now be updated if the permission on the element changes.
+
+icon:plus[] UI: A new action was added to the node action context menu. It is now possible to unpublish nodes.
+
+icon:plus[] UI: The Mesh UI was updated.
 
 icon:plus[] Config: It is now possible to configure the host to which the Gentics Mesh http server should bind to via the `httpServer.host` setting in the `mesh.yml` file. Default is still 0.0.0.0 (all interfaces).
 
