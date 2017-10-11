@@ -2,6 +2,10 @@
 
 = Gentics Mesh Changelog
 
+== 0.10.5 (TBD)
+
+icon:check[] Performance: Optimized binary download memory usage.
+
 == 0.10.4 (10.10.2017)
 
 CAUTION: REST: The `availableLanguages` field now also contains the publish information of the languages of a node.
@@ -13,6 +17,8 @@ icon:check[] REST: ETags will now be updated if the permission on the element ch
 icon:check[] Core: Various bugs within the schema / microschema migration code have been addressed and fixed.
 
 icon:check[] Core: The search index handling has been updated. A differential synchronization will be run to update the new search index and thus the old index data can still be used.
+
+icon:check[] Performance: Removing permissions has been optimized.
 
 icon:plus[] UI: A new action was added to the node action context menu. It is now possible to unpublish nodes.
 

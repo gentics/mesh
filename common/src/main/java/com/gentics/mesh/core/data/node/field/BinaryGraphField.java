@@ -5,8 +5,8 @@ import java.io.File;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 
-import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.AsyncFile;
+import rx.Single;
 
 /**
  * The BinaryField Domain Model interface.
@@ -58,11 +58,11 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVert
 	BinaryGraphField setMimeType(String mimeType);
 
 	/**
-	 * Return future that holds a buffer reference to the binary file data.
+	 * Return a single that holds an AsyncFile for the binary.
 	 * 
 	 * @return
 	 */
-	Future<Buffer> getFileBuffer();
+	Single<AsyncFile> getFileStream();
 
 	/**
 	 * Return the file that points to the binary file within the binary file storage.
