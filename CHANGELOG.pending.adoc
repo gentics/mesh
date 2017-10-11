@@ -1,2 +1,0 @@
-icon:check[] Performance: Removing permissions has been optimized.
-icon:check[] Performance: Optimized binary download
