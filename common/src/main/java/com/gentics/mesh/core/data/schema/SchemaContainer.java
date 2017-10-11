@@ -62,11 +62,11 @@ public interface SchemaContainer
 	}
 
 	/**
-	 * Return the list of nodes which are referencing the schema container.
+	 * Returns an iterable of nodes which are referencing the schema container.
 	 * 
 	 * @return
 	 */
-	List<? extends Node> getNodes();
+	Iterable<? extends Node> getNodes();
 
 	/**
 	 * Return a list of all schema container roots to which the schema container was added.

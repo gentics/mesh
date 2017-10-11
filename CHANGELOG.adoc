@@ -6,6 +6,8 @@
 
 icon:check[] Performance: Optimized binary download memory usage.
 
+icon:check[] REST: Fixed a bug which prevented pages with more then 2000 items from being loaded.
+
 == 0.10.4 (10.10.2017)
 
 CAUTION: REST: The `availableLanguages` field now also contains the publish information of the languages of a node.
