@@ -89,8 +89,6 @@ ENV LANG en_US.UTF-8
 # Add credentials
 #RUN sudo -u jenkins gpg --import /home/jenkins/credentials/gpg/gentics/gpg-key.asc
 #RUN sudo -u jenkins gpg --import /home/jenkins/credentials/gpg/gentics/gpg-secret-key.asc
-#RUN ln -s /home/jenkins/credentials/ssh/authorized_keys /root/.ssh/authorized_keys
-#RUN ln -s /home/jenkins/credentials/ssh/authorized_keys /home/jenkins/.ssh/authorized_keys
 RUN ln -s /home/jenkins/credentials/maven/settings.xml /home/jenkins/.m2/settings.xml
 
 USER jenkins
