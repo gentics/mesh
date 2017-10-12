@@ -1,25 +1,21 @@
 {
-	# [$.data.bogus=<is-null>]
-	bogus: release(name: "bogus") {
-		name
-	}
-
-	release(name: "dummy") {
+    release {
 		# [$.data.release.uuid=<is-uuid>]
 		uuid
 		# [$.data.release.name=dummy]
 		name
-	}
-
-	releases {
-		# [$.data.releases.elements.length()=1]
-		elements { 
-			uuid
-			# [$.data.releases.elements[0].name=dummy]
-			name
-			# [$.data.releases.elements[0].migrated=true]
-			migrated
+		schema(name:"content") {
+            # [$.data.release.schema.uuid=<is-uuid>]
+            uuid
+            # [$.data.release.schema.name=content]
+            name
 		}
-	}
+		schemas {
+		    elements {
+                # [$.data.release.schemas.elements[0].uuid=<is-uuid>]
+		        uuid
+		    }
+		}
+    }
 }
 # [$.errors=<is-undefined>]

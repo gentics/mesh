@@ -13,11 +13,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -136,25 +144,6 @@ public abstract class AbstractTypeProvider {
 		return newArgument().name("name").type(GraphQLString).description(description).build();
 	}
 
-	/**
-	 * Load the paging parameters from the environment arguments.
-	 * 
-	 * @param fetcher
-	 * @return
-	 */
-	public PagingParameters getPagingParameters(DataFetchingEnvironment env) {
-		PagingParameters params = new PagingParametersImpl();
-		Long page = env.getArgument("page");
-		if (page != null) {
-			params.setPage(page);
-		}
-		Integer perPage = env.getArgument("perPage");
-		if (perPage != null) {
-			params.setPerPage(perPage);
-		}
-		return params;
-	}
-
 	public GraphQLEnumType createLinkEnumType() {
 		GraphQLEnumType linkTypeEnum = newEnum().name(LINK_TYPE_NAME).description("Mesh resolve link type")
 				.value(LinkType.FULL.name(), LinkType.FULL, "Render full links").value(LinkType.MEDIUM.name(), LinkType.MEDIUM, "Render medium links")
@@ -187,22 +176,81 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected MeshVertex handleUuidNameArgs(DataFetchingEnvironment env, RootVertex<?> root) {
+		return handleUuidNameArgs(env, root::findByUuid, root::findByName);
+	}
+
+	/**
+	 * Handle the UUID or name arguments and locate and return the vertex by the given functions.
+	 *
+	 * @param env
+	 * @param uuidFetcher
+	 * @param nameFetcher
+	 * @return
+	 */
+	protected MeshVertex handleUuidNameArgs(DataFetchingEnvironment env,
+											Function<String, MeshCoreVertex<?, ?>> uuidFetcher,
+											Function<String, MeshCoreVertex<?, ?>> nameFetcher) {
 		GraphQLContext gc = env.getContext();
+		MeshCoreVertex<?, ?> element = handleUuidNameArgsNoPerm(env, uuidFetcher, nameFetcher);
+		if (element == null) {
+			return null;
+		} else {
+			return gc.requiresPerm(element, READ_PERM);
+		}
+	}
+
+	/**
+	 * Handle the UUID or name arguments and locate and return the vertex by the given functions.
+	 *
+	 * @param env
+	 * @param uuidFetcher
+	 * @param nameFetcher
+	 * @return
+	 */
+	protected MeshCoreVertex<?, ?> handleUuidNameArgsNoPerm(DataFetchingEnvironment env,
+											Function<String, MeshCoreVertex<?, ?>> uuidFetcher,
+											Function<String, MeshCoreVertex<?, ?>> nameFetcher) {
 		String uuid = env.getArgument("uuid");
 		MeshCoreVertex<?, ?> element = null;
 		if (uuid != null) {
-			element = root.findByUuid(uuid);
+			element = uuidFetcher.apply(uuid);
 		}
 		String name = env.getArgument("name");
 		if (name != null) {
-			element = root.findByName(name);
+			element = nameFetcher.apply(name);
 		}
 		if (element == null) {
 			return null;
 		}
 
-		// Check permissions
-		return gc.requiresPerm(element, READ_PERM);
+		return element;
+	}
+
+	protected MeshVertex handleReleaseSchema(DataFetchingEnvironment env) {
+		GraphQLContext gc = env.getContext();
+		Release release = env.getSource();
+		Stream<? extends SchemaContainerVersion> schemas = StreamSupport
+			.stream(release.findActiveSchemaVersions().spliterator(), false);
+
+		return handleUuidNameArgsNoPerm(env,
+			uuid -> schemas.filter(schema -> {
+				SchemaContainer container = schema.getSchemaContainer();
+				return container.getUuid().equals(uuid) && gc.getUser().hasPermission(container, READ_PERM);
+			}).findFirst().get(),
+			name -> schemas.filter(schema ->
+					schema.getName().equals(name) &&
+					gc.getUser().hasPermission(schema.getSchemaContainer(), READ_PERM)
+			).findFirst().get()
+		);
+	}
+
+	protected Page<SchemaContainerVersion> handleReleaseSchemas(DataFetchingEnvironment env) {
+		GraphQLContext gc = env.getContext();
+		Release release = env.getSource();
+		Stream<? extends SchemaContainerVersion> schemas = StreamSupport
+			.stream(release.findActiveSchemaVersions().spliterator(), false)
+			.filter(schema -> gc.getUser().hasPermission(schema.getSchemaContainer(), READ_PERM));
+		return new DynamicStreamPageImpl<>(schemas, getPagingInfo(env));
 	}
 
 	/**

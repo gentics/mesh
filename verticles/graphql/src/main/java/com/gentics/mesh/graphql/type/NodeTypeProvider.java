@@ -275,7 +275,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 						return null;
 					}
 					Node node = content.getNode();
-					return node.getTags(gc.getUser(), getPagingParameters(env), gc.getRelease());
+					return node.getTags(gc.getUser(), getPagingInfo(env), gc.getRelease());
 				}));
 
 		// TODO Fix name confusion and check what version of schema should be used to determine this type

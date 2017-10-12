@@ -53,6 +53,16 @@
 		segmentField
 		# [$.data.schema.isContainer=false]
 		isContainer
+		nodes {
+		    elements {
+		        # [$.data.schema.nodes.elements[0].uuid=<is-uuid>]
+		        uuid
+		        schema {
+		            # [$.data.schema.nodes.elements[0].schema.name=content]
+		            name
+		        }
+		    }
+		}
 	}
 	project {
 		name

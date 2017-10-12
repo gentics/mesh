@@ -7,12 +7,12 @@ import com.gentics.mesh.parameter.PagingParameters;
 
 public class DynamicStreamPageImpl<T> extends AbstractDynamicPage<T> {
 
-	public DynamicStreamPageImpl(Stream<T> stream, PagingParameters pagingInfo) {
+	public DynamicStreamPageImpl(Stream<? extends T> stream, PagingParameters pagingInfo) {
 		super(pagingInfo);
 		init(stream);
 	}
 
-	private void init(Stream<T> stream) {
+	private void init(Stream<? extends T> stream) {
 
 		AtomicLong pageCounter = new AtomicLong();
 		visibleItems = stream
