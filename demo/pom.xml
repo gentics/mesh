@@ -84,7 +84,7 @@
 						<phase>process-classes</phase>
 						<configuration>
 							<skip>${skip.demodump}</skip>
-							<executable>java</executable>
+							<executable>${JAVA_1_8_HOME}/bin/java</executable>
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath />
