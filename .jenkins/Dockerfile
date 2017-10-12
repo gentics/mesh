@@ -43,12 +43,8 @@ RUN mkdir -p /home/jenkins/workspace && mkdir -p /home/jenkins/.ssh
 #ADD ./files/settings.xml /home/jenkins/.m2/settings.xml
 #ADD ./files/gentics /home/jenkins/.gnupg/gentics
 RUN chown jenkins: /home/jenkins -R
-#RUN sudo -u jenkins gpg --import /home/jenkins/.gnupg/gentics/gpg-key.asc
-#RUN sudo -u jenkins gpg --import /home/jenkins/.gnupg/gentics/gpg-secret-key.asc
 
 RUN echo "root:root" | chpasswd
-#ADD ./files/authorized_keys /root/.ssh/authorized_keys
-#ADD ./files/authorized_keys /home/jenkins/.ssh/authorized_keys
 ADD ./files/config /home/jenkins/.ssh/config
 RUN ssh-keyscan github.com >> /home/jenkins/.ssh/known_hosts
 RUN ssh-keyscan git.gentics.com >> /home/jenkins/.ssh/known_hosts
@@ -88,8 +84,14 @@ RUN chmod +x /usr/local/bin/captain
 # Fix docker socket permission issue
 RUN groupadd -g 117 docker && usermod -aG docker jenkins
 
-RUN mvn -version
 ENV LANG en_US.UTF-8
+
+# Add credentials
+#RUN sudo -u jenkins gpg --import /home/jenkins/credentials/gpg/gentics/gpg-key.asc
+#RUN sudo -u jenkins gpg --import /home/jenkins/credentials/gpg/gentics/gpg-secret-key.asc
+#RUN ln -s /home/jenkins/credentials/ssh/authorized_keys /root/.ssh/authorized_keys
+#RUN ln -s /home/jenkins/credentials/ssh/authorized_keys /home/jenkins/.ssh/authorized_keys
+RUN ln -s /home/jenkins/credentials/maven/settings.xml /home/jenkins/.m2/settings.xml
 
 USER jenkins
 
