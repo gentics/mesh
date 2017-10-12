@@ -13,11 +13,19 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -101,9 +109,8 @@ public abstract class AbstractTypeProvider {
 
 		// #lang
 		String defaultLanguage = Mesh.mesh().getOptions().getDefaultLanguage();
-		return newArgument().name("lang").type(new GraphQLList(GraphQLString))
-				.description(
-						"Language tags to filter by. When set only nodes which contain at least one of the provided language tags will be returned")
+		return newArgument().name("lang").type(new GraphQLList(GraphQLString)).description(
+				"Language tags to filter by. When set only nodes which contain at least one of the provided language tags will be returned")
 				.defaultValue(Arrays.asList(defaultLanguage)).build();
 	}
 
@@ -136,37 +143,17 @@ public abstract class AbstractTypeProvider {
 		return newArgument().name("name").type(GraphQLString).description(description).build();
 	}
 
-	/**
-	 * Load the paging parameters from the environment arguments.
-	 * 
-	 * @param fetcher
-	 * @return
-	 */
-	public PagingParameters getPagingParameters(DataFetchingEnvironment env) {
-		PagingParameters params = new PagingParametersImpl();
-		Long page = env.getArgument("page");
-		if (page != null) {
-			params.setPage(page);
-		}
-		Integer perPage = env.getArgument("perPage");
-		if (perPage != null) {
-			params.setPerPage(perPage);
-		}
-		return params;
-	}
-
 	public GraphQLEnumType createLinkEnumType() {
-		GraphQLEnumType linkTypeEnum = newEnum().name(LINK_TYPE_NAME).description("Mesh resolve link type")
-				.value(LinkType.FULL.name(), LinkType.FULL, "Render full links").value(LinkType.MEDIUM.name(), LinkType.MEDIUM, "Render medium links")
-				.value(LinkType.SHORT.name(), LinkType.SHORT, "Render short links").value(LinkType.OFF.name(), LinkType.OFF, "Don't render links")
-				.build();
+		GraphQLEnumType linkTypeEnum = newEnum().name(LINK_TYPE_NAME).description("Mesh resolve link type").value(LinkType.FULL.name(), LinkType.FULL,
+				"Render full links").value(LinkType.MEDIUM.name(), LinkType.MEDIUM, "Render medium links").value(LinkType.SHORT.name(),
+						LinkType.SHORT, "Render short links").value(LinkType.OFF.name(), LinkType.OFF, "Don't render links").build();
 		return linkTypeEnum;
 	}
 
 	public GraphQLArgument createLinkTypeArg() {
 
-		return newArgument().name("linkType").type(new GraphQLTypeReference(LINK_TYPE_NAME)).defaultValue(LinkType.OFF)
-				.description("Specify the resolve type").build();
+		return newArgument().name("linkType").type(new GraphQLTypeReference(LINK_TYPE_NAME)).defaultValue(LinkType.OFF).description(
+				"Specify the resolve type").build();
 	}
 
 	/**
@@ -188,21 +175,59 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected MeshVertex handleUuidNameArgs(DataFetchingEnvironment env, RootVertex<?> root) {
 		GraphQLContext gc = env.getContext();
+		MeshCoreVertex<?, ?> element = handleUuidNameArgsNoPerm(env, root::findByUuid, root::findByName);
+		if (element == null) {
+			return null;
+		} else {
+			return gc.requiresPerm(element, READ_PERM);
+		}
+	}
+
+	/**
+	 * Handle the UUID or name arguments and locate and return the vertex by the given functions.
+	 *
+	 * @param env
+	 * @param uuidFetcher
+	 * @param nameFetcher
+	 * @return
+	 */
+	protected MeshCoreVertex<?, ?> handleUuidNameArgsNoPerm(DataFetchingEnvironment env, Function<String, MeshCoreVertex<?, ?>> uuidFetcher,
+			Function<String, MeshCoreVertex<?, ?>> nameFetcher) {
 		String uuid = env.getArgument("uuid");
 		MeshCoreVertex<?, ?> element = null;
 		if (uuid != null) {
-			element = root.findByUuid(uuid);
+			element = uuidFetcher.apply(uuid);
 		}
 		String name = env.getArgument("name");
 		if (name != null) {
-			element = root.findByName(name);
+			element = nameFetcher.apply(name);
 		}
 		if (element == null) {
 			return null;
 		}
 
-		// Check permissions
-		return gc.requiresPerm(element, READ_PERM);
+		return element;
+	}
+
+	protected MeshVertex handleReleaseSchema(DataFetchingEnvironment env) {
+		GraphQLContext gc = env.getContext();
+		Release release = env.getSource();
+		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(release.findActiveSchemaVersions().spliterator(), false);
+
+		// We need to handle permissions dedicately since we check the schema container perm and not the schema container version perm.
+		return handleUuidNameArgsNoPerm(env, uuid -> schemas.filter(schema -> {
+			SchemaContainer container = schema.getSchemaContainer();
+			return container.getUuid().equals(uuid) && gc.getUser().hasPermission(container, READ_PERM);
+		}).findFirst().get(), name -> schemas.filter(schema -> schema.getName().equals(name) && gc.getUser().hasPermission(schema
+				.getSchemaContainer(), READ_PERM)).findFirst().get());
+	}
+
+	protected Page<SchemaContainerVersion> handleReleaseSchemas(DataFetchingEnvironment env) {
+		GraphQLContext gc = env.getContext();
+		Release release = env.getSource();
+		Stream<? extends SchemaContainerVersion> schemas = StreamSupport.stream(release.findActiveSchemaVersions().spliterator(), false).filter(
+				schema -> gc.getUser().hasPermission(schema.getSchemaContainer(), READ_PERM));
+		return new DynamicStreamPageImpl<>(schemas, getPagingInfo(env));
 	}
 
 	/**
@@ -222,8 +247,8 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
 			String pageTypeName, IndexHandler<?> indexHandler) {
-		return newFieldDefinition().name(name).description(description).argument(createPagingArgs()).argument(createQueryArg())
-				.type(new GraphQLTypeReference(pageTypeName)).dataFetcher((env) -> {
+		return newFieldDefinition().name(name).description(description).argument(createPagingArgs()).argument(createQueryArg()).type(
+				new GraphQLTypeReference(pageTypeName)).dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
 					String query = env.getArgument("query");
 					if (query != null) {
@@ -285,8 +310,8 @@ public abstract class AbstractTypeProvider {
 	 */
 	protected GraphQLFieldDefinition newElementField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
 			String elementType) {
-		return newFieldDefinition().name(name).description(description).argument(createUuidArg("Uuid of the " + name + "."))
-				.argument(createNameArg("Name of the " + name + ".")).type(new GraphQLTypeReference(elementType)).dataFetcher(env -> {
+		return newFieldDefinition().name(name).description(description).argument(createUuidArg("Uuid of the " + name + ".")).argument(createNameArg(
+				"Name of the " + name + ".")).type(new GraphQLTypeReference(elementType)).dataFetcher(env -> {
 					GraphQLContext gc = env.getContext();
 					return handleUuidNameArgs(env, rootProvider.call(gc));
 				}).build();

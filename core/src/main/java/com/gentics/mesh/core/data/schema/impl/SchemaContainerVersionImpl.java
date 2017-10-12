@@ -1,7 +1,10 @@
 package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_CONTAINER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER_VERSION;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_VERSION;
 
@@ -13,12 +16,16 @@ import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.GraphFieldContainerEdge;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.data.impl.ReleaseImpl;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -37,9 +44,9 @@ import rx.Single;
 /**
  * @see SchemaContainerVersion
  */
-public class SchemaContainerVersionImpl
-		extends AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer>
-		implements SchemaContainerVersion {
+public class SchemaContainerVersionImpl extends
+		AbstractGraphFieldSchemaContainerVersion<SchemaResponse, SchemaModel, SchemaReference, SchemaContainerVersion, SchemaContainer> implements
+		SchemaContainerVersion {
 
 	public static void init(Database database) {
 		database.addVertexType(SchemaContainerVersionImpl.class, MeshVertexImpl.class);
@@ -58,10 +65,20 @@ public class SchemaContainerVersionImpl
 	@Override
 	public Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String releaseUuid) {
 		return in(HAS_SCHEMA_CONTAINER_VERSION).inE(HAS_FIELD_CONTAINER).filter(e -> {
-			GraphFieldContainerEdgeImpl edge = e.reframeExplicit(GraphFieldContainerEdgeImpl.class);;
+			GraphFieldContainerEdgeImpl edge = e.reframeExplicit(GraphFieldContainerEdgeImpl.class);
 			ContainerType type = edge.getType();
 			return releaseUuid.equals(edge.getReleaseUuid()) && (DRAFT == type);
 		}).inV().frameExplicit(NodeGraphFieldContainerImpl.class).iterator();
+	}
+
+	@Override
+	public Iterable<? extends Node> getNodes(String releaseUuid, User user, ContainerType type) {
+		return in(HAS_PARENT_CONTAINER).in(HAS_SCHEMA_CONTAINER).transform(v -> v.reframeExplicit(NodeImpl.class)).filter(node -> {
+			return node.outE(HAS_FIELD_CONTAINER).filter(e -> {
+				GraphFieldContainerEdge edge = e.reframeExplicit(GraphFieldContainerEdgeImpl.class);
+				return releaseUuid.equals(edge.getReleaseUuid()) && type == edge.getType();
+			}).hasNext() && user.hasPermissionForId(node.getId(), READ_PUBLISHED_PERM);
+		});
 	}
 
 	@Override
