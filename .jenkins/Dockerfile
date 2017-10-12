@@ -1,0 +1,95 @@
+# This Dockerfile is used to build an image containing basic stuff to be used as a Jenkins slave build node.
+FROM jenkinsci/jnlp-slave
+MAINTAINER Johannes Schüth <j.schueth@gentics.com>
+USER root
+
+# Key chains
+RUN wget -O /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C2518248EEA14886
+
+# APT
+RUN echo 'deb http://ftp.at.debian.org/debian stretch main contrib non-free' > /etc/apt/sources.list
+RUN echo 'deb http://ftp.at.debian.org/debian stretch-backports main' >> /etc/apt/sources.list
+RUN echo 'deb http://security.debian.org/ stretch/updates main contrib' >> /etc/apt/sources.list
+
+RUN apt-get update && apt-get -y upgrade && apt-get install -y git-core gawk sed wget curl sudo \
+  less vim curl tar wget sed psmisc file pwgen locales zip unzip software-properties-common devscripts \
+  bzip2 rsync maven
+
+# Docker
+RUN curl "https://get.docker.com/builds/`uname -s`/`uname -m`/docker-latest.tgz" > docker.tgz &&\
+    tar -xvzf docker.tgz &&\
+    mv docker/* /usr/bin &&\
+    rm -rf docke*
+
+# Install Java 8 / 9 
+RUN \
+  echo  oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
+  echo  oracle-java9-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
+  add-apt-repository "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" && \
+  apt-get update && \
+  apt-get install -y oracle-java8-installer && \
+  apt-get install -y oracle-java9-installer && \
+  rm -rf /var/lib/apt/lists/* && \
+  rm -rf /var/cache/oracle-*
+
+ENV JAVA_1_8_HOME /usr/lib/jvm/java-8-oracle
+ENV JAVA_1_9_HOME /usr/lib/jvm/java-9-oracle
+
+# Add Jenkins user
+RUN echo "jenkins:jenkins" | chpasswd
+RUN mkdir -p /home/jenkins/workspace && mkdir -p /home/jenkins/.ssh
+
+#ADD ./files/settings.xml /home/jenkins/.m2/settings.xml
+#ADD ./files/gentics /home/jenkins/.gnupg/gentics
+RUN chown jenkins: /home/jenkins -R
+#RUN sudo -u jenkins gpg --import /home/jenkins/.gnupg/gentics/gpg-key.asc
+#RUN sudo -u jenkins gpg --import /home/jenkins/.gnupg/gentics/gpg-secret-key.asc
+
+RUN echo "root:root" | chpasswd
+#ADD ./files/authorized_keys /root/.ssh/authorized_keys
+#ADD ./files/authorized_keys /home/jenkins/.ssh/authorized_keys
+ADD ./files/config /home/jenkins/.ssh/config
+RUN ssh-keyscan github.com >> /home/jenkins/.ssh/known_hosts
+RUN ssh-keyscan git.gentics.com >> /home/jenkins/.ssh/known_hosts
+
+RUN mkdir -p /home/jenkins/.m2/repository
+RUN chown jenkins: /home/jenkins -R
+
+# Update Bash RC 
+RUN rm /home/jenkins/.bashrc
+RUN echo '. /etc/profile.d/*.sh' > /home/jenkins/.bashrc
+RUN chown jenkins: /home/jenkins/.bashrc
+
+# Setup locale
+RUN sed -i  's/.*\(en_US.UTF-8.*\)/\1/' /etc/locale.gen 
+RUN locale-gen
+RUN locale-gen en_US.UTF-8
+RUN update-locale LANG=en_US.UTF-8
+
+RUN echo "LC_ALL=en_US.UTF-8" > /etc/default/locale
+RUN echo "LANG=en_US.UTF-8" > /etc/default/locale
+RUN echo "LANGUAGE=en_US:en" >> /etc/default/locale
+
+# Setup timezone
+RUN cp /usr/share/zoneinfo/Europe/Vienna /etc/localtime 
+RUN echo "Europe/Vienna" > /etc/timezone 
+
+# Setup Git
+ADD ./files/.gitconfig /home/jenkins/.gitconfig
+RUN chown jenkins: /home/jenkins/.gitconfig
+
+RUN chown jenkins: /opt -R
+
+# Setup docker captain
+RUN curl -L https://github.com/harbur/captain/releases/download/v1.0.0/captain_linux_amd64 > /usr/local/bin/captain
+RUN chmod +x /usr/local/bin/captain
+
+# Fix docker socket permission issue
+RUN groupadd -g 117 docker && usermod -aG docker jenkins
+
+RUN mvn -version
+ENV LANG en_US.UTF-8
+
+USER jenkins
+

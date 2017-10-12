@@ -19,10 +19,49 @@ properties([
 final def dockerHost           = "tcp://gemini.office:2375"
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 
-node("jenkins-slave") {
+
+	stage("Setup Build Environment") {
+
+		stage("Checkout") {
+			checkout scm
+		}
+
+		sh "cd .jenkins && docker build -t registry.gentics.com/jenkins-slave-mesh ."
+		sh "cd .jenkins && docker push registry.gentics.com/jenkins-slave-mesh"
+
+		podTemplate(containers: [containerTemplate(alwaysPullImage: true, args: '${computer.jnlpmac} ${computer.name}', 
+				command: '', 
+				envVars: [], 
+				image: 'registry.gentics.com/jenkins-slave-mesh', 
+				livenessProbe: containerLivenessProbe(execArgs: '', failureThreshold: 0, initialDelaySeconds: 0, periodSeconds: 0, successThreshold: 0, timeoutSeconds: 0), 
+				name: 'jnlp', ports: [], 
+				privileged: false, 
+				resourceLimitCpu: '', 
+				resourceLimitMemory: '', 
+				resourceRequestCpu: '', 
+				resourceRequestMemory: '', 
+				ttyEnabled: true, 
+				workingDir: '/home/jenkins/workspace')], 
+				inheritFrom: '', 
+				instanceCap: 0, 
+				label: 'mesh', 
+				name: 'jenkins-slave-mesh', 
+				namespace: 'default', 
+				nodeSelector: '', 
+				serviceAccount: 'jenkins', 
+				volumes: [hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'), 
+					persistentVolumeClaim(claimName: 'jenkins-maven-repository', mountPath: '/home/jenkins/.m2/repository', readOnly: false)], 
+				workspaceVolume: emptyDirWorkspaceVolume(false)) {
+		}
+	}
+
+
+
+node("mesh") {
 	stage("Checkout") {
 		checkout scm
 	}
+
 	def branchName = GitHelper.fetchCurrentBranchName()
 	def version = MavenHelper.getVersion()
 
@@ -52,7 +91,7 @@ node("jenkins-slave") {
 			for (int i = 0; i < splits; i++) {
 				def current = i
 				branches["split${i}"] = {
-					node('jenkins-slave-worker') {
+					node('mesh') {
 						echo "Preparing slave environment for ${current}"
 						unstash 'project'
 						def postfix = current;
