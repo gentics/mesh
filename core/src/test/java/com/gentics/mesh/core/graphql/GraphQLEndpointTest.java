@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Vector;
 
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import org.json.JSONException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -115,6 +116,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testNodeQuery() throws JSONException, IOException, ParseException {
 		String staticUuid = "43ee8f9ff71e4016ae8f9ff71e10161c";
+		String staticSchemaUuid = "70bf14ed1267446eb70c5f02cfec0e38";
 		// String contentUuid = db().tx(() -> content().getUuid());
 		// String creationDate = db().tx(() -> content().getCreationDate());
 		// String uuid = db().tx(() -> folder("2015").getUuid());
@@ -146,7 +148,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Node node3 = folder("2014");
 
 			// Update schema
-			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaContainer schemaContainer = schemaContainer("folder");
+			schemaContainer.setUuid(staticSchemaUuid);
+			SchemaModel schema = schemaContainer.getLatestVersion().getSchema();
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 			nodeFieldSchema.setName("nodeRef");
 			nodeFieldSchema.setLabel("Some label");
