@@ -46,12 +46,12 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.Transformer;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.Completable;
+import io.reactivex.Scheduler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.RxHelper;
-import rx.Completable;
-import rx.Scheduler;
+import io.vertx.reactivex.RxHelper;
 
 /**
  * Abstract class for index handlers.

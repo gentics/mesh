@@ -4,12 +4,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
+import java.util.function.Function;
 
 import com.gentics.mesh.parameter.ImageManipulationParameters;
-
 import com.gentics.mesh.util.PropReadFileStream;
-import rx.Single;
-import rx.functions.Func0;
+
+import io.reactivex.Single;
 
 /**
  * SPI provider interface for image manipulators.
@@ -52,7 +52,7 @@ public interface ImageManipulator {
 	 * @param insFunc
 	 * @return
 	 */
-	Single<ImageInfo> readImageInfo(Func0<InputStream> insFunc);
+	Single<ImageInfo> readImageInfo(Function<InputStream> insFunc);
 
 	/**
 	 * Return the dominant color in the image.

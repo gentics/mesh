@@ -55,18 +55,16 @@ public class SearchEndpointTest extends AbstractMeshTest {
 
 		// Make sure the document was added to the index.
 		Map<String, Object> map = searchProvider()
-				.getDocument(User.composeIndexName(), User.composeIndexType(), User.composeDocumentId(db().tx(() -> user().getUuid()))).toBlocking()
-				.value();
+				.getDocument(User.composeIndexName(), User.composeIndexType(), User.composeDocumentId(db().tx(() -> user().getUuid()))).blockingGet();
 		assertNotNull("The user document should be stored within the index since we invoked a full index but it could not be found.", map);
 		assertEquals(db().tx(() -> user().getUuid()), map.get("uuid"));
 
 		for (IndexHandler<?> handler : meshDagger().indexHandlerRegistry().getHandlers()) {
-			handler.clearIndex().await();
+			handler.clearIndex().blockingAwait();
 		}
 
 		// Make sure the document is no longer stored within the search index.
-		map = searchProvider().getDocument(User.composeIndexName(), User.composeIndexType(), User.composeDocumentId(db().tx(() -> user().getUuid())))
-				.toBlocking().value();
+		map = searchProvider().getDocument(User.composeIndexName(), User.composeIndexType(), User.composeDocumentId(db().tx(() -> user().getUuid()))).blockingGet();
 		assertNull("The user document should no longer be part of the search index.", map);
 
 	}
@@ -86,11 +84,11 @@ public class SearchEndpointTest extends AbstractMeshTest {
 			String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en");
 			String indexType = NodeGraphFieldContainer.composeIndexType();
 
-			searchProvider().deleteDocument(Node.TYPE, indexType, documentId).await();
+			searchProvider().deleteDocument(Node.TYPE, indexType, documentId).blockingAwait();
 			assertNull(
 					"The document with uuid {" + uuid + "} could still be found within the search index. Used index type {" + indexType
 							+ "} document id {" + documentId + "}",
-					searchProvider().getDocument(Node.TYPE, indexType, documentId).toBlocking().value());
+					searchProvider().getDocument(Node.TYPE, indexType, documentId).blockingGet());
 		}
 	}
 

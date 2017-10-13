@@ -6,9 +6,9 @@ import org.codehaus.jettison.json.JSONObject;
 
 import com.gentics.mesh.etc.config.MeshOptions;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
-import rx.Completable;
-import rx.Single;
 
 /**
  * A search provider is a service this enables storage and retrieval of indexed documents.

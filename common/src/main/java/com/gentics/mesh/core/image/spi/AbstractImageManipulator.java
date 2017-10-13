@@ -13,11 +13,11 @@ import javax.imageio.ImageIO;
 
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
-
 import com.gentics.mesh.util.PropReadFileStream;
+
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 import rx.functions.Func0;
 
 /**

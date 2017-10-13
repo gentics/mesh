@@ -8,9 +8,9 @@ import java.util.Map;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.config.MeshOptions;
 
+import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
-import rx.Completable;
-import rx.Single;
 
 /**
  * Dummy search provider which just logs interacts with the search provider. This is useful when debugging or writing tests.

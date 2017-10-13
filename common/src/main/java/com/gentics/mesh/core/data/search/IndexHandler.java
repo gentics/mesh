@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.parameter.PagingParameters;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 /**
  * Index handlers are used to interact with the search provider index on a type specific level. Each domain model in mesh which is indexable needs to implement

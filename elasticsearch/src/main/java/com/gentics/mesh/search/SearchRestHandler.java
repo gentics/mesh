@@ -4,7 +4,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,14 +41,15 @@ import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.util.Tuple;
+import com.tinkerpop.gremlin.Tokens.T;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.reactivex.RxHelper;
 import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
-import rx.Observable;
-import rx.Single;
 import rx.functions.Func0;
 
 /**
@@ -265,9 +265,9 @@ public class SearchRestHandler {
 				// Iterate over all index handlers update the index
 				for (IndexHandler<?> handler : registry.getHandlers()) {
 					// Create all indices and mappings
-					handler.init().await();
+					handler.init().blockingAwait();
 					searchProvider.refreshIndex();
-					handler.reindexAll().await();
+					handler.reindexAll().blockingAwait();
 				}
 				return Single.just(message(ac, "search_admin_reindex_invoked"));
 			} else {
