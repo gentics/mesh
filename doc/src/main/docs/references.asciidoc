@@ -18,7 +18,7 @@ There are many things you can do with the REST API. To name a few:
 NOTE: All REST API responses are available in JSON, only, except for binary data.
 
 === Query Parameters
-The REST API end points can be used in combination with a set of query parameters, all of which are documented for the specific end points in the link:raml[Gentics Mesh REST API] reference. Following, we provide an overview of the most commen query parameters.
+The REST API end points can be used in combination with a set of query parameters, all of which are documented for the specific end points in the link:raml[Gentics Mesh REST API] reference. Following, we provide an overview of the most common query parameters.
 
 ==== Paging Parameters
 
