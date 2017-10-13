@@ -2,15 +2,12 @@ package com.gentics.mesh.test;
 
 import org.junit.Test;
 
-import com.gentics.mesh.util.RxDebugger;
-
 import rx.Observable;
 
 public class RxDebuggerTest {
 
 	@Test
 	public void testStuckObservable() throws InterruptedException {
-		new RxDebugger().start();
 		new Thread(() -> {
 			Observable<String> obs = Observable.create(sub -> {
 				for (int i = 0; i < 10; i++) {
@@ -33,7 +30,6 @@ public class RxDebuggerTest {
 
 	@Test
 	public void testStuckObservableWithNoEmit() throws InterruptedException {
-		new RxDebugger().start();
 		new Thread(() -> {
 			Observable<String> obs = Observable.create(sub -> {
 				try {
