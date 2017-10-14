@@ -2,7 +2,6 @@ package com.gentics.mesh.rest.client.method;
 
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.rest.client.MeshRequest;
@@ -25,13 +24,6 @@ public interface AdminClientMethods {
 	 * @return
 	 */
 	MeshRequest<ClusterStatusResponse> clusterStatus();
-
-	/**
-	 * Return the migration status.
-	 * 
-	 * @return
-	 */
-	MeshRequest<MigrationStatusResponse> migrationStatus();
 
 	/**
 	 * Invoke a graph database backup.

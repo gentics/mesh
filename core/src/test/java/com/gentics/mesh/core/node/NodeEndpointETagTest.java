@@ -16,7 +16,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -71,7 +71,7 @@ public class NodeEndpointETagTest extends AbstractMeshTest {
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setLanguage("en");
 		request.setParentNode(new NodeReference().setUuid(uuid));
-		request.setSchema(new SchemaReference().setName("content"));
+		request.setSchema(new SchemaReferenceImpl().setName("content"));
 		request.getFields().put("teaser", FieldUtil.createStringField("someTeaser"));
 		request.getFields().put("slug", FieldUtil.createStringField("someSlug"));
 		NodeResponse createdNode = call(() -> client().createNode(PROJECT_NAME, request));

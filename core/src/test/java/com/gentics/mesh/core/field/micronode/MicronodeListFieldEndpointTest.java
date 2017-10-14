@@ -35,9 +35,9 @@ import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.node.field.list.FieldList;
 import com.gentics.mesh.core.rest.node.field.list.impl.MicronodeFieldListImpl;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
-import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
@@ -422,7 +422,7 @@ public class MicronodeListFieldEndpointTest extends AbstractListFieldEndpointTes
 	 */
 	protected MicronodeResponse createItem(String firstName, String lastName) {
 		MicronodeResponse item = new MicronodeResponse();
-		item.setMicroschema(new MicroschemaReference().setName("vcard"));
+		item.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
 		item.getFields().put("firstName", new StringFieldImpl().setString(firstName));
 		item.getFields().put("lastName", new StringFieldImpl().setString(lastName));
 		return item;

@@ -14,7 +14,7 @@ public class MicroschemaContainerCheck implements ConsistencyCheck {
 
 	@Override
 	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-		for (MicroschemaContainer microschemaContainer : boot.microschemaContainerRoot().findAll()) {
+		for (MicroschemaContainer microschemaContainer : boot.microschemaContainerRoot().findAllIt()) {
 			checkMicroschemaContainer(microschemaContainer, response);
 		}
 	}

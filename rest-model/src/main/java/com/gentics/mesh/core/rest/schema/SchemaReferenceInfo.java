@@ -1,7 +1,13 @@
 package com.gentics.mesh.core.rest.schema;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
+/**
+ * Utility pojo which will be used to examining the
+ */
 public class SchemaReferenceInfo {
 
+	@JsonDeserialize(as = SchemaReferenceImpl.class)
 	private SchemaReference schema;
 
 	/**

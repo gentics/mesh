@@ -2,8 +2,10 @@ package com.gentics.mesh.core.rest.user;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.NodeParameters;
 
 /**
@@ -31,6 +33,7 @@ public class NodeReference implements ExpandableNode {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the schema of the node")
+	@JsonDeserialize(as = SchemaReferenceImpl.class)
 	private SchemaReference schema;
 
 	@Override

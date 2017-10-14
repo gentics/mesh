@@ -1,9 +1,9 @@
 package com.gentics.mesh.core.schema;
 
-import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 import static org.junit.Assert.assertEquals;
@@ -12,9 +12,9 @@ import static org.junit.Assert.assertNull;
 
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.Before;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -25,19 +25,26 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
+
+	@Before
+	public void addAdminPerms() {
+		// Grant admin perms. Otherwise we can't check the jobs
+		tx(() -> group().addRole(roles().get("admin")));
+	}
 
 	@Test
 	public void testRemoveField() throws Exception {
@@ -64,9 +71,9 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		// 3. Invoke migration
 		call(() -> client().applyChangesToMicroschema(microschemaUuid, listOfChanges));
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
-					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
+					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 		}, COMPLETED, 1);
 
 		// 4. Assert migrated node
@@ -100,7 +107,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		call(() -> client().applyChangesToMicroschema(microschemaUuid, listOfChanges));
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(microschemaUuid));
 		call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
-				new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
+				new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 
 		// 4. Latch for completion
 		failingLatch(latch);
@@ -125,9 +132,9 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 		MicroschemaResponse microschema = call(() -> client().findMicroschemaByUuid(vcardUuid));
 
 		// 2. Invoke migration
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().assignReleaseMicroschemaVersions(PROJECT_NAME, initialReleaseUuid(),
-					new MicroschemaReference().setName(microschema.getName()).setVersion(microschema.getVersion())));
+					new MicroschemaReferenceImpl().setName(microschema.getName()).setVersion(microschema.getVersion())));
 		}, COMPLETED, 1);
 
 		try (Tx tx = tx()) {
@@ -163,7 +170,7 @@ public class MicroschemaChangesEndpointTest extends AbstractMeshTest {
 
 		// 2. Create node with vcard micronode
 		MicronodeResponse micronode = new MicronodeResponse();
-		MicroschemaReference ref = new MicroschemaReference();
+		MicroschemaReferenceImpl ref = new MicroschemaReferenceImpl();
 		ref.setName("vcard");
 		micronode.setMicroschema(ref);
 		micronode.getFields().put("firstName", new StringFieldImpl().setString("Max"));

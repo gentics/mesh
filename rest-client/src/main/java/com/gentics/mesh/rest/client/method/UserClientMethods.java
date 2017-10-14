@@ -23,15 +23,6 @@ public interface UserClientMethods {
 	MeshRequest<UserResponse> findUserByUuid(String uuid, ParameterProvider... parameters);
 
 	/**
-	 * Load a specific user by username.
-	 * 
-	 * @param username
-	 * @param parameters
-	 * @return
-	 */
-	MeshRequest<UserResponse> findUserByUsername(String username, ParameterProvider... parameters);
-
-	/**
 	 * Load multiple users.
 	 * 
 	 * @param parameters

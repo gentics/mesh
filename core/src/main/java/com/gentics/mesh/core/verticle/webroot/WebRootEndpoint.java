@@ -9,8 +9,10 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
+import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
+
 @Singleton
 public class WebRootEndpoint extends AbstractProjectEndpoint {
 
@@ -44,7 +46,8 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 		endpoint.setRAMLPath("/{path}");
 		endpoint.method(GET);
 		endpoint.addUriParameter("path", "Path to the node", "/News/2015/Images/flower.jpg");
-		endpoint.exampleResponse(OK, "JSON for a node or the binary data of the node for the given path.");
+		endpoint.exampleResponse(OK, "JSON for a node or the binary data of the node for the given path.", MeshHeaders.WEBROOT_RESPONSE_TYPE, "node",
+				"Header value which identifies the type of the webroot response. The response can either be a node or binary response.");
 		endpoint.description("Load the node or the node's binary data which is located using the provided path.");
 		endpoint.addQueryParameters(ImageManipulationParametersImpl.class);
 		endpoint.handler(rc -> {

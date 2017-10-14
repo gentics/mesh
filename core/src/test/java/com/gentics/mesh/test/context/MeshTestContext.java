@@ -6,9 +6,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.rules.TestWatcher;
@@ -20,13 +18,13 @@ import com.gentics.mesh.core.cache.PermissionStore;
 import com.gentics.mesh.core.data.impl.DatabaseHelper;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.verticle.job.JobWorkerVerticle;
-import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.DaggerTestMeshComponent;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.ElasticSearchOptions;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
@@ -44,7 +42,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 
 public class MeshTestContext extends TestWatcher {
 
@@ -89,20 +86,6 @@ public class MeshTestContext extends TestWatcher {
 				}
 				if (settings.startServer()) {
 					setupRestEndpoints();
-				}
-				if (settings.clusterMode()) {
-					CompletableFuture<Void> fut = new CompletableFuture<>();
-					vertx.sharedData().getClusterWideMap(MigrationStatusHandler.MIGRATION_DATA_MAP_KEY, rh -> {
-						rh.result().clear(ch -> {
-							fut.complete(null);
-						});
-					});
-					fut.get(10, TimeUnit.SECONDS);
-				} else {
-					LocalMap<Object, Object> map = vertx.sharedData().getLocalMap(MigrationStatusHandler.MIGRATION_DATA_MAP_KEY);
-					if (map != null) {
-						map.clear();
-					}
 				}
 			}
 		} catch (Exception e) {
@@ -172,6 +155,7 @@ public class MeshTestContext extends TestWatcher {
 		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);
 		JsonObject config = new JsonObject();
 		config.put("port", port);
+		config.put("host", HttpServerConfig.DEFAULT_HTTP_HOST);
 
 		// Start node migration verticle
 		DeploymentOptions options = new DeploymentOptions();
@@ -399,5 +383,9 @@ public class MeshTestContext extends TestWatcher {
 
 	public MeshRestClient getClient() {
 		return client;
+	}
+
+	public JobWorkerVerticle getJobWorkerVerticle() {
+		return jobWorkerVerticle;
 	}
 }

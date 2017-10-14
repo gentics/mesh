@@ -40,8 +40,6 @@ import com.gentics.mesh.json.JsonUtil;
 public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSchemaContainer, RM extends FieldSchemaContainerVersion, RE extends NameUuidReference<RE>, SCV extends GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC>, SC extends GraphFieldSchemaContainer<R, RE, SC, SCV>>
 		extends AbstractMeshCoreVertex<R, SCV> implements GraphFieldSchemaContainerVersion<R, RM, RE, SCV, SC> {
 
-	public static final String VERSION_PROPERTY_KEY = "version";
-
 	@Override
 	public void setName(String name) {
 		setProperty("name", name);
@@ -69,6 +67,11 @@ public abstract class AbstractGraphFieldSchemaContainerVersion<R extends FieldSc
 	@Override
 	public String getVersion() {
 		return getProperty(VERSION_PROPERTY_KEY);
+	}
+
+	@Override
+	public void setVersion(String version) {
+		setProperty(VERSION_PROPERTY_KEY, version);
 	}
 
 	@Override

@@ -12,7 +12,6 @@ import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT
 import static com.gentics.mesh.graphql.type.ProjectReferenceTypeProvider.PROJECT_REFERENCE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ProjectTypeProvider.PROJECT_TYPE_NAME;
-import static com.gentics.mesh.graphql.type.ReleaseTypeProvider.RELEASE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.ReleaseTypeProvider.RELEASE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.RoleTypeProvider.ROLE_TYPE_NAME;
@@ -40,6 +39,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
@@ -184,6 +184,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 			Path pathResult = webrootService.findByProjectPath(gc, path);
 			NodeGraphFieldContainer container = pathResult.getLast().getContainer();
 			Node nodeOfContainer = container.getParentNode();
+			nodeOfContainer = gc.requiresPerm(nodeOfContainer, READ_PERM, READ_PUBLISHED_PERM);
 			return new NodeContent(nodeOfContainer, container);
 		}
 		return null;
@@ -212,6 +213,17 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		GraphQLContext gc = env.getContext();
 		Project project = gc.getProject();
 		return gc.requiresPerm(project, READ_PERM);
+	}
+
+	/**
+	 * Data fetcher for the current release.
+	 * @param env
+	 * @return
+	 */
+	public Object releaseFetcher(DataFetchingEnvironment env) {
+		GraphQLContext gc = env.getContext();
+		Release release = gc.getRelease();
+		return gc.requiresPerm(release, READ_PERM);
 	}
 
 	/**
@@ -247,7 +259,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				.dataFetcher(this::userMeFetcher).build());
 
 		// .project
-		root.field(newFieldDefinition().name("project").description("Load the project that is active for this graphql query.")
+		root.field(newFieldDefinition().name("project").description("Load the project that is active for this GraphQL query.")
 				.type(new GraphQLTypeReference(PROJECT_TYPE_NAME)).dataFetcher(this::projectFetcher).build());
 
 		// NOT ALLOWED - See class description for details
@@ -302,10 +314,8 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 				tagFamilyIndexHandler));
 
 		// .release
-		root.field(newElementField("release", "Load release by name or uuid.", (ac) -> ac.getProject().getReleaseRoot(), RELEASE_TYPE_NAME));
-
-		// .releases
-		root.field(newPagingField("releases", "Load page of releases.", (ac) -> ac.getProject().getReleaseRoot(), RELEASE_PAGE_TYPE_NAME));
+		root.field(newFieldDefinition().name("release").description("Load the release that is active for this GraphQL query.")
+				.type(new GraphQLTypeReference(RELEASE_TYPE_NAME)).dataFetcher(this::releaseFetcher).build());
 
 		// .schema
 		root.field(newElementField("schema", "Load schema by name or uuid.", (ac) -> boot.schemaContainerRoot(), SCHEMA_TYPE_NAME));
@@ -347,7 +357,7 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	/**
 	 * Construct a page type with the given element type for its nested elements.
 	 * 
-	 * @param name
+	 * @param pageTypeName
 	 *            Name of the element that is being nested
 	 * @param elementType
 	 *            Type of the nested element
@@ -457,7 +467,6 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		additionalTypes.add(newPageType(ROLE_PAGE_TYPE_NAME, ROLE_TYPE_NAME));
 
 		additionalTypes.add(releaseTypeProvider.createType());
-		additionalTypes.add(newPageType(RELEASE_PAGE_TYPE_NAME, RELEASE_TYPE_NAME));
 
 		additionalTypes.add(meshTypeProvider.createType());
 		additionalTypes.add(interfaceTypeProvider.createPermInfoType());

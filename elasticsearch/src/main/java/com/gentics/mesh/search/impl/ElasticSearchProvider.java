@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
@@ -121,6 +122,10 @@ public class ElasticSearchProvider implements SearchProvider {
 			builder.put("node.local", true);
 		}
 
+		// Add custom properties
+		for (Entry<String, Object> entry : searchOptions.getParameters().entrySet()) {
+			builder.put(entry.getKey(), entry.getValue());
+		}
 		Settings settings = builder.build();
 
 		Set<Class<? extends Plugin>> classpathPlugins = new HashSet<>();
@@ -227,6 +232,12 @@ public class ElasticSearchProvider implements SearchProvider {
 				sub.onCompleted();
 				return;
 			}
+			if (log.isDebugEnabled()) {
+				log.debug("Creating mapping for index {" + indexName + "} and type {" + type + "}");
+			}
+			if (log.isTraceEnabled()) {
+				log.trace("Using mapping:\n" + mapping.encodePrettily());
+			}
 
 			org.elasticsearch.node.Node esNode = getNode();
 			PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
@@ -242,6 +253,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onFailure(Throwable e) {
+					log.error("Error while updating mapping for index {" + indexName + "} and type {" + type + "}", e);
 					sub.onError(e);
 				}
 			});
@@ -383,7 +395,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
-				log.debug("Adding object {" + uuid + ":" + type + "} to index.");
+				log.debug("Adding object {" + uuid + ":" + type + "} to index {" + index + "}");
 			}
 			IndexRequestBuilder builder = getSearchClient().prepareIndex(index, type, uuid);
 
@@ -409,7 +421,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable deleteIndex(String indexName) {
+	public Completable deleteIndex(String indexName, boolean failOnMissingIndex) {
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
@@ -426,8 +438,12 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
-					sub.onError(e);
+					if (e instanceof IndexNotFoundException && !failOnMissingIndex) {
+						sub.onCompleted();
+					} else {
+						log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
+						sub.onError(e);
+					}
 				}
 			});
 		});

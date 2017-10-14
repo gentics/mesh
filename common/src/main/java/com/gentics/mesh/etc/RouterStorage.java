@@ -109,7 +109,7 @@ public class RouterStorage {
 			try (Tx tx = database.tx()) {
 				Set<String> projectNames = new HashSet<>();
 				// Check whether there are any projects which do not have an active project router
-				for (Project project : boot.get().projectRoot().findAll()) {
+				for (Project project : boot.get().projectRoot().findAllIt()) {
 					if (!routerStorage.hasProjectRouter(project.getName())) {
 						log.info("Mounting project {" + project.getName() + "}");
 						routerStorage.addProjectRouter(project.getName());

@@ -10,7 +10,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.BooleanGraphFieldImpl;
@@ -27,7 +27,7 @@ import com.gentics.mesh.util.CompareUtils;
 public class BooleanGraphFieldListImpl extends AbstractBasicGraphFieldList<BooleanGraphField, BooleanFieldListImpl, Boolean>
 		implements BooleanGraphFieldList {
 
-	public static FieldTransformator<BooleanFieldListImpl> BOOLEAN_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level,
+	public static FieldTransformer<BooleanFieldListImpl> BOOLEAN_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 			parentNode) -> {
 		BooleanGraphFieldList booleanFieldList = container.getBooleanList(fieldKey);
 		if (booleanFieldList == null) {

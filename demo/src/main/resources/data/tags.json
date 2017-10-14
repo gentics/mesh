@@ -14,6 +14,7 @@
      { "uuid": "e2c9525ba42e426989525ba42ea2692f", "name": "Hydrogen",    "tagFamily": "Fuels"},
      { "uuid": "1fd29fffec0b466b929fffec0b766b0a", "name": "Diesel"  ,    "tagFamily": "Fuels"},
      { "uuid": "fc5dd881ecd249229dd881ecd25922af", "name": "Electricity", "tagFamily": "Fuels"},
-     { "uuid": "8226809bfa8d4707a6809bfa8d670700", "name": "Solar",       "tagFamily": "Fuels"}
+     { "uuid": "8226809bfa8d4707a6809bfa8d670700", "name": "Solar",       "tagFamily": "Fuels"},
+     { "uuid": "1d0f65dced8048538f65dced80c853ea", "name": "Plutonium",   "tagFamily": "Fuels"}
   ]
 }

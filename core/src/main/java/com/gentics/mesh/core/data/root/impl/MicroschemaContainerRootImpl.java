@@ -49,7 +49,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 	}
 
 	@Override
-	public void addMicroschema(MicroschemaContainer container) {
+	public void addMicroschema(User user, MicroschemaContainer container) {
 		addItem(container);
 	}
 
@@ -74,7 +74,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		version.setSchemaContainer(container);
 		container.setCreated(user);
 		container.setName(microschema.getName());
-		addMicroschema(container);
+		addMicroschema(user, container);
 
 		return container;
 	}
@@ -124,7 +124,7 @@ public class MicroschemaContainerRootImpl extends AbstractRootVertex<Microschema
 		MicroschemaContainerVersion foundVersion = null;
 
 		if (release != null) {
-			foundVersion = release.getVersion(container);
+			foundVersion = release.findLatestMicroschemaVersion(container);
 		} else if (version != null) {
 			foundVersion = container.findVersionByRev(version);
 		} else {

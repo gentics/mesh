@@ -81,14 +81,14 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	 * Return a set of permissions which the role is granting to the given element.
 	 * 
 	 * @param element
-	 * @return
+	 * @return Set of permissions of the element
 	 */
 	Set<GraphPermission> getPermissions(MeshVertex element);
 
 	/**
 	 * Return a list of groups to which this role was assigned.
 	 * 
-	 * @return
+	 * @return List of groups
 	 */
 	List<? extends Group> getGroups();
 
@@ -97,7 +97,7 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	 * 
 	 * @param user
 	 * @param params
-	 * @return
+	 * @return Loaded page
 	 */
 	Page<? extends Group> getGroups(User user, PagingParameters params);
 

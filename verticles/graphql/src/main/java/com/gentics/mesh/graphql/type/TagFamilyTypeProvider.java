@@ -53,7 +53,7 @@ public class TagFamilyTypeProvider extends AbstractTypeProvider {
 		tagFamilyType.field(newPagingFieldWithFetcher("tags", "Tags which are assigned to the tagfamily.", (env) -> {
 			GraphQLContext gc = env.getContext();
 			TagFamily tagFamily = env.getSource();
-			PagingParameters pagingInfo = getPagingParameters(env);
+			PagingParameters pagingInfo = getPagingInfo(env);
 			return tagFamily.getTags(gc.getUser(), pagingInfo);
 		}, TAG_PAGE_TYPE_NAME));
 		return tagFamilyType.build();

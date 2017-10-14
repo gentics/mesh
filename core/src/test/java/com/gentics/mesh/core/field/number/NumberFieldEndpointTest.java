@@ -26,8 +26,8 @@ import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -70,7 +70,7 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 			Node node = folder("2015");
 			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 			nodeCreateRequest.setParentNodeUuid(node.getUuid());
-			nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
+			nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
 			nodeCreateRequest.setLanguage("en");
 			nodeCreateRequest.getFields().put(fieldKey, field);
 

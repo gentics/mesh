@@ -5,19 +5,19 @@ import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DI
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.ADDFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.REMOVEFIELD;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATESCHEMA;
-import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.BinaryFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
+import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
@@ -26,6 +26,7 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SchemaDiffEndpointTest extends AbstractMeshTest {
@@ -104,6 +105,24 @@ public class SchemaDiffEndpointTest extends AbstractMeshTest {
 			assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("binary");
 			assertThat(changes.getChanges().get(1)).is(UPDATESCHEMA).hasProperty("order",
 					new String[] { "slug", "title", "teaser", "content", "binary" });
+		}
+	}
+
+	@Test
+	public void testAddNodeField() {
+		try (Tx tx = tx()) {
+			SchemaContainer schema = schemaContainer("content");
+			Schema request = getSchema();
+			NodeFieldSchema nodeField = FieldUtil.createNodeFieldSchema("node");
+			nodeField.setAllowedSchemas("content");
+			request.addField(nodeField);
+
+			SchemaChangesListModel changes = call(() -> client().diffSchema(schema.getUuid(), request));
+			assertNotNull(changes);
+			assertThat(changes.getChanges()).hasSize(2);
+			assertThat(changes.getChanges().get(0)).is(ADDFIELD).forField("node").hasProperty("allow", new String[] {"content"});
+			assertThat(changes.getChanges().get(1)).is(UPDATESCHEMA).hasProperty("order",
+					new String[] { "slug", "title", "teaser", "content", "node" });
 		}
 	}
 

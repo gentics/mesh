@@ -18,7 +18,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.HandleElementAction;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -36,6 +35,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.TagFamilyRoot;
 import com.gentics.mesh.core.data.root.impl.TagFamilyRootImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyReference;
 import com.gentics.mesh.core.rest.tag.TagFamilyResponse;
@@ -169,7 +169,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 		}
 
 		// Delete all the tags of the tag root
-		for (Tag tag : findAll()) {
+		for (Tag tag : findAllIt()) {
 			tag.delete(batch);
 		}
 		batch.delete(this, false);
@@ -199,7 +199,7 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	@Override
 	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
-			for (Tag tag : findAll()) {
+			for (Tag tag : findAllIt()) {
 				tag.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
 		}
@@ -208,19 +208,19 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public void handleRelatedEntries(HandleElementAction action) {
-		for (Tag tag : findAll()) {
-			HandleContext context = new HandleContext();
+		for (Tag tag : findAllIt()) {
+			GenericEntryContextImpl context = new GenericEntryContextImpl();
 			context.setProjectUuid(tag.getProject().getUuid());
 			action.call(tag, context);
 
 			// To prevent nodes from being handled multiple times
 			HashSet<String> handledNodes = new HashSet<>();
 
-			for (Release release : tag.getProject().getReleaseRoot().findAll()) {
+			for (Release release : tag.getProject().getReleaseRoot().findAllIt()) {
 				for (Node node : tag.getNodes(release)) {
 					if (!handledNodes.contains(node.getUuid())) {
 						handledNodes.add(node.getUuid());
-						HandleContext nodeContext = new HandleContext();
+						GenericEntryContextImpl nodeContext = new GenericEntryContextImpl();
 						context.setReleaseUuid(release.getUuid());
 						context.setProjectUuid(node.getProject().getUuid());
 						action.call(node, nodeContext);
@@ -232,7 +232,10 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp());
+		StringBuilder keyBuilder = new StringBuilder();
+		keyBuilder.append(super.getETag(ac));
+		keyBuilder.append(getLastEditedTimestamp());
+		return ETag.hash(keyBuilder);
 	}
 
 	@Override

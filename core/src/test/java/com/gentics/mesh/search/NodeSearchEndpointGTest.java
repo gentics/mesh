@@ -24,8 +24,8 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
-import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.json.JsonUtil;
@@ -96,9 +96,11 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 
 		// 2. Add micronode field to content schema
 		schemaUpdate.addField(FieldUtil.createMicronodeFieldSchema("micro").setAllowedMicroSchemas("TestMicroschema"));
-		waitForMigration(() -> {
+		tx(() -> group().addRole(roles().get("admin")));
+		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaUuid, schemaUpdate));
 		}, COMPLETED, 1);
+		tx(() -> group().removeRole(roles().get("admin")));
 
 		NodeListResponse response2 = call(
 				() -> client().searchNodes(PROJECT_NAME, getSimpleQuery("supersonic"), new VersioningParametersImpl().draft()));
@@ -108,12 +110,12 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("en");
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(folderUuid));
-		nodeCreateRequest.setSchema(new SchemaReference().setName("content"));
+		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("content"));
 		nodeCreateRequest.getFields().put("title", FieldUtil.createStringField("someTitle"));
 		nodeCreateRequest.getFields().put("teaser", FieldUtil.createStringField("someTeaser"));
 		nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("someSlug"));
 		MicronodeResponse micronodeField = new MicronodeResponse();
-		micronodeField.setMicroschema(new MicroschemaReference().setName("TestMicroschema"));
+		micronodeField.setMicroschema(new MicroschemaReferenceImpl().setName("TestMicroschema"));
 		micronodeField.getFields().put("text", FieldUtil.createStringField("someText"));
 		micronodeField.getFields().put("nodeRef", FieldUtil.createNodeField(contentUuid));
 		nodeCreateRequest.getFields().put("micro", micronodeField);
@@ -125,9 +127,12 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		microschemaUpdate.setName("TestMicroschema");
 		microschemaUpdate.addField(FieldUtil.createStringFieldSchema("textNew"));
 		microschemaUpdate.addField(FieldUtil.createNodeFieldSchema("nodeRefNew").setAllowedSchemas("content"));
-		waitForMigration(() -> {
+		
+		tx(() -> group().addRole(roles().get("admin")));
+		waitForJobs(() -> {
 			call(() -> client().updateMicroschema(microschemaUuid, microschemaUpdate));
 		}, COMPLETED, 1);
+		tx(() -> group().removeRole(roles().get("admin")));
 
 		// Update the node and populate the new fields
 		NodeUpdateRequest updateRequest = new NodeUpdateRequest();
@@ -135,7 +140,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 		// The migration bumped the version to 0.2
 		updateRequest.setVersion("0.2");
 		micronodeField = new MicronodeResponse();
-		micronodeField.setMicroschema(new MicroschemaReference().setName("TestMicroschema"));
+		micronodeField.setMicroschema(new MicroschemaReferenceImpl().setName("TestMicroschema"));
 		micronodeField.getFields().put("textNew", FieldUtil.createStringField("someNewText"));
 		micronodeField.getFields().put("nodeRefNew", FieldUtil.createNodeField(contentUuid));
 		updateRequest.getFields().put("micro", micronodeField);

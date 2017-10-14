@@ -1,5 +1,6 @@
 package com.gentics.mesh.changelog;
 
+import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.TransactionalGraph;
 
 /**
@@ -86,5 +87,19 @@ public interface Change {
 	 * @return
 	 */
 	boolean requiresReindex();
+
+	/**
+	 * Set the database.
+	 * 
+	 * @param db
+	 */
+	void setDb(Database db);
+
+	/**
+	 * Return the database.
+	 * 
+	 * @return
+	 */
+	Database getDb();
 
 }

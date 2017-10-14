@@ -1,5 +1,10 @@
 package com.gentics.mesh.core.verticle.migration;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
+
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -27,11 +32,15 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import jdk.nashorn.api.scripting.ClassFilter;
 import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
 
 @SuppressWarnings("restriction")
 public abstract class AbstractMigrationHandler extends AbstractHandler implements MigrationHandler {
+
+	private static final Logger log = LoggerFactory.getLogger(AbstractMigrationHandler.class);
 
 	/**
 	 * Script engine factory.
@@ -84,7 +93,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	}
 
 	/**
-	 * Migrate the given container. This will also set the new version to the container
+	 * Migrate the given container. This will also set the new version to the container.
 	 * 
 	 * @param ac
 	 *            context
@@ -104,12 +113,11 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 	protected <T extends FieldContainer> void migrate(NodeMigrationActionContextImpl ac, GraphFieldContainer container, RestModel restModel,
 			GraphFieldSchemaContainerVersion<?, ?, ?, ?, ?> newVersion, Set<String> touchedFields,
 			List<Tuple<String, List<Tuple<String, Object>>>> migrationScripts, Class<T> clazz) throws Exception {
-		// collect the files for all binary fields (keys are the sha512sums,
-		// values are filepaths to the binary files)
+		// Collect the files for all binary fields (keys are the sha512sums, values are filepaths to the binary files)
 		Map<String, String> filePaths = container.getFields().stream().filter(f -> f instanceof BinaryGraphField).map(f -> (BinaryGraphField) f)
 				.collect(Collectors.toMap(BinaryGraphField::getSHA512Sum, BinaryGraphField::getFilePath, (existingPath, newPath) -> existingPath));
 
-		// remove all touched fields (if necessary, they will be readded later)
+		// Remove all touched fields (if necessary, they will be readded later)
 		container.getFields().stream().filter(f -> touchedFields.contains(f.getFieldKey())).forEach(f -> f.removeField(container));
 
 		String nodeJson = JsonUtil.toJson(restModel);
@@ -137,30 +145,35 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 			nodeJson = transformedNodeModel.toString();
 		}
 
-		// transform the result back to the Rest Model
+		// Transform the result back to the Rest Model
 		T transformedRestModel = JsonUtil.readValue(nodeJson, clazz);
 
 		container.setSchemaContainerVersion(newVersion);
 		container.updateFieldsFromRest(ac, transformedRestModel.getFields());
-		// create a map containing fieldnames (as keys) and
-		// sha512sums of the supposedly stored binary contents
-		// of all binary fields
+
+		// Create a map containing fieldnames (as keys) and sha512sums of the supposedly stored binary contents of all binary fields
 		Map<String, String> existingBinaryFields = newVersion.getSchema().getFields().stream().filter(f -> "binary".equals(f.getType()))
 				.map(f -> Tuple.tuple(f.getName(), transformedRestModel.getFields().getBinaryField(f.getName()))).filter(t -> t.v2() != null)
 				.filter(t -> t.v2().getSha512sum() != null).collect(Collectors.toMap(t -> t.v1(), t -> t.v2().getSha512sum()));
 
-		// check for every binary field in the migrated node,
-		// whether the binary file is present, if not, copy it
-		// from the old data
+		// Check for every binary field in the migrated node, whether the binary file is present, if not, copy it from the old data
 		existingBinaryFields.entrySet().stream().forEach(entry -> {
 			String fieldName = entry.getKey();
 			String sha512Sum = entry.getValue();
 
 			BinaryGraphField binaryField = container.getBinary(fieldName);
 			if (binaryField != null && !binaryField.getFile().exists() && filePaths.containsKey(sha512Sum)) {
-				Buffer buffer = Mesh.vertx().fileSystem().readFileBlocking(filePaths.get(sha512Sum));
-				binaryFieldHandler.hashAndStoreBinaryFile(buffer, binaryField.getUuid(), binaryField.getSegmentedPath());
-				binaryField.setSHA512Sum(sha512Sum);
+				String pathToOldBinaryFile = filePaths.get(sha512Sum);
+				File file = new File(pathToOldBinaryFile);
+				if (file.exists()) {
+					Buffer buffer = Mesh.vertx().fileSystem().readFileBlocking(pathToOldBinaryFile);
+					binaryFieldHandler.hashAndStoreBinaryFile(buffer, binaryField.getUuid(), binaryField.getSegmentedPath());
+					binaryField.setSHA512Sum(sha512Sum);
+				} else {
+					log.error("Could not find binary file for field {" + fieldName + "} in container {" + container.getUuid() + "}");
+					throw new RuntimeException("Could not find binary file for field {" + fieldName + "} in container {" + container.getUuid()
+							+ "} within path " + file.getAbsolutePath() + "} Orignal filename was {" + binaryField.getFileName() + "}");
+				}
 			}
 		});
 	}

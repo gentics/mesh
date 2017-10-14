@@ -18,17 +18,14 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 import rx.Single;
 
 /**
@@ -131,42 +128,6 @@ public class AdminHandler extends AbstractHandler {
 			Single.just(message(ac, "import_finished")).subscribe(model -> ac.send(model, OK), ac::fail);
 		} catch (IOException e) {
 			ac.fail(e);
-		}
-	}
-
-	/**
-	 * Handle migration status request.
-	 * 
-	 * @param ac
-	 */
-	public void handleMigrationStatus(InternalActionContext ac) {
-		if (vertx.isClustered()) {
-			vertx.sharedData().getClusterWideMap(MigrationStatusHandler.MIGRATION_DATA_MAP_KEY, rh -> {
-				if (rh.failed()) {
-					log.error("Could not load status map.", rh.cause());
-					ac.fail(rh.cause());
-				} else {
-					rh.result().get("data", dh -> {
-						if (dh.failed()) {
-							log.error("Could not load status data from map.", dh.cause());
-							ac.fail(dh.cause());
-						} else {
-							MigrationStatusResponse response = (MigrationStatusResponse) dh.result();
-							if (response == null) {
-								response = new MigrationStatusResponse();
-							}
-							ac.send(response, OK);
-						}
-					});
-				}
-			});
-		} else {
-			LocalMap<String, MigrationStatusResponse> map = vertx.sharedData().getLocalMap(MigrationStatusHandler.MIGRATION_DATA_MAP_KEY);
-			MigrationStatusResponse response = map.get("data");
-			if (response == null) {
-				response = new MigrationStatusResponse();
-			}
-			ac.send(response, OK);
 		}
 	}
 

@@ -102,7 +102,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		return new DynamicTransformablePageImpl<>(ac.getUser(), this, pagingInfo, perm, (item) -> {
 			return matchesReleaseAndType(item.getId(), releaseUuid, type.getCode());
-		});
+		}, true);
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			boolean isPublished = fieldContainer.isPublished(release.getUuid());
 			if (isPublished && requestUser.hasPermission(element, READ_PUBLISHED_PERM)) {
 				return element;
-			// The container could be a draft. Check whether READ perm is granted.
+				// The container could be a draft. Check whether READ perm is granted.
 			} else if (!isPublished && requestUser.hasPermission(element, READ_PERM)) {
 				return element;
 			} else {
@@ -202,7 +202,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			log.debug("Deleting node root {" + getUuid() + "}");
 		}
 		// Delete all containers of all nodes
-		for (Node node : findAll()) {
+		for (Node node : findAllIt()) {
 			for (NodeGraphFieldContainer container : node.getAllInitialGraphFieldContainers()) {
 				container.delete(batch);
 			}
@@ -223,7 +223,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	 * @return
 	 */
 	// TODO use schema container version instead of container
-	private Node createNode(InternalActionContext ac, SchemaContainer schemaContainer, SearchQueueBatch batch, String uuid) {
+	private Node createNode(InternalActionContext ac, SchemaContainerVersion schemaVersion, SearchQueueBatch batch, String uuid) {
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
 		BootstrapInitializer boot = MeshInternal.get().boot();
@@ -240,7 +240,8 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 		// Load the parent node in order to create the node
 		Node parentNode = project.getNodeRoot().loadObjectByUuid(ac, requestModel.getParentNode().getUuid(), CREATE_PERM);
 		Release release = ac.getRelease();
-		Node node = parentNode.create(requestUser, schemaContainer.getLatestVersion(), project, release, uuid);
+		// BUG: Don't use the latest version. Use the version which is linked to the release!
+		Node node = parentNode.create(requestUser, schemaVersion, project, release, uuid);
 
 		// Add initial permissions to the created node
 		requestUser.addCRUDPermissionOnRole(parentNode, CREATE_PERM, node);
@@ -266,6 +267,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 
 		Project project = ac.getProject();
 		MeshAuthUser requestUser = ac.getUser();
+		Release release = ac.getRelease();
 
 		String body = ac.getBodyAsString();
 
@@ -277,23 +279,22 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 			throw error(BAD_REQUEST, "error_schema_parameter_missing");
 		}
 
-		// TODO use fromReference call to load the schema container
-
 		if (!isEmpty(schemaInfo.getSchema().getUuid())) {
 			// 2. Use schema reference by uuid first
-			SchemaContainer schemaContainer = project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM);
-			return createNode(ac, schemaContainer, batch, uuid);
+			SchemaContainer schemaByUuid = project.getSchemaContainerRoot().loadObjectByUuid(ac, schemaInfo.getSchema().getUuid(), READ_PERM);
+			SchemaContainerVersion schemaVersion = release.findLatestSchemaVersion(schemaByUuid);
+			return createNode(ac, schemaVersion, batch, uuid);
 		}
 
-		// TODO handle schema version as well? Decide whether it should be possible to create a node and specify the schema version.
 		// 3. Or just schema reference by name
 		if (!isEmpty(schemaInfo.getSchema().getName())) {
-			SchemaContainer containerByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
-			if (containerByName != null) {
-				String schemaName = containerByName.getName();
-				String schemaUuid = containerByName.getUuid();
-				if (requestUser.hasPermission(containerByName, GraphPermission.READ_PERM)) {
-					return createNode(ac, containerByName, batch, uuid);
+			SchemaContainer schemaByName = project.getSchemaContainerRoot().findByName(schemaInfo.getSchema().getName());
+			if (schemaByName != null) {
+				String schemaName = schemaByName.getName();
+				String schemaUuid = schemaByName.getUuid();
+				if (requestUser.hasPermission(schemaByName, GraphPermission.READ_PERM)) {
+					SchemaContainerVersion schemaVersion = release.findLatestSchemaVersion(schemaByName);
+					return createNode(ac, schemaVersion, batch, uuid);
 				} else {
 					throw error(FORBIDDEN, "error_missing_perm", schemaUuid + "/" + schemaName);
 				}
@@ -309,7 +310,7 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	@Override
 	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
-			for (Node node : findAll()) {
+			for (Node node : findAllIt()) {
 				// We don't need to recursively handle the permissions for each node again since this call will already affect all nodes.
 				node.applyPermissions(role, false, permissionsToGrant, permissionsToRevoke);
 			}

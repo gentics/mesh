@@ -893,4 +893,9 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 		return true;
 	}
 
+	@Override
+	public void setWebrootResponseType(String type) {
+		// Not supported
+	}
+
 }

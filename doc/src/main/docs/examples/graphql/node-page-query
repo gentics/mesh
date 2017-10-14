@@ -9,12 +9,10 @@
     totalCount
     # Total amount of found pages. Each page has a size of 2
     pageCount
-		# Size of the current page. The last page may only contain a few elements
+    # Size of the current page. The last page may only contain a few elements
     size
-		# Current per page size 
+    # Current per page size 
     perPage
-    # Current page size
-    size
     # Flag which indicates whether another page exists
     hasNextPage
     # Flag which indicates whether a previous page exists

@@ -188,6 +188,10 @@ public class SearchModelGenerator extends AbstractGenerator {
 		when(tagFamily.findAll()).then(answer -> {
 			return tagList;
 		});
+		when(tagFamily.findAllIt()).then(answer -> {
+			return tagList.iterator();
+		});
+
 		TagFamilyIndexHandler tagFamilyIndexHandler = meshDagger.tagFamilyIndexHandler();
 		UpdateDocumentEntry entry = mockUpdateDocumentEntry();
 

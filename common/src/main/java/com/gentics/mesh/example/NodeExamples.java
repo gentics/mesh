@@ -37,6 +37,7 @@ import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
+import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 import com.gentics.mesh.core.rest.node.field.BinaryFieldTransformRequest;
 import com.gentics.mesh.core.rest.node.field.Field;
@@ -44,7 +45,7 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.util.Tuple;
@@ -63,7 +64,14 @@ public class NodeExamples extends AbstractExamples {
 		nodeResponse.setCreator(createUserReference());
 		nodeResponse.getTags().add(new TagReference().setName("red").setUuid(randomUUID()).setTagFamily("colors"));
 		nodeResponse.setPath("/api/v1/yourProject/webroot/Images");
-		nodeResponse.setAvailableLanguages(Arrays.asList("en", "de"));
+		Map<String, PublishStatusModel> languageInfo = new HashMap<>();
+
+		languageInfo.put("de",
+				new PublishStatusModel().setVersion("1.0").setPublished(true).setPublishDate(createTimestamp()).setPublisher(createUserReference()));
+		languageInfo.put("en",
+				new PublishStatusModel().setVersion("1.1").setPublished(false).setPublishDate(createTimestamp()).setPublisher(createUserReference()));
+
+		nodeResponse.setAvailableLanguages(languageInfo);
 		HashMap<String, String> languagePaths = new HashMap<>();
 		languagePaths.put("en", "/api/v1/yourProject/webroot/Images");
 		languagePaths.put("de", "/api/v1/yourProject/webroot/Bilder");
@@ -98,7 +106,7 @@ public class NodeExamples extends AbstractExamples {
 
 		// breadcrumb
 		Deque<NodeReference> breadcrumb = new ArrayDeque<>();
-		//		breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
+		// breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
 		breadcrumb.add(new NodeReference().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
 		breadcrumb.add(new NodeReference().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
 		nodeResponse.setBreadcrumb(breadcrumb);
@@ -174,7 +182,7 @@ public class NodeExamples extends AbstractExamples {
 
 		// breadcrumb
 		Deque<NodeReference> breadcrumb = new ArrayDeque<>();
-		//		breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
+		// breadcrumb.add(new NodeReferenceImpl().setDisplayName("/").setPath("/").setUuid(randomUUID()));
 		breadcrumb.add(new NodeReference().setDisplayName("news").setPath("/news").setUuid(randomUUID()));
 		breadcrumb.add(new NodeReference().setDisplayName("2015").setPath("/news/2015").setUuid(randomUUID()));
 		nodeResponse.setBreadcrumb(breadcrumb);
@@ -223,7 +231,7 @@ public class NodeExamples extends AbstractExamples {
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("en");
 		nodeCreateRequest.setParentNodeUuid(randomUUID());
-		nodeCreateRequest.setSchema(new SchemaReference().setName("vehicle"));
+		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("vehicle"));
 		nodeCreateRequest.getFields().put("name", new StringFieldImpl().setString("DeLorean DMC-12"));
 		nodeCreateRequest.getFields().put("description", new HtmlFieldImpl().setHTML(
 				"The DeLorean DMC-12 is a sports car manufactured by John DeLorean's DeLorean Motor Company for the American market from 1981–83."));

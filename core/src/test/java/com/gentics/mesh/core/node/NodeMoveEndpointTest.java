@@ -19,8 +19,8 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
@@ -132,14 +132,14 @@ public class NodeMoveEndpointTest extends AbstractMeshTest {
 
 			// 3. Assign the schema to the initial release
 			String releaseUuid = project().getLatestRelease().getUuid();
-			SchemaReference reference = new SchemaReference();
+			SchemaReferenceImpl reference = new SchemaReferenceImpl();
 			reference.setName("test");
 			reference.setVersion("1.0");
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid, reference));
 
 			// We don't need to wait for a schema migration because there are no nodes which use the schema
 			NodeCreateRequest request = new NodeCreateRequest();
-			request.setSchema(new SchemaReference().setName("test"));
+			request.setSchema(new SchemaReferenceImpl().setName("test"));
 			request.getFields().put("stringField", FieldUtil.createStringField("blar"));
 			request.setParentNodeUuid(folder("2015").getUuid());
 			request.setLanguage("en");

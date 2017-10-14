@@ -14,7 +14,7 @@ import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
@@ -22,8 +22,9 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 
-import io.vertx.core.Future;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.AsyncFile;
+import io.vertx.core.file.OpenOptions;
+import rx.Single;
 
 public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphField {
 
@@ -32,7 +33,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 		//database.addVertexIndex(BinaryGraphFieldImpl.class, true, BINARY_SHA512SUM_PROPERTY_KEY);
 	}
 
-	public static FieldTransformator<BinaryField> BINARY_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	public static FieldTransformer<BinaryField> BINARY_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		BinaryGraphField graphBinaryField = container.getBinary(fieldKey);
 		if (graphBinaryField == null) {
 			return null;
@@ -249,17 +250,10 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public Future<Buffer> getFileBuffer() {
-		Future<Buffer> future = Future.future();
-		// TODO use only a few chunks of the file in memory
-		Mesh.vertx().fileSystem().readFile(getFilePath(), rh -> {
-			if (rh.succeeded()) {
-				future.complete(rh.result());
-			} else {
-				future.fail(rh.cause());
-			}
-		});
-		return future;
+	public Single<AsyncFile> getFileStream() {
+		return Single.create(new io.vertx.rx.java.SingleOnSubscribeAdapter<AsyncFile>(fut -> {
+			Mesh.vertx().fileSystem().open(getFilePath(), new OpenOptions().setRead(true), fut);
+		}));
 	}
 
 	@Override

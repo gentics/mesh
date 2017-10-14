@@ -83,11 +83,11 @@ public class ProjectRootImpl extends AbstractRootVertex<Project> implements Proj
 		// Create the initial release for the project and add the used schema
 		// version to it
 		Release release = project.getReleaseRoot().create(name, creator).setMigrated(true);
-		release.assignSchemaVersion(schemaContainerVersion);
+		release.assignSchemaVersion(creator, schemaContainerVersion);
 
 		// Assign the provided schema container to the project
 		project.getSchemaContainerRoot().addItem(schemaContainerVersion.getSchemaContainer());
-		project.getLatestRelease().assignSchemaVersion(schemaContainerVersion);
+//		project.getLatestRelease().assignSchemaVersion(creator, schemaContainerVersion);
 		project.createBaseNode(creator, schemaContainerVersion);
 
 		project.setCreated(creator);

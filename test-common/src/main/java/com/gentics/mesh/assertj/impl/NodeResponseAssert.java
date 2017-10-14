@@ -47,7 +47,7 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 	 * Assert that the node response contains a version reference with the given number
 	 *
 	 * @param number
-	 * @return fluent API
+	 * @return Fluent API
 	 */
 	public NodeResponseAssert hasVersion(String number) {
 		assertThat(actual.getVersion()).as(descriptionText() + " version").isNotNull();
@@ -62,7 +62,7 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 	 *            field name
 	 * @param value
 	 *            field value
-	 * @return fluent API
+	 * @return Fluent API
 	 */
 	public NodeResponseAssert hasStringField(String name, String value) {
 		assertThat(actual.getFields().getStringField(name)).as(descriptionText() + " string field").isNotNull();
@@ -74,7 +74,7 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 	 * Assert that the node response has the given language
 	 * 
 	 * @param languageTag
-	 * @return fluent API
+	 * @return Fluent API
 	 */
 	public NodeResponseAssert hasLanguage(String languageTag) {
 		assertThat(actual.getLanguage()).as(descriptionText() + " language").isEqualTo(languageTag);
@@ -86,7 +86,7 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 	 *
 	 * @param node
 	 *            node
-	 * @return fluent API
+	 * @return Fluent API
 	 */
 	public NodeResponseAssert is(Node node) {
 		assertThat(actual.getUuid()).as("Uuid").isEqualTo(node.getUuid());
@@ -94,17 +94,23 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 	}
 
 	/**
-	 * Assert that the response has the given uuid
+	 * Assert that the response has the given uuid.
 	 * 
 	 * @param uuid
 	 *            uuid
-	 * @return fluent API
+	 * @return Fluent API
 	 */
 	public NodeResponseAssert hasUuid(String uuid) {
 		assertThat(actual.getUuid()).as("Uuid").isEqualTo(uuid);
 		return this;
 	}
 
+	/**
+	 * Assert that the create request matches up with the actual response.
+	 * 
+	 * @param request
+	 * @return Fluent API
+	 */
 	public NodeResponseAssert matches(NodeCreateRequest request) {
 
 		// for (Map.Entry<String, String> entry : request.getProperties().entrySet()) {
@@ -118,7 +124,7 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 		String schemaName = request.getSchema().getName();
 		assertEquals("The schemaname of the request does not match the response schema name", schemaName, actual.getSchema().getName());
 		// assertEquals(request.getOrder(), restNode.getOrder());
-		//String nodeUuid = request.getParentNodeUuid();
+		// String nodeUuid = request.getParentNodeUuid();
 		// TODO how to match the parent node?
 
 		assertNotNull(actual.getUuid());
@@ -127,5 +133,20 @@ public class NodeResponseAssert extends AbstractAssert<NodeResponseAssert, NodeR
 
 		return this;
 
+	}
+
+	/**
+	 * Assert that the given schema version matches up with the actual schema version of the response.
+	 * 
+	 * @param name
+	 *            Expected schema name
+	 * @param version
+	 *            Expected schema version
+	 * @return Fluent API
+	 */
+	public NodeResponseAssert hasSchemaVersion(String name, String version) {
+		assertEquals("The schema version did not match.", version, actual.getSchema().getVersion());
+		assertEquals("The schema name did not match.", name, actual.getSchema().getName());
+		return this;
 	}
 }

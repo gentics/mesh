@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
@@ -55,7 +55,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 			assertEquals(3, nodeList.getData().size());
 
 			NodeCreateRequest create1 = new NodeCreateRequest();
-			SchemaReference schemaReference = new SchemaReference();
+			SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
 			schemaReference.setName("folder");
 			create1.setSchema(schemaReference);
 			create1.setLanguage("en");
@@ -241,7 +241,7 @@ public class NodeChildrenEndpointTest extends AbstractMeshTest {
 		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 		nodeCreateRequest.setLanguage("de");
 		nodeCreateRequest.setParentNode(new NodeReference().setUuid(uuid));
-		nodeCreateRequest.setSchema(new SchemaReference().setName("content"));
+		nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("content"));
 		nodeCreateRequest.getFields().put("teaser", new StringFieldImpl().setString("Only German Teaser"));
 		nodeCreateRequest.getFields().put("slug", new StringFieldImpl().setString("Only German Slug"));
 

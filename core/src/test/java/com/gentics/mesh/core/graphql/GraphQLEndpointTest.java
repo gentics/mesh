@@ -10,6 +10,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Vector;
 
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import org.json.JSONException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +44,6 @@ import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.BooleanFieldSchemaImpl;
@@ -53,6 +53,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.json.JsonUtil;
@@ -115,6 +116,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testNodeQuery() throws JSONException, IOException, ParseException {
 		String staticUuid = "43ee8f9ff71e4016ae8f9ff71e10161c";
+		String staticSchemaUuid = "70bf14ed1267446eb70c5f02cfec0e38";
 		// String contentUuid = db().tx(() -> content().getUuid());
 		// String creationDate = db().tx(() -> content().getCreationDate());
 		// String uuid = db().tx(() -> folder("2015").getUuid());
@@ -132,7 +134,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			call(() -> client().assignMicroschemaToProject(PROJECT_NAME, microschemaResponse.getUuid()));
 		} else {
 			try (Tx tx = db().tx()) {
-				for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAll()) {
+				for (MicroschemaContainer microschema : meshRoot().getMicroschemaContainerRoot().findAllIt()) {
 					microschema.remove();
 				}
 				tx.success();
@@ -146,7 +148,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			Node node3 = folder("2014");
 
 			// Update schema
-			SchemaModel schema = schemaContainer("folder").getLatestVersion().getSchema();
+			SchemaContainer schemaContainer = schemaContainer("folder");
+			schemaContainer.setUuid(staticSchemaUuid);
+			SchemaModel schema = schemaContainer.getLatestVersion().getSchema();
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 			nodeFieldSchema.setName("nodeRef");
 			nodeFieldSchema.setLabel("Some label");
@@ -333,7 +337,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		// Create a draft node
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setLanguage("en");
-		request.setSchema(new SchemaReference().setName("content"));
+		request.setSchema(new SchemaReferenceImpl().setName("content"));
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
 		request.getFields().put("slug", FieldUtil.createStringField("new-page"));

@@ -44,9 +44,9 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.Microschema;
-import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
@@ -338,9 +338,9 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			MicronodeResponse micronodeField = new MicronodeResponse();
 			micronodeField.getFields().put("firstName", FieldUtil.createStringField("firstnameValue"));
 			micronodeField.getFields().put("lastName", FieldUtil.createStringField("lastnameValue"));
-			micronodeField.setMicroschema(new MicroschemaReference().setName("vcard"));
+			micronodeField.setMicroschema(new MicroschemaReferenceImpl().setName("vcard"));
 			nodeCreateRequest.getFields().put("vcardtest", micronodeField);
-			nodeCreateRequest.setSchema(new SchemaReference().setName("test"));
+			nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("test"));
 			nodeCreateRequest.setParentNodeUuid(project().getBaseNode().getUuid());
 			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 

@@ -31,7 +31,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.rest.tag.TagResponse;
@@ -139,10 +139,12 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 
 		// Wait for migration to complete
-		waitForMigration(() -> {
+		tx(() -> group().addRole(roles().get("admin")));
+		waitForJobs(() -> {
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, db().tx(() -> project().getLatestRelease().getUuid()),
-					new SchemaReference().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
+					new SchemaReferenceImpl().setUuid(updatedSchema.getUuid()).setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
+		tx(() -> group().removeRole(roles().get("admin")));
 
 		// searchProvider().refreshIndex();
 
@@ -230,13 +232,13 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 					() -> client().findNodeByUuid(PROJECT_NAME, content("concorde").getUuid(), new VersioningParametersImpl().draft()));
 
 			ProjectCreateRequest createProject = new ProjectCreateRequest();
-			createProject.setSchema(new SchemaReference().setName("folder"));
+			createProject.setSchema(new SchemaReferenceImpl().setName("folder"));
 			createProject.setName("mynewproject");
 			ProjectResponse projectResponse = call(() -> client().createProject(createProject));
 
 			NodeCreateRequest createNode = new NodeCreateRequest();
 			createNode.setLanguage("en");
-			createNode.setSchema(new SchemaReference().setName("folder"));
+			createNode.setSchema(new SchemaReferenceImpl().setName("folder"));
 			createNode.setParentNode(projectResponse.getRootNode());
 			createNode.getFields().put("name", FieldUtil.createStringField("Concorde"));
 			NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
@@ -266,13 +268,13 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		// 1. Create a new project and a folder schema
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName("mynewproject");
-		createProject.setSchema(new SchemaReference().setName("folder"));
+		createProject.setSchema(new SchemaReferenceImpl().setName("folder"));
 		ProjectResponse projectResponse = call(() -> client().createProject(createProject));
 
 		// 2. Create a new node in the base of the project
 		NodeCreateRequest createNode = new NodeCreateRequest();
 		createNode.setLanguage("en");
-		createNode.setSchema(new SchemaReference().setName("folder"));
+		createNode.setSchema(new SchemaReferenceImpl().setName("folder"));
 		createNode.setParentNode(projectResponse.getRootNode());
 		createNode.getFields().put("name", FieldUtil.createStringField("AwesomeString"));
 		NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));
@@ -309,13 +311,13 @@ public class NodeSearchEndpointDTest extends AbstractNodeSearchEndpointTest {
 		// 1. Create a new project and a folder schema
 		ProjectCreateRequest createProject = new ProjectCreateRequest();
 		createProject.setName("mynewproject");
-		createProject.setSchema(new SchemaReference().setName("folder"));
+		createProject.setSchema(new SchemaReferenceImpl().setName("folder"));
 		ProjectResponse projectResponse = call(() -> client().createProject(createProject));
 
 		// 2. Create a new node in the base of the project
 		NodeCreateRequest createNode = new NodeCreateRequest();
 		createNode.setLanguage("en");
-		createNode.setSchema(new SchemaReference().setName("folder"));
+		createNode.setSchema(new SchemaReferenceImpl().setName("folder"));
 		createNode.setParentNodeUuid(projectResponse.getRootNode().getUuid());
 		createNode.getFields().put("name", FieldUtil.createStringField("AwesomeString"));
 		NodeResponse newNode = call(() -> client().createNode("mynewproject", createNode));

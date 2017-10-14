@@ -2,7 +2,6 @@ package com.gentics.mesh.search.index.tag;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,7 +34,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	public final static String CUSTOM_PROJECT_UUID = "projectUuid";
 
 	@Inject
-	TagTransformator transformator;
+	TagTransformer transforer;
 
 	@Inject
 	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -48,8 +47,8 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	protected TagTransformator getTransformator() {
-		return transformator;
+	protected TagTransformer getTransformer() {
+		return transforer;
 	}
 
 	@Override
@@ -78,8 +77,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 		return db.tx(() -> {
 			Map<String, String> indexInfo = new HashMap<>();
 			ProjectRoot projectRoot = boot.meshRoot().getProjectRoot();
-			List<? extends Project> projects = projectRoot.findAll();
-			for (Project project : projects) {
+			for (Project project : projectRoot.findAllIt()) {
 				indexInfo.put(Tag.composeIndexName(project.getUuid()), Tag.TYPE);
 			}
 			return indexInfo;

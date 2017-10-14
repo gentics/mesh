@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Iterator;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -22,6 +23,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -49,7 +51,7 @@ public class SchemaContainerImpl
 
 	@Override
 	public SchemaReference transformToReference() {
-		return new SchemaReference().setName(getName()).setUuid(getUuid());
+		return new SchemaReferenceImpl().setName(getName()).setUuid(getUuid());
 	}
 
 	@Override
@@ -63,15 +65,15 @@ public class SchemaContainerImpl
 	}
 
 	@Override
-	public List<? extends NodeImpl> getNodes() {
-		return in(HAS_SCHEMA_CONTAINER).toListExplicit(NodeImpl.class);
+	public Iterable<? extends NodeImpl> getNodes() {
+		return in(HAS_SCHEMA_CONTAINER).frameExplicit(NodeImpl.class);
 	}
 
 	@Override
 	public void delete(SearchQueueBatch batch) {
 		// Check whether the schema is currently being referenced by nodes.
-		List<? extends NodeImpl> list = getNodes();
-		if (list.isEmpty()) {
+		Iterator<? extends NodeImpl> it = getNodes().iterator();
+		if (!it.hasNext()) {
 			batch.delete(this, true);
 			getElement().remove();
 			// TODO handel related elements?

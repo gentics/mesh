@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.project.ProjectCreateRequest;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -49,7 +49,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			SchemaContainer schema = schemaContainer("content");
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			request.setName(name);
 
 			ProjectResponse restProject = call(() -> client().createProject(request));
@@ -68,7 +68,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("extraProject");
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			ProjectResponse created = call(() -> client().createProject(request));
 			extraProject = projectRoot.findByUuid(created.getUuid());
 
@@ -96,7 +96,7 @@ public class SchemaProjectEndpointTest extends AbstractMeshTest {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
 			ProjectCreateRequest request = new ProjectCreateRequest();
 			request.setName("extraProject");
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			ProjectResponse response = call(() -> client().createProject(request));
 			projectUuid = response.getUuid();
 			extraProject = projectRoot.findByUuid(projectUuid);

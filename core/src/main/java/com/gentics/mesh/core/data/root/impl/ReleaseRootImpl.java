@@ -12,8 +12,6 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -80,15 +78,13 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		creator.addCRUDPermissionOnRole(getProject(), UPDATE_PERM, release);
 
 		// assign the newest schema versions of all project schemas to the release
-		List<? extends SchemaContainer> projectSchemas = getProject().getSchemaContainerRoot().findAll();
-		for (SchemaContainer schemaContainer : projectSchemas) {
-			release.assignSchemaVersion(schemaContainer.getLatestVersion());
+		for (SchemaContainer schemaContainer : getProject().getSchemaContainerRoot().findAllIt()) {
+			release.assignSchemaVersion(creator, schemaContainer.getLatestVersion());
 		}
 
 		// ... same for microschemas
-		List<? extends MicroschemaContainer> projectMicroschemas = getProject().getMicroschemaContainerRoot().findAll();
-		for (MicroschemaContainer microschemaContainer : projectMicroschemas) {
-			release.assignMicroschemaVersion(microschemaContainer.getLatestVersion());
+		for (MicroschemaContainer microschemaContainer : getProject().getMicroschemaContainerRoot().findAllIt()) {
+			release.assignMicroschemaVersion(creator, microschemaContainer.getLatestVersion());
 		}
 
 		return release;
@@ -134,7 +130,7 @@ public class ReleaseRootImpl extends AbstractRootVertex<Release> implements Rele
 		Release release = create(createRequest.getName(), requestUser, uuid);
 
 		// A new release was created - We also need to create new indices for the nodes within the release
-		for (SchemaContainerVersion version : release.findAllSchemaVersions()) {
+		for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
 			batch.addNodeIndex(project, release, version, DRAFT);
 			batch.addNodeIndex(project, release, version, PUBLISHED);
 		}

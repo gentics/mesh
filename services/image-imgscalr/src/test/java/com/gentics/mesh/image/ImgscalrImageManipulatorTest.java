@@ -17,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import com.gentics.mesh.util.PropReadFileStream;
+import com.gentics.mesh.util.RxUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
@@ -67,7 +69,9 @@ public class ImgscalrImageManipulatorTest {
 
 		checkImages((imageName, width, height, color, refImage, ins) -> {
 			log.debug("Handling " + imageName);
-			Single<Buffer> obs = manipulator.handleResize(ins.call(), imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180));
+			Single<Buffer> obs = manipulator.handleResize(ins.call(), imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
+				.map(PropReadFileStream::getFile)
+				.flatMap(RxUtil::readEntireFile);
 			CountDownLatch latch = new CountDownLatch(1);
 			obs.subscribe(buffer -> {
 				try {

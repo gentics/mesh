@@ -17,11 +17,17 @@ public class HttpServerConfig {
 
 	public static final String HTTP_PORT_KEY = "httpPort";
 
+	public static final String DEFAULT_HTTP_HOST = "0.0.0.0";
+
 	public static final int DEFAULT_HTTP_PORT = 8080;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server port.")
+	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server port. Default is: " + DEFAULT_HTTP_PORT)
 	private int port = DEFAULT_HTTP_PORT;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Configure the Gentics Mesh HTTP server host to bind to. Default is: " + DEFAULT_HTTP_HOST)
+	private String host = DEFAULT_HTTP_HOST;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Configured CORS allowed origin pattern. You can specify a regex to include multiple hosts if you want to do so.")
@@ -36,6 +42,26 @@ public class HttpServerConfig {
 	private Boolean enableCors = false;
 
 	public HttpServerConfig() {
+	}
+
+	/**
+	 * Return the http server host to bind to.
+	 * 
+	 * @return Configured host
+	 */
+	public String getHost() {
+		return host;
+	}
+
+	/**
+	 * Set the http server host to bind to.
+	 * 
+	 * @param host
+	 * @return Fluent API
+	 */
+	public HttpServerConfig setHost(String host) {
+		this.host = host;
+		return this;
 	}
 
 	/**

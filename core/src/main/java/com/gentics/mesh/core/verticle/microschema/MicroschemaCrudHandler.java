@@ -19,7 +19,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
@@ -85,7 +84,6 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
-				JobRoot jobRoot = boot.get().jobRoot();
 				MicroschemaContainerVersion createdVersion = schemaContainer.getLatestVersion().applyChanges(ac, model, batch);
 
 				if (updateParams.getUpdateAssignedReleases()) {
@@ -101,13 +99,8 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 							continue;
 						}
 
-						MicroschemaContainerVersion previouslyReferencedVersion = releaseEntry.getValue();
-
 						// Assign the new version to the release
-						release.assignMicroschemaVersion(createdVersion);
-
-						// Enqueue the job so that the worker can process it later on
-						jobRoot.enqueueMicroschemaMigration(user, release, previouslyReferencedVersion, createdVersion);
+						release.assignMicroschemaVersion(user, createdVersion);
 					}
 				}
 				return Tuple.tuple(batch, createdVersion.getVersion());
@@ -195,9 +188,9 @@ public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaConta
 				return microschema.transformToRest(ac, 0);
 			}
 
-			return  db.tx(() -> {
+			return db.tx(() -> {
 				// Assign the microschema to the project
-				root.addMicroschema(microschema);
+				root.addMicroschema(ac.getUser(), microschema);
 				return microschema.transformToRest(ac, 0);
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);

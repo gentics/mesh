@@ -72,4 +72,9 @@ public interface AddFieldChange extends SchemaFieldChange {
 	 */
 	String[] getAllowProp();
 
+	/**
+	 * Get the required flag
+	 * @return required flag
+	 */
+	Boolean getRequired();
 }

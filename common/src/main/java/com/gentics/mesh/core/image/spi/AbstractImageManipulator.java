@@ -14,7 +14,7 @@ import javax.imageio.ImageIO;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 
-import io.vertx.core.buffer.Buffer;
+import com.gentics.mesh.util.PropReadFileStream;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
@@ -34,7 +34,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public Single<Buffer> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters parameters) {
+	public Single<PropReadFileStream> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters parameters) {
 		try {
 			parameters.validate();
 			parameters.validateLimits(options);

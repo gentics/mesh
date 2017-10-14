@@ -19,8 +19,8 @@ import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.HtmlFieldImpl;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.test.context.AbstractMeshTest;
@@ -45,7 +45,7 @@ public class BasicNodeFieldEndpointTest extends AbstractMeshTest {
 			Node parentNode = folder("2015");
 			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
 			nodeCreateRequest.setParentNodeUuid(parentNode.getUuid());
-			nodeCreateRequest.setSchema(new SchemaReference().setName("folder"));
+			nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("folder"));
 			nodeCreateRequest.setLanguage("en");
 			nodeCreateRequest.getFields().put("htmlField", new HtmlFieldImpl().setHTML("Some<b>html"));
 

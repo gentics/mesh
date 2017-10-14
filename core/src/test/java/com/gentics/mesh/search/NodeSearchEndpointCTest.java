@@ -183,10 +183,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		addRawToSchemaField();
 
 		// Add the user to the admin group - this way the user is in fact an admin.
-		try (Tx tx = tx()) {
-			user().addGroup(groups().get("admin"));
-			tx.success();
-		}
+		tx(() -> user().addGroup(groups().get("admin")));
 		searchProvider().refreshIndex();
 
 		GenericMessageResponse message = call(() -> client().invokeReindex());
@@ -203,9 +200,13 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		SchemaUpdateRequest request = tx(
 				() -> JsonUtil.readValue(content().getSchemaContainer().getLatestVersion().getJson(), SchemaUpdateRequest.class));
 		request.getField("teaser").setIndexOptions(new IndexOptions().setAddRaw(true));
-		waitForMigration(() -> {
+
+		tx(() -> group().addRole(roles().get("admin")));
+		waitForJobs(() -> {
 			call(() -> client().updateSchema(schemaUuid, request));
 		}, COMPLETED, 1);
+		tx(() -> group().removeRole(roles().get("admin")));
+
 	}
 
 	@Test

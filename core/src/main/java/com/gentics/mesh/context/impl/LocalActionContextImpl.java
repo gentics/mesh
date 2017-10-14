@@ -240,4 +240,9 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 		return false;
 	}
 
+	@Override
+	public void setWebrootResponseType(String type) {
+		// Not supported
+	}
+
 }

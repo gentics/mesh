@@ -174,6 +174,34 @@ public class LinkRendererTest extends AbstractMeshTest {
 	}
 
 	@Test
+	public void testNoQuote() {
+		try (Tx tx = tx()) {
+			Node newsNode = content("news overview");
+			String uuid = newsNode.getUuid();
+			final String content = "'\"{{mesh.link(" + uuid + ")}}\"'";
+			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
+					content, LinkType.FULL, null, null);
+
+			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'",
+					replacedContent);
+		}
+	}
+
+	@Test
+	public void testNoQuoteGerman() {
+		try (Tx tx = tx()) {
+			Node newsNode = content("news overview");
+			String uuid = newsNode.getUuid();
+			final String content = "'\"{{mesh.link(" + uuid + ", de)}}\"'";
+			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
+					content, LinkType.FULL, null, null);
+
+			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html\"'",
+					replacedContent);
+		}
+	}
+
+	@Test
 	public void testSingleQuote() {
 		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");

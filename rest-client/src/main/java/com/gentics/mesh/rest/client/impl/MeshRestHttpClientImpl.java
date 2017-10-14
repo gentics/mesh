@@ -6,7 +6,6 @@ import static io.vertx.core.http.HttpMethod.DELETE;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
-import java.util.Arrays;
 import java.util.Objects;
 
 import org.apache.commons.lang.NotImplementedException;
@@ -14,7 +13,6 @@ import org.apache.commons.lang.NotImplementedException;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -47,6 +45,8 @@ import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
+import com.gentics.mesh.core.rest.release.info.ReleaseInfoMicroschemaList;
+import com.gentics.mesh.core.rest.release.info.ReleaseInfoSchemaList;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -56,11 +56,9 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -96,7 +94,6 @@ import com.gentics.mesh.rest.client.handler.impl.WebRootResponseHandler;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.WebSocket;
@@ -111,22 +108,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	public MeshRestHttpClientImpl(String host, int port, boolean ssl, Vertx vertx) {
-		HttpClientOptions options = new HttpClientOptions();
-		options.setDefaultHost(host);
-		options.setTryUseCompression(true);
-		options.setDefaultPort(port);
-		options.setSsl(ssl);
-		this.client = vertx.createHttpClient(options);
-		setAuthenticationProvider(new JWTAuthentication());
-	}
-
-	public MeshRestHttpClientImpl(String host, int port, Vertx vertx, boolean useSsl) {
-		HttpClientOptions options = new HttpClientOptions();
-		options.setDefaultHost(host);
-		options.setTryUseCompression(true);
-		options.setDefaultPort(port);
-		options.setSsl(useSsl);
-		this.client = vertx.createHttpClient(options);
+		super(host, port, ssl, vertx);
 		setAuthenticationProvider(new JWTAuthentication());
 	}
 
@@ -476,11 +458,6 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<UserResponse> findUserByUsername(String username, ParameterProvider... parameters) {
-		return prepareRequest(GET, "/users/" + username + getQuery(parameters), UserResponse.class);
-	}
-
-	@Override
 	public MeshRequest<UserListResponse> findUsers(ParameterProvider... parameters) {
 		return prepareRequest(GET, "/users" + getQuery(parameters), UserListResponse.class);
 	}
@@ -721,7 +698,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		// TODO encode path?
 		String requestUri = getBaseUri() + "/" + encodeFragment(projectName) + "/webroot" + path + getQuery(parameters);
 		ResponseHandler<WebRootResponse> handler = new WebRootResponseHandler(HttpMethod.GET, requestUri);
-		HttpClientRequest request = client.request(GET, requestUri, handler);
+		HttpClientRequest request = getClient().request(GET, requestUri, handler);
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "*/*");
 		});
@@ -850,7 +827,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeReindex() {
-		return prepareRequest(GET, "/search/reindex", GenericMessageResponse.class);
+		return prepareRequest(POST, "/search/reindex", GenericMessageResponse.class);
 	}
 
 	@Override
@@ -871,11 +848,6 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeRestore() {
 		return prepareRequest(POST, "/admin/graphdb/restore", GenericMessageResponse.class);
-	}
-
-	@Override
-	public MeshRequest<MigrationStatusResponse> migrationStatus() {
-		return prepareRequest(GET, "/admin/status/migrations", MigrationStatusResponse.class);
 	}
 
 	@Override
@@ -940,7 +912,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		String uri = getBaseUri() + path;
 
 		MeshBinaryResponseHandler handler = new MeshBinaryResponseHandler(GET, uri);
-		HttpClientRequest request = client.request(GET, uri, handler);
+		HttpClientRequest request = getClient().request(GET, uri, handler);
 		authentication.addAuthenticationInformation(request).subscribe(() -> {
 			request.headers().add("Accept", "application/json");
 		});
@@ -1028,7 +1000,7 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 
 	@Override
 	public void eventbus(Handler<WebSocket> wsConnect) {
-		client.websocket(getBaseUri() + "/eventbus/websocket", wsConnect);
+		getClient().websocket(getBaseUri() + "/eventbus/websocket", wsConnect);
 	}
 
 	@Override
@@ -1087,54 +1059,59 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<SchemaReferenceList> getReleaseSchemaVersions(String projectName, String releaseUuid) {
+	public MeshRequest<ReleaseInfoSchemaList> getReleaseSchemaVersions(String projectName, String releaseUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 
-		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/releases/" + releaseUuid + "/schemas", SchemaReferenceList.class);
+		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/releases/" + releaseUuid + "/schemas", ReleaseInfoSchemaList.class);
 	}
 
 	@Override
-	public MeshRequest<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
-			SchemaReferenceList schemaVersionReferences) {
+	public MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
+			ReleaseInfoSchemaList schemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 
-		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/releases/" + releaseUuid + "/schemas", SchemaReferenceList.class,
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/releases/" + releaseUuid + "/schemas", ReleaseInfoSchemaList.class,
 				schemaVersionReferences);
 	}
 
 	@Override
-	public MeshRequest<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
+	public MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
 			SchemaReference... schemaVersionReferences) {
-		return assignReleaseSchemaVersions(projectName, releaseUuid, new SchemaReferenceList(Arrays.asList(schemaVersionReferences)));
+		ReleaseInfoSchemaList info = new ReleaseInfoSchemaList();
+		info.add(schemaVersionReferences);
+		return assignReleaseSchemaVersions(projectName, releaseUuid, info);
 	}
 
 	@Override
-	public MeshRequest<MicroschemaReferenceList> getReleaseMicroschemaVersions(String projectName, String releaseUuid) {
+	public MeshRequest<ReleaseInfoMicroschemaList> getReleaseMicroschemaVersions(String projectName, String releaseUuid) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 
-		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/releases/" + releaseUuid + "/microschemas", MicroschemaReferenceList.class);
+		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/releases/" + releaseUuid + "/microschemas",
+				ReleaseInfoMicroschemaList.class);
 	}
 
 	@Override
-	public MeshRequest<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
-			MicroschemaReferenceList microschemaVersionReferences) {
+	public MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+			ReleaseInfoMicroschemaList microschemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 
-		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/releases/" + releaseUuid + "/microschemas", MicroschemaReferenceList.class,
-				microschemaVersionReferences);
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/releases/" + releaseUuid + "/microschemas",
+				ReleaseInfoMicroschemaList.class, microschemaVersionReferences);
 	}
 
 	@Override
-	public MeshRequest<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+	public MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
 			MicroschemaReference... microschemaVersionReferences) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(releaseUuid, "releaseUuid must not be null");
 
-		return assignReleaseMicroschemaVersions(projectName, releaseUuid, new MicroschemaReferenceList(Arrays.asList(microschemaVersionReferences)));
+		ReleaseInfoMicroschemaList list = new ReleaseInfoMicroschemaList();
+		list.add(microschemaVersionReferences);
+		return assignReleaseMicroschemaVersions(projectName, releaseUuid, list);
 	}
 
 	@Override

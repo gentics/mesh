@@ -62,4 +62,9 @@ public interface JobRoot extends RootVertex<Job> {
 	 * Purge all failed jobs from the job root.
 	 */
 	void purgeFailed();
+
+	/**
+	 * Delete all jobs.
+	 */
+	void clear();
 }

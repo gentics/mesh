@@ -44,6 +44,12 @@ public class JobWorkerVerticle extends AbstractVerticle {
 
 	private Database db;
 
+	private Long periodicTimerId;
+
+	private long timerId;
+
+	private boolean stopped = false;
+
 	@Inject
 	public JobWorkerVerticle(Database db, Lazy<BootstrapInitializer> boot) {
 		this.db = db;
@@ -55,26 +61,36 @@ public class JobWorkerVerticle extends AbstractVerticle {
 		if (log.isDebugEnabled()) {
 			log.debug("Starting verticle {" + getClass().getName() + "}");
 		}
+		stopped = false;
 		registerJobHandler();
 
-		// The verticle has been deployed. Now wait a few seconds and trigger an event so that remaining jobs will be handled.
-		vertx.setTimer(30_000, rh -> {
-			vertx.eventBus().send(JOB_WORKER_ADDRESS, null);
+		// The verticle has been deployed. Now wait a few seconds and schedule the periodic execution of jobs
+		timerId = vertx.setTimer(30_000, rh -> {
+			periodicTimerId = vertx.setPeriodic(15_000, th -> {
+				processJobs();
+			});
 		});
+
 		super.start();
 	}
 
 	private void registerJobHandler() {
 		jobConsumer = vertx.eventBus().consumer(JOB_WORKER_ADDRESS, (message) -> {
-			executeLocked(() -> {
+			log.info("Got job processing request. Getting lock to execute the request.");
+			processJobs();
+		});
+	}
+
+	private void processJobs() {
+		executeLocked(() -> {
+			if (!stopped) {
 				db.tx(() -> {
 					JobRoot jobRoot = boot.get().jobRoot();
 					jobRoot.process();
 				});
-			}, error -> {
-				log.error("Error while processing jobs", error);
-			});
-
+			}
+		}, error -> {
+			log.error("Error while processing jobs", error);
 		});
 	}
 
@@ -83,6 +99,11 @@ public class JobWorkerVerticle extends AbstractVerticle {
 		if (jobConsumer != null) {
 			jobConsumer.unregister();
 		}
+		vertx.cancelTimer(timerId);
+		if (periodicTimerId != null) {
+			vertx.cancelTimer(periodicTimerId);
+		}
+		stopped = true;
 		super.stop();
 	}
 
@@ -100,7 +121,7 @@ public class JobWorkerVerticle extends AbstractVerticle {
 			vertx.sharedData().getLock(GLOBAL_JOB_LOCK_NAME, rh -> {
 				if (rh.failed()) {
 					Throwable cause = rh.cause();
-					log.error("Error while acquiring global migration lock", cause);
+					log.error("Error while acquiring global migration lock {" + GLOBAL_JOB_LOCK_NAME + "}", cause);
 					errorAction.call(cause);
 				} else {
 					Lock lock = rh.result();

@@ -11,7 +11,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Map.Entry;
 
@@ -29,7 +29,7 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -69,7 +69,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		NodeCreateRequest requestA = new NodeCreateRequest();
 		requestA.setLanguage("en");
 		requestA.setParentNodeUuid(subFolderUuid);
-		requestA.setSchema(new SchemaReference().setName("content"));
+		requestA.setSchema(new SchemaReferenceImpl().setName("content"));
 		requestA.getFields().put("teaser", FieldUtil.createStringField("nodeA"));
 		requestA.getFields().put("slug", FieldUtil.createStringField("nodeA"));
 		NodeResponse nodeA = call(() -> client().createNode(PROJECT_NAME, requestA));
@@ -101,7 +101,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		String parentNodeUuid = tx(() -> folder("news").getUuid());
 
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference().setName("content"));
+		request.setSchema(new SchemaReferenceImpl().setName("content"));
 		request.setLanguage("en");
 		request.getFields().put("title", FieldUtil.createStringField("some title"));
 		request.getFields().put("teaser", FieldUtil.createStringField("some teaser"));
@@ -260,7 +260,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		NodeCreateRequest request = new NodeCreateRequest();
 		request.setLanguage("en");
 		request.setParentNodeUuid(uuid);
-		request.setSchema(new SchemaReference().setName("content"));
+		request.setSchema(new SchemaReferenceImpl().setName("content"));
 		request.getFields().put("teaser", FieldUtil.createStringField("some-teaser"));
 		request.getFields().put("slug", FieldUtil.createStringField("some-slug"));
 		request.getFields().put("content", FieldUtil.createHtmlField("someContent"));
@@ -373,8 +373,11 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		assertThat(publishStatus).as("Publish status").isPublished().hasVersion("1.0");
 
 		// Assert that german is published and english is offline
-		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"),
-				new VersioningParametersImpl().published())).getAvailableLanguages()).containsOnly("de");
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"),
+				new VersioningParametersImpl().published()));
+		assertTrue(response.getAvailableLanguages().get("de").isPublished());
+		assertFalse(response.getAvailableLanguages().get("en").isPublished());
+
 		assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isPublished("de").hasVersion("de", "1.0")
 				.isNotPublished("en").hasVersion("en", "2.0");
 

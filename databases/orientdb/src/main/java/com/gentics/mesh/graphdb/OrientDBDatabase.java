@@ -116,7 +116,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 
 	private DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy_HH-mm-ss-SSS");
 
-	private int maxRetry = 535;
+	private int maxRetry = 100;
 
 	@Override
 	public void stop() {
@@ -653,6 +653,35 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
+	public void removeEdgeType(String typeName) {
+		if (log.isDebugEnabled()) {
+			log.debug("Removing vertex type with name {" + typeName + "}");
+		}
+		OrientGraphNoTx noTx = factory.getNoTx();
+		try {
+			noTx.dropEdgeType(typeName);
+		} finally {
+			noTx.shutdown();
+		}
+	}
+
+	@Override
+	public void removeVertexType(String typeName) {
+		if (log.isDebugEnabled()) {
+			log.debug("Removing vertex type with name {" + typeName + "}");
+		}
+		OrientGraphNoTx noTx = factory.getNoTx();
+		try {
+			OrientVertexType type = noTx.getVertexType(typeName);
+			if (type != null) {
+				noTx.dropVertexType(typeName);
+			}
+		} finally {
+			noTx.shutdown();
+		}
+	}
+
+	@Override
 	public void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String... fields) {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex index  for class {" + clazzOfVertices.getName() + "}");
@@ -772,7 +801,7 @@ public class OrientDBDatabase extends AbstractDatabase {
 				log.error("Error handling transaction", e);
 				throw new RuntimeException("Transaction error", e);
 			}
-			if (log.isDebugEnabled()) {
+			if (!handlerFinished && log.isDebugEnabled()) {
 				log.debug("Retrying .. {" + retry + "}");
 			}
 			if (handlerFinished) {

@@ -4,8 +4,9 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.RestModel;
 
-public class GraphQLError {
+public class GraphQLError implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("The error message.")

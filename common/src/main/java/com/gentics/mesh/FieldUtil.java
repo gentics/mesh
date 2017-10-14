@@ -31,7 +31,6 @@ import com.gentics.mesh.core.rest.schema.DateFieldSchema;
 import com.gentics.mesh.core.rest.schema.HtmlFieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
-import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
@@ -42,6 +41,7 @@ import com.gentics.mesh.core.rest.schema.impl.DateFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.NumberFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -234,7 +234,7 @@ public final class FieldUtil {
 	@SafeVarargs
 	public static MicronodeField createNewMicronodeField(String microschema, Tuple<String, Field>... fields) {
 		MicronodeResponse field = new MicronodeResponse();
-		MicroschemaReference microschemaReference = new MicroschemaReference();
+		MicroschemaReferenceImpl microschemaReference = new MicroschemaReferenceImpl();
 		microschemaReference.setName(microschema);
 		microschemaReference.setUuid(UUIDUtil.randomUUID());
 		field.setMicroschema(microschemaReference);

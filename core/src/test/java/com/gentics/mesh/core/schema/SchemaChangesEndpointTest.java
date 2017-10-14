@@ -4,9 +4,8 @@ import static com.gentics.mesh.Events.MESH_MIGRATION;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.IDLE;
-import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.assertMessage;
+import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.util.MeshAssert.failingLatch;
@@ -23,6 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Before;
 import org.junit.Test;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -34,17 +34,17 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.node.field.impl.NumberFieldImpl;
 import com.gentics.mesh.core.rest.node.field.impl.StringFieldImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -62,6 +62,12 @@ import io.vertx.core.json.JsonObject;
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
+	@Before
+	public void addAdminPerms() {
+		// Grant admin perms. Otherwise we can't check the jobs
+		tx(() -> group().addRole(roles().get("admin")));
+	}
+
 	@Test
 	public void testUpdateName() throws GenericRestException, Exception {
 		String name = "new_name";
@@ -73,7 +79,7 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		MeshInternal.get().serverSchemaStorage().clear();
 
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			// Invoke the update of the schema which will trigger the node migration
 			GenericMessageResponse message = call(() -> client().updateSchema(schemaUuid, request));
 			assertMessage(message, "schema_updated_migration_invoked", "content", "2.0");
@@ -125,9 +131,9 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		try (Tx tx = tx()) {
-			// Assert migration is in idle
-			MigrationStatusResponse migrationStatus = call(() -> client().migrationStatus());
-			assertEquals(IDLE, migrationStatus.getStatus());
+			// Assert that all jobs have been completed
+			JobListResponse migrationStatus = call(() -> client().findJobs());
+			assertThat(migrationStatus).listsAll(COMPLETED);
 
 			GenericMessageResponse status = call(() -> client().applyChangesToSchema(container.getUuid(), listOfChanges));
 			assertMessage(status, "schema_changes_applied", "content");
@@ -136,9 +142,9 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			assertEquals("2.0", schema.getVersion());
 
 			// Trigger migration
-			waitForMigration(() -> {
+			waitForJobs(() -> {
 				call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
-						new SchemaReference().setName("content").setVersion(schema.getVersion())));
+						new SchemaReferenceImpl().setName("content").setVersion(schema.getVersion())));
 			}, COMPLETED, 1);
 		}
 
@@ -179,9 +185,9 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		assertMessage(status, "schema_changes_applied", "content");
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
-					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
+					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 
 		// Wait for event
@@ -227,9 +233,9 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			// 5. assign the new schema version to the release (which will start the migration)
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaContainer.getUuid()));
 
-			waitForMigration(() -> {
+			waitForJobs(() -> {
 				call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, project().getLatestRelease().getUuid(),
-						new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
+						new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 			}, COMPLETED, 1);
 			failingLatch(latch);
 		}
@@ -344,9 +350,9 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().applyChangesToSchema(schemaUuid, listOfChanges));
 
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
-					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
+					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 
 		// 5. Wait for migration to finish
@@ -380,9 +386,9 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		assertMessage(status, "schema_changes_applied", "content");
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
-					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
+					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 		// 4. Latch for completion
 		failingLatch(latch);
@@ -462,9 +468,9 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 			SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(containerUuid));
 
 			// 3. Invoke migration
-			waitForMigration(() -> {
+			waitForJobs(() -> {
 				call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid,
-						new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
+						new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 			}, COMPLETED, 1);
 			// 4. Latch for completion
 			latch.await(10, TimeUnit.SECONDS);
@@ -547,9 +553,9 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 		// 4. Assign the new schema version to the release
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
 
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
-					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
+					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 
 		Schema reloadedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
@@ -597,23 +603,20 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// Setup eventbus bridged latch - This will effectively block the unit test until the background schema migration process has finished.
 		CountDownLatch latch = TestUtils.latchForMigrationCompleted(client());
-
-		// 2. Update the schema server side
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().updateSchema(containerUuid, schema));
 		}, COMPLETED, 1);
 		failingLatch(latch);
 
-		latch = TestUtils.latchForMigrationCompleted(client());
 		// 3. Load the new schema and assign it to the release
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(containerUuid));
+		assertEquals("2.0", updatedSchema.getVersion());
 		assertNull("The content field should have been removed", updatedSchema.getField("content"));
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, releaseUuid,
-					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
+					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 		schema.setVersion(schema.getVersion() + 1);
-		failingLatch(latch);
 
 		// 4. Read node and check additional field
 		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new VersioningParametersImpl().draft()));
@@ -645,9 +648,9 @@ public class SchemaChangesEndpointTest extends AbstractNodeSearchEndpointTest {
 
 		// 4. assign the new schema version to the initial release
 		SchemaResponse updatedSchema = call(() -> client().findSchemaByUuid(schemaUuid));
-		waitForMigration(() -> {
+		waitForJobs(() -> {
 			call(() -> client().assignReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid(),
-					new SchemaReference().setName("content").setVersion(updatedSchema.getVersion())));
+					new SchemaReferenceImpl().setName("content").setVersion(updatedSchema.getVersion())));
 		}, COMPLETED, 1);
 		failingLatch(latch);
 

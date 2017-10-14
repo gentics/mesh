@@ -7,6 +7,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LIS
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_CONTAINER;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_MICROSCHEMA_VERSION;
 
+import java.util.Iterator;
 import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -25,6 +26,7 @@ import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaModelImpl;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
@@ -52,8 +54,8 @@ public class MicroschemaContainerVersionImpl extends
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public List<? extends NodeGraphFieldContainer> getFieldContainers(String releaseUuid) {
-		return in(HAS_MICROSCHEMA_CONTAINER)
+	public Iterator<? extends NodeGraphFieldContainer> getDraftFieldContainers(String releaseUuid) {
+		Iterator<? extends NodeGraphFieldContainer> it = in(HAS_MICROSCHEMA_CONTAINER)
 				.copySplit(
 						(a) -> a.in(HAS_FIELD).mark().inE(HAS_FIELD_CONTAINER)
 								.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
@@ -61,12 +63,13 @@ public class MicroschemaContainerVersionImpl extends
 						(a) -> a.in(HAS_ITEM).in(HAS_LIST).mark().inE(HAS_FIELD_CONTAINER)
 								.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
 								.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back())
-				.fairMerge().dedup().transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class)).toList();
+				.fairMerge().dedup().transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class)).iterator();
+		return it;
 	}
 
 	@Override
-	public List<? extends Micronode> findMicronodes() {
-		return in(HAS_MICROSCHEMA_CONTAINER).toListExplicit(MicronodeImpl.class);
+	public Iterator<? extends Micronode> findMicronodes() {
+		return in(HAS_MICROSCHEMA_CONTAINER).frameExplicit(MicronodeImpl.class).iterator();
 	}
 
 	@Override
@@ -101,8 +104,8 @@ public class MicroschemaContainerVersionImpl extends
 	}
 
 	@Override
-	public MicroschemaReference transformToReference() {
-		MicroschemaReference reference = new MicroschemaReference();
+	public MicroschemaReferenceImpl transformToReference() {
+		MicroschemaReferenceImpl reference = new MicroschemaReferenceImpl();
 		reference.setName(getName());
 		reference.setUuid(getSchemaContainer().getUuid());
 		reference.setVersion(getVersion());

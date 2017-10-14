@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 
 import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
@@ -22,14 +21,20 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.DropIndexEntry;
+import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.context.GenericEntryContext;
+import com.gentics.mesh.core.data.search.context.MoveEntryContext;
+import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
+import com.gentics.mesh.core.data.search.context.impl.MoveEntryContextImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.index.common.CreateIndexEntryImpl;
 import com.gentics.mesh.search.index.common.DropIndexEntryImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
+import com.gentics.mesh.search.index.entry.MoveDocumentEntryImpl;
 import com.gentics.mesh.search.index.entry.UpdateDocumentEntryImpl;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
@@ -95,19 +100,30 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public SearchQueueBatch store(Node node, String releaseUuid, ContainerType type, boolean addRelatedElements) {
-		HandleContext context = new HandleContext();
+		GenericEntryContextImpl context = new GenericEntryContextImpl();
 		context.setContainerType(type);
 		context.setReleaseUuid(releaseUuid);
-		// context.setLanguageTag(node.getLanguage().getLanguageTag());
 		context.setProjectUuid(node.getProject().getUuid());
 		store((IndexableElement) node, context, addRelatedElements);
 		return this;
 	}
 
 	@Override
+	public SearchQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String releaseUuid, ContainerType type) {
+		MoveEntryContext context = new MoveEntryContextImpl();
+		context.setContainerType(type);
+		context.setReleaseUuid(releaseUuid);
+		context.setOldContainer(oldContainer);
+		context.setNewContainer(newContainer);
+		MoveDocumentEntry entry = new MoveDocumentEntryImpl(nodeContainerIndexHandler, context);
+		addEntry(entry);
+		return this;
+	}
+
+	@Override
 	public SearchQueueBatch store(NodeGraphFieldContainer container, String releaseUuid, ContainerType type, boolean addRelatedElements) {
 		Node node = container.getParentNode();
-		HandleContext context = new HandleContext();
+		GenericEntryContextImpl context = new GenericEntryContextImpl();
 		context.setContainerType(type);
 		context.setReleaseUuid(releaseUuid);
 		context.setLanguageTag(container.getLanguage().getLanguageTag());
@@ -121,7 +137,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	public SearchQueueBatch delete(Tag tag, boolean addRelatedEntries) {
 		// We need to add the project uuid to the context because the index handler for tags will not be able to
 		// determine the project uuid once the tag has been removed from the graph.
-		HandleContext context = new HandleContext();
+		GenericEntryContextImpl context = new GenericEntryContextImpl();
 		context.setProjectUuid(tag.getProject().getUuid());
 		delete((IndexableElement) tag, context, addRelatedEntries);
 		return this;
@@ -131,7 +147,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	public SearchQueueBatch delete(TagFamily tagFymily, boolean addRelatedEntries) {
 		// We need to add the project uuid to the context because the index handler for tagfamilies will not be able to
 		// determine the project uuid once the tagfamily has been removed from the graph.
-		HandleContext context = new HandleContext();
+		GenericEntryContextImpl context = new GenericEntryContextImpl();
 		context.setProjectUuid(tagFymily.getProject().getUuid());
 		delete((IndexableElement) tagFymily, context, addRelatedEntries);
 		return this;
@@ -139,7 +155,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public SearchQueueBatch delete(NodeGraphFieldContainer container, String releaseUuid, ContainerType type, boolean addRelatedEntries) {
-		HandleContext context = new HandleContext();
+		GenericEntryContextImpl context = new GenericEntryContextImpl();
 		context.setContainerType(type);
 		context.setProjectUuid(container.getParentNode().getProject().getUuid());
 		context.setReleaseUuid(releaseUuid);
@@ -150,7 +166,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch store(IndexableElement element, HandleContext context, boolean addRelatedEntries) {
+	public SearchQueueBatch store(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries) {
 		UpdateDocumentEntryImpl entry = new UpdateDocumentEntryImpl(registry.getForClass(element), element, context, STORE_ACTION);
 		addEntry(entry);
 
@@ -164,7 +180,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch delete(IndexableElement element, HandleContext context, boolean addRelatedEntries) {
+	public SearchQueueBatch delete(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries) {
 		UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(registry.getForClass(element), element, context, DELETE_ACTION);
 		addEntry(entry);
 
@@ -226,7 +242,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 				List<Completable> entryList = storeEntries.stream().map(entry -> entry.process()).collect(Collectors.toList());
 				// Handle all entries sequentially since some entries create entries and those need to be executed first
 				int batchSize = 8;
-				long totalBatchCount = entryList.size() / batchSize;
+				long totalBatchCount = entryList.size() / batchSize + 1;
 				Observable<Completable> obs2 = Observable.from(entryList);
 				Observable<List<Completable>> buffers = obs2.buffer(batchSize);
 				// First ensure that the non-store events are processed before handling the store batches

@@ -17,6 +17,7 @@ import org.codehaus.jettison.json.JSONObject;
 import org.raml.model.MimeType;
 import org.raml.model.Response;
 import org.raml.model.parameter.FormParameter;
+import org.raml.model.parameter.Header;
 import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 
@@ -255,11 +256,24 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint exampleResponse(HttpResponseStatus status, String description) {
+	public Endpoint exampleResponse(HttpResponseStatus status, String description, String headerName, String example, String headerDescription) {
 		Response response = new Response();
 		response.setDescription(description);
 		exampleResponses.put(status.code(), response);
+		if (headerName != null) {
+			Header header = new Header();
+			header.setDescription(headerDescription);
+			header.setExample(example);
+			Map<String, Header> headers = new HashMap<>();
+			headers.put(headerName, header);
+			response.setHeaders(headers);
+		}
 		return this;
+	}
+
+	@Override
+	public Endpoint exampleResponse(HttpResponseStatus status, String description) {
+		return exampleResponse(status, description, null, null, null);
 	}
 
 	@Override

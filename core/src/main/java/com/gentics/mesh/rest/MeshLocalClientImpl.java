@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
@@ -46,6 +45,8 @@ import com.gentics.mesh.core.rest.release.ReleaseCreateRequest;
 import com.gentics.mesh.core.rest.release.ReleaseListResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.release.ReleaseUpdateRequest;
+import com.gentics.mesh.core.rest.release.info.ReleaseInfoMicroschemaList;
+import com.gentics.mesh.core.rest.release.info.ReleaseInfoSchemaList;
 import com.gentics.mesh.core.rest.role.RoleCreateRequest;
 import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
@@ -55,11 +56,9 @@ import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.MicroschemaListResponse;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.MicroschemaReferenceList;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaReferenceList;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangesListModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
@@ -651,12 +650,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<UserResponse> findUserByUsername(String username, ParameterProvider... parameters) {
-		LocalActionContextImpl<UserResponse> ac = createContext(UserResponse.class, parameters);
-		return new MeshLocalRequestImpl<>(ac.getFuture());
-	}
-
-	@Override
 	public MeshRequest<UserListResponse> findUsers(ParameterProvider... parameters) {
 		LocalActionContextImpl<UserListResponse> ac = createContext(UserListResponse.class, parameters);
 		userCrudHandler.handleReadList(ac);
@@ -868,12 +861,6 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	public MeshRequest<ClusterStatusResponse> clusterStatus() {
 		LocalActionContextImpl<ClusterStatusResponse> ac = createContext(ClusterStatusResponse.class);
 		adminHandler.handleClusterStatus(ac);
-		return new MeshLocalRequestImpl<>(ac.getFuture());
-	}
-
-	@Override
-	public MeshRequest<MigrationStatusResponse> migrationStatus() {
-		LocalActionContextImpl<MigrationStatusResponse> ac = createContext(MigrationStatusResponse.class);
 		return new MeshLocalRequestImpl<>(ac.getFuture());
 	}
 
@@ -1150,15 +1137,15 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<SchemaReferenceList> getReleaseSchemaVersions(String projectName, String releaseUuid) {
+	public MeshRequest<ReleaseInfoSchemaList> getReleaseSchemaVersions(String projectName, String releaseUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
-			SchemaReferenceList schemaVersionReferences) {
-		LocalActionContextImpl<SchemaReferenceList> ac = createContext(SchemaReferenceList.class);
+	public MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
+			ReleaseInfoSchemaList schemaVersionReferences) {
+		LocalActionContextImpl<ReleaseInfoSchemaList> ac = createContext(ReleaseInfoSchemaList.class);
 		ac.setProject(projectName);
 		ac.setPayloadObject(schemaVersionReferences);
 		releaseCrudHandler.handleAssignSchemaVersion(ac, releaseUuid);
@@ -1166,27 +1153,27 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<SchemaReferenceList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
+	public MeshRequest<ReleaseInfoSchemaList> assignReleaseSchemaVersions(String projectName, String releaseUuid,
 			SchemaReference... schemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<MicroschemaReferenceList> getReleaseMicroschemaVersions(String projectName, String releaseUuid) {
+	public MeshRequest<ReleaseInfoMicroschemaList> getReleaseMicroschemaVersions(String projectName, String releaseUuid) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
-			MicroschemaReferenceList microschemaVersionReferences) {
+	public MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+			ReleaseInfoMicroschemaList microschemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	public MeshRequest<MicroschemaReferenceList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
+	public MeshRequest<ReleaseInfoMicroschemaList> assignReleaseMicroschemaVersions(String projectName, String releaseUuid,
 			MicroschemaReference... microschemaVersionReferences) {
 		// TODO Auto-generated method stub
 		return null;

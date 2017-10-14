@@ -209,14 +209,17 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	public void handleRelatedEntries(HandleElementAction action) {
 		for (User user : getUsers()) {
 			// We need to store users as well since users list their groups -
-			// See {@link UserTransformator#toDocument(User)}
+			// See {@link UserTransformer#toDocument(User)}
 			action.call(user, null);
 		}
 	}
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp());
+		StringBuilder keyBuilder = new StringBuilder();
+		keyBuilder.append(super.getETag(ac));
+		keyBuilder.append(getLastEditedTimestamp());
+		return ETag.hash(keyBuilder);
 	}
 
 	@Override

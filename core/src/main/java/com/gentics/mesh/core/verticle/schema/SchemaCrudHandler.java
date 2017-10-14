@@ -22,7 +22,6 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -40,7 +39,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
@@ -88,7 +86,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 
 			// 2. Diff the schema with the latest version
 			SchemaChangesListModel model = new SchemaChangesListModel();
-			model.getChanges().addAll(MeshInternal.get().schemaComparator().diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
+			model.getChanges().addAll(comparator.diff(schemaContainer.getLatestVersion().getSchema(), requestModel));
 			String schemaName = schemaContainer.getName();
 
 			// No changes -> done
@@ -96,7 +94,6 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				return message(ac, "schema_update_no_difference_detected", schemaName);
 			}
 
-			JobRoot jobRoot = boot.get().meshRoot().getJobRoot();
 			SchemaUpdateParameters updateParams = ac.getSchemaUpdateParameters();
 			User user = ac.getUser();
 			Tuple<SearchQueueBatch, String> info = db.tx(() -> {
@@ -127,7 +124,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 							for (SchemaContainerRoot roots : schemaContainer.getRoots()) {
 								Project project = roots.getProject();
 								if (project != null) {
-									project.getMicroschemaContainerRoot().addMicroschema(microschema);
+									project.getMicroschemaContainerRoot().addMicroschema(user, microschema);
 								}
 							}
 						}
@@ -153,13 +150,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 							continue;
 						}
 
-						SchemaContainerVersion previouslyReferencedVersion = releaseEntry.getValue();
-
 						// Assign the new version to the release
-						release.assignSchemaVersion(createdVersion);
-
-						// Enqueue the job so that the worker can process it later on
-						jobRoot.enqueueSchemaMigration(user, release, previouslyReferencedVersion, createdVersion);
+						release.assignSchemaVersion(user,createdVersion);
 					}
 				}
 				return Tuple.tuple(batch, createdVersion.getVersion());
@@ -232,7 +224,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 				SearchQueueBatch batch = searchQueue.create();
 
 				// Assign the schema to the project
-				root.addSchemaContainer(schema);
+				root.addSchemaContainer(ac.getUser(), schema);
 				String releaseUuid = project.getLatestRelease().getUuid();
 				SchemaContainerVersion schemaContainerVersion = schema.getLatestVersion();
 				batch.createNodeIndex(projectUuid, releaseUuid, schemaContainerVersion.getUuid(), DRAFT, schemaContainerVersion.getSchema());

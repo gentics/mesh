@@ -12,7 +12,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
@@ -30,7 +30,7 @@ import com.gentics.mesh.util.CompareUtils;
 
 public class NodeGraphFieldListImpl extends AbstractReferencingGraphFieldList<NodeGraphField, NodeFieldList, Node> implements NodeGraphFieldList {
 
-	public static FieldTransformator<NodeFieldList> NODE_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level,
+	public static FieldTransformer<NodeFieldList> NODE_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 			parentNode) -> {
 		NodeGraphFieldList nodeFieldList = container.getNodeList(fieldKey);
 		if (nodeFieldList == null) {

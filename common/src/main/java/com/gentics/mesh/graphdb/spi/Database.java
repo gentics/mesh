@@ -320,6 +320,20 @@ public interface Database extends TxFactory {
 	void addVertexType(Class<?> clazzOfVertex, Class<?> superClazzOfVertex);
 
 	/**
+	 * Remove the vertex type with the given name.
+	 * 
+	 * @param string
+	 */
+	void removeVertexType(String typeName);
+
+	/**
+	 * Remove the edge type with the given name.
+	 * 
+	 * @param typeName
+	 */
+	void removeEdgeType(String typeName);
+
+	/**
 	 * Utilize the index and locate the matching vertices.
 	 * 
 	 * @param classOfVertex

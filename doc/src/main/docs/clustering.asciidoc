@@ -13,28 +13,7 @@ Clustering is also a way to increase redundancy and fault tolerance since each i
 
 == Configuration
 
-* `cluster.enabled`
-
-The cluster mode can be switched on using this setting. 
-
-* `cluster.networkHost`
-
-This setting is optional and can be used to configure the network which the cluster daemons bind to.
-Gentics Mesh will try to determine the network automatically if no setting has been provided. The value of this setting will currently also be used to connect other instances to the configured instance. 
-So make sure that the IP/Host can be reached from other potential instances in your network.
-
-*  `cluster.clusterName`
-
-The setting is required when clustering is enabled. It is used to group your instances together. It can also be used to form a new cluster next to an existing cluster. Only instances with the same clusterName will be able to find eachother.
-
-* `cluster.vertxPort`
-
-The vertxPort setting is used by the Vert.x eventbus message service. By default vert.x will choose any free port and utilize it for the service.
-
-* `nodeName`
-
-The node name is used to identify the instance in the cluster. The name must be unique to a single instance and should not be changed.
-
+include::includes/cluster-options.inc[]
 
 .mesh.yml
 [source,yaml]

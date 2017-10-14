@@ -42,7 +42,7 @@ public class CoreVerticleLoader {
 	public void loadVerticles(MeshOptions configuration) {
 		JsonObject defaultConfig = new JsonObject();
 		defaultConfig.put("port", configuration.getHttpServerOptions().getPort());
-
+		defaultConfig.put("host", configuration.getHttpServerOptions().getHost());
 		for (AbstractVerticle verticle : getMandatoryVerticleClasses()) {
 			try {
 				if (log.isInfoEnabled()) {

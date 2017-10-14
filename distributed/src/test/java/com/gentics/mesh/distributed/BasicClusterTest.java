@@ -23,11 +23,11 @@ import org.junit.rules.RuleChain;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
-import com.gentics.mesh.core.rest.admin.migration.MigrationInfo;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
 import com.gentics.mesh.core.rest.group.GroupCreateRequest;
 import com.gentics.mesh.core.rest.group.GroupResponse;
+import com.gentics.mesh.core.rest.job.JobListResponse;
+import com.gentics.mesh.core.rest.job.JobResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
@@ -353,9 +353,9 @@ public class BasicClusterTest extends AbstractClusterTest {
 		call(() -> clientA.updateSchema(schemaResponse.getUuid(), request));
 
 		for (int i = 0; i < 10; i++) {
-			MigrationStatusResponse statusResponse = call(() -> clientA.migrationStatus());
-			if (statusResponse.getMigrations().size() > 0) {
-				MigrationInfo first = statusResponse.getMigrations().get(0);
+			JobListResponse statusResponse = call(() -> clientA.findJobs());
+			if (statusResponse.getData().size() > 0) {
+				JobResponse first = statusResponse.getData().get(0);
 				if (MigrationStatus.COMPLETED.equals(first.getStatus())) {
 					log.info("Migration completed...");
 					break;
@@ -365,14 +365,12 @@ public class BasicClusterTest extends AbstractClusterTest {
 		}
 
 		// Check status on nodeA
-		MigrationStatusResponse status = call(() -> clientA.migrationStatus());
-		assertEquals(MigrationStatus.IDLE, status.getStatus());
-		assertEquals(MigrationStatus.COMPLETED, status.getMigrations().get(0).getStatus());
+		JobListResponse status = call(() -> clientA.findJobs());
+		assertEquals(MigrationStatus.COMPLETED, status.getData().get(0).getStatus());
 
 		// Check status on nodeB
-		status = call(() -> clientB.migrationStatus());
-		assertEquals(MigrationStatus.IDLE, status.getStatus());
-		assertEquals(MigrationStatus.COMPLETED, status.getMigrations().get(0).getStatus());
+		status = call(() -> clientB.findJobs());
+		assertEquals(MigrationStatus.COMPLETED, status.getData().get(0).getStatus());
 
 		// NodeB: Now verify that the migration on nodeA has updated the node
 		NodeResponse response2 = call(() -> clientB.findNodeByUuid(projectName, response.getUuid()));

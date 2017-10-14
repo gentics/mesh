@@ -24,7 +24,7 @@ import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	@Inject
-	RoleTransformator transformator;
+	RoleTransformer transformer;
 
 	@Inject
 	public RoleIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -52,8 +52,8 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	public RoleTransformator getTransformator() {
-		return transformator;
+	public RoleTransformer getTransformer() {
+		return transformer;
 	}
 
 	@Override

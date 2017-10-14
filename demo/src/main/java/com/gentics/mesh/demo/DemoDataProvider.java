@@ -37,8 +37,8 @@ import com.gentics.mesh.core.rest.role.RoleListResponse;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.schema.SchemaListResponse;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.tag.TagCreateRequest;
 import com.gentics.mesh.core.rest.tag.TagFamilyCreateRequest;
@@ -74,8 +74,6 @@ public class DemoDataProvider {
 	public static final String TAG_CATEGORIES_SCHEMA_NAME = "tagCategories";
 	public static final String TAG_DEFAULT_SCHEMA_NAME = "tag";
 
-	private static final String ANONYMOUS_UUID = "5fb9654c0b734e87b9654c0b736e8701";
-
 	private Database db;
 
 	private MeshLocalClientImpl client;
@@ -93,6 +91,8 @@ public class DemoDataProvider {
 
 	private BootstrapInitializer boot;
 
+	private JsonObject mappingData;
+
 	@Inject
 	public DemoDataProvider(Database database, MeshLocalClientImpl client, BootstrapInitializer boot) {
 		this.db = database;
@@ -101,6 +101,8 @@ public class DemoDataProvider {
 	}
 
 	public void setup() throws JsonParseException, JsonMappingException, IOException, MeshSchemaException, InterruptedException {
+		mappingData = loadJson("uuid-mapping");
+
 		MeshAuthUser user = db.tx(() -> {
 			return MeshInternal.get().boot().meshRoot().getUserRoot().findMeshAuthUserByUsername("admin");
 		});
@@ -303,28 +305,29 @@ public class DemoDataProvider {
 	 * Add data to the internal maps which was created within the {@link BootstrapInitializer} (e.g.: admin groups, roles, users)
 	 * 
 	 * @throws InterruptedException
+	 * @throws IOException
 	 */
-	private void addBootstrappedData() throws InterruptedException {
+	private void addBootstrappedData() throws InterruptedException, IOException {
 
 		MeshResponse<GroupListResponse> groupsFuture = client.findGroups().invoke();
 		latchFor(groupsFuture);
 		for (GroupResponse group : groupsFuture.result().getData()) {
 			groups.put(group.getName(), group);
+			uuidMapping.put(group.getUuid(), mappingData.getString("group/" + group.getName()));
 		}
 
 		MeshResponse<UserListResponse> usersFuture = client.findUsers().invoke();
 		latchFor(usersFuture);
 		for (UserResponse user : usersFuture.result().getData()) {
-			if (user.getUsername().equals("anonymous")) {
-				uuidMapping.put(user.getUuid(), ANONYMOUS_UUID);
-			}
 			users.put(user.getUsername(), user);
+			uuidMapping.put(user.getUuid(), mappingData.getString("user/" + user.getUsername()));
 		}
 
 		MeshResponse<RoleListResponse> rolesFuture = client.findRoles().invoke();
 		latchFor(rolesFuture);
 		for (RoleResponse role : rolesFuture.result().getData()) {
 			roles.put(role.getName(), role);
+			uuidMapping.put(role.getUuid(), mappingData.getString("role/" + role.getName()));
 		}
 
 		MeshResponse<SchemaListResponse> schemasFuture = client.findSchemas().invoke();
@@ -362,7 +365,7 @@ public class DemoDataProvider {
 			} else {
 				nodeCreateRequest.setParentNode(project.getRootNode());
 			}
-			nodeCreateRequest.setSchema(new SchemaReference().setUuid(schema.getUuid()));
+			nodeCreateRequest.setSchema(new SchemaReferenceImpl().setUuid(schema.getUuid()));
 			nodeCreateRequest.getFields().put("name", FieldUtil.createStringField(name));
 
 			// Add the segment field value
@@ -472,11 +475,12 @@ public class DemoDataProvider {
 
 			log.info("Creating project {" + name + "}");
 			ProjectCreateRequest request = new ProjectCreateRequest();
-			request.setSchema(new SchemaReference().setName("folder"));
+			request.setSchema(new SchemaReferenceImpl().setName("folder"));
 			request.setName(name);
 			ProjectResponse project = call(() -> client.createProject(request));
 			projects.put(name, project);
 			uuidMapping.put(project.getUuid(), uuid);
+			uuidMapping.put(project.getRootNode().getUuid(), mappingData.getString("node/root"));
 		}
 	}
 

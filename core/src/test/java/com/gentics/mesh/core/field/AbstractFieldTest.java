@@ -53,7 +53,7 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 		version.setSchema(schema);
 		Node node = meshRoot().getNodeRoot().create(user(), version, project());
 		Release release = Tx.getActive().getGraph().addFramedVertex(ReleaseImpl.class);
-		release.assignSchemaVersion(version);
+		release.assignSchemaVersion(user(), version);
 		project().getReleaseRoot().addItem(release);
 		NodeGraphFieldContainer nodeContainer = node.createGraphFieldContainer(english(), release, user());
 

@@ -5,8 +5,10 @@ import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
 import com.gentics.mesh.core.data.generic.AbstractGenericFieldContainerVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
-import com.gentics.mesh.core.data.job.impl.JobImpl;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
+import com.gentics.mesh.core.data.job.impl.MicronodeMigrationJobImpl;
+import com.gentics.mesh.core.data.job.impl.NodeMigrationJobImpl;
+import com.gentics.mesh.core.data.job.impl.ReleaseMigrationJobImpl;
 import com.gentics.mesh.core.data.node.field.impl.BinaryGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.impl.BooleanGraphFieldListImpl;
@@ -20,6 +22,8 @@ import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.relationship.GraphRelationships;
+import com.gentics.mesh.core.data.release.impl.ReleaseMicroschemaEdgeImpl;
+import com.gentics.mesh.core.data.release.impl.ReleaseSchemaEdgeImpl;
 import com.gentics.mesh.core.data.root.impl.GroupRootImpl;
 import com.gentics.mesh.core.data.root.impl.LanguageRootImpl;
 import com.gentics.mesh.core.data.root.impl.MeshRootImpl;
@@ -72,6 +76,8 @@ public final class DatabaseHelper {
 		GraphFieldContainerEdgeImpl.init(database);
 		MicronodeGraphFieldImpl.init(database);
 		TagEdgeImpl.init(database);
+		ReleaseSchemaEdgeImpl.init(database);
+		ReleaseMicroschemaEdgeImpl.init(database);
 
 		// Aggregation nodes
 		MeshRootImpl.init(database);
@@ -118,7 +124,11 @@ public final class DatabaseHelper {
 		MicroschemaContainerImpl.init(database);
 		SchemaContainerVersionImpl.init(database);
 		MicroschemaContainerVersionImpl.init(database);
-		JobImpl.init(database);
+
+		// Jobs
+		NodeMigrationJobImpl.init(database);
+		MicronodeMigrationJobImpl.init(database);
+		ReleaseMigrationJobImpl.init(database);
 
 		// Field changes
 		FieldTypeChangeImpl.init(database);

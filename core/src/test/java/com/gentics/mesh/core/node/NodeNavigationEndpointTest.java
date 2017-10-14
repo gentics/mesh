@@ -27,7 +27,7 @@ import com.gentics.mesh.core.rest.navigation.NavigationResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.field.StringField;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
@@ -230,7 +230,7 @@ public class NodeNavigationEndpointTest extends AbstractMeshTest {
 
 		// level 0
 		NodeCreateRequest request = new NodeCreateRequest();
-		request.setSchema(new SchemaReference().setName("folder"));
+		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 		request.setLanguage("en");
 		request.getFields().put("name", FieldUtil.createStringField("english folder-0"));
 		request.getFields().put("slug", FieldUtil.createStringField("english folder-0"));

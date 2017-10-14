@@ -28,9 +28,9 @@ import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
-import com.gentics.mesh.core.rest.admin.migration.MigrationStatusResponse;
+import com.gentics.mesh.core.rest.job.JobListResponse;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.impl.PublishParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -46,6 +46,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		DeploymentOptions options = new DeploymentOptions();
 		options.setWorker(true);
 		vertx().deployVerticle(meshDagger().jobWorkerVerticle(), options);
+		tx(() -> group().addRole(roles().get("admin")));
 	}
 
 	@Test
@@ -85,8 +86,8 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 						.isEmpty();
 			});
 		});
-		requestReleaseMigration(newRelease);
-		triggerAndWaitForMigration();
+
+		triggerAndWaitForJob(requestReleaseMigration(newRelease));
 
 		try (Tx tx = tx()) {
 			assertThat(newRelease.isMigrated()).as("Release migration status").isEqualTo(true);
@@ -122,8 +123,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	@Test
 	public void testStartForInitial() throws Throwable {
 		try (Tx tx = tx()) {
-			requestReleaseMigration(initialRelease());
-			triggerAndWaitForMigration(MigrationStatus.FAILED);
+			triggerAndWaitForJob(requestReleaseMigration(initialRelease()), FAILED);
 		}
 	}
 
@@ -134,16 +134,14 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 			newRelease = project().getReleaseRoot().create("newrelease", user());
 			tx.success();
 		}
+		String jobUuidA = requestReleaseMigration(newRelease);
+		triggerAndWaitForJob(jobUuidA, COMPLETED);
 
-		try (Tx tx = tx()) {
-			requestReleaseMigration(newRelease);
-			triggerAndWaitForMigration(MigrationStatus.COMPLETED);
-
-			requestReleaseMigration(newRelease);
-			MigrationStatusResponse response = triggerAndWaitForMigration(null);
-			List<MigrationStatus> status = response.getMigrations().stream().map(e -> e.getStatus()).collect(Collectors.toList());
-			assertThat(status).containsExactly(MigrationStatus.COMPLETED, MigrationStatus.FAILED);
-		}
+		// The second job should fail because the release has already been migrated.
+		String jobUuidB = requestReleaseMigration(newRelease);
+		JobListResponse response = triggerAndWaitForJob(jobUuidB, FAILED);
+		List<MigrationStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+		assertThat(status).contains(COMPLETED, FAILED);
 
 	}
 
@@ -160,18 +158,15 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 		}
 
 		try (Tx tx = tx()) {
-			requestReleaseMigration(newestRelease);
-			triggerAndWaitForMigration(FAILED);
+			triggerAndWaitForJob(requestReleaseMigration(newestRelease), FAILED);
 
-			requestReleaseMigration(newRelease);
-			MigrationStatusResponse response = triggerAndWaitForMigration(null);
-			List<MigrationStatus> status = response.getMigrations().stream().map(e -> e.getStatus()).collect(Collectors.toList());
-			assertThat(status).containsExactly(FAILED, COMPLETED);
+			JobListResponse response = triggerAndWaitForJob(requestReleaseMigration(newRelease), COMPLETED);
+			List<MigrationStatus> status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+			assertThat(status).contains(FAILED, COMPLETED);
 
-			requestReleaseMigration(newestRelease);
-			response = triggerAndWaitForMigration(null);
-			status = response.getMigrations().stream().map(e -> e.getStatus()).collect(Collectors.toList());
-			assertThat(status).containsExactly(FAILED, COMPLETED, COMPLETED);
+			response = triggerAndWaitForJob(requestReleaseMigration(newestRelease), COMPLETED);
+			status = response.getData().stream().map(e -> e.getStatus()).collect(Collectors.toList());
+			assertThat(status).contains(FAILED, COMPLETED, COMPLETED);
 		}
 	}
 
@@ -201,7 +196,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 				futures.add(service.submit(() -> {
 					NodeCreateRequest create = new NodeCreateRequest();
 					create.setLanguage("en");
-					create.setSchema(new SchemaReference().setName("folder"));
+					create.setSchema(new SchemaReferenceImpl().setName("folder"));
 					create.setParentNodeUuid(baseNodeUuid);
 					call(() -> client().createNode(projectName, create));
 					createdNode.mark();
@@ -217,8 +212,8 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 			tx.success();
 		}
 
-		requestReleaseMigration(newRelease);
-		triggerAndWaitForMigration();
+		String jobUuid = requestReleaseMigration(newRelease);
+		triggerAndWaitForJob(jobUuid);
 	}
 
 	/**
@@ -227,9 +222,7 @@ public class ReleaseMigrationEndpointTest extends AbstractMeshTest {
 	 * @param release
 	 * @return future
 	 */
-	protected void requestReleaseMigration(Release release) {
-		tx(() -> {
-			boot().jobRoot().enqueueReleaseMigration(user(), release);
-		});
+	protected String requestReleaseMigration(Release release) {
+		return tx(() -> boot().jobRoot().enqueueReleaseMigration(user(), release).getUuid());
 	}
 }

@@ -82,7 +82,7 @@ public class DistributedEventManager {
 		Map<String, Router> registeredProjectRouters = routerStorage.getProjectRouters();
 
 		// Load all projects and check whether they are already registered
-		for (Project project : boot.meshRoot().getProjectRoot().findAll()) {
+		for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
 			if (registeredProjectRouters.containsKey(project.getName())) {
 				continue;
 			} else {

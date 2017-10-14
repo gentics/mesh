@@ -435,7 +435,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			Release newRelease = project.getReleaseRoot().create("newrelease", user());
 
 			// 3. migrate nodes
-			meshDagger().releaseMigrationHandler().migrateRelease(newRelease).await();
+			meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
 
 			// 4. assert nodes in new release
 			assertThat(folder).as("folder").hasOnlyChildren(newRelease, subFolder);
@@ -573,7 +573,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 2. create new release and migrate nodes
 			tx(() -> {
 				Release newRelease = project.getReleaseRoot().create("newrelease", user());
-				meshDagger().releaseMigrationHandler().migrateRelease(newRelease).await();
+				meshDagger().releaseMigrationHandler().migrateRelease(newRelease, null);
 				System.out.println("Release UUID: " + newRelease.getUuid());
 			});
 

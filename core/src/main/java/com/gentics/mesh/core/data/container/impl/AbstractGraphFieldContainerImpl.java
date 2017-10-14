@@ -93,8 +93,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public NodeGraphField getNode(String key) {
-		return outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
-				.nextOrDefaultExplicit(NodeGraphFieldImpl.class, null);
+		return outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(NodeGraphFieldImpl.class, null);
 	}
 
 	@Override
@@ -189,8 +188,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public MicronodeGraphField getMicronode(String key) {
-		return outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
-				.nextOrDefaultExplicit(MicronodeGraphFieldImpl.class, null);
+		return outE(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(MicronodeGraphFieldImpl.class, null);
 	}
 
 	@Override
@@ -217,8 +215,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 
 	@Override
 	public BinaryGraphField getBinary(String key) {
-		return out(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key)
-				.nextOrDefaultExplicit(BinaryGraphFieldImpl.class, null);
+		return out(HAS_FIELD).has(GraphField.FIELD_KEY_PROPERTY_KEY, key).nextOrDefaultExplicit(BinaryGraphFieldImpl.class, null);
 	}
 
 	@Override
@@ -323,11 +320,10 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema,
-			List<String> languageTags, int level) {
+	public Field getRestFieldFromGraph(InternalActionContext ac, String fieldKey, FieldSchema fieldSchema, List<String> languageTags, int level) {
 		GraphFieldTypes type = GraphFieldTypes.valueByFieldSchema(fieldSchema);
 		if (type != null) {
-			return type.getRestFieldFromGraph(this, ac, fieldKey, fieldSchema, languageTags, level, getParentNode());
+			return type.getRestFieldFromGraph(this, ac, fieldKey, fieldSchema, languageTags, level, () -> getParentNode());
 		} else {
 			throw error(BAD_REQUEST, "type unknown");
 		}
@@ -337,12 +333,14 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	 * Update or create the field using the given restField. The {@link FieldSchema} is used to determine the type of the field.
 	 * 
 	 * @param ac
+	 *            Action context
 	 * @param fieldMap
 	 * @param fieldKey
 	 *            Key of the field
 	 * @param fieldSchema
 	 *            Field schema of the field
 	 * @param schema
+	 *            Schema of the field
 	 */
 	protected void updateField(InternalActionContext ac, FieldMap fieldMap, String fieldKey, FieldSchema fieldSchema, FieldSchemaContainer schema) {
 		GraphFieldTypes type = GraphFieldTypes.valueByFieldSchema(fieldSchema);

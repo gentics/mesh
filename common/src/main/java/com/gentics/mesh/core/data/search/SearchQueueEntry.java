@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.search;
 
-import com.gentics.mesh.core.data.HandleContext;
+import com.gentics.mesh.core.data.search.context.EntryContext;
 
 import rx.Completable;
 
@@ -16,7 +16,7 @@ import rx.Completable;
  * <li>Element Context - ProjectUuid, ReleaseUuid</li>
  * </ul>
  */
-public interface SearchQueueEntry extends Comparable<SearchQueueEntry> {
+public interface SearchQueueEntry<T extends EntryContext> extends Comparable<SearchQueueEntry<?>> {
 
 	/**
 	 * Return the search queue entry action (eg. Update, delete..)
@@ -38,12 +38,12 @@ public interface SearchQueueEntry extends Comparable<SearchQueueEntry> {
 	 * 
 	 * @return
 	 */
-	HandleContext getContext();
+	T getContext();
 
 	/**
 	 * Compare the given entry. The order of the element action will be used to compare the entries.
 	 */
-	default int compareTo(SearchQueueEntry o) {
+	default int compareTo(SearchQueueEntry<?> o) {
 		return getElementAction().getPriority().compareTo(o.getElementAction().getPriority());
 	}
 

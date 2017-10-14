@@ -1,6 +1,6 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +23,15 @@ public class PermissionInfoAssert extends AbstractAssert<PermissionInfoAssert, P
 		List<String> mustHave = Arrays.asList(permissions).stream().map(e -> e.getName()).collect(Collectors.toList());
 		assertThat(hasPerm).containsAll(mustHave);
 		return this;
+	}
+
+	public PermissionInfoAssert hasNoPerm(Permission... permissions) {
+		List<String> hasPerm = actual.asMap().entrySet().stream().filter(p -> p.getValue() == true).map(e -> e.getKey().getName())
+				.collect(Collectors.toList());
+		List<String> mustNotHave = Arrays.asList(permissions).stream().map(e -> e.getName()).collect(Collectors.toList());
+		assertThat(hasPerm).doesNotContain(mustNotHave.toArray(new String[mustNotHave.size()]));
+		return this;
+
 	}
 
 }

@@ -1,12 +1,15 @@
 package com.gentics.mesh.core.data.job;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.job.JobResponse;
+import com.gentics.mesh.util.DateUtils;
 
 /**
  * A job can be added to the {@link JobRoot} vertex. Jobs are used to persist information about long running tasks.
@@ -18,6 +21,16 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	public static final String ERROR_DETAIL_PROPERTY_KEY = "error_detail";
 
 	public static final String ERROR_MSG_PROPERTY_KEY = "error_msg";
+
+	public static final String START_TIMESTAMP_PROPERTY_KEY = "startDate";
+
+	public static final String STOP_TIMESTAMP_PROPERTY_KEY = "stopDate";
+
+	public static final String COMPLETION_COUNT_PROPERTY_KEY = "completionCount";
+
+	public static final String STATUS_PROPERTY_KEY = "status";
+
+	public static final String NODE_NAME_PROPERTY_KEY = "nodeName";
 
 	/**
 	 * Return the job type.
@@ -104,6 +117,11 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	void setToMicroschemaVersion(MicroschemaContainerVersion toVersion);
 
 	/**
+	 * Prepare the job.
+	 */
+	void prepare();
+
+	/**
 	 * Process the job.
 	 */
 	void process();
@@ -120,7 +138,7 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * 
 	 * @param e
 	 */
-	void setError(Exception e);
+	void setError(Throwable e);
 
 	/**
 	 * Return the human readable error message.
@@ -153,7 +171,7 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	/**
 	 * Removes the error information from the job and thus it can be processed again.
 	 */
-	void removeErrorState();
+	void resetJob();
 
 	/**
 	 * Check whether the job has failed.
@@ -161,5 +179,118 @@ public interface Job extends MeshCoreVertex<JobResponse, Job>, CreatorTrackingVe
 	 * @return
 	 */
 	boolean hasFailed();
+
+	/**
+	 * Return the start date of the job.
+	 * 
+	 * @return
+	 */
+	default String getStartDate() {
+		Long timestamp = getStartTimestamp();
+		if (timestamp == null) {
+			return null;
+		}
+		return DateUtils.toISO8601(timestamp);
+	}
+
+	/**
+	 * Return the start timestamp of the job.
+	 * 
+	 * @return
+	 */
+	Long getStartTimestamp();
+
+	/**
+	 * Set the start timestamp of the job.
+	 * 
+	 * @param date
+	 */
+	void setStartTimestamp(Long date);
+
+	/**
+	 * Set the current start timestamp.
+	 */
+	default void setStartTimestamp() {
+		setStartTimestamp(System.currentTimeMillis());
+	}
+
+	/**
+	 * Return the stop date of the job.
+	 * 
+	 * @return
+	 */
+	default String getStopDate() {
+		Long timestamp = getStopTimestamp();
+		if (timestamp == null) {
+			return null;
+		}
+		return DateUtils.toISO8601(timestamp);
+	}
+
+	Long getStopTimestamp();
+
+	/**
+	 * Set the stop date of the job.
+	 * 
+	 * @param date
+	 */
+	void setStopTimestamp(Long date);
+
+	/**
+	 * Set the current stop timestamp.
+	 */
+	default void setStopTimestamp() {
+		setStopTimestamp(System.currentTimeMillis());
+	}
+
+	/**
+	 * Return the amount of elements which have already been processed.
+	 * 
+	 * @return
+	 */
+	long getCompletionCount();
+
+	/**
+	 * Set the count of total processed elements.
+	 * 
+	 * @param count
+	 */
+	void setCompletionCount(long count);
+
+	/**
+	 * Get migration status.
+	 * 
+	 * @return
+	 */
+	MigrationStatus getStatus();
+
+	/**
+	 * Set migration status.
+	 * 
+	 * @param status
+	 */
+	void setStatus(MigrationStatus status);
+
+	/**
+	 * Return the name of the node on which the job is being executed.
+	 * 
+	 * @return
+	 */
+	String getNodeName();
+
+	/**
+	 * Set the name of the node on which the job is being executed.
+	 * 
+	 * @param nodeName
+	 */
+	void setNodeName(String nodeName);
+
+	/**
+	 * Set the current node name.
+	 */
+	default void setNodeName() {
+		String nodeName = Mesh.mesh().getOptions().getNodeName();
+		setNodeName(nodeName);
+	}
 
 }

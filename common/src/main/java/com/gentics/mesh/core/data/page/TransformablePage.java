@@ -7,6 +7,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.TransformableElement;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
+import com.gentics.mesh.util.ETag;
 
 import rx.Observable;
 import rx.Single;
@@ -65,7 +66,7 @@ public interface TransformablePage<T extends TransformableElement<? extends Rest
 			builder.append("-");
 			builder.append(element.getETag(ac));
 		}
-		return builder.toString();
+		return ETag.hash(builder.toString());
 	}
 	
 

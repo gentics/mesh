@@ -8,7 +8,8 @@ import java.time.format.DateTimeFormatter;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.schema.MicroschemaReference;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.core.rest.user.UserReference;
 
@@ -49,8 +50,8 @@ public abstract class AbstractExamples {
 	 * @param name
 	 * @return
 	 */
-	public SchemaReference getSchemaReference(String name) {
-		SchemaReference schemaReference = new SchemaReference();
+	public SchemaReferenceImpl getSchemaReference(String name) {
+		SchemaReferenceImpl schemaReference = new SchemaReferenceImpl();
 		schemaReference.setName(name);
 		schemaReference.setUuid(randomUUID());
 		schemaReference.setVersion("1.0");
@@ -71,7 +72,7 @@ public abstract class AbstractExamples {
 	}
 
 	public MicroschemaReference getMicroschemaReference(String name, String version) {
-		return new MicroschemaReference().setName(name).setUuid(randomUUID()).setVersion(version);
+		return new MicroschemaReferenceImpl().setName(name).setUuid(randomUUID()).setVersion(version);
 	}
 
 	/**

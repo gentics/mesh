@@ -77,7 +77,6 @@ import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.MavenVersionNumber;
@@ -166,7 +165,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * @throws InvalidNameException
 	 */
 	private void initProjects() throws InvalidNameException {
-		for (Project project : meshRoot().getProjectRoot().findAll()) {
+		for (Project project : meshRoot().getProjectRoot().findAllIt()) {
 			routerStorage.addProjectRouter(project.getName());
 			if (log.isDebugEnabled()) {
 				log.debug("Initalized project {" + project.getName() + "}");
@@ -257,8 +256,11 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			boolean active = false;
 			while (!active) {
 				log.info("Waiting for hazelcast to become active");
-				Thread.sleep(1000);
 				active = manager.getHazelcastInstance().getLifecycleService().isRunning();
+				if (active) {
+					break;
+				}
+				Thread.sleep(1000);
 			}
 		} else {
 
@@ -341,7 +343,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		vertxOptions.setClusterPublicPort(vertxClusterPort);
 
 		if (log.isDebugEnabled()) {
-			log.debug("Using these vert.x options for vertx {\n" + JsonUtil.toJson(vertxOptions) + "\n}");
+			log.debug("Using vert.x cluster port {" + vertxClusterPort + "}");
+			log.debug("Using vert.x cluster public port {" + vertxClusterPort + "}");
+			log.debug("Binding vert.x on host {" + localIp + "}");
 		}
 		CompletableFuture<Vertx> fut = new CompletableFuture<>();
 		Vertx.clusteredVertx(vertxOptions, rh -> {
@@ -386,6 +390,18 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			verticleLoader.apply(Mesh.vertx());
 		}
 
+		// Handle admin password reset
+
+		String password = configuration.getAdminPassword();
+		if (password != null) {
+			try (Tx tx = db.tx()) {
+				User adminUser = userRoot().findByName("admin");
+				if (adminUser != null) {
+					adminUser.setPassword(password);
+				}
+				tx.success();
+			}
+		}
 		// Initialise routes for existing projects
 		try (Tx tx = db.tx()) {
 			initProjects();
@@ -568,7 +584,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Override
 	public JobRoot jobRoot() {
-		return meshRoot.getJobRoot();
+		return meshRoot().getJobRoot();
 	}
 
 	@Override
@@ -821,7 +837,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	@Override
 	public Collection<? extends String> getAllLanguageTags() {
 		if (allLanguageTags.isEmpty()) {
-			for (Language l : languageRoot().findAll()) {
+			for (Language l : languageRoot().findAllIt()) {
 				String tag = l.getLanguageTag();
 				allLanguageTags.add(tag);
 			}

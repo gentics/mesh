@@ -10,6 +10,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.common.FieldContainer;
 import com.gentics.mesh.core.rest.common.FieldTypes;
@@ -17,6 +18,7 @@ import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.project.ProjectReference;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.core.rest.tag.TagReference;
 import com.gentics.mesh.core.rest.user.ExpandableNode;
 import com.gentics.mesh.core.rest.user.NodeReference;
@@ -32,8 +34,8 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	private String language;
 
 	@JsonProperty(required = true)
-	@JsonPropertyDescription("List of languages for which content is available.")
-	private List<String> availableLanguages;
+	@JsonPropertyDescription("Map of languages for which content is available and their publish status.")
+	private Map<String, PublishStatusModel> availableLanguages;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Map of webroot paths per language. This property will only be populated if the "
@@ -61,6 +63,7 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Reference to the schema of the node.")
+	@JsonDeserialize(as = SchemaReferenceImpl.class)
 	private SchemaReference schema;
 
 	@JsonProperty(required = true)
@@ -242,21 +245,21 @@ public class NodeResponse extends AbstractGenericRestResponse implements NodeFie
 	}
 
 	/**
-	 * Return a list of language tags which are available for the node.
+	 * Return a map of language tags which are available for the node.
 	 * 
-	 * @return List of language tags
+	 * @return Map of language tags
 	 */
-	public List<String> getAvailableLanguages() {
+	public Map<String, PublishStatusModel> getAvailableLanguages() {
 		return availableLanguages;
 	}
 
 	/**
-	 * Set a list of language tags which are available for the node.
+	 * Set a map of language tags which are available for the node and their publish status.
 	 * 
 	 * @param availableLanguages
 	 *            List of language tags
 	 */
-	public void setAvailableLanguages(List<String> availableLanguages) {
+	public void setAvailableLanguages(Map<String, PublishStatusModel> availableLanguages) {
 		this.availableLanguages = availableLanguages;
 	}
 

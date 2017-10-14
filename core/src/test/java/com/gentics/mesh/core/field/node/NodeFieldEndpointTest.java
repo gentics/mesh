@@ -33,8 +33,8 @@ import com.gentics.mesh.core.rest.node.field.NodeField;
 import com.gentics.mesh.core.rest.node.field.impl.NodeFieldImpl;
 import com.gentics.mesh.core.rest.schema.NodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.NodeFieldSchemaImpl;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
@@ -365,7 +365,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			// add a node in german and english
 			NodeCreateRequest createGermanNode = new NodeCreateRequest();
-			createGermanNode.setSchema(new SchemaReference().setName("folder"));
+			createGermanNode.setSchema(new SchemaReferenceImpl().setName("folder"));
 			createGermanNode.setParentNodeUuid(folder.getUuid());
 			createGermanNode.setLanguage("de");
 			createGermanNode.getFields().put("name", FieldUtil.createStringField("German Target"));
@@ -385,7 +385,7 @@ public class NodeFieldEndpointTest extends AbstractFieldEndpointTest {
 
 			// add a node in german (referencing the target node)
 			NodeCreateRequest createSourceNode = new NodeCreateRequest();
-			createSourceNode.setSchema(new SchemaReference().setName("folder"));
+			createSourceNode.setSchema(new SchemaReferenceImpl().setName("folder"));
 			createSourceNode.setParentNodeUuid(folder.getUuid());
 			createSourceNode.setLanguage("de");
 			createSourceNode.getFields().put("name", FieldUtil.createStringField("German Source"));

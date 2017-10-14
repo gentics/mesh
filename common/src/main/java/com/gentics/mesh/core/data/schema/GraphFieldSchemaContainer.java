@@ -12,7 +12,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.NameUuidReference;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.core.rest.schema.SchemaReference;
+import com.gentics.mesh.core.rest.schema.impl.SchemaReferenceImpl;
 
 /**
  * Common graph model interface for schema field containers.
@@ -22,7 +22,7 @@ import com.gentics.mesh.core.rest.schema.SchemaReference;
  * @param <V>
  *            Container type
  * @param <RE>
- *            Response reference model class of the container (e.g.: {@link SchemaReference})
+ *            Response reference model class of the container (e.g.: {@link SchemaReferenceImpl})
  * @param <VV>
  *            Container version type
  */
