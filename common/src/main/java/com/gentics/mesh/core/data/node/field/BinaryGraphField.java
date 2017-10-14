@@ -1,12 +1,12 @@
 package com.gentics.mesh.core.data.node.field;
 
-import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.MeshEdge;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 
 /**
  * The BinaryField Domain Model interface.
  */
-public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVertex {
+public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge {
 	/**
 	 * Return the binary filename.
 	 * 

@@ -20,7 +20,7 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 
-public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphField {
+public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphField {
 
 	public static void init(Database database) {
 		database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
@@ -239,7 +239,7 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 
 	@Override
 	public GraphField cloneTo(GraphFieldContainer container) {
-		MeshEdgeImpl edge = getGraph().addFramedEdge(container, this, HAS_FIELD, MeshEdgeImpl.class);
+		BinaryGraphFieldImpl edge = getGraph().addFramedEdge(container, this, HAS_FIELD, BinaryGraphFieldImpl.class);
 		edge.setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, getFieldKey());
 		return container.getBinary(getFieldKey());
 	}
