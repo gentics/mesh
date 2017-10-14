@@ -14,6 +14,8 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
+import com.gentics.mesh.core.rest.asset.AssetListResponse;
+import com.gentics.mesh.core.rest.asset.AssetResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -185,6 +187,30 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	public MeshRequest<NodeListResponse> findNodes(String projectName, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/nodes" + getQuery(parameters), NodeListResponse.class);
+	}
+
+	@Override
+	public MeshRequest<AssetResponse> findAssetByUuid(String projectName, String uuid, ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<AssetListResponse> findAssets(String projectName, ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<AssetResponse> createAsset(String projectName, String uuid) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MeshRequest<Void> deleteAsset(String projectName, String uuid, ParameterProvider... parameters) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override

@@ -1,12 +1,7 @@
 package com.gentics.mesh.core.data.node.field;
 
-import java.io.File;
-
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
-
-import io.vertx.core.file.AsyncFile;
-import rx.Single;
 
 /**
  * The BinaryField Domain Model interface.
@@ -56,20 +51,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVert
 	 * @return Fluent API
 	 */
 	BinaryGraphField setMimeType(String mimeType);
-
-	/**
-	 * Return a single that holds an AsyncFile for the binary.
-	 * 
-	 * @return
-	 */
-	Single<AsyncFile> getFileStream();
-
-	/**
-	 * Return the file that points to the binary file within the binary file storage.
-	 * 
-	 * @return Found file or null when no binary file could be found
-	 */
-	File getFile();
 
 	/**
 	 * Set the binary file size in bytes
@@ -145,21 +126,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshVert
 	 * @return Fluent API
 	 */
 	BinaryGraphField setImageHeight(Integer heigth);
-
-	/**
-	 * Returns the segmented path that points to the binary file within the binary file location. The segmented path is build using the uuid of the binary field
-	 * vertex.
-	 * 
-	 * @return
-	 */
-	String getSegmentedPath();
-
-	/**
-	 * Return the file path for the binary file location of the node.
-	 * 
-	 * @return
-	 */
-	String getFilePath();
 
 	/**
 	 * Return the uuid of the binary field.

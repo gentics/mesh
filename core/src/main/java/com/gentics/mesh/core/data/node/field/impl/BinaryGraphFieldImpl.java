@@ -5,10 +5,8 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.io.File;
 import java.util.Objects;
 
-import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
@@ -22,15 +20,11 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 
-import io.vertx.core.file.AsyncFile;
-import io.vertx.core.file.OpenOptions;
-import rx.Single;
-
 public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphField {
 
 	public static void init(Database database) {
 		database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
-		//database.addVertexIndex(BinaryGraphFieldImpl.class, true, BINARY_SHA512SUM_PROPERTY_KEY);
+		// database.addVertexIndex(BinaryGraphFieldImpl.class, true, BINARY_SHA512SUM_PROPERTY_KEY);
 	}
 
 	public static FieldTransformer<BinaryField> BINARY_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
@@ -145,24 +139,6 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public String getSegmentedPath() {
-		String[] parts = getUuid().split("(?<=\\G.{4})");
-		StringBuffer buffer = new StringBuffer();
-		buffer.append(File.separator);
-		for (String part : parts) {
-			buffer.append(part + File.separator);
-		}
-		return buffer.toString();
-	}
-
-	@Override
-	public String getFilePath() {
-		File folder = new File(Mesh.mesh().getOptions().getUploadOptions().getDirectory(), getSegmentedPath());
-		File binaryFile = new File(folder, getUuid() + ".bin");
-		return binaryFile.getAbsolutePath();
-	}
-
-	@Override
 	public boolean hasImage() {
 		String contentType = getMimeType();
 		if (contentType == null) {
@@ -250,19 +226,6 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 	}
 
 	@Override
-	public Single<AsyncFile> getFileStream() {
-		return Single.create(new io.vertx.rx.java.SingleOnSubscribeAdapter<AsyncFile>(fut -> {
-			Mesh.vertx().fileSystem().open(getFilePath(), new OpenOptions().setRead(true), fut);
-		}));
-	}
-
-	@Override
-	public File getFile() {
-		File binaryFile = new File(getFilePath());
-		return binaryFile;
-	}
-
-	@Override
 	public void removeField(GraphFieldContainer container) {
 		// Detach the list from the given graph field container
 		container.unlinkOut(this, HAS_FIELD);
@@ -272,7 +235,6 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 			// delete(null);
 			remove();
 		}
-
 	}
 
 	@Override
