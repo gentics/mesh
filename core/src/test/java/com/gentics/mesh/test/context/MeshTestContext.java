@@ -130,7 +130,7 @@ public class MeshTestContext extends TestWatcher {
 	protected void setupIndexHandlers() throws Exception {
 		// We need to call init() again in order create missing indices for the created test data
 		for (IndexHandler<?> handler : meshDagger.indexHandlerRegistry().getHandlers()) {
-			handler.init().await();
+			handler.init().blockingAwait();
 		}
 	}
 
@@ -183,7 +183,7 @@ public class MeshTestContext extends TestWatcher {
 		try (Tx tx = db().tx()) {
 			client = MeshRestClient.create("localhost", getPort(), false, Mesh.vertx());
 			client.setLogin(getData().user().getUsername(), getData().getUserInfo().getPassword());
-			client.login().toBlocking().value();
+			client.login().blockingGet();
 		}
 		if (dummySearchProvider != null) {
 			dummySearchProvider.clear();

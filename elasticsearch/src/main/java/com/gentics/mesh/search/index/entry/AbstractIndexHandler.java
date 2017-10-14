@@ -136,7 +136,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
 		String indexType = composeIndexTypeFromEntry(entry);
-		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformer().toDocument(object)).doOnCompleted(() -> {
+		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformer().toDocument(object)).doOnComplete(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
 			}
@@ -209,7 +209,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 						if (log.isDebugEnabled()) {
 							log.debug("Updated mapping for index {" + indexName + "}");
 						}
-						sub.onCompleted();
+						sub.onComplete();
 					}
 
 					@Override

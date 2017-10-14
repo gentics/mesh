@@ -1,7 +1,7 @@
 package com.gentics.mesh.rest.client;
 
 import io.vertx.core.http.HttpClientResponse;
-import io.vertx.rxjava.core.Future;
+import io.vertx.reactivex.core.Future;
 
 public class MeshResponse<T> extends Future<T> {
 

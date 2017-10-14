@@ -229,7 +229,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			RoutingContext rc = mockRoutingContext();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 
-			UserResponse restUser = user().transformToRest(ac, 0).toBlocking().value();
+			UserResponse restUser = user().transformToRest(ac, 0).blockingGet();
 
 			assertNotNull(restUser);
 			assertEquals(user().getUsername(), restUser.getUsername());

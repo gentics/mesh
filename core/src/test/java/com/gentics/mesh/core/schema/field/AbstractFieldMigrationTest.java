@@ -53,7 +53,7 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.gentics.mesh.util.VersionNumber;
 import com.syncleus.ferma.tx.Tx;
 
-import rx.exceptions.CompositeException;
+import io.reactivex.exceptions.CompositeException;
 
 /**
  * Base class for all field migration tests
@@ -150,7 +150,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -205,7 +205,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignMicroschemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
+		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).blockingAwait(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
 		assertThat(oldContainer).as("Old container").hasVersion(oldVersion.toString());
@@ -307,7 +307,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(user, versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -373,7 +373,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the micronode
 		project().getLatestRelease().assignMicroschemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
+		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).blockingAwait(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
 		assertThat(oldContainer).as("Old container").hasVersion(oldVersion.toString());
@@ -472,7 +472,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
 		// old container must not be changed
 		assertThat(englishContainer).isOf(versionA).hasVersion("0.1");
 		// assert that migration worked
@@ -544,7 +544,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		assertThat(oldFieldFetcher.fetch(micronodeField.getMicronode(), fieldName)).as(OLDFIELD).isNotNull();
 
 		// migrate the micronode
-		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
+		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).blockingAwait(10, TimeUnit.SECONDS);
 
 		// old container must be untouched
 		micronodeField = oldContainer.getMicronode(micronodeFieldName);
@@ -648,7 +648,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
 
 		// assert that migration worked
 		assertThat(node).as("Migrated Node").isOf(container).hasTranslation("en");
@@ -708,7 +708,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the micronode
 		project().getLatestRelease().assignMicroschemaVersion(user(),versionB);
 		Tx.getActive().getGraph().commit();
-		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
+		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).blockingAwait(10, TimeUnit.SECONDS);
 
 		// old container must be unchanged
 		assertThat(oldContainer).as("Old container").hasVersion(oldVersion.toString());
@@ -801,7 +801,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignSchemaVersion(user, versionB);
 		Tx.getActive().getGraph().commit();
-		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
+		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).blockingAwait();
 	}
 
 	/**
@@ -848,7 +848,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the node
 		project().getLatestRelease().assignMicroschemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
+		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).blockingAwait(10, TimeUnit.SECONDS);
 	}
 
 	/**

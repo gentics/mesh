@@ -53,6 +53,7 @@ import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
 import com.gentics.mesh.util.FileUtils;
 
 import dagger.Lazy;
+import io.reactivex.Single;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileSystem;
@@ -60,7 +61,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.web.FileUpload;
 import io.vertx.ext.web.RoutingContext;
-import rx.Single;
 
 /**
  * Handler which contains field API specific request handlers.
@@ -262,7 +262,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					return new TransformationResult(sha512sum, 0, imageInfo);
 				});
 
-				TransformationResult info = resultObs.toBlocking().value();
+				TransformationResult info = resultObs.blockingGet();
 				field.setFileName(fileName);
 				field.setFileSize(ul.size());
 				field.setMimeType(contentType);
@@ -370,7 +370,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 								});
 							});
 
-					TransformationResult result = obsTransformation.toBlocking().value();
+					TransformationResult result = obsTransformation.blockingGet();
 
 					field.setSHA512Sum(result.getHash());
 					field.setFileSize(result.getSize());

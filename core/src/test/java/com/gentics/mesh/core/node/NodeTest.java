@@ -187,7 +187,7 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			InternalActionContext ac = mockActionContext("lang=en&version=draft");
 			Node newsNode = content("concorde");
 
-			NodeResponse response = newsNode.transformToRest(ac, 0).toBlocking().value();
+			NodeResponse response = newsNode.transformToRest(ac, 0).blockingGet();
 			String json = JsonUtil.toJson(response);
 			assertNotNull(json);
 

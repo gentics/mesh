@@ -10,6 +10,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NO_CONTENT;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -38,7 +39,6 @@ import com.syncleus.ferma.tx.TxAction2;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.functions.Action1;
 
 /**
  * Common request handler methods which can be used for CRUD operations.
@@ -224,7 +224,7 @@ public class HandlerUtilities {
 			if (ac.matches(etag, true)) {
 				throw new NotModifiedException();
 			} else {
-				return page.transformToRest(ac, 0).toBlocking().value();
+				return page.transformToRest(ac, 0).blockingGet();
 			}
 		}, (e) -> ac.send(e, OK));
 	}
@@ -238,26 +238,26 @@ public class HandlerUtilities {
 	 * @param action
 	 *            Action which will be invoked once the handler has finished
 	 */
-	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction<RM> handler, Action1<RM> action) {
+	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction<RM> handler, Consumer<RM> action) {
 		operate(ac, () -> {
 			return database.tx(handler);
 		}, action);
 	}
 
-	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction0 handler, Action1<RM> action) {
+	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction0 handler, Consumer<RM> action) {
 		operate(ac, () -> {
 			database.tx(handler);
 			return null;
 		}, action);
 	}
 
-	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction1<RM> handler, Action1<RM> action) {
+	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction1<RM> handler, Consumer<RM> action) {
 		operate(ac, () -> {
 			return database.tx(handler);
 		}, action);
 	}
 
-	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction2 handler, Action1<RM> action) {
+	public <RM extends RestModel> void operateTx(InternalActionContext ac, TxAction2 handler, Consumer<RM> action) {
 		operate(ac, () -> {
 			database.tx(handler);
 			return null;
@@ -271,7 +271,7 @@ public class HandlerUtilities {
 	 * @param handler
 	 * @param action
 	 */
-	private <RM extends RestModel> void operate(InternalActionContext ac, TxAction1<RM> handler, Action1<RM> action) {
+	private <RM extends RestModel> void operate(InternalActionContext ac, TxAction1<RM> handler, Consumer<RM> action) {
 		Mesh.vertx().executeBlocking(bc -> {
 			try {
 				bc.complete(handler.handle());
@@ -282,7 +282,7 @@ public class HandlerUtilities {
 			if (rh.failed()) {
 				ac.fail(rh.cause());
 			} else {
-				action.call(rh.result());
+				action.accept(rh.result());
 			}
 		});
 	}

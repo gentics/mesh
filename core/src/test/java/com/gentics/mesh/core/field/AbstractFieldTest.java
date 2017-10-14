@@ -6,9 +6,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
+import java.util.function.Consumer;
+
 import org.elasticsearch.common.collect.Tuple;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
@@ -32,8 +33,7 @@ import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.AbstractMeshTest;
-
-import rx.functions.Action1;
+import com.syncleus.ferma.tx.Tx;
 
 public abstract class AbstractFieldTest<FS extends FieldSchema> extends AbstractMeshTest implements FieldTestcases {
 
@@ -86,10 +86,10 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	}
 
 	protected void invokeRemoveFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider dummyFieldCreator,
-			Action1<NodeGraphFieldContainer> updater) {
+			Consumer<NodeGraphFieldContainer> updater) {
 		NodeGraphFieldContainer container = createNode(false, null).v2();
 		dummyFieldCreator.set(container, fieldName);
-		updater.call(container);
+		updater.accept(container);
 		assertNull("The field should have been deleted by setting it to null", fetcher.fetch(container, fieldName));
 	}
 
@@ -110,11 +110,11 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 *            Action which updates the given node using a null value
 	 */
 	protected void invokeRemoveRequiredFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider createDummyData,
-			Action1<NodeGraphFieldContainer> updater) {
+			Consumer<NodeGraphFieldContainer> updater) {
 		NodeGraphFieldContainer container = createNode(true, null).v2();
 		createDummyData.set(container, fieldName);
 		try {
-			updater.call(container);
+			updater.accept(container);
 			fail("The update should have failed");
 		} catch (GenericRestException e) {
 			assertEquals("node_error_required_field_not_deletable", e.getI18nKey());
@@ -123,10 +123,10 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	}
 
 	protected void invokeRemoveSegmentFieldViaNullTestcase(String fieldName, FieldFetcher fetcher, DataProvider createDummyData,
-			Action1<NodeGraphFieldContainer> updater) {
+			Consumer<NodeGraphFieldContainer> updater) {
 		NodeGraphFieldContainer container = createNode(false, fieldName).v2();
 		createDummyData.set(container, fieldName);
-		updater.call(container);
+		updater.accept(container);
 	}
 
 	protected void invokeUpdateFromRestNullOnCreateRequiredTestcase(String fieldName, FieldFetcher fetcher) {
@@ -171,11 +171,11 @@ public abstract class AbstractFieldTest<FS extends FieldSchema> extends Abstract
 	 *            Action which will assert the update
 	 */
 	protected void invokeUpdateFromRestValidSimpleValueTestcase(String fieldName, DataProvider createDummyData,
-			Action1<NodeGraphFieldContainer> updater, Action1<NodeGraphFieldContainer> asserter) {
+			Consumer<NodeGraphFieldContainer> updater, Consumer<NodeGraphFieldContainer> asserter) {
 		NodeGraphFieldContainer container = createNode(false, null).v2();
 		createDummyData.set(container, fieldName);
-		updater.call(container);
-		asserter.call(container);
+		updater.accept(container);
+		asserter.accept(container);
 	}
 
 	/**

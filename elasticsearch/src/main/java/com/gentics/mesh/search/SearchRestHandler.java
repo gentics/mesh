@@ -4,10 +4,12 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
+import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -49,8 +51,6 @@ import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.reactivex.RxHelper;
-import io.vertx.rx.java.ObservableFuture;
-import rx.functions.Func0;
 
 /**
  * Collection of handlers which are used to deal with rest search requests.
@@ -98,7 +98,7 @@ public class SearchRestHandler {
 	 * @throws MeshConfigurationException
 	 */
 	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void handleSearch(InternalActionContext ac,
-			Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
+			Supplier<RootVertex<T>> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
 			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException {
 
 		PagingParameters pagingInfo = ac.getPagingParameters();
@@ -166,9 +166,9 @@ public class SearchRestHandler {
 						// TODO check permissions without loading the vertex
 
 						// Locate the node
-						T element = rootVertex.call().findByUuid(uuid);
+						T element = rootVertex.get().findByUuid(uuid);
 						if (element == null) {
-							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.call().getRootLabel() + "}");
+							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.get().getRootLabel() + "}");
 							obsResult.toHandler().handle(Future.succeededFuture());
 						} else {
 							obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
@@ -280,7 +280,7 @@ public class SearchRestHandler {
 		utils.operateTx(ac, () -> {
 			if (ac.getUser().hasAdminRole()) {
 				for (IndexHandler<?> handler : registry.getHandlers()) {
-					handler.init().await();
+					handler.init().blockingAwait();
 				}
 				nodeIndexHandler.updateNodeIndexMappings();
 				return message(ac, "search_admin_createmappings_created");

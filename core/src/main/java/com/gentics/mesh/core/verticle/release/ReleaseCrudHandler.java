@@ -49,10 +49,10 @@ import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
-import rx.Single;
 
 /**
  * CRUD Handler for Releases

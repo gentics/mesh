@@ -19,7 +19,6 @@ import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.Vertx;
-import rx.functions.Action0;
 
 /**
  * Test container for a mesh instance which uses local class files. The image for the container will automatically be rebuild during each startup.
@@ -39,10 +38,10 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	/**
 	 * Action which will be invoked once the mesh instance is ready.
 	 */
-	private Action0 startupAction = () -> {
+	private Runnable startupAction = () -> {
 		client = MeshRestClient.create(getContainerIpAddress(), getMappedPort(8080), false, vertx);
 		client.setLogin("admin", "admin");
-		client.login().toBlocking().value();
+		client.login().blockingGet();
 	};
 	private StartupLatchingConsumer startupConsumer = new StartupLatchingConsumer(startupAction);
 

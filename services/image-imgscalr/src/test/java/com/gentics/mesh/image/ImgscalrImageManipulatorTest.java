@@ -1,10 +1,7 @@
 package com.gentics.mesh.image;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -14,11 +11,10 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 
 import javax.imageio.ImageIO;
 
-import com.gentics.mesh.util.PropReadFileStream;
-import com.gentics.mesh.util.RxUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
@@ -34,14 +30,15 @@ import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.util.PropReadFileStream;
+import com.gentics.mesh.util.RxUtil;
 
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rxjava.core.Vertx;
-import rx.Single;
+import io.vertx.reactivex.core.Vertx;
 import rx.functions.Action6;
-import rx.functions.Func0;
 
 public class ImgscalrImageManipulatorTest {
 
@@ -110,7 +107,7 @@ public class ImgscalrImageManipulatorTest {
 		});
 	}
 
-	private void checkImages(Action6<String, Integer, Integer, String, BufferedImage, Func0<InputStream>> action) throws JSONException, IOException {
+	private void checkImages(Action6<String, Integer, Integer, String, BufferedImage, Consumer<InputStream>> action) throws JSONException, IOException {
 		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json")));
 		JSONArray array = json.getJSONArray("images");
 		for (int i = 0; i < array.length(); i++) {
@@ -229,7 +226,7 @@ public class ImgscalrImageManipulatorTest {
 	@Test
 	public void testTikaMetadata() throws IOException, SAXException, TikaException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/12382975864_09e6e069e7_o.jpg");
-		Map<String, String> metadata = manipulator.getMetadata(ins).toBlocking().value();
+		Map<String, String> metadata = manipulator.getMetadata(ins).blockingGet();
 		assertTrue(!metadata.isEmpty());
 		for (String key : metadata.keySet()) {
 			System.out.println(key + "=" + metadata.get(key));

@@ -7,13 +7,13 @@ import com.gentics.mesh.rest.client.MeshRequest;
 import com.gentics.mesh.rest.client.MeshResponse;
 import com.gentics.mesh.rest.client.handler.ResponseHandler;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
 
 /**
  * Wrapper for a mesh HTTP request.
@@ -103,7 +103,7 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 
 	@Override
 	public Single<T> toSingle() {
-		return toObservable().toSingle();
+		return toObservable().singleOrError();
 	}
 
 

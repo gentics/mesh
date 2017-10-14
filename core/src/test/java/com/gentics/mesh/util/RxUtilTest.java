@@ -3,7 +3,7 @@ package com.gentics.mesh.util;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 @Ignore
 public class RxUtilTest {
@@ -12,7 +12,7 @@ public class RxUtilTest {
 	public void testThen() {
 		Observable.just(1, 2, 3).doOnNext(item -> {
 			System.out.println("Current item " + item.intValue());
-		}).last().compose(RxUtil.then(() -> {
+		}).lastElement().compose(RxUtil.then(() -> {
 			System.out.println("After all");
 			return Observable.just(this);
 		})).doOnNext(item -> {

@@ -87,9 +87,9 @@ public class BasicClusterTest extends AbstractClusterTest {
 	@Before
 	public void setupLogin() {
 		clientA.setLogin("admin", "admin");
-		clientA.login().toBlocking().value();
+		clientA.login().blockingGet();
 		clientB.setLogin("admin", "admin");
-		clientB.login().toBlocking().value();
+		clientB.login().blockingGet();
 	}
 
 	@Test
@@ -280,9 +280,9 @@ public class BasicClusterTest extends AbstractClusterTest {
 		call(() -> clientA.addUserToGroup(groupResponse.getUuid(), userResponse.getUuid()));
 
 		// Node B - Login with new user and read the project
-		clientB.logout().toBlocking().value();
+		clientB.logout().blockingGet();
 		clientB.setLogin(username, password);
-		clientB.login().toBlocking().value();
+		clientB.login().blockingGet();
 		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()));
 
 		// 1. Test permission removal
@@ -297,9 +297,9 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 		// 2. Test role removal - Now remove the role from the group and check that this change is reflected on clientB
 		call(() -> clientA.removeRoleFromGroup(groupResponse.getUuid(), roleResponse.getUuid()));
-		clientA.logout().toBlocking().value();
+		clientA.logout().blockingGet();
 		clientA.setLogin(username, password);
-		clientA.login().toBlocking().value();
+		clientA.login().blockingGet();
 		call(() -> clientA.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
 		call(() -> clientB.findProjectByUuid(projectResponse.getUuid()), FORBIDDEN, "error_missing_perm", projectResponse.getUuid());
 	}

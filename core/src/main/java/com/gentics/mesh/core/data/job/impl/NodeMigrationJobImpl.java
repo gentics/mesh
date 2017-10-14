@@ -89,8 +89,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 
 				status.commit();
 				for (int i = 0; i < 3; i++) {
-					MeshInternal.get().nodeMigrationHandler().migrateNodes(project, release, fromContainerVersion, toContainerVersion, status)
-							.await();
+					MeshInternal.get().nodeMigrationHandler().migrateNodes(project, release, fromContainerVersion, toContainerVersion, status).blockingAwait();
 					// Check migration result
 					boolean hasRemainingContainers = fromContainerVersion.getDraftFieldContainers(release.getUuid()).hasNext();
 					if (i == 3 && hasRemainingContainers) {
@@ -125,11 +124,11 @@ public class NodeMigrationJobImpl extends JobImpl {
 		// Remove old indices
 		MeshInternal.get().searchProvider()
 				.deleteIndex(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), fromContainerVersion.getUuid(), DRAFT))
-				.await();
+				.blockingAwait();
 		MeshInternal.get().searchProvider()
 				.deleteIndex(
 						NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), fromContainerVersion.getUuid(), PUBLISHED))
-				.await();
+				.blockingAwait();
 
 	}
 

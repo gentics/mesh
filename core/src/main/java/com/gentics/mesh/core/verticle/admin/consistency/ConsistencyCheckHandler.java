@@ -19,9 +19,9 @@ import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Vertex;
 
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 @Singleton
 public class ConsistencyCheckHandler extends AbstractHandler {

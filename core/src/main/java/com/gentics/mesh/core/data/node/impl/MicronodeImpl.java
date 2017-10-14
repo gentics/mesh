@@ -45,9 +45,9 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.util.CompareUtils;
 import com.gentics.mesh.util.ETag;
 
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 public class MicronodeImpl extends AbstractGraphFieldContainerImpl implements Micronode {
 	private static final Logger log = LoggerFactory.getLogger(MicronodeImpl.class);

@@ -1,11 +1,11 @@
 package com.gentics.mesh.rest;
 
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
-
 import com.gentics.mesh.rest.client.MeshRestClient;
+
+import io.reactivex.Completable;
+import io.reactivex.Single;
 import io.vertx.core.http.HttpClientRequest;
-import rx.Completable;
-import rx.Single;
 
 public interface MeshRestClientAuthenticationProvider {
 	

@@ -18,7 +18,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -32,8 +31,9 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
+import com.syncleus.ferma.tx.Tx;
 
-import rx.Single;
+import io.reactivex.Single;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TxTest extends AbstractMeshTest {
@@ -120,7 +120,7 @@ public class TxTest extends AbstractMeshTest {
 		CompletableFuture<Throwable> cf = new CompletableFuture<>();
 		db().operateTx(() -> {
 			throw new RuntimeException("error");
-		}).toBlocking().value();
+		}).blockingGet();
 		assertEquals("error", cf.get().getMessage());
 		throw cf.get();
 	}
@@ -132,7 +132,7 @@ public class TxTest extends AbstractMeshTest {
 				TestUtils.sleep(1000);
 			});
 			return Single.just("OK");
-		}).toBlocking().value();
+		}).blockingGet();
 		assertEquals("OK", result);
 	}
 
@@ -140,7 +140,7 @@ public class TxTest extends AbstractMeshTest {
 	public void testAsyncNoTrxSuccess() throws Throwable {
 		String result = db().operateTx(() -> {
 			return Single.just("OK");
-		}).toBlocking().value();
+		}).blockingGet();
 		assertEquals("OK", result);
 	}
 

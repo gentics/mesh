@@ -1,10 +1,5 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
-import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
-
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -31,8 +26,8 @@ import com.gentics.mesh.core.rest.schema.MicroschemaReference;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.CompareUtils;
 
-import rx.Observable;
-import rx.Single;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 
 /**
  * @see MicronodeGraphFieldList
@@ -80,7 +75,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 
 		// Handle Update
 		// TODO instead this method should also return an observable
-		micronodeGraphFieldList.update(ac, micronodeList).toBlocking().value();
+		micronodeGraphFieldList.update(ac, micronodeList).blockingGet();
 	};
 
 	public static FieldGetter MICRONODE_LIST_GETTER = (container, fieldSchema) -> {
@@ -189,7 +184,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				subscriber.onNext(true);
 				subscriber.onCompleted();
 			});
-		}).toSingle();
+		}).singleOrError();
 	}
 
 	@Override

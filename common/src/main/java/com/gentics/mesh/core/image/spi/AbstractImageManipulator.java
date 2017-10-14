@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.concurrent.Callable;
 
 import javax.imageio.ImageIO;
 
@@ -18,7 +19,6 @@ import com.gentics.mesh.util.PropReadFileStream;
 import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.functions.Func0;
 
 /**
  * Abstract image manipulator implementation.
@@ -71,7 +71,7 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public Single<ImageInfo> readImageInfo(Func0<InputStream> insFunc) {
+	public Single<ImageInfo> readImageInfo(Callable<InputStream> insFunc) {
 		return Single.create(sub -> {
 			// 1. Read the image
 			BufferedImage bi = null;

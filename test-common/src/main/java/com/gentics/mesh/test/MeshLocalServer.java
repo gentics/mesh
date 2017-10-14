@@ -152,7 +152,7 @@ public class MeshLocalServer extends TestWatcher {
 		if (client == null) {
 			client = MeshRestClient.create("localhost", httpPort, false, Mesh.vertx());
 			client.setLogin("admin", "admin");
-			client.login().toBlocking().value();
+			client.login().blockingGet();
 		}
 		return client;
 	}

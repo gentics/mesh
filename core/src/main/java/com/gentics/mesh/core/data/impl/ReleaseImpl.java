@@ -48,8 +48,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.VersionUtil;
 
-import rx.Observable;
-import rx.Single;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 
 /**
  * @see Release

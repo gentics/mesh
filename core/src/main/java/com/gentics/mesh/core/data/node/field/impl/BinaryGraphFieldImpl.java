@@ -22,9 +22,9 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 
+import io.reactivex.Single;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
-import rx.Single;
 
 public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphField {
 

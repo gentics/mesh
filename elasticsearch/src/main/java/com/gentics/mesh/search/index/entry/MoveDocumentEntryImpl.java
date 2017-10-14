@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 /**
  * @see MoveDocumentEntry

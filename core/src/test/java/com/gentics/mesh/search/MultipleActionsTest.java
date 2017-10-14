@@ -1,14 +1,16 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
+import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.node.NodeResponse;
@@ -18,13 +20,12 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
-import rx.functions.Func1;
-import static com.gentics.mesh.test.TestSize.FULL;
-import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.Single;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
@@ -49,8 +50,7 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 				.compose(flatMapSingle(unused -> createEmptyNode(newSchema.get(), rootNodeReference.get()))).toCompletable();
 
 		NodeListResponse searchResult = actions
-				.andThen(Single.defer(() -> client().searchNodes(getSimpleTermQuery("schema.name.raw", SCHEMA_NAME)).toSingle())).toBlocking()
-				.value();
+				.andThen(Single.defer(() -> client().searchNodes(getSimpleTermQuery("schema.name.raw", SCHEMA_NAME)).toSingle())).blockingGet();
 		assertEquals("Check search result after actions", nodeCount, searchResult.getMetainfo().getTotalCount());
 	}
 
@@ -68,7 +68,7 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	}
 
 	private Single<SchemaResponse> getSchemaByName(String schemaName) throws JSONException {
-		return client().searchSchemas(getSimpleTermQuery("name.raw", schemaName)).toObservable().flatMapIterable(it -> it.getData()).toSingle();
+		return client().searchSchemas(getSimpleTermQuery("name.raw", schemaName)).toObservable().flatMapIterable(it -> it.getData()).singleOrError();
 	}
 
 	private Single<SchemaResponse> createTestSchema() {
@@ -97,11 +97,11 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 		return client().findProjectByName(PROJECT_NAME).toSingle().map(it -> it.getRootNode());
 	}
 
-	private <T> Observable.Transformer<T, Void> flatMapCompletable(Func1<T, Completable> mapper) {
+	private <T> ObservableTransformer<T, Void> flatMapCompletable(Function<T, Completable> mapper) {
 		return src -> src.map(mapper).toList().flatMap(l -> Completable.merge(l).toObservable());
 	}
 
-	private <T, R> Observable.Transformer<T, R> flatMapSingle(Func1<T, Single<R>> mapper) {
+	private <T, R> ObservableTransformer<T, R> flatMapSingle(Function<T, Single<R>> mapper) {
 		return src -> src.map(mapper).flatMap(it -> it.toObservable());
 	}
 }

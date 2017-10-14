@@ -2,7 +2,7 @@ package com.gentics.mesh.test;
 
 import org.junit.Test;
 
-import rx.Observable;
+import io.reactivex.Observable;
 
 public class RxDebuggerTest {
 
@@ -19,8 +19,7 @@ public class RxDebuggerTest {
 					e.printStackTrace();
 				}
 				System.out.println("Complete");
-				sub.onCompleted();
-
+				sub.onComplete();
 			});
 			obs.subscribe();
 		}).start();
@@ -38,8 +37,7 @@ public class RxDebuggerTest {
 					e.printStackTrace();
 				}
 				System.out.println("Complete");
-				sub.onCompleted();
-
+				sub.onComplete();
 			});
 			obs.subscribe();
 		}).start();

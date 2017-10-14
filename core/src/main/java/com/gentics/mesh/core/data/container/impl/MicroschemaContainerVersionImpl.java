@@ -32,7 +32,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
 
-import rx.Single;
+import io.reactivex.Single;
 
 public class MicroschemaContainerVersionImpl extends
 		AbstractGraphFieldSchemaContainerVersion<MicroschemaResponse, MicroschemaModel, MicroschemaReference, MicroschemaContainerVersion, MicroschemaContainer>

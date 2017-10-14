@@ -32,7 +32,6 @@ import com.syncleus.ferma.tx.Tx;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
-import rx.functions.Action0;
 
 public abstract class AbstractMeshTest implements TestHelperMethods {
 
@@ -60,18 +59,18 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 		MeshInternal.get().searchProvider().clear();
 		// We need to call init() again in order create missing indices for the created test data
 		for (IndexHandler<?> handler : MeshInternal.get().indexHandlerRegistry().getHandlers()) {
-			handler.init().await();
+			handler.init().blockingAwait();
 		}
 		IndexHandlerRegistry registry = MeshInternal.get().indexHandlerRegistry();
 		for (IndexHandler<?> handler : registry.getHandlers()) {
-			handler.reindexAll().await();
+			handler.reindexAll().blockingAwait();
 		}
 	}
 
 	public String getJson(Node node) throws Exception {
 		InternalActionContext ac = mockActionContext("lang=en&version=draft");
 		ac.data().put(RouterStorage.PROJECT_CONTEXT_KEY, TestDataProvider.PROJECT_NAME);
-		return JsonUtil.toJson(node.transformToRest(ac, 0).toBlocking().value());
+		return JsonUtil.toJson(node.transformToRest(ac, 0).blockingGet());
 	}
 
 	protected void testPermission(GraphPermission perm, MeshCoreVertex<?, ?> element) {
@@ -139,12 +138,12 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	 *            Amount of expected jobs
 	 * @return Migration status
 	 */
-	protected JobListResponse waitForJobs(Action0 action, MigrationStatus status, int expectedJobs) {
+	protected JobListResponse waitForJobs(Runnable action, MigrationStatus status, int expectedJobs) {
 		// Load a status just before the action
 		JobListResponse before = call(() -> client().findJobs());
 
 		// Invoke the action
-		action.call();
+		action.run();
 
 		// Now poll the migration status and check the response
 		final int MAX_WAIT = 120;
@@ -183,9 +182,9 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	 *            Expected job status
 	 * @return Job status
 	 */
-	protected JobResponse waitForJob(Action0 action, String jobUuid, MigrationStatus status) {
+	protected JobResponse waitForJob(Runnable action, String jobUuid, MigrationStatus status) {
 		// Invoke the action
-		action.call();
+		action.run();
 
 		// Now poll the migration status and check the response
 		final int MAX_WAIT = 120;

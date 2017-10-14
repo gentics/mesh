@@ -45,9 +45,9 @@ import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
 

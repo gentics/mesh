@@ -1563,9 +1563,9 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		});
 
 		// Now login with a different user to see that the editor field gets updated correctly
-		client().logout().toBlocking().value();
+		client().logout().blockingGet();
 		client().setLogin("dummy", "test123");
-		client().login().toBlocking().value();
+		client().login().blockingGet();
 
 		// 2. Prepare the update request (change name field of english node)
 		NodeUpdateRequest request = new NodeUpdateRequest();

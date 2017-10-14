@@ -296,9 +296,9 @@ public class RoleEndpointPermissionsTest extends AbstractMeshTest {
 		message = call(() -> client().updateRolePermissions(roleUuid, "projects/" + projectUuid() + "/nodes", request));
 		assertMessage(message, "role_updated_permission", "testRole");
 
-		client().logout().toBlocking().value();
+		client().logout().blockingGet();
 		client().setLogin("test", "dummy");
-		client().login().toBlocking().value();
+		client().login().blockingGet();
 
 		NodeListResponse nodeList = call(() -> client().findNodes(PROJECT_NAME));
 		System.out.println(nodeList.toJson());

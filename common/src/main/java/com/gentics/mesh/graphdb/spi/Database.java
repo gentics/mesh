@@ -79,7 +79,7 @@ public interface Database extends TxFactory {
 						bc.complete();
 					} else {
 						try {
-							T ele = result.toBlocking().toFuture().get(40, TimeUnit.SECONDS);
+							T ele = result.blockingGet();
 							bc.complete(ele);
 						} catch (TimeoutException e2) {
 							log.error("Timeout while processing result of transaction handler.", e2);
@@ -124,7 +124,7 @@ public interface Database extends TxFactory {
 						bc.complete();
 					} else {
 						try {
-							T ele = result.toBlocking().toFuture().get(40, TimeUnit.SECONDS);
+							T ele = result.blockingGet();
 							bc.complete(ele);
 						} catch (TimeoutException e2) {
 							log.error("Timeout while processing result of transaction handler.", e2);

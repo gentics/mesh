@@ -37,9 +37,9 @@ import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
+import com.google.common.base.Supplier;
 
 import dagger.Lazy;
-import rx.functions.Func0;
 
 @Singleton
 public class SearchEndpoint extends AbstractEndpoint {
@@ -168,8 +168,8 @@ public class SearchEndpoint extends AbstractEndpoint {
 	 * @param indexHandlerKey
 	 *            key of the index handlers
 	 */
-	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
-			Func0<RootVertex<T>> root, Class<RL> classOfRL, IndexHandler indexHandler, RL exampleListResponse) {
+	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName, Supplier
+			<RootVertex<T>> root, Class<RL> classOfRL, IndexHandler indexHandler, RL exampleListResponse) {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);

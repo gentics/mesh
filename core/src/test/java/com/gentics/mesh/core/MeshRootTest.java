@@ -10,15 +10,13 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.BuildInfo;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
-
-import rx.functions.Action0;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class MeshRootTest extends AbstractMeshTest {
@@ -150,9 +148,9 @@ public class MeshRootTest extends AbstractMeshTest {
 		}
 	}
 
-	private void expectException(Action0 action) {
+	private void expectException(Runnable action) {
 		try {
-			action.call();
+			action.run();
 			fail("An exception should have been thrown.");
 		} catch (Exception e) {
 			assertEquals("Downgrade not allowed", e.getMessage());

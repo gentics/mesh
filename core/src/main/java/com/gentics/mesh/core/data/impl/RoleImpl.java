@@ -38,7 +38,7 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Edge;
 
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * @see Role

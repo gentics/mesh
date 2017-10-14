@@ -22,8 +22,8 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.user.UserAPITokenResponse;
 import com.gentics.mesh.core.rest.user.UserPermissionResponse;
-import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -31,9 +31,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.DateUtils;
 import com.gentics.mesh.util.TokenUtil;
 
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 /**
  * Handler which contains methods for user related requests.

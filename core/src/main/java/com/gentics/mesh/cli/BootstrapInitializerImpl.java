@@ -146,9 +146,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		for (IndexHandler<?> handler : registry.getHandlers()) {
 			String handlerName = handler.getClass().getSimpleName();
 			log.info("Invoking reindex on handler {" + handlerName + "}. This may take some time..");
-			handler.init().await();
+			handler.init().blockingAwait();
 			try (Tx tx = db.tx()) {
-				handler.reindexAll().await();
+				handler.reindexAll().blockingAwait();
 			}
 			log.info("Reindex on handler {" + handlerName + "} completed.");
 		}
@@ -513,7 +513,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	public void createSearchIndicesAndMappings() {
 		IndexHandlerRegistry registry = indexHandlerRegistry.get();
 		for (IndexHandler<?> handler : registry.getHandlers()) {
-			handler.init().await();
+			handler.init().blockingAwait();
 		}
 	}
 

@@ -1,6 +1,5 @@
 package com.gentics.mesh.test;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
 import java.io.IOException;
@@ -11,11 +10,11 @@ import org.junit.Test;
 
 import com.gentics.mesh.util.RxUtil;
 
-import io.vertx.rxjava.core.Vertx;
-import io.vertx.rxjava.core.file.FileSystem;
-import rx.Observable;
-import rx.Single;
-import rx.schedulers.Schedulers;
+import io.reactivex.Observable;
+import io.reactivex.Single;
+import io.reactivex.schedulers.Schedulers;
+import io.vertx.reactivex.core.Vertx;
+import io.vertx.reactivex.core.file.FileSystem;
 
 public class RxTest {
 
@@ -100,7 +99,7 @@ public class RxTest {
 			System.out.println("FLATMAP");
 			return Observable.create(sub -> {
 				sub.onNext("Tüte");
-				sub.onCompleted();
+				sub.onComplete();
 			});
 		});
 

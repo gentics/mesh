@@ -10,8 +10,8 @@ import com.gentics.mesh.core.link.WebRootLinkReplacer;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 
+import io.reactivex.Single;
 import io.vertx.ext.web.RoutingContext;
-import rx.Single;
 
 /**
  * Handler for utility request methods.
