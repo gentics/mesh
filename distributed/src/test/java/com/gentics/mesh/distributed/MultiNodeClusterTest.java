@@ -5,7 +5,6 @@ import static com.gentics.mesh.util.TokenUtil.randomToken;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
 
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
@@ -18,7 +17,6 @@ import io.vertx.core.Vertx;
 /**
  * Test how a cluster behaves with more then two nodes.
  */
-@Ignore
 public class MultiNodeClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
