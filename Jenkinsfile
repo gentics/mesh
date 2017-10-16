@@ -29,7 +29,8 @@ node("docker") {
 		sh "cd .jenkins && docker build -t registry.gentics.com/jenkins-slave-mesh ."
 		sh "cd .jenkins && docker push registry.gentics.com/jenkins-slave-mesh"
 
-		podTemplate(containers: [containerTemplate(alwaysPullImage: true, args: '${computer.jnlpmac} ${computer.name}',
+		podTemplate(containers: [
+			containerTemplate(alwaysPullImage: true, args: '${computer.jnlpmac} ${computer.name}',
 				command: '',
 				envVars: [],
 				image: 'registry.gentics.com/jenkins-slave-mesh',
@@ -37,7 +38,12 @@ node("docker") {
 				name: 'jnlp',
 				privileged: false,
 				ttyEnabled: true,
-				workingDir: '/home/jenkins/workspace')],
+				workingDir: '/home/jenkins/workspace'),
+
+			containerTemplate(alwaysPullImage: false, command: '', envVars: [], image: 'docker:dind', 
+				name: 'dind', ports: [portMapping(containerPort: 2375, hostPort: 2375, name: 'dind')], 
+				privileged: true, ttyEnabled: true, workingDir: '/')
+				],
 				inheritFrom: '',
 				instanceCap: 20,
 				label: 'mesh',
