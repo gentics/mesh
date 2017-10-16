@@ -7,14 +7,7 @@ import static com.gentics.mesh.core.data.ContainerType.forVersion;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.ASSIGNED_TO_PROJECT;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_PARENT_NODE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_TAG;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_USER;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.*;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
 import static com.tinkerpop.blueprints.Direction.OUT;
@@ -66,6 +59,8 @@ import com.gentics.mesh.core.data.impl.UserImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
+import com.gentics.mesh.core.data.node.field.impl.NodeGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.page.TransformablePage;
 import com.gentics.mesh.core.data.page.impl.DynamicTransformablePageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -472,6 +467,19 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			return graph.frameElementExplicit(vertex, NodeImpl.class);
 		});
 		return () -> nstream.iterator();
+	}
+
+	@Override
+	public Iterable<? extends Node> getReferences() {
+		return in(HAS_FIELD).frameExplicit(NodeImpl.class);
+	}
+
+	@Override
+	public Iterable<? extends Node> getReferences(String fieldName) {
+		return inE(HAS_FIELD).filter(e -> {
+			NodeGraphField edge = e.reframeExplicit(NodeGraphFieldImpl.class);
+			return edge.getFieldKey().equals(fieldName);
+		}).outV().frameExplicit(NodeImpl.class);
 	}
 
 	@Override

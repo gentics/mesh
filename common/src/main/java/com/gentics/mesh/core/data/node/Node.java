@@ -275,6 +275,21 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	List<? extends Node> getChildren(MeshAuthUser requestUser, String releaseUuid, List<String> languageTags, ContainerType type);
 
 	/**
+	 * Return the nodes that reference this node.
+	 *
+	 * @return
+	 */
+	Iterable<? extends Node> getReferences();
+
+	/**
+	 * Return the nodes that reference this node by the given field name.
+	 *
+	 * @param fieldName field name
+	 * @return
+	 */
+    Iterable<? extends Node> getReferences(String fieldName);
+
+    /**
 	 * Returns the parent node of this node.
 	 * 
 	 * @param releaseUuid

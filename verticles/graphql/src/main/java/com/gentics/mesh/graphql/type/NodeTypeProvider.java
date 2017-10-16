@@ -2,21 +2,24 @@ package com.gentics.mesh.graphql.type;
 
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD;
+import static com.gentics.mesh.graphql.type.NodeReferenceTypeProvider.NODE_REFERENCE_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.SchemaTypeProvider.SCHEMA_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.TagTypeProvider.TAG_PAGE_TYPE_NAME;
 import static com.gentics.mesh.graphql.type.UserTypeProvider.USER_TYPE_NAME;
 import static graphql.Scalars.GraphQLBoolean;
 import static graphql.Scalars.GraphQLString;
+import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -42,11 +45,8 @@ import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
-import graphql.schema.DataFetchingEnvironment;
-import graphql.schema.GraphQLList;
-import graphql.schema.GraphQLObjectType;
+import graphql.schema.*;
 import graphql.schema.GraphQLObjectType.Builder;
-import graphql.schema.GraphQLTypeReference;
 
 /**
  * Type provider for the node type. Internally this will map partially to {@link Node} and {@link NodeGraphFieldContainer} vertices.
@@ -395,6 +395,49 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			}
 			return container.getLanguage().getLanguageTag();
 		}));
+
+		GraphQLArgument schemaNameArgument = newArgument()
+			.name("schemaName")
+			.description("Filter the nodes by schema name.")
+			.type(GraphQLString)
+			.build();
+
+		GraphQLArgument fieldNameArgument = newArgument()
+			.name("fieldName")
+			.description("Filter the nodes by the field name which is used to reference this node.")
+			.type(GraphQLString)
+			.build();
+
+		// .referencedBy
+		nodeType.field(newFieldDefinition()
+			.name("referencedBy")
+			.description("Loads nodes that reference this node.")
+			.argument(schemaNameArgument)
+			.argument(fieldNameArgument)
+			.type(new GraphQLTypeReference(NODE_REFERENCE_PAGE_TYPE_NAME))
+			.dataFetcher(env -> {
+				NodeContent content = env.getSource();
+				GraphQLContext gc = env.getContext();
+
+				Stream<? extends Node> references;
+				if (env.containsArgument(fieldNameArgument.getName())) {
+					references = StreamSupport.stream(
+						content.getNode().getReferences(env.getArgument(fieldNameArgument.getName())).spliterator(),
+					false);
+				} else {
+					references = StreamSupport.stream(content.getNode().getReferences().spliterator(), false);
+				}
+
+				if (env.containsArgument(schemaNameArgument.getName())) {
+					references = references
+						.filter(node -> node.getSchemaContainer().getName().equals(env.getArgument(schemaNameArgument.getName())) &&
+							gc.getUser().hasPermission(node, READ_PUBLISHED_PERM)
+						);
+				} else {
+
+				}
+			})
+		);
 
 		return nodeType.build();
 	}
