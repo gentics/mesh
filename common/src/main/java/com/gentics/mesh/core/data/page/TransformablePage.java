@@ -39,7 +39,7 @@ public interface TransformablePage<T extends TransformableElement<? extends Rest
 			return Single.just(listResponse);
 		}
 
-		return Observable.fromIterable(obs).concatMapEager(s -> s.toObservable()).toList().toSingle().map(list -> {
+		return Observable.fromIterable(obs).concatMapEager(s -> s.toObservable()).toList().map(list -> {
 			setPaging(listResponse);
 			listResponse.getData().addAll(list);
 			return listResponse;

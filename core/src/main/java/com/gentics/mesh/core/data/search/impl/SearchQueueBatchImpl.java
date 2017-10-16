@@ -243,14 +243,15 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 				// Handle all entries sequentially since some entries create entries and those need to be executed first
 				int batchSize = 8;
 				long totalBatchCount = entryList.size() / batchSize + 1;
-				Observable<Completable> obs2 = Observable.from(entryList);
+				Observable<Completable> obs2 = Observable.fromIterable(entryList);
 				Observable<List<Completable>> buffers = obs2.buffer(batchSize);
+				
 				// First ensure that the non-store events are processed before handling the store batches
-				obs = obs.andThen(Completable.concat(buffers.map(i -> Completable.merge(i).doOnComplete(() -> {
+				obs = obs.andThen(buffers.map(i -> Completable.merge(i).doOnComplete(() -> {
 					if (totalBatchCount > 0) {
 						log.info("Search queue entry batch completed {" + counter.incrementAndGet() + "/" + totalBatchCount + "}");
 					}
-				}))));
+				})).toList().flatMapCompletable(it -> Completable.concat(it)));
 			}
 
 			return obs.doOnComplete(() -> {

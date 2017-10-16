@@ -1,5 +1,10 @@
 package com.gentics.mesh.core.data.node.field.list.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
+import static org.apache.commons.lang3.StringUtils.equalsIgnoreCase;
+
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -122,7 +127,7 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 		}));
 
 		return Observable.<Boolean>create(subscriber -> {
-			Observable.from(list.getItems()).flatMap(item -> {
+			Observable.fromIterable(list.getItems()).flatMap(item -> {
 				if (item == null) {
 					throw error(BAD_REQUEST, "field_list_error_null_not_allowed", getFieldKey());
 				}
@@ -178,11 +183,10 @@ public class MicronodeGraphFieldListImpl extends AbstractReferencingGraphFieldLi
 				existing.values().stream().forEach(micronode -> {
 					micronode.delete(null);
 				});
+				subscriber.onNext(true);
+				subscriber.onComplete();
 			}, e -> {
 				subscriber.onError(e);
-			}, () -> {
-				subscriber.onNext(true);
-				subscriber.onCompleted();
 			});
 		}).singleOrError();
 	}

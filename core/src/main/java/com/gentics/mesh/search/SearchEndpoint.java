@@ -5,6 +5,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import java.util.Set;
+import java.util.function.Supplier;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -37,7 +40,6 @@ import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
-import com.google.common.base.Supplier;
 
 import dagger.Lazy;
 

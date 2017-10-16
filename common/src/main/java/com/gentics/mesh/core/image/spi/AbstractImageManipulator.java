@@ -8,7 +8,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.concurrent.Callable;
+import java.util.function.Supplier;
 
 import javax.imageio.ImageIO;
 
@@ -71,11 +71,11 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	}
 
 	@Override
-	public Single<ImageInfo> readImageInfo(Callable<InputStream> insFunc) {
+	public Single<ImageInfo> readImageInfo(Supplier<InputStream> insFunc) {
 		return Single.create(sub -> {
 			// 1. Read the image
 			BufferedImage bi = null;
-			try (InputStream ins = insFunc.call()) {
+			try (InputStream ins = insFunc.get()) {
 				bi = ImageIO.read(ins);
 			} catch (Exception e) {
 				throw error(BAD_REQUEST, "image_error_reading_failed", e);

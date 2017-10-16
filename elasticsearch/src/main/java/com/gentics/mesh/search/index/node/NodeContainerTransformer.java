@@ -240,7 +240,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						MicronodeGraphFieldList micronodeGraphFieldList = container.getMicronodeList(fieldSchema.getName());
 						if (micronodeGraphFieldList != null) {
 							// Add list of micronode objects
-							fieldsMap.put(fieldSchema.getName(), Observable.from(micronodeGraphFieldList.getList()).map(item -> {
+							fieldsMap.put(fieldSchema.getName(), Observable.fromIterable(micronodeGraphFieldList.getList()).map(item -> {
 								JsonObject itemMap = new JsonObject();
 								Micronode micronode = item.getMicronode();
 								MicroschemaContainerVersion microschameContainerVersion = micronode.getSchemaContainerVersion();
@@ -248,7 +248,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode,
 										microschameContainerVersion.getSchema().getFields());
 								return itemMap;
-							}).toList().toBlocking().single());
+							}).toList().blockingGet());
 						}
 						break;
 					case "string":

@@ -43,14 +43,11 @@ import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.util.Tuple;
-import com.tinkerpop.gremlin.Tokens.T;
 
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.reactivex.RxHelper;
 
 /**
  * Collection of handlers which are used to deal with rest search requests.
@@ -149,7 +146,7 @@ public class SearchRestHandler {
 			@Override
 			public void onResponse(SearchResponse response) {
 				db.tx(() -> {
-					List<ObservableFuture<Tuple<T, String>>> obs = new ArrayList<>();
+					List<Single<Tuple<T, String>>> obs = new ArrayList<>();
 					List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 
 					for (SearchHit hit : response.getHits()) {
@@ -160,23 +157,18 @@ public class SearchRestHandler {
 						String language = pos > 0 ? id.substring(pos + 1) : null;
 						String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-						ObservableFuture<Tuple<T, String>> obsResult = RxHelper.observableFuture();
-						obs.add(obsResult);
-
 						// TODO check permissions without loading the vertex
-
 						// Locate the node
 						T element = rootVertex.get().findByUuid(uuid);
 						if (element == null) {
 							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.get().getRootLabel() + "}");
-							obsResult.toHandler().handle(Future.succeededFuture());
 						} else {
-							obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
+							obs.add(Single.just(Tuple.tuple(element, language)));
 						}
 
 					}
 
-					Observable.merge(obs).collect(() -> {
+					Single.merge(obs).collect(() -> {
 						return new ArrayList<Tuple<T, String>>();
 					}, (x, y) -> {
 						if (y == null) {
@@ -223,7 +215,7 @@ public class SearchRestHandler {
 
 						List<Observable<TR>> obsList = transformedElements.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
 						// Populate the response data with the transformed elements and send the response
-						Observable.concat(Observable.from(obsList)).collect(() -> {
+						Observable.concat(Observable.fromIterable(obsList)).collect(() -> {
 							return listResponse.getData();
 						}, (x, y) -> {
 							x.add(y);
@@ -289,5 +281,7 @@ public class SearchRestHandler {
 			}
 		}, message -> ac.send(message, OK));
 	}
+
+	
 
 }

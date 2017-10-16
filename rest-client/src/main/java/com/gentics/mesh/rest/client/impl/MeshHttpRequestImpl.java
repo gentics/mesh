@@ -98,7 +98,7 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 
 	@Override
 	public Completable toCompletable() {
-		return toObservable().toCompletable();
+		return toObservable().ignoreElements();
 	}
 
 	@Override

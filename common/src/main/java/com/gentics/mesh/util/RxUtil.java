@@ -6,13 +6,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
 import io.reactivex.ObservableTransformer;
 import io.reactivex.Single;
+import io.reactivex.subscribers.DefaultSubscriber;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
 
@@ -22,7 +22,7 @@ public final class RxUtil {
 	}
 
 	public static <T> Completable andThenCompletable(Single<T> source, Function<T, Completable> mappingFunction) {
-		return Observable.merge(source.toObservable().map(v -> mappingFunction.apply(v).toObservable())).toCompletable();
+		return Observable.merge(source.toObservable().map(v -> mappingFunction.apply(v).toObservable())).ignoreElements();
 	}
 
 	public static <T> void noopAction(T nix) {
@@ -56,7 +56,7 @@ public final class RxUtil {
 		//TODO handle empty list
 		return Observable.create(sub -> {
 			AtomicInteger index = new AtomicInteger();
-			Subscriber<T> subscriber = new Subscriber<T>() {
+			DefaultSubscriber<T> subscriber = new DefaultSubscriber<T>() {
 				@Override
 				public void onComplete() {
 					int current = index.incrementAndGet();
