@@ -43,7 +43,7 @@ node("docker") {
 				],
 
 				inheritFrom: '',
-				instanceCap: 20,
+				instanceCap: 10,
 				label: 'mesh',
 				name: 'jenkins-slave-mesh',
 				namespace: 'default', 
