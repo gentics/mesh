@@ -49,12 +49,13 @@ node("docker") {
 				namespace: 'default', 
 				serviceAccount: 'jenkins',
 				volumes: [
+					volumes: [emptyDirVolume(memory: false, mountPath: '/var/run')],
 					persistentVolumeClaim(claimName: 'jenkins-maven-repository', mountPath: '/home/jenkins/.m2/repository', readOnly: false),
 					persistentVolumeClaim(claimName: 'jenkins-credentials', mountPath: '/home/jenkins/credentials', readOnly: true)
 				], 
 				workspaceVolume: emptyDirWorkspaceVolume(false)) {
 					node("mesh") {
-						env.DOCKER_HOST = "tcp://127.0.0.1:2375"
+						//env.DOCKER_HOST = "tcp://127.0.0.1:2375"
 
 						stage("Checkout") {
 							checkout scm
