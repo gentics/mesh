@@ -49,7 +49,7 @@ node("docker") {
 				namespace: 'default', 
 				serviceAccount: 'jenkins',
 				volumes: [
-					volumes: [emptyDirVolume(memory: false, mountPath: '/var/run')],
+					emptyDirVolume(memory: false, mountPath: '/var/run'),
 					persistentVolumeClaim(claimName: 'jenkins-maven-repository', mountPath: '/home/jenkins/.m2/repository', readOnly: false),
 					persistentVolumeClaim(claimName: 'jenkins-credentials', mountPath: '/home/jenkins/credentials', readOnly: true)
 				], 
