@@ -2,16 +2,14 @@ package com.gentics.mesh.distributed;
 
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.util.UUIDUtil.randomUUID;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.test.MeshLocalServer;
 
-@Ignore
 public class LocalServerTest {
 
 	private static String clusterPostFix = randomUUID();
