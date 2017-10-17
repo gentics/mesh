@@ -30,14 +30,19 @@ node("docker") {
 				command: '',
 				envVars: [],
 				image: 'registry.gentics.com/jenkins-slave-mesh',
-				livenessProbe: containerLivenessProbe(execArgs: '', failureThreshold: 0, initialDelaySeconds: 0, periodSeconds: 0, successThreshold: 0, timeoutSeconds: 0),
 				name: 'jnlp',
 				privileged: false,
 				ttyEnabled: true,
 				workingDir: '/home/jenkins/workspace'),
 
-			containerTemplate(alwaysPullImage: false, command: '', envVars: [], image: 'docker:dind', 
-				name: 'dind', privileged: true, ttyEnabled: true, workingDir: '/')
+			containerTemplate(alwaysPullImage: false, 
+				command: '',
+				envVars: [],
+				image: 'docker:dind',
+				name: 'dind',
+				privileged: true,
+				ttyEnabled: true,
+				workingDir: '/home/jenkins')
 				],
 
 				inheritFrom: '',
