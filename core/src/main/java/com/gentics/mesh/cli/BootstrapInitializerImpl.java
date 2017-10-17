@@ -68,6 +68,7 @@ import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.HtmlFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
+import com.gentics.mesh.distributed.DistributedEventManager;
 import com.gentics.mesh.error.MeshSchemaException;
 import com.gentics.mesh.etc.LanguageEntry;
 import com.gentics.mesh.etc.LanguageSet;
@@ -114,6 +115,9 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 	@Inject
 	public RouterStorage routerStorage;
+
+	@Inject
+	public DistributedEventManager eventManager;
 
 	@Inject
 	public Lazy<IndexHandlerRegistry> indexHandlerRegistry;
@@ -178,9 +182,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 	 * 
 	 * @param isJoiningCluster
 	 *            Flag which indicates that the instance is joining the cluster. In those cases various checks must not be invoked.
+	 * @return True if an empty installation was detected, false if existing data was found
 	 * @throws Exception
 	 */
-	private void initLocalData(boolean isJoiningCluster) throws Exception {
+	private boolean initLocalData(boolean isJoiningCluster) throws Exception {
 		boolean isEmptyInstallation = isEmptyInstallation();
 		if (isEmptyInstallation) {
 			// Update graph indices and vertex types (This may take some time)
@@ -193,7 +198,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 
 			// Mark all changelog entries as applied for new installations
 			markChangelogApplied();
-			createSearchIndicesAndMappings();
+			return true;
 		} else {
 
 			handleMeshVersion();
@@ -203,6 +208,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// Update graph indices and vertex types (This may take some time)
 				DatabaseHelper.init(db);
 			}
+			return false;
 		}
 	}
 
@@ -238,11 +244,14 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 				// We need to init the graph db before starting the OrientDB Server. Otherwise the database will not get picked up by the orientdb server which
 				// handles the clustering.
 				db.setupConnectionPool();
-				initLocalData(false);
+				boolean setupData = initLocalData(false);
 				// db.closeConnectionPool();
 				db.startServer();
 				// db.setupConnectionPool();
 				initVertx(options, isClustered);
+				if (setupData) {
+					createSearchIndicesAndMappings();
+				}
 			} else {
 				// We need to wait for other nodes and receive the graphdb
 				db.startServer();
@@ -276,6 +285,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 			}
 		}
 
+		eventManager.registerHandlers();
 		routerStorage.init();
 		handleLocalData(hasOldLock, options, verticleLoader);
 	}
@@ -309,10 +319,10 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		// TODO configure worker pool size
 		vertxOptions.setWorkerPoolSize(12);
 		if (vertxOptions.isClustered()) {
-			log.info("Creating clustered vertx instance");
+			log.info("Creating clustered Vert.x instance");
 			mesh.setVertx(createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.getHazelcast()));
 		} else {
-			log.info("Creating non-clustered vertx instance");
+			log.info("Creating non-clustered Vert.x instance");
 			mesh.setVertx(Vertx.vertx(vertxOptions));
 		}
 	}

@@ -35,7 +35,9 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -75,6 +77,9 @@ import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.tx.Tx;
 import com.syncleus.ferma.typeresolvers.PolymorphicTypeResolver;
 
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonObject;
+
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = true)
 public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
 
@@ -106,8 +111,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		ProjectResponse restProject = call(() -> client().createProject(request));
 		assertEquals("The name of the project did not match.", name, restProject.getName());
 
-		NodeResponse response = call(
-				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl().setVersion("draft")));
+		NodeResponse response = call(() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl()
+				.setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
 
 		// Test slashes
@@ -136,12 +141,21 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		request.setName(name);
 		request.setSchema(new SchemaReferenceImpl().setName("folder"));
 
+		CompletableFuture<JsonObject> fut = new CompletableFuture<>();
+		vertx().eventBus().consumer(Project.TYPE_INFO.getOnCreatedAddress(), (Message<JsonObject> rh) -> {
+			fut.complete(rh.body());
+		});
+
 		ProjectResponse restProject = call(() -> client().createProject(request));
 
 		// Verify that the new routes have been created
-		NodeResponse response = call(
-				() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl().setVersion("draft")));
+		NodeResponse response = call(() -> client().findNodeByUuid(name, restProject.getRootNode().getUuid(), new VersioningParametersImpl()
+				.setVersion("draft")));
 		assertEquals("folder", response.getSchema().getName());
+
+		JsonObject eventInfo = fut.get(10, TimeUnit.SECONDS);
+		assertEquals(name, eventInfo.getString("name"));
+		assertEquals(restProject.getUuid(), eventInfo.getString("uuid"));
 
 		assertThat(restProject).matches(request);
 		try (Tx tx = tx()) {
@@ -295,8 +309,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		assertEquals("Somehow not all projects were loaded when loading all pages.", totalProjects, allProjects.size());
 
 		// Verify that the no perm project is not part of the response
-		List<ProjectResponse> filteredProjectList = allProjects.parallelStream()
-				.filter(restProject -> restProject.getName().equals(noPermProjectName)).collect(Collectors.toList());
+		List<ProjectResponse> filteredProjectList = allProjects.parallelStream().filter(restProject -> restProject.getName().equals(
+				noPermProjectName)).collect(Collectors.toList());
 		assertTrue("The no perm project should not be part of the list since no permissions were added.", filteredProjectList.size() == 0);
 
 		call(() -> client().findProjects(new PagingParametersImpl(-1, perPage)), BAD_REQUEST, "error_page_parameter_must_be_positive", "-1");
@@ -631,9 +645,8 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		validateCreation(set, null);
 
 		try (Tx tx = tx()) {
-			long n = StreamSupport
-					.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName()).spliterator(), true)
-					.count();
+			long n = StreamSupport.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())
+					.spliterator(), true).count();
 			int nProjectsAfter = meshRoot().getProjectRoot().findAll().size();
 			assertEquals(nProjectsBefore + nJobs, nProjectsAfter);
 			assertEquals(nProjectsBefore + nJobs, n);

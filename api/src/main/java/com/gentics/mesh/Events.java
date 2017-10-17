@@ -38,11 +38,6 @@ public final class Events {
 	public static final String EVENT_CLUSTER_DATABASE_CHANGE_STATUS = "mesh.cluster.db.status";
 
 	/**
-	 * Event which is send once the project information has been updated.
-	 */
-	public static final String EVENT_CLUSTER_UPDATE_PROJECTS = "mesh.cluster.update-projects";
-
-	/**
 	 * Event which is send to update the permission stores.
 	 */
 	public static final String EVENT_CLEAR_PERMISSION_STORE = "mesh.clear-permission-store";

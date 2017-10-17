@@ -45,16 +45,14 @@ public class DemoRunner {
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 
 		MissingOrientCredentialFixer.fix(options);
-
-		options.getHttpServerOptions().setEnableCors(true);
-		options.getHttpServerOptions().setCorsAllowCredentials(false);
-		options.getHttpServerOptions().setCorsAllowedOriginPattern("*");
+		
 		// For Mesh UI Dev
+		//options.getHttpServerOptions().setEnableCors(true);
 		// options.getHttpServerOptions().setCorsAllowCredentials(true);
 		// options.getHttpServerOptions().setCorsAllowedOriginPattern("http://localhost:5000");
 		// options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setStartServer(true);
-		// options.getSearchOptions().setHttpEnabled(true);
+		options.getSearchOptions().setHttpEnabled(true);
 		// options.getStorageOptions().setDirectory(null);
 		// options.setClusterMode(true);
 

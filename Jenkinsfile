@@ -21,11 +21,7 @@ final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 
 node("docker") {
 	stage("Setup Build Environment") {
-
-		stage("Checkout") {
-			checkout scm
-		}
-
+		checkout scm
 		sh "cd .jenkins && docker build -t registry.gentics.com/jenkins-slave-mesh ."
 		sh "cd .jenkins && docker push registry.gentics.com/jenkins-slave-mesh"
 
@@ -41,9 +37,9 @@ node("docker") {
 				workingDir: '/home/jenkins/workspace'),
 
 			containerTemplate(alwaysPullImage: false, command: '', envVars: [], image: 'docker:dind', 
-				name: 'dind', ports: [portMapping(containerPort: 2375, hostPort: 2375, name: 'dind')], 
-				privileged: true, ttyEnabled: true, workingDir: '/')
+				name: 'dind', privileged: true, ttyEnabled: true, workingDir: '/')
 				],
+
 				inheritFrom: '',
 				instanceCap: 20,
 				label: 'mesh',
@@ -57,6 +53,8 @@ node("docker") {
 				], 
 				workspaceVolume: emptyDirWorkspaceVolume(false)) {
 					node("mesh") {
+						env.DOCKER_HOST = "tcp://127.0.0.1:2375"
+
 						stage("Checkout") {
 							checkout scm
 						}

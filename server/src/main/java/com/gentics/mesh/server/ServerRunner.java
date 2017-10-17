@@ -7,7 +7,6 @@ import com.gentics.mesh.OptionsLoader;
 import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.config.MeshOptions;
-import com.gentics.mesh.graphdb.MissingOrientCredentialFixer;
 import com.gentics.mesh.search.verticle.ElasticsearchHeadVerticle;
 import com.gentics.mesh.util.DeploymentUtil;
 import com.gentics.mesh.verticle.admin.AdminGUIVerticle;

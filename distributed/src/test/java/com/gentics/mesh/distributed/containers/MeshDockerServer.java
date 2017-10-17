@@ -157,6 +157,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 			addEnv("JAVAOPTS", javaOpts);
 		}
 
+		exposedPorts.add(8600);
 		exposedPorts.add(8080);
 		exposedPorts.add(9200);
 		exposedPorts.add(9300);
@@ -259,6 +260,7 @@ public class MeshDockerServer<SELF extends MeshDockerServer<SELF>> extends Gener
 	private static String generateMeshYML(boolean enableClustering) throws JsonProcessingException {
 		MeshOptions options = new MeshOptions();
 		options.getClusterOptions().setEnabled(enableClustering);
+		options.getClusterOptions().setVertxPort(8600);
 		options.getAuthenticationOptions().setKeystorePassword(UUIDUtil.randomUUID());
 		options.getSearchOptions().setHttpEnabled(true);
 		return OptionsLoader.getYAMLMapper().writeValueAsString(options);
