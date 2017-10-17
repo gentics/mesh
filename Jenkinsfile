@@ -16,7 +16,6 @@ properties([
 	])
 ])
 
-final def dockerHost           = "tcp://gemini.office:2375"
 final def gitCommitTag         = '[Jenkins | ' + env.JOB_BASE_NAME + ']';
 
 node("docker") {
@@ -28,7 +27,6 @@ node("docker") {
 		podTemplate(containers: [
 			containerTemplate(alwaysPullImage: true, args: '${computer.jnlpmac} ${computer.name}',
 				command: '',
-				envVars: [],
 				image: 'registry.gentics.com/jenkins-slave-mesh',
 				name: 'jnlp',
 				privileged: false,
@@ -37,12 +35,11 @@ node("docker") {
 
 			containerTemplate(alwaysPullImage: false, 
 				command: '',
-				envVars: [],
 				image: 'docker:dind',
 				name: 'dind',
 				privileged: true,
 				ttyEnabled: true,
-				workingDir: '/home/jenkins')
+				workingDir: '/root')
 				],
 
 				inheritFrom: '',
@@ -52,7 +49,6 @@ node("docker") {
 				namespace: 'default', 
 				serviceAccount: 'jenkins',
 				volumes: [
-					hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'), 
 					persistentVolumeClaim(claimName: 'jenkins-maven-repository', mountPath: '/home/jenkins/.m2/repository', readOnly: false),
 					persistentVolumeClaim(claimName: 'jenkins-credentials', mountPath: '/home/jenkins/credentials', readOnly: true)
 				], 
@@ -199,4 +195,3 @@ node("docker") {
 		}
 	}
 }
-
