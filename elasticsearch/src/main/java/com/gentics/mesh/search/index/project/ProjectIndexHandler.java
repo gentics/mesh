@@ -62,7 +62,7 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
-	protected RootVertex<Project> getRootVertex() {
+	public RootVertex<Project> getRootVertex() {
 		return boot.meshRoot().getProjectRoot();
 	}
 

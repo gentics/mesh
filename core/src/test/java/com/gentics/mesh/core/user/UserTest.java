@@ -43,6 +43,7 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.test.util.TestUtils;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
@@ -153,7 +154,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 				assertEquals(user().getEmailAddress(), json.getString("emailAddress"));
 
 				assertNotNull(json.getJsonArray("roles"));
-				assertEquals(user().getRoles().size(), json.getJsonArray("roles").size());
+				assertEquals(TestUtils.size(user().getRoles()), json.getJsonArray("roles").size());
 				assertNotNull(json.getJsonArray("groups"));
 				assertEquals(user().getGroups().size(), json.getJsonArray("groups").size());
 			}
@@ -319,22 +320,20 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertTrue(
 						"The new user should have all permissions to CRUD the target node since he is member of a group that has been assigned to roles with various permissions that cover CRUD. Failed for permission {"
-								+ perm.name() + "}",
-						newUser.hasPermission(targetNode, perm));
+								+ perm.name() + "}", newUser.hasPermission(targetNode, perm));
 			}
 
 			// roleWithAllPerm
 			for (GraphPermission perm : GraphPermission.values()) {
-				assertTrue("The role should grant all permissions to the target node. Failed for permission {" + perm.name() + "}",
-						roleWithAllPerm.hasPermission(perm, targetNode));
+				assertTrue("The role should grant all permissions to the target node. Failed for permission {" + perm.name() + "}", roleWithAllPerm
+						.hasPermission(perm, targetNode));
 			}
 
 			// roleWithNoPerm
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertFalse(
 						"No extra permissions should be assigned to the role that did not have any permissions on the source element. Failed for permission {"
-								+ perm.name() + "}",
-						roleWithNoPerm.hasPermission(perm, targetNode));
+								+ perm.name() + "}", roleWithNoPerm.hasPermission(perm, targetNode));
 			}
 
 			// roleWithDeletePerm
@@ -359,8 +358,7 @@ public class UserTest extends AbstractMeshTest implements BasicObjectTestcases {
 			for (GraphPermission perm : GraphPermission.values()) {
 				assertTrue(
 						"The role should have all permission on the object since addCRUDPermissionOnRole has been invoked using CREATE_PERM parameter. Failed for permission {"
-								+ perm.name() + "}",
-						roleWithCreatePerm.hasPermission(perm, targetNode));
+								+ perm.name() + "}", roleWithCreatePerm.hasPermission(perm, targetNode));
 			}
 		}
 

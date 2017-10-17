@@ -792,6 +792,12 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
+			public Iterable<? extends Role> getRolesWithPerm(GraphPermission perm) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
 			public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
 				// TODO Auto-generated method stub
 			}

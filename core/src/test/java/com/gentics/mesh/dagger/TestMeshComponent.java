@@ -16,7 +16,7 @@ import com.gentics.mesh.core.verticle.migration.micronode.MicronodeMigrationHand
 import com.gentics.mesh.core.verticle.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.verticle.migration.release.ReleaseMigrationHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
-import com.gentics.mesh.dagger.module.ExtraModule;
+import com.gentics.mesh.dagger.module.BindModule;
 import com.gentics.mesh.dagger.module.FakeConsoleModule;
 import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.etc.RouterStorage;
@@ -39,7 +39,7 @@ import com.gentics.mesh.search.index.user.UserIndexHandler;
 import dagger.Component;
 
 @Singleton
-@Component(modules = { MeshModule.class, ExtraModule.class, FakeConsoleModule.class })
+@Component(modules = { MeshModule.class, BindModule.class, FakeConsoleModule.class })
 public interface TestMeshComponent extends MeshComponent {
 
 	BootstrapInitializer boot();
@@ -47,8 +47,6 @@ public interface TestMeshComponent extends MeshComponent {
 	Database database();
 
 	SearchQueue searchQueue();
-
-	SearchProvider searchProvider();
 
 	BCryptPasswordEncoder passwordEncoder();
 

@@ -209,8 +209,8 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	}
 
 	@Override
-	public List<? extends Role> getRoles() {
-		return out(HAS_USER).in(HAS_ROLE).toListExplicit(RoleImpl.class);
+	public Iterable<? extends Role> getRoles() {
+		return out(HAS_USER).in(HAS_ROLE).frameExplicit(RoleImpl.class);
 	}
 
 	@Override

@@ -31,6 +31,7 @@ import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.index.group.GroupIndexHandler;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeSearchHandler;
 import com.gentics.mesh.search.index.project.ProjectIndexHandler;
 import com.gentics.mesh.search.index.role.RoleIndexHandler;
 import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
@@ -44,7 +45,7 @@ import rx.functions.Func0;
 @Singleton
 public class SearchEndpoint extends AbstractEndpoint {
 
-	private SearchRestHandler searchHandler;
+	private NodeSearchHandler searchHandler;
 
 	private Lazy<BootstrapInitializer> boot;
 
@@ -76,7 +77,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 	MicroschemaContainerIndexHandler microschemaContainerIndexHandler;
 
 	@Inject
-	public SearchEndpoint(RouterStorage routerStorage, SearchRestHandler searchHandler, Lazy<BootstrapInitializer> boot) {
+	public SearchEndpoint(RouterStorage routerStorage, NodeSearchHandler searchHandler, Lazy<BootstrapInitializer> boot) {
 		super("search", routerStorage);
 		this.searchHandler = searchHandler;
 		this.boot = boot;

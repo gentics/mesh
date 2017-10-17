@@ -26,12 +26,13 @@ public class TagFamilyTransformer extends AbstractTransformer<TagFamily> {
 
 	@Override
 	public JsonObject toDocument(TagFamily tagFamily) {
-		JsonObject jsonObject = new JsonObject();
-		jsonObject.put(NAME_KEY, tagFamily.getName());
-		addBasicReferences(jsonObject, tagFamily);
-		addTags(jsonObject, tagFamily.findAll());
-		addProject(jsonObject, tagFamily.getProject());
-		return jsonObject;
+		JsonObject document = new JsonObject();
+		document.put(NAME_KEY, tagFamily.getName());
+		addBasicReferences(document, tagFamily);
+		addTags(document, tagFamily.findAllIt());
+		addProject(document, tagFamily.getProject());
+		addPermissionInfo(document, tagFamily);
+		return document;
 	}
 
 	@Override

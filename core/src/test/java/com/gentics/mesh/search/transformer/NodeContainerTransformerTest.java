@@ -41,15 +41,16 @@ public class NodeContainerTransformerTest extends AbstractMeshTest {
 			assertEquals("Incorrect count of basic tags", basicNames.size(), basicArray.size());
 			assertEquals("Incorrect count of colors", colorNames.size(), colorArray.size());
 
-			boolean allTagsContained = basicArray.stream()
-				.map(obj -> ((JsonObject)obj).getString("name"))
-				.allMatch(name -> basicNames.contains(name));
-			boolean allColorsContained = colorArray.stream()
-				.map(obj -> ((JsonObject)obj).getString("name"))
-				.allMatch(name -> colorNames.contains(name));
+			boolean allTagsContained = basicArray.stream().map(obj -> ((JsonObject) obj).getString("name")).allMatch(name -> basicNames.contains(
+					name));
+			boolean allColorsContained = colorArray.stream().map(obj -> ((JsonObject) obj).getString("name")).allMatch(name -> colorNames.contains(
+					name));
 
 			assertTrue("Could not find all basic tags", allTagsContained);
 			assertTrue("Could not find all colors", allColorsContained);
+
+			JsonArray roleUuids = document.getJsonObject("roles").getJsonArray("uuid");
+			assertEquals("The role information was not correctly set", 1, roleUuids.size());
 		}
 	}
 }

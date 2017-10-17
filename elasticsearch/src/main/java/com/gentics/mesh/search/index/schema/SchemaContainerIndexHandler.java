@@ -67,7 +67,7 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
-	protected RootVertex<SchemaContainer> getRootVertex() {
+	public RootVertex<SchemaContainer> getRootVertex() {
 		return boot.meshRoot().getSchemaContainerRoot();
 	}
 

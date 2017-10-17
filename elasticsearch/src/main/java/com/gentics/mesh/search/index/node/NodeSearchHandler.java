@@ -1,4 +1,4 @@
-package com.gentics.mesh.search;
+package com.gentics.mesh.search.index.node;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static com.gentics.mesh.rest.Messages.message;
@@ -9,9 +9,16 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
@@ -19,12 +26,20 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.node.Node;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.search.SearchHit;
 
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
+import com.gentics.mesh.core.data.ContainerType;
+import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.NodeContent;
+import com.gentics.mesh.core.data.page.Page;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.IndexHandler;
@@ -40,10 +55,15 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.IndexHandlerRegistry;
+import com.gentics.mesh.search.MeshSearchHit;
+import com.gentics.mesh.search.ScrollingIterator;
+import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.AbstractSearchHandler;
 import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rx.java.ObservableFuture;
@@ -53,30 +73,143 @@ import rx.Single;
 import rx.functions.Func0;
 
 /**
- * Collection of handlers which are used to deal with rest search requests.
+ * Collection of handlers which are used to deal with search requests.
  */
-public class SearchRestHandler {
+@Singleton
+public class NodeSearchHandler extends AbstractSearchHandler<Node> {
 
-	private static final Logger log = LoggerFactory.getLogger(SearchRestHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(NodeSearchHandler.class);
 
-	private SearchProvider searchProvider;
-
-	private Database db;
+	private static final int INITIAL_BATCH_SIZE = 30;
 
 	private IndexHandlerRegistry registry;
 
-	private NodeIndexHandler nodeIndexHandler;
-
 	private HandlerUtilities utils;
 
+	private BootstrapInitializer boot;
+
+	private NodeIndexHandler nodeIndexHandler;
+
 	@Inject
-	public SearchRestHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, NodeIndexHandler nodeIndexHandler,
-			HandlerUtilities utils) {
-		this.searchProvider = searchProvider;
-		this.db = db;
+	public NodeSearchHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, NodeIndexHandler nodeIndexHandler,
+			HandlerUtilities utils, BootstrapInitializer boot) {
+		super(db, searchProvider, nodeIndexHandler);
 		this.registry = registry;
-		this.nodeIndexHandler = nodeIndexHandler;
 		this.utils = utils;
+		this.boot = boot;
+		this.nodeIndexHandler = nodeIndexHandler;
+	}
+
+	/**
+	 * Invoke the given query and return a page of node containers.
+	 * 
+	 * @param gc
+	 * @param query
+	 *            Elasticsearch query
+	 * @param pagingInfo
+	 * @return
+	 * @throws MeshConfigurationException
+	 * @throws TimeoutException
+	 * @throws ExecutionException
+	 * @throws InterruptedException
+	 */
+	public Page<? extends NodeContent> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo,
+			GraphPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
+		User user = ac.getUser();
+
+		org.elasticsearch.node.Node esNode = null;
+		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
+			esNode = (org.elasticsearch.node.Node) searchProvider.getNode();
+		} else {
+			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
+		}
+		Client client = esNode.client();
+
+		if (log.isDebugEnabled()) {
+			log.debug("Invoking search with query {" + query + "} for {Containers}");
+		}
+		Set<String> indices = getIndexHandler().getSelectedIndices(ac);
+
+		/*
+		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
+		 * to be written that deals with Document Level Permissions/Security (commonly known as DLS)
+		 */
+		SearchRequestBuilder builder = null;
+		builder = client.prepareSearch(indices.toArray(new String[indices.size()]));
+		try {
+			JsonObject json = prepareSearchQuery(ac, query);
+			builder.setExtraSource(json.toString());
+		} catch (Exception e) {
+			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
+		}
+		// Only load the documentId we don't care about the indexed contents. The graph is our source of truth here.
+		builder.setFetchSource(false);
+		builder.setSize(INITIAL_BATCH_SIZE);
+		builder.setScroll(new TimeValue(60000));
+		SearchResponse scrollResp = builder.execute().actionGet();
+		long unfilteredCount = scrollResp.getHits().getTotalHits();
+		// The scrolling iterator will wrap the current response and query ES for more data if needed.
+		ScrollingIterator scrollingIt = new ScrollingIterator(client, scrollResp);
+		Page<? extends NodeContent> page = db.tx(() -> {
+
+			// Prepare a stream which applies all needed filtering
+			Stream<NodeContent> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(scrollingIt, Spliterator.ORDERED), false)
+
+					.map(hit -> {
+						String id = hit.getId();
+						int pos = id.indexOf("-");
+
+						String language = pos > 0 ? id.substring(pos + 1) : null;
+						String uuid = pos > 0 ? id.substring(0, pos) : id;
+
+						return new MeshSearchHit<Node>(uuid, language);
+					})
+					// TODO filter by requested language
+					.filter(hit -> {
+						return hit.language != null;
+					})
+
+					.map(hit -> {
+						// Load the node
+						RootVertex<Node> root = getIndexHandler().getRootVertex();
+						hit.element = root.findByUuid(hit.uuid);
+						if (hit.element == null) {
+							log.error("Object could not be found for uuid {" + hit.uuid + "} in root vertex {" + root.getRootLabel() + "}");
+						}
+
+						return hit;
+					})
+
+					.filter(hit -> {
+						// Only include found elements
+						return hit.element != null;
+					})
+
+					.map(hit -> {
+
+						ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+						Language languageTag = boot.languageRoot().findByLanguageTag(hit.language);
+						if (languageTag == null) {
+							log.debug("Could not find language {" + hit.language + "}");
+							return null;
+						}
+
+						// Locate the matching container and add it to the list of found containers
+						NodeGraphFieldContainer container = hit.element.getGraphFieldContainer(languageTag, ac.getRelease(), type);
+						if (container != null) {
+							return new NodeContent(hit.element, container);
+						}
+						return null;
+					})
+
+					.filter(hit -> {
+						return hit != null;
+					});
+			DynamicStreamPageImpl<NodeContent> dynamicPage = new DynamicStreamPageImpl<>(stream, pagingInfo);
+			dynamicPage.setUnfilteredSearchCount(unfilteredCount);
+			return dynamicPage;
+		});
+		return page;
 	}
 
 	/**
@@ -110,11 +243,10 @@ public class SearchRestHandler {
 		}
 
 		RL listResponse = classOfRL.newInstance();
-		MeshAuthUser requestUser = ac.getUser();
 
 		org.elasticsearch.node.Node esNode = null;
 		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
-			esNode = (Node) searchProvider.getNode();
+			esNode = (org.elasticsearch.node.Node) searchProvider.getNode();
 		} else {
 			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
 		}
@@ -125,20 +257,10 @@ public class SearchRestHandler {
 			log.debug("Invoking search with query {" + searchQuery + "} for {" + classOfRL.getName() + "}");
 		}
 
-		/*
-		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
-		 * to be written that deals with Document Level Permissions/Security (commonly known as DLS)
-		 */
 		SearchRequestBuilder builder = null;
 		try {
-			JSONObject queryStringObject = new JSONObject(searchQuery);
-			/**
-			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more
-			 * efficient ways to do deep scrolling.
-			 */
-			queryStringObject.put("from", 0);
-			queryStringObject.put("size", Integer.MAX_VALUE);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryStringObject.toString());
+			JsonObject query = prepareSearchQuery(ac, searchQuery);
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(query.toString());
 		} catch (Exception e) {
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;
@@ -163,8 +285,6 @@ public class SearchRestHandler {
 						ObservableFuture<Tuple<T, String>> obsResult = RxHelper.observableFuture();
 						obs.add(obsResult);
 
-						// TODO check permissions without loading the vertex
-
 						// Locate the node
 						T element = rootVertex.call().findByUuid(uuid);
 						if (element == null) {
@@ -182,10 +302,10 @@ public class SearchRestHandler {
 						if (y == null) {
 							return;
 						}
+						// Check whether the language matches up
 						boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags == null || requestedLanguageTags.isEmpty()
 								|| requestedLanguageTags.contains(y.v2());
-						// Check permissions and language
-						if (y != null && matchesRequestedLang && requestUser.hasPermission(y.v1(), permission)) {
+						if (y != null && matchesRequestedLang) {
 							x.add(y);
 						}
 					}).subscribe(list -> {

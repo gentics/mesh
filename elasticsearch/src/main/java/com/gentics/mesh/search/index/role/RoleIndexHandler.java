@@ -32,7 +32,7 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	protected Class<Role> getElementClass() {
+	public Class<Role> getElementClass() {
 		return Role.class;
 	}
 
@@ -67,7 +67,7 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	protected RootVertex<Role> getRootVertex() {
+	public RootVertex<Role> getRootVertex() {
 		return boot.meshRoot()
 				.getRoleRoot();
 	}

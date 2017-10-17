@@ -24,11 +24,12 @@ public class MicroschemaTransformer extends AbstractTransformer<MicroschemaConta
 
 	@Override
 	public JsonObject toDocument(MicroschemaContainer microschema) {
-		JsonObject info = new JsonObject();
-		addBasicReferences(info, microschema);
-		info.put(NAME_KEY, microschema.getName());
+		JsonObject document = new JsonObject();
+		addBasicReferences(document, microschema);
+		document.put(NAME_KEY, microschema.getName());
+		addPermissionInfo(document, microschema);
 		// map.put(DESCRIPTION_KEY, microschema.getSchema().getDescription());
-		return info;
+		return document;
 	}
 
 	@Override

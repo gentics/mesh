@@ -6,6 +6,7 @@ import javax.inject.Singleton;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.impl.SearchQueueImpl;
@@ -21,6 +22,7 @@ import com.gentics.mesh.search.DummySearchProvider;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.impl.ElasticSearchProvider;
 
+import dagger.Lazy;
 import dagger.Module;
 import dagger.Provides;
 import io.vertx.core.Handler;
@@ -134,7 +136,7 @@ public class MeshModule {
 	 */
 	@Provides
 	@Singleton
-	public static SearchProvider searchProvider() {
+	public static SearchProvider searchProvider(Lazy<BootstrapInitializer> boot) {
 		MeshOptions options = Mesh.mesh().getOptions();
 		SearchProvider searchProvider = null;
 		// Automatically select the dummy search provider if no directory or
@@ -142,7 +144,7 @@ public class MeshModule {
 		if (options.getSearchOptions() == null || options.getSearchOptions().getDirectory() == null) {
 			searchProvider = new DummySearchProvider();
 		} else {
-			searchProvider = new ElasticSearchProvider();
+			searchProvider = new ElasticSearchProvider(boot);
 		}
 		return searchProvider;
 	}

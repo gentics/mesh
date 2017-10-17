@@ -3,41 +3,23 @@ package com.gentics.mesh.search.index.node;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeoutException;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.codehaus.jettison.json.JSONObject;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.client.Client;
-import org.elasticsearch.common.unit.TimeValue;
-
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.node.Node;
-import com.gentics.mesh.core.data.node.NodeContent;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -48,12 +30,8 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
-import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.search.MeshSearchHit;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.syncleus.ferma.tx.Tx;
@@ -80,10 +58,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	private static final Logger log = LoggerFactory.getLogger(NodeIndexHandler.class);
 
-	private static final int INITIAL_BATCH_SIZE = 30;
-
 	@Inject
-	NodeContainerTransformer transformer;
+	public NodeContainerTransformer transformer;
 
 	@Inject
 	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -91,7 +67,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	protected Class<Node> getElementClass() {
+	public Class<Node> getElementClass() {
 		return Node.class;
 	}
 
@@ -141,10 +117,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				for (Release release : project.getReleaseRoot().findAllIt()) {
 					// Each release specific index has also document type specific mappings
 					for (SchemaContainerVersion containerVersion : release.findActiveSchemaVersions()) {
-						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
-								containerVersion.getUuid(), DRAFT);
-						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(),
-								containerVersion.getUuid(), PUBLISHED);
+						String draftIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), containerVersion
+								.getUuid(), DRAFT);
+						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), containerVersion
+								.getUuid(), PUBLISHED);
 						String documentType = NodeGraphFieldContainer.composeIndexType();
 						if (log.isDebugEnabled()) {
 							log.debug("Adding index to map of known idices {" + draftIndexName + "");
@@ -168,8 +144,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				Release release = ac.getRelease();
 				// Locate all schema versions which need to be taken into consideration when choosing the indices
 				for (SchemaContainerVersion version : release.findActiveSchemaVersions()) {
-					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), version.getUuid(),
-							ContainerType.forVersion(ac.getVersioningParameters().getVersion())));
+					indices.add(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), version.getUuid(), ContainerType
+							.forVersion(ac.getVersioningParameters().getVersion())));
 				}
 			} else {
 				// The project was not specified. Maybe a global search wants to know which indices must be searched.
@@ -188,7 +164,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	protected RootVertex<Node> getRootVertex() {
+	public RootVertex<Node> getRootVertex() {
 		return boot.meshRoot().getNodeRoot();
 	}
 
@@ -202,8 +178,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}
 
 			// Now merge all store actions and refresh the affected indices
-			return Observable.from(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct()
-					.doOnNext(indexName -> searchProvider.refreshIndex(indexName)).toCompletable();
+			return Observable.from(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct().doOnNext(indexName -> searchProvider.refreshIndex(
+					indexName)).toCompletable();
 		});
 	}
 
@@ -288,8 +264,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		MoveEntryContext context = entry.getContext();
 		ContainerType type = context.getContainerType();
 		String releaseUuid = context.getReleaseUuid();
-		return storeContainer(context.getNewContainer(), releaseUuid, type).toCompletable()
-				.andThen(deleteContainer(context.getOldContainer(), releaseUuid, type));
+		return storeContainer(context.getNewContainer(), releaseUuid, type).toCompletable().andThen(deleteContainer(context.getOldContainer(),
+				releaseUuid, type));
 	}
 
 	/**
@@ -302,8 +278,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	private Completable deleteContainer(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
 		String projectUuid = container.getParentNode().getProject().getUuid();
-		return searchProvider.deleteDocument(container.getIndexName(projectUuid, releaseUuid, type), container.getIndexType(),
-				container.getDocumentId());
+		return searchProvider.deleteDocument(container.getIndexName(projectUuid, releaseUuid, type), container.getIndexType(), container
+				.getDocumentId());
 	}
 
 	/**
@@ -416,129 +392,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Invoke the given query and return a page of node containers.
-	 * 
-	 * @param gc
-	 * @param query
-	 *            Elasticsearch query
-	 * @param pagingInfo
-	 * @return
-	 * @throws MeshConfigurationException
-	 * @throws TimeoutException
-	 * @throws ExecutionException
-	 * @throws InterruptedException
-	 */
-	public Page<? extends NodeContent> handleContainerSearch(InternalActionContext ac, String query, PagingParameters pagingInfo,
-			GraphPermission... permissions) throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
-		User user = ac.getUser();
-
-		org.elasticsearch.node.Node esNode = null;
-		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
-			esNode = (org.elasticsearch.node.Node) searchProvider.getNode();
-		} else {
-			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
-		}
-		Client client = esNode.client();
-
-		if (log.isDebugEnabled()) {
-			log.debug("Invoking search with query {" + query + "} for {" + getElementClass().getName() + "}");
-		}
-		Set<String> indices = getSelectedIndices(ac);
-
-		/*
-		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
-		 * to be written that deals with Document Level Permissions/Security (commonly known as DLS)
-		 */
-		SearchRequestBuilder builder = null;
-		builder = client.prepareSearch(indices.toArray(new String[indices.size()]));
-		try {
-			JSONObject queryStringObject = new JSONObject(query);
-			builder.setExtraSource(queryStringObject.toString());
-		} catch (Exception e) {
-			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
-		}
-		// Only load the documentId we don't care about the indexed contents. The graph is our source of truth here.
-		builder.setFetchSource(false);
-		builder.setSize(INITIAL_BATCH_SIZE);
-		builder.setScroll(new TimeValue(60000));
-		SearchResponse scrollResp = builder.execute().actionGet();
-		long unfilteredCount = scrollResp.getHits().getTotalHits();
-		// The scrolling iterator will wrap the current response and query ES for more data if needed.
-		ScrollingIterator scrollingIt = new ScrollingIterator(client, scrollResp);
-		Page<? extends NodeContent> page = db.tx(() -> {
-
-			// Prepare a stream which applies all needed filtering
-			Stream<NodeContent> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(scrollingIt, Spliterator.ORDERED), false)
-
-					.map(hit -> {
-						String id = hit.getId();
-						int pos = id.indexOf("-");
-
-						String language = pos > 0 ? id.substring(pos + 1) : null;
-						String uuid = pos > 0 ? id.substring(0, pos) : id;
-
-						return new MeshSearchHit<Node>(uuid, language);
-					})
-					// TODO filter by requested language
-					.filter(hit -> {
-						return hit.language != null;
-					})
-
-					.map(hit -> {
-						// Load the node
-						hit.element = getRootVertex().findByUuid(hit.uuid);
-						if (hit.element == null) {
-							log.error(
-									"Object could not be found for uuid {" + hit.uuid + "} in root vertex {" + getRootVertex().getRootLabel() + "}");
-						}
-
-						return hit;
-					})
-
-					.filter(hit -> {
-						// Only include found elements
-						return hit.element != null;
-					})
-
-					.filter(hit -> {
-						// TODO check permissions without loading the vertex
-						for (GraphPermission permission : permissions) {
-							boolean hasPerm = user.hasPermission(hit.element, permission);
-							if (hasPerm) {
-								return true;
-							}
-						}
-						return false;
-					})
-
-					.map(hit -> {
-
-						ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
-						Language languageTag = boot.languageRoot().findByLanguageTag(hit.language);
-						if (languageTag == null) {
-							log.debug("Could not find language {" + hit.language + "}");
-							return null;
-						}
-
-						// Locate the matching container and add it to the list of found containers
-						NodeGraphFieldContainer container = hit.element.getGraphFieldContainer(languageTag, ac.getRelease(), type);
-						if (container != null) {
-							return new NodeContent(hit.element, container);
-						}
-						return null;
-					})
-
-					.filter(hit -> {
-						return hit != null;
-					});
-			DynamicStreamPageImpl<NodeContent> dynamicPage = new DynamicStreamPageImpl<>(stream, pagingInfo);
-			dynamicPage.setUnfilteredSearchCount(unfilteredCount);
-			return dynamicPage;
-		});
-		return page;
 	}
 
 }

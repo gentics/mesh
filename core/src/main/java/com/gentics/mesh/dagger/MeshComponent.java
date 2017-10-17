@@ -17,7 +17,7 @@ import com.gentics.mesh.core.verticle.migration.node.NodeMigrationHandler;
 import com.gentics.mesh.core.verticle.migration.release.ReleaseMigrationHandler;
 import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.dagger.module.ConsoleModule;
-import com.gentics.mesh.dagger.module.ExtraModule;
+import com.gentics.mesh.dagger.module.BindModule;
 import com.gentics.mesh.dagger.module.MeshModule;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -42,7 +42,7 @@ import dagger.Component;
  * Central dagger mesh component which will expose dependencies.
  */
 @Singleton
-@Component(modules = { MeshModule.class, ExtraModule.class, ConsoleModule.class })
+@Component(modules = { MeshModule.class, BindModule.class, ConsoleModule.class })
 public interface MeshComponent {
 
 	BootstrapInitializer boot();

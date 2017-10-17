@@ -47,7 +47,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	protected Class<?> getElementClass() {
+	public Class<?> getElementClass() {
 		return MicroschemaContainer.class;
 	}
 
@@ -62,7 +62,7 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	protected RootVertex<MicroschemaContainer> getRootVertex() {
+	public RootVertex<MicroschemaContainer> getRootVertex() {
 		return boot.meshRoot().getMicroschemaContainerRoot();
 	}
 

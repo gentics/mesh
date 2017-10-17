@@ -22,6 +22,7 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeSearchHandler;
 import com.gentics.mesh.search.index.tag.TagIndexHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 
@@ -33,7 +34,7 @@ import rx.functions.Func0;
 @Singleton
 public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 
-	private SearchRestHandler searchHandler;
+	private NodeSearchHandler searchHandler;
 
 	@Inject
 	NodeIndexHandler nodeContainerIndexHandler;
@@ -49,7 +50,7 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 	}
 
 	@Inject
-	public ProjectSearchEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, SearchRestHandler searchHandler) {
+	public ProjectSearchEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, NodeSearchHandler searchHandler) {
 		super("search", boot, routerStorage);
 		this.searchHandler = searchHandler;
 	}

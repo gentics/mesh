@@ -54,12 +54,12 @@ import com.gentics.mesh.graphql.type.field.MicronodeFieldTypeProvider;
 import com.gentics.mesh.graphql.type.field.NodeFieldTypeProvider;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
-import com.gentics.mesh.search.index.group.GroupIndexHandler;
-import com.gentics.mesh.search.index.project.ProjectIndexHandler;
-import com.gentics.mesh.search.index.role.RoleIndexHandler;
-import com.gentics.mesh.search.index.tag.TagIndexHandler;
-import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
-import com.gentics.mesh.search.index.user.UserIndexHandler;
+import com.gentics.mesh.search.index.group.GroupSearchHandler;
+import com.gentics.mesh.search.index.project.ProjectSearchHandler;
+import com.gentics.mesh.search.index.role.RoleSearchHandler;
+import com.gentics.mesh.search.index.tag.TagSearchHandler;
+import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
+import com.gentics.mesh.search.index.user.UserSearchHandler;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
@@ -137,22 +137,22 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 	public MicroschemaTypeProvider microschemaTypeProvider;
 
 	@Inject
-	public UserIndexHandler userIndexHandler;
+	public UserSearchHandler userSearchHandler;
 
 	@Inject
-	public RoleIndexHandler roleIndexHandler;
+	public RoleSearchHandler roleSearchHandler;
 
 	@Inject
-	public GroupIndexHandler groupIndexHandler;
+	public GroupSearchHandler groupSearchHandler;
 
 	@Inject
-	public ProjectIndexHandler projectIndexHandler;
+	public ProjectSearchHandler projectSearchHandler;
 
 	@Inject
-	public TagFamilyIndexHandler tagFamilyIndexHandler;
+	public TagFamilySearchHandler tagFamilySearchHandler;
 
 	@Inject
-	public TagIndexHandler tagIndexHandler;
+	public TagSearchHandler tagSearchHandler;
 
 	@Inject
 	public QueryTypeProvider() {
@@ -304,14 +304,14 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newElementField("tag", "Load tag by name or uuid.", (ac) -> boot.tagRoot(), TAG_TYPE_NAME));
 
 		// .tags
-		root.field(newPagingSearchField("tags", "Load page of tags.", (ac) -> boot.tagRoot(), TAG_PAGE_TYPE_NAME, tagIndexHandler));
+		root.field(newPagingSearchField("tags", "Load page of tags.", (ac) -> boot.tagRoot(), TAG_PAGE_TYPE_NAME, tagSearchHandler));
 
 		// .tagFamily
 		root.field(newElementField("tagFamily", "Load tagFamily by name or uuid.", (ac) -> ac.getProject().getTagFamilyRoot(), TAG_FAMILY_TYPE_NAME));
 
 		// .tagFamilies
 		root.field(newPagingSearchField("tagFamilies", "Load page of tagFamilies.", (ac) -> boot.tagFamilyRoot(), TAG_FAMILY_PAGE_TYPE_NAME,
-				tagFamilyIndexHandler));
+				tagFamilySearchHandler));
 
 		// .release
 		root.field(newFieldDefinition().name("release").description("Load the release that is active for this GraphQL query.")
@@ -334,19 +334,19 @@ public class QueryTypeProvider extends AbstractTypeProvider {
 		root.field(newElementField("role", "Load role by name or uuid.", (ac) -> boot.roleRoot(), ROLE_TYPE_NAME));
 
 		// .roles
-		root.field(newPagingSearchField("roles", "Load page of roles.", (ac) -> boot.roleRoot(), ROLE_PAGE_TYPE_NAME, roleIndexHandler));
+		root.field(newPagingSearchField("roles", "Load page of roles.", (ac) -> boot.roleRoot(), ROLE_PAGE_TYPE_NAME, roleSearchHandler));
 
 		// .group
 		root.field(newElementField("group", "Load group by name or uuid.", (ac) -> boot.groupRoot(), GROUP_TYPE_NAME));
 
 		// .groups
-		root.field(newPagingSearchField("groups", "Load page of groups.", (ac) -> boot.groupRoot(), GROUP_PAGE_TYPE_NAME, groupIndexHandler));
+		root.field(newPagingSearchField("groups", "Load page of groups.", (ac) -> boot.groupRoot(), GROUP_PAGE_TYPE_NAME, groupSearchHandler));
 
 		// .user
 		root.field(newElementField("user", "Load user by name or uuid.", (ac) -> boot.userRoot(), USER_TYPE_NAME));
 
 		// .users
-		root.field(newPagingSearchField("users", "Load page of users.", (ac) -> boot.userRoot(), USER_PAGE_TYPE_NAME, userIndexHandler));
+		root.field(newPagingSearchField("users", "Load page of users.", (ac) -> boot.userRoot(), USER_PAGE_TYPE_NAME, userSearchHandler));
 
 		// .mesh
 		root.field(meshTypeProvider.createMeshFieldType());

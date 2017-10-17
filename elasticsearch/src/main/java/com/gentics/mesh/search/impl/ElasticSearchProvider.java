@@ -46,11 +46,14 @@ import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.plugin.PermissionsPlugin;
 
+import dagger.Lazy;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -71,12 +74,19 @@ public class ElasticSearchProvider implements SearchProvider {
 	public static final String DEFAULT_INDEX_SETTINGS_FILENAME = "default-es-index-settings.json";
 
 	public static String DEFAULT_INDEX_SETTINGS;
+
 	static {
 		try {
 			DEFAULT_INDEX_SETTINGS = IOUtils.toString(ElasticSearchProvider.class.getResourceAsStream("/" + DEFAULT_INDEX_SETTINGS_FILENAME));
 		} catch (IOException e) {
 			throw new RuntimeException("Could not load default index settings", e);
 		}
+	}
+
+	private Lazy<BootstrapInitializer> boot;
+
+	public ElasticSearchProvider(Lazy<BootstrapInitializer> boot) {
+		this.boot = boot;
 	}
 
 	@Override
@@ -133,6 +143,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (clusterOptions.isEnabled()) {
 			classpathPlugins.add(MulticastDiscoveryPlugin.class);
 		}
+		classpathPlugins.add(PermissionsPlugin.class);
 		node = new MeshNode(settings, classpathPlugins);
 		node.start();
 		if (log.isDebugEnabled()) {
@@ -341,9 +352,8 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error(
-							"Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
-							e);
+					log.error("Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start)
+							+ "[ms]", e);
 					sub.onError(e);
 				}
 			});
@@ -373,8 +383,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onResponse(BulkResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Finished bulk  store request on index {" + index + ":" + type + "}. Duration "
-								+ (System.currentTimeMillis() - start) + "[ms]");
+						log.debug("Finished bulk  store request on index {" + index + ":" + type + "}. Duration " + (System.currentTimeMillis()
+								- start) + "[ms]");
 					}
 					sub.onCompleted();
 				}

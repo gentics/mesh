@@ -245,8 +245,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 								Micronode micronode = item.getMicronode();
 								MicroschemaContainerVersion microschameContainerVersion = micronode.getSchemaContainerVersion();
 								addMicroschema(itemMap, microschameContainerVersion);
-								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode,
-										microschameContainerVersion.getSchema().getFields());
+								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode, microschameContainerVersion
+										.getSchema().getFields());
 								return itemMap;
 							}).toList().toBlocking().single());
 						}
@@ -296,8 +296,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						JsonObject micronodeMap = new JsonObject();
 						addMicroschema(micronodeMap, micronode.getSchemaContainerVersion());
 						// Micronode field can't be stored. The datastructure is dynamic
-						addFields(micronodeMap, "fields-" + micronode.getSchemaContainerVersion().getName(), micronode,
-								micronode.getSchemaContainerVersion().getSchema().getFields());
+						addFields(micronodeMap, "fields-" + micronode.getSchemaContainerVersion().getName(), micronode, micronode
+								.getSchemaContainerVersion().getSchema().getFields());
 						fieldsMap.put(fieldSchema.getName(), micronodeMap);
 					}
 				}
@@ -319,7 +319,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 *            Field schema which will be used to construct the mapping info
 	 * @return JSON object which contains the mapping info
 	 */
-	public JsonObject getMappingInfo(FieldSchema fieldSchema) {
+	public JsonObject getFieldMapping(FieldSchema fieldSchema) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		boolean addRaw = fieldSchema.getIndexOptions() != null ? Boolean.valueOf(fieldSchema.getIndexOptions().getAddRaw()) : false;
 		JsonObject fieldInfo = new JsonObject();
@@ -509,6 +509,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		addProject(document, node.getProject());
 		addTags(document, node.getTags(node.getProject().getLatestRelease()));
 		addTagFamilies(document, node.getTags(node.getProject().getLatestRelease()));
+		addPermissionInfo(document, node);
 
 		// The basenode has no parent.
 		if (node.getParentNode(releaseUuid) != null) {
@@ -576,15 +577,11 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		// tagFamilies
 		typeProperties.put("tagFamilies", new JsonObject().put("type", "object").put("dynamic", true));
 
-		typeMapping.put("dynamic_templates",
-				new JsonArray()
-						.add(new JsonObject().put("tagFamilyUuid",
-								new JsonObject().put("path_match", "tagFamilies.*.uuid").put("match_mapping_type", "*").put("mapping",
-										notAnalyzedType(STRING))))
-						.add(new JsonObject().put("tagFamilyTags",
-								new JsonObject().put("path_match", "tagFamilies.*.tags").put("match_mapping_type", "*").put("mapping",
-										new JsonObject().put("type", "nested").put("properties",
-												new JsonObject().put("name", trigramStringType()).put("uuid", notAnalyzedType(STRING)))))));
+		typeMapping.put("dynamic_templates", new JsonArray().add(new JsonObject().put("tagFamilyUuid", new JsonObject().put("path_match",
+				"tagFamilies.*.uuid").put("match_mapping_type", "*").put("mapping", notAnalyzedType(STRING)))).add(new JsonObject().put(
+						"tagFamilyTags", new JsonObject().put("path_match", "tagFamilies.*.tags").put("match_mapping_type", "*").put("mapping",
+								new JsonObject().put("type", "nested").put("properties", new JsonObject().put("name", trigramStringType()).put("uuid",
+										notAnalyzedType(STRING)))))));
 
 		// language
 		typeProperties.put("language", notAnalyzedType(STRING));
@@ -624,7 +621,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		mapping.put(type, typeMapping);
 
 		for (FieldSchema field : schema.getFields()) {
-			JsonObject fieldInfo = getMappingInfo(field);
+			JsonObject fieldInfo = getFieldMapping(field);
 			fieldProps.put(field.getName(), fieldInfo);
 		}
 		return mapping;
