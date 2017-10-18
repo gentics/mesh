@@ -38,7 +38,7 @@ import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
-import rx.Single;
+import io.reactivex.Single;
 
 public class MicroschemaCrudHandler extends AbstractCrudHandler<MicroschemaContainer, MicroschemaResponse> {
 

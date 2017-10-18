@@ -9,6 +9,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -43,14 +44,10 @@ import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.util.Tuple;
 
-import io.vertx.core.Future;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rx.java.ObservableFuture;
-import io.vertx.rx.java.RxHelper;
-import rx.Observable;
-import rx.Single;
-import rx.functions.Func0;
 
 /**
  * Collection of handlers which are used to deal with rest search requests.
@@ -98,7 +95,7 @@ public class SearchRestHandler {
 	 * @throws MeshConfigurationException
 	 */
 	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void handleSearch(InternalActionContext ac,
-			Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
+			Supplier<RootVertex<T>> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
 			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException {
 
 		PagingParameters pagingInfo = ac.getPagingParameters();
@@ -149,7 +146,7 @@ public class SearchRestHandler {
 			@Override
 			public void onResponse(SearchResponse response) {
 				db.tx(() -> {
-					List<ObservableFuture<Tuple<T, String>>> obs = new ArrayList<>();
+					List<Single<Tuple<T, String>>> obs = new ArrayList<>();
 					List<String> requestedLanguageTags = ac.getNodeParameters().getLanguageList();
 
 					for (SearchHit hit : response.getHits()) {
@@ -160,23 +157,18 @@ public class SearchRestHandler {
 						String language = pos > 0 ? id.substring(pos + 1) : null;
 						String uuid = pos > 0 ? id.substring(0, pos) : id;
 
-						ObservableFuture<Tuple<T, String>> obsResult = RxHelper.observableFuture();
-						obs.add(obsResult);
-
 						// TODO check permissions without loading the vertex
-
 						// Locate the node
-						T element = rootVertex.call().findByUuid(uuid);
+						T element = rootVertex.get().findByUuid(uuid);
 						if (element == null) {
-							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.call().getRootLabel() + "}");
-							obsResult.toHandler().handle(Future.succeededFuture());
+							log.error("Object could not be found for uuid {" + uuid + "} in root vertex {" + rootVertex.get().getRootLabel() + "}");
 						} else {
-							obsResult.toHandler().handle(Future.succeededFuture(Tuple.tuple(element, language)));
+							obs.add(Single.just(Tuple.tuple(element, language)));
 						}
 
 					}
 
-					Observable.merge(obs).collect(() -> {
+					Single.merge(obs).collect(() -> {
 						return new ArrayList<Tuple<T, String>>();
 					}, (x, y) -> {
 						if (y == null) {
@@ -223,7 +215,7 @@ public class SearchRestHandler {
 
 						List<Observable<TR>> obsList = transformedElements.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
 						// Populate the response data with the transformed elements and send the response
-						Observable.concat(Observable.from(obsList)).collect(() -> {
+						Observable.concat(Observable.fromIterable(obsList)).collect(() -> {
 							return listResponse.getData();
 						}, (x, y) -> {
 							x.add(y);
@@ -265,9 +257,9 @@ public class SearchRestHandler {
 				// Iterate over all index handlers update the index
 				for (IndexHandler<?> handler : registry.getHandlers()) {
 					// Create all indices and mappings
-					handler.init().await();
+					handler.init().blockingAwait();
 					searchProvider.refreshIndex();
-					handler.reindexAll().await();
+					handler.reindexAll().blockingAwait();
 				}
 				return Single.just(message(ac, "search_admin_reindex_invoked"));
 			} else {
@@ -280,7 +272,7 @@ public class SearchRestHandler {
 		utils.operateTx(ac, () -> {
 			if (ac.getUser().hasAdminRole()) {
 				for (IndexHandler<?> handler : registry.getHandlers()) {
-					handler.init().await();
+					handler.init().blockingAwait();
 				}
 				nodeIndexHandler.updateNodeIndexMappings();
 				return message(ac, "search_admin_createmappings_created");
@@ -289,5 +281,7 @@ public class SearchRestHandler {
 			}
 		}, message -> ac.send(message, OK));
 	}
+
+	
 
 }

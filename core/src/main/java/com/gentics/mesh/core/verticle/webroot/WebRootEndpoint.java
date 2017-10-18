@@ -11,6 +11,9 @@ import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
+import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.Endpoint;
 
 @Singleton
@@ -50,6 +53,9 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 				"Header value which identifies the type of the webroot response. The response can either be a node or binary response.");
 		endpoint.description("Load the node or the node's binary data which is located using the provided path.");
 		endpoint.addQueryParameters(ImageManipulationParametersImpl.class);
+		endpoint.addQueryParameters(NodeParametersImpl.class);
+		endpoint.addQueryParameters(VersioningParametersImpl.class);
+		endpoint.addQueryParameters(RolePermissionParametersImpl.class);
 		endpoint.handler(rc -> {
 			handler.handleGetPath(rc);
 		});

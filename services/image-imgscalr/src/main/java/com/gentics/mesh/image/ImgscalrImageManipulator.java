@@ -15,7 +15,6 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import com.gentics.mesh.util.PropReadFileStream;
 import org.apache.tika.metadata.Metadata;
 import org.apache.tika.parser.AutoDetectParser;
 import org.apache.tika.parser.ParseContext;
@@ -28,9 +27,10 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.image.spi.AbstractImageManipulator;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
+import com.gentics.mesh.util.PropReadFileStream;
 
-import io.vertx.rxjava.core.Vertx;
-import rx.Single;
+import io.reactivex.Single;
+import io.vertx.reactivex.core.Vertx;
 
 /**
  * The ImgScalr Manipulator uses a pure java imageio image resizer.

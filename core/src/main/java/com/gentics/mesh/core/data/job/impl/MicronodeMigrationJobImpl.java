@@ -63,8 +63,7 @@ public class MicronodeMigrationJobImpl extends JobImpl {
 
 				statusHandler.commit();
 
-				MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(release, fromContainerVersion, toContainerVersion, statusHandler)
-						.await();
+				MeshInternal.get().micronodeMigrationHandler().migrateMicronodes(release, fromContainerVersion, toContainerVersion, statusHandler).blockingAwait();
 				statusHandler.done();
 			}
 		} catch (Exception e) {

@@ -1,16 +1,15 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.TestSize.PROJECT;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = PROJECT, startServer = false)
 public class NodeIndexHandlerTest extends AbstractMeshTest {
@@ -18,11 +17,11 @@ public class NodeIndexHandlerTest extends AbstractMeshTest {
 	@Test
 	public void testReindexAll() throws Exception {
 		try (Tx tx = tx()) {
-			assertThat(meshRoot().getNodeRoot().findAll()).as("Node list").isNotEmpty();
+			assertTrue(meshRoot().getNodeRoot().findAllIt().iterator().hasNext());
 			searchProvider().reset();
 			assertEquals("Initially no store event should have been recorded.", 0,
 					dummySearchProvider().getStoreEvents().size());
-			meshDagger().nodeContainerIndexHandler().reindexAll().await();
+			meshDagger().nodeContainerIndexHandler().reindexAll().blockingAwait();
 			assertTrue("We expected to see more than one store event.",
 					dummySearchProvider().getStoreEvents().size() > 1);
 		}

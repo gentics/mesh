@@ -56,11 +56,11 @@ import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.search.index.AbstractTransformer;
 
+import io.reactivex.Observable;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
 
 /**
  * Transformer which can be used to transform a {@link NodeGraphFieldContainer} into a elasticsearch document. Additionally the matching mapping can also be
@@ -240,7 +240,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						MicronodeGraphFieldList micronodeGraphFieldList = container.getMicronodeList(fieldSchema.getName());
 						if (micronodeGraphFieldList != null) {
 							// Add list of micronode objects
-							fieldsMap.put(fieldSchema.getName(), Observable.from(micronodeGraphFieldList.getList()).map(item -> {
+							fieldsMap.put(fieldSchema.getName(), Observable.fromIterable(micronodeGraphFieldList.getList()).map(item -> {
 								JsonObject itemMap = new JsonObject();
 								Micronode micronode = item.getMicronode();
 								MicroschemaContainerVersion microschameContainerVersion = micronode.getSchemaContainerVersion();
@@ -248,7 +248,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode,
 										microschameContainerVersion.getSchema().getFields());
 								return itemMap;
-							}).toList().toBlocking().single());
+							}).toList().blockingGet());
 						}
 						break;
 					case "string":

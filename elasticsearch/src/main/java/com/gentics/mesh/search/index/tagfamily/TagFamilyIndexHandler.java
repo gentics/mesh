@@ -20,7 +20,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 @Singleton
 public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {

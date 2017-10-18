@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.node;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -22,9 +23,8 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.UUIDUtil;
 
+import io.reactivex.exceptions.CompositeException;
 import io.vertx.ext.web.FileUpload;
-import rx.exceptions.CompositeException;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeFieldAPIHandlerTest extends AbstractMeshTest {

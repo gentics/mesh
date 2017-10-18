@@ -5,7 +5,7 @@ import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.rest.node.field.list.MicronodeFieldList;
 
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * Graph field which contains a list of micronodes.

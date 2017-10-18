@@ -65,7 +65,7 @@ public class JobHandler extends AbstractCrudHandler<Job, JobResponse> {
 			if (ac.matches(etag, true)) {
 				throw new NotModifiedException();
 			} else {
-				return page.transformToRest(ac, 0).toBlocking().value();
+				return page.transformToRest(ac, 0).blockingGet();
 			}
 		}, (e) -> ac.send(e, OK));
 	}

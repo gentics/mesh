@@ -1,26 +1,28 @@
 package com.gentics.mesh.util;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
+import org.reactivestreams.Subscription;
+
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.Single;
+import io.reactivex.subscribers.DefaultSubscriber;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
-import rx.Observable.Transformer;
-import rx.Subscriber;
-import rx.functions.Func0;
-import rx.functions.Func1;
-import rx.functions.Func2;
 
 public final class RxUtil {
 
 	private RxUtil() {
 	}
 
-	public static <T> Completable andThenCompletable(Single<T> source, Func1<T, Completable> mappingFunction) {
-		return Observable.merge(source.toObservable().map(v -> mappingFunction.call(v).toObservable())).toCompletable();
+	public static <T> Completable andThenCompletable(Single<T> source, Function<T, Completable> mappingFunction) {
+		return Observable.merge(source.toObservable().map(v -> mappingFunction.apply(v).toObservable())).ignoreElements();
 	}
 
 	public static <T> void noopAction(T nix) {
@@ -28,7 +30,7 @@ public final class RxUtil {
 	}
 
 	public final static <T1, T2, R extends Observable<R2>, R2> Observable<R> flatZip(Observable<? extends T1> o1, Observable<? extends T2> o2,
-			final Func2<? super T1, ? super T2, Observable<R>> zipFunction) {
+			final BiFunction<? super T1, ? super T2, Observable<R>> zipFunction) {
 		return Observable.zip(o1, o2, zipFunction).flatMap(x -> x);
 	}
 
@@ -38,13 +40,13 @@ public final class RxUtil {
 	 * @param o1
 	 * @return
 	 */
-	public static <T> Transformer<T, T> delay(Observable<?> o1) {
+	public static <T> ObservableTransformer<T, T> delay(Observable<?> o1) {
 		return source -> {
 			return source.delaySubscription(() -> o1.ignoreElements());
 		};
 	}
 
-	public static <T, U> Transformer<T, U> then(Func0<Observable<U>> o1) {
+	public static <T, U> ObservableTransformer<T, U> then(Callable<Observable<U>> o1) {
 		return source -> {
 			return Observable.defer(o1).delaySubscription(() -> source.ignoreElements());
 		};
@@ -54,12 +56,12 @@ public final class RxUtil {
 		//TODO handle empty list
 		return Observable.create(sub -> {
 			AtomicInteger index = new AtomicInteger();
-			Subscriber<T> subscriber = new Subscriber<T>() {
+			DefaultSubscriber<T> subscriber = new DefaultSubscriber<T>() {
 				@Override
-				public void onCompleted() {
+				public void onComplete() {
 					int current = index.incrementAndGet();
 					if (current == input.size()) {
-						sub.onCompleted();
+						sub.onComplete();
 					} else {
 						input.get(current).subscribe(this);
 					}
@@ -74,6 +76,11 @@ public final class RxUtil {
 				public void onNext(T o) {
 					sub.onNext(o);
 				}
+
+				@Override
+				public void onSubscribe(Subscription s) {
+					
+				}
 			};
 			input.get(0).subscribe(subscriber);
 		});
@@ -83,7 +90,7 @@ public final class RxUtil {
 	 * Reads the entire AsyncFile object and returns its contents as a buffer.
 	 */
 	public static Single<Buffer> readEntireFile(AsyncFile file) {
-		return new io.vertx.rxjava.core.file.AsyncFile(file).toObservable()
+		return new io.vertx.reactivex.core.file.AsyncFile(file).toObservable()
 			.reduce((a, b) -> a.appendBuffer(b))
 			.toSingle()
 			.map(it -> it.getDelegate());

@@ -49,10 +49,10 @@ import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Observable;
-import rx.Single;
 
 /**
  * CRUD Handler for Releases
@@ -234,7 +234,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 * @return single emitting the rest model
 	 */
 	protected Single<ReleaseInfoSchemaList> getSchemaVersionsInfo(Release release) {
-		return Observable.from(release.findAllLatestSchemaVersionEdges()).map(edge -> {
+		return Observable.fromIterable(release.findAllLatestSchemaVersionEdges()).map(edge -> {
 			SchemaReference reference = edge.getSchemaContainerVersion().transformToReference();
 			ReleaseSchemaInfo info = new ReleaseSchemaInfo(reference);
 			info.setMigrationStatus(edge.getMigrationStatus());
@@ -244,7 +244,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			return new ReleaseInfoSchemaList();
 		}, (x, y) -> {
 			x.getSchemas().add(y);
-		}).toSingle();
+		});
 	}
 
 	/**
@@ -255,7 +255,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 	 * @return single emitting the rest model
 	 */
 	protected Single<ReleaseInfoMicroschemaList> getMicroschemaVersions(Release release) {
-		return Observable.from(release.findAllLatestMicroschemaVersionEdges()).map(edge -> {
+		return Observable.fromIterable(release.findAllLatestMicroschemaVersionEdges()).map(edge -> {
 			MicroschemaReference reference = edge.getMicroschemaContainerVersion().transformToReference();
 			ReleaseMicroschemaInfo info = new ReleaseMicroschemaInfo(reference);
 			info.setMigrationStatus(edge.getMigrationStatus());
@@ -265,7 +265,7 @@ public class ReleaseCrudHandler extends AbstractCrudHandler<Release, ReleaseResp
 			return new ReleaseInfoMicroschemaList();
 		}, (x, y) -> {
 			x.getMicroschemas().add(y);
-		}).toSingle();
+		});
 	}
 
 	public void handleMigrateRemainingMicronodes(InternalActionContext ac, String releaseUuid) {

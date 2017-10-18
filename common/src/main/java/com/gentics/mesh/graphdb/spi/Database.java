@@ -13,17 +13,18 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.tx.Tx;
-import com.syncleus.ferma.tx.TxFactory;
 import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.tx.TxAction1;
+import com.syncleus.ferma.tx.TxFactory;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
+import com.tinkerpop.gremlin.Tokens.T;
 
+import io.reactivex.Single;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 /**
  * Main description of a graph database.
@@ -78,7 +79,7 @@ public interface Database extends TxFactory {
 						bc.complete();
 					} else {
 						try {
-							T ele = result.toBlocking().toFuture().get(40, TimeUnit.SECONDS);
+							T ele = result.blockingGet();
 							bc.complete(ele);
 						} catch (TimeoutException e2) {
 							log.error("Timeout while processing result of transaction handler.", e2);
@@ -123,7 +124,7 @@ public interface Database extends TxFactory {
 						bc.complete();
 					} else {
 						try {
-							T ele = result.toBlocking().toFuture().get(40, TimeUnit.SECONDS);
+							T ele = result.blockingGet();
 							bc.complete(ele);
 						} catch (TimeoutException e2) {
 							log.error("Timeout while processing result of transaction handler.", e2);

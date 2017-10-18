@@ -8,7 +8,7 @@ import com.gentics.mesh.core.data.search.DropIndexEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.search.index.entry.AbstractEntry;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 /**
  * @see DropIndexEntry

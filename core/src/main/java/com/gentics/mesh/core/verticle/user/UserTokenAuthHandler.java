@@ -20,19 +20,18 @@ import com.gentics.mesh.core.data.root.UserRoot;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.UserParameters;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.impl.AuthHandlerImpl;
 
 /**
- * The user token authentication handler grants access to routes by validating
- * the provides token query parameter value.
+ * The user token authentication handler grants access to routes by validating the provides token query parameter value.
  * 
- * Please note that is very important to always chain the MeshAuthHandler after
- * this handler because it will just inject a User into the routing context.
- * This handler will also call rc.next() if no token has been provided. The
- * token code is only a fallback mechanism and should not replace the JWT auth
- * handler. If this handler fails the {@link MeshAuthHandler} should try to
- * extract the JWT token from the cookie and load the correct user.
+ * Please note that is very important to always chain the MeshAuthHandler after this handler because it will just inject a User into the routing context. This
+ * handler will also call rc.next() if no token has been provided. The token code is only a fallback mechanism and should not replace the JWT auth handler. If
+ * this handler fails the {@link MeshAuthHandler} should try to extract the JWT token from the cookie and load the correct user.
  */
 @Singleton
 public class UserTokenAuthHandler extends AuthHandlerImpl {
@@ -46,6 +45,11 @@ public class UserTokenAuthHandler extends AuthHandlerImpl {
 		super(authProvider);
 		this.boot = boot;
 		this.db = db;
+	}
+
+	@Override
+	public void parseCredentials(RoutingContext context, Handler<AsyncResult<JsonObject>> handler) {
+		// Not needed
 	}
 
 	@Override

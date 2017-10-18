@@ -112,7 +112,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		tx(() -> user().setResetTokenIssueTimestamp(System.currentTimeMillis() - 1000 * 60 * 60));
 
 		// 2. Logout the current client user
-		client().logout().toBlocking().value();
+		client().logout().blockingGet();
 
 		// 3. Update the user using the token code
 		UserUpdateRequest request = new UserUpdateRequest();
@@ -139,7 +139,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertNotNull("The user token code should now be set to a non-null value but it was not", tx(() -> user().getResetToken()));
 
 		// 2. Logout the current client user
-		client().logout().toBlocking().value();
+		client().logout().blockingGet();
 
 		// 3. Update the user using the token code
 		UserUpdateRequest request = new UserUpdateRequest();
@@ -163,7 +163,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().getUserResetToken(uuid));
 
 		// 2. Logout the current client user
-		client().logout().toBlocking().value();
+		client().logout().blockingGet();
 
 		// 3. Update the user using the token code
 		UserUpdateRequest request = new UserUpdateRequest();
@@ -187,7 +187,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		call(() -> client().getUserResetToken(uuid));
 
 		// 2. Logout the current client user
-		client().logout().toBlocking().value();
+		client().logout().blockingGet();
 
 		// 3. Update the user using the token code
 		UserUpdateRequest request = new UserUpdateRequest();

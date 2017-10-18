@@ -5,6 +5,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.vertx.core.http.HttpMethod.GET;
 import static io.vertx.core.http.HttpMethod.POST;
 
+import java.util.Set;
+import java.util.function.Supplier;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -39,7 +42,6 @@ import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
 import com.gentics.mesh.search.index.user.UserIndexHandler;
 
 import dagger.Lazy;
-import rx.functions.Func0;
 
 @Singleton
 public class SearchEndpoint extends AbstractEndpoint {
@@ -168,8 +170,8 @@ public class SearchEndpoint extends AbstractEndpoint {
 	 * @param indexHandlerKey
 	 *            key of the index handlers
 	 */
-	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
-			Func0<RootVertex<T>> root, Class<RL> classOfRL, IndexHandler indexHandler, RL exampleListResponse) {
+	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName, Supplier
+			<RootVertex<T>> root, Class<RL> classOfRL, IndexHandler indexHandler, RL exampleListResponse) {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);

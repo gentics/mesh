@@ -6,7 +6,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.data.search.DropIndexEntry;
 import com.gentics.mesh.search.SearchProvider;
 
-import rx.Completable;
+import io.reactivex.Completable;
 
 /**
  * @see DropIndexHandler

@@ -5,8 +5,8 @@ import java.io.File;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 
+import io.reactivex.Single;
 import io.vertx.core.file.AsyncFile;
-import rx.Single;
 
 /**
  * The BinaryField Domain Model interface.

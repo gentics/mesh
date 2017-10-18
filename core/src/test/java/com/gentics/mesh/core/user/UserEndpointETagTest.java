@@ -24,7 +24,6 @@ public class UserEndpointETagTest extends AbstractMeshTest {
 			String etag = callETag(() -> client().findUsers());
 			callETag(() -> client().findUsers(), etag, true, 304);
 			callETag(() -> client().findUsers(new PagingParametersImpl().setPage(2)), etag, true, 200);
-
 		}
 	}
 

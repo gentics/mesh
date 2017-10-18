@@ -113,7 +113,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 		schema.addField(vcardListFieldSchema);
 
 		// Set the mapping for the schema
-		meshDagger().nodeContainerIndexHandler().updateNodeIndexMapping(schema).await();
+		meshDagger().nodeContainerIndexHandler().updateNodeIndexMapping(schema).blockingAwait();
 
 		MicronodeGraphFieldList vcardListField = node.getLatestDraftFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
@@ -142,7 +142,7 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 		schema.addField(nodeListFieldSchema);
 
 		// Set the mapping for the schema
-		meshDagger().nodeContainerIndexHandler().updateNodeIndexMapping(schema).await();
+		meshDagger().nodeContainerIndexHandler().updateNodeIndexMapping(schema).blockingAwait();
 
 		// create a non-empty list for the english version
 		NodeGraphFieldList nodeListField = node.getLatestDraftFieldContainer(english()).createNodeList("nodelist");

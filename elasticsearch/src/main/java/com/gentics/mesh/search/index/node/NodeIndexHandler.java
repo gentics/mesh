@@ -58,12 +58,12 @@ import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 import com.syncleus.ferma.tx.Tx;
 
+import io.reactivex.Completable;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Completable;
-import rx.Observable;
-import rx.Single;
 
 /**
  * Handler for the node specific search index.
@@ -120,7 +120,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return super.init().andThen(Completable.create(sub -> {
 			db.tx(() -> {
 				updateNodeIndexMappings();
-				sub.onCompleted();
+				sub.onComplete();
 			});
 		}));
 	}
@@ -202,8 +202,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			}
 
 			// Now merge all store actions and refresh the affected indices
-			return Observable.from(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct()
-					.doOnNext(indexName -> searchProvider.refreshIndex(indexName)).toCompletable();
+			return Observable.fromIterable(obs).map(x -> x.toObservable()).flatMap(x -> x).distinct()
+					.doOnNext(indexName -> searchProvider.refreshIndex(indexName)).ignoreElements();
 		});
 	}
 
@@ -411,8 +411,8 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			for (Release release : project.getReleaseRoot().findAllIt()) {
 				// Each release specific index has also document type specific mappings
 				for (SchemaContainerVersion containerVersion : release.findActiveSchemaVersions()) {
-					updateNodeIndexMapping(project, release, containerVersion, DRAFT, containerVersion.getSchema()).await();
-					updateNodeIndexMapping(project, release, containerVersion, PUBLISHED, containerVersion.getSchema()).await();
+					updateNodeIndexMapping(project, release, containerVersion, DRAFT, containerVersion.getSchema()).blockingAwait();
+					updateNodeIndexMapping(project, release, containerVersion, PUBLISHED, containerVersion.getSchema()).blockingAwait();
 				}
 			}
 		}

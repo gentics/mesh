@@ -9,8 +9,8 @@ import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.util.ETag;
 
-import rx.Observable;
-import rx.Single;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 
 /**
  * A transformable page is a page which contains {@link TransformableElement}. Thus it is possible to compute the etag for the page and transform the page into
@@ -39,7 +39,7 @@ public interface TransformablePage<T extends TransformableElement<? extends Rest
 			return Single.just(listResponse);
 		}
 
-		return Observable.from(obs).concatMapEager(s -> s.toObservable()).toList().toSingle().map(list -> {
+		return Observable.fromIterable(obs).concatMapEager(s -> s.toObservable()).toList().map(list -> {
 			setPaging(listResponse);
 			listResponse.getData().addAll(list);
 			return listResponse;

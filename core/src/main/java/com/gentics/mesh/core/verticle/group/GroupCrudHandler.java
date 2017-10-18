@@ -26,9 +26,9 @@ import com.gentics.mesh.util.ResultInfo;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
+import io.reactivex.Single;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import rx.Single;
 
 /**
  * Handler for group specific request methods.

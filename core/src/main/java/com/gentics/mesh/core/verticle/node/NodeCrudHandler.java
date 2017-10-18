@@ -19,7 +19,6 @@ import javax.inject.Inject;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.elasticsearch.common.collect.Tuple;
 
-import com.syncleus.ferma.tx.TxAction1;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -43,9 +42,10 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.VersioningParameters;
+import com.syncleus.ferma.tx.TxAction1;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
-import rx.Single;
+import io.reactivex.Single;
 
 /**
  * Main CRUD handler for the Node Endpoint.
@@ -191,7 +191,7 @@ public class NodeCrudHandler extends AbstractCrudHandler<Node, NodeResponse> {
 			if (ac.matches(etag, true)) {
 				throw new NotModifiedException();
 			} else {
-				return page.transformToRest(ac, 0).toBlocking().value();
+				return page.transformToRest(ac, 0).blockingGet();
 			}
 		}, model -> ac.send(model, OK));
 

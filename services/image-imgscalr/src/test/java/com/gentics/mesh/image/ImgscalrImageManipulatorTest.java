@@ -3,6 +3,7 @@ package com.gentics.mesh.image;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -14,11 +15,10 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 import javax.imageio.ImageIO;
 
-import com.gentics.mesh.util.PropReadFileStream;
-import com.gentics.mesh.util.RxUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.tika.exception.TikaException;
@@ -34,14 +34,14 @@ import com.gentics.mesh.core.image.spi.ImageInfo;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.util.PropReadFileStream;
+import com.gentics.mesh.util.RxUtil;
 
+import io.reactivex.Single;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.rxjava.core.Vertx;
-import rx.Single;
-import rx.functions.Action6;
-import rx.functions.Func0;
+import io.vertx.reactivex.core.Vertx;
 
 public class ImgscalrImageManipulatorTest {
 
@@ -69,7 +69,7 @@ public class ImgscalrImageManipulatorTest {
 
 		checkImages((imageName, width, height, color, refImage, ins) -> {
 			log.debug("Handling " + imageName);
-			Single<Buffer> obs = manipulator.handleResize(ins.call(), imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
+			Single<Buffer> obs = manipulator.handleResize(ins.get(), imageName, new ImageManipulationParametersImpl().setWidth(150).setHeight(180))
 				.map(PropReadFileStream::getFile)
 				.flatMap(RxUtil::readEntireFile);
 			CountDownLatch latch = new CountDownLatch(1);
@@ -103,14 +103,14 @@ public class ImgscalrImageManipulatorTest {
 	public void testExtractImageInfo() throws IOException, JSONException {
 		checkImages((imageName, width, height, color, refImage, ins) -> {
 			Single<ImageInfo> obs = manipulator.readImageInfo(ins);
-			ImageInfo info = obs.toBlocking().value();
+			ImageInfo info = obs.blockingGet();
 			assertEquals("The width or image {" + imageName + "} did not match.", width, info.getWidth());
 			assertEquals("The height or image {" + imageName + "} did not match.", height, info.getHeight());
 			assertEquals("The dominant color of the image did not match {" + imageName + "}", color, info.getDominantColor());
 		});
 	}
 
-	private void checkImages(Action6<String, Integer, Integer, String, BufferedImage, Func0<InputStream>> action) throws JSONException, IOException {
+	private void checkImages(ImageAction<String, Integer, Integer, String, BufferedImage, Supplier<InputStream>> action) throws JSONException, IOException {
 		JSONObject json = new JSONObject(IOUtils.toString(getClass().getResourceAsStream("/pictures/images.json")));
 		JSONArray array = json.getJSONArray("images");
 		for (int i = 0; i < array.length(); i++) {
@@ -229,7 +229,7 @@ public class ImgscalrImageManipulatorTest {
 	@Test
 	public void testTikaMetadata() throws IOException, SAXException, TikaException {
 		InputStream ins = getClass().getResourceAsStream("/pictures/12382975864_09e6e069e7_o.jpg");
-		Map<String, String> metadata = manipulator.getMetadata(ins).toBlocking().value();
+		Map<String, String> metadata = manipulator.getMetadata(ins).blockingGet();
 		assertTrue(!metadata.isEmpty());
 		for (String key : metadata.keySet()) {
 			System.out.println(key + "=" + metadata.get(key));

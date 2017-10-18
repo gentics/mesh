@@ -48,8 +48,8 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.VersionUtil;
 
-import rx.Observable;
-import rx.Single;
+import io.reactivex.Observable;
+import io.reactivex.Single;
 
 /**
  * @see Release
@@ -230,7 +230,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	@Override
 	public Iterable<? extends ReleaseMicroschemaEdge> findAllLatestMicroschemaVersionEdges() {
 		// Locate one version (latest) of all versions per schema
-		return Observable.from(outE(HAS_MICROSCHEMA_VERSION).frameExplicit(ReleaseMicroschemaEdgeImpl.class))
+		return Observable.fromIterable(outE(HAS_MICROSCHEMA_VERSION).frameExplicit(ReleaseMicroschemaEdgeImpl.class))
 				.groupBy(it -> it.getMicroschemaContainerVersion().getSchemaContainer().getUuid())
 				.map(it -> it.reduce((a, b) -> a.getMicroschemaContainerVersion().compareTo(b.getMicroschemaContainerVersion()) > 0 ? a : b))
 				.flatMap(x -> x).toBlocking().toIterable();
@@ -239,7 +239,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 	@Override
 	public Iterable<? extends ReleaseSchemaEdge> findAllLatestSchemaVersionEdges() {
 		// Locate one version (latest) of all versions per schema
-		return Observable.from(outE(HAS_SCHEMA_VERSION).frameExplicit(ReleaseSchemaEdgeImpl.class))
+		return Observable.fromIterable(outE(HAS_SCHEMA_VERSION).frameExplicit(ReleaseSchemaEdgeImpl.class))
 				.groupBy(it -> it.getSchemaContainerVersion().getSchemaContainer().getUuid())
 				.map(it -> it.reduce((a, b) -> a.getSchemaContainerVersion().compareTo(b.getSchemaContainerVersion()) > 0 ? a : b)).flatMap(x -> x)
 				.toBlocking().toIterable();
