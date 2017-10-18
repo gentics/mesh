@@ -194,15 +194,14 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	@Override
 	public BinaryGraphField createBinary(String fieldKey) {
 		BinaryGraphField existing = getBinary(fieldKey);
-		BinaryGraphFieldImpl field = getGraph().addFramedVertex(BinaryGraphFieldImpl.class);
-		field.setFieldKey(fieldKey);
 
-		MeshEdgeImpl edge = getGraph().addFramedEdge(this, field, HAS_FIELD, MeshEdgeImpl.class);
+		BinaryGraphField edge = addFramedEdge(HAS_FIELD, this, BinaryGraphFieldImpl.class);
+		edge.setFieldKey(fieldKey);
 		edge.setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, fieldKey);
 
 		if (existing != null) {
 			// Copy the old values to the new field
-			existing.copyTo(field);
+			existing.copyTo(edge);
 
 			unlinkOut(existing, HAS_FIELD);
 			// Remove the field if no more containers are using it
@@ -210,7 +209,7 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 				existing.remove();
 			}
 		}
-		return field;
+		return edge;
 	}
 
 	@Override

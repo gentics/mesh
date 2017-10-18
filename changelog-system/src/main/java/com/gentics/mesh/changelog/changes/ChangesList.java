@@ -30,6 +30,7 @@ public final class ChangesList {
 		list.add(new RemoveBogusWebrootProperty());
 		list.add(new PurgeOldJobs());
 		list.add(new UpdateReleaseSchemaEdge());
+		list.add(new BinaryAssetMigration());
 		// ADD NEW CHANGES HERE!
 		return list;
 	}

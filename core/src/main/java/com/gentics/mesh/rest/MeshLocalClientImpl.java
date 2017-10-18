@@ -15,6 +15,8 @@ import com.gentics.mesh.core.rest.MeshServerInfoModel;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.consistency.ConsistencyCheckResponse;
 import com.gentics.mesh.core.rest.admin.status.MeshStatusResponse;
+import com.gentics.mesh.core.rest.asset.AssetListResponse;
+import com.gentics.mesh.core.rest.asset.AssetResponse;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.graphql.GraphQLRequest;
@@ -1302,6 +1304,32 @@ public class MeshLocalClientImpl implements MeshRestClient {
 
 	@Override
 	public MeshRequest<GenericMessageResponse> invokeJobProcessing() {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<AssetResponse> findAssetByUuid(String projectName, String uuid, ParameterProvider... parameters) {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<AssetListResponse> findAssets(String projectName, ParameterProvider... parameters) {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<AssetResponse> createAsset(String projectName, String uuid) {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<NodeResponse> updateAsset(String projectName, String uuid, Buffer fileData, String fileName, String contentType,
+			ParameterProvider... parameters) {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<Void> deleteAsset(String projectName, String uuid, ParameterProvider... parameters) {
 		return null;
 	}
 

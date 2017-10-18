@@ -71,6 +71,13 @@ public class GraphRelationships {
 		// Changelog
 		db.addEdgeType(HAS_CHANGELOG_ROOT);
 
+		// Assets
+		db.addEdgeType(HAS_ASSET_BINARY_ROOT);
+		db.addEdgeType(HAS_ASSET_BINARY);
+		db.addEdgeType(HAS_ASSET_ROOT);
+		db.addEdgeType(HAS_ASSET);
+		db.addEdgeType(HAS_BINARY);
+
 	}
 
 	// Project
@@ -136,6 +143,13 @@ public class GraphRelationships {
 	public static final String HAS_PROJECT_ROOT = "HAS_PROJECT_ROOT";
 	public static final String HAS_RELEASE_ROOT = "HAS_RELEASE_ROOT";
 	public static final String HAS_JOB_ROOT = "HAS_JOB_ROOT";
+
+	// Asset root
+	public static final String HAS_ASSET_ROOT = "HAS_ASSET_ROOT";
+	public static final String HAS_ASSET = "HAS_ASSET";
+	public static final String HAS_ASSET_BINARY_ROOT = "HAS_ASSET_BINARY_ROOT";
+	public static final String HAS_ASSET_BINARY = "HAS_ASSET_BINARY";
+	public static final String HAS_BINARY = "HAS_BINARY";
 
 	public static final String HAS_FIELD = "HAS_FIELD";
 	public static final String HAS_ITEM = "HAS_ITEM";

@@ -74,7 +74,7 @@ public final class Events {
 
 	public static final String EVENT_TAG_DELETED = "mesh.tag.deleted";
 
-	/* Tag */
+	/* Tag Family */
 
 	public static final String EVENT_TAG_FAMILY_CREATED = "mesh.tagfamily.created";
 
@@ -89,6 +89,14 @@ public final class Events {
 	public static final String EVENT_PROJECT_UPDATED = "mesh.project.updated";
 
 	public static final String EVENT_PROJECT_DELETED = "mesh.project.deleted";
+
+	/* Asset */
+
+	public static final String EVENT_ASSET_CREATED = "mesh.asset.created";
+
+	public static final String EVENT_ASSET_UPDATED = "mesh.asset.updated";
+
+	public static final String EVENT_ASSET_DELETED = "mesh.asset.deleted";
 
 	/* Node */
 

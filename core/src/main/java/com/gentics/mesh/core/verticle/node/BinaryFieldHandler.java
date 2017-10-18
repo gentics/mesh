@@ -50,6 +50,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
+import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.FileUtils;
 
 import dagger.Lazy;
@@ -79,14 +80,17 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 	private SearchQueue searchQueue;
 
+	private BinaryStorage binaryStorage;
+
 	@Inject
 	public BinaryFieldHandler(ImageManipulator imageManipulator, Database db, Lazy<BootstrapInitializer> boot, SearchQueue searchQueue,
-			BinaryFieldResponseHandler binaryFieldResponseHandler) {
+			BinaryFieldResponseHandler binaryFieldResponseHandler, BinaryStorage binaryStorage) {
 		this.imageManipulator = imageManipulator;
 		this.db = db;
 		this.boot = boot;
 		this.searchQueue = searchQueue;
 		this.binaryFieldResponseHandler = binaryFieldResponseHandler;
+		this.binaryStorage = binaryStorage;
 	}
 
 	public void handleReadBinaryField(RoutingContext rc, String uuid, String fieldName) {
@@ -343,31 +347,32 @@ public class BinaryFieldHandler extends AbstractHandler {
 					Release release = ac.getRelease();
 
 					// Create a new node version field container to store the upload
-					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
+					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion,
+							true);
 					BinaryGraphField field = newDraftVersion.createBinary(fieldName);
+					
 					String fieldUuid = field.getUuid();
 					String fieldSegmentedPath = field.getSegmentedPath();
 					String fieldPath = field.getFilePath();
 
 					// 1. Resize the original image and store the result in the filesystem
 					Single<TransformationResult> obsTransformation = imageManipulator
-							.handleResize(initialField.getFile(), field.getSHA512Sum(), imageManipulationParameter)
-							.flatMap(file -> {
+							.handleResize(initialField.getFile(), field.getSHA512Sum(), imageManipulationParameter).flatMap(file -> {
 								// 2. Hash the resized image data and store it using the computed fieldUuid + hash
 								return readEntireFile(file.getFile()).map(buffer -> hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath))
-								.flatMap(hash -> {
-									// 3. The image was stored and hashed. Now we need to load the stored file again and check the image properties
-									return imageManipulator.readImageInfo(() -> {
-										try {
-											return new FileInputStream(fieldPath);
-										} catch (IOException e) {
-											throw new RuntimeException(e);
-										}
-									}).map(info -> {
-										// Return a POJO which hold all information that is needed to update the field
-										return new TransformationResult(hash, file.getProps().size(), info);
-									});
-								});
+										.flatMap(hash -> {
+											// 3. The image was stored and hashed. Now we need to load the stored file again and check the image properties
+											return imageManipulator.readImageInfo(() -> {
+												try {
+													return new FileInputStream(fieldPath);
+												} catch (IOException e) {
+													throw new RuntimeException(e);
+												}
+											}).map(info -> {
+												// Return a POJO which hold all information that is needed to update the field
+												return new TransformationResult(hash, file.getProps().size(), info);
+											});
+										});
 							});
 
 					TransformationResult result = obsTransformation.toBlocking().value();
@@ -404,18 +409,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 */
 	protected String hashAndMoveBinaryFile(FileUpload fileUpload, String uuid, String segmentedPath) {
 		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
-		File targetFile = new File(uploadFolder, uuid + ".bin");
-		String targetPath = targetFile.getAbsolutePath();
-
 		String sha512sum = hashFileupload(fileUpload);
-		checkUploadFolderExists(uploadFolder);
-		deletePotentialUpload(targetPath);
-		moveUploadIntoPlace(fileUpload, targetPath);
+		binaryStorage.store(buffer, sha512sum, uuid);
 		return sha512sum;
-		// log.error("Failed to handle upload file from {" + fileUpload.uploadedFileName() + "} / {" + targetPath + "}", error);
-		// throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
-
 	}
 
 	/**
@@ -430,15 +426,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @return The sha512 checksum
 	 */
 	public String hashAndStoreBinaryFile(Buffer buffer, String uuid, String segmentedPath) {
-		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
-		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
-		File targetFile = new File(uploadFolder, uuid + ".bin");
-		String targetPath = targetFile.getAbsolutePath();
-
 		String sha512sum = hashBuffer(buffer);
-		checkUploadFolderExists(uploadFolder);
-		deletePotentialUpload(targetPath);
-		storeBuffer(buffer, targetPath);
+		binaryStorage.store(buffer, sha512sum, uuid);
 		return sha512sum;
 	}
 
@@ -461,76 +450,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 */
 	protected String hashBuffer(Buffer buffer) {
 		return FileUtils.generateSha512Sum(buffer);
-	}
-
-	/**
-	 * Delete potential existing file uploads from the given path.
-	 * 
-	 * @param targetPath
-	 */
-	protected void deletePotentialUpload(String targetPath) {
-		FileSystem fileSystem = Mesh.vertx().fileSystem();
-		if (fileSystem.existsBlocking(targetPath)) {
-			// Deleting of existing binary file
-			fileSystem.deleteBlocking(targetPath);
-		}
-		// log.error("Error while attempting to delete target file {" + targetPath + "}", error);
-		// log.error("Unable to check existence of file at location {" + targetPath + "}");
-
-	}
-
-	/**
-	 * Move the file upload from the temporary upload directory to the given target path.
-	 * 
-	 * @param fileUpload
-	 * @param targetPath
-	 */
-	protected void moveUploadIntoPlace(FileUpload fileUpload, String targetPath) {
-		FileSystem fileSystem = Mesh.vertx().fileSystem();
-		fileSystem.moveBlocking(fileUpload.uploadedFileName(), targetPath);
-		if (log.isDebugEnabled()) {
-			log.debug("Moved upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}");
-		}
-		// log.error("Failed to move upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}", error);
-	}
-
-	/**
-	 * Store the data in the buffer into the given place.
-	 * 
-	 * @param buffer
-	 *            buffer
-	 * @param targetPath
-	 *            target path
-	 */
-	protected void storeBuffer(Buffer buffer, String targetPath) {
-		FileSystem fileSystem = Mesh.vertx().fileSystem();
-		fileSystem.writeFileBlocking(targetPath, buffer);
-		// log.error("Failed to save file to {" + targetPath + "}", error);
-		// throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
-	}
-
-	/**
-	 * Check the target upload folder and create it if needed.
-	 * 
-	 * @param uploadFolder
-	 */
-	protected void checkUploadFolderExists(File uploadFolder) {
-
-		boolean folderExists = uploadFolder.exists();
-		// log.error("Could not check whether target directory {" + uploadFolder.getAbsolutePath() + "} exists.", error);
-		// throw error(BAD_REQUEST, "node_error_upload_failed", error);
-
-		if (!folderExists) {
-			uploadFolder.mkdirs();
-
-			// log.error("Failed to create target folder {" + uploadFolder.getAbsolutePath() + "}", error);
-			// throw error(BAD_REQUEST, "node_error_upload_failed", error);
-
-			if (log.isDebugEnabled()) {
-				log.debug("Created folder {" + uploadFolder.getAbsolutePath() + "}");
-			}
-		}
-
 	}
 
 }

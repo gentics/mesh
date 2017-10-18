@@ -235,6 +235,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 		endpoint.exampleRequest(tagFamilyExamples.getTagFamilyCreateRequest("Colors"));
 		endpoint.exampleResponse(CREATED, tagFamilyExamples.getTagFamilyResponse("Colors"), "Created tag family.");
 		endpoint.handler(rc -> {
+			//TODO add support for creation with uuid
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			tagFamilyCrudHandler.handleCreate(ac);
 		});
