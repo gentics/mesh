@@ -1,16 +1,16 @@
 package com.gentics.mesh.search.index.entry;
 
-import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.search.context.EntryContext;
 
 /**
  * Abstract implementation for {@link SearchQueueEntry}'s. Please use this class if you want to build your own entry types.
  */
-public abstract class AbstractEntry implements SearchQueueEntry {
+public abstract class AbstractEntry<T extends EntryContext> implements SearchQueueEntry<T> {
 
 	protected SearchQueueEntryAction elementAction;
-	protected HandleContext context = new HandleContext();
+	protected T context;
 
 	public AbstractEntry(SearchQueueEntryAction action) {
 		this.elementAction = action;
@@ -27,7 +27,7 @@ public abstract class AbstractEntry implements SearchQueueEntry {
 	}
 
 	@Override
-	public HandleContext getContext() {
+	public T getContext() {
 		return context;
 	}
 

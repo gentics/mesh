@@ -1328,7 +1328,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			Node node = folder("news");
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), new VersioningParametersImpl().draft(),
 					new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
-			assertThat(response.getAvailableLanguages()).containsExactly("de", "en");
+			assertThat(response.getAvailableLanguages().keySet()).containsExactly("de", "en");
 			assertThat(response.getLanguagePaths()).containsEntry("en", "/api/v1/dummy/webroot/News");
 			assertThat(response.getLanguagePaths()).containsEntry("de", "/api/v1/dummy/webroot/Neuigkeiten");
 		}
@@ -1405,7 +1405,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid));
 			assertNotNull(response);
 			assertEquals("folder", response.getSchema().getName());
-			assertThat(response.getAvailableLanguages()).containsExactly("en");
+			assertThat(response.getAvailableLanguages().keySet()).containsExactly("en");
 			assertEquals("en", response.getLanguage());
 
 			response = call(() -> client().findNodeByUuid(PROJECT_NAME, uuid, new NodeParametersImpl().setResolveLinks(LinkType.FULL)));
@@ -1487,7 +1487,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			VersioningParameters versionParams = new VersioningParametersImpl().draft();
 			NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, node.getUuid(), parameters, versionParams));
 			assertThat(response.getLanguage()).as("Node language").isNull();
-			assertThat(response.getAvailableLanguages()).as("Available languages").containsOnly("nl");
+			assertThat(response.getAvailableLanguages().keySet()).as("Available languages").containsOnly("nl");
 			assertThat(response.getFields()).as("Node Fields").isEmpty();
 			assertNotNull(response.getProject());
 			assertEquals(project().getUuid(), response.getProject().getUuid());

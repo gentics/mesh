@@ -8,15 +8,18 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.schema.SchemaContainer;
-import com.gentics.mesh.search.index.AbstractTransformator;
+import com.gentics.mesh.search.index.AbstractTransformer;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Transformer for schemas.
+ */
 @Singleton
-public class SchemaTransformator extends AbstractTransformator<SchemaContainer> {
+public class SchemaTransformer extends AbstractTransformer<SchemaContainer> {
 
 	@Inject
-	public SchemaTransformator() {
+	public SchemaTransformer() {
 	}
 
 	@Override

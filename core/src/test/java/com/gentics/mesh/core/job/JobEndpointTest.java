@@ -1,6 +1,5 @@
 package com.gentics.mesh.core.job;
 
-import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.FAILED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.test.ClientHelper.assertMessage;

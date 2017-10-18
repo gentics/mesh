@@ -370,7 +370,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 			// Multiple tags of the same family can be tagged on same node. This should still trigger only 1 update for that node.
 			HashSet<String> taggedNodes = new HashSet<>();
 			int storeCount = 0;
-			for (Tag tag : tagfamily.findAll()) {
+			for (Tag tag : tagfamily.findAllIt()) {
 				storeCount++;
 				for (Node node : tag.getNodes(release)) {
 					if (!taggedNodes.contains(node.getUuid())) {

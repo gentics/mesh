@@ -90,14 +90,14 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	/**
 	 * Return a list of users that are assigned to the group.
 	 * 
-	 * @return
+	 * @return List of users
 	 */
 	List<? extends User> getUsers();
 
 	/**
 	 * Return the a list of roles that are assigned to the group.
 	 * 
-	 * @return
+	 * @return List of roles
 	 */
 	List<? extends Role> getRoles();
 

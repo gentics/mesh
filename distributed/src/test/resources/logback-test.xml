@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+	<conversionRule conversionWord="meshName" converterClass="com.gentics.mesh.log.MeshLogNameConverter"/>
+
+	<appender name="STDERR" class="ch.qos.logback.core.ConsoleAppender">
+		<target>System.err</target>
+		<encoder>
+			<pattern>TEST %-5level [%thread] [%file:%line] - %msg%n
+			</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.classic.filter.LevelFilter">
+			<level>ERROR</level>
+			<onMatch>ACCEPT</onMatch>
+			<onMismatch>DENY</onMismatch>
+		</filter>
+	</appender>
+
+	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>TEST %-5level [%thread] [%file:%line] - %msg%n
+			</pattern>
+		</encoder>
+	</appender>
+
+	<!-- <logger name="com.gentics.mesh.search.index.NodeIndexHandler" level="DEBUG"/> <logger name="com.gentics.mesh.search.impl.ElasticSearchProvider" level="DEBUG"/> <logger name="com.gentics.mesh.core.verticle.node.NodeMigrationVerticle" 
+		level="ERROR" /> <logger name="com.gentics.mesh.core.data.node.handler.NodeMigrationHandler" level="ERROR" /> -->
+
+	<logger name="com.gentics.mesh.core.data.generic" level="DEBUG" />
+	<logger name="com.gentics.mesh.distributed" level="DEBUG" />
+	<logger name="com.gentics.mesh.etc.RouterStorage" level="DEBUG"/>
+	<logger name="io.netty" level="ERROR"/>
+	<logger name="com.github.dockerjava" level="ERROR"/>
+	<!-- <logger name="com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl" level="DEBUG" /> -->
+
+	<root level="DEBUG">
+		<appender-ref ref="STDOUT"/>
+	</root>
+</configuration>

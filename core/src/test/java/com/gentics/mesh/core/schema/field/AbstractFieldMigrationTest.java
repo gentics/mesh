@@ -138,7 +138,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
-		project().getLatestRelease().assignSchemaVersion(versionA);
+		project().getLatestRelease().assignSchemaVersion(user(), versionA);
 		User user = user();
 		Language english = english();
 		Node parentNode = folder("2015");
@@ -148,7 +148,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		dataProvider.set(englishContainer, removedFieldName);
 
 		// migrate the node
-		project().getLatestRelease().assignSchemaVersion(versionB);
+		project().getLatestRelease().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 
@@ -203,7 +203,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the node
-		project().getLatestRelease().assignMicroschemaVersion(versionB);
+		project().getLatestRelease().assignMicroschemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
 		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
@@ -296,8 +296,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
-		project().getLatestRelease().assignSchemaVersion(versionA);
 		User user = user();
+		project().getLatestRelease().assignSchemaVersion(user, versionA);
 		Language english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
@@ -305,7 +305,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		dataProvider.set(englishContainer, oldFieldName);
 
 		// migrate the node
-		project().getLatestRelease().assignSchemaVersion(versionB);
+		project().getLatestRelease().assignSchemaVersion(user, versionB);
 		Tx.getActive().getGraph().commit();
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 
@@ -371,7 +371,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the micronode
-		project().getLatestRelease().assignMicroschemaVersion(versionB);
+		project().getLatestRelease().assignMicroschemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
 		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
@@ -458,7 +458,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
-		project().getLatestRelease().assignSchemaVersion(versionA);
+		project().getLatestRelease().assignSchemaVersion(user(), versionA);
 		User user = user();
 		Language english = english();
 		Node parentNode = folder("2015");
@@ -470,7 +470,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		assertThat(oldFieldFetcher.fetch(englishContainer, fieldName)).as(OLDFIELD).isNotNull();
 
 		// migrate the node
-		project().getLatestRelease().assignSchemaVersion(versionB);
+		project().getLatestRelease().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 		// old container must not be changed
@@ -533,7 +533,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		change.setNextSchemaContainerVersion(versionB);
 		versionA.setNextVersion(versionB);
 
-		project().getMicroschemaContainerRoot().addMicroschema(container);
+		project().getMicroschemaContainerRoot().addMicroschema(user(), container);
 		Node node = folder("2015").create(user(), schemaContainer("content").getLatestVersion(), project());
 
 		// create a node based on the old schema
@@ -637,7 +637,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
-		project().getLatestRelease().assignSchemaVersion(versionA);
+		project().getLatestRelease().assignSchemaVersion(user(), versionA);
 		User user = user();
 		Language english = english();
 		Node parentNode = folder("2015");
@@ -646,7 +646,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		dataProvider.set(englishContainer, fieldName);
 
 		// migrate the node
-		project().getLatestRelease().assignSchemaVersion(versionB);
+		project().getLatestRelease().assignSchemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 
@@ -699,14 +699,14 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a micronode based on the old schema
-		project().getMicroschemaContainerRoot().addMicroschema(container);
+		project().getMicroschemaContainerRoot().addMicroschema(user(), container);
 		Node node = folder("2015").create(user(), schemaContainer("content").getLatestVersion(), project());
 		MicronodeGraphField micronodeField = createMicronodefield(node, micronodeFieldName, versionA, dataProvider, fieldName);
 		NodeGraphFieldContainer oldContainer = node.getGraphFieldContainer("en");
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the micronode
-		project().getLatestRelease().assignMicroschemaVersion(versionB);
+		project().getLatestRelease().assignMicroschemaVersion(user(),versionB);
 		Tx.getActive().getGraph().commit();
 		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
@@ -790,8 +790,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		versionA.setNextVersion(versionB);
 
 		// create a node based on the old schema
-		project().getLatestRelease().assignSchemaVersion(versionA);
 		User user = user();
+		project().getLatestRelease().assignSchemaVersion(user, versionA);
 		Language english = english();
 		Node parentNode = folder("2015");
 		Node node = parentNode.create(user, versionA, project());
@@ -799,7 +799,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		dataProvider.set(englishContainer, fieldName);
 
 		// migrate the node
-		project().getLatestRelease().assignSchemaVersion(versionB);
+		project().getLatestRelease().assignSchemaVersion(user, versionB);
 		Tx.getActive().getGraph().commit();
 		nodeMigrationHandler.migrateNodes(project(), project().getLatestRelease(), versionA, versionB, null).await();
 	}
@@ -846,7 +846,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		createMicronodefield(folder("2015"), micronodeFieldName, versionA, dataProvider, fieldName);
 
 		// migrate the node
-		project().getLatestRelease().assignMicroschemaVersion(versionB);
+		project().getLatestRelease().assignMicroschemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
 		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 	}

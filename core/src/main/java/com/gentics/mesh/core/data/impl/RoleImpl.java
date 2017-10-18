@@ -6,9 +6,11 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDI
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ROLE;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -121,11 +123,19 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	}
 
 	@Override
-	public void revokePermissions(MeshVertex node, GraphPermission... permissions) {
-		for (GraphPermission permission : permissions) {
-			outE(permission.label()).mark().inV().retain((MeshVertexImpl) node).back().removeAll();
+	public void revokePermissions(MeshVertex vertex, GraphPermission... permissions) {
+		FramedGraph graph = Tx.getActive().getGraph();
+		Object indexKey = MeshInternal.get().database().createComposedIndexKey(vertex.getId(), getId());
+
+		long edgesRemoved = Arrays.stream(permissions)
+			.map(perm -> "e." + perm.label() + "_inout")
+			.flatMap(key -> StreamSupport.stream(graph.getEdges(key, indexKey).spliterator(), false))
+			.peek(Edge::remove)
+			.count();
+
+		if (edgesRemoved > 0) {
+			PermissionStore.invalidate();
 		}
-		PermissionStore.invalidate();
 	}
 
 	@Override
@@ -162,7 +172,10 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	@Override
 	public String getETag(InternalActionContext ac) {
-		return ETag.hash(getUuid() + "-" + getLastEditedTimestamp());
+		StringBuilder keyBuilder = new StringBuilder();
+		keyBuilder.append(super.getETag(ac));
+		keyBuilder.append(getLastEditedTimestamp());
+		return ETag.hash(keyBuilder);
 	}
 
 	@Override

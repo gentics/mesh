@@ -1,4 +1,4 @@
-package com.gentics.mesh.search.transformator;
+package com.gentics.mesh.search.transformer;
 
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.junit.Assert.assertEquals;
@@ -13,7 +13,7 @@ import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
-import com.gentics.mesh.search.index.node.NodeContainerTransformator;
+import com.gentics.mesh.search.index.node.NodeContainerTransformer;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
@@ -21,15 +21,15 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
-public class NodeContainerTransformatorTest extends AbstractMeshTest {
+public class NodeContainerTransformerTest extends AbstractMeshTest {
 
 	@Test
-	public void testNodeTagFamilyTransformator() {
-		NodeContainerTransformator transformator = new NodeContainerTransformator();
+	public void testNodeTagFamilyTransformer() {
+		NodeContainerTransformer transformer = new NodeContainerTransformer();
 		try (Tx tx = tx()) {
 			Release release = project().getLatestRelease();
 			NodeGraphFieldContainer node = content("concorde").getGraphFieldContainer(english(), release, ContainerType.PUBLISHED);
-			JsonObject document = transformator.toDocument(node, release.getUuid());
+			JsonObject document = transformer.toDocument(node, release.getUuid());
 			JsonObject families = document.getJsonObject("tagFamilies");
 
 			HashSet<String> basicNames = new HashSet<>(Arrays.asList("Plane", "Twinjet"));

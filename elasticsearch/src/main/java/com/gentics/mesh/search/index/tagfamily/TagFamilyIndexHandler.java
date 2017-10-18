@@ -2,7 +2,6 @@ package com.gentics.mesh.search.index.tagfamily;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,7 +26,7 @@ import rx.Completable;
 public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Inject
-	TagFamilyTransformator transformator;
+	TagFamilyTransformer transformer;
 
 	@Inject
 	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -39,8 +38,8 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 		return TagFamily.class;
 	}
 
-	public TagFamilyTransformator getTransformator() {
-		return transformator;
+	public TagFamilyTransformer getTransformer() {
+		return transformer;
 	}
 
 	@Override
@@ -72,9 +71,8 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 		return db.tx(() -> {
 			ProjectRoot root = boot.meshRoot()
 					.getProjectRoot();
-			List<? extends Project> projects = root.findAll();
 			Map<String, String> indexInfo = new HashMap<>();
-			for (Project project : projects) {
+			for (Project project : root.findAllIt()) {
 				indexInfo.put(TagFamily.composeIndexName(project.getUuid()), TagFamily.TYPE);
 			}
 			return indexInfo;

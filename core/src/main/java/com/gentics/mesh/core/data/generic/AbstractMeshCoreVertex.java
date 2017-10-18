@@ -139,4 +139,13 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 		}
 	}
 
+	@Override
+	public String getETag(InternalActionContext ac) {
+		StringBuilder keyBuilder = new StringBuilder();
+		keyBuilder.append(getUuid());
+		keyBuilder.append("-");
+		keyBuilder.append(ac.getUser().getPermissionInfo(this).getHash());
+		return keyBuilder.toString();
+	}
+
 }

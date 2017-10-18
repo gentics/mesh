@@ -16,11 +16,11 @@ import java.io.IOException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.context.impl.LoggingConfigurator;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
@@ -49,12 +49,12 @@ import com.gentics.mesh.distributed.containers.MeshDockerServer;
 import com.gentics.mesh.parameter.client.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.test.util.TestUtils;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-@Ignore
 public class BasicClusterTest extends AbstractClusterTest {
 
 	private static String clusterPostFix = randomUUID();
@@ -79,6 +79,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 
 	@BeforeClass
 	public static void waitForNodes() throws InterruptedException {
+		LoggingConfigurator.init();
 		serverB.awaitStartup(200);
 		clientA = serverA.getMeshClient();
 		clientB = serverB.getMeshClient();
@@ -180,15 +181,6 @@ public class BasicClusterTest extends AbstractClusterTest {
 	}
 
 	@Test
-	public void testNodeCreation() {
-		String projectName = randomName();
-		NodeResponse response = createProjectAndNode(clientA, projectName);
-
-		NodeResponse nodeResponse = call(() -> clientB.findNodeByUuid(projectName, response.getUuid()));
-		assertEquals("Blessed mealtime again!", nodeResponse.getFields().getStringField("content").getString());
-	}
-
-	@Test
 	public void testNodeUpdate() {
 		String projectName = randomName();
 		NodeResponse response = createProjectAndNode(clientA, projectName);
@@ -198,14 +190,23 @@ public class BasicClusterTest extends AbstractClusterTest {
 		request.getFields().put("teaser", FieldUtil.createStringField("deutscher text"));
 		request.getFields().put("slug", FieldUtil.createStringField("new-page.de.html"));
 		request.getFields().put("content", FieldUtil.createStringField("Mahlzeit!"));
-		NodeResponse updateResponse = call(
-				() -> clientB.updateNode(projectName, response.getUuid(), request, new NodeParametersImpl().setLanguages("de")));
+		NodeResponse updateResponse = call(() -> clientB.updateNode(projectName, response.getUuid(), request, new NodeParametersImpl().setLanguages(
+				"de")));
 		assertEquals("new-page.de.html", updateResponse.getFields().getStringField("slug").getString());
 
-		NodeResponse responseFromNodeA = call(
-				() -> clientA.findNodeByUuid(projectName, response.getUuid(), new NodeParametersImpl().setLanguages("de")));
+		NodeResponse responseFromNodeA = call(() -> clientA.findNodeByUuid(projectName, response.getUuid(), new NodeParametersImpl().setLanguages(
+				"de")));
 		assertEquals("new-page.de.html", responseFromNodeA.getFields().getStringField("slug").getString());
 
+	}
+
+	@Test
+	public void testNodeCreation() {
+		String projectName = randomName();
+		NodeResponse response = createProjectAndNode(clientA, projectName);
+
+		NodeResponse nodeResponse = call(() -> clientB.findNodeByUuid(projectName, response.getUuid()));
+		assertEquals("Blessed mealtime again!", nodeResponse.getFields().getStringField("content").getString());
 	}
 
 	@Test
@@ -214,12 +215,18 @@ public class BasicClusterTest extends AbstractClusterTest {
 		NodeResponse response = createProjectAndNode(clientA, projectName);
 		String uuid = response.getUuid();
 
+		TestUtils.sleep(1000);
+
+		call(() -> clientB.findNodeByUuid(projectName, uuid));
+
 		ReleaseListResponse releasesResponse = call(() -> clientA.findReleases(projectName));
 		String releaseUuid = releasesResponse.getData().get(0).getUuid();
 
 		// NodeA - Assert that the node is offline
 		call(() -> clientA.findNodeByUuid(projectName, uuid, new VersioningParametersImpl().published()), NOT_FOUND,
 				"node_error_published_not_found_for_uuid_release_language", uuid, "en", releaseUuid);
+
+		call(() -> clientB.findNodeByUuid(projectName, uuid));
 
 		// NodeA - Now publish the node
 		call(() -> clientA.publishNode(projectName, uuid));
@@ -228,6 +235,7 @@ public class BasicClusterTest extends AbstractClusterTest {
 		NodeResponse publishedNode = call(() -> clientA.findNodeByUuid(projectName, uuid, new VersioningParametersImpl().published()));
 		assertEquals("en", publishedNode.getLanguage());
 
+		TestUtils.sleep(6000);
 		// NodeB - Assert that the node can now be loaded
 		publishedNode = call(() -> clientB.findNodeByUuid(projectName, uuid, new VersioningParametersImpl().published()));
 		assertEquals("en", publishedNode.getLanguage());

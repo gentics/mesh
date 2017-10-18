@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.gentics.mesh.core.data.ContainerType;
-import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -13,6 +12,8 @@ import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
+import com.gentics.mesh.core.data.search.context.GenericEntryContext;
+import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 
 import rx.Completable;
@@ -101,7 +102,7 @@ public interface SearchQueueBatch {
 	 * @return Fluent API
 	 */
 	default SearchQueueBatch store(IndexableElement element, boolean addRelatedEntries) {
-		return store(element, new HandleContext(), addRelatedEntries);
+		return store(element, new GenericEntryContextImpl(), addRelatedEntries);
 	}
 
 	/**
@@ -112,7 +113,18 @@ public interface SearchQueueBatch {
 	 * @param addRelatedEntries
 	 * @return Fluent API
 	 */
-	SearchQueueBatch store(IndexableElement element, HandleContext context, boolean addRelatedEntries);
+	SearchQueueBatch store(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries);
+
+	/**
+	 * Move the node from the old index and store it in the new index.
+	 * 
+	 * @param oldContainer
+	 * @param newContainer
+	 * @param releaseUuid
+	 * @param type
+	 * @return Fluent API
+	 */
+	SearchQueueBatch move(NodeGraphFieldContainer oldContainer, NodeGraphFieldContainer newContainer, String releaseUuid, ContainerType type);
 
 	/**
 	 * Delete the given element from the its index.
@@ -122,7 +134,7 @@ public interface SearchQueueBatch {
 	 * @param addRelatedEntries
 	 * @return Fluent API
 	 */
-	SearchQueueBatch delete(IndexableElement element, HandleContext context, boolean addRelatedEntries);
+	SearchQueueBatch delete(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries);
 
 	/**
 	 * Add an entry to this batch.
@@ -130,7 +142,7 @@ public interface SearchQueueBatch {
 	 * @param entry
 	 * @return Added entry
 	 */
-	SearchQueueEntry addEntry(SearchQueueEntry entry);
+	SearchQueueEntry<?> addEntry(SearchQueueEntry<?> entry);
 
 	/**
 	 * Return a list of entries for this batch.
@@ -179,7 +191,7 @@ public interface SearchQueueBatch {
 	 * @return Fluent API
 	 */
 	default SearchQueueBatch delete(IndexableElement element, boolean addRelatedEntries) {
-		return delete(element, new HandleContext(), addRelatedEntries);
+		return delete(element, new GenericEntryContextImpl(), addRelatedEntries);
 	}
 
 	/**
@@ -197,7 +209,8 @@ public interface SearchQueueBatch {
 	 * @param node
 	 * @param releaseUuid
 	 * @param type
-	 * @param addRelatedElements Whether to also add related elements (e.g: child nodes)
+	 * @param addRelatedElements
+	 *            Whether to also add related elements (e.g: child nodes)
 	 * @return Fluent API
 	 */
 	SearchQueueBatch store(Node node, String releaseUuid, ContainerType type, boolean addRelatedElements);

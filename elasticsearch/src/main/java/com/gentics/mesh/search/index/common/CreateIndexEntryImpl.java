@@ -4,10 +4,11 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.CREATE_IN
 
 import javax.inject.Inject;
 
-import com.gentics.mesh.core.data.HandleContext;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
+import com.gentics.mesh.core.data.search.context.GenericEntryContext;
+import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.search.index.entry.AbstractEntry;
 
@@ -16,13 +17,13 @@ import rx.Completable;
 /**
  * @see CreateIndexEntry
  */
-public class CreateIndexEntryImpl extends AbstractEntry implements CreateIndexEntry {
+public class CreateIndexEntryImpl extends AbstractEntry<GenericEntryContext> implements CreateIndexEntry {
 
 	private String indexName;
 	private Schema schema;
 	private String indexType;
 	private IndexHandler<?> indexHandler;
-	private HandleContext context = new HandleContext();
+	private GenericEntryContextImpl context = new GenericEntryContextImpl();
 
 	@Inject
 	public CreateIndexEntryImpl(IndexHandler<?> indexHandler, String indexName, String indexType) {
@@ -64,7 +65,7 @@ public class CreateIndexEntryImpl extends AbstractEntry implements CreateIndexEn
 	}
 
 	@Override
-	public HandleContext getContext() {
+	public GenericEntryContextImpl getContext() {
 		return context;
 	}
 

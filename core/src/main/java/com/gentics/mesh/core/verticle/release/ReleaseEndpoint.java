@@ -92,7 +92,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	private void addNodeMigrationHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:releaseUuid/migrateSchemas");
-		endpoint.method(GET);
+		endpoint.method(POST);
 		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		endpoint.description("Invoked the node migration for not yet migrated nodes of schemas that are assigned to the release.");
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");
@@ -107,7 +107,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	private void addMicronodeMigrationHandler() {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/:releaseUuid/migrateMicroschemas");
-		endpoint.method(GET);
+		endpoint.method(POST);
 		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		endpoint.description("Invoked the micronode migration for not yet migrated micronodes of microschemas that are assigned to the release.");
 		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "schema_migration_invoked");

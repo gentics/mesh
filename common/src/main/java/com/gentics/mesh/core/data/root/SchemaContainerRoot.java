@@ -46,9 +46,11 @@ public interface SchemaContainerRoot extends RootVertex<SchemaContainer> {
 	/**
 	 * Add the schema to the aggregation node and assign it to all releases of the project to which the root belongs.
 	 * 
+	 * @param user
+	 *            User for the creator value of the jobs which will be created
 	 * @param schemaContainer
 	 */
-	void addSchemaContainer(SchemaContainer schemaContainer);
+	void addSchemaContainer(User user, SchemaContainer schemaContainer);
 
 	/**
 	 * Remove the schema container from the aggregation node.

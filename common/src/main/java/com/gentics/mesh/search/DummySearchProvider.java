@@ -84,7 +84,6 @@ public class DummySearchProvider implements SearchProvider {
 
 	@Override
 	public void start() {
-
 	}
 
 	@Override
@@ -92,7 +91,7 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable deleteIndex(String indexName) {
+	public Completable deleteIndex(String indexName, boolean failOnMissingIndex) {
 		dropIndexEvents.add(indexName);
 		return Completable.complete();
 	}

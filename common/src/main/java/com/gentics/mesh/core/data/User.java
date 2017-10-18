@@ -186,6 +186,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * Set the referenced node.
 	 * 
 	 * @param node
+	 * @return Fluent API
 	 */
 	User setReferencedNode(Node node);
 
@@ -220,6 +221,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 *            Permission that is used in conjunction with the node to determine the list of affected roles.
 	 * @param targetNode
 	 *            Node to which the CRUD permissions will be assigned.
+	 * @return Fluent API
 	 */
 	User addCRUDPermissionOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode);
 
@@ -235,6 +237,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 *            target node
 	 * @param toGrant
 	 *            permissions to grant
+	 * @return Fluent API
 	 */
 	User addPermissionsOnRole(MeshVertex sourceNode, GraphPermission permission, MeshVertex targetNode, GraphPermission... toGrant);
 
@@ -243,6 +246,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * 
 	 * @param sourceNode
 	 * @param targetNode
+	 * @return Fluent API
 	 */
 	User inheritRolePermissions(MeshVertex sourceNode, MeshVertex targetNode);
 
@@ -266,6 +270,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	 * Add the user to the given group.
 	 * 
 	 * @param group
+	 * @return Fluent API
 	 */
 	User addGroup(Group group);
 
@@ -302,6 +307,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Disable the user and remove him from all groups
+	 * @return
 	 */
 	User deactivate();
 

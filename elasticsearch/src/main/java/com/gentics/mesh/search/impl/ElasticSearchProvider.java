@@ -4,15 +4,12 @@ import static org.elasticsearch.client.Requests.refreshRequest;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.gentics.mesh.search.ElasticSearchUtil;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.ActionListener;
@@ -36,6 +33,7 @@ import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.node.Node;
 import org.elasticsearch.node.NodeValidationException;
 import org.elasticsearch.search.SearchHit;
@@ -44,6 +42,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
+import com.gentics.mesh.search.ElasticSearchUtil;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.json.JsonObject;
@@ -219,6 +218,12 @@ public class ElasticSearchProvider implements SearchProvider {
 				sub.onCompleted();
 				return;
 			}
+			if (log.isDebugEnabled()) {
+				log.debug("Creating mapping for index {" + indexName + "} and type {" + type + "}");
+			}
+			if (log.isTraceEnabled()) {
+				log.trace("Using mapping:\n" + mapping.encodePrettily());
+			}
 
 			org.elasticsearch.node.Node esNode = getNode();
 			PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
@@ -234,6 +239,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onFailure(Exception e) {
+					log.error("Error while updating mapping for index {" + indexName + "} and type {" + type + "}", e);
 					sub.onError(e);
 				}
 			});
@@ -375,7 +381,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
-				log.debug("Adding object {" + uuid + ":" + type + "} to index.");
+				log.debug("Adding object {" + uuid + ":" + type + "} to index {" + index + "}");
 			}
 			IndexRequestBuilder builder = getSearchClient().prepareIndex(index, type, uuid);
 
@@ -401,7 +407,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable deleteIndex(String indexName) {
+	public Completable deleteIndex(String indexName, boolean failOnMissingIndex) {
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
@@ -419,7 +425,12 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onFailure(Exception e) {
 					log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
-					sub.onError(e);
+					if (e instanceof IndexNotFoundException && !failOnMissingIndex) {
+						sub.onCompleted();
+					} else {
+						log.error("Deleting index {" + indexName + "} failed. Duration " + (System.currentTimeMillis() - start) + "[ms]", e);
+						sub.onError(e);
+					}
 				}
 			});
 		});

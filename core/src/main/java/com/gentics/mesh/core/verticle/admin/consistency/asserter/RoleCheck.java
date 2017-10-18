@@ -16,7 +16,7 @@ public class RoleCheck implements ConsistencyCheck {
 
 	@Override
 	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-		for (Role role : boot.roleRoot().findAll()) {
+		for (Role role : boot.roleRoot().findAllIt()) {
 			checkRole(role, response);
 		}
 	}

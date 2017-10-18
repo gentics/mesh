@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
@@ -26,7 +26,7 @@ import com.gentics.mesh.util.CompareUtils;
  */
 public class HtmlGraphFieldListImpl extends AbstractBasicGraphFieldList<HtmlGraphField, HtmlFieldListImpl, String> implements HtmlGraphFieldList {
 
-	public static FieldTransformator<HtmlFieldListImpl> HTML_LIST_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level,
+	public static FieldTransformer<HtmlFieldListImpl> HTML_LIST_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 			parentNode) -> {
 		HtmlGraphFieldList htmlFieldList = container.getHTMLList(fieldKey);
 		if (htmlFieldList == null) {

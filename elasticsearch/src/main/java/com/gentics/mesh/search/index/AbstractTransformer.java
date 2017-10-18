@@ -22,14 +22,14 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 /**
- * Abstract search document transformator which provides various helper methods which are commonly used among transformer implementations.
+ * Abstract search document transformer which provides various helper methods which are commonly used among transformer implementations.
  *
  * @param <T>
  *            Type of the element which can be transformed
  */
-public abstract class AbstractTransformator<T> implements Transformator<T> {
+public abstract class AbstractTransformer<T> implements Transformer<T> {
 
-	private static final Logger log = LoggerFactory.getLogger(AbstractTransformator.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractTransformer.class);
 
 	public static final int MAX_RAW_FIELD_LEN = 32_700;
 

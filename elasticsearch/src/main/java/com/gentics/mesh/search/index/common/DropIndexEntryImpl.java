@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DROP_INDE
 import javax.inject.Inject;
 
 import com.gentics.mesh.core.data.search.DropIndexEntry;
+import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.search.index.entry.AbstractEntry;
 
 import rx.Completable;
@@ -12,7 +13,7 @@ import rx.Completable;
 /**
  * @see DropIndexEntry
  */
-public class DropIndexEntryImpl extends AbstractEntry implements DropIndexEntry {
+public class DropIndexEntryImpl extends AbstractEntry<GenericEntryContext> implements DropIndexEntry {
 
 	private String indexName;
 

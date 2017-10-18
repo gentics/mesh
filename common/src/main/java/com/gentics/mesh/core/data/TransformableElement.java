@@ -55,7 +55,7 @@ public interface TransformableElement<T extends RestModel> extends MeshElement {
 	 * Return the etag for the element.
 	 * 
 	 * @param ac
-	 * @return
+	 * @return Generated etag
 	 */
 	String getETag(InternalActionContext ac);
 

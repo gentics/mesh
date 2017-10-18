@@ -24,7 +24,7 @@ import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<MicroschemaContainer> {
 
 	@Inject
-	MicroschemaTransformator transformator;
+	MicroschemaTransformer transformer;
 
 	@Inject
 	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -52,8 +52,8 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	public MicroschemaTransformator getTransformator() {
-		return transformator;
+	public MicroschemaTransformer getTransformer() {
+		return transformer;
 	}
 
 	@Override

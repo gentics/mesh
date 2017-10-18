@@ -34,7 +34,7 @@ public abstract class AbstractRootVertex<T extends MeshCoreVertex<? extends Rest
 	@Override
 	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
-			for (T t : findAll()) {
+			for (T t : findAllIt()) {
 				t.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
 		}

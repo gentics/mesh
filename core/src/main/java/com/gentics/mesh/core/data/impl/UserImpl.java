@@ -531,14 +531,13 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 	@Override
 	public String getETag(InternalActionContext ac) {
 		StringBuilder keyBuilder = new StringBuilder();
-		Node referencedNode = getReferencedNode();
-		keyBuilder.append(getUuid());
-		keyBuilder.append("-");
+		keyBuilder.append(super.getETag(ac));
 		keyBuilder.append(getLastEditedTimestamp());
+
+		Node referencedNode = getReferencedNode();
 		boolean expandReference = ac.getNodeParameters().getExpandedFieldnameList().contains("nodeReference")
 				|| ac.getNodeParameters().getExpandAll();
-		// We only need to compute the full etag if the referenced node is
-		// expanded.
+		// We only need to compute the full etag if the referenced node is expanded.
 		if (referencedNode != null && expandReference) {
 			keyBuilder.append("-");
 			keyBuilder.append(referencedNode.getETag(ac));
@@ -548,7 +547,7 @@ public class UserImpl extends AbstractMeshCoreVertex<UserResponse, User> impleme
 			keyBuilder.append(referencedNode.getProject().getName());
 		}
 
-		return ETag.hash(keyBuilder.toString());
+		return ETag.hash(keyBuilder);
 	}
 
 	@Override

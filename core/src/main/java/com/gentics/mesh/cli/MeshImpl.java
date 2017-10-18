@@ -10,11 +10,7 @@ import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -150,23 +146,33 @@ public class MeshImpl implements Mesh {
 
 	/**
 	 * Send a request to the update checker.
-	 * 
-	 * @return Latest version of Gentics Mesh which is currently released.
 	 */
-	public String invokeUpdateCheck() {
+	public void invokeUpdateCheck() {
 		String currentVersion = Mesh.getPlainVersion();
 		log.info("Checking for updates..");
-		CompletableFuture<JsonObject> fut = new CompletableFuture<>();
 		HttpClientRequest request = Mesh.vertx().createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(false)).get(443, "getmesh.io",
 				"/api/updatecheck?v=" + Mesh.getPlainVersion(), rh -> {
 					int code = rh.statusCode();
 					if (code < 200 || code >= 299) {
 						log.error("Update check failed with status code {" + code + "}");
-						fut.complete(null);
 					} else {
 						rh.bodyHandler(bh -> {
 							JsonObject info = bh.toJsonObject();
-							fut.complete(info);
+							String latestVersion = info.getString("latest");
+
+							if (currentVersion.contains("-SNAPSHOT")) {
+								log.warn("You are using a SNAPSHOT version {" + currentVersion
+										+ "}. This is potentially dangerous because this version has never been officially released.");
+								log.info("The latest version of Gentics Mesh is {" + latestVersion + "}");
+							} else {
+								int result = VersionUtil.compareVersions(latestVersion, currentVersion);
+								if (result == 0) {
+									log.info("Great! You are using the latest version");
+								} else if (result > 0) {
+									log.warn("Your Gentics Mesh version is outdated. You are using {" + currentVersion + "} but version {"
+											+ latestVersion + "} is available.");
+								}
+							}
 						});
 					}
 				});
@@ -178,28 +184,7 @@ public class MeshImpl implements Mesh {
 			headers.set("X-Hostname", hostname);
 		}
 		request.end();
-		try {
-			JsonObject info = fut.get(1, TimeUnit.SECONDS);
-			String latestVersion = info.getString("latest");
 
-			if (currentVersion.contains("-SNAPSHOT")) {
-				log.warn("You are using a SNAPSHOT version {" + currentVersion
-						+ "}. This is potentially dangerous because this version has never been officially released.");
-				log.info("The latest version of Gentics Mesh is {" + latestVersion + "}");
-			} else {
-				int result = VersionUtil.compareVersions(latestVersion, currentVersion);
-				if (result == 0) {
-					log.info("Great! You are using the latest version");
-				} else if (result > 0) {
-					log.warn("Your Gentics Mesh version is outdated. You are using {" + currentVersion + "} but version {" + latestVersion
-							+ "} is available.");
-				}
-			}
-			return latestVersion;
-		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			log.warn("Update check failed.", e);
-			return null;
-		}
 	}
 
 	/**

@@ -13,6 +13,7 @@ import com.orientechnologies.orient.server.distributed.ODistributedLifecycleList
 import com.orientechnologies.orient.server.distributed.ODistributedServerManager.DB_STATUS;
 
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -83,7 +84,11 @@ public class TopologyEventBridge implements ODistributedLifecycleListener {
 	public void onDatabaseChangeStatus(String iNode, String iDatabaseName, DB_STATUS iNewStatus) {
 		log.info("Node {" + iNode + "} Database {" + iDatabaseName + "} changed status {" + iNewStatus.name() + "}");
 		if (isVertxReady()) {
-			getEventBus().send(EVENT_CLUSTER_DATABASE_CHANGE_STATUS, iNode + "." + iDatabaseName + ":" + iNewStatus.name());
+			JsonObject statusInfo = new JsonObject();
+			statusInfo.put("node", iNode);
+			statusInfo.put("database", iDatabaseName);
+			statusInfo.put("status", iNewStatus.name());
+			getEventBus().send(EVENT_CLUSTER_DATABASE_CHANGE_STATUS, statusInfo);
 		}
 		if ("storage".equals(iDatabaseName) && iNewStatus == DB_STATUS.ONLINE && iNode.equals(db.getNodeName())) {
 			nodeJoinLatch.countDown();

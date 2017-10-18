@@ -19,7 +19,7 @@ import com.gentics.mesh.core.data.diff.FieldContainerChange;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
@@ -44,7 +44,7 @@ public class MicronodeGraphFieldImpl extends MeshEdgeImpl implements MicronodeGr
 
 	private static final Logger log = LoggerFactory.getLogger(MicronodeGraphFieldImpl.class);
 
-	public static FieldTransformator<MicronodeField> MICRONODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level,
+	public static FieldTransformer<MicronodeField> MICRONODE_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 			parentNode) -> {
 		MicronodeGraphField micronodeGraphField = container.getMicronode(fieldKey);
 		if (micronodeGraphField == null) {

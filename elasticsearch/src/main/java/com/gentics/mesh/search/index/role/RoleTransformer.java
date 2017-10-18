@@ -7,18 +7,18 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.Role;
-import com.gentics.mesh.search.index.AbstractTransformator;
+import com.gentics.mesh.search.index.AbstractTransformer;
 
 import io.vertx.core.json.JsonObject;
 
 /**
- * Transformator for role search index documents.
+ * Transformer for role search index documents.
  */
 @Singleton
-public class RoleTransformator extends AbstractTransformator<Role> {
+public class RoleTransformer extends AbstractTransformer<Role> {
 
 	@Inject
-	public RoleTransformator() {
+	public RoleTransformer() {
 	}
 
 	/**

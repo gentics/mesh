@@ -48,7 +48,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 	}
 
 	@Override
-	public MigrationStatusHandler commitStatus() {
+	public MigrationStatusHandler commit() {
 		if (versionEdge != null) {
 			versionEdge.setMigrationStatus(status);
 		}
@@ -93,7 +93,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		JsonObject result = new JsonObject().put("type", "completed");
 		vertx.eventBus().publish(MESH_MIGRATION, result);
 		job.setStopTimestamp();
-		commitStatus();
+		commit();
 		return this;
 	}
 
@@ -115,7 +115,7 @@ public class MigrationStatusHandlerImpl implements MigrationStatusHandler {
 		vertx.eventBus().publish(MESH_MIGRATION, new JsonObject().put("type", status.name()));
 		job.setStopTimestamp();
 		job.setError(error);
-		commitStatus();
+		commit();
 		return this;
 	}
 

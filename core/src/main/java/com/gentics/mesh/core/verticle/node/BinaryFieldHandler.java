@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.util.RxUtil.readEntireFile;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CREATED;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
@@ -229,7 +230,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 			return db.tx(() -> {
 				SearchQueueBatch batch = searchQueue.create();
 				// Create a new node version field container to store the upload
-				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
 				BinaryGraphField field = newDraftVersion.createBinary(fieldName);
 				String fieldUuid = field.getUuid();
 
@@ -342,7 +343,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					Release release = ac.getRelease();
 
 					// Create a new node version field container to store the upload
-					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
 					BinaryGraphField field = newDraftVersion.createBinary(fieldName);
 					String fieldUuid = field.getUuid();
 					String fieldSegmentedPath = field.getSegmentedPath();
@@ -350,19 +351,22 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 					// 1. Resize the original image and store the result in the filesystem
 					Single<TransformationResult> obsTransformation = imageManipulator
-							.handleResize(initialField.getFile(), field.getSHA512Sum(), imageManipulationParameter).flatMap(buffer -> {
+							.handleResize(initialField.getFile(), field.getSHA512Sum(), imageManipulationParameter)
+							.flatMap(file -> {
 								// 2. Hash the resized image data and store it using the computed fieldUuid + hash
-								String hash = hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath);
-								// 3. The image was stored and hashed. Now we need to load the stored file again and check the image properties
-								return imageManipulator.readImageInfo(() -> {
-									try {
-										return new FileInputStream(fieldPath);
-									} catch (IOException e) {
-										throw new RuntimeException(e);
-									}
-								}).map(info -> {
-									// Return a POJO which hold all information that is needed to update the field
-									return new TransformationResult(hash, buffer.length(), info);
+								return readEntireFile(file.getFile()).map(buffer -> hashAndStoreBinaryFile(buffer, fieldUuid, fieldSegmentedPath))
+								.flatMap(hash -> {
+									// 3. The image was stored and hashed. Now we need to load the stored file again and check the image properties
+									return imageManipulator.readImageInfo(() -> {
+										try {
+											return new FileInputStream(fieldPath);
+										} catch (IOException e) {
+											throw new RuntimeException(e);
+										}
+									}).map(info -> {
+										// Return a POJO which hold all information that is needed to update the field
+										return new TransformationResult(hash, file.getProps().size(), info);
+									});
 								});
 							});
 

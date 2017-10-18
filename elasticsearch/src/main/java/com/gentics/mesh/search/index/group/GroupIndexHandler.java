@@ -24,7 +24,7 @@ import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	@Inject
-	GroupTransformator transformator;
+	GroupTransformer transformer;
 
 	@Inject
 	public GroupIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -37,8 +37,8 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	}
 
 	@Override
-	public GroupTransformator getTransformator() {
-		return transformator;
+	public GroupTransformer getTransformer() {
+		return transformer;
 	}
 
 	@Override

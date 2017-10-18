@@ -2,8 +2,9 @@ package com.gentics.mesh.core.rest.graphql;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.gentics.mesh.core.rest.common.RestModel;
 
-public class ErrorLocation {
+public class ErrorLocation implements RestModel {
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Error line number.")

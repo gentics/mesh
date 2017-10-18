@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.10.4-SNAPSHOT</version>
+		<version>0.10.5-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -28,6 +28,11 @@
 		</dependency>
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>
+			<artifactId>mesh-distributed</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.gentics.mesh</groupId>
 			<artifactId>mesh-elasticsearch</artifactId>
 			<version>${project.version}</version>
 		</dependency>
@@ -41,19 +46,6 @@
 			<artifactId>mesh-rest-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
-		<!-- Logging -->
-		<dependency>
-			<groupId>ch.qos.logback</groupId>
-			<artifactId>logback-classic</artifactId>
-			<version>1.1.2</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>log4j-over-slf4j</artifactId>
-			<version>1.7.25</version>
-		</dependency>
-
 
 		<!-- Common Tools -->
 		<dependency>
@@ -124,13 +116,6 @@
 					<groupId>commons-logging</groupId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-
-		<!-- Caching -->
-		<dependency>
-			<groupId>com.github.ben-manes.caffeine</groupId>
-			<artifactId>caffeine</artifactId>
-			<version>2.3.3</version>
 		</dependency>
 
 		<!-- Dagger -->
@@ -255,8 +240,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
 					<forceJavacCompilerUse>true</forceJavacCompilerUse>
 				</configuration>
 				<dependencies>

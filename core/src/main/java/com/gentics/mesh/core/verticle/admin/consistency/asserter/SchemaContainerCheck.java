@@ -17,7 +17,7 @@ public class SchemaContainerCheck implements ConsistencyCheck {
 
 	@Override
 	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-		for (SchemaContainer schemaContainer : boot.schemaContainerRoot().findAll()) {
+		for (SchemaContainer schemaContainer : boot.schemaContainerRoot().findAllIt()) {
 			checkSchemaContainer(schemaContainer, response);
 		}
 	}

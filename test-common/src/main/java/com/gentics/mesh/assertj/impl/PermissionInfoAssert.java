@@ -1,6 +1,6 @@
 package com.gentics.mesh.assertj.impl;
 
-import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.List;
@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import org.assertj.core.api.AbstractAssert;
 
-import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.Permission;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
 

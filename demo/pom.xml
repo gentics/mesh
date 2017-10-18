@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.10.4-SNAPSHOT</version>
+		<version>0.10.5-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -84,7 +84,7 @@
 						<phase>process-classes</phase>
 						<configuration>
 							<skip>${skip.demodump}</skip>
-							<executable>java</executable>
+							<executable>${JAVA_1_8_HOME}/bin/java</executable>
 							<arguments>
 								<argument>-classpath</argument>
 								<classpath />

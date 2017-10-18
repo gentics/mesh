@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.10.4-SNAPSHOT</version>
+		<version>0.10.5-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -61,6 +61,13 @@
 			<version>4.2.5</version>
 		</dependency>
 
+		<!-- Caching -->
+		<dependency>
+			<groupId>com.github.ben-manes.caffeine</groupId>
+			<artifactId>caffeine</artifactId>
+			<version>2.3.3</version>
+		</dependency>
+
 		<!-- YAML -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
@@ -86,6 +93,17 @@
 			<version>${rx.version}</version>
 		</dependency>
 
+		<!-- Logging -->
+		<dependency>
+			<groupId>ch.qos.logback</groupId>
+			<artifactId>logback-classic</artifactId>
+			<version>1.1.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+			<version>1.7.25</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.gentics.mesh</groupId>

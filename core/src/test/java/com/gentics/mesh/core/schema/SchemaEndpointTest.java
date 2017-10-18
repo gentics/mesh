@@ -246,7 +246,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
 		request.setDescription("New description");
 		request.addField(FieldUtil.createHtmlFieldSchema("someHtml"));
-		
+
 		tx(() -> group().addRole(roles().get("admin")));
 		waitForJobs(() -> {
 			call(() -> client().updateSchema(uuid, request));
@@ -547,12 +547,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			tx.success();
 		}
 
-		try (Tx tx = tx()) {
-			SchemaUpdateRequest request = new SchemaUpdateRequest();
-			request.setName("new-name");
-			call(() -> client().updateSchema(schemaUuid, request), FORBIDDEN, "error_missing_perm", schemaUuid);
-		}
-
+		SchemaUpdateRequest request = new SchemaUpdateRequest();
+		request.setName("new-name");
+		call(() -> client().updateSchema(schemaUuid, request), FORBIDDEN, "error_missing_perm", schemaUuid);
 	}
 
 }

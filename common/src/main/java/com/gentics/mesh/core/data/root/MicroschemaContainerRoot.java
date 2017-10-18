@@ -15,9 +15,10 @@ public interface MicroschemaContainerRoot extends RootVertex<MicroschemaContaine
 	 * Add the microschema container to the aggregation node. The microschemas will automatically be assigned to all releases of the project to which this root
 	 * belongs.
 	 * 
+	 * @param user
 	 * @param container
 	 */
-	void addMicroschema(MicroschemaContainer container);
+	void addMicroschema(User user, MicroschemaContainer container);
 
 	/**
 	 * Remove the microschema container from the aggregation node.

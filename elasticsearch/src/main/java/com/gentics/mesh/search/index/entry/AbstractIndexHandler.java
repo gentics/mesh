@@ -47,7 +47,7 @@ import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.index.Transformator;
+import com.gentics.mesh.search.index.Transformer;
 import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
@@ -92,11 +92,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	abstract protected RootVertex<T> getRootVertex();
 
 	/**
-	 * Return the index specific transformator which is used to generate the search document and mappings.
+	 * Return the index specific transformer which is used to generate the search document and mappings.
 	 * 
 	 * @return
 	 */
-	abstract protected Transformator getTransformator();
+	abstract protected Transformer getTransformer();
 
 	/**
 	 * Return the class of elements which can be handled by this handler.
@@ -141,7 +141,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
 		String indexType = composeIndexTypeFromEntry(entry);
-		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformator().toDocument(object)).doOnCompleted(() -> {
+		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformer().toDocument(object)).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
 			}
@@ -204,7 +204,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				mappingRequestBuilder.setType(normalizedDocumentType);
 
 				// Generate the mapping for the specific type
-				JsonObject mapping = getTransformator().getMapping(normalizedDocumentType);
+				JsonObject mapping = getTransformer().getMapping(normalizedDocumentType);
 				mappingRequestBuilder.setSource(mapping.toString(), XContentType.JSON);
 
 				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
@@ -257,7 +257,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			log.info("Handling full reindex entry");
 			SearchQueueBatch batch = searchQueue.create();
 			// Add all elements from the root vertex of the handler to the created batch
-			for (T element : getRootVertex().findAll()) {
+			for (T element : getRootVertex().findAllIt()) {
 				if (element instanceof IndexableElement) {
 					IndexableElement indexableElement = (IndexableElement) element;
 					log.info("Invoking reindex in handler {" + getClass().getName() + "} for element {" + indexableElement.getUuid() + "}");
@@ -290,25 +290,16 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	public Completable init() {
 		// 1. Create the indices
 		Map<String, String> indexInfo = getIndices();
-		Set<Completable> indexCreationObs = new HashSet<>();
+		Set<Completable> obs = new HashSet<>();
 
 		for (String indexKey : indexInfo.keySet()) {
 			if (log.isDebugEnabled()) {
 				log.debug("Creating index {" + indexKey + "}");
 			}
-			indexCreationObs.add(searchProvider.createIndex(indexKey));
+			String documentType = indexInfo.get(indexKey);
+			obs.add(searchProvider.createIndex(indexKey).andThen(updateMapping(indexKey, documentType)));
 		}
-		if (indexCreationObs.isEmpty()) {
-			return Completable.complete();
-		} else {
-			// 2. Create the mappings
-			Set<Completable> mappingUpdateObs = new HashSet<>();
-			for (String indexName : indexInfo.keySet()) {
-				String documentType = indexInfo.get(indexName);
-				mappingUpdateObs.add(updateMapping(indexName, documentType));
-			}
-			return Completable.merge(indexCreationObs).andThen(Completable.merge(mappingUpdateObs));
-		}
+		return Completable.merge(obs);
 	}
 
 	@Override

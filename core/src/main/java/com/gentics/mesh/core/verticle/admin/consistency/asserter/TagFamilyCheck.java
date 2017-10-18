@@ -15,7 +15,7 @@ public class TagFamilyCheck implements ConsistencyCheck {
 
 	@Override
 	public void invoke(BootstrapInitializer boot, ConsistencyCheckResponse response) {
-		for (TagFamily tagFamily : boot.tagFamilyRoot().findAll()) {
+		for (TagFamily tagFamily : boot.tagFamilyRoot().findAllIt()) {
 			checkTagFamily(tagFamily, response);
 		}
 	}

@@ -24,6 +24,7 @@ import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.etc.config.ElasticSearchOptions;
+import com.gentics.mesh.etc.config.HttpServerConfig;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.impl.MeshFactoryImpl;
@@ -154,6 +155,7 @@ public class MeshTestContext extends TestWatcher {
 		routerStorage.addProjectRouter(TestDataProvider.PROJECT_NAME);
 		JsonObject config = new JsonObject();
 		config.put("port", port);
+		config.put("host", HttpServerConfig.DEFAULT_HTTP_HOST);
 
 		// Start node migration verticle
 		DeploymentOptions options = new DeploymentOptions();
@@ -381,5 +383,9 @@ public class MeshTestContext extends TestWatcher {
 
 	public MeshRestClient getClient() {
 		return client;
+	}
+
+	public JobWorkerVerticle getJobWorkerVerticle() {
+		return jobWorkerVerticle;
 	}
 }

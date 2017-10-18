@@ -10,18 +10,18 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.core.data.TagFamily;
-import com.gentics.mesh.search.index.AbstractTransformator;
+import com.gentics.mesh.search.index.AbstractTransformer;
 
 import io.vertx.core.json.JsonObject;
 
 /**
- * Transformator for tagfamily search index documents.
+ * Transformer for tagfamily search index documents.
  */
 @Singleton
-public class TagFamilyTransformator extends AbstractTransformator<TagFamily> {
+public class TagFamilyTransformer extends AbstractTransformer<TagFamily> {
 
 	@Inject
-	public TagFamilyTransformator() {
+	public TagFamilyTransformer() {
 	}
 
 	@Override

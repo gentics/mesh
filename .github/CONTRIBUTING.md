@@ -30,11 +30,11 @@ Submit a pull request via the normal GitHub UI.
 
 ## Documentation
 
-If you want to contribute to the Gentics Mesh documentation, the right place is: https://github.com/gentics/mesh. Every release all the contributions are reviewed and published on the public [documentation](http://getmesh.io/docs/beta/).
+If you want to contribute to the Gentics Mesh documentation, the right place is: https://github.com/gentics/mesh. Every release all the contributions are reviewed and published on the public [documentation](https://getmesh.io/docs/beta/).
 
 ## Code formatting
 
-You can find eclipse java formatter config file here: [/eclipse_formatter.xml](https://github.com/gentics/mesh/blob/master/eclipse_formatter.xml).
+You can find eclipse java formatter config file here: [/eclipse_formatter.xml](https://github.com/gentics/mesh/blob/dev/eclipse_formatter.xml).
 
 If you use IntelliJ IDEA you can install [this](http://plugins.jetbrains.com/plugin/?id=6546) plugin and use formatter profile mentioned above.
 

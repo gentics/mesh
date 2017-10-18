@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.fasterxml.uuid.Generators;
 import com.fasterxml.uuid.impl.RandomBasedGenerator;
+import com.gentics.mesh.graphdb.spi.Database;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -20,6 +21,8 @@ public abstract class AbstractChange implements Change {
 	protected static final Logger log = LoggerFactory.getLogger(AbstractChange.class);
 
 	private TransactionalGraph graph;
+
+	private Database db;
 
 	private long duration;
 
@@ -128,6 +131,16 @@ public abstract class AbstractChange implements Change {
 	@Override
 	public boolean requiresReindex() {
 		return false;
+	}
+
+	@Override
+	public Database getDb() {
+		return db;
+	}
+
+	@Override
+	public void setDb(Database db) {
+		this.db = db;
 	}
 
 }

@@ -4,7 +4,7 @@ import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.node.field.AbstractBasicField;
 import com.gentics.mesh.core.data.node.field.BooleanGraphField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.rest.node.field.BooleanField;
@@ -15,7 +15,7 @@ import com.syncleus.ferma.AbstractVertexFrame;
 
 public class BooleanGraphFieldImpl extends AbstractBasicField<BooleanField> implements BooleanGraphField {
 
-	public static FieldTransformator<BooleanField> BOOLEAN_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level,
+	public static FieldTransformer<BooleanField> BOOLEAN_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level,
 			parentNode) -> {
 		BooleanGraphField graphBooleanField = container.getBoolean(fieldKey);
 		if (graphBooleanField == null) {

@@ -70,7 +70,7 @@ public class TagRootImpl extends AbstractRootVertex<Tag> implements TagRoot {
 			log.debug("Deleting tag root {" + getUuid() + "}");
 		}
 		// Delete all the tags of the tag root
-		for (Tag tag : findAll()) {
+		for (Tag tag : findAllIt()) {
 			tag.delete(batch);
 		}
 		// Now delete the tag root element

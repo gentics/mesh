@@ -11,7 +11,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.util.Map.Entry;
 
@@ -373,8 +373,11 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 		assertThat(publishStatus).as("Publish status").isPublished().hasVersion("1.0");
 
 		// Assert that german is published and english is offline
-		assertThat(call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"),
-				new VersioningParametersImpl().published())).getAvailableLanguages()).containsOnly("de");
+		NodeResponse response = call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"),
+				new VersioningParametersImpl().published()));
+		assertTrue(response.getAvailableLanguages().get("de").isPublished());
+		assertFalse(response.getAvailableLanguages().get("en").isPublished());
+
 		assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isPublished("de").hasVersion("de", "1.0")
 				.isNotPublished("en").hasVersion("en", "2.0");
 

@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
-import com.gentics.mesh.core.data.node.field.FieldTransformator;
+import com.gentics.mesh.core.data.node.field.FieldTransformer;
 import com.gentics.mesh.core.data.node.field.FieldUpdater;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
@@ -36,7 +36,7 @@ import com.gentics.mesh.util.CompareUtils;
 
 public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
-	public static FieldTransformator<NodeField> NODE_TRANSFORMATOR = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
+	public static FieldTransformer<NodeField> NODE_TRANSFORMER = (container, ac, fieldKey, fieldSchema, languageTags, level, parentNode) -> {
 		NodeGraphField graphNodeField = container.getNode(fieldKey);
 		if (graphNodeField == null) {
 			return null;

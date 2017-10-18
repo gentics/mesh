@@ -96,7 +96,7 @@ public class TagFamilyRootImpl extends AbstractRootVertex<TagFamily> implements 
 		if (log.isDebugEnabled()) {
 			log.debug("Deleting tagFamilyRoot {" + getUuid() + "}");
 		}
-		for (TagFamily tagFamily : findAll()) {
+		for (TagFamily tagFamily : findAllIt()) {
 			tagFamily.delete(batch);
 		}
 		getElement().remove();

@@ -97,6 +97,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.DeleteParameters;
 import com.gentics.mesh.parameter.LinkType;
+import com.gentics.mesh.parameter.NavigationParameters;
 import com.gentics.mesh.parameter.NodeParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
@@ -308,35 +309,40 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user) {
-		return createGraphFieldContainer(language, release, user, null);
+	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User editor) {
+		return createGraphFieldContainer(language, release, editor, null, true);
 	}
 
 	@Override
-	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User user, NodeGraphFieldContainer original) {
+	public NodeGraphFieldContainer createGraphFieldContainer(Language language, Release release, User editor, NodeGraphFieldContainer original,
+			boolean handleDraftEdge) {
 		NodeGraphFieldContainerImpl previous = null;
 		EdgeFrame draftEdge = null;
 		String languageTag = language.getLanguageTag();
 		String releaseUuid = release.getUuid();
 
 		// check whether there is a current draft version
-		draftEdge = getGraphFieldContainerEdge(languageTag, releaseUuid, DRAFT);
-		if (draftEdge != null) {
-			previous = draftEdge.inV().nextOrDefault(NodeGraphFieldContainerImpl.class, null);
+
+		if (handleDraftEdge) {
+			draftEdge = getGraphFieldContainerEdge(languageTag, releaseUuid, DRAFT);
+			if (draftEdge != null) {
+				previous = draftEdge.inV().nextOrDefault(NodeGraphFieldContainerImpl.class, null);
+			}
 		}
 
 		// Create the new container
 		NodeGraphFieldContainerImpl container = getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);
 		if (original != null) {
-			container.setEditor(user);
+			container.setEditor(editor);
 			container.setLastEditedTimestamp();
 			container.setLanguage(language);
 			container.setSchemaContainerVersion(original.getSchemaContainerVersion());
 		} else {
-			container.setEditor(user);
+			container.setEditor(editor);
 			container.setLastEditedTimestamp();
 			container.setLanguage(language);
-			container.setSchemaContainerVersion(release.getVersion(getSchemaContainer()));
+			// We need create a new container with no reference. So use the latest version available to use.
+			container.setSchemaContainerVersion(release.findLatestSchemaVersion(getSchemaContainer()));
 		}
 		if (previous != null) {
 			// set the next version number
@@ -364,11 +370,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// node graph field container.
 		container.updateDisplayFieldValue();
 
-		// create a new draft edge
-		GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
-		edge.setLanguageTag(languageTag);
-		edge.setReleaseUuid(releaseUuid);
-		edge.setType(DRAFT);
+		if (handleDraftEdge) {
+			// create a new draft edge
+			GraphFieldContainerEdge edge = addFramedEdge(HAS_FIELD_CONTAINER, container, GraphFieldContainerEdgeImpl.class);
+			edge.setLanguageTag(languageTag);
+			edge.setReleaseUuid(releaseUuid);
+			edge.setType(DRAFT);
+		}
 
 		// if there is no initial edge, create one
 		if (getGraphFieldContainerEdge(languageTag, releaseUuid, INITIAL) == null) {
@@ -525,16 +533,13 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 		// Increment level for each node transformation to avoid stackoverflow situations
 		level = level + 1;
-		VersioningParameters versioiningParameters = ac.getVersioningParameters();
-
 		NodeResponse restNode = new NodeResponse();
 		SchemaContainer container = getSchemaContainer();
 		if (container == null) {
 			throw error(BAD_REQUEST, "The schema container for node {" + getUuid() + "} could not be found.");
 		}
 		Release release = ac.getRelease(getProject());
-		restNode.setAvailableLanguages(getAvailableLanguageNames(release, forVersion(versioiningParameters.getVersion())));
-
+		restNode.setAvailableLanguages(getLanguageInfo(ac));
 		setFields(ac, release, restNode, level, languageTags);
 		setParentNodeInfo(ac, release, restNode);
 		setRolePermissions(ac, restNode);
@@ -630,10 +635,10 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			// reference that points to the container (no version information
 			// will be included)
 			restNode.setSchema(getSchemaContainer().transformToReference());
-			// TODO BUG Issue #119 - Actually we would need to throw a 404 in these cases but many current implementations rely on the empty node response. 
+			// TODO BUG Issue #119 - Actually we would need to throw a 404 in these cases but many current implementations rely on the empty node response.
 			// The response will also contain information about other languages and general structure information.
 			// We should change this behaviour and update the client implementations.
-			//throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
+			// throw error(NOT_FOUND, "object_not_found_for_uuid", getUuid());
 		} else {
 			Schema schema = fieldContainer.getSchemaContainerVersion().getSchema();
 			restNode.setContainer(schema.isContainer());
@@ -934,7 +939,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			List<Observable<NavigationResponse>> obsList = obsResponses.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
 			return Observable.merge(obsList).last().toSingle();
 		}
-		NavigationParametersImpl parameters = new NavigationParametersImpl(ac);
+		NavigationParameters parameters = new NavigationParametersImpl(ac);
 		// Add children
 		for (Node child : nodes) {
 			// TODO assure that the schema version is correct?
@@ -995,10 +1000,15 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public PublishStatusResponse transformToPublishStatus(InternalActionContext ac) {
-		Release release = ac.getRelease(getProject());
 		PublishStatusResponse publishStatus = new PublishStatusResponse();
-		Map<String, PublishStatusModel> languages = new HashMap<>();
+		Map<String, PublishStatusModel> languages = getLanguageInfo(ac);
 		publishStatus.setAvailableLanguages(languages);
+		return publishStatus;
+	}
+
+	private Map<String, PublishStatusModel> getLanguageInfo(InternalActionContext ac) {
+		Map<String, PublishStatusModel> languages = new HashMap<>();
+		Release release = ac.getRelease(getProject());
 
 		getGraphFieldContainers(release, PUBLISHED).stream().forEach(c -> {
 
@@ -1013,8 +1023,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			PublishStatusModel status = new PublishStatusModel().setPublished(false).setVersion(c.getVersion().toString());
 			languages.put(c.getLanguage().getLanguageTag(), status);
 		});
-
-		return publishStatus;
+		return languages;
 	}
 
 	@Override
@@ -1370,7 +1379,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				return false;
 			}
 			return true;
-		});
+		}, true);
 	}
 
 	@Override
@@ -1480,7 +1489,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 			// Make sure the container was already migrated. Otherwise the update can't proceed.
 			SchemaContainerVersion schemaContainerVersion = latestDraftVersion.getSchemaContainerVersion();
-			if (!latestDraftVersion.getSchemaContainerVersion().equals(release.getVersion(schemaContainerVersion.getSchemaContainer()))) {
+			if (!latestDraftVersion.getSchemaContainerVersion()
+					.equals(release.findLatestSchemaVersion(schemaContainerVersion.getSchemaContainer()))) {
 				throw error(BAD_REQUEST, "node_error_migration_incomplete");
 			}
 
@@ -1534,7 +1544,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			if (!requestModel.getFields().isEmpty()) {
 
 				// Create new field container as clone of the existing
-				NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion);
+				NodeGraphFieldContainer newDraftVersion = createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
 				// Update the existing fields
 				newDraftVersion.updateFieldsFromRest(ac, requestModel.getFields());
 				latestDraftVersion = newDraftVersion;
@@ -1744,6 +1754,8 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 	 */
 	@Override
 	public String getETag(InternalActionContext ac) {
+		String superkey = super.getETag(ac);
+
 		// Parameters
 		Release release = ac.getRelease(getProject());
 		VersioningParameters versioiningParameters = ac.getVersioningParameters();
@@ -1754,14 +1766,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 				ac.getVersioningParameters().getVersion());
 
 		StringBuilder keyBuilder = new StringBuilder();
-
-		/**
-		 * node uuid
-		 * 
-		 * The node uuid must be part of the etag computation.
-		 */
-		keyBuilder.append(getUuid());
-		keyBuilder.append("-");
+		keyBuilder.append(superkey);
 
 		/**
 		 * release uuid

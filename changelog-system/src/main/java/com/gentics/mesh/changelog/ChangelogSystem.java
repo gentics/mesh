@@ -36,6 +36,7 @@ public class ChangelogSystem {
 		for (Change change : list) {
 			// Execute each change in a new transaction
 			TransactionalGraph graph = db.rawTx();
+			change.setDb(db);
 			change.setGraph(graph);
 			try {
 				if (!change.isApplied()) {
