@@ -20,6 +20,7 @@ import java.util.stream.StreamSupport;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.search.ElasticSearchUtil;
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -61,6 +62,10 @@ import com.syncleus.ferma.tx.Tx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryParseContext;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import rx.Completable;
 import rx.Observable;
 import rx.Single;
@@ -456,7 +461,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		builder = client.prepareSearch(indices.toArray(new String[indices.size()]));
 		try {
 			JSONObject queryStringObject = new JSONObject(query);
-			builder.setExtraSource(queryStringObject.toString());
+			builder.setSource(ElasticSearchUtil.parseQuery(query));
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}

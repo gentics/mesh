@@ -161,6 +161,11 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>de.dentrassi.elasticsearch</groupId>
+			<artifactId>log4j2-mock</artifactId>
+			<version>0.0.1</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.google.dagger</groupId>

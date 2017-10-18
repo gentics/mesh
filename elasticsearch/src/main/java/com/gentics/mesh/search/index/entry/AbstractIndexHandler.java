@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import com.gentics.mesh.search.ElasticSearchUtil;
 import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
@@ -22,6 +23,9 @@ import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.xcontent.NamedXContentRegistry;
+import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryParseContext;
 import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.Mesh;
@@ -49,6 +53,7 @@ import com.syncleus.ferma.tx.Tx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import io.vertx.rx.java.RxHelper;
 import rx.Completable;
 import rx.Scheduler;
@@ -200,7 +205,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 
 				// Generate the mapping for the specific type
 				JsonObject mapping = getTransformer().getMapping(normalizedDocumentType);
-				mappingRequestBuilder.setSource(mapping.toString());
+				mappingRequestBuilder.setSource(mapping.toString(), XContentType.JSON);
 
 				mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
 
@@ -213,7 +218,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 					}
 
 					@Override
-					public void onFailure(Throwable e) {
+					public void onFailure(Exception e) {
 						sub.onError(e);
 					}
 				});
@@ -346,13 +351,13 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			queryStringObject.put("from", 0);
 			queryStringObject.put("size", Integer.MAX_VALUE);
 			Set<String> indices = getSelectedIndices(ac);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryStringObject.toString());
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(ElasticSearchUtil.parseQuery(query));
 		} catch (Exception e) {
 			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
 		}
 		CompletableFuture<Page<? extends T>> future = new CompletableFuture<>();
 		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		builder.execute().addListener(new ActionListener<SearchResponse>() {
+		builder.execute(new ActionListener<SearchResponse>() {
 
 			@Override
 			public void onResponse(SearchResponse response) {
@@ -385,7 +390,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			}
 
 			@Override
-			public void onFailure(Throwable e) {
+			public void onFailure(Exception e) {
 				log.error("Search query failed", e);
 				future.completeExceptionally(e);
 			}

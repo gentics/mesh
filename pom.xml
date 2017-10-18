@@ -18,11 +18,14 @@
 		<spring.security.version>3.2.1.RELEASE</spring.security.version>
 		<ferma.version>2.4.0</ferma.version>
 		<ferma.orientdb.version>2.3.1</ferma.orientdb.version>
-		<elasticsearch.version>2.4.6</elasticsearch.version>
+		<elasticsearch.version>5.5.2</elasticsearch.version>
 		<orientdb.version>2.2.29</orientdb.version>
 		<dagger.version>2.7</dagger.version>
 		<hazelcast.version>3.8.4</hazelcast.version>
 		<rx.version>1.2.3</rx.version>
+		<log4j.version>2.8.2</log4j.version>
+		<slf4j.version>1.7.7</slf4j.version>
+
 
 		<surefire.forkcount>3</surefire.forkcount>
 		<surefire.jvm.postfix></surefire.jvm.postfix>
