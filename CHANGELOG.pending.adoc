@@ -1,2 +1,0 @@
-CAUTION: GraphQL: The root field releases has been removed. The root field release now takes no parameters and loads the active release.
-icon:plus[] GraphQL: Nodes can now be loaded in the context of a schema. This will return all nodes which use the schema.

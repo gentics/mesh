@@ -4,6 +4,11 @@
 
 == 0.10.5 (TBD)
 
+CAUTION: GraphQL: The root field releases has been removed. The root field release now takes no parameters and loads the active release.
+icon:plus[] GraphQL: Nodes can now be loaded in the context of a schema. This will return all nodes which use the schema.
+
+CAUTION: Elasticsearch: Search queries will now automatically be wrapped in a boolean query in order to check permissions much more efficiently. 
+
 icon:check[] Performance: Optimized binary download memory usage.
 
 icon:check[] REST: Fixed a bug which prevented pages with more then 2000 items from being loaded.

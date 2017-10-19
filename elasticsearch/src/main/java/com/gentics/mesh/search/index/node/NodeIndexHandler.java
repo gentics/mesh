@@ -292,7 +292,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 * @return Single with affected index name
 	 */
 	public Single<String> storeContainer(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
-		JsonObject doc = transformer.toDocument(container, releaseUuid);
+		JsonObject doc = transformer.toDocument(container, releaseUuid, type);
 		String projectUuid = container.getParentNode().getProject().getUuid();
 		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, container.getSchemaContainerVersion().getUuid(), type);
 		if (log.isDebugEnabled()) {
@@ -407,13 +407,14 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
 		} else {
 			Project project = node.getProject();
-			JsonObject json = getTransformer().toPermissionPartial(node);
+			
 
 			Set<Observable<String>> obs = new HashSet<>();
 
 			// Determine which documents need to be updated. The node could have multiple documents in various indices.
 			for (Release release : project.getReleaseRoot().findAllIt()) {
 				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
+					JsonObject json = getTransformer().toPermissionPartial(node, type);
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(release, type)) {
 						String indexName = container.getIndexName(project.getUuid(), release.getUuid(), type);
 						String documentId = container.getDocumentId();

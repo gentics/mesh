@@ -1,5 +1,8 @@
 package com.gentics.mesh.search.index.node;
 
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.search.index.MappingHelper.ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
@@ -27,9 +30,10 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.NotImplementedException;
 
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -109,6 +113,29 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		// parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
 		// parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
 		document.put("parentNode", info);
+	}
+
+	/**
+	 * Generate the node container specific permission info. Node containers need to store also the read publish perm roles for published containers.
+	 * 
+	 * @param document
+	 * @param node
+	 * @param type
+	 */
+	private void addPermissionInfo(JsonObject document, Node node, ContainerType type) {
+		List<String> roleUuids = new ArrayList<>();
+
+		for (Role role : node.getRolesWithPerm(READ_PERM)) {
+			roleUuids.add(role.getUuid());
+		}
+
+		// Also add the roles which would grant read on published nodes if the container is published.
+		if (type == PUBLISHED) {
+			for (Role role : node.getRolesWithPerm(READ_PUBLISHED_PERM)) {
+				roleUuids.add(role.getUuid());
+			}
+		}
+		document.put("_roleUuids", roleUuids);
 	}
 
 	/**
@@ -246,8 +273,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 								Micronode micronode = item.getMicronode();
 								MicroschemaContainerVersion microschameContainerVersion = micronode.getSchemaContainerVersion();
 								addMicroschema(itemMap, microschameContainerVersion);
-								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode, microschameContainerVersion
-										.getSchema().getFields());
+								addFields(itemMap, "fields-" + microschameContainerVersion.getName(), micronode,
+										microschameContainerVersion.getSchema().getFields());
 								return itemMap;
 							}).toList().toBlocking().single());
 						}
@@ -297,8 +324,8 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 						JsonObject micronodeMap = new JsonObject();
 						addMicroschema(micronodeMap, micronode.getSchemaContainerVersion());
 						// Micronode field can't be stored. The datastructure is dynamic
-						addFields(micronodeMap, "fields-" + micronode.getSchemaContainerVersion().getName(), micronode, micronode
-								.getSchemaContainerVersion().getSchema().getFields());
+						addFields(micronodeMap, "fields-" + micronode.getSchemaContainerVersion().getName(), micronode,
+								micronode.getSchemaContainerVersion().getSchema().getFields());
 						fieldsMap.put(fieldSchema.getName(), micronodeMap);
 					}
 				}
@@ -491,12 +518,17 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		throw new NotImplementedException("Use toDocument(container, releaseUuid) instead");
 	}
 
-	@Override
-	public JsonObject toPermissionPartial(MeshCoreVertex<?, ?> element) {
-		if (element instanceof NodeGraphFieldContainer) {
-			return super.toPermissionPartial(((NodeGraphFieldContainer) element).getParentNode());
-		}
-		return super.toPermissionPartial(element);
+	/**
+	 * Generate the node specific permission info partial whiich is used to update node container documents in the indices.
+	 * 
+	 * @param node
+	 * @param type
+	 * @return
+	 */
+	public JsonObject toPermissionPartial(Node node, ContainerType type) {
+		JsonObject document = new JsonObject();
+		addPermissionInfo(document, node, type);
+		return document;
 	}
 
 	/**
@@ -504,9 +536,10 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 * 
 	 * @param container
 	 * @param releaseUuid
+	 * @param type
 	 * @return
 	 */
-	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid) {
+	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
 		Node node = container.getParentNode();
 		JsonObject document = new JsonObject();
 		document.put("uuid", node.getUuid());
@@ -518,7 +551,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		addProject(document, node.getProject());
 		addTags(document, node.getTags(node.getProject().getLatestRelease()));
 		addTagFamilies(document, node.getTags(node.getProject().getLatestRelease()));
-		addPermissionInfo(document, node);
+		addPermissionInfo(document, node, type);
 
 		// The basenode has no parent.
 		if (node.getParentNode(releaseUuid) != null) {
@@ -586,11 +619,15 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		// tagFamilies
 		typeProperties.put("tagFamilies", new JsonObject().put("type", "object").put("dynamic", true));
 
-		typeMapping.put("dynamic_templates", new JsonArray().add(new JsonObject().put("tagFamilyUuid", new JsonObject().put("path_match",
-				"tagFamilies.*.uuid").put("match_mapping_type", "*").put("mapping", notAnalyzedType(STRING)))).add(new JsonObject().put(
-						"tagFamilyTags", new JsonObject().put("path_match", "tagFamilies.*.tags").put("match_mapping_type", "*").put("mapping",
-								new JsonObject().put("type", "nested").put("properties", new JsonObject().put("name", trigramStringType()).put("uuid",
-										notAnalyzedType(STRING)))))));
+		typeMapping.put("dynamic_templates",
+				new JsonArray()
+						.add(new JsonObject().put("tagFamilyUuid",
+								new JsonObject().put("path_match", "tagFamilies.*.uuid").put("match_mapping_type", "*").put("mapping",
+										notAnalyzedType(STRING))))
+						.add(new JsonObject().put("tagFamilyTags",
+								new JsonObject().put("path_match", "tagFamilies.*.tags").put("match_mapping_type", "*").put("mapping",
+										new JsonObject().put("type", "nested").put("properties",
+												new JsonObject().put("name", trigramStringType()).put("uuid", notAnalyzedType(STRING)))))));
 
 		// language
 		typeProperties.put("language", notAnalyzedType(STRING));
