@@ -9,6 +9,7 @@ properties([
 	parameters([
 		booleanParam(name: 'runTests',            defaultValue: true,  description: "Whether to run the unit tests"),
 		booleanParam(name: 'runPerformanceTests', defaultValue: false, description: "Whether to run performance tests."),
+		booleanParam(name: 'runClusterTests',     defaultValue: false, description: "Whether to run cluster tests."),
 		booleanParam(name: 'runDeploy',           defaultValue: false, description: "Whether to run the deploy steps."),
 		booleanParam(name: 'runDocker',           defaultValue: false, description: "Whether to run the docker steps."),
 		booleanParam(name: 'runMavenBuild',       defaultValue: false, description: "Whether to run the maven build steps."),
@@ -101,7 +102,7 @@ node("docker") {
 											sh "mv includes-${postfix} inclusions.txt"
 											sshagent(["git"]) {
 												try {
-													sh "mvn -fae -Dmaven.javadoc.skip=true -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!performance-tests' clean package"
+													sh "mvn -fae -Dmaven.javadoc.skip=true -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!distributed,!performance-tests' clean package"
 												} finally {
 													step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 												}
@@ -134,6 +135,19 @@ node("docker") {
 							}
 						}
 
+						stage("Cluster Tests") {
+							if (Boolean.valueOf(params.runClusterTests)) {
+								try {
+									sh "mvn -B -DskipTests clean package -pl '!demo,!doc'"
+									sh "mvn -B test -pl distributed"
+								} finally {
+									step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/*.xml'])
+								}
+							} else {
+								echo "Cluster tests skipped.."
+							}
+						}
+
 						stage("Docker Build") {
 							if (Boolean.valueOf(params.runDocker)) {
 								sh "rm demo/target/*sources.jar"
@@ -147,7 +161,7 @@ node("docker") {
 						stage("Performance Tests") {
 							if (Boolean.valueOf(params.runPerformanceTests)) {
 								try {
-									sh "mvn -B -U clean package -pl '!doc,!demo,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
+									sh "mvn -B -U clean package -pl '!doc,!demo,!distributed,!verticles,!server' -Dskip.unit.tests=true -Dskip.performance.tests=false -Dmaven.test.failure.ignore=true"
 								} finally {
 									step([$class: 'JUnitResultArchiver', testResults: '**/target/*.performance.xml'])
 								}
