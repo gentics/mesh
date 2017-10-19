@@ -41,9 +41,10 @@ public interface SearchProvider {
 	 *            Uuid of the document
 	 * @param document
 	 *            Document which should be stored
-	 * 
+	 * @param ignoreMissingDocumentError
+	 *            Whether to ignore missing document errors
 	 */
-	Completable updateDocument(String indexName, String type, String uuid, JsonObject document);
+	Completable updateDocument(String indexName, String type, String uuid, JsonObject document, boolean ignoreMissingDocumentError);
 
 	/**
 	 * Delete the given document.
@@ -134,7 +135,8 @@ public interface SearchProvider {
 	/**
 	 * Delete the given index and don't fail if the index is not existing.
 	 * 
-	 * @param indexName Name of the index which should be deleted
+	 * @param indexName
+	 *            Name of the index which should be deleted
 	 * @return
 	 */
 	default Completable deleteIndex(String indexName) {

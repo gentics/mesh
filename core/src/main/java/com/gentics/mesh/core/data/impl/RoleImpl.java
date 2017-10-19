@@ -151,7 +151,6 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 	public void delete(SearchQueueBatch batch) {
 		// TODO don't allow deletion of admin role
 		batch.delete(this, true);
-
 		// Update all document in the index which reference the uuid of the role
 		for (GraphPermission perm : Arrays.asList(READ_PERM, READ_PUBLISHED_PERM)) {
 			for (MeshVertex element : getElementsWithPermission(perm)) {

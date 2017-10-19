@@ -418,7 +418,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						String indexName = container.getIndexName(project.getUuid(), release.getUuid(), type);
 						String documentId = container.getDocumentId();
 						String indexType = container.getIndexType();
-						obs.add(searchProvider.updateDocument(indexName, indexType, documentId, json).andThen(Observable.just(indexName)));
+						obs.add(searchProvider.updateDocument(indexName, indexType, documentId, json, true).andThen(Observable.just(indexName)));
 					}
 				}
 			}

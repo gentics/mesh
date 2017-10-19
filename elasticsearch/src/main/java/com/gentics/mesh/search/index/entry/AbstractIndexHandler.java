@@ -120,8 +120,8 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			String indexName = composeIndexNameFromEntry(entry);
 			String documentId = composeDocumentIdFromEntry(entry);
 			String indexType = composeIndexTypeFromEntry(entry);
-			return searchProvider.updateDocument(indexName, indexType, documentId, getTransformer().toPermissionPartial(element)).doOnCompleted(
-					() -> {
+			return searchProvider.updateDocument(indexName, indexType, documentId, getTransformer().toPermissionPartial(element), true)
+					.doOnCompleted(() -> {
 						if (log.isDebugEnabled()) {
 							log.debug("Updated object in index.");
 						}

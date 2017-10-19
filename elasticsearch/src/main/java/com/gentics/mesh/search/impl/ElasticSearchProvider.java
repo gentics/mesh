@@ -37,6 +37,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.settings.Settings.Builder;
 import org.elasticsearch.index.IndexNotFoundException;
+import org.elasticsearch.index.engine.DocumentMissingException;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.node.Node;
@@ -319,15 +320,19 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error("Could not delete object {" + uuid + ":" + type + "} from index {" + index + "}");
-					sub.onError(e);
+					if (e instanceof DocumentMissingException) {
+						sub.onCompleted();
+					} else {
+						log.error("Could not delete object {" + uuid + ":" + type + "} from index {" + index + "}");
+						sub.onError(e);
+					}
 				}
 			});
 		});
 	}
 
 	@Override
-	public Completable updateDocument(String index, String type, String uuid, JsonObject document) {
+	public Completable updateDocument(String index, String type, String uuid, JsonObject document, boolean ignoreMissingDocumentError) {
 		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
@@ -348,9 +353,13 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error("Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start)
-							+ "[ms]", e);
-					sub.onError(e);
+					if (ignoreMissingDocumentError && e instanceof DocumentMissingException) {
+						sub.onCompleted();
+					} else {
+						log.error("Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start)
+								+ "[ms]", e);
+						sub.onError(e);
+					}
 				}
 			});
 		}).observeOn(scheduler);
@@ -379,8 +388,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onResponse(BulkResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Finished bulk  store request on index {" + index + ":" + type + "}. Duration " + (System.currentTimeMillis()
-								- start) + "[ms]");
+						log.debug("Finished bulk  store request on index {" + index + ":" + type + "}. Duration "
+								+ (System.currentTimeMillis() - start) + "[ms]");
 					}
 					sub.onCompleted();
 				}

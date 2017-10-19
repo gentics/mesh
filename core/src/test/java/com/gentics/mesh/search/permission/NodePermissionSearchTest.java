@@ -4,8 +4,6 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
-
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
@@ -15,6 +13,7 @@ import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true, startESServer = true)
 public class NodePermissionSearchTest extends AbstractMeshTest {
@@ -39,7 +38,10 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testIndexPermRoleDeletion() throws IOException {
+	public void testIndexPermRoleDeletion() throws Exception {
+		try (Tx tx = tx()) {
+			recreateIndices();
+		}
 		NodeResponse response = createNode("slug", FieldUtil.createStringField("slugblub"));
 
 		String json = getESQuery("nodeWildcard.es");
