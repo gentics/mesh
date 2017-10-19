@@ -17,7 +17,7 @@ import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true, startESServer = true)
-public class UserPermissionSearchEndpointTest extends AbstractMeshTest {
+public class UserPermissionSearchTest extends AbstractMeshTest {
 
 	@Test
 	public void testReadPermHandling() throws Exception {
@@ -60,7 +60,7 @@ public class UserPermissionSearchEndpointTest extends AbstractMeshTest {
 	}
 
 	@Test
-	public void testUserIndexPermUpdate() throws Exception {
+	public void testIndexPermUpdate() throws Exception {
 		String username = "testuser42a";
 		UserResponse response = createUser(username);
 

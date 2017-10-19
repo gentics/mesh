@@ -54,7 +54,9 @@ import com.gentics.mesh.search.SearchProvider;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.RxHelper;
 import rx.Completable;
+import rx.Scheduler;
 import rx.Single;
 
 /**
@@ -196,7 +198,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable createIndex(String indexName) {
-		// TODO Add method which will be used to create an index and set a custom mapping
+		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
 		return Completable.create(sub -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Creating ES Index {" + indexName + "}");
@@ -225,7 +227,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 
 			});
-		});
+		}).observeOn(scheduler);
 	}
 
 	@Override
@@ -326,6 +328,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable updateDocument(String index, String type, String uuid, JsonObject document) {
+		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
@@ -350,7 +353,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					sub.onError(e);
 				}
 			});
-		});
+		}).observeOn(scheduler);
 	}
 
 	@Override

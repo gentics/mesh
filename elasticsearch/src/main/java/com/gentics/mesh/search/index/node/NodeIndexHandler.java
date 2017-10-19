@@ -5,6 +5,7 @@ import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -391,6 +392,42 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					updateNodeIndexMapping(project, release, containerVersion, PUBLISHED, containerVersion.getSchema()).await();
 				}
 			}
+		}
+	}
+
+	/**
+	 * We need to handle permission update requests for nodes here since the action must affect multiple documents in multiple indices .
+	 */
+	@Override
+	public Completable updatePermission(UpdateDocumentEntry entry) {
+		String uuid = entry.getElementUuid();
+		Node node = getRootVertex().findByUuid(uuid);
+		if (node == null) {
+			String type = composeIndexTypeFromEntry(entry);
+			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
+		} else {
+			Project project = node.getProject();
+			JsonObject json = getTransformer().toPermissionPartial(node);
+
+			Set<Observable<String>> obs = new HashSet<>();
+
+			// Determine which documents need to be updated. The node could have multiple documents in various indices.
+			for (Release release : project.getReleaseRoot().findAllIt()) {
+				for (ContainerType type : Arrays.asList(DRAFT, PUBLISHED)) {
+					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(release, type)) {
+						String indexName = container.getIndexName(project.getUuid(), release.getUuid(), type);
+						String documentId = container.getDocumentId();
+						String indexType = container.getIndexType();
+						obs.add(searchProvider.updateDocument(indexName, indexType, documentId, json).andThen(Observable.just(indexName)));
+					}
+				}
+			}
+			return Observable.merge(obs).toList().doOnNext(list -> {
+				if (log.isDebugEnabled()) {
+					log.debug("Updated object in index.");
+				}
+				searchProvider.refreshIndex(list.stream().toArray(String[]::new));
+			}).toCompletable();
 		}
 	}
 

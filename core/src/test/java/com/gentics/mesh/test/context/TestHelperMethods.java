@@ -2,8 +2,8 @@ package com.gentics.mesh.test.context;
 
 import static com.gentics.mesh.mock.Mocks.getMockedInternalActionContext;
 import static com.gentics.mesh.mock.Mocks.getMockedRoutingContext;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.IOException;
@@ -12,11 +12,6 @@ import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 
-import com.syncleus.ferma.tx.Tx;
-import com.syncleus.ferma.tx.TxAction;
-import com.syncleus.ferma.tx.TxAction0;
-import com.syncleus.ferma.tx.TxAction1;
-import com.syncleus.ferma.tx.TxAction2;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -83,6 +78,11 @@ import com.gentics.mesh.search.DummySearchProvider;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.test.TestDataProvider;
 import com.gentics.mesh.util.VersionNumber;
+import com.syncleus.ferma.tx.Tx;
+import com.syncleus.ferma.tx.TxAction;
+import com.syncleus.ferma.tx.TxAction0;
+import com.syncleus.ferma.tx.TxAction1;
+import com.syncleus.ferma.tx.TxAction2;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -381,11 +381,6 @@ public interface TestHelperMethods {
 		TagUpdateRequest tagUpdateRequest = new TagUpdateRequest();
 		tagUpdateRequest.setName(newTagName);
 		return call(() -> client().updateTag(projectName, tagFamilyUuid, uuid, tagUpdateRequest));
-	}
-
-	default public NodeResponse createNode(String projectName, String nameField) {
-		NodeCreateRequest request = new NodeCreateRequest();
-		return call(() -> client().createNode(projectName, request));
 	}
 
 	default public MeshRequest<NodeResponse> createNodeAsync(String fieldKey, Field field) {

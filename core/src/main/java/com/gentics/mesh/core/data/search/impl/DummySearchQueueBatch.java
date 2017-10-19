@@ -1,7 +1,5 @@
 package com.gentics.mesh.core.data.search.impl;
 
-import static com.gentics.mesh.core.data.search.SearchQueueEntryAction.DELETE_ACTION;
-
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -14,10 +12,8 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
-import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.rest.schema.Schema;
-import com.gentics.mesh.search.index.entry.UpdateDocumentEntryImpl;
 
 import rx.Completable;
 
@@ -125,4 +121,5 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 	@Override
 	public void clear() {
 	}
+
 }

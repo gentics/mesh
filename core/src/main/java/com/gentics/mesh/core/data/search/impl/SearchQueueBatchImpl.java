@@ -196,7 +196,8 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 
 	@Override
 	public SearchQueueBatch updatePermissions(IndexableElement element) {
-		UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(registry.getForClass(element), element, null,
+		GenericEntryContextImpl context = new GenericEntryContextImpl();
+		UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(registry.getForClass(element), element, context,
 				SearchQueueEntryAction.UPDATE_ROLE_PERM_ACTION);
 		addEntry(entry);
 		return this;
