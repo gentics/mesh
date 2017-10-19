@@ -44,7 +44,9 @@ public class PermissionsScript extends AbstractSearchScript {
 		if (ids instanceof List) {
 			List<?> documentRoleUuids = (List<?>) ids;
 			// Check if the user has at least one granting role.
-			return CollectionUtils.containsAny(userRoleUuids, documentRoleUuids);
+			boolean hasRole = CollectionUtils.containsAny(userRoleUuids, documentRoleUuids);
+			System.out.println("Element " + source().get("uuid") + " " + hasRole);
+			return hasRole;
 		} else {
 			log.warn("Document {" + source() + "} did not contain the " + ROLE_UUID_FIELD + " field.");
 		}

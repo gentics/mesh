@@ -14,7 +14,6 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.group.GroupListResponse;
@@ -28,16 +27,16 @@ import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
-import com.gentics.mesh.search.index.group.GroupIndexHandler;
-import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.AdminIndexHandler;
+import com.gentics.mesh.search.index.group.GroupSearchHandler;
+import com.gentics.mesh.search.index.microschema.MicroschemaSearchHandler;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
-import com.gentics.mesh.search.index.project.ProjectIndexHandler;
-import com.gentics.mesh.search.index.role.RoleIndexHandler;
-import com.gentics.mesh.search.index.schema.SchemaContainerIndexHandler;
-import com.gentics.mesh.search.index.tag.TagIndexHandler;
-import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
-import com.gentics.mesh.search.index.user.UserIndexHandler;
+import com.gentics.mesh.search.index.project.ProjectSearchHandler;
+import com.gentics.mesh.search.index.role.RoleSearchHandler;
+import com.gentics.mesh.search.index.schema.SchemaSearchHandler;
+import com.gentics.mesh.search.index.tag.TagSearchHandler;
+import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
+import com.gentics.mesh.search.index.user.UserSearchHandler;
 
 import dagger.Lazy;
 import rx.functions.Func0;
@@ -45,41 +44,41 @@ import rx.functions.Func0;
 @Singleton
 public class SearchEndpoint extends AbstractEndpoint {
 
-	private NodeSearchHandler searchHandler;
-
 	private Lazy<BootstrapInitializer> boot;
 
 	@Inject
-	NodeIndexHandler nodeIndexHandler;
+	AdminIndexHandler adminHandler;
+	
+	@Inject
+	UserSearchHandler userSearchHandler;
 
 	@Inject
-	UserIndexHandler userIndexHandler;
+	GroupSearchHandler groupSearchHandler;
 
 	@Inject
-	GroupIndexHandler groupIndexHandler;
+	RoleSearchHandler roleSearchHandler;
 
 	@Inject
-	RoleIndexHandler roleIndexHandler;
+	NodeSearchHandler nodeSearchHandler;
 
 	@Inject
-	ProjectIndexHandler projectIndexHandler;
+	TagSearchHandler tagSearchHandler;
 
 	@Inject
-	TagFamilyIndexHandler tagFamilyIndexHandler;
+	TagFamilySearchHandler tagFamilySearchHandler;
 
 	@Inject
-	TagIndexHandler tagIndexHandler;
+	ProjectSearchHandler projectSearchHandler;
 
 	@Inject
-	SchemaContainerIndexHandler schemaContainerIndexHandler;
+	SchemaSearchHandler schemaContainerSearchHandler;
 
 	@Inject
-	MicroschemaContainerIndexHandler microschemaContainerIndexHandler;
+	MicroschemaSearchHandler microschemaContainerSearchHandler;
 
 	@Inject
 	public SearchEndpoint(RouterStorage routerStorage, NodeSearchHandler searchHandler, Lazy<BootstrapInitializer> boot) {
 		super("search", routerStorage);
-		this.searchHandler = searchHandler;
 		this.boot = boot;
 	}
 
@@ -102,23 +101,24 @@ public class SearchEndpoint extends AbstractEndpoint {
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		registerHandler("users", () -> boot.get().meshRoot().getUserRoot(), UserListResponse.class, userIndexHandler,
-				userExamples.getUserListResponse());
-		registerHandler("groups", () -> boot.get().meshRoot().getGroupRoot(), GroupListResponse.class, groupIndexHandler,
-				groupExamples.getGroupListResponse());
-		registerHandler("roles", () -> boot.get().meshRoot().getRoleRoot(), RoleListResponse.class, roleIndexHandler,
-				roleExamples.getRoleListResponse());
-		registerHandler("nodes", () -> boot.get().meshRoot().getNodeRoot(), NodeListResponse.class, nodeIndexHandler,
-				nodeExamples.getNodeListResponse());
-		registerHandler("tags", () -> boot.get().meshRoot().getTagRoot(), TagListResponse.class, tagIndexHandler, tagExamples.createTagListResponse());
-		registerHandler("tagFamilies", () -> boot.get().meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilyIndexHandler,
+		registerHandler("users", () -> boot.get().meshRoot().getUserRoot(), UserListResponse.class, userSearchHandler, userExamples
+				.getUserListResponse());
+		registerHandler("groups", () -> boot.get().meshRoot().getGroupRoot(), GroupListResponse.class, groupSearchHandler, groupExamples
+				.getGroupListResponse());
+		registerHandler("roles", () -> boot.get().meshRoot().getRoleRoot(), RoleListResponse.class, roleSearchHandler, roleExamples
+				.getRoleListResponse());
+		registerHandler("nodes", () -> boot.get().meshRoot().getNodeRoot(), NodeListResponse.class, nodeSearchHandler, nodeExamples
+				.getNodeListResponse());
+		registerHandler("tags", () -> boot.get().meshRoot().getTagRoot(), TagListResponse.class, tagSearchHandler, tagExamples
+				.createTagListResponse());
+		registerHandler("tagFamilies", () -> boot.get().meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilySearchHandler,
 				tagFamilyExamples.getTagFamilyListResponse());
-		registerHandler("projects", () -> boot.get().meshRoot().getProjectRoot(), ProjectListResponse.class, projectIndexHandler,
-				projectExamples.getProjectListResponse());
-		registerHandler("schemas", () -> boot.get().meshRoot().getSchemaContainerRoot(), SchemaListResponse.class, schemaContainerIndexHandler,
+		registerHandler("projects", () -> boot.get().meshRoot().getProjectRoot(), ProjectListResponse.class, projectSearchHandler, projectExamples
+				.getProjectListResponse());
+		registerHandler("schemas", () -> boot.get().meshRoot().getSchemaContainerRoot(), SchemaListResponse.class, schemaContainerSearchHandler,
 				schemaExamples.getSchemaListResponse());
 		registerHandler("microschemas", () -> boot.get().meshRoot().getMicroschemaContainerRoot(), MicroschemaListResponse.class,
-				microschemaContainerIndexHandler, microschemaExamples.getMicroschemaListResponse());
+				microschemaContainerSearchHandler, microschemaExamples.getMicroschemaListResponse());
 		addAdminHandlers();
 	}
 
@@ -131,7 +131,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 		statusEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Search index status.");
 		statusEndpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			searchHandler.handleStatus(ac);
+			adminHandler.handleStatus(ac);
 		});
 
 		Endpoint createMappings = createEndpoint();
@@ -142,7 +142,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 		createMappings.exampleResponse(OK, miscExamples.createMessageResponse(), "Create all mappings.");
 		createMappings.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			searchHandler.createMappings(ac);
+			adminHandler.createMappings(ac);
 		});
 
 		Endpoint reindexEndpoint = createEndpoint();
@@ -153,7 +153,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 		reindexEndpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "Invoked reindex command for all elements.");
 		reindexEndpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			searchHandler.handleReindex(ac);
+			adminHandler.handleReindex(ac);
 		});
 	}
 
@@ -170,7 +170,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 	 *            key of the index handlers
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
-			Func0<RootVertex<T>> root, Class<RL> classOfRL, IndexHandler indexHandler, RL exampleListResponse) {
+			Func0<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T,TR> searchHandler, RL exampleListResponse) {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
@@ -182,7 +182,7 @@ public class SearchEndpoint extends AbstractEndpoint {
 		endpoint.handler(rc -> {
 			try {
 				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getSelectedIndices(ac), indexHandler.getReadPermission(ac));
+				searchHandler.query(ac, root, classOfRL);
 			} catch (Exception e) {
 				// fail(rc, "search_error_query");
 				rc.fail(e);

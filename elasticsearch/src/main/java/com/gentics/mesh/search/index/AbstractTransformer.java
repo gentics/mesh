@@ -127,7 +127,6 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 		for (Role role : roleIt) {
 			roleUuids.add(role.getUuid());
 		}
-		roleUuids.add(randomUUID());
 		document.put("_roleUuids", roleUuids);
 	}
 

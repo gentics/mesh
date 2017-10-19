@@ -3,11 +3,13 @@ package com.gentics.mesh.search.permission;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static org.junit.Assert.assertEquals;
 
-import java.io.IOException;
-
 import org.junit.Test;
 
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.user.UserListResponse;
+import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
@@ -17,18 +19,27 @@ import com.syncleus.ferma.tx.Tx;
 public class UserPermissionSearchEndpointTest extends AbstractMeshTest {
 
 	@Test
-	public void testSimpleQuerySearch() throws IOException {
+	public void testReadPermHandling() throws Exception {
 
 		String username = "testuser42a";
+		UserResponse response = createUser(username);
 		try (Tx tx = tx()) {
-			createUser(username);
+			User user = meshRoot().getUserRoot().findByUuid(response.getUuid());
+			System.out.println("User Uuid:" + response.getUuid());
+			for (Role role : user().getRoles()) {
+				role.revokePermissions(user, GraphPermission.READ_PERM);
+			}
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
+			recreateIndices();
 		}
 
 		String json = getESQuery("userWildcard.es");
 
 		UserListResponse list = call(() -> client().searchUsers(json));
-		assertEquals(1, list.getData().size());
-		assertEquals("The found element is not the user we were looking for", username, list.getData().get(0).getUsername());
+		assertEquals("The user should not be found since the requestor has no permission to see it", 0, list.getData().size());
 
 	}
 

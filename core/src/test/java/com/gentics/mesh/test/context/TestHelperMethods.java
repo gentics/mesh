@@ -572,7 +572,7 @@ public interface TestHelperMethods {
 		UserCreateRequest request = new UserCreateRequest();
 		request.setUsername(username);
 		request.setPassword("test1234");
-		request.setGroupUuid(group().getUuid());
+		request.setGroupUuid(groupUuid());
 
 		return call(() -> client().createUser(request));
 	}

@@ -13,7 +13,6 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.root.RootVertex;
-import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
@@ -21,10 +20,9 @@ import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.Endpoint;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
-import com.gentics.mesh.search.index.tag.TagIndexHandler;
-import com.gentics.mesh.search.index.tagfamily.TagFamilyIndexHandler;
+import com.gentics.mesh.search.index.tag.TagSearchHandler;
+import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
 
 import rx.functions.Func0;
 
@@ -34,25 +32,22 @@ import rx.functions.Func0;
 @Singleton
 public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 
-	private NodeSearchHandler searchHandler;
+	@Inject
+	public NodeSearchHandler nodeSearchHandler;
 
 	@Inject
-	NodeIndexHandler nodeContainerIndexHandler;
+	public TagSearchHandler tagSearchHandler;
 
 	@Inject
-	TagIndexHandler tagIndexHandler;
-
-	@Inject
-	TagFamilyIndexHandler tagFamilyIndexHandler;
+	public TagFamilySearchHandler tagFamilySearchHandler;
 
 	public ProjectSearchEndpoint() {
 		super("search", null, null);
 	}
 
 	@Inject
-	public ProjectSearchEndpoint(BootstrapInitializer boot, RouterStorage routerStorage, NodeSearchHandler searchHandler) {
+	public ProjectSearchEndpoint(BootstrapInitializer boot, RouterStorage routerStorage) {
 		super("search", boot, routerStorage);
-		this.searchHandler = searchHandler;
 	}
 
 	@Override
@@ -70,10 +65,11 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 	 * Add various search endpoints using the aggregation nodes.
 	 */
 	private void addSearchEndpoints() {
-		registerSearchHandler("nodes", () -> boot.meshRoot().getNodeRoot(), NodeListResponse.class, nodeContainerIndexHandler,
-				nodeExamples.getNodeListResponse());
-		registerSearchHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, tagIndexHandler, tagExamples.createTagListResponse());
-		registerSearchHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilyIndexHandler,
+		registerSearchHandler("nodes", () -> boot.meshRoot().getNodeRoot(), NodeListResponse.class, nodeSearchHandler, nodeExamples
+				.getNodeListResponse());
+		registerSearchHandler("tags", () -> boot.meshRoot().getTagRoot(), TagListResponse.class, tagSearchHandler, tagExamples
+				.createTagListResponse());
+		registerSearchHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilySearchHandler,
 				tagFamilyExamples.getTagFamilyListResponse());
 	}
 
@@ -92,7 +88,7 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 	 *            Example list response used for RAML generation
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
-			Func0<RootVertex<T>> root, Class<RL> classOfRL, IndexHandler<T> indexHandler, RL exampleResponse) {
+			Func0<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse) {
 		Endpoint endpoint = createEndpoint();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
@@ -104,7 +100,7 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 		endpoint.handler(rc -> {
 			try {
 				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-				searchHandler.handleSearch(ac, root, classOfRL, indexHandler.getSelectedIndices(ac), indexHandler.getReadPermission(ac));
+				searchHandler.query(ac, root, classOfRL);
 			} catch (Exception e) {
 				rc.fail(e);
 			}

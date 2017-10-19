@@ -138,10 +138,10 @@ node("docker") {
 						stage("Cluster Tests") {
 							if (Boolean.valueOf(params.runClusterTests)) {
 								try {
-									sh "mvn -B -DskipTests clean package -pl '!demo,!doc'"
+									sh "mvn -B -DskipTests clean install -pl '!demo,!doc'"
 									sh "mvn -B test -pl distributed"
 								} finally {
-									step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/*.xml'])
+									step([$class: 'JUnitResultArchiver', testResults: 'distributed/target/surefire-reports/*.xml'])
 								}
 							} else {
 								echo "Cluster tests skipped.."
