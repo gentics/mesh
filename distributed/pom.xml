@@ -43,6 +43,16 @@
 	</dependencies>
 
 	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<jvm>${JAVA_1_8_HOME}/bin/java${surefire.jvm.postfix}</jvm>
+					<argLine>-Xmx256m -XX:MaxDirectMemorySize=1524m</argLine>
+				</configuration>
+			</plugin>
+		</plugins>
 	</build>
 
 </project>
