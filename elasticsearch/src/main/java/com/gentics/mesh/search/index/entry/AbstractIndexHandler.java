@@ -92,21 +92,42 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	/**
 	 * Store the given object within the search index.
 	 * 
-	 * @param object
+	 * @param element
 	 * @param entry
 	 *            search queue entry
 	 * @return
 	 */
-	public Completable store(T object, UpdateDocumentEntry entry) {
+	public Completable store(T element, UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
 		String indexType = composeIndexTypeFromEntry(entry);
-		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformer().toDocument(object)).doOnCompleted(() -> {
+		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformer().toDocument(element)).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
 			}
 			searchProvider.refreshIndex();
 		});
+	}
+
+	@Override
+	public Completable updatePermission(UpdateDocumentEntry entry) {
+		String uuid = entry.getElementUuid();
+		T element = getRootVertex().findByUuid(uuid);
+		if (element == null) {
+			String type = composeIndexTypeFromEntry(entry);
+			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
+		} else {
+			String indexName = composeIndexNameFromEntry(entry);
+			String documentId = composeDocumentIdFromEntry(entry);
+			String indexType = composeIndexTypeFromEntry(entry);
+			return searchProvider.updateDocument(indexName, indexType, documentId, getTransformer().toPermissionPartial(element)).doOnCompleted(
+					() -> {
+						if (log.isDebugEnabled()) {
+							log.debug("Updated object in index.");
+						}
+						searchProvider.refreshIndex();
+					});
+		}
 	}
 
 	@Override
@@ -123,9 +144,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return Completable.defer(() -> {
 			try (Tx tx = db.tx()) {
 				String uuid = entry.getElementUuid();
-				String type = composeIndexTypeFromEntry(entry);
 				T element = getRootVertex().findByUuid(uuid);
 				if (element == null) {
+					String type = composeIndexTypeFromEntry(entry);
 					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
 				} else {
 					return store(element, entry);

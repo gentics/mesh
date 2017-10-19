@@ -495,10 +495,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 1. create folder and publish
 			String folderUuid = db().tx(() -> {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
-				folder.applyPermissions(role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
+				SearchQueueBatch batch = createBatch();
+				folder.applyPermissions(batch, role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
 						Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
-				SearchQueueBatch batch = createBatch();
 				folder.publish(mockActionContext(), batch);
 				return folder.getUuid();
 			});
@@ -562,10 +562,10 @@ public class NodeTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 1. create folder and publish
 			String folderUuid = tx(() -> {
 				Node folder = project.getBaseNode().create(user(), folderSchema, project);
-				folder.applyPermissions(role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
+				SearchQueueBatch batch = createBatch();
+				folder.applyPermissions(batch, role(), false, new HashSet<>(Arrays.asList(GraphPermission.READ_PERM, GraphPermission.READ_PUBLISHED_PERM)),
 						Collections.emptySet());
 				folder.createGraphFieldContainer(english(), initialRelease, user()).createString("name").setString("Folder");
-				SearchQueueBatch batch = createBatch();
 				folder.publish(mockActionContext(), batch);
 				return folder.getUuid();
 			});

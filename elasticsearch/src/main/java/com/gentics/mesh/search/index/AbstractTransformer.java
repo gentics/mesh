@@ -4,6 +4,7 @@ import static com.gentics.mesh.search.index.MappingHelper.DATE;
 import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
 import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -126,6 +127,13 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 			roleUuids.add(role.getUuid());
 		}
 		document.put("_roleUuids", roleUuids);
+	}
+
+	@Override
+	public JsonObject toPermissionPartial(MeshCoreVertex<?, ?> element) {
+		JsonObject document = new JsonObject();
+		addPermissionInfo(document, element);
+		return document;
 	}
 
 	/**

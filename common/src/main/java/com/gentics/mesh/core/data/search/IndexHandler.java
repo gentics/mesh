@@ -33,6 +33,20 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	Completable init();
 
 	/**
+	 * Return the root vertex of the index handler. The root vertex is used to retrieve nodes by UUID in order to update the search index.
+	 * 
+	 * @return
+	 */
+	RootVertex<T> getRootVertex();
+
+	/**
+	 * Return the class of elements which can be handled by this handler.
+	 * 
+	 * @return
+	 */
+	Class<?> getElementClass();
+
+	/**
 	 * Handle the search queue update mapping entry.
 	 * 
 	 * @param entry
@@ -112,17 +126,11 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	Completable createIndex(CreateIndexEntry entry);
 
 	/**
-	 * Return the root vertex of the index handler. The root vertex is used to retrieve nodes by UUID in order to update the search index.
+	 * Update the permissions for the document which is identified by the entry.
 	 * 
+	 * @param entry
 	 * @return
 	 */
-	RootVertex<T> getRootVertex();
-
-	/**
-	 * Return the class of elements which can be handled by this handler.
-	 * 
-	 * @return
-	 */
-	Class<?> getElementClass();
+	Completable updatePermission(UpdateDocumentEntry entry);
 
 }

@@ -11,6 +11,8 @@ public enum SearchQueueEntryAction {
 
 	DELETE_ACTION("delete", 80),
 
+	UPDATE_ROLE_PERM_ACTION("updateRolePerm", 70),
+
 	STORE_ACTION("store", 60),
 
 	MOVE_ACTION("move", 50);

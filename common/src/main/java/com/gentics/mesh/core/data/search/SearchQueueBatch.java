@@ -270,4 +270,12 @@ public interface SearchQueueBatch {
 	 */
 	void clear();
 
+	/**
+	 * Update the permission of the given element.
+	 * 
+	 * @param element
+	 * @return Fluent API
+	 */
+	SearchQueueBatch updatePermissions(IndexableElement element);
+
 }

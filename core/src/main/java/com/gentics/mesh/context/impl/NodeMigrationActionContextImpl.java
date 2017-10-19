@@ -185,7 +185,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 			}
 
 			@Override
-			public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+			public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
 					Set<GraphPermission> permissionsToRevoke) {
 
 			}

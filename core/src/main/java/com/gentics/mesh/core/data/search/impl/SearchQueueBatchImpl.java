@@ -24,6 +24,7 @@ import com.gentics.mesh.core.data.search.DropIndexEntry;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
@@ -194,6 +195,14 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
+	public SearchQueueBatch updatePermissions(IndexableElement element) {
+		UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(registry.getForClass(element), element, null,
+				SearchQueueEntryAction.UPDATE_ROLE_PERM_ACTION);
+		addEntry(entry);
+		return this;
+	}
+
+	@Override
 	public SearchQueueEntry addEntry(SearchQueueEntry entry) {
 		entries.add(entry);
 		return entry;
@@ -228,11 +237,11 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 		return Completable.defer(() -> {
 			// Process the batch
 			Completable obs = Completable.complete();
-			List<? extends SearchQueueEntry> nonStoreEntries = getEntries().stream().filter(i -> i.getElementAction() != STORE_ACTION)
-					.collect(Collectors.toList());
+			List<? extends SearchQueueEntry> nonStoreEntries = getEntries().stream().filter(i -> i.getElementAction() != STORE_ACTION).collect(
+					Collectors.toList());
 
-			List<? extends SearchQueueEntry> storeEntries = getEntries().stream().filter(i -> i.getElementAction() == STORE_ACTION)
-					.collect(Collectors.toList());
+			List<? extends SearchQueueEntry> storeEntries = getEntries().stream().filter(i -> i.getElementAction() == STORE_ACTION).collect(Collectors
+					.toList());
 
 			if (!nonStoreEntries.isEmpty()) {
 				obs = Completable.concat(nonStoreEntries.stream().map(entry -> entry.process()).collect(Collectors.toList()));
@@ -272,8 +281,8 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	@Override
 	public void processSync(long timeout, TimeUnit unit) {
 		if (!processAsync().await(timeout, unit)) {
-			throw error(INTERNAL_SERVER_ERROR,
-					"Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name() + "} exceeded.");
+			throw error(INTERNAL_SERVER_ERROR, "Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name()
+					+ "} exceeded.");
 		}
 	}
 

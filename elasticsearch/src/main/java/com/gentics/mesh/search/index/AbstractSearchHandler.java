@@ -149,7 +149,6 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		try {
 
 			JsonObject query = prepareSearchQuery(ac, searchQuery);
-			System.out.println(query.encodePrettily());
 			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(query.toString());
 		} catch (Exception e) {
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));

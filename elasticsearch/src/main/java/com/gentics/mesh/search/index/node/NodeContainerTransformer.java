@@ -28,6 +28,7 @@ import javax.inject.Singleton;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
@@ -488,6 +489,14 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	@Deprecated
 	public JsonObject toDocument(NodeGraphFieldContainer object) {
 		throw new NotImplementedException("Use toDocument(container, releaseUuid) instead");
+	}
+
+	@Override
+	public JsonObject toPermissionPartial(MeshCoreVertex<?, ?> element) {
+		if (element instanceof NodeGraphFieldContainer) {
+			return super.toPermissionPartial(((NodeGraphFieldContainer) element).getParentNode());
+		}
+		return super.toPermissionPartial(element);
 	}
 
 	/**

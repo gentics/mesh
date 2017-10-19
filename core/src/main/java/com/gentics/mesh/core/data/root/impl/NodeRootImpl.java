@@ -308,14 +308,14 @@ public class NodeRootImpl extends AbstractRootVertex<Node> implements NodeRoot {
 	}
 
 	@Override
-	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Node node : findAllIt()) {
 				// We don't need to recursively handle the permissions for each node again since this call will already affect all nodes.
-				node.applyPermissions(role, false, permissionsToGrant, permissionsToRevoke);
+				node.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
 			}
 		}
-		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 }

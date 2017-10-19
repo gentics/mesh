@@ -104,7 +104,6 @@ public class MeshModule {
 		corsHandler.allowedHeader("Anonymous-Authentication");
 		corsHandler.allowedHeader("Content-Type");
 		corsHandler.allowedHeader("Accept");
-		corsHandler.allowedHeader("Content-Type");
 		corsHandler.allowedHeader("Origin");
 		corsHandler.allowedHeader("Cookie");
 		return corsHandler;
