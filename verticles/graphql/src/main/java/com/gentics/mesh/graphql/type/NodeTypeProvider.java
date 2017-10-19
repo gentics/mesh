@@ -40,7 +40,6 @@ import com.gentics.mesh.graphql.type.field.NodeFieldTypeProvider;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
 
 import graphql.schema.DataFetchingEnvironment;

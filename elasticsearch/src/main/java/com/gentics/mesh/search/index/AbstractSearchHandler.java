@@ -4,6 +4,7 @@ import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -13,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -68,6 +70,17 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 	protected IndexHandler<T> indexHandler;
 
+	public final static String DEFAULT_QUERY_FILENAME = "default-query.json";
+
+	public static String DEFAULT_QUERY = null;
+	static {
+		try {
+			DEFAULT_QUERY = IOUtils.toString(AbstractSearchHandler.class.getResourceAsStream("/" + DEFAULT_QUERY_FILENAME));
+		} catch (IOException e) {
+			throw new RuntimeException("Could not load {" + DEFAULT_QUERY + "} file");
+		}
+	}
+
 	/**
 	 * Create a new search handler.
 	 * 
@@ -82,40 +95,25 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	}
 
 	/**
-	 * Prepare the initial search query and inject the permission script dependency.
+	 * Prepare the initial search query and inject the values we need to check role permissions.
 	 * 
 	 * @param ac
 	 * @param searchQuery
 	 * @return
 	 */
 	protected JsonObject prepareSearchQuery(InternalActionContext ac, String searchQuery) {
-		JsonObject json = new JsonObject(searchQuery);
-		/**
-		 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more efficient
-		 * ways to do deep scrolling.
-		 */
-		json.put("from", 0);
-		json.put("size", Integer.MAX_VALUE);
 
-		// Permission script
-		JsonObject scriptParams = new JsonObject();
-
+		JsonObject json = new JsonObject(DEFAULT_QUERY);
 		JsonArray roleUuids = new JsonArray();
 		try (Tx tx = db.tx()) {
 			for (Role role : ac.getUser().getRoles()) {
 				roleUuids.add(role.getUuid());
 			}
 		}
-		scriptParams.put("userRoleUuids", roleUuids);
 
-		JsonObject scriptInfo = new JsonObject();
-		scriptInfo.put("script", "hasPermission");
-		scriptInfo.put("lang", "native");
-		scriptInfo.put("params", scriptParams);
-
-		JsonObject scriptFields = new JsonObject();
-		scriptFields.put("meshscript.hasPermission", scriptInfo);
-		json.put("script_fields", scriptFields);
+		JsonArray must = json.getJsonObject("query").getJsonObject("bool").getJsonArray("must");
+		must.getJsonObject(0).getJsonObject("terms").put("_roleUuids", roleUuids);
+		must.getJsonObject(1).mergeIn(new JsonObject(searchQuery));
 		return json;
 	}
 
@@ -149,7 +147,9 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		Set<String> indices = indexHandler.getSelectedIndices(ac);
 		SearchRequestBuilder builder = null;
 		try {
+
 			JsonObject query = prepareSearchQuery(ac, searchQuery);
+			System.out.println(query.encodePrettily());
 			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(query.toString());
 		} catch (Exception e) {
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));

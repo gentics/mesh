@@ -46,14 +46,11 @@ import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.Mesh;
-import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.plugin.PermissionsPlugin;
 
-import dagger.Lazy;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -83,10 +80,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 	}
 
-	private Lazy<BootstrapInitializer> boot;
-
-	public ElasticSearchProvider(Lazy<BootstrapInitializer> boot) {
-		this.boot = boot;
+	public ElasticSearchProvider() {
 	}
 
 	@Override
@@ -143,7 +137,6 @@ public class ElasticSearchProvider implements SearchProvider {
 		if (clusterOptions.isEnabled()) {
 			classpathPlugins.add(MulticastDiscoveryPlugin.class);
 		}
-		classpathPlugins.add(PermissionsPlugin.class);
 		node = new MeshNode(settings, classpathPlugins);
 		node.start();
 		if (log.isDebugEnabled()) {

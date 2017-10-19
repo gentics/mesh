@@ -15,7 +15,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 
-@MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true)
+@MeshTestSetting(useElasticsearch = true, testSize = TestSize.PROJECT_AND_NODE, startServer = true, startESServer = true)
 public class UserPermissionSearchEndpointTest extends AbstractMeshTest {
 
 	@Test
@@ -40,6 +40,21 @@ public class UserPermissionSearchEndpointTest extends AbstractMeshTest {
 
 		UserListResponse list = call(() -> client().searchUsers(json));
 		assertEquals("The user should not be found since the requestor has no permission to see it", 0, list.getData().size());
+
+		// Now add the perm
+		try (Tx tx = tx()) {
+			User user = meshRoot().getUserRoot().findByUuid(response.getUuid());
+			System.out.println("User Uuid:" + response.getUuid());
+			role().grantPermissions(user, GraphPermission.READ_PERM);
+			tx.success();
+		}
+
+		try (Tx tx = tx()) {
+			recreateIndices();
+		}
+
+		list = call(() -> client().searchUsers(json));
+		assertEquals("The user should be found since we added the permission to see it", 1, list.getData().size());
 
 	}
 

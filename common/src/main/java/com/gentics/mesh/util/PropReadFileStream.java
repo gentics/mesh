@@ -1,6 +1,5 @@
 package com.gentics.mesh.util;
 
-import com.gentics.mesh.Mesh;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.file.OpenOptions;

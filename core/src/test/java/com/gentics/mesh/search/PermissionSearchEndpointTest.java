@@ -27,7 +27,7 @@ import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
-public class PermissionSearchVerticleTest extends AbstractNodeSearchEndpointTest {
+public class PermissionSearchEndpointTest extends AbstractNodeSearchEndpointTest {
 
 	private ProjectResponse project;
 	private UserResponse restrictedUser;

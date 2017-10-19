@@ -1,10 +1,6 @@
 package com.gentics.mesh.core.verticle.migration;
 
-import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
