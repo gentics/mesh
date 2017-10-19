@@ -113,14 +113,6 @@ public interface SearchProvider {
 	void reset();
 
 	/**
-	 * Return the elastic search node.
-	 * 
-	 * @return Elasticsearch node
-	 */
-	// TODO get rid of the elastic search dependency within the interface
-	Object getNode();
-
-	/**
 	 * Clear the given index. This will effectively remove all documents from the index without removing the index itself.
 	 * 
 	 * @param indexName
@@ -208,5 +200,12 @@ public interface SearchProvider {
 	 * @return
 	 */
 	Completable updateMapping(String indexName, String type, JsonObject mapping);
+
+	/**
+	 * Return the search provider client.
+	 * 
+	 * @return
+	 */
+	<T> T getClient();
 
 }

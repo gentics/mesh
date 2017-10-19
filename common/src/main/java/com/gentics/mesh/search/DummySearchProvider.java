@@ -102,11 +102,6 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Object getNode() {
-		return null;
-	}
-
-	@Override
 	public Completable clearIndex(String indexName) {
 		return Completable.complete();
 	}
@@ -158,5 +153,10 @@ public class DummySearchProvider implements SearchProvider {
 
 	public Map<String, JsonObject> getUpdateMappingEvents() {
 		return updateMappingEvents;
+	}
+
+	@Override
+	public <T> T getClient() {
+		return null;
 	}
 }

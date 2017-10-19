@@ -10,6 +10,7 @@ import java.util.Set;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
+import org.elasticsearch.client.Client;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
@@ -175,13 +176,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	public Completable updateMapping(String indexName, String documentType) {
 
 		final String normalizedDocumentType = documentType.toLowerCase();
-		if (searchProvider.getNode() != null) {
+		if (searchProvider.getClient() != null) {
 			Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
 
 			return Completable.create(sub -> {
-
-				org.elasticsearch.node.Node node = getESNode();
-				PutMappingRequestBuilder mappingRequestBuilder = node.client().admin().indices().preparePutMapping(indexName);
+				Client client = searchProvider.getClient(); 
+				PutMappingRequestBuilder mappingRequestBuilder = client.admin().indices().preparePutMapping(indexName);
 				mappingRequestBuilder.setType(normalizedDocumentType);
 
 				// Generate the mapping for the specific type
@@ -206,22 +206,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			}).observeOn(scheduler);
 		} else {
 			return Completable.complete();
-		}
-	}
-
-	/**
-	 * Utility method that is used to return the elasticsearch node.
-	 * 
-	 * @return es node
-	 * @throws RuntimeException
-	 *             Exception which will be thrown if the ES node can't be returned
-	 */
-	protected org.elasticsearch.node.Node getESNode() {
-		// Fetch the elastic search instance
-		if (searchProvider.getNode() != null && searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
-			return (org.elasticsearch.node.Node) searchProvider.getNode();
-		} else {
-			throw new RuntimeException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
 		}
 	}
 

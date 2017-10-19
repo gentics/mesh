@@ -90,10 +90,10 @@ public class DemoDumpGenerator {
 	private void shutdown() throws MeshConfigurationException, InterruptedException {
 		// Close the elastic search instance
 		SearchProvider searchProvider = MeshInternal.get().searchProvider();
-		if (searchProvider.getNode() !=null) {
+		if (searchProvider.getClient() !=null) {
 			searchProvider.refreshIndex("_all");
 		} else {
-			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
+			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getClient() + "}");
 		}
 		searchProvider.stop();
 		Thread.sleep(5000);

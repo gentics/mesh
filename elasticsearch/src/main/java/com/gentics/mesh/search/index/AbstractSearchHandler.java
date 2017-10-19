@@ -131,13 +131,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 		RL listResponse = classOfRL.newInstance();
 
-		org.elasticsearch.node.Node esNode = null;
-		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
-			esNode = (org.elasticsearch.node.Node) searchProvider.getNode();
-		} else {
-			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
-		}
-		Client client = esNode.client();
+		Client client = searchProvider.getClient();
 
 		String searchQuery = ac.getBodyAsString();
 		if (log.isDebugEnabled()) {
@@ -262,14 +256,8 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	@Override
 	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
 			throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
-		org.elasticsearch.node.Node esNode = null;
-		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
-			esNode = (org.elasticsearch.node.Node) searchProvider.getNode();
-		} else {
-			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
-		}
+		Client client = searchProvider.getClient();
 
-		Client client = esNode.client();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + query + "} for {" + indexHandler.getElementClass().getName() + "}");
 		}
