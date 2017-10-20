@@ -21,6 +21,8 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Release;
+import com.gentics.mesh.core.data.node.Node;
+import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
@@ -337,4 +339,15 @@ public abstract class AbstractTypeProvider {
 		return parameters;
 	}
 
+	/**
+	 * Maps a Node to the NodeContent object based on the request parameters.
+	 *
+	 * @param env
+	 * @return
+	 */
+	protected Function<Node, NodeContent> toNodeContent(DataFetchingEnvironment env) {
+		GraphQLContext gc = env.getContext();
+		List<String> languageTags = getLanguageArgument(env);
+		return node -> new NodeContent(node, node.findNextMatchingFieldContainer(gc, languageTags));
+	}
 }

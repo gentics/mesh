@@ -1,0 +1,65 @@
+{
+	node(uuid: "43ee8f9ff71e4016ae8f9ff71e10161c") {
+		noParam: referencedBy {
+		    elements {
+		        fields {
+		            ... on folder {
+		                # [$.data.node.noParam.elements[0].fields.name=2015]
+		                name
+		            }
+		        }
+		    }
+		}
+        schemaOnly: referencedBy(schemaName: "folder") {
+		    elements {
+		        fields {
+		            ... on folder {
+		                # [$.data.node.schemaOnly.elements[0].fields.name=2015]
+		                name
+		            }
+		        }
+		    }
+		}
+        fieldOnly: referencedBy(fieldName: "nodeList") {
+		    elements {
+		        fields {
+		            ... on folder {
+		                # [$.data.node.fieldOnly.elements[0].fields.name=2015]
+		                name
+		            }
+		        }
+		    }
+		}
+        combined: referencedBy(schemaName: "folder", fieldName: "nodeList") {
+		    elements {
+		        fields {
+		            ... on folder {
+		                # [$.data.node.fieldOnly.elements[0].fields.name=2015]
+		                name
+		            }
+		        }
+		    }
+		}
+        bogusSchema: referencedBy(schemaName: "bogus") {
+		    elements {
+		        fields {
+		            ... on folder {
+		                # [$.data.node.noParam.elements.length=0]
+		                name
+		            }
+		        }
+		    }
+		}
+        bogusField: referencedBy(fieldName: "bogus") {
+		    elements {
+		        fields {
+		            ... on folder {
+		                # [$.data.node.noParam.elements.length=0]
+		                name
+		            }
+		        }
+		    }
+		}
+	}
+}
+# [$.errors=<is-undefined>]

@@ -103,6 +103,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testData.add(new Object[] { "node-fields-no-microschema-query", false, "draft" });
 		testData.add(new Object[] { "node-fields-link-resolve-query", true, "draft" });
 		testData.add(new Object[] { "node-field-list-path-query", true, "draft" });
+		testData.add(new Object[] { "node-referencedBy-query", true, "draft" });
 		testData.add(new Object[] { "project-query", true, "draft" });
 		testData.add(new Object[] { "tag-query", true, "draft" });
 		testData.add(new Object[] { "release-query", true, "draft" });

@@ -83,17 +83,13 @@ public class SchemaTypeProvider extends AbstractTypeProvider {
 
 		schemaType.field(newPagingFieldWithFetcherBuilder("nodes", "Load nodes with this schema", env -> {
 			GraphQLContext gc = env.getContext();
-			List<String> languageTags = getLanguageArgument(env);
 
 			Stream<? extends NodeContent> nodes = StreamSupport.stream(getSchemaContainerVersion(env).getNodes(
 					gc.getRelease().getUuid(),
 					gc.getUser(),
 					ContainerType.forVersion(gc.getVersioningParameters().getVersion())
 			).spliterator(), false)
-			.map(node -> {
-				NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
-				return new NodeContent(node, container);
-			});
+			.map(toNodeContent(env));
 
 			return new DynamicStreamPageImpl(nodes, getPagingInfo(env));
 		}, NODE_PAGE_TYPE_NAME));

@@ -17,6 +17,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -35,6 +36,7 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.NodeContent;
 import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.page.TransformablePage;
+import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.page.impl.WrappedPageImpl;
 import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.error.MeshConfigurationException;
@@ -255,11 +257,10 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					getPagingInfo(env));
 
 			// Transform the found nodes into contents
-			List<NodeContent> contents = page.getWrappedList().stream().map(item -> {
-				NodeGraphFieldContainer container = item.findNextMatchingFieldContainer(gc, languageTags);
-				return new NodeContent(item, container);
-			}).collect(Collectors.toList());
-			return new WrappedPageImpl<NodeContent>(contents, page);
+			List<NodeContent> contents = page.getWrappedList().stream()
+				.map(toNodeContent(env))
+				.collect(Collectors.toList());
+			return new WrappedPageImpl<>(contents, page);
 		}, NODE_PAGE_TYPE_NAME).argument(createLanguageTagArg()));
 
 		// .parent
@@ -419,23 +420,24 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				NodeContent content = env.getSource();
 				GraphQLContext gc = env.getContext();
 
-				Stream<? extends Node> references;
+				Iterable<? extends Node> references;
 				if (env.containsArgument(fieldNameArgument.getName())) {
-					references = StreamSupport.stream(
-						content.getNode().getReferences(env.getArgument(fieldNameArgument.getName())).spliterator(),
-					false);
+					references = content.getNode().getReferences(env.getArgument(fieldNameArgument.getName()));
 				} else {
-					references = StreamSupport.stream(content.getNode().getReferences().spliterator(), false);
+					references = content.getNode().getReferences();
 				}
+
+				Predicate<Node> filter = node -> gc.getUser().hasPermission(node, READ_PUBLISHED_PERM);
 
 				if (env.containsArgument(schemaNameArgument.getName())) {
-					references = references
-						.filter(node -> node.getSchemaContainer().getName().equals(env.getArgument(schemaNameArgument.getName())) &&
-							gc.getUser().hasPermission(node, READ_PUBLISHED_PERM)
-						);
-				} else {
-
+					filter = filter.and(node -> node.getSchemaContainer().getName().equals(env.getArgument(schemaNameArgument.getName())));
 				}
+
+				Stream<NodeContent> stream = StreamSupport.stream(references.spliterator(), false)
+					.filter(filter)
+					.map(toNodeContent(env));
+
+				return new DynamicStreamPageImpl<>(stream, getPagingInfo(env));
 			})
 		);
 

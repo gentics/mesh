@@ -32,14 +32,7 @@ public class NodeReferenceTypeProvider extends AbstractTypeProvider {
             .name("node")
             .description("Load the node that references this node.")
             .type(new GraphQLTypeReference(NODE_TYPE_NAME))
-            .dataFetcher(env -> {
-                Node node = env.getSource();
-                GraphQLContext gc = env.getContext();
-                List<String> languageTags = getLanguageArgument(env);
-
-                NodeGraphFieldContainer container = node.findNextMatchingFieldContainer(gc, languageTags);
-                return new NodeContent(node, container);
-            })
+            .dataFetcher(this::toNodeContent)
         );
 
         nodeType.field(
