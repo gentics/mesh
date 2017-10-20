@@ -174,7 +174,7 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerHandler(String typeName,
 			Func0<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleListResponse) {
 		EndpointRoute endpoint = createEndpoint();
-		endpoint.path("/" + typeName + "/query");
+		endpoint.path("/" + typeName);
 		endpoint.method(POST);
 		endpoint.description("Invoke a search query for " + typeName + " and return a paged list response.");
 		endpoint.consumes(APPLICATION_JSON);
@@ -186,7 +186,6 @@ public class SearchEndpointImpl extends AbstractEndpoint implements SearchEndpoi
 				InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 				searchHandler.query(ac, root, classOfRL);
 			} catch (Exception e) {
-				// fail(rc, "search_error_query");
 				rc.fail(e);
 			}
 		});
