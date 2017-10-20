@@ -22,7 +22,8 @@ RUN curl "https://get.docker.com/builds/`uname -s`/`uname -m`/docker-latest.tgz"
     mv docker/* /usr/bin &&\
     rm -rf docke*
 
-# Install Java 8 / 9 
+# Install Java 8 / 9
+RUN apt-get update && apt-get -y upgrade
 RUN \
   echo  oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
   echo  oracle-java9-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
