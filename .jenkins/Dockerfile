@@ -29,12 +29,13 @@ RUN \
   add-apt-repository "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" && \
   apt-get update && \
   apt-get install -y oracle-java8-installer && \
-  apt-get install -y oracle-java9-installer && \
   rm -rf /var/lib/apt/lists/* && \
   rm -rf /var/cache/oracle-*
 
 ENV JAVA_1_8_HOME /usr/lib/jvm/java-8-oracle
-ENV JAVA_1_9_HOME /usr/lib/jvm/java-9-oracle
+
+#apt-get install -y oracle-java9-installer && \
+#ENV JAVA_1_9_HOME /usr/lib/jvm/java-9-oracle
 
 # Add Jenkins user
 RUN echo "jenkins:jenkins" | chpasswd
