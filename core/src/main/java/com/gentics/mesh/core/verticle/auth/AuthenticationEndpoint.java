@@ -12,7 +12,7 @@ import com.gentics.mesh.auth.MeshBasicAuthLoginHandler;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 
 @Singleton
 public class AuthenticationEndpoint extends AbstractEndpoint {
@@ -43,7 +43,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 		// Only secure /me
 		getRouter().route("/me").handler(authHandler);
 
-		Endpoint meEndpoint = createEndpoint();
+		EndpointRoute meEndpoint = createEndpoint();
 		meEndpoint.path("/me");
 		meEndpoint.method(GET);
 		meEndpoint.produces(APPLICATION_JSON);
@@ -53,7 +53,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 			authRestHandler.handleMe(new InternalRoutingActionContextImpl(rc));
 		});
 
-		Endpoint basicAuthLoginEndpoint = createEndpoint();
+		EndpointRoute basicAuthLoginEndpoint = createEndpoint();
 		basicAuthLoginEndpoint.path("/login");
 		basicAuthLoginEndpoint.method(GET);
 		//basicAuthLoginEndpoint.produces(APPLICATION_JSON);
@@ -61,7 +61,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 		basicAuthLoginEndpoint.exampleResponse(OK, "Login was sucessful");
 		basicAuthLoginEndpoint.handler(basicAuthLoginHandler);
 
-		Endpoint loginEndpoint = createEndpoint();
+		EndpointRoute loginEndpoint = createEndpoint();
 		loginEndpoint.path("/login");
 		loginEndpoint.method(POST);
 		loginEndpoint.consumes(APPLICATION_JSON);
@@ -75,7 +75,7 @@ public class AuthenticationEndpoint extends AbstractEndpoint {
 
 		// Only secure logout
 		getRouter().route("/logout").handler(authHandler);
-		Endpoint logoutEndpoint = createEndpoint();
+		EndpointRoute logoutEndpoint = createEndpoint();
 		logoutEndpoint.path("/logout");
 		logoutEndpoint.method(GET);
 		logoutEndpoint.produces(APPLICATION_JSON);

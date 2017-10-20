@@ -44,9 +44,9 @@ import com.gentics.mesh.core.verticle.utility.UtilityEndpoint;
 import com.gentics.mesh.core.verticle.webroot.WebRootEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
-import com.gentics.mesh.rest.Endpoint;
-import com.gentics.mesh.search.ProjectSearchEndpoint;
-import com.gentics.mesh.search.SearchEndpoint;
+import com.gentics.mesh.rest.EndpointRoute;
+import com.gentics.mesh.search.ProjectSearchEndpointImpl;
+import com.gentics.mesh.search.SearchEndpointImpl;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpMethod;
@@ -140,7 +140,7 @@ public class RAMLGenerator extends AbstractGenerator {
 			verticleResource.setDescription(verticle.getDescription());
 			resources.put(ramlPath, verticleResource);
 		}
-		for (Endpoint endpoint : verticle.getEndpoints().stream().sorted().collect(Collectors.toList())) {
+		for (EndpointRoute endpoint : verticle.getEndpoints().stream().sorted().collect(Collectors.toList())) {
 
 			String fullPath = "api/v1" + basePath + "/" + verticle.getBasePath() + endpoint.getRamlPath();
 			if (isEmpty(verticle.getBasePath())) {
@@ -304,7 +304,7 @@ public class RAMLGenerator extends AbstractGenerator {
 		initEndpoint(graphqlEndpoint);
 		addEndpoints(projectBasePath, resources, graphqlEndpoint);
 
-		ProjectSearchEndpoint projectSearchEndpoint = Mockito.spy(new ProjectSearchEndpoint());
+		ProjectSearchEndpointImpl projectSearchEndpoint = Mockito.spy(new ProjectSearchEndpointImpl());
 		initEndpoint(projectSearchEndpoint);
 		addEndpoints(projectBasePath, resources, projectSearchEndpoint);
 
@@ -355,7 +355,7 @@ public class RAMLGenerator extends AbstractGenerator {
 		initEndpoint(adminEndpoint);
 		addEndpoints(coreBasePath, resources, adminEndpoint);
 
-		SearchEndpoint searchEndpoint = Mockito.spy(new SearchEndpoint());
+		SearchEndpointImpl searchEndpoint = Mockito.spy(new SearchEndpointImpl());
 		initEndpoint(searchEndpoint);
 		addEndpoints(coreBasePath, resources, searchEndpoint);
 

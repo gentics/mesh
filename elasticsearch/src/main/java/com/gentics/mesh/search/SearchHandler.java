@@ -64,4 +64,11 @@ public interface SearchHandler<T extends MeshCoreVertex<RM, T>, RM extends RestM
 	<RL extends ListResponse<RM>> void query(InternalActionContext ac, Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL)
 			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException;
 
+	/**
+	 * Invoke a raw query which will not post process the search result. Instead the result of the search provider will directly be returned.
+	 * 
+	 * @param ac
+	 */
+	void rawQuery(InternalActionContext ac);
+
 }

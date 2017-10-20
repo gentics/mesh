@@ -20,7 +20,7 @@ import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
 import com.gentics.mesh.parameter.impl.UserParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
 @Singleton
@@ -59,7 +59,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addAPITokenHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:userUuid/token");
 		endpoint.setRAMLPath("/{userUuid}/token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -73,7 +73,7 @@ public class UserEndpoint extends AbstractEndpoint {
 			crudHandler.handleIssueAPIToken(ac, uuid);
 		});
 
-		Endpoint deleteEndpoint = createEndpoint();
+		EndpointRoute deleteEndpoint = createEndpoint();
 		deleteEndpoint.path("/:userUuid/token");
 		deleteEndpoint.setRAMLPath("/{userUuid}/token");
 		deleteEndpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -89,7 +89,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addReadPermissionHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
 		endpoint.setRAMLPath("/{userUuid}/permissions/{path}");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -107,7 +107,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addResetTokenHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:userUuid/reset_token");
 		endpoint.setRAMLPath("/{userUuid}/reset_token");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -123,7 +123,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addReadHandler() {
-		Endpoint readOne = createEndpoint();
+		EndpointRoute readOne = createEndpoint();
 		readOne.path("/:userUuid");
 		readOne.description("Read the user with the given uuid");
 		readOne.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
@@ -142,7 +142,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		/*
 		 * List all users when no parameter was specified
 		 */
-		Endpoint readAll = createEndpoint();
+		EndpointRoute readAll = createEndpoint();
 		readAll.path("/");
 		readAll.description("Load multiple users and return a paged list response.");
 		readAll.method(GET);
@@ -159,7 +159,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDeleteHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:userUuid");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
@@ -181,7 +181,7 @@ public class UserEndpoint extends AbstractEndpoint {
 		// Chain the regular auth handler afterwards in order to handle non-token code requests
 		getRouter().route("/:userUuid").method(POST).handler(authHandler);
 
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:userUuid");
 		endpoint.addUriParameter("userUuid", "Uuid of the user.", UUIDUtil.randomUUID());
 		endpoint.description("Update the user with the given uuid. The user is created if no user with the specified uuid could be found.");
@@ -199,7 +199,7 @@ public class UserEndpoint extends AbstractEndpoint {
 	}
 
 	private void addCreateHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/");
 		endpoint.description("Create a new user.");
 		endpoint.method(POST);

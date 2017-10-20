@@ -17,7 +17,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -56,7 +56,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addMicroschemaInfoHandler() {
-		Endpoint readMicroschemas = createEndpoint();
+		EndpointRoute readMicroschemas = createEndpoint();
 		readMicroschemas.path("/:releaseUuid/microschemas");
 		readMicroschemas.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		readMicroschemas.method(GET);
@@ -74,7 +74,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addSchemaInfoHandler() {
-		Endpoint readSchemas = createEndpoint();
+		EndpointRoute readSchemas = createEndpoint();
 		readSchemas.path("/:releaseUuid/schemas");
 		readSchemas.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		readSchemas.method(GET);
@@ -90,7 +90,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addNodeMigrationHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:releaseUuid/migrateSchemas");
 		endpoint.method(POST);
 		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
@@ -105,7 +105,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addMicronodeMigrationHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:releaseUuid/migrateMicroschemas");
 		endpoint.method(POST);
 		endpoint.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
@@ -120,7 +120,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addCreateHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new release and automatically invoke a node migration.");
@@ -135,7 +135,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 
 	private void addReadHandler() {
 
-		Endpoint readOne = createEndpoint();
+		EndpointRoute readOne = createEndpoint();
 		readOne.path("/:releaseUuid");
 		readOne.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		readOne.description("Load the release with the given uuid.");
@@ -152,7 +152,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 			}
 		});
 
-		Endpoint readAll = createEndpoint();
+		EndpointRoute readAll = createEndpoint();
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Load multiple releases and return a paged list response.");
@@ -166,7 +166,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addUpdateHandler() {
-		Endpoint addSchema = createEndpoint();
+		EndpointRoute addSchema = createEndpoint();
 		addSchema.path("/:releaseUuid/schemas");
 		addSchema.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		addSchema.method(POST);
@@ -181,7 +181,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handleAssignSchemaVersion(ac, uuid);
 		});
 
-		Endpoint addMicroschema = createEndpoint();
+		EndpointRoute addMicroschema = createEndpoint();
 		addMicroschema.path("/:releaseUuid/microschemas");
 		addMicroschema.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		addMicroschema.method(POST);
@@ -196,7 +196,7 @@ public class ReleaseEndpoint extends AbstractProjectEndpoint {
 			crudHandler.handleAssignMicroschemaVersion(ac, uuid);
 		});
 
-		Endpoint updateRelease = createEndpoint();
+		EndpointRoute updateRelease = createEndpoint();
 		updateRelease.path("/:releaseUuid");
 		updateRelease.addUriParameter("releaseUuid", "Uuid of the release", UUIDUtil.randomUUID());
 		updateRelease

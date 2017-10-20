@@ -15,7 +15,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -50,7 +50,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addReadHandlers() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/");
 		endpoint.method(GET);
 		endpoint.produces(APPLICATION_JSON);
@@ -63,7 +63,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addAssignHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -78,7 +78,7 @@ public class ProjectMicroschemaEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addDeleteHandlers() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);

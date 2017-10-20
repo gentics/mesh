@@ -16,7 +16,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
 @Singleton
@@ -51,7 +51,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 	}
 
 	private void addPermissionHandler() {
-		Endpoint permissionSetEndpoint = createEndpoint();
+		EndpointRoute permissionSetEndpoint = createEndpoint();
 		permissionSetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
 		permissionSetEndpoint.setRAMLPath("/{roleUuid}/permissions/{path}");
 		permissionSetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
@@ -69,7 +69,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 			crudHandler.handlePermissionUpdate(ac, roleUuid, pathToElement);
 		});
 
-		Endpoint permissionGetEndpoint = createEndpoint();
+		EndpointRoute permissionGetEndpoint = createEndpoint();
 		permissionGetEndpoint.pathRegex("\\/([^\\/]*)\\/permissions\\/(.*)");
 		permissionGetEndpoint.setRAMLPath("/{roleUuid}/permissions/{path}");
 		permissionGetEndpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
@@ -88,7 +88,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDeleteHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:roleUuid");
 		endpoint.addUriParameter("roleUuid", "Uuid of the role", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
@@ -102,7 +102,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 	}
 
 	private void addUpdateHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:roleUuid");
 		endpoint.addUriParameter("roleUuid", "Uuid of the role.", UUIDUtil.randomUUID());
 		endpoint.description("Update the role with the given uuid. The role is created if no role with the specified uuid could be found.");
@@ -118,7 +118,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 	}
 
 	private void addReadHandler() {
-		Endpoint readOne = createEndpoint();
+		EndpointRoute readOne = createEndpoint();
 		readOne.path("/:roleUuid");
 		readOne.addUriParameter("roleUuid", "Uuid of the role", UUIDUtil.randomUUID());
 		readOne.description("Load the role with the given uuid.");
@@ -134,7 +134,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 		/*
 		 * List all roles when no parameter was specified
 		 */
-		Endpoint readAll = createEndpoint();
+		EndpointRoute readAll = createEndpoint();
 		readAll.path("/");
 		readAll.description("Load multiple roles and return a paged list response");
 		readAll.method(GET);
@@ -148,7 +148,7 @@ public class RoleEndpoint extends AbstractEndpoint {
 	}
 
 	private void addCreateHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/");
 		endpoint.description("Create a new role.");
 		endpoint.method(POST);

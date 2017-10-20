@@ -9,7 +9,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NodeParametersImpl;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -45,7 +45,7 @@ public class UtilityEndpoint extends AbstractEndpoint {
 	 * Add the handler for link resolving.
 	 */
 	private void addResolveLinkHandler() {
-		Endpoint resolver = createEndpoint();
+		EndpointRoute resolver = createEndpoint();
 		resolver.path("/linkResolver");
 		resolver.method(POST);
 		resolver.description("Return the posted text and resolve and replace all found mesh links. "

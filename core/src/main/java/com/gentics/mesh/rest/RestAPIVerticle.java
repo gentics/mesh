@@ -30,8 +30,10 @@ import com.gentics.mesh.core.verticle.utility.UtilityEndpoint;
 import com.gentics.mesh.core.verticle.webroot.WebRootEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
-import com.gentics.mesh.search.ProjectSearchEndpoint;
-import com.gentics.mesh.search.SearchEndpoint;
+import com.gentics.mesh.search.ProjectSearchEndpointImpl;
+import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
+import com.gentics.mesh.search.RawSearchEndpointImpl;
+import com.gentics.mesh.search.SearchEndpointImpl;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
@@ -75,7 +77,10 @@ public class RestAPIVerticle extends AbstractVerticle {
 	public SchemaEndpoint schemaEndpoint;
 
 	@Inject
-	public ProjectSearchEndpoint projectSearchEndpoint;
+	public ProjectSearchEndpointImpl projectSearchEndpoint;
+
+	@Inject
+	public ProjectRawSearchEndpointImpl projectRawSearchEndpoint;
 
 	@Inject
 	public ProjectSchemaEndpoint projectSchemaEndpoint;
@@ -108,7 +113,10 @@ public class RestAPIVerticle extends AbstractVerticle {
 	public AuthenticationEndpoint authenticationEndpoint;
 
 	@Inject
-	public SearchEndpoint searchEndpoint;
+	public SearchEndpointImpl searchEndpoint;
+
+	@Inject
+	public RawSearchEndpointImpl rawSearchEndpoint;
 
 	@Inject
 	public GraphQLEndpoint graphqlEndpoint;
@@ -200,6 +208,8 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(tagFamilyEndpoint);
 		endpoints.add(projectSchemaEndpoint);
 		endpoints.add(projectMicroschemaEndpoint);
+		endpoints.add(projectSearchEndpoint);
+		endpoints.add(projectRawSearchEndpoint);
 		endpoints.add(releaseEndpoint);
 		endpoints.add(graphqlEndpoint);
 
@@ -210,7 +220,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		endpoints.add(schemaEndpoint);
 		endpoints.add(microschemaEndpoint);
 		endpoints.add(searchEndpoint);
-		endpoints.add(projectSearchEndpoint);
+		endpoints.add(rawSearchEndpoint);
 		endpoints.add(authenticationEndpoint);
 		endpoints.add(adminEndpoint);
 		endpoints.add(eventbusEndpoint);

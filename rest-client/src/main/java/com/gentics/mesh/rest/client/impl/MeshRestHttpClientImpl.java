@@ -97,6 +97,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.WebSocket;
+import io.vertx.core.json.JsonObject;
 
 /**
  * HTTP based REST client implementation.
@@ -278,9 +279,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");
 		Objects.requireNonNull(tagUuid, "tagUuid must not be null");
-		return prepareRequest(GET,
-				"/" + encodeFragment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + tagUuid + "/nodes" + getQuery(parameters),
-				NodeListResponse.class);
+		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/tagFamilies/" + tagFamilyUuid + "/tags/" + tagUuid + "/nodes" + getQuery(
+				parameters), NodeListResponse.class);
 	}
 
 	@Override
@@ -590,9 +590,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "languageTag must not be null");
-		return prepareRequest(GET,
-				"/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/published" + getQuery(parameters),
-				PublishStatusModel.class);
+		return prepareRequest(GET, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/published" + getQuery(
+				parameters), PublishStatusModel.class);
 	}
 
 	@Override
@@ -601,9 +600,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "languageTag must not be null");
-		return prepareRequest(POST,
-				"/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/published" + getQuery(parameters),
-				PublishStatusModel.class);
+		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/published" + getQuery(
+				parameters), PublishStatusModel.class);
 	}
 
 	@Override
@@ -611,9 +609,8 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(nodeUuid, "nodeUuid must not be null");
 		Objects.requireNonNull(languageTag, "languageTag must not be null");
-		return prepareRequest(DELETE,
-				"/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/published" + getQuery(parameters),
-				Void.class);
+		return prepareRequest(DELETE, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/languages/" + languageTag + "/published"
+				+ getQuery(parameters), Void.class);
 	}
 
 	@Override
@@ -704,7 +701,6 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		});
 
 		return new MeshHttpRequestImpl<>(request, handler, null, null, authentication, "application/json");
-
 	}
 
 	@Override
@@ -756,10 +752,23 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<JsonObject> searchNodesRaw(String json, ParameterProvider... parameters) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/rawSearch/nodes" + getQuery(parameters), JsonObject.class, json);
+	}
+
+	@Override
 	public MeshRequest<NodeListResponse> searchNodes(String projectName, String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/" + encodeFragment(projectName) + "/search/nodes" + getQuery(parameters), NodeListResponse.class, json);
+	}
+
+	@Override
+	public MeshRequest<JsonObject> searchNodesRaw(String projectName, String json, ParameterProvider... parameters) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/" + encodeFragment(projectName) + "/rawSearch/nodes" + getQuery(parameters), JsonObject.class, json);
 	}
 
 	@Override
@@ -769,9 +778,21 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<JsonObject> searchUsersRaw(String json) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/rawSearch/users", JsonObject.class, json);
+	}
+
+	@Override
 	public MeshRequest<GroupListResponse> searchGroups(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/search/groups" + getQuery(parameters), GroupListResponse.class, json);
+	}
+
+	@Override
+	public MeshRequest<JsonObject> searchGroupsRaw(String json) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/rawSearch/groups", JsonObject.class, json);
 	}
 
 	@Override
@@ -781,9 +802,21 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<JsonObject> searchRolesRaw(String json) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/rawSearch/roles", JsonObject.class, json);
+	}
+
+	@Override
 	public MeshRequest<MicroschemaListResponse> searchMicroschemas(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/search/microschemas" + getQuery(parameters), MicroschemaListResponse.class, json);
+	}
+
+	@Override
+	public MeshRequest<JsonObject> searchMicroschemasRaw(String json) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/rawSearch/microschemas", JsonObject.class, json);
 	}
 
 	@Override
@@ -793,9 +826,21 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<JsonObject> searchProjectsRaw(String json) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/rawSearch/projects", JsonObject.class, json);
+	}
+
+	@Override
 	public MeshRequest<TagListResponse> searchTags(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/search/tags" + getQuery(parameters), TagListResponse.class, json);
+	}
+
+	@Override
+	public MeshRequest<JsonObject> searchTagsRaw(String json) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/rawSearch/tags", JsonObject.class, json);
 	}
 
 	@Override
@@ -806,9 +851,22 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<JsonObject> searchTagsRaw(String projectName, String json) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/" + encodeFragment(projectName) + "/rawSearch/tags", JsonObject.class, json);
+	}
+
+	@Override
 	public MeshRequest<SchemaListResponse> searchSchemas(String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/search/schemas" + getQuery(parameters), SchemaListResponse.class, json);
+	}
+
+	@Override
+	public MeshRequest<JsonObject> searchSchemasRaw(String json) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/rawSearch/schemas", JsonObject.class, json);
 	}
 
 	@Override
@@ -818,11 +876,24 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<JsonObject> searchTagFamiliesRaw(String json) {
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/rawSearch/tagFamilies", JsonObject.class, json);
+	}
+
+	@Override
 	public MeshRequest<TagFamilyListResponse> searchTagFamilies(String projectName, String json, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(json, "json must not be null");
 		return handleRequest(POST, "/" + encodeFragment(projectName) + "/search/tagFamilies" + getQuery(parameters), TagFamilyListResponse.class,
 				json);
+	}
+
+	@Override
+	public MeshRequest<JsonObject> searchTagFamiliesRaw(String projectName, String json) {
+		Objects.requireNonNull(projectName, "projectName must not be null");
+		Objects.requireNonNull(json, "json must not be null");
+		return handleRequest(POST, "/" + encodeFragment(projectName) + "/rawSearch/tagFamilies", JsonObject.class, json);
 	}
 
 	@Override
@@ -928,10 +999,10 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 		Objects.requireNonNull(version, "version must not be null");
 		Objects.requireNonNull(fieldKey, "field key must not be null");
 
-		BinaryFieldTransformRequest transformRequest = new BinaryFieldTransformRequest().setWidth(imageManipulationParameter.getWidth())
-				.setHeight(imageManipulationParameter.getHeight()).setCropx(imageManipulationParameter.getStartx())
-				.setCropy(imageManipulationParameter.getStarty()).setCroph(imageManipulationParameter.getCroph())
-				.setCropw(imageManipulationParameter.getCropw()).setLanguage(languageTag).setVersion(version);
+		BinaryFieldTransformRequest transformRequest = new BinaryFieldTransformRequest().setWidth(imageManipulationParameter.getWidth()).setHeight(
+				imageManipulationParameter.getHeight()).setCropx(imageManipulationParameter.getStartx()).setCropy(imageManipulationParameter
+						.getStarty()).setCroph(imageManipulationParameter.getCroph()).setCropw(imageManipulationParameter.getCropw()).setLanguage(
+								languageTag).setVersion(version);
 
 		return prepareRequest(POST, "/" + encodeFragment(projectName) + "/nodes/" + nodeUuid + "/binaryTransform/" + fieldKey, NodeResponse.class,
 				transformRequest);

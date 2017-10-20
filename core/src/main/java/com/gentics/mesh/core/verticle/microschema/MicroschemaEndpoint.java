@@ -20,7 +20,7 @@ import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
 @Singleton
@@ -57,7 +57,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDiffHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:microschemaUuid/diff");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -87,7 +87,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 		// crudHandler.handleGetSchemaChanges(ac, schemaUuid);
 		// });
 
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:microschemaUuid/changes");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -105,7 +105,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addReadHandlers() {
-		Endpoint readOne = createEndpoint();
+		EndpointRoute readOne = createEndpoint();
 		readOne.path("/:microschemaUuid");
 		readOne.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		readOne.addQueryParameters(VersioningParametersImpl.class);
@@ -123,7 +123,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 			}
 		});
 
-		Endpoint readAll = createEndpoint();
+		EndpointRoute readAll = createEndpoint();
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Read multiple microschemas and return a paged list response.");
@@ -137,7 +137,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDeleteHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
@@ -152,7 +152,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addUpdateHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:microschemaUuid");
 		endpoint.addUriParameter("microschemaUuid", "Uuid of the microschema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -170,7 +170,7 @@ public class MicroschemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addCreateHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new microschema.");

@@ -24,7 +24,7 @@ import org.raml.model.parameter.UriParameter;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.ParameterProvider;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Handler;
@@ -36,11 +36,11 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 
 /**
- * @see Endpoint
+ * @see EndpointRoute
  */
-public class EndpointImpl implements Endpoint {
+public class EndpointImpl implements EndpointRoute {
 
-	private static final Logger log = LoggerFactory.getLogger(Endpoint.class);
+	private static final Logger log = LoggerFactory.getLogger(EndpointRoute.class);
 
 	private Route route;
 
@@ -87,13 +87,13 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint path(String path) {
+	public EndpointRoute path(String path) {
 		route.path(path);
 		return this;
 	}
 
 	@Override
-	public Endpoint method(HttpMethod method) {
+	public EndpointRoute method(HttpMethod method) {
 		if (this.method != null) {
 			throw new RuntimeException(
 					"The method for the endpoint was already set. The endpoint wrapper currently does not support more than one method per route.");
@@ -104,47 +104,47 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint pathRegex(String path) {
+	public EndpointRoute pathRegex(String path) {
 		this.pathRegex = path;
 		route.pathRegex(path);
 		return this;
 	}
 
 	@Override
-	public Endpoint produces(String contentType) {
+	public EndpointRoute produces(String contentType) {
 		produces.add(contentType);
 		route.produces(contentType);
 		return this;
 	}
 
 	@Override
-	public Endpoint consumes(String contentType) {
+	public EndpointRoute consumes(String contentType) {
 		consumes.add(contentType);
 		route.consumes(contentType);
 		return this;
 	}
 
 	@Override
-	public Endpoint order(int order) {
+	public EndpointRoute order(int order) {
 		route.order(order);
 		return this;
 	}
 
 	@Override
-	public Endpoint last() {
+	public EndpointRoute last() {
 		route.last();
 		return this;
 	}
 
 	@Override
-	public Endpoint handler(Handler<RoutingContext> requestHandler) {
+	public EndpointRoute handler(Handler<RoutingContext> requestHandler) {
 		validate();
 		route.handler(requestHandler);
 		return this;
 	}
 
 	@Override
-	public Endpoint validate() {
+	public EndpointRoute validate() {
 		if (!produces.isEmpty() && exampleResponses.isEmpty()) {
 			log.error("Endpoint {" + getRamlPath() + "} has no example response.");
 			throw new RuntimeException("Endpoint {" + getRamlPath() + "} has no example responses.");
@@ -179,43 +179,43 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint blockingHandler(Handler<RoutingContext> requestHandler) {
+	public EndpointRoute blockingHandler(Handler<RoutingContext> requestHandler) {
 		route.blockingHandler(requestHandler);
 		return this;
 	}
 
 	@Override
-	public Endpoint blockingHandler(Handler<RoutingContext> requestHandler, boolean ordered) {
+	public EndpointRoute blockingHandler(Handler<RoutingContext> requestHandler, boolean ordered) {
 		route.blockingHandler(requestHandler, ordered);
 		return this;
 	}
 
 	@Override
-	public Endpoint failureHandler(Handler<RoutingContext> failureHandler) {
+	public EndpointRoute failureHandler(Handler<RoutingContext> failureHandler) {
 		route.failureHandler(failureHandler);
 		return this;
 	}
 
 	@Override
-	public Endpoint remove() {
+	public EndpointRoute remove() {
 		route.remove();
 		return this;
 	}
 
 	@Override
-	public Endpoint disable() {
+	public EndpointRoute disable() {
 		route.disable();
 		return this;
 	}
 
 	@Override
-	public Endpoint enable() {
+	public EndpointRoute enable() {
 		route.enable();
 		return this;
 	}
 
 	@Override
-	public Endpoint useNormalisedPath(boolean useNormalisedPath) {
+	public EndpointRoute useNormalisedPath(boolean useNormalisedPath) {
 		route.useNormalisedPath(useNormalisedPath);
 		return this;
 	}
@@ -234,13 +234,13 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint displayName(String name) {
+	public EndpointRoute displayName(String name) {
 		this.displayName = name;
 		return this;
 	}
 
 	@Override
-	public Endpoint description(String description) {
+	public EndpointRoute description(String description) {
 		this.description = description;
 		return this;
 	}
@@ -256,7 +256,7 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint exampleResponse(HttpResponseStatus status, String description, String headerName, String example, String headerDescription) {
+	public EndpointRoute exampleResponse(HttpResponseStatus status, String description, String headerName, String example, String headerDescription) {
 		Response response = new Response();
 		response.setDescription(description);
 		exampleResponses.put(status.code(), response);
@@ -272,12 +272,12 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint exampleResponse(HttpResponseStatus status, String description) {
+	public EndpointRoute exampleResponse(HttpResponseStatus status, String description) {
 		return exampleResponse(status, description, null, null, null);
 	}
 
 	@Override
-	public Endpoint exampleResponse(HttpResponseStatus status, Object model, String description) {
+	public EndpointRoute exampleResponse(HttpResponseStatus status, Object model, String description) {
 		Response response = new Response();
 		response.setDescription(description);
 
@@ -306,7 +306,7 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint exampleRequest(String bodyText) {
+	public EndpointRoute exampleRequest(String bodyText) {
 		HashMap<String, MimeType> bodyMap = new HashMap<>();
 		MimeType mimeType = new MimeType();
 		mimeType.setExample(bodyText);
@@ -316,7 +316,7 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint exampleRequest(Map<String, List<FormParameter>> parameters) {
+	public EndpointRoute exampleRequest(Map<String, List<FormParameter>> parameters) {
 		HashMap<String, MimeType> bodyMap = new HashMap<>();
 		MimeType mimeType = new MimeType();
 		mimeType.setFormParameters(parameters);
@@ -326,7 +326,7 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint exampleRequest(RestModel model) {
+	public EndpointRoute exampleRequest(RestModel model) {
 		HashMap<String, MimeType> bodyMap = new HashMap<>();
 		MimeType mimeType = new MimeType();
 		String json = JsonUtil.toJson(model);
@@ -339,7 +339,7 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint exampleRequest(JSONObject jsonObject) {
+	public EndpointRoute exampleRequest(JSONObject jsonObject) {
 		HashMap<String, MimeType> bodyMap = new HashMap<>();
 		MimeType mimeType = new MimeType();
 		String json = jsonObject.toString();
@@ -350,7 +350,7 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint traits(String... traits) {
+	public EndpointRoute traits(String... traits) {
 		this.traits = traits;
 		return this;
 	}
@@ -386,7 +386,7 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint addQueryParameters(Class<? extends ParameterProvider> clazz) {
+	public EndpointRoute addQueryParameters(Class<? extends ParameterProvider> clazz) {
 		try {
 			ParameterProvider provider = clazz.newInstance();
 			parameters.putAll(provider.getRAMLParameters());
@@ -397,7 +397,7 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint setRAMLPath(String path) {
+	public EndpointRoute setRAMLPath(String path) {
 		this.ramlPath = path;
 		return this;
 	}
@@ -408,7 +408,7 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public Endpoint addUriParameter(String key, String description, String example) {
+	public EndpointRoute addUriParameter(String key, String description, String example) {
 		UriParameter param = new UriParameter(key);
 		param.setDescription(description);
 		param.setExample(example);
@@ -417,7 +417,7 @@ public class EndpointImpl implements Endpoint {
 	}
 
 	@Override
-	public int compareTo(Endpoint o) {
+	public int compareTo(EndpointRoute o) {
 		return getRamlPath().compareTo(o.getRamlPath());
 	}
 

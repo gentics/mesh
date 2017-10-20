@@ -118,6 +118,40 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	}
 
 	@Override
+	public void rawQuery(InternalActionContext ac) {
+		Client client = searchProvider.getClient();
+
+		String searchQuery = ac.getBodyAsString();
+		if (log.isDebugEnabled()) {
+			log.debug("Invoking search with query {" + searchQuery + "}");
+		}
+		Set<String> indices = indexHandler.getSelectedIndices(ac);
+
+		SearchRequestBuilder builder = null;
+		try {
+			JsonObject query = prepareSearchQuery(ac, searchQuery);
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(query.toString());
+		} catch (Exception e) {
+			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
+			return;
+		}
+		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+		builder.execute().addListener(new ActionListener<SearchResponse>() {
+
+			@Override
+			public void onResponse(SearchResponse response) {
+				ac.send(response.toString(), OK);
+			}
+
+			public void onFailure(Throwable e) {
+				log.error("Search query failed", e);
+				ac.fail(error(BAD_REQUEST, "search_error_query"));
+			}
+		});
+
+	}
+
+	@Override
 	public <RL extends ListResponse<RM>> void query(InternalActionContext ac, Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL)
 			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException {
 
@@ -141,7 +175,6 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		Set<String> indices = indexHandler.getSelectedIndices(ac);
 		SearchRequestBuilder builder = null;
 		try {
-
 			JsonObject query = prepareSearchQuery(ac, searchQuery);
 			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(query.toString());
 		} catch (Exception e) {

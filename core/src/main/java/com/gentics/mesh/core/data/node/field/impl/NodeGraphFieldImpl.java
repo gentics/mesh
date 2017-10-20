@@ -87,6 +87,7 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 		} else {
 			// Check whether the container already contains a node field
 			// TODO check node permissions
+			// TODO check whether we want to allow cross project node references
 			if (graphNodeField == null) {
 				container.createNode(fieldKey, node);
 			} else {

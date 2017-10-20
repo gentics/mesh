@@ -12,7 +12,7 @@ import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.context.impl.GraphQLContextImpl;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -38,7 +38,7 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
-		Endpoint queryEndpoint = createEndpoint();
+		EndpointRoute queryEndpoint = createEndpoint();
 		queryEndpoint.method(POST);
 		queryEndpoint.exampleRequest(graphqlExamples.createQueryRequest());
 		queryEndpoint.exampleResponse(OK, graphqlExamples.createResponse(), "Basic GraphQL response.");

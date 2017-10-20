@@ -13,6 +13,8 @@ import com.gentics.mesh.core.rest.user.UserListResponse;
 import com.gentics.mesh.parameter.ParameterProvider;
 import com.gentics.mesh.rest.client.MeshRequest;
 
+import io.vertx.core.json.JsonObject;
+
 public interface SearchClientMethods {
 
 	/**
@@ -26,7 +28,16 @@ public interface SearchClientMethods {
 	MeshRequest<NodeListResponse> searchNodes(String json, ParameterProvider... parameters);
 
 	/**
-	 * Search nodes in project
+	 * Search for nodes across all projects and return the raw search response.
+	 * 
+	 * @param json
+	 * @param parameters
+	 * @return
+	 */
+	MeshRequest<JsonObject> searchNodesRaw(String json, ParameterProvider... parameters);
+
+	/**
+	 * Search for nodes in the project.
 	 *
 	 * @param projectName
 	 *            Project Name
@@ -36,6 +47,16 @@ public interface SearchClientMethods {
 	 * @return
 	 */
 	MeshRequest<NodeListResponse> searchNodes(String projectName, String json, ParameterProvider... parameters);
+
+	/**
+	 * Search for nodes in the project and return the raw response of the search engine.
+	 * 
+	 * @param projectName
+	 * @param json
+	 * @param parameters
+	 * @return
+	 */
+	MeshRequest<JsonObject> searchNodesRaw(String projectName, String json, ParameterProvider... parameters);
 
 	/**
 	 * Search users.
@@ -48,6 +69,14 @@ public interface SearchClientMethods {
 	MeshRequest<UserListResponse> searchUsers(String json, ParameterProvider... parameters);
 
 	/**
+	 * Search users and return the raw search response.
+	 * 
+	 * @param json
+	 * @return
+	 */
+	MeshRequest<JsonObject> searchUsersRaw(String json);
+
+	/**
 	 * Search groups.
 	 * 
 	 * @param json
@@ -56,6 +85,14 @@ public interface SearchClientMethods {
 	 * @return
 	 */
 	MeshRequest<GroupListResponse> searchGroups(String json, ParameterProvider... parameters);
+
+	/**
+	 * Search groups and return the raw response of the search engine.
+	 * 
+	 * @param json
+	 * @return
+	 */
+	MeshRequest<JsonObject> searchGroupsRaw(String json);
 
 	/**
 	 * Search roles.
@@ -68,6 +105,14 @@ public interface SearchClientMethods {
 	MeshRequest<RoleListResponse> searchRoles(String json, ParameterProvider... parameters);
 
 	/**
+	 * Search for roles and return the raw search response.
+	 * 
+	 * @param json
+	 * @return
+	 */
+	MeshRequest<JsonObject> searchRolesRaw(String json);
+
+	/**
 	 * Search projects.
 	 * 
 	 * @param json
@@ -78,6 +123,14 @@ public interface SearchClientMethods {
 	MeshRequest<ProjectListResponse> searchProjects(String json, ParameterProvider... parameters);
 
 	/**
+	 * Search for projects and return the raw search response.
+	 * 
+	 * @param json
+	 * @return
+	 */
+	MeshRequest<JsonObject> searchProjectsRaw(String json);
+
+	/**
 	 * Search tags.
 	 * 
 	 * @param json
@@ -86,6 +139,14 @@ public interface SearchClientMethods {
 	 * @return
 	 */
 	MeshRequest<TagListResponse> searchTags(String json, ParameterProvider... parameters);
+
+	/**
+	 * Search tags and return the raw search response.
+	 * 
+	 * @param json
+	 * @return
+	 */
+	MeshRequest<JsonObject> searchTagsRaw(String json);
 
 	/**
 	 * Search tags in project
@@ -100,6 +161,15 @@ public interface SearchClientMethods {
 	MeshRequest<TagListResponse> searchTags(String projectName, String json, ParameterProvider... parameters);
 
 	/**
+	 * Search for tags in the project and return the raw search response.
+	 * 
+	 * @param projectName
+	 * @param json
+	 * @return
+	 */
+	MeshRequest<JsonObject> searchTagsRaw(String projectName, String json);
+
+	/**
 	 * Search tag families.
 	 * 
 	 * @param json
@@ -109,7 +179,15 @@ public interface SearchClientMethods {
 	MeshRequest<TagFamilyListResponse> searchTagFamilies(String json, ParameterProvider... parameters);
 
 	/**
-	 * Search tag families in project
+	 * Search tag families and return the raw search response.
+	 * 
+	 * @param json
+	 * @return
+	 */
+	MeshRequest<JsonObject> searchTagFamiliesRaw(String json);
+
+	/**
+	 * Search tag families in project.
 	 *
 	 * @param projectName
 	 * @param json
@@ -117,6 +195,15 @@ public interface SearchClientMethods {
 	 * @return
 	 */
 	MeshRequest<TagFamilyListResponse> searchTagFamilies(String projectName, String json, ParameterProvider... parameters);
+
+	/**
+	 * Search tag families in project and return the raw response.
+	 * 
+	 * @param projectName
+	 * @param json
+	 * @return
+	 */
+	MeshRequest<JsonObject> searchTagFamiliesRaw(String projectName, String json);
 
 	/**
 	 * Search schemas.
@@ -129,6 +216,14 @@ public interface SearchClientMethods {
 	MeshRequest<SchemaListResponse> searchSchemas(String json, ParameterProvider... parameters);
 
 	/**
+	 * Search schemas and and return the raw search response.
+	 * 
+	 * @param json
+	 * @return
+	 */
+	MeshRequest<JsonObject> searchSchemasRaw(String json);
+
+	/**
 	 * Search microschemas.
 	 * 
 	 * @param json
@@ -137,6 +232,15 @@ public interface SearchClientMethods {
 	 * @return
 	 */
 	MeshRequest<MicroschemaListResponse> searchMicroschemas(String json, ParameterProvider... parameters);
+
+	/**
+	 * Search microschemas and return the raw search response.
+	 * 
+	 * @param json
+	 *            Elasticsearch search request
+	 * @return
+	 */
+	MeshRequest<JsonObject> searchMicroschemasRaw(String json);
 
 	/**
 	 * Trigger a reindex action which will rebuild the index for all elements. This is useful when you want to sync the search index after restoring a backup.

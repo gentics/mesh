@@ -18,7 +18,7 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.example.RestInfoExamples;
 import com.gentics.mesh.generator.RAMLGenerator;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.search.SearchProvider;
 
 import io.vertx.core.http.HttpHeaders;
@@ -53,7 +53,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 	@Override
 	public void registerEndPoints() {
 
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/raml");
 		endpoint.method(GET);
 		endpoint.description("Endpoint which provides a RAML document for all registed endpoints.");
@@ -67,7 +67,7 @@ public class RestInfoEndpoint extends AbstractEndpoint {
 			rc.response().end(raml);
 		});
 
-		Endpoint infoEndpoint = createEndpoint();
+		EndpointRoute infoEndpoint = createEndpoint();
 		infoEndpoint.path("/");
 		infoEndpoint.description("Endpoint which returns version information");
 		infoEndpoint.displayName("Version Information");

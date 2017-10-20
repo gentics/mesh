@@ -19,7 +19,7 @@ import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.core.rest.tag.TagFamilyListResponse;
 import com.gentics.mesh.core.rest.tag.TagListResponse;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.search.index.node.NodeSearchHandler;
 import com.gentics.mesh.search.index.tag.TagSearchHandler;
 import com.gentics.mesh.search.index.tagfamily.TagFamilySearchHandler;
@@ -30,7 +30,7 @@ import rx.functions.Func0;
  * Verticle that adds REST endpoints for project specific search (for nodes, tags and tagFamilies)
  */
 @Singleton
-public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
+public class ProjectSearchEndpointImpl extends AbstractProjectEndpoint implements SearchEndpoint {
 
 	@Inject
 	public NodeSearchHandler nodeSearchHandler;
@@ -41,12 +41,12 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 	@Inject
 	public TagFamilySearchHandler tagFamilySearchHandler;
 
-	public ProjectSearchEndpoint() {
+	public ProjectSearchEndpointImpl() {
 		super("search", null, null);
 	}
 
 	@Inject
-	public ProjectSearchEndpoint(BootstrapInitializer boot, RouterStorage routerStorage) {
+	public ProjectSearchEndpointImpl(BootstrapInitializer boot, RouterStorage routerStorage) {
 		super("search", boot, routerStorage);
 	}
 
@@ -71,10 +71,11 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 				.createTagListResponse());
 		registerSearchHandler("tagFamilies", () -> boot.meshRoot().getTagFamilyRoot(), TagFamilyListResponse.class, tagFamilySearchHandler,
 				tagFamilyExamples.getTagFamilyListResponse());
+
 	}
 
 	/**
-	 * Register the selected search handler.
+	 * Register the search handler which will parse the search result and return a mesh list response.
 	 * 
 	 * @param typeName
 	 *            Name of the search endpoint
@@ -89,7 +90,7 @@ public class ProjectSearchEndpoint extends AbstractProjectEndpoint {
 	 */
 	private <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void registerSearchHandler(String typeName,
 			Func0<RootVertex<T>> root, Class<RL> classOfRL, SearchHandler<T, TR> searchHandler, RL exampleResponse) {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/" + typeName);
 		endpoint.method(POST);
 		endpoint.description("Invoke a search query for " + typeName + " and return a paged list response.");

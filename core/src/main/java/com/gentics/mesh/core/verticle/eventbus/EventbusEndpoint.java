@@ -8,7 +8,7 @@ import javax.inject.Singleton;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
 import io.vertx.ext.web.handler.sockjs.PermittedOptions;
@@ -56,7 +56,7 @@ public class EventbusEndpoint extends AbstractEndpoint {
 			});
 		}
 
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.setRAMLPath("/");
 		endpoint.description("This endpoint provides a sockjs complient websocket which can be used to interface with the vert.x eventbus.");
 		endpoint.path("/*").handler(handler);
