@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
@@ -197,6 +198,10 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	@Override
 	public SearchQueueBatch updatePermissions(IndexableElement element) {
 		GenericEntryContextImpl context = new GenericEntryContextImpl();
+		Project project = element.getProject();
+		if (project != null) {
+			context.setProjectUuid(project.getUuid());
+		}
 		UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(registry.getForClass(element), element, context,
 				SearchQueueEntryAction.UPDATE_ROLE_PERM_ACTION);
 		addEntry(entry);
@@ -238,11 +243,11 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 		return Completable.defer(() -> {
 			// Process the batch
 			Completable obs = Completable.complete();
-			List<? extends SearchQueueEntry> nonStoreEntries = getEntries().stream().filter(i -> i.getElementAction() != STORE_ACTION).collect(
-					Collectors.toList());
+			List<? extends SearchQueueEntry> nonStoreEntries = getEntries().stream().filter(i -> i.getElementAction() != STORE_ACTION)
+					.collect(Collectors.toList());
 
-			List<? extends SearchQueueEntry> storeEntries = getEntries().stream().filter(i -> i.getElementAction() == STORE_ACTION).collect(Collectors
-					.toList());
+			List<? extends SearchQueueEntry> storeEntries = getEntries().stream().filter(i -> i.getElementAction() == STORE_ACTION)
+					.collect(Collectors.toList());
 
 			if (!nonStoreEntries.isEmpty()) {
 				obs = Completable.concat(nonStoreEntries.stream().map(entry -> entry.process()).collect(Collectors.toList()));
@@ -282,8 +287,8 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	@Override
 	public void processSync(long timeout, TimeUnit unit) {
 		if (!processAsync().await(timeout, unit)) {
-			throw error(INTERNAL_SERVER_ERROR, "Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name()
-					+ "} exceeded.");
+			throw error(INTERNAL_SERVER_ERROR,
+					"Batch {" + getBatchId() + "} did not finish in time. Timeout of {" + timeout + "} / {" + unit.name() + "} exceeded.");
 		}
 	}
 

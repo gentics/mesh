@@ -230,9 +230,8 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 				for (Role role : roles().values()) {
 					for (GraphPermission permission : GraphPermission.values()) {
 						assertTrue(
-								"The role {" + role.getName() + "} does not grant perm {"
-										+ permission.getRestPerm().getName() + "} to the node {" + node.getUuid()
-										+ "} but it should since the parent object got this role permission.",
+								"The role {" + role.getName() + "} does not grant perm {" + permission.getRestPerm().getName() + "} to the node {"
+										+ node.getUuid() + "} but it should since the parent object got this role permission.",
 								role.hasPermission(permission, node));
 					}
 				}
@@ -401,7 +400,7 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// assertThat(groupEntry).isPresent();
 			// assertEquals(STORE_ACTION, groupEntry.get().getElementAction());
 
-			assertEquals(2, batch.getEntries().size());
+			assertEquals("The role and all the documents which had permissions on the role must be updated.", 2 + 30, batch.getEntries().size());
 		}
 	}
 
