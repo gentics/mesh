@@ -49,8 +49,8 @@ public class NodeContainerTransformerTest extends AbstractMeshTest {
 			assertTrue("Could not find all basic tags", allTagsContained);
 			assertTrue("Could not find all colors", allColorsContained);
 
-			JsonArray roleUuids = document.getJsonObject("roles").getJsonArray("uuid");
-			assertEquals("The role information was not correctly set", 1, roleUuids.size());
+			JsonArray roleUuids = document.getJsonArray("_roleUuids");
+			assertEquals("The role information was not correctly set", 2, roleUuids.size());
 		}
 	}
 }
