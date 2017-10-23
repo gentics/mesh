@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.verticle;
+package com.gentics.mesh.core.webroot;
 
 import static com.gentics.mesh.http.HttpConstants.ETAG;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;

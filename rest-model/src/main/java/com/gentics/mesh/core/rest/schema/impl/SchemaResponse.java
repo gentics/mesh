@@ -16,9 +16,13 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	@JsonPropertyDescription("Name of the display field.")
 	private String displayField;
 
-	@JsonProperty(required = true)
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the segment field. This field is used to construct the webroot path to the node.")
 	private String segmentField;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Names of the fields which provide a compete url to the node. This property can be used to define custom urls for certain nodes. The webroot API will try to locate the node via it's segment field and via the specified url fields.")
+	private List<String> urlFields;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
@@ -70,6 +74,17 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	@Override
 	public SchemaResponse setSegmentField(String segmentField) {
 		this.segmentField = segmentField;
+		return this;
+	}
+
+	@Override
+	public List<String> getUrlFields() {
+		return urlFields;
+	}
+
+	@Override
+	public SchemaResponse setUrlFields(List<String> urlFields) {
+		this.urlFields = urlFields;
 		return this;
 	}
 

@@ -3,6 +3,9 @@ package com.gentics.mesh.core.rest.schema;
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -70,14 +73,59 @@ public interface Schema extends FieldSchemaContainer {
 			}
 		}
 
+		if (getUrlFields() != null) {
+			for (String urlFieldName : getUrlFields()) {
+				FieldSchema segmentFieldSchema = getField(urlFieldName);
+				if (segmentFieldSchema == null) {
+					throw error(BAD_REQUEST, "schema_error_urlfield_null", urlFieldName);
+				}
+				if (segmentFieldSchema != null && (!((segmentFieldSchema instanceof StringFieldSchema)
+						|| (segmentFieldSchema instanceof ListFieldSchema)))) {
+					throw error(BAD_REQUEST, "schema_error_urlfield_type_invalid", urlFieldName, segmentFieldSchema.getType());
+				}
+				if (segmentFieldSchema instanceof ListFieldSchema) {
+					ListFieldSchema list = (ListFieldSchema) segmentFieldSchema;
+					if (!list.getListType().equals("string")) {
+						throw error(BAD_REQUEST, "schema_error_urlfield_type_invalid", urlFieldName, list.getListType());
+					}
+				}
+			}
+		}
+
 		FieldSchema segmentFieldSchema = getField(getSegmentField());
-		if (segmentFieldSchema != null
-				&& (!((segmentFieldSchema instanceof StringFieldSchema) || (segmentFieldSchema instanceof BinaryFieldSchema)))) {
+		if (segmentFieldSchema != null && (!((segmentFieldSchema instanceof StringFieldSchema)
+				|| (segmentFieldSchema instanceof BinaryFieldSchema)))) {
 			throw error(BAD_REQUEST, "schema_error_segmentfield_type_invalid", segmentFieldSchema.getType());
 		}
 
 		if (getSegmentField() != null && !getFields().stream().map(FieldSchema::getName).anyMatch(e -> e.equals(getSegmentField()))) {
 			throw error(BAD_REQUEST, "schema_error_segmentfield_invalid", getSegmentField());
 		}
+	}
+
+	/**
+	 * Return the list of url fields.
+	 * 
+	 * @return
+	 */
+	List<String> getUrlFields();
+
+	/**
+	 * Set the list of url field names.
+	 * 
+	 * @param urlFields
+	 * @return Fluent API
+	 */
+	Schema setUrlFields(List<String> urlFields);
+
+	/**
+	 * Set the url field names.
+	 * 
+	 * @param fieldNames
+	 * @return Fluent API
+	 */
+	default Schema setUrlFields(String... fieldNames) {
+		this.setUrlFields(Arrays.asList(fieldNames));
+		return this;
 	}
 }

@@ -76,9 +76,13 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	public static final String WEBROOT_INDEX_NAME = "webrootPathInfoIndex";
 
-	public static final String PUBLISHED_WEBROOT_PROPERTY_KEY = "publishedWebrootPathInfo";
+	//public static final String WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootPathUrlFieldInfoIndex";
 
+	public static final String PUBLISHED_WEBROOT_PROPERTY_KEY = "publishedWebrootPathInfo";
+	
 	public static final String PUBLISHED_WEBROOT_INDEX_NAME = "publishedWebrootPathInfoIndex";
+	
+	//public static final String PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootPathUrlFieldInfoIndex";
 
 	public static final String DISPLAY_FIELD_PROPERTY_KEY = "displayFieldValue";
 

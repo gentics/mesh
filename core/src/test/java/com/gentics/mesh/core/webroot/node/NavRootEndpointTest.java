@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.verticle.node;
+package com.gentics.mesh.core.webroot.node;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;

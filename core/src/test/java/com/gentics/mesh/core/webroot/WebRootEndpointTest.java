@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.verticle;
+package com.gentics.mesh.core.webroot;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
