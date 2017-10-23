@@ -72,17 +72,25 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
 
+	// Webroot index
+
 	public static final String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
 
 	public static final String WEBROOT_INDEX_NAME = "webrootPathInfoIndex";
 
-	//public static final String WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootPathUrlFieldInfoIndex";
-
 	public static final String PUBLISHED_WEBROOT_PROPERTY_KEY = "publishedWebrootPathInfo";
-	
+
 	public static final String PUBLISHED_WEBROOT_INDEX_NAME = "publishedWebrootPathInfoIndex";
-	
-	//public static final String PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootPathUrlFieldInfoIndex";
+
+	// Url Field index
+
+	public static final String WEBROOT_URLFIELD_PROPERTY_KEY = "webrootUrlInfo";
+
+	public static final String WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootPathUrlFieldInfoIndex";
+
+	public static final String PUBLISHED_URLFIELD_WEBROOT_PROPERTY_KEY = "publishedWebrootUrlInfo";
+
+	public static final String PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootPathUrlFieldInfoIndex";
 
 	public static final String DISPLAY_FIELD_PROPERTY_KEY = "displayFieldValue";
 
@@ -90,8 +98,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	public static void init(Database database) {
 		database.addVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);
+		// Webroot index:
 		database.addVertexIndex(WEBROOT_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, WEBROOT_PROPERTY_KEY);
 		database.addVertexIndex(PUBLISHED_WEBROOT_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, PUBLISHED_WEBROOT_PROPERTY_KEY);
+		// Webroot url field index:
+		database.addVertexIndex(WEBROOT_URLFIELD_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, WEBROOT_URLFIELD_PROPERTY_KEY);
+		database.addVertexIndex(PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, PUBLISHED_URLFIELD_WEBROOT_PROPERTY_KEY);
 	}
 
 	@Override
@@ -184,11 +196,13 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			updateWebrootPathInfo(releaseUuid, conflictI18n, ContainerType.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME);
 		} else {
 			setProperty(WEBROOT_PROPERTY_KEY, null);
+			setProperty(WEBROOT_URLFIELD_PROPERTY_KEY, null);
 		}
 		if (isPublished(releaseUuid)) {
 			updateWebrootPathInfo(releaseUuid, conflictI18n, ContainerType.PUBLISHED, PUBLISHED_WEBROOT_PROPERTY_KEY, PUBLISHED_WEBROOT_INDEX_NAME);
 		} else {
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
+			setProperty(PUBLISHED_URLFIELD_WEBROOT_PROPERTY_KEY, null);
 		}
 	}
 
