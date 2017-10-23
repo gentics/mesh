@@ -6,12 +6,15 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.node.NodeListResponse;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.rest.client.MeshRestClientMessageException;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 @MeshTestSetting(useElasticsearch = true, startServer = true, testSize = FULL)
@@ -37,8 +40,10 @@ public class NodeTagSearchEndpointTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		String query = getESQuery("failing-query.es");
-		//TODO add better error info
-		call(() -> client().searchNodes(PROJECT_NAME, query), BAD_REQUEST, "search_error_query");
+		MeshRestClientMessageException error = call(() -> client().searchNodes(PROJECT_NAME, query), BAD_REQUEST, "search_error_query");
+		GenericMessageResponse message = error.getResponseMessage();
+		assertNotNull("Detailed info not found", message.getProperties().get("cause-0"));
+		System.out.println(message.toJson());
 
 	}
 

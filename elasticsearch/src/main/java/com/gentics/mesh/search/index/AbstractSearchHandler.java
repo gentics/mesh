@@ -2,6 +2,7 @@ package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
 import java.io.IOException;
@@ -15,11 +16,14 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
+import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.common.bytes.BytesReference;
+import org.elasticsearch.rest.BytesRestResponse;
 import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -39,11 +43,13 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
+import com.gentics.mesh.search.MeshRestChannel;
 import com.gentics.mesh.search.SearchHandler;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -154,7 +160,13 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 			public void onFailure(Throwable e) {
 				log.error("Search query failed", e);
-				ac.fail(error(BAD_REQUEST, "search_error_query"));
+				try {
+					JsonObject json = convertToJson(e);
+					ac.send(json.encodePrettily(), HttpResponseStatus.BAD_REQUEST);
+				} catch (Exception e1) {
+					log.error("Error while converting es error to response", e1);
+					throw error(INTERNAL_SERVER_ERROR, "Error while converting error.", e1);
+				}
 			}
 		});
 
@@ -289,10 +301,39 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			@Override
 			public void onFailure(Throwable e) {
 				log.error("Search query failed", e);
-				ac.fail(error(BAD_REQUEST, "search_error_query"));
+				GenericRestException error = error(BAD_REQUEST, "search_error_query", simpleMessage(e));
+				if (e instanceof ElasticsearchException) {
+					int i = 0;
+					for (Throwable e1 = e.getCause(); e1 != null; e1 = e1.getCause()) {
+						error.setProperty("cause-" + i, simpleMessage(e1));
+						i++;
+					}
+				}
+				ac.fail(error);
 			}
 		});
 
+	}
+
+	private static String simpleMessage(Throwable t) {
+		int counter = 0;
+		Throwable next = t;
+		while (next != null && counter++ < 10) {
+			if (t instanceof ElasticsearchException) {
+				return next.getClass().getSimpleName() + "[" + next.getMessage() + "]";
+			}
+			next = next.getCause();
+		}
+
+		return "No ElasticsearchException found";
+	}
+
+	private static JsonObject convertToJson(Throwable e) throws Exception {
+		// Create a mocked channel and convert the throwable to json
+		MeshRestChannel channel = new MeshRestChannel(null, true);
+		BytesRestResponse response = new BytesRestResponse(channel, e);
+		BytesReference ref = response.content();
+		return new JsonObject(new String(ref.array()));
 	}
 
 	@Override

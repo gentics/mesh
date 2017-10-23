@@ -112,8 +112,9 @@ public final class ClientHelper {
 	 *            i18n of the expected response message
 	 * @param i18nParams
 	 *            parameters of the expected response message
+	 * @return
 	 */
-	public static <T> void call(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
+	public static <T> MeshRestClientMessageException call(ClientHandler<T> handler, HttpResponseStatus status, String bodyMessageI18nKey, String... i18nParams) {
 		MeshResponse<T> future;
 		try {
 			future = handler.handle().invoke();
@@ -122,6 +123,10 @@ public final class ClientHelper {
 		}
 		latchFor(future);
 		expectException(future, status, bodyMessageI18nKey, i18nParams);
+		if (future.cause() instanceof MeshRestClientMessageException) {
+			return (MeshRestClientMessageException) future.cause();
+		}
+		return null;
 	}
 
 	public static void validateDeletion(Set<MeshResponse<Void>> set, CyclicBarrier barrier) {

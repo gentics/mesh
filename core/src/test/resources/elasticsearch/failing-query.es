@@ -1,4 +1,9 @@
 {
+	"sort": {
+		"bogus": {
+			"order": "asc"
+		}
+	},
 	"query": {
 		"nested": {
 			"path": "tags",
