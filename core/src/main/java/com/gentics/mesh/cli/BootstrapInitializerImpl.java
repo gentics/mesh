@@ -32,6 +32,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.changelog.ChangelogSystem;
 import com.gentics.mesh.changelog.ReindexAction;
 import com.gentics.mesh.core.cache.PermissionStore;
@@ -221,7 +222,7 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		boolean startOrientServer = storageOptions != null && storageOptions.getStartServer();
 
 		try {
-			db.init(Mesh.mesh().getOptions(), Mesh.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
+			db.init(Mesh.mesh().getOptions(), MeshVersion.getBuildInfo().getVersion(), "com.gentics.mesh.core.data");
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

@@ -19,7 +19,7 @@ import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.RolePermissionParametersImpl;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
 @Singleton
@@ -52,7 +52,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 	}
 
 	private void addUpdateHandler() {
-		Endpoint updateEndpoint = createEndpoint();
+		EndpointRoute updateEndpoint = createEndpoint();
 		updateEndpoint.path("/:projectUuid");
 		updateEndpoint
 				.description("Update the project with the given uuid. The project is created if no project with the specified uuid could be found.");
@@ -72,7 +72,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 	// TODO when the root tag is not saved the project can't be saved. Unfortunately this did not show up as an http error. We must handle those
 	// cases. They must show up in any case.
 	private void addCreateHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new project.");
@@ -87,7 +87,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 	}
 
 	private void addReadHandler() {
-		Endpoint readOne = createEndpoint();
+		EndpointRoute readOne = createEndpoint();
 		readOne.path("/:projectUuid");
 		readOne.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
 		readOne.description("Load the project with the given uuid.");
@@ -105,7 +105,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 			}
 		});
 
-		Endpoint readAll = createEndpoint();
+		EndpointRoute readAll = createEndpoint();
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Load multiple projects and return a paged response.");
@@ -120,7 +120,7 @@ public class ProjectEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDeleteHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:projectUuid");
 		endpoint.addUriParameter("projectUuid", "Uuid of the project.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);

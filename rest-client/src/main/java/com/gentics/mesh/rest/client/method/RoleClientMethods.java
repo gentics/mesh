@@ -71,7 +71,7 @@ public interface RoleClientMethods {
 	 * @param roleUuid
 	 *            Role to which the permissions should be updated
 	 * @param pathToElement
-	 *            Path to an element or an aggregation element
+	 *            Path to an element or an aggregation element. Example: projects/20f2af58befb4e64b2af58befbce64fd
 	 * @param request
 	 *            Request that defines how the permissions should be changed
 	 * @return

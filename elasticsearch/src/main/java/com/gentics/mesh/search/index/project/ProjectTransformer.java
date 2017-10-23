@@ -26,6 +26,7 @@ public class ProjectTransformer extends AbstractTransformer<Project> {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, project.getName());
 		addBasicReferences(document, project);
+		addPermissionInfo(document, project);
 		return document;
 	}
 

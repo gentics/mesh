@@ -10,7 +10,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 
 import io.vertx.core.http.HttpMethod;
 import io.vertx.ext.web.Router;
@@ -34,7 +34,7 @@ public class ProjectInfoEndpoint extends AbstractEndpoint {
 	@Override
 	public void registerEndPoints() {
 		secureAll();
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:project");
 		endpoint.method(HttpMethod.GET);
 		endpoint.addUriParameter("project", "Name of the project.", "demo");

@@ -22,6 +22,8 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.SearchQueue;
+import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.role.RolePermissionRequest;
 import com.gentics.mesh.core.rest.role.RolePermissionResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -29,6 +31,7 @@ import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.util.Tuple;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -40,10 +43,13 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 
 	private BootstrapInitializer boot;
 
+	private SearchQueue searchQueue;
+
 	@Inject
-	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils) {
+	public RoleCrudHandler(Database db, BootstrapInitializer boot, HandlerUtilities utils, SearchQueue searchQueue) {
 		super(db, utils);
 		this.boot = boot;
+		this.searchQueue = searchQueue;
 	}
 
 	@Override
@@ -83,7 +89,7 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 			}
 			RolePermissionResponse response = new RolePermissionResponse();
 
-			// 1. Add granted permissions 
+			// 1. Add granted permissions
 			for (GraphPermission perm : role.getPermissions(targetElement)) {
 				response.set(perm.getRestPerm(), true);
 			}
@@ -104,18 +110,16 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 	 *            Path to the element for which the permissions should be updated
 	 */
 	public void handlePermissionUpdate(InternalActionContext ac, String roleUuid, String pathToElement) {
-		//TODO validate uuids
+		if (isEmpty(roleUuid)) {
+			throw error(BAD_REQUEST, "error_uuid_must_be_specified");
+		}
+		if (isEmpty(pathToElement)) {
+			throw error(BAD_REQUEST, "role_permission_path_missing");
+		}
 
 		db.operateTx(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Handling permission request for element on path {" + pathToElement + "}");
-			}
-			if (isEmpty(roleUuid)) {
-				throw error(BAD_REQUEST, "error_uuid_must_be_specified");
-			}
-
-			if (isEmpty(pathToElement)) {
-				throw error(BAD_REQUEST, "role_permission_path_missing");
 			}
 
 			// 1. Load the role that should be used
@@ -132,7 +136,8 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 				RolePermissionRequest requestModel = ac.fromJson(RolePermissionRequest.class);
 
 				// Prepare the sets for revoke and grant actions
-				Role updatedRole = db.tx(() -> {
+				Tuple<SearchQueueBatch, String> tuple = db.tx(() -> {
+					SearchQueueBatch batch = searchQueue.create();
 					Set<GraphPermission> permissionsToGrant = new HashSet<>();
 					Set<GraphPermission> permissionsToRevoke = new HashSet<>();
 
@@ -154,11 +159,13 @@ public class RoleCrudHandler extends AbstractCrudHandler<Role, RoleResponse> {
 					}
 
 					// 3. Apply the permission actions
-					element.applyPermissions(role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
-					return role;
+					element.applyPermissions(batch, role, BooleanUtils.isTrue(requestModel.getRecursive()), permissionsToGrant, permissionsToRevoke);
+					return Tuple.tuple(batch, role.getName());
 				});
 
-				return Single.just(message(ac, "role_updated_permission", updatedRole.getName()));
+				tuple.v1().processSync();
+				String name = tuple.v2();
+				return Single.just(message(ac, "role_updated_permission", name));
 
 			});
 		}).subscribe(model -> ac.send(model, OK), ac::fail);

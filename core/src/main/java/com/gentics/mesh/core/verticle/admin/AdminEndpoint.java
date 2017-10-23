@@ -15,7 +15,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.core.verticle.admin.consistency.ConsistencyCheckHandler;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -66,7 +66,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	}
 
 	private void addClusterStatusHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/cluster/status");
 		endpoint.method(GET);
 		endpoint.description("Loads the cluster status information.");
@@ -79,7 +79,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	}
 
 	private void addConsistencyCheckHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/consistency/check");
 		endpoint.method(GET);
 		endpoint.description("Invokes a consistency check of the graph database and returns a list of found issues");
@@ -91,7 +91,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	}
 
 	private void addExportHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/graphdb/export");
 		endpoint.method(POST);
 		endpoint.description("Invoke a orientdb graph database export.");
@@ -103,7 +103,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	}
 
 	private void addImportHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/graphdb/import");
 		endpoint.method(POST);
 		endpoint.description(
@@ -116,7 +116,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	}
 
 	private void addRestoreHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/graphdb/restore");
 		endpoint.description(
 				"Invoke a graph database restore. The latest dump from the backup directory will be inserted. Please note that this operation will block all current operation and effecivly destroy all previously stored data.");
@@ -129,7 +129,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	}
 
 	private void addBackupHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/graphdb/backup");
 		endpoint.method(POST);
 		endpoint.description(
@@ -145,7 +145,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 	 * Handler that reacts onto status requests.
 	 */
 	private void addMeshStatusHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.description("Return the Gentics Mesh server status.");
 		endpoint.path("/status");
 		endpoint.method(GET);
@@ -193,7 +193,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 
 	private void addJobHandler() {
 
-		Endpoint invokeJobWorker = createEndpoint();
+		EndpointRoute invokeJobWorker = createEndpoint();
 		invokeJobWorker.path("/processJobs");
 		invokeJobWorker.method(POST);
 		invokeJobWorker.description("Invoke the processing of remaining jobs.");
@@ -204,7 +204,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 			jobHandler.handleInvokeJobWorker(ac);
 		});
 
-		Endpoint readJobList = createEndpoint();
+		EndpointRoute readJobList = createEndpoint();
 		readJobList.path("/jobs");
 		readJobList.method(GET);
 		readJobList.description("List all currently queued jobs.");
@@ -215,7 +215,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 			jobHandler.handleReadList(ac);
 		});
 
-		Endpoint readJob = createEndpoint();
+		EndpointRoute readJob = createEndpoint();
 		readJob.path("/jobs/:jobUuid");
 		readJob.method(GET);
 		readJob.description("Load a specific job.");
@@ -228,7 +228,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 			jobHandler.handleRead(ac, uuid);
 		});
 
-		Endpoint deleteJob = createEndpoint();
+		EndpointRoute deleteJob = createEndpoint();
 		deleteJob.path("/jobs/:jobUuid");
 		deleteJob.method(DELETE);
 		deleteJob.description("Deletes the job. Note that it is only possible to delete failed jobs");
@@ -239,7 +239,7 @@ public class AdminEndpoint extends AbstractEndpoint {
 			jobHandler.handleDelete(ac, uuid);
 		});
 
-		Endpoint resetJob = createEndpoint();
+		EndpointRoute resetJob = createEndpoint();
 		resetJob.path("/jobs/:jobUuid/error");
 		resetJob.method(DELETE);
 		resetJob.description("Deletes error state from the job. This will make it possible to execute the job once again.");

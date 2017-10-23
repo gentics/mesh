@@ -1,4 +1,4 @@
-package com.gentics.mesh.search.index.node;
+package com.gentics.mesh.search;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;

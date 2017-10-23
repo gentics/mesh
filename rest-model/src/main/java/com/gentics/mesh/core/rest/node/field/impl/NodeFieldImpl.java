@@ -3,6 +3,8 @@ package com.gentics.mesh.core.rest.node.field.impl;
 import java.util.Map;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.node.field.NodeField;
 
@@ -11,10 +13,16 @@ import com.gentics.mesh.core.rest.node.field.NodeField;
  */
 public class NodeFieldImpl implements NodeField {
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Uuid of the referenced node.")
 	private String uuid;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Path to the referenced node.")
 	private String path;
 
+	@JsonProperty(required = true)
+	@JsonPropertyDescription("Set of language paths that the node provides.")
 	private Map<String, String> languagePaths;
 
 	@Override

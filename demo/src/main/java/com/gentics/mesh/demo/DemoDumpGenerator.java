@@ -1,12 +1,9 @@
 package com.gentics.mesh.demo;
 
-import static org.elasticsearch.client.Requests.refreshRequest;
-
 import java.io.File;
 import java.io.IOException;
 
 import org.apache.commons.io.FileUtils;
-import org.elasticsearch.node.Node;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -93,14 +90,12 @@ public class DemoDumpGenerator {
 	private void shutdown() throws MeshConfigurationException, InterruptedException {
 		// Close the elastic search instance
 		SearchProvider searchProvider = MeshInternal.get().searchProvider();
-		org.elasticsearch.node.Node esNode = null;
-		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
-			esNode = (Node) searchProvider.getNode();
-			esNode.client().admin().indices().refresh(refreshRequest().indices("_all")).actionGet();
+		if (searchProvider.getClient() !=null) {
+			searchProvider.refreshIndex("_all");
 		} else {
-			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
+			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getClient() + "}");
 		}
-		esNode.close();
+		searchProvider.stop();
 		Thread.sleep(5000);
 		System.exit(0);
 

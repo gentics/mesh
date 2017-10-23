@@ -13,4 +13,5 @@ public class MeshNode extends Node {
 	protected MeshNode(Settings settings, Collection<Class<? extends Plugin>> plugins) {
 		super(InternalSettingsPreparer.prepareEnvironment(settings, null), Version.CURRENT, plugins);
 	}
+
 }

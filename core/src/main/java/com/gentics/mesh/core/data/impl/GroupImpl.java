@@ -196,13 +196,14 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 	}
 
 	@Override
-	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant,
+			Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (User user : getUsers()) {
-				user.applyPermissions(role, false, permissionsToGrant, permissionsToRevoke);
+				user.applyPermissions(batch, role, false, permissionsToGrant, permissionsToRevoke);
 			}
 		}
-		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 	@Override

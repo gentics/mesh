@@ -1,30 +1,31 @@
-package com.gentics.mesh.search;
+package com.gentics.mesh.search.index;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.rest.Messages.message;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import javax.inject.Inject;
-
-import org.codehaus.jettison.json.JSONObject;
+import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.node.Node;
 import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.context.InternalActionContext;
-import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.MeshCoreVertex;
+import com.gentics.mesh.core.data.Role;
+import com.gentics.mesh.core.data.page.Page;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.IndexHandler;
@@ -32,18 +33,20 @@ import com.gentics.mesh.core.rest.common.ListResponse;
 import com.gentics.mesh.core.rest.common.PagingMetaInfo;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.core.rest.search.SearchStatusResponse;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.json.MeshJsonException;
 import com.gentics.mesh.parameter.PagingParameters;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.SearchHandler;
+import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.util.Tuple;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.Future;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.rx.java.ObservableFuture;
@@ -53,52 +56,103 @@ import rx.Single;
 import rx.functions.Func0;
 
 /**
- * Collection of handlers which are used to deal with rest search requests.
+ * Abstract implementation for a mesh search handler.
+ *
+ * @param <T>
  */
-public class SearchRestHandler {
+public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM extends RestModel> implements SearchHandler<T, RM> {
 
-	private static final Logger log = LoggerFactory.getLogger(SearchRestHandler.class);
+	private static final Logger log = LoggerFactory.getLogger(AbstractSearchHandler.class);
 
-	private SearchProvider searchProvider;
+	protected Database db;
 
-	private Database db;
+	protected SearchProvider searchProvider;
 
-	private IndexHandlerRegistry registry;
+	protected IndexHandler<T> indexHandler;
 
-	private NodeIndexHandler nodeIndexHandler;
+	public final static String DEFAULT_QUERY_FILENAME = "default-query.json";
 
-	private HandlerUtilities utils;
-
-	@Inject
-	public SearchRestHandler(SearchProvider searchProvider, Database db, IndexHandlerRegistry registry, NodeIndexHandler nodeIndexHandler,
-			HandlerUtilities utils) {
-		this.searchProvider = searchProvider;
-		this.db = db;
-		this.registry = registry;
-		this.nodeIndexHandler = nodeIndexHandler;
-		this.utils = utils;
+	public static String DEFAULT_QUERY = null;
+	static {
+		try {
+			DEFAULT_QUERY = IOUtils.toString(AbstractSearchHandler.class.getResourceAsStream("/" + DEFAULT_QUERY_FILENAME));
+		} catch (IOException e) {
+			throw new RuntimeException("Could not load {" + DEFAULT_QUERY + "} file");
+		}
 	}
 
 	/**
-	 * Handle a search request.
+	 * Create a new search handler.
+	 * 
+	 * @param db
+	 * @param searchProvider
+	 * @param indexHandler
+	 */
+	public AbstractSearchHandler(Database db, SearchProvider searchProvider, IndexHandler<T> indexHandler) {
+		this.db = db;
+		this.searchProvider = searchProvider;
+		this.indexHandler = indexHandler;
+	}
+
+	/**
+	 * Prepare the initial search query and inject the values we need to check role permissions.
 	 * 
 	 * @param ac
-	 * @param rootVertex
-	 *            Root Vertex of the elements that should be searched
-	 * @param classOfRL
-	 *            Class of the rest model list that should be used when creating the response
-	 * @param indices
-	 *            Names of indices which should be searched
-	 * @param permission
-	 *            required permission
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
-	 * @throws InvalidArgumentException
-	 * @throws MeshJsonException
-	 * @throws MeshConfigurationException
+	 * @param searchQuery
+	 * @return
 	 */
-	public <T extends MeshCoreVertex<TR, T>, TR extends RestModel, RL extends ListResponse<TR>> void handleSearch(InternalActionContext ac,
-			Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL, Set<String> indices, GraphPermission permission)
+	protected JsonObject prepareSearchQuery(InternalActionContext ac, String searchQuery) {
+
+		JsonObject json = new JsonObject(DEFAULT_QUERY);
+		JsonArray roleUuids = new JsonArray();
+		try (Tx tx = db.tx()) {
+			for (Role role : ac.getUser().getRoles()) {
+				roleUuids.add(role.getUuid());
+			}
+		}
+
+		JsonArray must = json.getJsonObject("query").getJsonObject("bool").getJsonArray("must");
+		must.getJsonObject(0).getJsonObject("terms").put("_roleUuids", roleUuids);
+		must.getJsonObject(1).mergeIn(new JsonObject(searchQuery));
+		return json;
+	}
+
+	@Override
+	public void rawQuery(InternalActionContext ac) {
+		Client client = searchProvider.getClient();
+
+		String searchQuery = ac.getBodyAsString();
+		if (log.isDebugEnabled()) {
+			log.debug("Invoking search with query {" + searchQuery + "}");
+		}
+		Set<String> indices = indexHandler.getSelectedIndices(ac);
+
+		SearchRequestBuilder builder = null;
+		try {
+			JsonObject query = prepareSearchQuery(ac, searchQuery);
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(query.toString());
+		} catch (Exception e) {
+			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
+			return;
+		}
+		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+		builder.execute().addListener(new ActionListener<SearchResponse>() {
+
+			@Override
+			public void onResponse(SearchResponse response) {
+				ac.send(response.toString(), OK);
+			}
+
+			public void onFailure(Throwable e) {
+				log.error("Search query failed", e);
+				ac.fail(error(BAD_REQUEST, "search_error_query"));
+			}
+		});
+
+	}
+
+	@Override
+	public <RL extends ListResponse<RM>> void query(InternalActionContext ac, Func0<RootVertex<T>> rootVertex, Class<RL> classOfRL)
 			throws InstantiationException, IllegalAccessException, InvalidArgumentException, MeshJsonException, MeshConfigurationException {
 
 		PagingParameters pagingInfo = ac.getPagingParameters();
@@ -110,35 +164,19 @@ public class SearchRestHandler {
 		}
 
 		RL listResponse = classOfRL.newInstance();
-		MeshAuthUser requestUser = ac.getUser();
 
-		org.elasticsearch.node.Node esNode = null;
-		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
-			esNode = (Node) searchProvider.getNode();
-		} else {
-			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
-		}
-		Client client = esNode.client();
+		Client client = searchProvider.getClient();
 
 		String searchQuery = ac.getBodyAsString();
 		if (log.isDebugEnabled()) {
 			log.debug("Invoking search with query {" + searchQuery + "} for {" + classOfRL.getName() + "}");
 		}
 
-		/*
-		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
-		 * to be written that deals with Document Level Permissions/Security (commonly known as DLS)
-		 */
+		Set<String> indices = indexHandler.getSelectedIndices(ac);
 		SearchRequestBuilder builder = null;
 		try {
-			JSONObject queryStringObject = new JSONObject(searchQuery);
-			/**
-			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more
-			 * efficient ways to do deep scrolling.
-			 */
-			queryStringObject.put("from", 0);
-			queryStringObject.put("size", Integer.MAX_VALUE);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryStringObject.toString());
+			JsonObject query = prepareSearchQuery(ac, searchQuery);
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(query.toString());
 		} catch (Exception e) {
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;
@@ -163,8 +201,6 @@ public class SearchRestHandler {
 						ObservableFuture<Tuple<T, String>> obsResult = RxHelper.observableFuture();
 						obs.add(obsResult);
 
-						// TODO check permissions without loading the vertex
-
 						// Locate the node
 						T element = rootVertex.call().findByUuid(uuid);
 						if (element == null) {
@@ -182,10 +218,10 @@ public class SearchRestHandler {
 						if (y == null) {
 							return;
 						}
+						// Check whether the language matches up
 						boolean matchesRequestedLang = y.v2() == null || requestedLanguageTags == null || requestedLanguageTags.isEmpty()
 								|| requestedLanguageTags.contains(y.v2());
-						// Check permissions and language
-						if (y != null && matchesRequestedLang && requestUser.hasPermission(y.v1(), permission)) {
+						if (y != null && matchesRequestedLang) {
 							x.add(y);
 						}
 					}).subscribe(list -> {
@@ -196,7 +232,7 @@ public class SearchRestHandler {
 						int upper = low + pagingInfo.getPerPage() - 1;
 
 						int n = 0;
-						List<Single<TR>> transformedElements = new ArrayList<>();
+						List<Single<RM>> transformedElements = new ArrayList<>();
 						for (Tuple<T, String> objectAndLanguageTag : list) {
 
 							// Only transform elements that we want to list in our resultset
@@ -221,7 +257,7 @@ public class SearchRestHandler {
 						metainfo.setPerPage(pagingInfo.getPerPage());
 						listResponse.setMetainfo(metainfo);
 
-						List<Observable<TR>> obsList = transformedElements.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
+						List<Observable<RM>> obsList = transformedElements.stream().map(ele -> ele.toObservable()).collect(Collectors.toList());
 						// Populate the response data with the transformed elements and send the response
 						Observable.concat(Observable.from(obsList)).collect(() -> {
 							return listResponse.getData();
@@ -250,44 +286,59 @@ public class SearchRestHandler {
 
 	}
 
-	public void handleStatus(InternalActionContext ac) {
-		db.tx(() -> {
-			SearchStatusResponse statusResponse = new SearchStatusResponse();
-			return Observable.just(statusResponse);
-		}).subscribe(message -> ac.send(message, OK), ac::fail);
+	@Override
+	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
+			throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
+		Client client = searchProvider.getClient();
+
+		if (log.isDebugEnabled()) {
+			log.debug("Invoking search with query {" + query + "} for {" + indexHandler.getElementClass().getName() + "}");
+		}
+
+		SearchRequestBuilder builder = null;
+		try {
+			JsonObject queryJson = prepareSearchQuery(ac, query);
+			Set<String> indices = indexHandler.getSelectedIndices(ac);
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryJson.toString());
+		} catch (Exception e) {
+			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
+		}
+		CompletableFuture<Page<? extends T>> future = new CompletableFuture<>();
+		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
+		builder.execute().addListener(new ActionListener<SearchResponse>() {
+
+			@Override
+			public void onResponse(SearchResponse response) {
+				Page<? extends T> page = db.tx(() -> {
+					List<T> elementList = new ArrayList<T>();
+					for (SearchHit hit : response.getHits()) {
+						String id = hit.getId();
+						int pos = id.indexOf("-");
+						String uuid = pos > 0 ? id.substring(0, pos) : id;
+
+						// Locate the node
+						T element = indexHandler.getRootVertex().findByUuid(uuid);
+						if (element != null) {
+							elementList.add(element);
+						}
+					}
+					Page<? extends T> elementPage = Page.applyPaging(elementList, pagingInfo);
+					return elementPage;
+				});
+				future.complete(page);
+			}
+
+			@Override
+			public void onFailure(Throwable e) {
+				log.error("Search query failed", e);
+				future.completeExceptionally(e);
+			}
+		});
+		return future.get(60, TimeUnit.SECONDS);
 	}
 
-	public void handleReindex(InternalActionContext ac) {
-		db.operateTx(() -> {
-			if (ac.getUser().hasAdminRole()) {
-				searchProvider.clear();
-
-				// Iterate over all index handlers update the index
-				for (IndexHandler<?> handler : registry.getHandlers()) {
-					// Create all indices and mappings
-					handler.init().await();
-					searchProvider.refreshIndex();
-					handler.reindexAll().await();
-				}
-				return Single.just(message(ac, "search_admin_reindex_invoked"));
-			} else {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-		}).subscribe(message -> ac.send(message, OK), ac::fail);
-	}
-
-	public void createMappings(InternalActionContext ac) {
-		utils.operateTx(ac, () -> {
-			if (ac.getUser().hasAdminRole()) {
-				for (IndexHandler<?> handler : registry.getHandlers()) {
-					handler.init().await();
-				}
-				nodeIndexHandler.updateNodeIndexMappings();
-				return message(ac, "search_admin_createmappings_created");
-			} else {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-		}, message -> ac.send(message, OK));
+	public IndexHandler<T> getIndexHandler() {
+		return indexHandler;
 	}
 
 }

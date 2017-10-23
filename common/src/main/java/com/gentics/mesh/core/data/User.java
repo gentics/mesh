@@ -275,11 +275,11 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	User addGroup(Group group);
 
 	/**
-	 * Return a list of roles which belong to this user. Internally this will fetch all groups of the user and collect the assigned roles.
+	 * Return an iterable of roles which belong to this user. Internally this will fetch all groups of the user and collect the assigned roles.
 	 * 
 	 * @return
 	 */
-	List<? extends Role> getRoles();
+	Iterable<? extends Role> getRoles();
 
 	/**
 	 * Return a list of roles that belong to the user. Internally this will check the user role shortcut edge.
@@ -307,6 +307,7 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 
 	/**
 	 * Disable the user and remove him from all groups
+	 * 
 	 * @return
 	 */
 	User deactivate();

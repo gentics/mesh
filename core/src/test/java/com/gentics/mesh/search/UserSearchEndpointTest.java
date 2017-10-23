@@ -10,6 +10,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
@@ -30,16 +32,14 @@ import com.gentics.mesh.test.definition.BasicSearchCrudTestcases;
 public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSearchCrudTestcases {
 
 	@Test
-	public void testSimpleQuerySearch() {
+	public void testSimpleQuerySearch() throws IOException {
 
 		String username = "testuser42a";
 		try (Tx tx = tx()) {
 			createUser(username);
 		}
 
-		String json = "{\n" + "  \"query\": {\n" + "      \"simple_query_string\" : {\n" + "          \"query\": \"testuser*\",\n"
-				+ "          \"analyzer\": \"snowball\",\n" + "          \"fields\": [\"name^5\",\"_all\"],\n"
-				+ "          \"default_operator\": \"and\"\n" + "      }\n" + "  }\n" + "}";
+		String json = getESQuery("userWildcard.es");
 
 		UserListResponse list = call(() -> client().searchUsers(json));
 		assertEquals(1, list.getData().size());
@@ -48,15 +48,13 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 	}
 
 	@Test
-	public void testEmptyResult() {
+	public void testEmptyResult() throws IOException {
 		String username = "testuser42a";
 		try (Tx tx = tx()) {
 			createUser(username);
 		}
 
-		String json = "{\n" + "  \"query\": {\n" + "      \"simple_query_string\" : {\n" + "          \"query\": \"testuser111235*\",\n"
-				+ "          \"analyzer\": \"snowball\",\n" + "          \"fields\": [\"name^5\",\"_all\"],\n"
-				+ "          \"default_operator\": \"and\"\n" + "      }\n" + "  }\n" + "}";
+		String json = getESQuery("userBogusName.es");
 
 		UserListResponse list = call(() -> client().searchUsers(json));
 		assertEquals(0, list.getData().size());
@@ -248,8 +246,8 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			createUser(username);
 		}
 
-		UserListResponse list = call(
-				() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase()), new PagingParametersImpl().setPerPage(0)));
+		UserListResponse list = call(() -> client().searchUsers(getSimpleTermQuery("groups.name.raw", groupName.toLowerCase()),
+				new PagingParametersImpl().setPerPage(0)));
 		assertEquals(0, list.getData().size());
 		assertEquals(1, list.getMetainfo().getTotalCount());
 	}

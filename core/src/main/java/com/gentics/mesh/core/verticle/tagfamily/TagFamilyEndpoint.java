@@ -18,7 +18,7 @@ import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.core.verticle.tag.TagCrudHandler;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.logging.Logger;
@@ -78,7 +78,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	// TODO update other fields as well?
 	// TODO Update user information
 	private void addTagUpdateHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:tagFamilyUuid/tags/:tagUuid");
 		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
 		endpoint.addUriParameter("tagUuid", "Uuid of the tag.", UUIDUtil.randomUUID());
@@ -101,7 +101,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	// TODO handle creator
 	// TODO maybe projects should not be a set?
 	private void addTagCreateHandler() {
-		Endpoint createTag = createEndpoint();
+		EndpointRoute createTag = createEndpoint();
 		createTag.description("Create a new tag within the tag family.");
 		createTag.path("/:tagFamilyUuid/tags").method(POST).consumes(APPLICATION_JSON).produces(APPLICATION_JSON);
 		createTag.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
@@ -116,7 +116,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 
 	// TODO filtering, sorting
 	private void addTagReadHandler() {
-		Endpoint readOne = createEndpoint();
+		EndpointRoute readOne = createEndpoint();
 		readOne.path("/:tagFamilyUuid/tags/:tagUuid");
 		readOne.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
 		readOne.addUriParameter("tagUuid", "Uuid of the tag.", UUIDUtil.randomUUID());
@@ -131,7 +131,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 			tagCrudHandler.handleRead(ac, tagFamilyUuid, uuid);
 		});
 
-		Endpoint readAll = createEndpoint();
+		EndpointRoute readAll = createEndpoint();
 		readAll.path("/:tagFamilyUuid/tags");
 		readAll.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
 		readAll.method(GET);
@@ -149,7 +149,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 
 	// TODO filter by projectName
 	private void addTagDeleteHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:tagFamilyUuid/tags/:tagUuid");
 		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
 		endpoint.addUriParameter("tagUuid", "Uuid of the tag.", UUIDUtil.randomUUID());
@@ -166,7 +166,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addTaggedNodesHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:tagFamilyUuid/tags/:tagUuid/nodes");
 		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
 		endpoint.addUriParameter("tagUuid", "Uuid of the tag.", UUIDUtil.randomUUID());
@@ -184,7 +184,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addTagFamilyDeleteHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:tagFamilyUuid");
 		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
@@ -199,7 +199,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addTagFamilyReadHandler() {
-		Endpoint readOne = createEndpoint();
+		EndpointRoute readOne = createEndpoint();
 		readOne.path("/:tagFamilyUuid");
 		readOne.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
 		readOne.method(GET);
@@ -212,7 +212,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 			tagFamilyCrudHandler.handleRead(ac, uuid);
 		});
 
-		Endpoint readAll = createEndpoint();
+		EndpointRoute readAll = createEndpoint();
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.produces(APPLICATION_JSON);
@@ -226,7 +226,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addTagFamilyCreateHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new tag family.");
@@ -241,7 +241,7 @@ public class TagFamilyEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addTagFamilyUpdateHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:tagFamilyUuid");
 		endpoint.addUriParameter("tagFamilyUuid", "Uuid of the tag family.", UUIDUtil.randomUUID());
 		endpoint.method(POST);

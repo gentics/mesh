@@ -37,6 +37,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.settings.Settings.Builder;
 import org.elasticsearch.index.IndexNotFoundException;
+import org.elasticsearch.index.engine.DocumentMissingException;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.elasticsearch.node.Node;
@@ -54,7 +55,9 @@ import com.gentics.mesh.search.SearchProvider;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.rx.java.RxHelper;
 import rx.Completable;
+import rx.Scheduler;
 import rx.Single;
 
 /**
@@ -64,6 +67,8 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(ElasticSearchProvider.class);
 
+	private Client client;
+
 	private Node node;
 
 	private MeshOptions options;
@@ -71,12 +76,16 @@ public class ElasticSearchProvider implements SearchProvider {
 	public static final String DEFAULT_INDEX_SETTINGS_FILENAME = "default-es-index-settings.json";
 
 	public static String DEFAULT_INDEX_SETTINGS;
+
 	static {
 		try {
 			DEFAULT_INDEX_SETTINGS = IOUtils.toString(ElasticSearchProvider.class.getResourceAsStream("/" + DEFAULT_INDEX_SETTINGS_FILENAME));
 		} catch (IOException e) {
 			throw new RuntimeException("Could not load default index settings", e);
 		}
+	}
+
+	public ElasticSearchProvider() {
 	}
 
 	@Override
@@ -135,20 +144,26 @@ public class ElasticSearchProvider implements SearchProvider {
 		}
 		node = new MeshNode(settings, classpathPlugins);
 		node.start();
+		client = node.client();
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 		}
+
+		// builder.put("node.master", false);
+		// builder.put("node.data", false);
+		// try {
+		// node = NodeBuilder.nodeBuilder().settings(builder.build()).clusterName("elasticsearch").local(true).node();
+		// client = TransportClient.builder().build().addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName("127.0.0.1"), 9300));
+		// } catch (UnknownHostException e) {
+		// e.printStackTrace();
+		// }
+
 	}
 
 	@Override
 	public ElasticSearchProvider init(MeshOptions options) {
 		this.options = options;
 		return this;
-	}
-
-	@Override
-	public Node getNode() {
-		return node;
 	}
 
 	@Override
@@ -173,26 +188,31 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public void clear() {
-		node.client().admin().indices().prepareDelete("_all").execute().actionGet();
+		client.admin().indices().prepareDelete("_all").execute().actionGet();
 	}
 
 	@Override
 	public void stop() {
-		node.close();
+		if (client != null) {
+			client.close();
+		}
+		if (node != null) {
+			node.close();
+		}
 	}
 
 	@Override
 	public void refreshIndex(String... indices) {
-		getNode().client().admin().indices().refresh(refreshRequest().indices(indices)).actionGet();
+		client.admin().indices().refresh(refreshRequest().indices(indices)).actionGet();
 	}
 
 	private Client getSearchClient() {
-		return getNode().client();
+		return client;
 	}
 
 	@Override
 	public Completable createIndex(String indexName) {
-		// TODO Add method which will be used to create an index and set a custom mapping
+		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
 		return Completable.create(sub -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Creating ES Index {" + indexName + "}");
@@ -212,23 +232,23 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onFailure(Throwable e) {
-					if (!(e instanceof IndexAlreadyExistsException)) {
+					if (e instanceof IndexAlreadyExistsException) {
+						sub.onCompleted();
+					} else {
 						sub.onError(e);
 						log.error("Error while creating index {" + indexName + "}", e);
-					} else {
-						sub.onCompleted();
 					}
 				}
 
 			});
-		});
+		}).observeOn(scheduler);
 	}
 
 	@Override
 	public Completable updateMapping(String indexName, String type, JsonObject mapping) {
 		return Completable.create(sub -> {
 			// Check whether the search provider is a dummy provider or not
-			if (getNode() == null) {
+			if (client == null) {
 				sub.onCompleted();
 				return;
 			}
@@ -239,8 +259,7 @@ public class ElasticSearchProvider implements SearchProvider {
 				log.trace("Using mapping:\n" + mapping.encodePrettily());
 			}
 
-			org.elasticsearch.node.Node esNode = getNode();
-			PutMappingRequestBuilder mappingRequestBuilder = esNode.client().admin().indices().preparePutMapping(indexName);
+			PutMappingRequestBuilder mappingRequestBuilder = client.admin().indices().preparePutMapping(indexName);
 			mappingRequestBuilder.setType(type);
 
 			mappingRequestBuilder.setSource(mapping.toString());
@@ -313,15 +332,20 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error("Could not delete object {" + uuid + ":" + type + "} from index {" + index + "}");
-					sub.onError(e);
+					if (e instanceof DocumentMissingException) {
+						sub.onCompleted();
+					} else {
+						log.error("Could not delete object {" + uuid + ":" + type + "} from index {" + index + "}");
+						sub.onError(e);
+					}
 				}
 			});
 		});
 	}
 
 	@Override
-	public Completable updateDocument(String index, String type, String uuid, JsonObject document) {
+	public Completable updateDocument(String index, String type, String uuid, JsonObject document, boolean ignoreMissingDocumentError) {
+		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
@@ -341,13 +365,16 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error(
-							"Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
-							e);
-					sub.onError(e);
+					if (ignoreMissingDocumentError && e instanceof DocumentMissingException) {
+						sub.onCompleted();
+					} else {
+						log.error("Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start)
+								+ "[ms]", e);
+						sub.onError(e);
+					}
 				}
 			});
-		});
+		}).observeOn(scheduler);
 	}
 
 	@Override
@@ -490,7 +517,6 @@ public class ElasticSearchProvider implements SearchProvider {
 			if (log.isDebugEnabled()) {
 				log.debug("Deleting documents from indices {" + Arrays.toString(indices) + "} via query {" + searchQuery + "}");
 			}
-			Client client = getNode().client();
 			SearchRequestBuilder builder = client.prepareSearch(indices).setSource(searchQuery);
 
 			Set<Completable> obs = new HashSet<>();
@@ -532,8 +558,13 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public String getVersion() {
-		NodesInfoResponse info = getNode().client().admin().cluster().prepareNodesInfo().all().get();
+		NodesInfoResponse info = client.admin().cluster().prepareNodesInfo().all().get();
 		return info.getAt(0).getVersion().number();
+	}
+
+	@Override
+	public <T> T getClient() {
+		return (T) client;
 	}
 
 }

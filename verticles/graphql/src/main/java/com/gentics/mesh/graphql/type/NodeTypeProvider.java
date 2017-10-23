@@ -40,7 +40,7 @@ import com.gentics.mesh.graphql.type.field.NodeFieldTypeProvider;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.path.PathSegment;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
+import com.gentics.mesh.search.index.node.NodeSearchHandler;
 
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLList;
@@ -59,7 +59,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	public static final String NODE_PAGE_TYPE_NAME = "NodesPage";
 
 	@Inject
-	public NodeIndexHandler nodeIndexHandler;
+	public NodeSearchHandler nodeSearchHandler;
 
 	@Inject
 	public InterfaceTypeProvider interfaceTypeProvider;
@@ -171,24 +171,24 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		interfaceTypeProvider.addCommonFields(nodeType, true);
 
 		// .project
-		nodeType.field(newFieldDefinition().name("project").description("Project of the node").type(new GraphQLTypeReference("Project"))
-				.dataFetcher((env) -> {
-					GraphQLContext gc = env.getContext();
-					NodeContent content = env.getSource();
-					if (content == null) {
-						return null;
-					}
-					Project projectOfNode = content.getNode().getProject();
-					return gc.requiresPerm(projectOfNode, READ_PERM);
-				}));
+		nodeType.field(newFieldDefinition().name("project").description("Project of the node").type(new GraphQLTypeReference("Project")).dataFetcher((
+				env) -> {
+			GraphQLContext gc = env.getContext();
+			NodeContent content = env.getSource();
+			if (content == null) {
+				return null;
+			}
+			Project projectOfNode = content.getNode().getProject();
+			return gc.requiresPerm(projectOfNode, READ_PERM);
+		}));
 
 		// .breadcrumb
-		nodeType.field(newFieldDefinition().name("breadcrumb").description("Breadcrumb of the node")
-				.type(new GraphQLList(new GraphQLTypeReference(NODE_TYPE_NAME))).dataFetcher(this::breadcrumbFetcher));
+		nodeType.field(newFieldDefinition().name("breadcrumb").description("Breadcrumb of the node").type(new GraphQLList(new GraphQLTypeReference(
+				NODE_TYPE_NAME))).dataFetcher(this::breadcrumbFetcher));
 
 		// .availableLanguages
-		nodeType.field(newFieldDefinition().name("availableLanguages").description("List all available languages for the node")
-				.type(new GraphQLList(GraphQLString)).dataFetcher((env) -> {
+		nodeType.field(newFieldDefinition().name("availableLanguages").description("List all available languages for the node").type(new GraphQLList(
+				GraphQLString)).dataFetcher((env) -> {
 					NodeContent content = env.getSource();
 					if (content == null) {
 						return null;
@@ -251,8 +251,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 			Node node = content.getNode();
 			List<String> languageTags = getLanguageArgument(env);
 
-			TransformablePage<? extends Node> page = node.getChildren(gc, languageTags, gc.getRelease().getUuid(), selectedType,
-					getPagingInfo(env));
+			TransformablePage<? extends Node> page = node.getChildren(gc, languageTags, gc.getRelease().getUuid(), selectedType, getPagingInfo(env));
 
 			// Transform the found nodes into contents
 			List<NodeContent> contents = page.getWrappedList().stream().map(item -> {
@@ -263,25 +262,25 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}, NODE_PAGE_TYPE_NAME).argument(createLanguageTagArg()));
 
 		// .parent
-		nodeType.field(newFieldDefinition().name("parent").description("Parent node").type(new GraphQLTypeReference(NODE_TYPE_NAME))
-				.dataFetcher(this::parentNodeFetcher));
+		nodeType.field(newFieldDefinition().name("parent").description("Parent node").type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(
+				this::parentNodeFetcher));
 
 		// .tags
-		nodeType.field(newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME))
-				.dataFetcher((env) -> {
-					GraphQLContext gc = env.getContext();
-					NodeContent content = env.getSource();
-					if (content == null) {
-						return null;
-					}
-					Node node = content.getNode();
-					return node.getTags(gc.getUser(), getPagingInfo(env), gc.getRelease());
-				}));
+		nodeType.field(newFieldDefinition().name("tags").argument(createPagingArgs()).type(new GraphQLTypeReference(TAG_PAGE_TYPE_NAME)).dataFetcher((
+				env) -> {
+			GraphQLContext gc = env.getContext();
+			NodeContent content = env.getSource();
+			if (content == null) {
+				return null;
+			}
+			Node node = content.getNode();
+			return node.getTags(gc.getUser(), getPagingInfo(env), gc.getRelease());
+		}));
 
 		// TODO Fix name confusion and check what version of schema should be used to determine this type
 		// .isContainer
-		nodeType.field(newFieldDefinition().name("isContainer").description("Check whether the node can have subnodes via children")
-				.type(GraphQLBoolean).dataFetcher((env) -> {
+		nodeType.field(newFieldDefinition().name("isContainer").description("Check whether the node can have subnodes via children").type(
+				GraphQLBoolean).dataFetcher((env) -> {
 					NodeContent content = env.getSource();
 					if (content == null) {
 						return null;
@@ -357,8 +356,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 				}));
 
 		// .isDraft
-		nodeType.field(
-				newFieldDefinition().name("isDraft").description("Check whether the content is a draft.").type(GraphQLBoolean).dataFetcher(env -> {
+		nodeType.field(newFieldDefinition().name("isDraft").description("Check whether the content is a draft.").type(GraphQLBoolean).dataFetcher(
+				env -> {
 					GraphQLContext gc = env.getContext();
 					NodeContent content = env.getSource();
 					NodeGraphFieldContainer container = content.getContainer();
@@ -379,8 +378,8 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}));
 
 		// .fields
-		nodeType.field(newFieldDefinition().name("fields").description("Contains the fields of the content.")
-				.type(nodeFieldTypeProvider.getSchemaFieldsType(project)).dataFetcher(env -> {
+		nodeType.field(newFieldDefinition().name("fields").description("Contains the fields of the content.").type(nodeFieldTypeProvider
+				.getSchemaFieldsType(project)).dataFetcher(env -> {
 					// The fields can be accessed via the container so we can directly pass it along.
 					NodeContent content = env.getSource();
 					return content.getContainer();
@@ -419,7 +418,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 */
 	public Page<? extends NodeContent> handleContentSearch(GraphQLContext gc, String query, PagingParameters pagingInfo) {
 		try {
-			return nodeIndexHandler.handleContainerSearch(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);
+			return nodeSearchHandler.handleContainerSearch(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);
 		} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
 			throw new RuntimeException(e);
 		}
@@ -436,7 +435,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 	 */
 	public Page<? extends Node> handleSearch(GraphQLContext gc, String query, PagingParameters pagingInfo) {
 		try {
-			return nodeIndexHandler.query(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);
+			return nodeSearchHandler.query(gc, query, pagingInfo, READ_PERM, READ_PUBLISHED_PERM);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

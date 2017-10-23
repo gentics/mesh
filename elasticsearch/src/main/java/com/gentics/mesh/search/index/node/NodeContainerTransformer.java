@@ -1,5 +1,8 @@
 package com.gentics.mesh.search.index.node;
 
+import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
+import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PUBLISHED_PERM;
 import static com.gentics.mesh.search.index.MappingHelper.ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
@@ -27,8 +30,10 @@ import javax.inject.Singleton;
 
 import org.apache.commons.lang3.NotImplementedException;
 
+import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -108,6 +113,29 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		// parentNodeInfo.put("schema.name", parentNode.getSchemaContainer().getName());
 		// parentNodeInfo.put("schema.uuid", parentNode.getSchemaContainer().getUuid());
 		document.put("parentNode", info);
+	}
+
+	/**
+	 * Generate the node container specific permission info. Node containers need to store also the read publish perm roles for published containers.
+	 * 
+	 * @param document
+	 * @param node
+	 * @param type
+	 */
+	private void addPermissionInfo(JsonObject document, Node node, ContainerType type) {
+		List<String> roleUuids = new ArrayList<>();
+
+		for (Role role : node.getRolesWithPerm(READ_PERM)) {
+			roleUuids.add(role.getUuid());
+		}
+
+		// Also add the roles which would grant read on published nodes if the container is published.
+		if (type == PUBLISHED) {
+			for (Role role : node.getRolesWithPerm(READ_PUBLISHED_PERM)) {
+				roleUuids.add(role.getUuid());
+			}
+		}
+		document.put("_roleUuids", roleUuids);
 	}
 
 	/**
@@ -319,7 +347,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	 *            Field schema which will be used to construct the mapping info
 	 * @return JSON object which contains the mapping info
 	 */
-	public JsonObject getMappingInfo(FieldSchema fieldSchema) {
+	public JsonObject getFieldMapping(FieldSchema fieldSchema) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
 		boolean addRaw = fieldSchema.getIndexOptions() != null ? Boolean.valueOf(fieldSchema.getIndexOptions().getAddRaw()) : false;
 		JsonObject fieldInfo = new JsonObject();
@@ -491,13 +519,27 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 	}
 
 	/**
+	 * Generate the node specific permission info partial whiich is used to update node container documents in the indices.
+	 * 
+	 * @param node
+	 * @param type
+	 * @return
+	 */
+	public JsonObject toPermissionPartial(Node node, ContainerType type) {
+		JsonObject document = new JsonObject();
+		addPermissionInfo(document, node, type);
+		return document;
+	}
+
+	/**
 	 * Transform the given container into a indexable document.
 	 * 
 	 * @param container
 	 * @param releaseUuid
+	 * @param type
 	 * @return
 	 */
-	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid) {
+	public JsonObject toDocument(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
 		Node node = container.getParentNode();
 		JsonObject document = new JsonObject();
 		document.put("uuid", node.getUuid());
@@ -509,6 +551,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		addProject(document, node.getProject());
 		addTags(document, node.getTags(node.getProject().getLatestRelease()));
 		addTagFamilies(document, node.getTags(node.getProject().getLatestRelease()));
+		addPermissionInfo(document, node, type);
 
 		// The basenode has no parent.
 		if (node.getParentNode(releaseUuid) != null) {
@@ -624,7 +667,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		mapping.put(type, typeMapping);
 
 		for (FieldSchema field : schema.getFields()) {
-			JsonObject fieldInfo = getMappingInfo(field);
+			JsonObject fieldInfo = getFieldMapping(field);
 			fieldProps.put(field.getName(), fieldInfo);
 		}
 		return mapping;

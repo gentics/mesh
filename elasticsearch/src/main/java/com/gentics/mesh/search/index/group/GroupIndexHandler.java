@@ -67,7 +67,7 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	}
 
 	@Override
-	protected RootVertex<Group> getRootVertex() {
+	public RootVertex<Group> getRootVertex() {
 		return boot.meshRoot().getGroupRoot();
 	}
 

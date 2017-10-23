@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,7 +15,6 @@ import java.util.Map.Entry;
 
 import org.mockito.Mockito;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
@@ -67,6 +67,7 @@ import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.field.nesting.NodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
@@ -90,6 +91,7 @@ import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.util.HttpQueryUtils;
 import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.HttpServerRequest;
@@ -110,6 +112,7 @@ public final class Mocks {
 		when(project.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
 		when(project.getEditor()).thenReturn(user);
 		when(project.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
+		when(project.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
 		return project;
 	}
 
@@ -158,6 +161,7 @@ public final class Mocks {
 		when(role.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
 		when(role.getName()).thenReturn(roleName);
 		when(role.getUuid()).thenReturn(randomUUID());
+		when(role.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
 		return role;
 	}
 
@@ -169,6 +173,7 @@ public final class Mocks {
 		when(group.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
 		when(group.getName()).thenReturn(groupName);
 		when(group.getUuid()).thenReturn(randomUUID());
+		when(group.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
 		return group;
 	}
 
@@ -189,6 +194,7 @@ public final class Mocks {
 			when(user.getCreator()).thenReturn(creator);
 			when(user.getEditor()).thenReturn(creator);
 		}
+		when(user.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
 		return user;
 	}
 
@@ -210,6 +216,7 @@ public final class Mocks {
 		when(tagFamily.getName()).thenReturn(name);
 		when(tagFamily.getUuid()).thenReturn(randomUUID());
 		when(tagFamily.getProject()).thenReturn(project);
+		when(tagFamily.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
 		return tagFamily;
 	}
 
@@ -223,6 +230,7 @@ public final class Mocks {
 		when(tag.getUuid()).thenReturn(randomUUID());
 		when(tag.getTagFamily()).thenReturn(tagFamily);
 		when(tag.getProject()).thenReturn(project);
+		when(tag.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
 		return tag;
 	}
 
@@ -239,6 +247,7 @@ public final class Mocks {
 		when(container.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
 		when(container.getEditor()).thenReturn(user);
 		when(container.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
+		when(container.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
 		return container;
 	}
 
@@ -254,6 +263,7 @@ public final class Mocks {
 		when(container.getCreationTimestamp()).thenReturn(System.currentTimeMillis());
 		when(container.getEditor()).thenReturn(user);
 		when(container.getLastEditedTimestamp()).thenReturn(System.currentTimeMillis());
+		when(container.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
 		return container;
 	}
 
@@ -309,6 +319,7 @@ public final class Mocks {
 		when(node.getSchemaContainer()).thenReturn(schemaContainer);
 		when(node.getCreator()).thenReturn(user);
 		when(node.getUuid()).thenReturn(randomUUID());
+		when(node.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
 
 		NodeGraphFieldContainer container = mockContainer(language, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);

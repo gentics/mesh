@@ -1,7 +1,7 @@
 package com.gentics.mesh.search;
 
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -12,10 +12,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.codehaus.jettison.json.JSONException;
-import org.elasticsearch.common.collect.Tuple;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
@@ -33,6 +31,8 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
+import com.gentics.mesh.util.Tuple;
+import com.syncleus.ferma.tx.Tx;
 
 public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 

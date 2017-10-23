@@ -1,5 +1,7 @@
 package com.gentics.mesh.search.index;
 
+import com.gentics.mesh.core.data.MeshCoreVertex;
+
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -25,5 +27,13 @@ public interface Transformer<T> {
 	 * @return
 	 */
 	JsonObject getMapping(String type);
+
+	/**
+	 * Create the json document for a permission update.
+	 * 
+	 * @param element
+	 * @return
+	 */
+	JsonObject toPermissionPartial(MeshCoreVertex<?, ?> element);
 
 }

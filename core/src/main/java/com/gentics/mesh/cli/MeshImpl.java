@@ -16,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.MeshStatus;
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.crypto.KeyStoreHelper;
 import com.gentics.mesh.dagger.MeshComponent;
 import com.gentics.mesh.dagger.MeshInternal;
@@ -228,7 +229,7 @@ public class MeshImpl implements Mesh {
 
 	private void printProductInformation() {
 		log.info("###############################################################");
-		log.info(infoLine("Mesh Version " + Mesh.getBuildInfo()));
+		log.info(infoLine("Mesh Version " + MeshVersion.getBuildInfo()));
 		log.info(infoLine("Gentics Software"));
 		log.info("#-------------------------------------------------------------#");
 		// log.info(infoLine("Neo4j Version : " + Version.getKernel().getReleaseVersion()));
@@ -243,7 +244,7 @@ public class MeshImpl implements Mesh {
 	private void printAprilFoolJoke() {
 		try {
 			log.info("###############################################################");
-			log.info(infoLine("Booting Skynet Kernel " + Mesh.getBuildInfo()));
+			log.info(infoLine("Booting Skynet Kernel " + MeshVersion.getBuildInfo()));
 			Thread.sleep(500);
 			if (getOptions().getClusterOptions() != null && getOptions().getClusterOptions().isEnabled()) {
 				log.info(infoLine("Skynet Global Name: " + getOptions().getClusterOptions().getClusterName()));

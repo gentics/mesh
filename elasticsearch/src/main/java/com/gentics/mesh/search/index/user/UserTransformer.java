@@ -48,6 +48,7 @@ public class UserTransformer extends AbstractTransformer<User> {
 		document.put(FIRSTNAME_KEY, user.getFirstname());
 		document.put(LASTNAME_KEY, user.getLastname());
 		addGroups(document, user.getGroups());
+		addPermissionInfo(document, user);
 		Node referencedNode = user.getReferencedNode();
 		if (referencedNode != null) {
 			document.put(NODEREFERECE_KEY, referencedNode.getUuid());

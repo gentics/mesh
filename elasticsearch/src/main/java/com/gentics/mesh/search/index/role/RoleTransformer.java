@@ -32,6 +32,7 @@ public class RoleTransformer extends AbstractTransformer<Role> {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, role.getName());
 		addBasicReferences(document, role);
+		addPermissionInfo(document, role);
 		return document;
 	}
 

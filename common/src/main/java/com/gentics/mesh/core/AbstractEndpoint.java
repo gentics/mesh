@@ -7,22 +7,8 @@ import javax.inject.Inject;
 
 import com.gentics.mesh.auth.MeshAuthHandler;
 import com.gentics.mesh.etc.RouterStorage;
-import com.gentics.mesh.example.AdminExamples;
-import com.gentics.mesh.example.GraphQLExamples;
-import com.gentics.mesh.example.GroupExamples;
-import com.gentics.mesh.example.JobExamples;
-import com.gentics.mesh.example.MicroschemaExamples;
-import com.gentics.mesh.example.MiscExamples;
-import com.gentics.mesh.example.NodeExamples;
-import com.gentics.mesh.example.ProjectExamples;
-import com.gentics.mesh.example.ReleaseExamples;
-import com.gentics.mesh.example.RoleExamples;
-import com.gentics.mesh.example.SchemaExamples;
-import com.gentics.mesh.example.TagExamples;
-import com.gentics.mesh.example.TagFamilyExamples;
-import com.gentics.mesh.example.UserExamples;
-import com.gentics.mesh.example.VersioningExamples;
 import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.rest.impl.EndpointImpl;
 
 import io.vertx.ext.web.Route;
@@ -31,25 +17,9 @@ import io.vertx.ext.web.Router;
 /**
  * An abstract class that should be used when creating new endpoints.
  */
-public abstract class AbstractEndpoint {
+public abstract class AbstractEndpoint implements Endpoint {
 
-	protected List<Endpoint> endpoints = new ArrayList<>();
-
-	protected NodeExamples nodeExamples = new NodeExamples();
-	protected TagExamples tagExamples = new TagExamples();
-	protected TagFamilyExamples tagFamilyExamples = new TagFamilyExamples();
-	protected GroupExamples groupExamples = new GroupExamples();
-	protected RoleExamples roleExamples = new RoleExamples();
-	protected MiscExamples miscExamples = new MiscExamples();
-	protected VersioningExamples versioningExamples = new VersioningExamples();
-	protected SchemaExamples schemaExamples = new SchemaExamples();
-	protected ProjectExamples projectExamples = new ProjectExamples();
-	protected UserExamples userExamples = new UserExamples();
-	protected MicroschemaExamples microschemaExamples = new MicroschemaExamples();
-	protected GraphQLExamples graphqlExamples = new GraphQLExamples();
-	protected AdminExamples adminExamples = new AdminExamples();
-	protected JobExamples jobExamples = new JobExamples();
-	protected ReleaseExamples releaseExamples = new ReleaseExamples();
+	protected List<EndpointRoute> endpoints = new ArrayList<>();
 
 	protected Router localRouter = null;
 	protected String basePath;
@@ -132,13 +102,9 @@ public abstract class AbstractEndpoint {
 		return route;
 	}
 
-	/**
-	 * Create a new endpoint. Internally a new route will be wrapped.
-	 * 
-	 * @return Created endpoint
-	 */
-	protected Endpoint createEndpoint() {
-		Endpoint endpoint = new EndpointImpl(getRouter());
+	@Override
+	public EndpointRoute createEndpoint() {
+		EndpointRoute endpoint = new EndpointImpl(getRouter());
 		endpoints.add(endpoint);
 		return endpoint;
 	}
@@ -148,7 +114,7 @@ public abstract class AbstractEndpoint {
 	 * 
 	 * @return List of created endpoint
 	 */
-	public List<Endpoint> getEndpoints() {
+	public List<EndpointRoute> getEndpoints() {
 		return endpoints;
 	}
 

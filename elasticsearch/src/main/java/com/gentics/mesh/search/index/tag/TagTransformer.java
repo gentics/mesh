@@ -31,6 +31,7 @@ public class TagTransformer extends AbstractTransformer<Tag> {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, tag.getName());
 		addBasicReferences(document, tag);
+		addPermissionInfo(document, tag);
 		addTagFamily(document, tag.getTagFamily());
 		addProject(document, tag.getProject());
 		return document;

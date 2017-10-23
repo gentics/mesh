@@ -16,6 +16,7 @@ import javax.inject.Inject;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
@@ -24,6 +25,7 @@ import com.gentics.mesh.core.data.search.DropIndexEntry;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.SearchQueueEntry;
+import com.gentics.mesh.core.data.search.SearchQueueEntryAction;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
@@ -190,6 +192,19 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 				this.store(relatedElement, relatedContext, false);
 			});
 		}
+		return this;
+	}
+
+	@Override
+	public SearchQueueBatch updatePermissions(IndexableElement element) {
+		GenericEntryContextImpl context = new GenericEntryContextImpl();
+		Project project = element.getProject();
+		if (project != null) {
+			context.setProjectUuid(project.getUuid());
+		}
+		UpdateDocumentEntry entry = new UpdateDocumentEntryImpl(registry.getForClass(element), element, context,
+				SearchQueueEntryAction.UPDATE_ROLE_PERM_ACTION);
+		addEntry(entry);
 		return this;
 	}
 

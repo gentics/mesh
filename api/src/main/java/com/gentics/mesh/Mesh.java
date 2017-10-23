@@ -1,8 +1,5 @@
 package com.gentics.mesh;
 
-import java.util.Properties;
-import java.util.concurrent.atomic.AtomicReference;
-
 import com.gentics.mesh.etc.MeshCustomLoader;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -15,8 +12,6 @@ import io.vertx.core.Vertx;
 public interface Mesh {
 
 	static MeshFactory factory = ServiceHelper.loadFactory(MeshFactory.class);
-
-	static AtomicReference<BuildInfo> buildInfo = new AtomicReference<BuildInfo>(null);
 
 	/**
 	 * Returns the initialized instance.
@@ -45,36 +40,6 @@ public interface Mesh {
 	 */
 	static boolean isInitalized() {
 		return factory.isInitalized();
-	}
-
-	/**
-	 * Return the mesh build information.
-	 * 
-	 * @return Mesh version and build timestamp.
-	 */
-	static BuildInfo getBuildInfo() {
-		try {
-			if (buildInfo.get() == null) {
-				Properties buildProperties = new Properties();
-				buildProperties.load(Mesh.class.getResourceAsStream("/mesh.build.properties"));
-				// Cache the build information
-				buildInfo.set(new BuildInfo(buildProperties));
-			}
-			return buildInfo.get();
-		} catch (Exception e) {
-			return new BuildInfo("unknown", "unknown");
-		}
-		// Package pack = MeshImpl.class.getPackage();
-		// return pack.getImplementationVersion();
-	}
-
-	/**
-	 * Return the mesh version (without build timestamp)
-	 *
-	 * @return Mesh version
-	 */
-	static String getPlainVersion() {
-		return getBuildInfo().getVersion();
 	}
 
 	/**
@@ -151,5 +116,9 @@ public interface Mesh {
 	 * @return
 	 */
 	MeshStatus getStatus();
+
+	static String getPlainVersion() {
+		return MeshVersion.getPlainVersion();
+	}
 
 }

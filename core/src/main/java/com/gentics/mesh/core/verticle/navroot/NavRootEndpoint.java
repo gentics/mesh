@@ -13,7 +13,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.NavigationParametersImpl;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 
 /**
  * Endpoint which returns navigation responses for a given webroot path.
@@ -45,7 +45,7 @@ public class NavRootEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addPathHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.pathRegex("\\/(.*)");
 		endpoint.method(GET);
 		endpoint.description("Return a navigation for the node which is located using the given path.");

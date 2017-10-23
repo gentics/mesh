@@ -197,13 +197,13 @@ public class TagFamilyImpl extends AbstractMeshCoreVertex<TagFamilyResponse, Tag
 	}
 
 	@Override
-	public void applyPermissions(Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
+	public void applyPermissions(SearchQueueBatch batch, Role role, boolean recursive, Set<GraphPermission> permissionsToGrant, Set<GraphPermission> permissionsToRevoke) {
 		if (recursive) {
 			for (Tag tag : findAllIt()) {
-				tag.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+				tag.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 			}
 		}
-		super.applyPermissions(role, recursive, permissionsToGrant, permissionsToRevoke);
+		super.applyPermissions(batch, role, recursive, permissionsToGrant, permissionsToRevoke);
 	}
 
 	@Override

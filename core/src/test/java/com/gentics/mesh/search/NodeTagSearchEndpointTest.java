@@ -37,6 +37,7 @@ public class NodeTagSearchEndpointTest extends AbstractNodeSearchEndpointTest {
 		}
 
 		String query = getESQuery("failing-query.es");
+		//TODO add better error info
 		call(() -> client().searchNodes(PROJECT_NAME, query), BAD_REQUEST, "search_error_query");
 
 	}

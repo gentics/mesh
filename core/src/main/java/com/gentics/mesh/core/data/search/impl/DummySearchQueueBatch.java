@@ -54,6 +54,11 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 	}
 
 	@Override
+	public SearchQueueBatch updatePermissions(IndexableElement element) {
+		return this;
+	}
+
+	@Override
 	public SearchQueueBatch delete(IndexableElement element, GenericEntryContext context, boolean addRelatedEntries) {
 		return this;
 	}
@@ -116,4 +121,5 @@ public class DummySearchQueueBatch implements SearchQueueBatch {
 	@Override
 	public void clear() {
 	}
+
 }

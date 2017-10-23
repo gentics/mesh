@@ -20,7 +20,7 @@ import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.SchemaUpdateParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 import com.gentics.mesh.util.UUIDUtil;
 
 /**
@@ -69,7 +69,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 		// crudHandler.handleGetSchemaChanges(InternalActionContext.create(rc));
 		// });
 
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:schemaUuid/changes");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -85,7 +85,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addCreateHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/");
 		endpoint.method(POST);
 		endpoint.description("Create a new schema.");
@@ -100,7 +100,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDiffHandler() {
-		Endpoint diffEndpoint = createEndpoint();
+		EndpointRoute diffEndpoint = createEndpoint();
 		diffEndpoint.path("/:schemaUuid/diff");
 		diffEndpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		diffEndpoint.method(POST);
@@ -118,7 +118,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addUpdateHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:schemaUuid");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(POST);
@@ -136,7 +136,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addDeleteHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/:schemaUuid");
 		endpoint.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		endpoint.method(DELETE);
@@ -151,7 +151,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 	}
 
 	private void addReadHandlers() {
-		Endpoint readOne = createEndpoint();
+		EndpointRoute readOne = createEndpoint();
 		readOne.path("/:schemaUuid");
 		readOne.addUriParameter("schemaUuid", "Uuid of the schema.", UUIDUtil.randomUUID());
 		readOne.method(GET);
@@ -169,7 +169,7 @@ public class SchemaEndpoint extends AbstractEndpoint {
 			}
 		});
 
-		Endpoint readAll = createEndpoint();
+		EndpointRoute readAll = createEndpoint();
 		readAll.path("/");
 		readAll.method(GET);
 		readAll.description("Read multiple schemas and return a paged list response.");

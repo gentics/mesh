@@ -10,13 +10,14 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.BuildInfo;
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.MeshVersion;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 import rx.functions.Action0;
 
@@ -141,7 +142,7 @@ public class MeshRootTest extends AbstractMeshTest {
 	}
 
 	private void setMeshVersions(String graphVersion, String buildVersion) throws IOException {
-		Mesh.buildInfo.set(new BuildInfo(buildVersion, null));
+		MeshVersion.buildInfo.set(new BuildInfo(buildVersion, null));
 		assertEquals(buildVersion, Mesh.getPlainVersion());
 
 		try (Tx tx = tx()) {

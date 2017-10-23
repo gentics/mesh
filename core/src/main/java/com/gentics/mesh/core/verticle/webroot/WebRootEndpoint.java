@@ -11,7 +11,7 @@ import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.http.MeshHeaders;
 import com.gentics.mesh.parameter.impl.ImageManipulationParametersImpl;
-import com.gentics.mesh.rest.Endpoint;
+import com.gentics.mesh.rest.EndpointRoute;
 
 @Singleton
 public class WebRootEndpoint extends AbstractProjectEndpoint {
@@ -41,7 +41,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addPathHandler() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.pathRegex("\\/(.*)");
 		endpoint.setRAMLPath("/{path}");
 		endpoint.method(GET);
@@ -56,7 +56,7 @@ public class WebRootEndpoint extends AbstractProjectEndpoint {
 	}
 
 	private void addErrorHandlers() {
-		Endpoint endpoint = createEndpoint();
+		EndpointRoute endpoint = createEndpoint();
 		endpoint.path("/error/404");
 		endpoint.description("Fallback endpoint for unresolvable links which returns 404.");
 		endpoint.handler(rc -> {

@@ -14,8 +14,10 @@ import com.gentics.mesh.core.data.CreatorTrackingVertex;
 import com.gentics.mesh.core.data.EditorTrackingVertex;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Project;
+import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.relationship.GraphPermission;
 
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -81,7 +83,7 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	 * @param document
 	 * @param tags
 	 */
-	public void addTags(JsonObject document, List<? extends Tag> tags) {
+	public void addTags(JsonObject document, Iterable<? extends Tag> tags) {
 		List<String> tagUuids = new ArrayList<>();
 		List<String> tagNames = new ArrayList<>();
 		for (Tag tag : tags) {
@@ -112,6 +114,29 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 	}
 
 	/**
+	 * Adds the information which roles can read permission the given element to the document. This information will later be used by the permission script to
+	 * filter out document which should not be visible to the user which invokes the query.
+	 * 
+	 * @param document
+	 * @param element
+	 */
+	protected void addPermissionInfo(JsonObject document, MeshCoreVertex<?, ?> element) {
+		Iterable<? extends Role> roleIt = element.getRolesWithPerm(GraphPermission.READ_PERM);
+		List<String> roleUuids = new ArrayList<>();
+		for (Role role : roleIt) {
+			roleUuids.add(role.getUuid());
+		}
+		document.put("_roleUuids", roleUuids);
+	}
+
+	@Override
+	public JsonObject toPermissionPartial(MeshCoreVertex<?, ?> element) {
+		JsonObject document = new JsonObject();
+		addPermissionInfo(document, element);
+		return document;
+	}
+
+	/**
 	 * Add the project field to the source map.
 	 * 
 	 * @param document
@@ -137,12 +162,21 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 		mappingProperties.put("edited", notAnalyzedType(DATE));
 		mappingProperties.put("editor", getUserReferenceMapping());
 		mappingProperties.put("creator", getUserReferenceMapping());
+		mappingProperties.put("_roleUuids", notAnalyzedType(STRING));
 
 		JsonObject typeMapping = new JsonObject();
 		typeMapping.put("properties", mappingProperties);
 
 		mapping.put(type, typeMapping);
 		return mapping;
+	}
+
+	private JsonObject getRoleUuidsMapping() {
+		JsonObject rolesMapping = new JsonObject();
+		JsonObject rolesMappingProps = new JsonObject();
+		rolesMappingProps.put("_roleUuids", notAnalyzedType(STRING));
+		rolesMapping.put("properties", rolesMappingProps);
+		return rolesMapping;
 	}
 
 	/**

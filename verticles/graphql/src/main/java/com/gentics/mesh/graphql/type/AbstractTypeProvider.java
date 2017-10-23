@@ -26,12 +26,12 @@ import com.gentics.mesh.core.data.page.impl.DynamicStreamPageImpl;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
+import com.gentics.mesh.search.SearchHandler;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
@@ -246,14 +246,14 @@ public abstract class AbstractTypeProvider {
 	 * @return
 	 */
 	protected GraphQLFieldDefinition newPagingSearchField(String name, String description, Func1<GraphQLContext, RootVertex<?>> rootProvider,
-			String pageTypeName, IndexHandler<?> indexHandler) {
+			String pageTypeName, SearchHandler searchHandler) {
 		return newFieldDefinition().name(name).description(description).argument(createPagingArgs()).argument(createQueryArg()).type(
 				new GraphQLTypeReference(pageTypeName)).dataFetcher((env) -> {
 					GraphQLContext gc = env.getContext();
 					String query = env.getArgument("query");
 					if (query != null) {
 						try {
-							return indexHandler.query(gc, query, getPagingInfo(env), READ_PERM);
+							return searchHandler.query(gc, query, getPagingInfo(env), READ_PERM);
 						} catch (MeshConfigurationException | InterruptedException | ExecutionException | TimeoutException e) {
 							throw new RuntimeException(e);
 						}

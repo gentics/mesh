@@ -28,6 +28,7 @@ public class SchemaTransformer extends AbstractTransformer<SchemaContainer> {
 		document.put(NAME_KEY, container.getName());
 		document.put(DESCRIPTION_KEY, container.getLatestVersion().getSchema().getDescription());
 		addBasicReferences(document, container);
+		addPermissionInfo(document, container);
 		return document;
 	}
 

@@ -1,0 +1,14 @@
+{
+  "query": {
+    "bool": {
+      "must": [
+        {
+          "terms": {
+            "_roleUuids": []
+          }
+        },
+        {}
+      ]
+    }
+  }
+}

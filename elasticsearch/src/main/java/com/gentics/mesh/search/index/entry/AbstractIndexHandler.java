@@ -1,47 +1,27 @@
 package com.gentics.mesh.search.index.entry;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
-import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
-import org.elasticsearch.action.search.SearchRequestBuilder;
-import org.elasticsearch.action.search.SearchResponse;
-import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
-import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
-import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.IndexableElement;
 import com.gentics.mesh.core.data.MeshCoreVertex;
-import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.page.Page;
-import com.gentics.mesh.core.data.relationship.GraphPermission;
-import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
-import com.gentics.mesh.core.rest.error.GenericRestException;
-import com.gentics.mesh.error.MeshConfigurationException;
 import com.gentics.mesh.graphdb.spi.Database;
-import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.Transformer;
 import com.syncleus.ferma.tx.Tx;
@@ -80,25 +60,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	/**
-	 * Return the root vertex of the index handler. The root vertex is used to retrieve nodes by UUID in order to update the search index.
-	 * 
-	 * @return
-	 */
-	abstract protected RootVertex<T> getRootVertex();
-
-	/**
 	 * Return the index specific transformer which is used to generate the search document and mappings.
 	 * 
 	 * @return
 	 */
 	abstract protected Transformer getTransformer();
-
-	/**
-	 * Return the class of elements which can be handled by this handler.
-	 * 
-	 * @return
-	 */
-	abstract protected Class<?> getElementClass();
 
 	/**
 	 * Compose the index name using the batch entry data.
@@ -127,21 +93,42 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	/**
 	 * Store the given object within the search index.
 	 * 
-	 * @param object
+	 * @param element
 	 * @param entry
 	 *            search queue entry
 	 * @return
 	 */
-	public Completable store(T object, UpdateDocumentEntry entry) {
+	public Completable store(T element, UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
 		String indexType = composeIndexTypeFromEntry(entry);
-		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformer().toDocument(object)).doOnCompleted(() -> {
+		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformer().toDocument(element)).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
 			}
 			searchProvider.refreshIndex();
 		});
+	}
+
+	@Override
+	public Completable updatePermission(UpdateDocumentEntry entry) {
+		String uuid = entry.getElementUuid();
+		T element = getRootVertex().findByUuid(uuid);
+		if (element == null) {
+			String type = composeIndexTypeFromEntry(entry);
+			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
+		} else {
+			String indexName = composeIndexNameFromEntry(entry);
+			String documentId = composeDocumentIdFromEntry(entry);
+			String indexType = composeIndexTypeFromEntry(entry);
+			return searchProvider.updateDocument(indexName, indexType, documentId, getTransformer().toPermissionPartial(element), true)
+					.doOnCompleted(() -> {
+						if (log.isDebugEnabled()) {
+							log.debug("Updated object in index.");
+						}
+						searchProvider.refreshIndex();
+					});
+		}
 	}
 
 	@Override
@@ -158,9 +145,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		return Completable.defer(() -> {
 			try (Tx tx = db.tx()) {
 				String uuid = entry.getElementUuid();
-				String type = composeIndexTypeFromEntry(entry);
 				T element = getRootVertex().findByUuid(uuid);
 				if (element == null) {
+					String type = composeIndexTypeFromEntry(entry);
 					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
 				} else {
 					return store(element, entry);
@@ -189,13 +176,12 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	public Completable updateMapping(String indexName, String documentType) {
 
 		final String normalizedDocumentType = documentType.toLowerCase();
-		if (searchProvider.getNode() != null) {
+		if (searchProvider.getClient() != null) {
 			Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
 
 			return Completable.create(sub -> {
-
-				org.elasticsearch.node.Node node = getESNode();
-				PutMappingRequestBuilder mappingRequestBuilder = node.client().admin().indices().preparePutMapping(indexName);
+				Client client = searchProvider.getClient(); 
+				PutMappingRequestBuilder mappingRequestBuilder = client.admin().indices().preparePutMapping(indexName);
 				mappingRequestBuilder.setType(normalizedDocumentType);
 
 				// Generate the mapping for the specific type
@@ -220,22 +206,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 			}).observeOn(scheduler);
 		} else {
 			return Completable.complete();
-		}
-	}
-
-	/**
-	 * Utility method that is used to return the elasticsearch node.
-	 * 
-	 * @return es node
-	 * @throws RuntimeException
-	 *             Exception which will be thrown if the ES node can't be returned
-	 */
-	protected org.elasticsearch.node.Node getESNode() {
-		// Fetch the elastic search instance
-		if (searchProvider.getNode() != null && searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
-			return (org.elasticsearch.node.Node) searchProvider.getNode();
-		} else {
-			throw new RuntimeException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
 		}
 	}
 
@@ -313,86 +283,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public boolean accepts(Class<?> clazzOfElement) {
 		return getElementClass().isAssignableFrom(clazzOfElement);
-	}
-
-	@Override
-	public Page<? extends T> query(InternalActionContext ac, String query, PagingParameters pagingInfo, GraphPermission... permissions)
-			throws MeshConfigurationException, InterruptedException, ExecutionException, TimeoutException {
-		User user = ac.getUser();
-
-		org.elasticsearch.node.Node esNode = null;
-		if (searchProvider.getNode() instanceof org.elasticsearch.node.Node) {
-			esNode = (org.elasticsearch.node.Node) searchProvider.getNode();
-		} else {
-			throw new MeshConfigurationException("Unable to get elasticsearch instance from search provider got {" + searchProvider.getNode() + "}");
-		}
-		Client client = esNode.client();
-
-		if (log.isDebugEnabled()) {
-			log.debug("Invoking search with query {" + query + "} for {" + getElementClass().getName() + "}");
-		}
-
-		/*
-		 * TODO, FIXME This a very crude hack but we need to handle paging ourself for now. In order to avoid such nasty ways of paging a custom ES plugin has
-		 * to be written that deals with Document Level Permissions/Security (commonly known as DLS)
-		 */
-		SearchRequestBuilder builder = null;
-		try {
-			JSONObject queryStringObject = new JSONObject(query);
-			/**
-			 * Note that from + size can not be more than the index.max_result_window index setting which defaults to 10,000. See the Scroll API for more
-			 * efficient ways to do deep scrolling.
-			 */
-			queryStringObject.put("from", 0);
-			queryStringObject.put("size", Integer.MAX_VALUE);
-			Set<String> indices = getSelectedIndices(ac);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(queryStringObject.toString());
-		} catch (Exception e) {
-			throw new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e);
-		}
-		CompletableFuture<Page<? extends T>> future = new CompletableFuture<>();
-		builder.setSearchType(SearchType.DFS_QUERY_THEN_FETCH);
-		builder.execute().addListener(new ActionListener<SearchResponse>() {
-
-			@Override
-			public void onResponse(SearchResponse response) {
-				Page<? extends T> page = db.tx(() -> {
-					List<T> elementList = new ArrayList<T>();
-					for (SearchHit hit : response.getHits()) {
-
-						String id = hit.getId();
-						int pos = id.indexOf("-");
-						String uuid = pos > 0 ? id.substring(0, pos) : id;
-
-						// TODO check permissions without loading the vertex
-
-						// Locate the node
-						T element = getRootVertex().findByUuid(uuid);
-						if (element != null) {
-							// Check permissions and language
-							for (GraphPermission permission : permissions) {
-								if (user.hasPermission(element, permission)) {
-									elementList.add(element);
-									break;
-								}
-							}
-						}
-					}
-					Page<? extends T> elementPage = Page.applyPaging(elementList, pagingInfo);
-					return elementPage;
-				});
-				future.complete(page);
-			}
-
-			@Override
-			public void onFailure(Throwable e) {
-				log.error("Search query failed", e);
-				future.completeExceptionally(e);
-			}
-		});
-
-		return future.get(60, TimeUnit.SECONDS);
-
 	}
 
 }

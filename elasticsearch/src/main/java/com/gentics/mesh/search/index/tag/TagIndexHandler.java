@@ -42,7 +42,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	protected Class<Tag> getElementClass() {
+	public Class<Tag> getElementClass() {
 		return Tag.class;
 	}
 
@@ -97,7 +97,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	protected RootVertex<Tag> getRootVertex() {
+	public RootVertex<Tag> getRootVertex() {
 		return boot.meshRoot().getTagRoot();
 	}
 

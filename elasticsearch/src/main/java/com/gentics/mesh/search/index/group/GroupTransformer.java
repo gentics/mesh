@@ -26,6 +26,7 @@ public class GroupTransformer extends AbstractTransformer<Group> {
 		JsonObject document = new JsonObject();
 		document.put(NAME_KEY, group.getName());
 		addBasicReferences(document, group);
+		addPermissionInfo(document, group);
 		return document;
 	}
 

@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.NamedElement;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.User;
+import com.gentics.mesh.core.data.impl.RoleImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.rest.common.GenericRestResponse;
 import com.gentics.mesh.core.rest.common.PermissionInfo;
@@ -38,6 +39,11 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 	private static final Logger log = LoggerFactory.getLogger(AbstractMeshCoreVertex.class);
 
 	@Override
+	public Iterable<? extends Role> getRolesWithPerm(GraphPermission perm) {
+		return in(perm.label()).frameExplicit(RoleImpl.class);
+	}
+
+	@Override
 	public void setRolePermissions(InternalActionContext ac, GenericRestResponse model) {
 		String roleUuid = ac.getRolePermissionParameters().getRoleUuid();
 		if (!isEmpty(roleUuid)) {
@@ -53,8 +59,8 @@ public abstract class AbstractMeshCoreVertex<T extends RestModel, R extends Mesh
 				model.setRolePerms(permissionInfo);
 			}
 		}
-
 	}
+	
 
 	@Override
 	public void fillCommonRestFields(InternalActionContext ac, GenericRestResponse model) {

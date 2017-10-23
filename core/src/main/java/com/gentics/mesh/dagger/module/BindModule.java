@@ -11,7 +11,7 @@ import dagger.Binds;
 import dagger.Module;
 
 @Module
-public abstract class ExtraModule {
+public abstract class BindModule {
 
 	@Binds
 	abstract DropIndexHandler bindCommonHandler(DropIndexHandlerImpl e);

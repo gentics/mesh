@@ -31,7 +31,7 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
-	protected Class<User> getElementClass() {
+	public Class<User> getElementClass() {
 		return User.class;
 	}
 
@@ -61,7 +61,7 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
-	protected RootVertex<User> getRootVertex() {
+	public RootVertex<User> getRootVertex() {
 		return boot.meshRoot().getUserRoot();
 	}
 

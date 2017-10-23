@@ -12,6 +12,8 @@ import com.gentics.mesh.core.rest.auth.LoginRequest;
 import com.gentics.mesh.core.rest.common.GenericMessageResponse;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
 
+import io.vertx.core.json.JsonObject;
+
 public class MiscExamples extends AbstractExamples {
 
 	public LoginRequest getLoginRequest() {
@@ -60,9 +62,13 @@ public class MiscExamples extends AbstractExamples {
 
 	public ConsistencyCheckResponse createConsistencyCheckResponse() {
 		ConsistencyCheckResponse response = new ConsistencyCheckResponse();
-		response.getInconsistencies().add(new InconsistencyInfo().setSeverity(InconsistencySeverity.LOW).setElementUuid(randomUUID())
-				.setDescription("A dangling field container has been found."));
+		response.getInconsistencies().add(new InconsistencyInfo().setSeverity(InconsistencySeverity.LOW).setElementUuid(randomUUID()).setDescription(
+				"A dangling field container has been found."));
 		return response;
+	}
+
+	public JsonObject createSearchResponse() {
+		return new JsonObject();
 	}
 
 }

@@ -22,19 +22,24 @@ RUN curl "https://get.docker.com/builds/`uname -s`/`uname -m`/docker-latest.tgz"
     mv docker/* /usr/bin &&\
     rm -rf docke*
 
-# Install Java 8 / 9 
-RUN \
-  echo  oracle-java8-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-  echo  oracle-java9-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
-  add-apt-repository "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" && \
-  apt-get update && \
-  apt-get install -y oracle-java8-installer && \
-  apt-get install -y oracle-java9-installer && \
-  rm -rf /var/lib/apt/lists/* && \
-  rm -rf /var/cache/oracle-*
-
+# Install Java 8
+RUN mkdir -p /usr/lib/jvm/ && \
+   cd /usr/lib/jvm/ && \
+   wget -nv -O jdk-8-x64.tar.gz "https://filebox.apa-it.at/index.php/s/p3yUKk7Rju96eyc/download" && \
+   tar xfz jdk-8-x64.tar.gz && \
+   rm *.gz && \
+   mv jdk1.8.0_151 java-8-oracle
 ENV JAVA_1_8_HOME /usr/lib/jvm/java-8-oracle
-ENV JAVA_1_9_HOME /usr/lib/jvm/java-9-oracle
+
+# Install Java 9
+#RUN \
+#  echo  oracle-java9-installer shared/accepted-oracle-license-v1-1 select true | debconf-set-selections && \
+#  add-apt-repository "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main" && \
+#  apt-get update && \
+#  apt-get install -y oracle-java9-installer && \
+#  rm -rf /var/lib/apt/lists/* && \
+#  rm -rf /var/cache/oracle-*
+#ENV JAVA_1_9_HOME /usr/lib/jvm/java-9-oracle
 
 # Add Jenkins user
 RUN echo "jenkins:jenkins" | chpasswd
