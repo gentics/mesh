@@ -73,6 +73,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	public final static String DEFAULT_QUERY_FILENAME = "default-query.json";
 
 	public static String DEFAULT_QUERY = null;
+
 	static {
 		try {
 			DEFAULT_QUERY = IOUtils.toString(AbstractSearchHandler.class.getResourceAsStream("/" + DEFAULT_QUERY_FILENAME));
@@ -102,8 +103,16 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	 * @return
 	 */
 	protected JsonObject prepareSearchQuery(InternalActionContext ac, String searchQuery) {
-
 		JsonObject json = new JsonObject(DEFAULT_QUERY);
+		JsonObject query = new JsonObject(searchQuery);
+
+		// We need to extract the sort object and move it to the top level
+		if (query.containsKey("sort")) {
+			JsonObject sort = query.getJsonObject("sort");
+			query.remove("sort");
+			json.put("sort", sort);
+		}
+
 		JsonArray roleUuids = new JsonArray();
 		try (Tx tx = db.tx()) {
 			for (Role role : ac.getUser().getRoles()) {
@@ -113,7 +122,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 		JsonArray must = json.getJsonObject("query").getJsonObject("bool").getJsonArray("must");
 		must.getJsonObject(0).getJsonObject("terms").put("_roleUuids", roleUuids);
-		must.getJsonObject(1).mergeIn(new JsonObject(searchQuery));
+		must.getJsonObject(1).mergeIn(query);
 		return json;
 	}
 

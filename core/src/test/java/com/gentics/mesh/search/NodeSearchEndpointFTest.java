@@ -32,21 +32,8 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		String json = "{";
-		json += "				\"sort\" : {";
-		json += "			      \"created\" : {\"order\" : \"asc\"}";
-		json += "			    },";
-		json += "			    \"query\":{";
-		json += "			        \"bool\" : {";
-		json += "			            \"must\" : {";
-		json += "			                \"term\" : { \"schema.name.raw\" : \"content\" }";
-		json += "			            }";
-		json += "			        }";
-		json += "			    }";
-		json += "			}";
-
-		String search = json;
-		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, search, new VersioningParametersImpl().draft()));
+		String query = getESQuery("contentSchemaTermQuery.es");
+		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query, new VersioningParametersImpl().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());
 
