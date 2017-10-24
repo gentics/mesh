@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.role.RoleResponse;
 import com.gentics.mesh.core.rest.role.RoleUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.FramedGraph;
@@ -49,7 +50,7 @@ public class RoleImpl extends AbstractMeshCoreVertex<RoleResponse, Role> impleme
 
 	public static void init(Database database) {
 		database.addVertexType(RoleImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(RoleImpl.class, true, "name");
+		database.addVertexIndex(RoleImpl.class, true, "name", FieldType.STRING);
 	}
 
 	@Override

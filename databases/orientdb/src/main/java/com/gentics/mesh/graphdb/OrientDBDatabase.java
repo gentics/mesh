@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
+import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.etc.config.ClusterOptions;
@@ -38,6 +39,7 @@ import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.gentics.mesh.graphdb.spi.AbstractDatabase;
+import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.util.DateUtils;
 import com.hazelcast.core.HazelcastInstance;
 import com.orientechnologies.common.concur.ONeedRetryException;
@@ -681,8 +683,48 @@ public class OrientDBDatabase extends AbstractDatabase {
 		}
 	}
 
+	/**
+	 * Convert the vendor agnostic type to an orientdb specific type.
+	 * 
+	 * @param fieldType
+	 * @return
+	 */
+	private OType convertType(FieldType fieldType) {
+		switch (fieldType) {
+		case STRING:
+			return OType.STRING;
+		case INTEGER:
+			return OType.INTEGER;
+		case BOOLEAN:
+			return OType.BOOLEAN;
+		case STRING_SET:
+			return OType.EMBEDDEDSET;
+		case STRING_LIST:
+			return OType.EMBEDDEDLIST;
+		default:
+			throw new RuntimeException("Unsupported type {" + fieldType + "}");
+		}
+	}
+
+	/**
+	 * Convert the vendor agnostic type to an orientdb specific sub type (eg. string for string lists)
+	 * 
+	 * @param fieldType
+	 * @return
+	 */
+	private OType convertToSubType(FieldType fieldType) {
+		switch (fieldType) {
+		case STRING_SET:
+			return OType.STRING;
+		case STRING_LIST:
+			return OType.STRING;
+		default:
+			return null;
+		}
+	}
+
 	@Override
-	public void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String... fields) {
+	public void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String fieldKey, FieldType fieldType) {
 		if (log.isDebugEnabled()) {
 			log.debug("Adding vertex index  for class {" + clazzOfVertices.getName() + "}");
 		}
@@ -693,19 +735,37 @@ public class OrientDBDatabase extends AbstractDatabase {
 			if (v == null) {
 				throw new RuntimeException("Vertex type {" + name + "} is unknown. Can't create index {" + indexName + "}");
 			}
-			for (String field : fields) {
-				if (v.getProperty(field) == null) {
-					v.createProperty(field, OType.STRING);
+
+			if (v.getProperty(fieldKey) == null) {
+				OType type = convertType(fieldType);
+				OType subType = convertToSubType(fieldType);
+				if (subType != null) {
+					v.createProperty(fieldKey, type, subType);
+				} else {
+					v.createProperty(fieldKey, type);
 				}
 			}
+
 			if (v.getClassIndex(indexName) == null) {
 				v.createIndex(indexName, unique ? OClass.INDEX_TYPE.UNIQUE_HASH_INDEX.toString() : OClass.INDEX_TYPE.NOTUNIQUE_HASH_INDEX.toString(),
-						null, new ODocument().fields("ignoreNullValues", true), fields);
+						null, new ODocument().fields("ignoreNullValues", true), new String[] { fieldKey });
 			}
 		} finally {
 			noTx.shutdown();
 		}
 
+	}
+
+	@Override
+	public <T extends MeshElement> T findVertex(String indexName, Object key, Class<T> clazz) {
+		FramedGraph graph = Tx.getActive().getGraph();
+		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
+		Iterator<Vertex> it = orientBaseGraph.getVertices(clazz.getSimpleName(), new String[] {
+				NodeGraphFieldContainer.WEBROOT_URLFIELD_PROPERTY_KEY }, new Object[] { key }).iterator();
+		if (it.hasNext()) {
+			return graph.frameNewElementExplicit(it.next(), clazz);
+		}
+		return null;
 	}
 
 	@Override

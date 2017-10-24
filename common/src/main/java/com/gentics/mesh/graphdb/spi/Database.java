@@ -13,9 +13,9 @@ import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.graphdb.model.MeshElement;
 import com.syncleus.ferma.tx.Tx;
-import com.syncleus.ferma.tx.TxFactory;
 import com.syncleus.ferma.tx.TxAction;
 import com.syncleus.ferma.tx.TxAction1;
+import com.syncleus.ferma.tx.TxFactory;
 import com.tinkerpop.blueprints.Element;
 import com.tinkerpop.blueprints.TransactionalGraph;
 import com.tinkerpop.blueprints.Vertex;
@@ -250,10 +250,10 @@ public interface Database extends TxFactory {
 	 * @param clazzOfVertices
 	 * @param unique
 	 *            true to create unique key
-	 * @param fields
+	 * @param fieldKey
 	 */
-	default void addVertexIndex(Class<?> clazzOfVertices, boolean unique, String... fields) {
-		addVertexIndex(clazzOfVertices.getSimpleName(), clazzOfVertices, unique, fields);
+	default void addVertexIndex(Class<?> clazzOfVertices, boolean unique, String fieldKey, FieldType fieldType) {
+		addVertexIndex(clazzOfVertices.getSimpleName(), clazzOfVertices, unique, fieldKey, fieldType);
 	}
 
 	/**
@@ -263,9 +263,9 @@ public interface Database extends TxFactory {
 	 *            index name
 	 * @param clazzOfVertices
 	 * @param unique
-	 * @param fields
+	 * @param fieldKey
 	 */
-	void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String... fields);
+	void addVertexIndex(String indexName, Class<?> clazzOfVertices, boolean unique, String fieldKey, FieldType fieldType);
 
 	/**
 	 * Check whether the values can be put into the given index for the given element.
@@ -429,5 +429,15 @@ public interface Database extends TxFactory {
 	 * @return
 	 */
 	ClusterStatusResponse getClusterStatus();
+
+	/**
+	 * Use the given index to lookup the vertex with the given key.
+	 * 
+	 * @param indexName
+	 * @param key
+	 * @param clazz
+	 * @return
+	 */
+	<T extends MeshElement> T findVertex(String indexName, Object key, Class<T> clazz);
 
 }

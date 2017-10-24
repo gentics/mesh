@@ -363,6 +363,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 		// remove existing draft edge
 		if (draftEdge != null) {
 			previous.setProperty(NodeGraphFieldContainerImpl.WEBROOT_PROPERTY_KEY, null);
+			previous.setProperty(NodeGraphFieldContainerImpl.WEBROOT_URLFIELD_PROPERTY_KEY, null);
 			container.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_update");
 			draftEdge.remove();
 		}

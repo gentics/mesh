@@ -12,21 +12,6 @@ import org.raml.model.parameter.QueryParameter;
 import org.raml.model.parameter.UriParameter;
 
 import com.gentics.mesh.core.rest.common.RestModel;
-import com.gentics.mesh.example.AdminExamples;
-import com.gentics.mesh.example.GraphQLExamples;
-import com.gentics.mesh.example.GroupExamples;
-import com.gentics.mesh.example.JobExamples;
-import com.gentics.mesh.example.MicroschemaExamples;
-import com.gentics.mesh.example.MiscExamples;
-import com.gentics.mesh.example.NodeExamples;
-import com.gentics.mesh.example.ProjectExamples;
-import com.gentics.mesh.example.ReleaseExamples;
-import com.gentics.mesh.example.RoleExamples;
-import com.gentics.mesh.example.SchemaExamples;
-import com.gentics.mesh.example.TagExamples;
-import com.gentics.mesh.example.TagFamilyExamples;
-import com.gentics.mesh.example.UserExamples;
-import com.gentics.mesh.example.VersioningExamples;
 import com.gentics.mesh.parameter.ParameterProvider;
 
 import io.netty.handler.codec.http.HttpResponseStatus;

@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
 
@@ -21,6 +22,26 @@ import com.gentics.mesh.util.VersionNumber;
  * A node field container is an aggregation node that holds localized fields (e.g.: StringField, NodeField...)
  */
 public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrackingVertex {
+
+	// Webroot index
+
+	public static final String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
+
+	public static final String WEBROOT_INDEX_NAME = "webrootPathInfoIndex";
+
+	public static final String PUBLISHED_WEBROOT_PROPERTY_KEY = "publishedWebrootPathInfo";
+
+	public static final String PUBLISHED_WEBROOT_INDEX_NAME = "publishedWebrootPathInfoIndex";
+
+	// Url Field index
+
+	public static final String WEBROOT_URLFIELD_PROPERTY_KEY = "webrootUrlInfo";
+
+	public static final String WEBROOT_URLFIELD_INDEX_NAME = "webrootPathUrlFieldInfoIndex";
+
+	public static final String PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY = "publishedWebrootUrlInfo";
+
+	public static final String PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootPathUrlFieldInfoIndex";
 
 	/**
 	 * Type Value: {@value #TYPE}
@@ -295,7 +316,7 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	List<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version);
 
 	/**
-	 * Return the etag for the field container.
+	 * Return the ETag for the field container.
 	 * 
 	 * @param ac
 	 * @return Generated entity tag
@@ -321,5 +342,20 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 * @return
 	 */
 	NodeGraphFieldContainer findVersion(String version);
+
+	/**
+	 * Return the URL field values for the container.
+	 * 
+	 * @return
+	 */
+	Set<String> getUrlFieldValues();
+
+	/**
+	 * Traverse to the base node and build up the path to this container.
+	 * 
+	 * @param ac
+	 * @return
+	 */
+	Path getPath(InternalActionContext ac);
 
 }

@@ -20,7 +20,7 @@ import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
-import com.gentics.mesh.core.data.service.WebRootService;
+import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.core.rest.error.NotModifiedException;
 import com.gentics.mesh.core.verticle.node.BinaryFieldResponseHandler;
@@ -37,7 +37,7 @@ import rx.Single;
 @Singleton
 public class WebRootHandler {
 
-	private WebRootService webrootService;
+	private WebRootServiceImpl webrootService;
 
 	private ImageManipulator imageManipulator;
 
@@ -46,7 +46,7 @@ public class WebRootHandler {
 	private Database db;
 
 	@Inject
-	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootService webrootService,
+	public WebRootHandler(Database database, ImageManipulator imageManipulator, WebRootServiceImpl webrootService,
 			BinaryFieldResponseHandler binaryFieldResponseHandler) {
 		this.db = database;
 		this.imageManipulator = imageManipulator;

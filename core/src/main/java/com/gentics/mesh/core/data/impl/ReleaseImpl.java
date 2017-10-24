@@ -11,6 +11,7 @@ import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCH
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.QUEUED;
 import static com.gentics.mesh.core.rest.error.Errors.conflict;
+import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
 import static com.gentics.mesh.util.URIUtils.encodeFragment;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -66,7 +67,7 @@ public class ReleaseImpl extends AbstractMeshCoreVertex<ReleaseResponse, Release
 
 	public static void init(Database database) {
 		database.addVertexType(ReleaseImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(UNIQUENAME_INDEX_NAME, ReleaseImpl.class, true, UNIQUENAME_PROPERTY_KEY);
+		database.addVertexIndex(UNIQUENAME_INDEX_NAME, ReleaseImpl.class, true, UNIQUENAME_PROPERTY_KEY, STRING);
 	}
 
 	@Override

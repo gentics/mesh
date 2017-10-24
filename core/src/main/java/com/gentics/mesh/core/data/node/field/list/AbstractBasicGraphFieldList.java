@@ -66,7 +66,6 @@ public abstract class AbstractBasicGraphFieldList<T extends ListableGraphField, 
 
 	@Override
 	public List<? extends T> getList() {
-
 		Map<String, String> map = getProperties("item");
 		List<T> list = new ArrayList<>();
 		// TODO sorting is not very efficient, because the keys are transformed to their order too often

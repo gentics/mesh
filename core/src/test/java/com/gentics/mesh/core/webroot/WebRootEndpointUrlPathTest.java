@@ -42,7 +42,7 @@ public class WebRootEndpointUrlPathTest extends AbstractMeshTest {
 		NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 
 		WebRootResponse webrootResponse = call(() -> client().webroot(PROJECT_NAME, niceUrlPath));
-
+		System.out.println(webrootResponse.toJson());
 	}
 
 	/**

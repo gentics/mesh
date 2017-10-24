@@ -33,6 +33,7 @@ import com.gentics.mesh.core.rest.group.GroupResponse;
 import com.gentics.mesh.core.rest.group.GroupUpdateRequest;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.util.ETag;
 import com.syncleus.ferma.traversals.VertexTraversal;
@@ -46,7 +47,7 @@ public class GroupImpl extends AbstractMeshCoreVertex<GroupResponse, Group> impl
 
 	public static void init(Database database) {
 		database.addVertexType(GroupImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(GroupImpl.class, true, "name");
+		database.addVertexIndex(GroupImpl.class, true, "name", FieldType.STRING);
 	}
 
 	@Override

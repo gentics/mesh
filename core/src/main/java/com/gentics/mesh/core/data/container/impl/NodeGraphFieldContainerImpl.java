@@ -16,12 +16,15 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.CONFLICT;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.apache.commons.collections.CollectionUtils;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
@@ -38,8 +41,10 @@ import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.GraphField;
 import com.gentics.mesh.core.data.node.field.StringGraphField;
 import com.gentics.mesh.core.data.node.field.impl.MicronodeGraphFieldImpl;
+import com.gentics.mesh.core.data.node.field.impl.StringGraphFieldImpl;
 import com.gentics.mesh.core.data.node.field.list.MicronodeGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.impl.MicronodeGraphFieldListImpl;
+import com.gentics.mesh.core.data.node.field.list.impl.StringGraphFieldListImpl;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.node.impl.MicronodeImpl;
 import com.gentics.mesh.core.data.node.impl.NodeImpl;
@@ -52,8 +57,12 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.field.Field;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.FieldType;
+import com.gentics.mesh.path.Path;
+import com.gentics.mesh.path.PathSegment;
 import com.gentics.mesh.util.ETag;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
@@ -72,26 +81,6 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	private static final Logger log = LoggerFactory.getLogger(NodeGraphFieldContainerImpl.class);
 
-	// Webroot index
-
-	public static final String WEBROOT_PROPERTY_KEY = "webrootPathInfo";
-
-	public static final String WEBROOT_INDEX_NAME = "webrootPathInfoIndex";
-
-	public static final String PUBLISHED_WEBROOT_PROPERTY_KEY = "publishedWebrootPathInfo";
-
-	public static final String PUBLISHED_WEBROOT_INDEX_NAME = "publishedWebrootPathInfoIndex";
-
-	// Url Field index
-
-	public static final String WEBROOT_URLFIELD_PROPERTY_KEY = "webrootUrlInfo";
-
-	public static final String WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootPathUrlFieldInfoIndex";
-
-	public static final String PUBLISHED_URLFIELD_WEBROOT_PROPERTY_KEY = "publishedWebrootUrlInfo";
-
-	public static final String PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootPathUrlFieldInfoIndex";
-
 	public static final String DISPLAY_FIELD_PROPERTY_KEY = "displayFieldValue";
 
 	public static final String VERSION_PROPERTY_KEY = "version";
@@ -99,11 +88,14 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	public static void init(Database database) {
 		database.addVertexType(NodeGraphFieldContainerImpl.class, MeshVertexImpl.class);
 		// Webroot index:
-		database.addVertexIndex(WEBROOT_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, WEBROOT_PROPERTY_KEY);
-		database.addVertexIndex(PUBLISHED_WEBROOT_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, PUBLISHED_WEBROOT_PROPERTY_KEY);
+		database.addVertexIndex(WEBROOT_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, WEBROOT_PROPERTY_KEY, FieldType.STRING);
+		database.addVertexIndex(PUBLISHED_WEBROOT_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, PUBLISHED_WEBROOT_PROPERTY_KEY,
+				FieldType.STRING);
 		// Webroot url field index:
-		database.addVertexIndex(WEBROOT_URLFIELD_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, WEBROOT_URLFIELD_PROPERTY_KEY);
-		database.addVertexIndex(PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, PUBLISHED_URLFIELD_WEBROOT_PROPERTY_KEY);
+		database.addVertexIndex(WEBROOT_URLFIELD_INDEX_NAME, NodeGraphFieldContainerImpl.class, true, WEBROOT_URLFIELD_PROPERTY_KEY,
+				FieldType.STRING_SET);
+		database.addVertexIndex(PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME, NodeGraphFieldContainerImpl.class, true,
+				PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY, FieldType.STRING_SET);
 	}
 
 	@Override
@@ -171,10 +163,9 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
 		}
 		// Remove the edge between the node and the container that matches the release
-		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
-				.or(e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()),
-						e -> e.traversal().has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode()))
-				.removeAll();
+		inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).or(e -> e.traversal().has(
+				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()), e -> e.traversal().has(
+						GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode())).removeAll();
 		// remove webroot property
 		setProperty(WEBROOT_PROPERTY_KEY, null);
 	}
@@ -182,12 +173,114 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	@Override
 	public void updateFieldsFromRest(InternalActionContext ac, FieldMap restFields) {
 		super.updateFieldsFromRest(ac, restFields);
+		String releaseUuid = ac.getRelease().getUuid();
 
-		String segmentFieldName = getSchemaContainerVersion().getSchema().getSegmentField();
+		SchemaModel schema = getSchemaContainerVersion().getSchema();
+		String segmentFieldName = schema.getSegmentField();
 		if (restFields.hasField(segmentFieldName)) {
-			updateWebrootPathInfo(ac.getRelease().getUuid(), "node_conflicting_segmentfield_update");
+			updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_update");
 		}
+
+		// Set the new url field values to the index
+		updateWebrootUrlFieldInfo(releaseUuid, schema, restFields);
+
 		updateDisplayFieldValue();
+	}
+
+	/**
+	 * Update the webroot url field index.
+	 * 
+	 * @param releaseUuid
+	 * @param schema
+	 * @param restFields
+	 */
+	private void updateWebrootUrlFieldInfo(String releaseUuid, Schema schema, FieldMap restFields) {
+		Set<String> urlFieldValues = restFields.getUrlFieldValues(schema);
+		if (isDraft(releaseUuid)) {
+			updateWebrootUrlFieldInfo(releaseUuid, urlFieldValues, ContainerType.DRAFT, WEBROOT_URLFIELD_PROPERTY_KEY, WEBROOT_INDEX_NAME);
+		} else {
+			setProperty(WEBROOT_URLFIELD_PROPERTY_KEY, null);
+		}
+		if (isPublished(releaseUuid)) {
+			updateWebrootUrlFieldInfo(releaseUuid, urlFieldValues, ContainerType.PUBLISHED, PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY,
+					PUBLISHED_WEBROOT_INDEX_NAME);
+		} else {
+			setProperty(PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY, null);
+		}
+	}
+
+	@Override
+	public Set<String> getUrlFieldValues() {
+		SchemaModel schema = getSchemaContainerVersion().getSchema();
+
+		Set<String> urlFieldValues = new HashSet<>();
+		for (String urlField : schema.getUrlFields()) {
+			FieldSchema fieldSchema = schema.getField(urlField);
+			GraphField field = getField(fieldSchema);
+			if (field instanceof StringGraphFieldImpl) {
+				StringGraphFieldImpl stringField = (StringGraphFieldImpl) field;
+				String value = stringField.getString();
+				if (value != null) {
+					urlFieldValues.add(value);
+				}
+			}
+			if (field instanceof StringGraphFieldListImpl) {
+				StringGraphFieldListImpl stringListField = (StringGraphFieldListImpl) field;
+				for (StringGraphField listField : stringListField.getList()) {
+					if (listField != null) {
+						String value = listField.getString();
+						if (value != null) {
+							urlFieldValues.add(value);
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Update the webroot url field index and also assert that the new values would not cause a conflict with the existing data.
+	 * 
+	 * @param releaseUuid
+	 * @param urlFieldValues
+	 * @param type
+	 * @param propertyName
+	 * @param indexName
+	 */
+	private void updateWebrootUrlFieldInfo(String releaseUuid, Set<String> urlFieldValues, ContainerType type, String propertyName,
+			String indexName) {
+		if (urlFieldValues != null && !urlFieldValues.isEmpty()) {
+
+			// Prefix each path with the releaseuuid in order to scope the paths by release
+			Set<String> prefixedUrlFieldValues = urlFieldValues.stream().map(e -> releaseUuid + e).collect(Collectors.toSet());
+			// NodeGraphFieldContainer conflictingContainer = MeshInternal.get().database().checkIndexUniqueness(indexName, this,
+			// prefixedUrlFieldValues);
+			NodeGraphFieldContainer conflictingContainer = null;
+
+			if (conflictingContainer != null) {
+				if (log.isDebugEnabled()) {
+					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} using index {" + indexName + "}");
+				}
+				// We know that the found container already occupies the index with one of the given paths. Lets compare both sets of paths in order to
+				// determine
+				// which path caused the conflict.
+				Set<String> fromConflictingContainer = conflictingContainer.getUrlFieldValues();
+				Node conflictingNode = conflictingContainer.getParentNode();
+
+				Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
+				String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
+
+				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
+						.getLanguageTag(), "node_conflicting_urlfield_update", paths);
+			} else {
+				setProperty(propertyName, prefixedUrlFieldValues);
+			}
+
+		} else {
+			setProperty(propertyName, null);
+		}
+
 	}
 
 	@Override
@@ -196,13 +289,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			updateWebrootPathInfo(releaseUuid, conflictI18n, ContainerType.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME);
 		} else {
 			setProperty(WEBROOT_PROPERTY_KEY, null);
-			setProperty(WEBROOT_URLFIELD_PROPERTY_KEY, null);
 		}
 		if (isPublished(releaseUuid)) {
 			updateWebrootPathInfo(releaseUuid, conflictI18n, ContainerType.PUBLISHED, PUBLISHED_WEBROOT_PROPERTY_KEY, PUBLISHED_WEBROOT_INDEX_NAME);
 		} else {
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
-			setProperty(PUBLISHED_URLFIELD_WEBROOT_PROPERTY_KEY, null);
+
 		}
 	}
 
@@ -237,18 +329,18 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			}
 
 			// check for uniqueness of webroot path
-			NodeGraphFieldContainerImpl conflictingContainer = MeshInternal.get().database().checkIndexUniqueness(indexName, this,
-					webRootInfo.toString());
+			NodeGraphFieldContainerImpl conflictingContainer = MeshInternal.get().database().checkIndexUniqueness(indexName, this, webRootInfo
+					.toString());
 			if (conflictingContainer != null) {
 				if (log.isDebugEnabled()) {
 					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} using index {" + indexName + "}");
 				}
 				Node conflictingNode = conflictingContainer.getParentNode();
-				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(),
-						conflictingContainer.getLanguage().getLanguageTag(), conflictI18n, segmentFieldName, segment);
+				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
+						.getLanguageTag(), conflictI18n, segmentFieldName, segment);
+			} else {
+				setProperty(propertyName, webRootInfo.toString());
 			}
-
-			setProperty(propertyName, webRootInfo.toString());
 		} else {
 			setProperty(propertyName, null);
 		}
@@ -256,8 +348,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public Node getParentNode(String uuid) {
-		return inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
-				.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, uuid).nextOrDefaultExplicit(NodeImpl.class, null);
+		return inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode()).has(
+				GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, uuid).nextOrDefaultExplicit(NodeImpl.class, null);
 	}
 
 	/**
@@ -345,23 +437,23 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public boolean isDraft(String releaseUuid) {
-		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode());
+		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).has(
+				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode());
 		return traversal.hasNext();
 	}
 
 	@Override
 	public boolean isPublished(String releaseUuid) {
-		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid)
-				.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode());
+		EdgeTraversal<?, ?, ?> traversal = inE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).has(
+				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.PUBLISHED.getCode());
 		return traversal.hasNext();
 	}
 
 	@Override
 	public Set<Tuple<String, ContainerType>> getReleaseTypes() {
 		Set<Tuple<String, ContainerType>> typeSet = new HashSet<>();
-		inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class)
-				.forEach(edge -> typeSet.add(Tuple.tuple(edge.getReleaseUuid(), edge.getType())));
+		inE(HAS_FIELD_CONTAINER).frameExplicit(GraphFieldContainerEdgeImpl.class).forEach(edge -> typeSet.add(Tuple.tuple(edge.getReleaseUuid(), edge
+				.getType())));
 		return typeSet;
 	}
 
@@ -488,14 +580,14 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public List<? extends MicronodeGraphField> getMicronodeFields(MicroschemaContainerVersion version) {
-		return outE(HAS_FIELD).mark().inV().has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class)
-				.has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldImpl.class);
+		return outE(HAS_FIELD).mark().inV().has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(MicroschemaContainerVersionImpl.class).has(
+				"uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldImpl.class);
 	}
 
 	@Override
 	public List<? extends MicronodeGraphFieldList> getMicronodeListFields(MicroschemaContainerVersion version) {
-		return out(HAS_LIST).has(MicronodeGraphFieldListImpl.class).mark().out(HAS_ITEM).has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER)
-				.has(MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldListImpl.class);
+		return out(HAS_LIST).has(MicronodeGraphFieldListImpl.class).mark().out(HAS_ITEM).has(MicronodeImpl.class).out(HAS_MICROSCHEMA_CONTAINER).has(
+				MicroschemaContainerVersionImpl.class).has("uuid", version.getUuid()).back().toListExplicit(MicronodeGraphFieldListImpl.class);
 	}
 
 	@Override
@@ -530,6 +622,12 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 			}
 		}
 		return null;
+	}
+
+	public com.gentics.mesh.path.Path getPath(InternalActionContext ac) {
+		Path nodePath = new Path();
+		nodePath.addSegment(new PathSegment(this, null, getLanguage().getLanguageTag()));
+		return nodePath;
 	}
 
 }

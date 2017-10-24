@@ -3,8 +3,6 @@ package com.gentics.mesh.search.index.common;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import org.elasticsearch.client.Client;
-
 import com.gentics.mesh.core.data.search.DropIndexEntry;
 import com.gentics.mesh.search.SearchProvider;
 
