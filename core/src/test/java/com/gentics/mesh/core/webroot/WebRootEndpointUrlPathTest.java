@@ -1,8 +1,10 @@
 package com.gentics.mesh.core.webroot;
 
+import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 
 import org.junit.Test;
 
@@ -43,6 +45,44 @@ public class WebRootEndpointUrlPathTest extends AbstractMeshTest {
 
 		WebRootResponse webrootResponse = call(() -> client().webroot(PROJECT_NAME, niceUrlPath));
 		System.out.println(webrootResponse.toJson());
+	}
+
+	/**
+	 * Test list resolving.
+	 */
+	@Test
+	public void testUrlPathListResolving() {
+
+		final String niceUrlPath = "/some/wonderful/short/url";
+
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setUrlFields("shortUrl", "shortUrlList");
+		request.setName("dummySchema");
+		request.setSegmentField("slug");
+		request.addField(FieldUtil.createStringFieldSchema("shortUrl"));
+		request.addField(FieldUtil.createStringFieldSchema("slug"));
+		request.addField(FieldUtil.createListFieldSchema("shortUrlList", "string"));
+
+		SchemaResponse schemaResponse = call(() -> client().createSchema(request));
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, schemaResponse.getUuid()));
+
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setSchemaName("dummySchema");
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setParentNodeUuid(tx(() -> project().getBaseNode().getUuid()));
+		nodeCreateRequest.getFields().put("slug", FieldUtil.createStringField("slugValue"));
+		nodeCreateRequest.getFields().put("shortUrl", FieldUtil.createStringField(niceUrlPath));
+		nodeCreateRequest.getFields().put("shortUrlList", FieldUtil.createStringListField("/some/other/url", "/middle", "/last/segment"));
+		NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+		String uuid = nodeResponse.getUuid();
+
+		assertThat(call(() -> client().webroot(PROJECT_NAME, niceUrlPath))).hasUuid(uuid);
+		assertThat(call(() -> client().webroot(PROJECT_NAME, "/some/other/url"))).hasUuid(uuid);
+		assertThat(call(() -> client().webroot(PROJECT_NAME, "/middle"))).hasUuid(uuid);
+		assertThat(call(() -> client().webroot(PROJECT_NAME, "/last/segment"))).hasUuid(uuid);
+		assertThat(call(() -> client().webroot(PROJECT_NAME, "/slugValue"))).hasUuid(uuid);
+		call(() -> client().webroot(PROJECT_NAME, "/not_found"), NOT_FOUND, "node_not_found_for_path", "/not_found");
+
 	}
 
 	/**
