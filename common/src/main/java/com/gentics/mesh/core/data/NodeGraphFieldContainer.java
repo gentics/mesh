@@ -14,6 +14,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.node.FieldMap;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
@@ -37,11 +38,11 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 
 	public static final String WEBROOT_URLFIELD_PROPERTY_KEY = "webrootUrlInfo";
 
-	public static final String WEBROOT_URLFIELD_INDEX_NAME = "webrootPathUrlFieldInfoIndex";
+	public static final String WEBROOT_URLFIELD_INDEX_NAME = "webrootUrlInfoIndex";
 
 	public static final String PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY = "publishedWebrootUrlInfo";
 
-	public static final String PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootPathUrlFieldInfoIndex";
+	public static final String PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME = "publishedWebrootInfoIndex";
 
 	/**
 	 * Type Value: {@value #TYPE}

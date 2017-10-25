@@ -175,14 +175,10 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		super.updateFieldsFromRest(ac, restFields);
 		String releaseUuid = ac.getRelease().getUuid();
 
-		SchemaModel schema = getSchemaContainerVersion().getSchema();
-		String segmentFieldName = schema.getSegmentField();
-		if (restFields.hasField(segmentFieldName)) {
+//		String segmentFieldName = schema.getSegmentField();
+//		if (restFields.hasField(segmentFieldName)) {
 			updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_update");
-		}
-
-		// Set the new url field values to the index
-		updateWebrootUrlFieldInfo(releaseUuid, schema, restFields);
+//		}
 
 		updateDisplayFieldValue();
 	}
@@ -192,17 +188,17 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * 
 	 * @param releaseUuid
 	 * @param schema
-	 * @param restFields
 	 */
-	private void updateWebrootUrlFieldInfo(String releaseUuid, Schema schema, FieldMap restFields) {
-		Set<String> urlFieldValues = restFields.getUrlFieldValues(schema);
+	private void updateWebrootUrlFieldsInfo(String releaseUuid, Schema schema) {
+		//Set<String> urlFieldValues = restFields.getUrlFieldValues(schema);
+		Set<String> urlFieldValues = getUrlFieldValues();
 		if (isDraft(releaseUuid)) {
-			updateWebrootUrlFieldInfo(releaseUuid, urlFieldValues, ContainerType.DRAFT, WEBROOT_URLFIELD_PROPERTY_KEY, WEBROOT_INDEX_NAME);
+			updateWebrootUrlFieldsInfo(releaseUuid, urlFieldValues, ContainerType.DRAFT, WEBROOT_URLFIELD_PROPERTY_KEY, WEBROOT_URLFIELD_INDEX_NAME);
 		} else {
 			setProperty(WEBROOT_URLFIELD_PROPERTY_KEY, null);
 		}
 		if (isPublished(releaseUuid)) {
-			updateWebrootUrlFieldInfo(releaseUuid, urlFieldValues, ContainerType.PUBLISHED, PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY,
+			updateWebrootUrlFieldsInfo(releaseUuid, urlFieldValues, ContainerType.PUBLISHED, PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY,
 					PUBLISHED_WEBROOT_INDEX_NAME);
 		} else {
 			setProperty(PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY, null);
@@ -236,7 +232,7 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 				}
 			}
 		}
-		return null;
+		return urlFieldValues;
 	}
 
 	/**
@@ -246,37 +242,36 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * @param urlFieldValues
 	 * @param type
 	 * @param propertyName
-	 * @param indexName
 	 */
-	private void updateWebrootUrlFieldInfo(String releaseUuid, Set<String> urlFieldValues, ContainerType type, String propertyName,
+	private void updateWebrootUrlFieldsInfo(String releaseUuid, Set<String> urlFieldValues, ContainerType type, String propertyName,
 			String indexName) {
 		if (urlFieldValues != null && !urlFieldValues.isEmpty()) {
 
 			// Prefix each path with the releaseuuid in order to scope the paths by release
 			Set<String> prefixedUrlFieldValues = urlFieldValues.stream().map(e -> releaseUuid + e).collect(Collectors.toSet());
-			// NodeGraphFieldContainer conflictingContainer = MeshInternal.get().database().checkIndexUniqueness(indexName, this,
-			// prefixedUrlFieldValues);
-			NodeGraphFieldContainer conflictingContainer = null;
 
-			if (conflictingContainer != null) {
-				if (log.isDebugEnabled()) {
-					log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "} using index {" + indexName + "}");
+			// Individually check each url
+			for (String urlFieldValue : prefixedUrlFieldValues) {
+				NodeGraphFieldContainer conflictingContainer = MeshInternal.get().database().checkIndexUniqueness(indexName, this, urlFieldValue);
+				if (conflictingContainer != null) {
+					if (log.isDebugEnabled()) {
+						log.debug("Found conflicting container with uuid {" + conflictingContainer.getUuid() + "}");
+					}
+					// We know that the found container already occupies the index with one of the given paths. Lets compare both sets of paths in order to
+					// determine
+					// which path caused the conflict.
+					Set<String> fromConflictingContainer = conflictingContainer.getUrlFieldValues();
+					Node conflictingNode = conflictingContainer.getParentNode();
+
+					@SuppressWarnings("unchecked")
+					Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
+					String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
+
+					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
+							.getLanguageTag(), "node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(), conflictingContainer.getLanguage().getLanguageTag());
 				}
-				// We know that the found container already occupies the index with one of the given paths. Lets compare both sets of paths in order to
-				// determine
-				// which path caused the conflict.
-				Set<String> fromConflictingContainer = conflictingContainer.getUrlFieldValues();
-				Node conflictingNode = conflictingContainer.getParentNode();
-
-				Collection<String> conflictingValues = CollectionUtils.intersection(fromConflictingContainer, urlFieldValues);
-				String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
-
-				throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
-						.getLanguageTag(), "node_conflicting_urlfield_update", paths);
-			} else {
-				setProperty(propertyName, prefixedUrlFieldValues);
 			}
-
+			setProperty(propertyName, prefixedUrlFieldValues);
 		} else {
 			setProperty(propertyName, null);
 		}
@@ -285,6 +280,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void updateWebrootPathInfo(String releaseUuid, String conflictI18n) {
+		// Set the new url field values to the index
+		SchemaModel schema = getSchemaContainerVersion().getSchema();
+		updateWebrootUrlFieldsInfo(releaseUuid, schema);
+
+		
 		if (isDraft(releaseUuid)) {
 			updateWebrootPathInfo(releaseUuid, conflictI18n, ContainerType.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME);
 		} else {

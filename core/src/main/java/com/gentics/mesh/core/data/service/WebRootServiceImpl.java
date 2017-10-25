@@ -31,25 +31,27 @@ public class WebRootServiceImpl implements WebRootService {
 	@Override
 	public NodeGraphFieldContainer findByPath(String releaseUuid, String path, ContainerType type) {
 
-		String indexName = NodeGraphFieldContainer.WEBROOT_URLFIELD_INDEX_NAME;
+		String fieldKey = NodeGraphFieldContainer.WEBROOT_URLFIELD_PROPERTY_KEY;
 		if (type == ContainerType.PUBLISHED) {
-			indexName = NodeGraphFieldContainer.PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME;
+			fieldKey = NodeGraphFieldContainer.PUBLISHED_WEBROOT_PROPERTY_KEY;
 		}
 
 		// Prefix each path with the releaseuuid in order to scope the paths by release
-		NodeGraphFieldContainer container = database.findVertex(indexName, releaseUuid + path, NodeGraphFieldContainerImpl.class);
-		return container;
+		return database.findVertex(fieldKey, releaseUuid + path, NodeGraphFieldContainerImpl.class);
 	}
 
 	@Override
 	public Path findByProjectPath(InternalActionContext ac, String path) {
 		Project project = ac.getProject();
 
-		NodeGraphFieldContainer containerByWebUrlPath = findByPath(ac.getRelease().getUuid(), path, ContainerType.DRAFT);
-		if(containerByWebUrlPath!=null) {
+		// First try to locate the content via the url path index
+		ContainerType type = ContainerType.forVersion(ac.getVersioningParameters().getVersion());
+		NodeGraphFieldContainer containerByWebUrlPath = findByPath(ac.getRelease().getUuid(), path, type);
+		if (containerByWebUrlPath != null) {
 			return containerByWebUrlPath.getPath(ac);
 		}
 
+		// Locating did not yield a result. Lets try the regular segmentpath info.
 		Path nodePath = new Path();
 		Node baseNode = project.getBaseNode();
 		nodePath.setTargetPath(path);

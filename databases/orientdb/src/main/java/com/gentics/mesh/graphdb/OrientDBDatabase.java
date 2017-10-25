@@ -31,7 +31,6 @@ import org.apache.commons.lang3.StringEscapeUtils;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
-import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
 import com.gentics.mesh.etc.config.ClusterOptions;
@@ -757,11 +756,10 @@ public class OrientDBDatabase extends AbstractDatabase {
 	}
 
 	@Override
-	public <T extends MeshElement> T findVertex(String indexName, Object key, Class<T> clazz) {
+	public <T extends MeshElement> T findVertex(String fieldKey, Object fieldValue, Class<T> clazz) {
 		FramedGraph graph = Tx.getActive().getGraph();
 		OrientBaseGraph orientBaseGraph = unwrapCurrentGraph();
-		Iterator<Vertex> it = orientBaseGraph.getVertices(clazz.getSimpleName(), new String[] {
-				NodeGraphFieldContainer.WEBROOT_URLFIELD_PROPERTY_KEY }, new Object[] { key }).iterator();
+		Iterator<Vertex> it = orientBaseGraph.getVertices(clazz.getSimpleName(), new String[] { fieldKey }, new Object[] { fieldValue }).iterator();
 		if (it.hasNext()) {
 			return graph.frameNewElementExplicit(it.next(), clazz);
 		}

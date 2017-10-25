@@ -431,13 +431,13 @@ public interface Database extends TxFactory {
 	ClusterStatusResponse getClusterStatus();
 
 	/**
-	 * Use the given index to lookup the vertex with the given key.
+	 * Find the vertex with the given key/value setup. Indices which provide this information will automatically be utilized.
 	 * 
-	 * @param indexName
-	 * @param key
+	 * @param propertyKey
+	 * @param propertyValue
 	 * @param clazz
 	 * @return
 	 */
-	<T extends MeshElement> T findVertex(String indexName, Object key, Class<T> clazz);
+	<T extends MeshElement> T findVertex(String propertyKey, Object propertyValue, Class<T> clazz);
 
 }

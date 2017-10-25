@@ -1178,6 +1178,7 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 			NodeGraphFieldContainerImpl oldPublishedContainer = currentPublished.inV().nextOrDefaultExplicit(NodeGraphFieldContainerImpl.class, null);
 			currentPublished.remove();
 			oldPublishedContainer.updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_publish");
+			//oldPublishedContainer.updateWebrootUrlFieldsInfo(releaseUuid, urlFieldValues, type, propertyName, indexName);
 		}
 
 		// create new published edge
