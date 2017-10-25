@@ -361,7 +361,7 @@ public class NodePublishEndpointTest extends AbstractMeshTest {
 				releaseUuid);
 
 		// Take english language offline
-		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"));
+		call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "en"));
 
 		// The node should not be loadable since both languages are offline
 		call(() -> client().findNodeByUuid(PROJECT_NAME, nodeUuid, new NodeParametersImpl().setLanguages("de"),

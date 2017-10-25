@@ -85,14 +85,14 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNode(PROJECT_NAME, nodeUuid))).as("Publish Status").isPublished("en").isPublished("de");
 
 			// 3. Take only en offline
-			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"));
+			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "en"));
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en");
 
 			// 4. Assert status
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("en").isPublished("de");
 
 			// 5. Take also de offline
-			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"));
+			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
 			assertThat(call(() -> client().getNodePublishStatus(PROJECT_NAME, nodeUuid))).as("Publish status").isNotPublished("de");
 
 			// 6. Assert that both are offline
@@ -129,7 +129,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 				role().revokePermissions(node, PUBLISH_PERM);
 				return null;
 			});
-			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid);
+			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "en"), FORBIDDEN, "error_missing_perm", nodeUuid);
 		}
 	}
 
@@ -158,10 +158,10 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			assertThat(call(() -> client().publishNodeLanguage(PROJECT_NAME, nodeUuid, "en"))).as("Initial publish status").isPublished();
 
 			// All nodes are initially published so lets take german offline
-			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"));
+			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "de"));
 
 			// Another take offline call should fail since there is no german page online anymore.
-			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found", "de");
+			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "de"), NOT_FOUND, "error_language_not_found", "de");
 		}
 	}
 
@@ -176,7 +176,7 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 			Node node = folder("products");
 			String nodeUuid = node.getUuid();
 
-			call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, nodeUuid, "fr"), NOT_FOUND, "error_language_not_found", "fr");
+			call(() -> client().takeNodeLanguage(PROJECT_NAME, nodeUuid, "fr"), NOT_FOUND, "error_language_not_found", "fr");
 		}
 	}
 
@@ -201,9 +201,9 @@ public class NodeTakeOfflineEndpointTest extends AbstractMeshTest {
 		call(() -> client().publishNode(PROJECT_NAME, newsUuid));
 		call(() -> client().publishNode(PROJECT_NAME, news2015Uuid));
 
-		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "de"));
+		call(() -> client().takeNodeLanguage(PROJECT_NAME, newsUuid, "de"));
 
-		call(() -> client().takeNodeLanguageOffline(PROJECT_NAME, newsUuid, "en"), BAD_REQUEST, "node_error_children_containers_still_published",
+		call(() -> client().takeNodeLanguage(PROJECT_NAME, newsUuid, "en"), BAD_REQUEST, "node_error_children_containers_still_published",
 				news2015Uuid);
 
 	}

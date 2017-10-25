@@ -175,34 +175,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		super.updateFieldsFromRest(ac, restFields);
 		String releaseUuid = ac.getRelease().getUuid();
 
-//		String segmentFieldName = schema.getSegmentField();
-//		if (restFields.hasField(segmentFieldName)) {
-			updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_update");
-//		}
-
+		updateWebrootPathInfo(releaseUuid, "node_conflicting_segmentfield_update");
 		updateDisplayFieldValue();
-	}
-
-	/**
-	 * Update the webroot url field index.
-	 * 
-	 * @param releaseUuid
-	 * @param schema
-	 */
-	private void updateWebrootUrlFieldsInfo(String releaseUuid, Schema schema) {
-		//Set<String> urlFieldValues = restFields.getUrlFieldValues(schema);
-		Set<String> urlFieldValues = getUrlFieldValues();
-		if (isDraft(releaseUuid)) {
-			updateWebrootUrlFieldsInfo(releaseUuid, urlFieldValues, ContainerType.DRAFT, WEBROOT_URLFIELD_PROPERTY_KEY, WEBROOT_URLFIELD_INDEX_NAME);
-		} else {
-			setProperty(WEBROOT_URLFIELD_PROPERTY_KEY, null);
-		}
-		if (isPublished(releaseUuid)) {
-			updateWebrootUrlFieldsInfo(releaseUuid, urlFieldValues, ContainerType.PUBLISHED, PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY,
-					PUBLISHED_WEBROOT_INDEX_NAME);
-		} else {
-			setProperty(PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY, null);
-		}
 	}
 
 	@Override
@@ -210,23 +184,25 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 		SchemaModel schema = getSchemaContainerVersion().getSchema();
 
 		Set<String> urlFieldValues = new HashSet<>();
-		for (String urlField : schema.getUrlFields()) {
-			FieldSchema fieldSchema = schema.getField(urlField);
-			GraphField field = getField(fieldSchema);
-			if (field instanceof StringGraphFieldImpl) {
-				StringGraphFieldImpl stringField = (StringGraphFieldImpl) field;
-				String value = stringField.getString();
-				if (value != null) {
-					urlFieldValues.add(value);
+		if (schema.getUrlFields() != null) {
+			for (String urlField : schema.getUrlFields()) {
+				FieldSchema fieldSchema = schema.getField(urlField);
+				GraphField field = getField(fieldSchema);
+				if (field instanceof StringGraphFieldImpl) {
+					StringGraphFieldImpl stringField = (StringGraphFieldImpl) field;
+					String value = stringField.getString();
+					if (value != null) {
+						urlFieldValues.add(value);
+					}
 				}
-			}
-			if (field instanceof StringGraphFieldListImpl) {
-				StringGraphFieldListImpl stringListField = (StringGraphFieldListImpl) field;
-				for (StringGraphField listField : stringListField.getList()) {
-					if (listField != null) {
-						String value = listField.getString();
-						if (value != null) {
-							urlFieldValues.add(value);
+				if (field instanceof StringGraphFieldListImpl) {
+					StringGraphFieldListImpl stringListField = (StringGraphFieldListImpl) field;
+					for (StringGraphField listField : stringListField.getList()) {
+						if (listField != null) {
+							String value = listField.getString();
+							if (value != null) {
+								urlFieldValues.add(value);
+							}
 						}
 					}
 				}
@@ -240,13 +216,11 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 	 * 
 	 * @param releaseUuid
 	 * @param urlFieldValues
-	 * @param type
 	 * @param propertyName
+	 * @param indexName
 	 */
-	private void updateWebrootUrlFieldsInfo(String releaseUuid, Set<String> urlFieldValues, ContainerType type, String propertyName,
-			String indexName) {
+	private void updateWebrootUrlFieldsInfo(String releaseUuid, Set<String> urlFieldValues, String propertyName, String indexName) {
 		if (urlFieldValues != null && !urlFieldValues.isEmpty()) {
-
 			// Prefix each path with the releaseuuid in order to scope the paths by release
 			Set<String> prefixedUrlFieldValues = urlFieldValues.stream().map(e -> releaseUuid + e).collect(Collectors.toSet());
 
@@ -268,7 +242,8 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 					String paths = conflictingValues.stream().map(n -> n.toString()).collect(Collectors.joining(","));
 
 					throw nodeConflict(conflictingNode.getUuid(), conflictingContainer.getDisplayFieldValue(), conflictingContainer.getLanguage()
-							.getLanguageTag(), "node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(), conflictingContainer.getLanguage().getLanguageTag());
+							.getLanguageTag(), "node_conflicting_urlfield_update", paths, conflictingContainer.getParentNode().getUuid(),
+							conflictingContainer.getLanguage().getLanguageTag());
 				}
 			}
 			setProperty(propertyName, prefixedUrlFieldValues);
@@ -280,21 +255,20 @@ public class NodeGraphFieldContainerImpl extends AbstractGraphFieldContainerImpl
 
 	@Override
 	public void updateWebrootPathInfo(String releaseUuid, String conflictI18n) {
-		// Set the new url field values to the index
-		SchemaModel schema = getSchemaContainerVersion().getSchema();
-		updateWebrootUrlFieldsInfo(releaseUuid, schema);
-
-		
+		Set<String> urlFieldValues = getUrlFieldValues();
 		if (isDraft(releaseUuid)) {
 			updateWebrootPathInfo(releaseUuid, conflictI18n, ContainerType.DRAFT, WEBROOT_PROPERTY_KEY, WEBROOT_INDEX_NAME);
+			updateWebrootUrlFieldsInfo(releaseUuid, urlFieldValues, WEBROOT_URLFIELD_PROPERTY_KEY, WEBROOT_URLFIELD_INDEX_NAME);
 		} else {
 			setProperty(WEBROOT_PROPERTY_KEY, null);
+			setProperty(WEBROOT_URLFIELD_PROPERTY_KEY, null);
 		}
 		if (isPublished(releaseUuid)) {
 			updateWebrootPathInfo(releaseUuid, conflictI18n, ContainerType.PUBLISHED, PUBLISHED_WEBROOT_PROPERTY_KEY, PUBLISHED_WEBROOT_INDEX_NAME);
+			updateWebrootUrlFieldsInfo(releaseUuid, urlFieldValues, PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY, PUBLISHED_WEBROOT_URLFIELD_INDEX_NAME);
 		} else {
 			setProperty(PUBLISHED_WEBROOT_PROPERTY_KEY, null);
-
+			setProperty(PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY, null);
 		}
 	}
 

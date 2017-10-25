@@ -421,6 +421,11 @@ public interface Database extends TxFactory {
 	 */
 	void startServer() throws Exception;
 
+	/**
+	 * Return the hazelcast instance which was started by the graph database server.
+	 * 
+	 * @return
+	 */
 	Object getHazelcast();
 
 	/**
@@ -436,7 +441,7 @@ public interface Database extends TxFactory {
 	 * @param propertyKey
 	 * @param propertyValue
 	 * @param clazz
-	 * @return
+	 * @return Found element or null if no element was found
 	 */
 	<T extends MeshElement> T findVertex(String propertyKey, Object propertyValue, Class<T> clazz);
 

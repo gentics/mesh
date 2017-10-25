@@ -29,18 +29,6 @@ public class WebRootServiceImpl implements WebRootService {
 	}
 
 	@Override
-	public NodeGraphFieldContainer findByPath(String releaseUuid, String path, ContainerType type) {
-
-		String fieldKey = NodeGraphFieldContainer.WEBROOT_URLFIELD_PROPERTY_KEY;
-		if (type == ContainerType.PUBLISHED) {
-			fieldKey = NodeGraphFieldContainer.PUBLISHED_WEBROOT_PROPERTY_KEY;
-		}
-
-		// Prefix each path with the releaseuuid in order to scope the paths by release
-		return database.findVertex(fieldKey, releaseUuid + path, NodeGraphFieldContainerImpl.class);
-	}
-
-	@Override
 	public Path findByProjectPath(InternalActionContext ac, String path) {
 		Project project = ac.getProject();
 
@@ -74,6 +62,19 @@ public class WebRootServiceImpl implements WebRootService {
 
 		// Traverse the graph and buildup the result path while doing so
 		return baseNode.resolvePath(ac.getRelease().getUuid(), ContainerType.forVersion(ac.getVersioningParameters().getVersion()), nodePath, stack);
+	}
+
+	@Override
+	public NodeGraphFieldContainer findByPath(String releaseUuid, String path, ContainerType type) {
+
+		String fieldKey = NodeGraphFieldContainer.WEBROOT_URLFIELD_PROPERTY_KEY;
+		if (type == ContainerType.PUBLISHED) {
+			fieldKey = NodeGraphFieldContainer.PUBLISHED_WEBROOT_URLFIELD_PROPERTY_KEY;
+		}
+
+		// Prefix each path with the releaseuuid in order to scope the paths by release
+		String key = releaseUuid + path;
+		return database.findVertex(fieldKey, key, NodeGraphFieldContainerImpl.class);
 	}
 
 }
