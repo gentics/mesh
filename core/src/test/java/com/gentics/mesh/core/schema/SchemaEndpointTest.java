@@ -5,15 +5,16 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
+import static com.gentics.mesh.core.rest.admin.migration.MigrationStatus.COMPLETED;
 import static com.gentics.mesh.core.rest.common.Permission.CREATE;
 import static com.gentics.mesh.core.rest.common.Permission.DELETE;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static com.gentics.mesh.core.rest.common.Permission.UPDATE;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.ClientHelper.validateSet;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
@@ -40,7 +41,6 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
@@ -68,6 +68,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.test.util.TestUtils;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -80,8 +81,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0, 0);
 		SchemaResponse restSchema = call(() -> client().createSchema(createRequest));
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
-		assertThat(dummySearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeIndexType(),
-				SchemaContainer.composeDocumentId(restSchema.getUuid()));
+		assertThat(dummySearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeIndexType(), SchemaContainer
+				.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
 			assertThat(createRequest).matches(restSchema);
 			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);
@@ -282,8 +283,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testReadByUuidWithRolePerms() {
 		String uuid = db().tx(() -> schemaContainer("content").getUuid());
 
-		SchemaResponse schema = call(
-				() -> client().findSchemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(db().tx(() -> role().getUuid()))));
+		SchemaResponse schema = call(() -> client().findSchemaByUuid(uuid, new RolePermissionParametersImpl().setRoleUuid(db().tx(() -> role()
+				.getUuid()))));
 		assertNotNull(schema.getRolePerms());
 		assertThat(schema.getRolePerms()).hasPerm(Permission.values());
 	}
@@ -329,14 +330,27 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		call(() -> client().createSchema(request), CONFLICT, "schema_conflicting_name", name);
 	}
 
+	@Test
+	public void testUpdateWithUrlFields() {
+		String uuid = tx(() -> schemaContainer("folder").getUuid());
+		String json = tx(() -> schemaContainer("folder").getLatestVersion().getJson());
+		SchemaUpdateRequest request = JsonUtil.readValue(json, SchemaUpdateRequest.class);
+		request.setUrlFields("slug");
+
+		tx(() -> group().addRole(roles().get("admin")));
+		waitForJobs(() -> {
+			call(() -> client().updateSchema(uuid, request));
+		}, COMPLETED, 1);
+	}
+
 	/**
 	 * Test automagically assignment of referenced microschemas to projects.
 	 */
 	@Test
 	public void testUpdateWithReferencedMicroschema() {
 
-		SchemaUpdateRequest schemaUpdate = db()
-				.tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(), SchemaUpdateRequest.class));
+		SchemaUpdateRequest schemaUpdate = db().tx(() -> JsonUtil.readValue(schemaContainer("content").getLatestVersion().getJson(),
+				SchemaUpdateRequest.class));
 		String schemaUuid = db().tx(() -> schemaContainer("content").getUuid());
 
 		// 1. Create the microschema
@@ -347,8 +361,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		MicroschemaResponse microschemaResponse = call(() -> client().createMicroschema(microschemaRequest));
 		String microschemaUuid = microschemaResponse.getUuid();
 
-		List<MicroschemaResponse> filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream()
-				.filter(microschema -> microschema.getUuid().equals(microschemaUuid)).collect(Collectors.toList());
+		List<MicroschemaResponse> filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream().filter(
+				microschema -> microschema.getUuid().equals(microschemaUuid)).collect(Collectors.toList());
 
 		assertThat(filteredList).isEmpty();
 
@@ -361,8 +375,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}, MigrationStatus.COMPLETED, 1);
 		tx(() -> group().removeRole(roles().get("admin")));
 
-		filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream()
-				.filter(microschema -> microschema.getUuid().equals(microschemaUuid)).collect(Collectors.toList());
+		filteredList = call(() -> client().findMicroschemas(PROJECT_NAME)).getData().stream().filter(microschema -> microschema.getUuid().equals(
+				microschemaUuid)).collect(Collectors.toList());
 		assertThat(filteredList).hasSize(1);
 
 	}
