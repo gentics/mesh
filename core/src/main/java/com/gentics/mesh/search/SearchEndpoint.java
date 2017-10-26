@@ -15,7 +15,7 @@ public interface SearchEndpoint extends Endpoint {
 	 * Register the search handler which will directly return the search response without any post processing by mesh.
 	 * 
 	 * @param typeName
-	 * @param nodeSearchHandler2
+	 * @param searchHandler
 	 */
 	default void registerRawSearchHandler(String typeName, SearchHandler<?, ?> searchHandler) {
 		EndpointRoute endpoint = createEndpoint();
