@@ -88,16 +88,17 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 		testData.add(new Object[] { "role-user-group-query", true, "draft" });
 		testData.add(new Object[] { "group-query", true, "draft" });
 		testData.add(new Object[] { "schema-query", true, "draft" });
-//		testData.add(new Object[] { "schema-projects-query", true, "draft" });
+		// testData.add(new Object[] { "schema-projects-query", true, "draft" });
 		testData.add(new Object[] { "microschema-query", true, "draft" });
 		testData.add(new Object[] { "paging-query", true, "draft" });
 		testData.add(new Object[] { "tagFamily-query", true, "draft" });
 		testData.add(new Object[] { "node-query", true, "draft" });
-		testData.add(new Object[] { "node-tag-query", true, "draft"});
+		testData.add(new Object[] { "node-tag-query", true, "draft" });
 		testData.add(new Object[] { "nodes-query", true, "draft" });
 		testData.add(new Object[] { "node-breadcrumb-query", true, "draft" });
 		testData.add(new Object[] { "node-language-fallback-query", true, "draft" });
 		testData.add(new Object[] { "node-webroot-query", true, "draft" });
+		testData.add(new Object[] { "node-webroot-urlfield-query", true, "draft" });
 		testData.add(new Object[] { "node-relations-query", true, "draft" });
 		testData.add(new Object[] { "node-fields-query", true, "draft" });
 		testData.add(new Object[] { "node-fields-no-microschema-query", false, "draft" });
@@ -151,6 +152,7 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			SchemaContainer schemaContainer = schemaContainer("folder");
 			schemaContainer.setUuid(staticSchemaUuid);
 			SchemaModel schema = schemaContainer.getLatestVersion().getSchema();
+			schema.setUrlFields("niceUrl");
 			NodeFieldSchema nodeFieldSchema = new NodeFieldSchemaImpl();
 			nodeFieldSchema.setName("nodeRef");
 			nodeFieldSchema.setLabel("Some label");
@@ -180,6 +182,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			StringFieldSchema stringFieldSchema = new StringFieldSchemaImpl();
 			stringFieldSchema.setName("string");
 			schema.addField(stringFieldSchema);
+
+			StringFieldSchema niceUrlFieldSchema = new StringFieldSchemaImpl();
+			niceUrlFieldSchema.setName("niceUrl");
+			schema.addField(niceUrlFieldSchema);
 
 			StringFieldSchema stringLinkFieldSchema = new StringFieldSchemaImpl();
 			stringLinkFieldSchema.setName("stringLink");
@@ -254,6 +260,9 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			// string
 			container.createString("string").setString("some string");
 
+			// niceUrl
+			container.createString("niceUrl").setString("/some/url");
+
 			// stringLink
 			container.createString("stringLink").setString("Link: {{mesh.link(\"" + staticUuid + "\", \"en\")}}");
 
@@ -326,7 +335,8 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 				micronodeField.getMicronode().createString("address").setString("Somewhere");
 				micronodeField.getMicronode().createString("postcode").setString("1010");
 			}
-			//folder("news").getChildren().forEach(e -> role().revokePermissions(e, GraphPermission.READ_PUBLISHED_PERM));
+			// folder("news").getChildren().forEach(e -> role().revokePermissions(e, GraphPermission.READ_PUBLISHED_PERM));
+			container.updateWebrootPathInfo(initialReleaseUuid(), null);
 			tx.success();
 		}
 
