@@ -5,6 +5,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.gentics.mesh.core.rest.common.ListResponse;
+import com.gentics.mesh.parameter.impl.NodeParametersImpl;
+import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import org.codehaus.jettison.json.JSONException;
 import org.junit.Test;
 
@@ -16,7 +19,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.StringFieldSchemaImpl;
 import com.gentics.mesh.core.rest.user.NodeReference;
-import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
 
 import rx.Completable;
@@ -30,6 +32,16 @@ import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleTermQuery;
 public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 	public static final String SCHEMA_NAME = "content";
 
+	/**
+	 * This test does the following:
+	 * 1. Delete all nodes of a schema
+	 * 2. Delete that schema
+	 * 3. Create a new schema
+	 * 4. Create nodes of that schema
+	 * 5. Search for all nodes of that schema
+	 *
+	 * @throws Exception
+	 */
 	@Test
 	public void testActions() throws Exception {
 		try (Tx tx = tx()) {
@@ -44,19 +56,23 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 		rootNodeReference$.subscribe();
 
 		Completable actions = getNodesBySchema(SCHEMA_NAME).compose(flatMapCompletable(this::deleteNode)).toCompletable()
-				.andThen(deleteSchemaByName(SCHEMA_NAME)).andThen(createTestSchema()).doOnSuccess(newSchema::set).toCompletable()
-				.andThen(rootNodeReference$).andThen(Observable.range(1, nodeCount))
-				.compose(flatMapSingle(unused -> createEmptyNode(newSchema.get(), rootNodeReference.get()))).toCompletable();
+			.andThen(deleteSchemaByName(SCHEMA_NAME))
+			.andThen(createTestSchema()).doOnSuccess(newSchema::set).toCompletable()
+			.andThen(rootNodeReference$).andThen(Observable.range(1, nodeCount))
+			.compose(flatMapSingle(unused -> createEmptyNode(newSchema.get(), rootNodeReference.get()))).toCompletable();
 
 		NodeListResponse searchResult = actions
-				.andThen(Single.defer(() -> client().searchNodes(getSimpleTermQuery("schema.name.raw", SCHEMA_NAME)).toSingle())).toBlocking()
-				.value();
+			.andThen(Single.defer(() -> client().searchNodes(getSimpleTermQuery("schema.name.raw", SCHEMA_NAME)).toSingle())).toBlocking()
+			.value();
 		assertEquals("Check search result after actions", nodeCount, searchResult.getMetainfo().getTotalCount());
 	}
 
 	private Observable<NodeResponse> getNodesBySchema(String schemaName) throws JSONException {
-		return client().searchNodes(PROJECT_NAME, getSimpleTermQuery("schema.name.raw", SCHEMA_NAME), new VersioningParametersImpl().draft())
-				.toObservable().flatMapIterable(it -> it.getData());
+		return client().findNodes(PROJECT_NAME,
+			new NodeParametersImpl().setLanguages("en", "de"),
+			new PagingParametersImpl().setPerPage(10000))
+			.toObservable().flatMapIterable(ListResponse::getData)
+			.filter(nr -> nr.getSchema().getName().equals(schemaName));
 	}
 
 	private Completable deleteNode(NodeResponse node) {
@@ -80,8 +96,8 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 		request.addField(new StringFieldSchemaImpl().setName("testfield2"));
 
 		return client().createSchema(request).toSingle().doOnSuccess(schemaResponse::set)
-				.flatMapCompletable(it -> client().assignSchemaToProject(PROJECT_NAME, it.getUuid()).toCompletable())
-				.andThen(Single.defer(() -> Single.just(schemaResponse.get())));
+			.flatMapCompletable(it -> client().assignSchemaToProject(PROJECT_NAME, it.getUuid()).toCompletable())
+			.andThen(Single.defer(() -> Single.just(schemaResponse.get())));
 	}
 
 	private Single<NodeResponse> createEmptyNode(SchemaResponse schema, NodeReference parentNode) {
