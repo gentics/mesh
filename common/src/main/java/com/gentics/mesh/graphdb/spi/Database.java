@@ -81,7 +81,7 @@ public interface Database extends TxFactory {
 						try {
 							T ele = result.blockingGet();
 							bc.complete(ele);
-						} catch (TimeoutException e2) {
+						} catch (RuntimeException e2) {
 							log.error("Timeout while processing result of transaction handler.", e2);
 							log.error("Calling transaction stacktrace.", reference.get());
 							bc.fail(reference.get());
@@ -126,7 +126,7 @@ public interface Database extends TxFactory {
 						try {
 							T ele = result.blockingGet();
 							bc.complete(ele);
-						} catch (TimeoutException e2) {
+						} catch (RuntimeException e2) {
 							log.error("Timeout while processing result of transaction handler.", e2);
 							log.error("Calling transaction stacktrace.", reference.get());
 							bc.fail(reference.get());

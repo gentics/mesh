@@ -25,6 +25,7 @@ import com.gentics.mesh.handler.ActionContext;
 import io.reactivex.Single;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
+import io.vertx.reactivex.core.Vertx;
 
 public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphField {
 
@@ -250,9 +251,8 @@ public class BinaryGraphFieldImpl extends MeshVertexImpl implements BinaryGraphF
 
 	@Override
 	public Single<AsyncFile> getFileStream() {
-		return Single.create(new io.vertx.rx.java.SingleOnSubscribeAdapter<AsyncFile>(fut -> {
-			Mesh.vertx().fileSystem().open(getFilePath(), new OpenOptions().setRead(true), fut);
-		}));
+		return new Vertx(Mesh.vertx()).fileSystem().rxOpen(getFilePath(), new OpenOptions().setRead(true))
+			.map(it -> it.getDelegate());
 	}
 
 	@Override

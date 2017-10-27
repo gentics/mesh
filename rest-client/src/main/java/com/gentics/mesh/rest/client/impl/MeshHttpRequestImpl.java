@@ -98,17 +98,17 @@ public class MeshHttpRequestImpl<T> implements MeshRequest<T> {
 
 	@Override
 	public Completable toCompletable() {
-		return toObservable().ignoreElements();
+		return toSingle().toCompletable();
 	}
 
 	@Override
 	public Single<T> toSingle() {
-		return toObservable().singleOrError();
+		return Single.defer(() -> invoke().rxSetHandler());
 	}
 
 
 	@Override
 	public Observable<T> toObservable() {
-		return Observable.defer(() -> invoke().setHandlerObservable());
+		return toSingle().toObservable();
 	}
 }

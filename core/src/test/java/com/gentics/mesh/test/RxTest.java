@@ -93,25 +93,6 @@ public class RxTest {
 		});
 	}
 
-	@Test
-	public void testFlatMap() throws Exception {
-
-		Observable<String> obs = Observable.just("hallo").flatMap(item -> {
-			System.out.println("FLATMAP");
-			return Observable.create(sub -> {
-				sub.onNext("Tüte");
-				sub.onComplete();
-			});
-		});
-
-		List<Observable<String>> obsAll = new ArrayList<>();
-		obsAll.add(obs);
-
-		RxUtil.concatListNotEager(obsAll).subscribe(next -> {
-			System.out.println(next);
-		});
-	}
-
 	// @Test
 	// public void testRxError() {
 	//

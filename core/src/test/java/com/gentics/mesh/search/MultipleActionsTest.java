@@ -44,10 +44,10 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 		Completable rootNodeReference$ = getRootNodeReference().doOnSuccess(rootNodeReference::set).cache().toCompletable();
 		rootNodeReference$.subscribe();
 
-		Completable actions = getNodesBySchema(SCHEMA_NAME).compose(flatMapCompletable(this::deleteNode)).ignoreElements()
+		Completable actions = getNodesBySchema(SCHEMA_NAME).flatMapCompletable(this::deleteNode)
 				.andThen(deleteSchemaByName(SCHEMA_NAME)).andThen(createTestSchema()).doOnSuccess(newSchema::set).toCompletable()
 				.andThen(rootNodeReference$).andThen(Observable.range(1, nodeCount))
-				.compose(flatMapSingle(unused -> createEmptyNode(newSchema.get(), rootNodeReference.get()))).ignoreElements();
+				.flatMapSingle(unused -> createEmptyNode(newSchema.get(), rootNodeReference.get())).ignoreElements();
 
 		NodeListResponse searchResult = actions
 				.andThen(Single.defer(() -> client().searchNodes(getSimpleTermQuery("schema.name.raw", SCHEMA_NAME)).toSingle())).blockingGet();
@@ -95,9 +95,5 @@ public class MultipleActionsTest extends AbstractNodeSearchEndpointTest {
 
 	private Single<NodeReference> getRootNodeReference() {
 		return client().findProjectByName(PROJECT_NAME).toSingle().map(it -> it.getRootNode());
-	}
-
-	private <T, R> ObservableTransformer<T, R> flatMapSingle(Function<T, Single<R>> mapper) {
-		return src -> src.map(mapper).flatMap(it -> it.toObservable());
 	}
 }
