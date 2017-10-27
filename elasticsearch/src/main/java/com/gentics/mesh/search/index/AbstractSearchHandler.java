@@ -76,18 +76,6 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 	protected IndexHandler<T> indexHandler;
 
-	public final static String DEFAULT_QUERY_FILENAME = "default-query.json";
-
-	public static String DEFAULT_QUERY = null;
-
-	static {
-		try {
-			DEFAULT_QUERY = IOUtils.toString(AbstractSearchHandler.class.getResourceAsStream("/" + DEFAULT_QUERY_FILENAME));
-		} catch (IOException e) {
-			throw new RuntimeException("Could not load {" + DEFAULT_QUERY + "} file");
-		}
-	}
-
 	/**
 	 * Create a new search handler.
 	 * 
@@ -109,15 +97,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 	 * @return
 	 */
 	protected JsonObject prepareSearchQuery(InternalActionContext ac, String searchQuery) {
-		JsonObject json = new JsonObject(DEFAULT_QUERY);
-		JsonObject query = new JsonObject(searchQuery);
-
-		// We need to extract the sort object and move it to the top level
-		if (query.containsKey("sort")) {
-			JsonObject sort = query.getJsonObject("sort");
-			query.remove("sort");
-			json.put("sort", sort);
-		}
+		JsonObject userJson = new JsonObject(searchQuery);
 
 		JsonArray roleUuids = new JsonArray();
 		try (Tx tx = db.tx()) {
@@ -126,10 +106,27 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 			}
 		}
 
-		JsonArray must = json.getJsonObject("query").getJsonObject("bool").getJsonArray("must");
-		must.getJsonObject(0).getJsonObject("terms").put("_roleUuids", roleUuids);
-		must.getJsonObject(1).mergeIn(query);
-		return json;
+		JsonObject newQuery = new JsonObject()
+			.put("bool", new JsonObject()
+				.put("filter", new JsonObject()
+					.put("terms", new JsonObject()
+						.put("_roleUuids", roleUuids)
+					)
+				)
+			);
+
+		JsonObject originalQuery = userJson.getJsonObject("query");
+		if (originalQuery != null) {
+			newQuery.getJsonObject("bool").put("must", originalQuery);
+		}
+
+		userJson.put("query", newQuery);
+
+		if (userJson.getLong("size") == null) {
+			userJson.put("size", Integer.MAX_VALUE);
+		}
+
+		return userJson;
 	}
 
 	@Override

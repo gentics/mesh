@@ -65,7 +65,7 @@ public class NodeRawSearchEndpointTest extends AbstractMeshTest {
 		assertThat(response).has("hits.total", "2", "Not exactly two item was found.");
 		String uuid1 = response.getJsonObject("hits").getJsonArray("hits").getJsonObject(0).getString("_id");
 		String uuid2 = response.getJsonObject("hits").getJsonArray("hits").getJsonObject(1).getString("_id");
-		assertThat(Arrays.asList(uuid1, uuid2)).containsExactly(nodeA.getUuid() + "-en", nodeB.getUuid() + "-en");
+		assertThat(Arrays.asList(uuid1, uuid2)).containsExactlyInAnyOrder(nodeA.getUuid() + "-en", nodeB.getUuid() + "-en");
 
 	}
 }
