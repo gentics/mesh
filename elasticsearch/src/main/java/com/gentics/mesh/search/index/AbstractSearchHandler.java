@@ -122,6 +122,10 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 
 		userJson.put("query", newQuery);
 
+		if (userJson.getLong("size") == null) {
+			userJson.put("size", Integer.MAX_VALUE);
+		}
+
 		return userJson;
 	}
 
@@ -190,9 +194,7 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 		SearchRequestBuilder builder = null;
 		try {
 			JsonObject query = prepareSearchQuery(ac, searchQuery);
-			builder = client.prepareSearch(indices.toArray(new String[indices.size()]))
-				.setSource(query.toString())
-				.setSize(Integer.MAX_VALUE);
+			builder = client.prepareSearch(indices.toArray(new String[indices.size()])).setSource(query.toString());
 		} catch (Exception e) {
 			ac.fail(new GenericRestException(BAD_REQUEST, "search_query_not_parsable", e));
 			return;
