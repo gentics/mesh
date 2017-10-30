@@ -46,6 +46,8 @@ image::GenticsMesh-PrettyURL-Example.png[Gentics Mesh Example for Building Prett
 The ```path``` property as well as the ```languagesPath``` property (for available language variants) of a node can be queried using the ```/api/v1/projectName/nodes/:nodeUuid``` endpoint together with the query parameter ```resolveLinks```. Alternatively, the WebRoot API can be used ```/api/v1/:projectName/webroot/:path```
 For more details see the documentation on link:building-blocks.html#_node[node] and <<webroot,WebRoot API>>, respectively.
 
+You can also specify dedicated paths for nodes using the ```urlFields``` schema property. You can add string or string list fields to your schema and list them via the ```urlFields``` property. Gentics Mesh will utilize these fields in nodes in order to retrieve the node.
+
 === API endpoints
 
 [options="header",cols="2*"]
@@ -656,9 +658,21 @@ The WebRoot API is an alternative way for fetching content from Gentics Mesh. Ot
 
 image::GenticsMesh-WebRootAPI-Example.png[Gentics Mesh Example for Fetching Content by Path using the WebRoot API,role="img-responsive"]
 
-This functionality builds on top of using the nodes' ```segmentField``` property to build the path of a specific node.
+This functionality builds on top of the schema ```segmentField``` and ```urlFields``` property to define the path of a specific node.
+
 WebRoot paths of arbitrary depth can be created, in combination with organizing content hierarchically in terms of a <<contenttree,content tree>> by specifying nodes to be ```containers``` for their child nodes.
-The WebRoot API endpoint uses this information to resolve a given path to a node UUID.
+The WebRoot API endpoint uses this information to resolve a given path to a node UUID. Each node in turn will provide a single `segment` to the full path via the referenced `segmentField`.
+
+In addition to that it is also possible to create completely custom URLs to your content using the ```urlFields``` schema property. You can reference `string` and `string list` fields within your schema using the property.
+Those fields can in turn contain a custom path to your node. Gentics Mesh will only make sure that there are no collisions between custom paths of other nodes. Saving a node which uses the same urlField value would cause a conflict error.
+It is important to note that conflicts between custom url field values and existing paths which are build using the `segmentPath` property will not cause a conflict. You can use this in order to override an existing path to a node using a custom path.
+Custom paths via the `urlFields` property will always be resolved first and thus overrule the `segmentField` paths.
+
+Possible applications for the `urlFields` property are:
+
+* Short URL support
+* Nice URL handling
+* Redirection handling
 
 Using the WebRoot API it is possible to easily integrate Gentics Mesh with many known routing frameworks.
 
