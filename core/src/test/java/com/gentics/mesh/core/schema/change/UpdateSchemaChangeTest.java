@@ -3,6 +3,7 @@ package com.gentics.mesh.core.schema.change;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_ADD_RAW;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
 import static com.gentics.mesh.test.TestSize.FULL;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -13,7 +14,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.UpdateSchemaChange;
@@ -24,6 +24,7 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 /**
  * Test {@link UpdateSchemaChangeImpl} methods
@@ -54,6 +55,9 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 
 			change.setSegmentField("fieldName2");
 			assertEquals("fieldName2", change.getSegmentField());
+
+			change.setURLFields("fieldA", "fieldB");
+			assertThat(change.getURLFields()).containsExactly("fieldA", "fieldB");
 		}
 	}
 
@@ -163,6 +167,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			model.setProperty(SchemaChangeModel.CONTAINER_FLAG_KEY, true);
 			model.setProperty(SchemaChangeModel.DESCRIPTION_KEY, "description");
 			model.setProperty(SchemaChangeModel.SEGMENT_FIELD_KEY, "segmentField");
+			model.setProperty(SchemaChangeModel.URLFIELDS_KEY, new String[] { "A", "B" });
 			model.setProperty(SchemaChangeModel.DISPLAY_FIELD_NAME_KEY, "displayField");
 			model.setProperty(SchemaChangeModel.NAME_KEY, "newName");
 			model.setProperty(SchemaChangeModel.FIELD_ORDER_KEY, new String[] { "A", "B", "C" });
@@ -207,6 +212,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			// Add more custom values
 			change.setDisplayField("test");
 			change.setSegmentField("test2");
+			change.setURLFields("fieldA", "fieldB");
 			change.setCustomMigrationScript("script");
 			change.setName("someName");
 			change.setDescription("someDescription");
@@ -216,6 +222,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			model = change.transformToRest();
 			assertEquals("test", model.getProperty(SchemaChangeModel.DISPLAY_FIELD_NAME_KEY));
 			assertEquals("test2", model.getProperty(SchemaChangeModel.SEGMENT_FIELD_KEY));
+			assertThat((String[])model.getProperty(SchemaChangeModel.URLFIELDS_KEY)).containsExactly("fieldA", "fieldB");
 			assertEquals("script", model.getMigrationScript());
 			assertEquals("someName", model.getProperty(SchemaChangeModel.NAME_KEY));
 			assertEquals("someDescription", model.getProperty(SchemaChangeModel.DESCRIPTION_KEY));

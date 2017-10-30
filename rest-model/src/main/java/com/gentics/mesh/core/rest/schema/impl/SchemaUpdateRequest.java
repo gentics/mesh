@@ -20,6 +20,10 @@ public class SchemaUpdateRequest implements SchemaModel {
 	private String segmentField;
 
 	@JsonProperty(required = false)
+	@JsonPropertyDescription("Names of the fields which provide a compete url to the node. This property can be used to define custom urls for certain nodes. The webroot API will try to locate the node via it's segment field and via the specified url fields.")
+	private List<String> urlFields;
+
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
 	private boolean container = false;
 
@@ -69,6 +73,17 @@ public class SchemaUpdateRequest implements SchemaModel {
 	@Override
 	public SchemaUpdateRequest setSegmentField(String segmentField) {
 		this.segmentField = segmentField;
+		return this;
+	}
+
+	@Override
+	public List<String> getUrlFields() {
+		return urlFields;
+	}
+
+	@Override
+	public SchemaUpdateRequest setUrlFields(List<String> urlFields) {
+		this.urlFields = urlFields;
 		return this;
 	}
 

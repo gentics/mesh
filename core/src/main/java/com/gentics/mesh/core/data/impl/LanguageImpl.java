@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
+import static com.gentics.mesh.graphdb.spi.FieldType.STRING;
+
 import org.apache.commons.lang.NotImplementedException;
 
 import com.gentics.mesh.context.InternalActionContext;
@@ -24,7 +26,7 @@ public class LanguageImpl extends AbstractMeshCoreVertex<LanguageResponse, Langu
 
 	public static void init(Database database) {
 		database.addVertexType(LanguageImpl.class, MeshVertexImpl.class);
-		database.addVertexIndex(LanguageImpl.class, true, LANGUAGE_TAG_PROPERTY_KEY);
+		database.addVertexIndex(LanguageImpl.class, true, LANGUAGE_TAG_PROPERTY_KEY, STRING);
 	}
 
 	@Override

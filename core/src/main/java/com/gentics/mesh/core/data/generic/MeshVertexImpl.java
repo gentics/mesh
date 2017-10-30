@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
+import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.util.UUIDUtil;
 import com.syncleus.ferma.AbstractVertexFrame;
 import com.syncleus.ferma.FramedGraph;
@@ -40,7 +41,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	public static void init(Database database) {
 		database.addVertexType(MeshVertexImpl.class, null);
-		database.addVertexIndex(MeshVertexImpl.class, true, "uuid");
+		database.addVertexIndex(MeshVertexImpl.class, true, "uuid", FieldType.STRING);
 	}
 
 	@Override

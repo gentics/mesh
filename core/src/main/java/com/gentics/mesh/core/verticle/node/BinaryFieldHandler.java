@@ -402,7 +402,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @param segmentedPath
 	 * @return calculated SHA 512 sum
 	 */
-	protected String hashAndMoveBinaryFile(FileUpload fileUpload, String uuid, String segmentedPath) {
+	public String hashAndMoveBinaryFile(FileUpload fileUpload, String uuid, String segmentedPath) {
 		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
 		File targetFile = new File(uploadFolder, uuid + ".bin");

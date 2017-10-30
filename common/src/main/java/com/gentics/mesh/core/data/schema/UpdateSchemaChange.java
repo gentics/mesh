@@ -1,5 +1,7 @@
 package com.gentics.mesh.core.data.schema;
 
+import java.util.List;
+
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
@@ -51,5 +53,19 @@ public interface UpdateSchemaChange extends FieldSchemaContainerUpdateChange<Sch
 	 * @return
 	 */
 	String getSegmentField();
+
+	/**
+	 * Set the url fields
+	 * 
+	 * @param keys
+	 */
+	void setURLFields(String... keys);
+
+	/**
+	 * Return the list of url fields.
+	 * 
+	 * @return
+	 */
+	List<String> getURLFields();
 
 }

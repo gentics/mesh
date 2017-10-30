@@ -4,9 +4,6 @@ import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.getSimpleQuery;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
-
 import java.util.Arrays;
 
 import org.junit.Test;

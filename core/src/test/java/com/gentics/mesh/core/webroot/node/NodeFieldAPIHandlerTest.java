@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.verticle.node;
+package com.gentics.mesh.core.webroot.node;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -17,6 +17,7 @@ import org.junit.Test;
 
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.rest.error.GenericRestException;
+import com.gentics.mesh.core.verticle.node.BinaryFieldHandler;
 import com.gentics.mesh.etc.config.MeshUploadOptions;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;

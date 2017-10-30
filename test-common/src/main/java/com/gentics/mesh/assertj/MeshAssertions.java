@@ -35,6 +35,7 @@ import com.gentics.mesh.assertj.impl.TagFamilyResponseAssert;
 import com.gentics.mesh.assertj.impl.TagListResponseAssert;
 import com.gentics.mesh.assertj.impl.TagResponseAssert;
 import com.gentics.mesh.assertj.impl.UserResponseAssert;
+import com.gentics.mesh.assertj.impl.WebRootResponseAssert;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.node.Micronode;
@@ -51,6 +52,7 @@ import com.gentics.mesh.core.rest.node.FieldMap;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
+import com.gentics.mesh.core.rest.node.WebRootResponse;
 import com.gentics.mesh.core.rest.project.ProjectResponse;
 import com.gentics.mesh.core.rest.release.ReleaseResponse;
 import com.gentics.mesh.core.rest.role.RoleResponse;
@@ -188,8 +190,12 @@ public class MeshAssertions extends Assertions {
 	public static GenericRestExceptionAssert assertThat(GenericRestException actual) {
 		return new GenericRestExceptionAssert(actual);
 	}
-	
+
 	public static JobListResponseAssert assertThat(JobListResponse actual) {
 		return new JobListResponseAssert(actual);
+	}
+
+	public static WebRootResponseAssert assertThat(WebRootResponse actual) {
+		return new WebRootResponseAssert(actual);
 	}
 }

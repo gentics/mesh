@@ -4,6 +4,8 @@ import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.cli.BootstrapInitializerImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.impl.SearchQueueBatchImpl;
+import com.gentics.mesh.core.data.service.WebRootService;
+import com.gentics.mesh.core.data.service.WebRootServiceImpl;
 import com.gentics.mesh.search.index.common.DropIndexHandler;
 import com.gentics.mesh.search.index.common.DropIndexHandlerImpl;
 
@@ -21,4 +23,7 @@ public abstract class BindModule {
 
 	@Binds
 	abstract BootstrapInitializer bindBoot(BootstrapInitializerImpl e);
+
+	@Binds
+	abstract WebRootService bindWebrootService(WebRootServiceImpl e);
 }

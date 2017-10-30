@@ -2,7 +2,9 @@ package com.gentics.mesh.core.rest.node;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.FieldTypes;
 import com.gentics.mesh.core.rest.micronode.MicronodeResponse;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
@@ -21,6 +23,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.HtmlFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
 
 /**
  * A field map stores all fields of a node or micronode.
@@ -216,7 +219,7 @@ public interface FieldMap {
 	 * @param fieldSchema
 	 * @return
 	 */
-	//TODO why do we need to specifiy the field key? the field schema contains the key (name)
+	// TODO why do we need to specifiy the field key? the field schema contains the key (name)
 	Field getField(String fieldKey, FieldSchema fieldSchema);
 
 	/**
@@ -240,5 +243,15 @@ public interface FieldMap {
 	 * @return true if an element with the given key could be removed otherwise false
 	 */
 	boolean remove(String fieldKey);
+
+	/**
+	 * Return the configured rest field values.
+	 * 
+	 * @param schema
+	 *            Schema to be used to determine which field values should be selected
+	 * @return
+	 */
+	@JsonIgnore
+	Set<String> getUrlFieldValues(Schema schema);
 
 }

@@ -4,19 +4,26 @@
 
 == 0.10.5 (TBD)
 
-CAUTION: GraphQL: The root field releases has been removed. The root field release now takes no parameters and loads the active release.
-icon:plus[] GraphQL: Nodes can now be loaded in the context of a schema. This will return all nodes which use the schema.
+CAUTION: GraphQL: The root field `releases` has been removed. The root field `release` now takes no parameters and loads the active release.
 
 CAUTION: Elasticsearch: Search queries will now automatically be wrapped in a boolean query in order to check permissions much more efficiently. 
+
+icon:plus[] GraphQL: Nodes can now be loaded in the context of a schema. This will return all nodes which use the schema.
 
 icon:plus[] Search: The `/api/v1/rawSearch/..` and `/api/v1/:projectName/rawSearch/..` endpoints have been added. These endpoint can be used to invoke search requests which will return the raw elasticsearch response JSON. 
             The needed indices will automatically be selected in order to only return the type specific documents. Read permissions on the document will also be automatically checked. 
 
 icon:plus[] Search: Error information for failed elasticsearch queries will now be added to the response.
 
+icon:plus[] Webroot: The schema property `urlFields` can now used to specify fields which contain webroot paths.
+                     The webroot endpoint in turn will first try to find a node which specified the requested path.
+                     If no path could be found using the urlField values the regular segment path will be used to locate the node.
+                     This feature can be used to set custom urls or short urls for your nodes.
+
 icon:check[] Performance: Optimized binary download memory usage.
 
 icon:check[] REST: Fixed a bug which prevented pages with more then 2000 items from being loaded.
+
 
 == 0.10.4 (10.10.2017)
 

@@ -1,4 +1,4 @@
-package com.gentics.mesh.core.verticle;
+package com.gentics.mesh.core.webroot;
 
 import org.junit.Test;
 

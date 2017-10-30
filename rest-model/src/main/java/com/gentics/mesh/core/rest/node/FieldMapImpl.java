@@ -7,8 +7,10 @@ import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERR
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -47,6 +49,7 @@ import com.gentics.mesh.core.rest.node.field.list.impl.NumberFieldListImpl;
 import com.gentics.mesh.core.rest.node.field.list.impl.StringFieldListImpl;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.json.JsonUtil;
 import com.google.common.collect.Lists;
 
@@ -407,8 +410,8 @@ public class FieldMapImpl implements FieldMap {
 		if (clazz.isAssignableFrom(pojo.getClass())) {
 			return clazz.cast(pojo);
 		} else {
-			throw error(BAD_REQUEST,
-					"The field value for {" + key + "} is not of correct type. Stored POJO was of class {" + pojo.getClass().getName() + "}");
+			throw error(BAD_REQUEST, "The field value for {" + key + "} is not of correct type. Stored POJO was of class {" + pojo.getClass()
+					.getName() + "}");
 		}
 	}
 
@@ -592,6 +595,31 @@ public class FieldMapImpl implements FieldMap {
 	@Override
 	public String toString() {
 		return node.toString();
+	}
+
+	@Override
+	public Set<String> getUrlFieldValues(Schema schema) {
+		Set<String> urlFieldValues = new HashSet<>();
+		for (String urlField : schema.getUrlFields()) {
+			FieldSchema fieldSchema = schema.getField(urlField);
+			Field field = getField(urlField, fieldSchema);
+			if (field instanceof StringFieldImpl) {
+				StringFieldImpl stringField = (StringFieldImpl) field;
+				String value = stringField.getString();
+				if (value != null) {
+					urlFieldValues.add(value);
+				}
+			}
+			if (field instanceof StringFieldListImpl) {
+				StringFieldListImpl stringListField = (StringFieldListImpl) field;
+				for (String value : stringListField.getItems()) {
+					if (value != null) {
+						urlFieldValues.add(value);
+					}
+				}
+			}
+		}
+		return urlFieldValues;
 	}
 
 }
