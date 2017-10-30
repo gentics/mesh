@@ -3,10 +3,16 @@
   "container" : false,
   "displayField": "name",
   "segmentField": "slug",
+  "urlFields": [ "niceUrl" ],
   "fields" : [ {
     "name" : "slug",
     "label" : "Slug",
     "required" : true,
+    "type" : "string"
+  }, {
+    "name" : "niceUrl",
+    "label" : "Nice URL",
+    "required" : false,
     "type" : "string"
   }, {
     "name" : "name",

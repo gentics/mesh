@@ -48,6 +48,10 @@ For more details see the documentation on link:building-blocks.html#_node[node] 
 
 You can also specify dedicated paths for nodes using the ```urlFields``` schema property. You can add string or string list fields to your schema and list them via the ```urlFields``` property. Gentics Mesh will utilize these fields in nodes in order to retrieve the node.
 
+.Try the example
+[TIP]
+https://demo.getmesh.io/api/v1/demo/webroot/cars/outatime
+
 === API endpoints
 
 [options="header",cols="2*"]
