@@ -4,6 +4,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import org.junit.Test;
+
+import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.ext.web.ParsedHeaderValues;
@@ -26,8 +28,10 @@ public class RouterStorageTest {
 		HttpServerRequest request = mock(HttpServerRequest.class);
 		when(request.query()).thenReturn("?blub");
 		when(request.method()).thenReturn(HttpMethod.GET);
+		when(request.uri()).thenReturn("");
 		when(rc.request()).thenReturn(request);
 		when(rc.normalisedPath()).thenReturn("/blub");
+		when(rc.queryParams()).thenReturn(new CaseInsensitiveHeaders());
 		storage.getRootRouter().handleFailure(rc);
 	}
 }
