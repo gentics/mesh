@@ -14,6 +14,8 @@ import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.http.MeshHeaders;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -82,12 +84,28 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 		User user = context.user();
 		if (user != null) {
 			// Already authenticated in, just authorise
-			authorise(user, context);
+			authorizeUser(user, context);
 			return;
 		}
 
 		handleJWTAuth(context);
 
+	}
+
+	@Override
+	public void parseCredentials(RoutingContext arg0, Handler<AsyncResult<JsonObject>> arg1) {
+		// Not needed for this handler
+	}
+
+	private void authorizeUser(User user, RoutingContext ctx) {
+		authorize(user, authZ -> {
+			if (authZ.failed()) {
+				ctx.fail(authZ.cause());
+				return;
+			}
+			// success, allowed to continue
+			ctx.next();
+		});
 	}
 
 	/**
@@ -134,7 +152,7 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 					handle401(context);
 					return;
 				}
-				if(log.isDebugEnabled()) {
+				if (log.isDebugEnabled()) {
 					log.debug("Using anonymous user.");
 				}
 				MeshAuthUser anonymousUser = database.tx(() -> boot.userRoot().findMeshAuthUserByUsername(ANONYMOUS_USERNAME));
@@ -144,7 +162,7 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 					}
 				} else {
 					context.setUser(anonymousUser);
-					authorise(anonymousUser, context);
+					authorizeUser(anonymousUser, context);
 					return;
 				}
 			}
@@ -176,7 +194,7 @@ public class MeshAuthHandler extends AuthHandlerImpl implements JWTAuthHandler {
 					context.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, jwtToken)
 							.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 				}
-				authorise(authenticatedUser, context);
+				authorizeUser(authenticatedUser, context);
 			} else {
 				log.warn("JWT decode failure", res.cause());
 				handle401(context);

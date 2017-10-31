@@ -81,7 +81,7 @@ public class MeshAuthUserImpl extends UserImpl implements MeshAuthUser {
 	}
 
 	@Override
-	public User isAuthorised(String authority, Handler<AsyncResult<Boolean>> resultHandler) {
+	public User isAuthorized(String authority, Handler<AsyncResult<Boolean>> resultHandler) {
 		throw new NotImplementedException("Please use the MeshAuthUserImpl method instead.");
 	}
 
