@@ -190,30 +190,6 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<AssetResponse> findAssetByUuid(String projectName, String uuid, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRequest<AssetListResponse> findAssets(String projectName, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRequest<AssetResponse> createAsset(String projectName, String uuid) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public MeshRequest<Void> deleteAsset(String projectName, String uuid, ParameterProvider... parameters) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
 	public MeshRequest<TagListResponse> findTags(String projectName, String tagFamilyUuid, ParameterProvider... parameters) {
 		Objects.requireNonNull(projectName, "projectName must not be null");
 		Objects.requireNonNull(tagFamilyUuid, "tagFamilyUuid must not be null");

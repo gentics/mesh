@@ -4,7 +4,6 @@ import com.gentics.mesh.rest.JWTAuthentication;
 import com.gentics.mesh.rest.client.impl.MeshRestHttpClientImpl;
 import com.gentics.mesh.rest.client.method.AdminClientMethods;
 import com.gentics.mesh.rest.client.method.ApiInfoClientMethods;
-import com.gentics.mesh.rest.client.method.AssetClientMethods;
 import com.gentics.mesh.rest.client.method.AuthClientMethods;
 import com.gentics.mesh.rest.client.method.EventbusClientMethods;
 import com.gentics.mesh.rest.client.method.GraphQLClientMethods;
@@ -32,7 +31,7 @@ import io.vertx.core.http.HttpClient;
 public interface MeshRestClient extends NodeClientMethods, TagClientMethods, ProjectClientMethods, TagFamilyClientMethods, WebRootClientMethods,
 		SchemaClientMethods, GroupClientMethods, UserClientMethods, RoleClientMethods, AuthClientMethods, SearchClientMethods, AdminClientMethods,
 		MicroschemaClientMethods, NodeBinaryFieldClientMethods, UtilityClientMethods, NavigationClientMethods, NavRootClientMethods,
-		EventbusClientMethods, ReleaseClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods, AssetClientMethods {
+		EventbusClientMethods, ReleaseClientMethods, ApiInfoClientMethods, GraphQLClientMethods, JobClientMethods {
 
 	/**
 	 * The default base URI path to the Mesh-API.

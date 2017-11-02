@@ -1307,30 +1307,4 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		return null;
 	}
 
-	@Override
-	public MeshRequest<AssetResponse> findAssetByUuid(String projectName, String uuid, ParameterProvider... parameters) {
-		return null;
-	}
-
-	@Override
-	public MeshRequest<AssetListResponse> findAssets(String projectName, ParameterProvider... parameters) {
-		return null;
-	}
-
-	@Override
-	public MeshRequest<AssetResponse> createAsset(String projectName, String uuid) {
-		return null;
-	}
-
-	@Override
-	public MeshRequest<NodeResponse> updateAsset(String projectName, String uuid, Buffer fileData, String fileName, String contentType,
-			ParameterProvider... parameters) {
-		return null;
-	}
-
-	@Override
-	public MeshRequest<Void> deleteAsset(String projectName, String uuid, ParameterProvider... parameters) {
-		return null;
-	}
-
 }

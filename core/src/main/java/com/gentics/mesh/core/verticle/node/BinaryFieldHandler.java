@@ -350,7 +350,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion,
 							true);
 					BinaryGraphField field = newDraftVersion.createBinary(fieldName);
-					
+
 					String fieldUuid = field.getUuid();
 					String fieldSegmentedPath = field.getSegmentedPath();
 					String fieldPath = field.getFilePath();
