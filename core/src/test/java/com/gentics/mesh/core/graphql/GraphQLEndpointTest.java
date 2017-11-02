@@ -1,8 +1,8 @@
 package com.gentics.mesh.core.graphql;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -10,16 +10,15 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Vector;
 
-import com.gentics.mesh.core.data.schema.SchemaContainer;
 import org.json.JSONException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameters;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
+import com.gentics.mesh.core.data.asset.Binary;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.node.field.list.BooleanGraphFieldList;
@@ -31,6 +30,7 @@ import com.gentics.mesh.core.data.node.field.list.NumberGraphFieldList;
 import com.gentics.mesh.core.data.node.field.list.StringGraphFieldList;
 import com.gentics.mesh.core.data.node.field.nesting.MicronodeGraphField;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
+import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.rest.graphql.GraphQLResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
@@ -62,6 +62,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.json.JsonObject;
 
@@ -261,8 +262,10 @@ public class GraphQLEndpointTest extends AbstractMeshTest {
 			container.createBoolean("boolean").setBoolean(true);
 
 			// binary
-			container.createBinary("binary").setSHA512Sum("hashsumvalue").setImageHeight(10).setImageWidth(20).setImageDominantColor("00FF00")
-					.setMimeType("image/jpeg").setFileSize(2048);
+			Binary binary = meshRoot().getBinaryRoot().create("hashsumvalue");
+			binary.setSize(2048);
+			container.createBinary("binary", binary).setImageHeight(10).setImageWidth(20).setImageDominantColor("00FF00")
+					.setMimeType("image/jpeg");
 
 			// stringList
 			StringGraphFieldList stringList = container.createStringList("stringList");

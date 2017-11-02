@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.root.impl;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ASSET_BINARY_ROOT;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BINARY_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_GROUP_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_JOB_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE_ROOT;
@@ -25,8 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Project;
-import com.gentics.mesh.core.data.asset.AssetBinaryRoot;
-import com.gentics.mesh.core.data.asset.impl.AssetBinaryRootImpl;
+import com.gentics.mesh.core.data.asset.BinaryRoot;
+import com.gentics.mesh.core.data.asset.impl.BinaryRootImpl;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.job.JobRoot;
 import com.gentics.mesh.core.data.job.impl.JobRootImpl;
@@ -68,7 +68,7 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	private static SchemaContainerRoot schemaContainerRoot;
 	private static MicroschemaContainerRoot microschemaContainerRoot;
 	private static JobRoot jobRoot;
-	private static AssetBinaryRoot assetBinaryRoot;
+	private static BinaryRoot assetBinaryRoot;
 
 	public static void init(Database database) {
 		database.addVertexType(MeshRootImpl.class, MeshVertexImpl.class);
@@ -85,13 +85,13 @@ public class MeshRootImpl extends MeshVertexImpl implements MeshRoot {
 	}
 
 	@Override
-	public AssetBinaryRoot getAssetBinaryRoot() {
+	public BinaryRoot getBinaryRoot() {
 		if (assetBinaryRoot == null) {
 			synchronized (MeshRootImpl.class) {
-				AssetBinaryRoot foundAssetBinaryRoot = out(HAS_ASSET_BINARY_ROOT).nextOrDefaultExplicit(AssetBinaryRootImpl.class, null);
+				BinaryRoot foundAssetBinaryRoot = out(HAS_BINARY_ROOT).nextOrDefaultExplicit(BinaryRootImpl.class, null);
 				if (foundAssetBinaryRoot == null) {
-					assetBinaryRoot = getGraph().addFramedVertex(AssetBinaryRootImpl.class);
-					linkOut(assetBinaryRoot, HAS_ASSET_BINARY_ROOT);
+					assetBinaryRoot = getGraph().addFramedVertex(BinaryRootImpl.class);
+					linkOut(assetBinaryRoot, HAS_BINARY_ROOT);
 					if (log.isInfoEnabled()) {
 						log.info("Created asset binary root {" + assetBinaryRoot.getUuid() + "}");
 					}

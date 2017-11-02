@@ -11,7 +11,7 @@ import java.util.List;
 
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
-import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
+import com.gentics.mesh.core.data.asset.Binary;
 import com.gentics.mesh.core.data.impl.GraphFieldTypes;
 import com.gentics.mesh.core.data.node.Micronode;
 import com.gentics.mesh.core.data.node.Node;
@@ -192,10 +192,10 @@ public abstract class AbstractGraphFieldContainerImpl extends AbstractBasicGraph
 	}
 
 	@Override
-	public BinaryGraphField createBinary(String fieldKey) {
+	public BinaryGraphField createBinary(String fieldKey, Binary binary) {
 		BinaryGraphField existing = getBinary(fieldKey);
 
-		BinaryGraphField edge = addFramedEdge(HAS_FIELD, this, BinaryGraphFieldImpl.class);
+		BinaryGraphField edge = addFramedEdge(HAS_FIELD, binary, BinaryGraphFieldImpl.class);
 		edge.setFieldKey(fieldKey);
 		edge.setProperty(GraphField.FIELD_KEY_PROPERTY_KEY, fieldKey);
 

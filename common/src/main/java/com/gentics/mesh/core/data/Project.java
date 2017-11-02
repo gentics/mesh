@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Objects;
 
 import com.gentics.mesh.core.TypeInfo;
-import com.gentics.mesh.core.data.asset.AssetRoot;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.root.MicroschemaContainerRoot;
 import com.gentics.mesh.core.data.root.NodeRoot;
@@ -166,12 +165,5 @@ public interface Project
 	 * @return Release root element
 	 */
 	ReleaseRoot getReleaseRoot();
-
-	/**
-	 * Return the asset root vertex of the project.
-	 * 
-	 * @return
-	 */
-	AssetRoot getAssetRoot();
 
 }

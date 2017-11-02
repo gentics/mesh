@@ -244,8 +244,6 @@ public class BinaryFieldUploadEndpointTest extends AbstractMeshTest {
 			BinaryGraphField binaryField = node.getLatestDraftFieldContainer(english()).getBinary("binary");
 			String uuid = "b677504736ed47a1b7504736ed07a14a";
 			binaryField.setUuid(uuid);
-			String path = binaryField.getSegmentedPath();
-			assertEquals("/b677/5047/36ed/47a1/b750/4736/ed07/a14a/", path);
 		}
 	}
 

@@ -86,7 +86,7 @@ public class WebRootHandler {
 			GraphField field = lastSegment.getPathField();
 			if (field instanceof BinaryGraphField) {
 				BinaryGraphField binaryField = (BinaryGraphField) field;
-				String sha512sum = binaryField.getSHA512Sum();
+				String sha512sum = binaryField.getBinary() != null ? binaryField.getBinary().getSHA512Sum() : null;
 
 				// Check the etag
 				String etagKey = sha512sum;

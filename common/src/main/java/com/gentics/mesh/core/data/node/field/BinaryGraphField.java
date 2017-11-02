@@ -1,12 +1,24 @@
 package com.gentics.mesh.core.data.node.field;
 
 import com.gentics.mesh.core.data.MeshEdge;
+import com.gentics.mesh.core.data.asset.Binary;
 import com.gentics.mesh.core.rest.node.field.BinaryField;
 
 /**
- * The BinaryField Domain Model interface.
+ * The BinaryField Domain Model interface. The field is an edge between the field container and the {@link Binary}
  */
 public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge {
+
+	public static final String BINARY_FILENAME_PROPERTY_KEY = "binaryFilename";
+
+	public static final String BINARY_CONTENT_TYPE_PROPERTY_KEY = "binaryContentType";
+
+	public static final String BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY = "binaryImageDominantColor";
+
+	public static final String BINARY_IMAGE_WIDTH_PROPERTY_KEY = "binaryImageWidth";
+
+	public static final String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
+
 	/**
 	 * Return the binary filename.
 	 * 
@@ -51,36 +63,6 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @return Fluent API
 	 */
 	BinaryGraphField setMimeType(String mimeType);
-
-	/**
-	 * Set the binary file size in bytes
-	 * 
-	 * @param sizeInBytes
-	 * @return Fluent API
-	 */
-	BinaryGraphField setFileSize(long sizeInBytes);
-
-	/**
-	 * Return the binary file size in bytes
-	 * 
-	 * @return
-	 */
-	long getFileSize();
-
-	/**
-	 * Set the binary SHA 512 checksum.
-	 * 
-	 * @param sha512HashSum
-	 * @return Fluent API
-	 */
-	BinaryGraphField setSHA512Sum(String sha512HashSum);
-
-	/**
-	 * Return the binary SHA 512 checksum.
-	 * 
-	 * @return
-	 */
-	String getSHA512Sum();
 
 	/**
 	 * Set the binary image dominant color.
@@ -140,5 +122,12 @@ public interface BinaryGraphField extends BasicGraphField<BinaryField>, MeshEdge
 	 * @param uuid
 	 */
 	void setUuid(String uuid);
+
+	/**
+	 * Return the referenced binary.
+	 * 
+	 * @return
+	 */
+	Binary getBinary();
 
 }

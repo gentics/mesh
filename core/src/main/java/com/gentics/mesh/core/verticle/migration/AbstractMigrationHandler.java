@@ -167,7 +167,7 @@ public abstract class AbstractMigrationHandler extends AbstractHandler implement
 				File file = new File(pathToOldBinaryFile);
 				if (file.exists()) {
 					Buffer buffer = Mesh.vertx().fileSystem().readFileBlocking(pathToOldBinaryFile);
-					binaryFieldHandler.hashAndStoreBinaryFile(buffer, binaryField.getUuid(), binaryField.getSegmentedPath());
+					binaryFieldHandler.hashAndStoreBinaryFile(buffer, binaryField.getUuid());
 					binaryField.setSHA512Sum(sha512Sum);
 				} else {
 					log.error("Could not find binary file for field {" + fieldName + "} in container {" + container.getUuid() + "}");

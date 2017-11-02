@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.data.asset;
 
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ASSET_BINARY;
+import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_BINARY;
 
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.graphdb.spi.Database;
@@ -10,7 +10,7 @@ import com.tinkerpop.blueprints.Edge;
 /**
  * Aggregation vertex for vertices which represent the binary of an asset.
  */
-public interface AssetBinaryRoot extends MeshVertex {
+public interface BinaryRoot extends MeshVertex {
 
 	Database database();
 
@@ -19,7 +19,7 @@ public interface AssetBinaryRoot extends MeshVertex {
 	 * 
 	 * @return
 	 */
-	default public Iterable<? extends AssetBinary> findAll() {
+	default public Iterable<? extends Binary> findAll() {
 		return out(getRootLabel()).frameExplicit(getPersistanceClass());
 	}
 
@@ -28,7 +28,7 @@ public interface AssetBinaryRoot extends MeshVertex {
 	 * 
 	 * @param item
 	 */
-	default public void addItem(AssetBinary item) {
+	default public void addItem(Binary item) {
 		FramedGraph graph = getGraph();
 		Iterable<Edge> edges = graph.getEdges("e." + getRootLabel().toLowerCase() + "_inout",
 				database().createComposedIndexKey(item.getId(), getId()));
@@ -38,7 +38,7 @@ public interface AssetBinaryRoot extends MeshVertex {
 	}
 
 	default public String getRootLabel() {
-		return HAS_ASSET_BINARY;
+		return HAS_BINARY;
 	}
 
 	/**
@@ -46,10 +46,18 @@ public interface AssetBinaryRoot extends MeshVertex {
 	 * 
 	 * @param item
 	 */
-	default public void removeItem(AssetBinary item) {
+	default public void removeItem(Binary item) {
 		unlinkOut(item, getRootLabel());
 	}
 
-	public Class<? extends AssetBinary> getPersistanceClass();
+	public Class<? extends Binary> getPersistanceClass();
+
+	/**
+	 * Create a new binary.
+	 * 
+	 * @param sha512sum
+	 * @return
+	 */
+	Binary create(String sha512sum);
 
 }

@@ -2,7 +2,6 @@ package com.gentics.mesh.core.data.impl;
 
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
-import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_ASSET_ROOT;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CREATOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_EDITOR;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_LANGUAGE;
@@ -30,8 +29,6 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.Tag;
 import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.User;
-import com.gentics.mesh.core.data.asset.AssetRoot;
-import com.gentics.mesh.core.data.asset.impl.AssetRootImpl;
 import com.gentics.mesh.core.data.generic.AbstractMeshCoreVertex;
 import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.Node;
@@ -309,16 +306,6 @@ public class ProjectImpl extends AbstractMeshCoreVertex<ProjectResponse, Project
 		if (root == null) {
 			root = getGraph().addFramedVertex(ReleaseRootImpl.class);
 			linkOut(root, HAS_RELEASE_ROOT);
-		}
-		return root;
-	}
-
-	@Override
-	public AssetRoot getAssetRoot() {
-		AssetRoot root = out(HAS_ASSET_ROOT).nextOrDefaultExplicit(AssetRootImpl.class, null);
-		if (root == null) {
-			root = getGraph().addFramedVertex(AssetRootImpl.class);
-			linkOut(root, HAS_ASSET_ROOT);
 		}
 		return root;
 	}

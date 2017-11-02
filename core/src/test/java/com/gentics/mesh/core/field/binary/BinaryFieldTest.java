@@ -59,7 +59,7 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 			NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(english());
 			BinaryGraphField field = container.createBinary(BINARY_FIELD);
 			field.setMimeType("image/jpg");
-			field.setSHA512Sum(
+			field.getBinary().setSHA512Sum(
 					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
 			field.setImageHeight(200);
 			field.setImageWidth(300);
@@ -92,27 +92,26 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 			field.setFileName("blume.jpg");
 			field.setMimeType("image/jpg");
-			field.setFileSize(220);
+			field.getBinary().setSize(220);
 			field.setImageDominantColor("#22A7F0");
 			field.setImageHeight(133);
 			field.setImageWidth(7);
-			field.setSHA512Sum(
+			field.getBinary().setSHA512Sum(
 					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
-			System.out.println(field.getSegmentedPath());
 
 			BinaryGraphField loadedField = container.getBinary(BINARY_FIELD);
 			assertNotNull("The previously created field could not be found.", loadedField);
-			assertEquals(220, loadedField.getFileSize());
+			assertEquals(220, loadedField.getBinary().getSize());
 
 			assertEquals("blume.jpg", loadedField.getFileName());
 			assertEquals("image/jpg", loadedField.getMimeType());
-			assertEquals(220, loadedField.getFileSize());
+			assertEquals(220, loadedField.getBinary().getSize());
 			assertEquals("#22A7F0", loadedField.getImageDominantColor());
 			assertEquals(133, loadedField.getImageHeight().intValue());
 			assertEquals(7, loadedField.getImageWidth().intValue());
 			assertEquals(
 					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc",
-					loadedField.getSHA512Sum());
+					loadedField.getBinary().getSHA512Sum());
 		}
 	}
 
@@ -128,11 +127,11 @@ public class BinaryFieldTest extends AbstractFieldTest<BinaryFieldSchema> {
 
 			field.setFileName("blume.jpg");
 			field.setMimeType("image/jpg");
-			field.setFileSize(220);
+			field.getBinary().setSize(220);
 			field.setImageDominantColor("#22A7F0");
 			field.setImageHeight(133);
 			field.setImageWidth(7);
-			field.setSHA512Sum(
+			field.getBinary().setSHA512Sum(
 					"6a793cf1c7f6ef022ba9fff65ed43ddac9fb9c2131ffc4eaa3f49212244c0d4191ae5877b03bd50fd137bd9e5a16799da4a1f2846f0b26e3d956c4d8423004cc");
 
 			NodeGraphFieldContainerImpl otherContainer = tx.getGraph().addFramedVertex(NodeGraphFieldContainerImpl.class);

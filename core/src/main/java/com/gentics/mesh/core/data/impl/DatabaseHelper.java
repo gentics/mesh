@@ -1,9 +1,7 @@
 package com.gentics.mesh.core.data.impl;
 
-import com.gentics.mesh.core.data.asset.impl.AssetBinaryImpl;
-import com.gentics.mesh.core.data.asset.impl.AssetBinaryRootImpl;
-import com.gentics.mesh.core.data.asset.impl.AssetImpl;
-import com.gentics.mesh.core.data.asset.impl.AssetRootImpl;
+import com.gentics.mesh.core.data.asset.impl.BinaryImpl;
+import com.gentics.mesh.core.data.asset.impl.BinaryRootImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerImpl;
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.container.impl.NodeGraphFieldContainerImpl;
@@ -101,10 +99,8 @@ public final class DatabaseHelper {
 		JobRootImpl.init(database);
 
 		// Assets
-		AssetImpl.init(database);
-		AssetRootImpl.init(database);
-		AssetBinaryImpl.init(database);
-		AssetBinaryRootImpl.init(database);
+		BinaryImpl.init(database);
+		BinaryRootImpl.init(database);
 
 		// Nodes
 		ProjectImpl.init(database);

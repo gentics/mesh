@@ -262,14 +262,14 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 				// 4. Hash and store the file and update the field properties
 				Single<TransformationResult> resultObs = obsImage.map((imageInfo) -> {
-					String sha512sum = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
+					String sha512sum = hashAndMoveBinaryFile(ul, fieldUuid);
 					return new TransformationResult(sha512sum, 0, imageInfo);
 				});
 
 				TransformationResult info = resultObs.toBlocking().value();
 				field.setFileName(fileName);
-				field.setFileSize(ul.size());
 				field.setMimeType(contentType);
+				field.setSize(ul.size());
 				field.setSHA512Sum(info.getHash());
 				field.setImageDominantColor(info.getImageInfo().getDominantColor());
 				field.setImageHeight(info.getImageInfo().getHeight());
@@ -352,9 +352,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 					BinaryGraphField field = newDraftVersion.createBinary(fieldName);
 
 					String fieldUuid = field.getUuid();
-					String fieldSegmentedPath = field.getSegmentedPath();
-					String fieldPath = field.getFilePath();
-
+			
 					// 1. Resize the original image and store the result in the filesystem
 					Single<TransformationResult> obsTransformation = imageManipulator
 							.handleResize(initialField.getFile(), field.getSHA512Sum(), imageManipulationParameter).flatMap(file -> {
@@ -377,8 +375,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 					TransformationResult result = obsTransformation.toBlocking().value();
 
-					field.setSHA512Sum(result.getHash());
-					field.setFileSize(result.getSize());
+					field.getBinary().setSHA512Sum(result.getHash());
+					field.getBinary().setSize(result.getSize());
 					// The resized image will always be a JPEG
 					field.setMimeType("image/jpeg");
 					// TODO should we rename the image, if the extension is wrong?
@@ -404,10 +402,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @param fileUpload
 	 *            Upload which will be handled
 	 * @param uuid
-	 * @param segmentedPath
 	 * @return calculated SHA 512 sum
 	 */
-	protected String hashAndMoveBinaryFile(FileUpload fileUpload, String uuid, String segmentedPath) {
+	protected String hashAndMoveBinaryFile(FileUpload fileUpload, String uuid) {
 		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 		String sha512sum = hashFileupload(fileUpload);
 		binaryStorage.store(buffer, sha512sum, uuid);
@@ -421,11 +418,9 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 *            buffer which will be handled
 	 * @param uuid
 	 *            uuid of the binary field
-	 * @param segmentedPath
-	 *            path to store the binary data
 	 * @return The sha512 checksum
 	 */
-	public String hashAndStoreBinaryFile(Buffer buffer, String uuid, String segmentedPath) {
+	public String hashAndStoreBinaryFile(Buffer buffer, String uuid) {
 		String sha512sum = hashBuffer(buffer);
 		binaryStorage.store(buffer, sha512sum, uuid);
 		return sha512sum;

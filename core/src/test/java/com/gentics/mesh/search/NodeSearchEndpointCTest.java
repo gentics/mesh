@@ -76,12 +76,12 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 			nodeA.getSchemaContainer().getLatestVersion().setSchema(schema);
 
 			// image
-			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary").setFileName("somefile.jpg").setFileSize(200).setImageHeight(200)
-					.setImageWidth(400).setMimeType("image/jpeg").setSHA512Sum("someHash").setImageDominantColor("#super");
+			nodeA.getLatestDraftFieldContainer(english()).createBinary("binary").setFileName("somefile.jpg").setImageHeight(200)
+					.setImageWidth(400).setMimeType("image/jpeg").setImageDominantColor("#super").getBinary().setSize(200).setSHA512Sum("someHash");
 
 			// file
-			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary").setFileName("somefile.dat").setFileSize(200)
-					.setMimeType("application/test").setSHA512Sum("someHash");
+			nodeB.getLatestDraftFieldContainer(english()).createBinary("binary").setFileName("somefile.dat")
+					.setMimeType("application/test").getBinary().setSHA512Sum("someHash").setSize(200);
 			recreateIndices();
 			tx.success();
 		}

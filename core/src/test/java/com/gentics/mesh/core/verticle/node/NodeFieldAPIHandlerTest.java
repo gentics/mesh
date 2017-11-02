@@ -1,5 +1,6 @@
 package com.gentics.mesh.core.verticle.node;
 
+import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -24,7 +25,6 @@ import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.ext.web.FileUpload;
 import rx.exceptions.CompositeException;
-import static com.gentics.mesh.test.TestSize.FULL;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
@@ -35,7 +35,6 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 
 	final String data = "bliblablub";
 	final String hash = "406d7d8188bb4556f7616628d1a5cd281ef6686034ddb3855b0ebb6affe6675e8ba9cde8f60f183341a0105223533e1ca09570e5d024cc8173d0b5087dfab4b5";
-	String segmentedPath = "some/path/to/file";
 
 	@Before
 	public void setup() throws Exception {
@@ -50,7 +49,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 		File uploadFolder = getUploadFolder();
 		assertFalse("Initially no upload folder should exist.", uploadFolder.exists());
 
-		String hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath);
+		String hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID());
 		assertNotNull(hashOutput);
 		assertEquals("The generated hash did not out expected value for data {" + data + "}", hash, hashOutput);
 		assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
@@ -59,7 +58,7 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 
 		fileUpload = mockUpload();
 		assertThat(uploadFolder).as("The upload folder should have been created").doesNotExist();
-		hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath);
+		hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID());
 		assertNotNull(hashOutput);
 		assertEquals("The generated hash did not out expected value for data {" + data + "}", hash, hashOutput);
 		assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
@@ -68,12 +67,11 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 
 	@Test
 	public void testHandlerCase2() throws IOException {
-		segmentedPath = "/cdfb/34f9/598a/4173/bb34/f959/8ae1/7330/";
 		FileUpload fileUpload = mockUpload();
 		File uploadFolder = getUploadFolder();
 		assertFalse("Initially no upload folder should exist.", uploadFolder.exists());
 
-		String hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath);
+		String hashOutput = handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID());
 		assertNotNull(hashOutput);
 		assertEquals("The generated hash did not out expected value for data {" + data + "}", hash, hashOutput);
 		assertFalse("The upload file should have been moved.", new File(fileUpload.uploadedFileName()).exists());
@@ -87,14 +85,14 @@ public class NodeFieldAPIHandlerTest extends AbstractMeshTest {
 		// Delete the file on purpose in order to invoke an error
 		new File(fileUpload.uploadedFileName()).delete();
 		try {
-			handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID(), segmentedPath);
+			handler.hashAndMoveBinaryFile(fileUpload, UUIDUtil.randomUUID());
 		} catch (CompositeException e) {
 			throw e.getExceptions().get(1);
 		}
 	}
 
 	private File getUploadFolder() {
-		return new File(uploadOptions.getDirectory(), segmentedPath);
+		return new File(uploadOptions.getDirectory());
 	}
 
 	private FileUpload mockUpload() throws IOException {

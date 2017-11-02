@@ -11,10 +11,12 @@ import java.io.InputStream;
 
 import javax.imageio.ImageIO;
 
+import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.etc.config.ImageManipulatorOptions;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
-
+import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.PropReadFileStream;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
@@ -28,21 +30,24 @@ public abstract class AbstractImageManipulator implements ImageManipulator {
 	private static final Logger log = LoggerFactory.getLogger(AbstractImageManipulator.class);
 
 	protected ImageManipulatorOptions options;
+	
+	protected BinaryStorage storage;
 
-	public AbstractImageManipulator(ImageManipulatorOptions options) {
+	public AbstractImageManipulator(ImageManipulatorOptions options, BinaryStorage storage) {
 		this.options = options;
+		this.storage = storage;
 	}
 
 	@Override
-	public Single<PropReadFileStream> handleResize(File binaryFile, String sha512sum, ImageManipulationParameters parameters) {
+	public Single<PropReadFileStream> handleResize(BinaryGraphField field, ImageManipulationParameters parameters) {
 		try {
 			parameters.validate();
 			parameters.validateLimits(options);
 		} catch (Exception e) {
 			return Single.error(e);
 		}
-		try (InputStream ins = new FileInputStream(binaryFile)) {
-			return handleResize(ins, sha512sum, parameters);
+		try (InputStream ins = storage.read(field)) {
+			return handleResize(ins, field.getBinary(), parameters);
 		} catch (IOException e) {
 			log.error("Can't handle image. File can't be opened. {" + binaryFile.getAbsolutePath() + "}", e);
 			return Single.error(error(BAD_REQUEST, "image_error_reading_failed", e));

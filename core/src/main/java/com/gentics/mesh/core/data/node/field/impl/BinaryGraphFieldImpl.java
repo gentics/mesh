@@ -8,8 +8,9 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.util.Objects;
 
 import com.gentics.mesh.core.data.GraphFieldContainer;
+import com.gentics.mesh.core.data.asset.Binary;
+import com.gentics.mesh.core.data.asset.impl.BinaryImpl;
 import com.gentics.mesh.core.data.generic.MeshEdgeImpl;
-import com.gentics.mesh.core.data.generic.MeshVertexImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.data.node.field.FieldGetter;
 import com.gentics.mesh.core.data.node.field.FieldTransformer;
@@ -20,10 +21,13 @@ import com.gentics.mesh.core.rest.node.field.impl.BinaryFieldImpl;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.handler.ActionContext;
 
+/**
+ * @see BinaryGraphField
+ */
 public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphField {
 
 	public static void init(Database database) {
-		database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
+		// database.addVertexType(BinaryGraphFieldImpl.class, MeshVertexImpl.class);
 		// database.addVertexIndex(BinaryGraphFieldImpl.class, true, BINARY_SHA512SUM_PROPERTY_KEY);
 	}
 
@@ -88,27 +92,16 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 		return container.getBinary(fieldSchema.getName());
 	};
 
-	private static final String BINARY_FILESIZE_PROPERTY_KEY = "binaryFileSize";
-
-	private static final String BINARY_FILENAME_PROPERTY_KEY = "binaryFilename";
-
-	private static final String BINARY_SHA512SUM_PROPERTY_KEY = "binarySha512Sum";
-
-	private static final String BINARY_CONTENT_TYPE_PROPERTY_KEY = "binaryContentType";
-
-	private static final String BINARY_IMAGE_DOMINANT_COLOR_PROPERTY_KEY = "binaryImageDominantColor";
-
-	private static final String BINARY_IMAGE_WIDTH_PROPERTY_KEY = "binaryImageWidth";
-
-	private static final String BINARY_IMAGE_HEIGHT_PROPERTY_KEY = "binaryImageHeight";
-
 	@Override
 	public BinaryField transformToRest(ActionContext ac) {
 		BinaryField restModel = new BinaryFieldImpl();
 		restModel.setFileName(getFileName());
 		restModel.setMimeType(getMimeType());
-		restModel.setFileSize(getFileSize());
-		restModel.setSha512sum(getSHA512Sum());
+		Binary binary = getBinary();
+		if (binary != null) {
+			restModel.setFileSize(binary.getSize());
+			restModel.setSha512sum(binary.getSHA512Sum());
+		}
 		restModel.setDominantColor(getImageDominantColor());
 		restModel.setWidth(getImageWidth());
 		restModel.setHeight(getImageHeight());
@@ -181,29 +174,6 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 	}
 
 	@Override
-	public String getSHA512Sum() {
-		return getProperty(BINARY_SHA512SUM_PROPERTY_KEY);
-	}
-
-	@Override
-	public BinaryGraphField setSHA512Sum(String sha512HashSum) {
-		setProperty(BINARY_SHA512SUM_PROPERTY_KEY, sha512HashSum);
-		return this;
-	}
-
-	@Override
-	public long getFileSize() {
-		Long size = getProperty(BINARY_FILESIZE_PROPERTY_KEY);
-		return size == null ? 0 : size;
-	}
-
-	@Override
-	public BinaryGraphField setFileSize(long sizeInBytes) {
-		setProperty(BINARY_FILESIZE_PROPERTY_KEY, sizeInBytes);
-		return this;
-	}
-
-	@Override
 	public BinaryGraphField setFileName(String filenName) {
 		setProperty(BINARY_FILENAME_PROPERTY_KEY, filenName);
 		return this;
@@ -227,14 +197,8 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 
 	@Override
 	public void removeField(GraphFieldContainer container) {
-		// Detach the list from the given graph field container
-		container.unlinkOut(this, HAS_FIELD);
-
-		// Remove the field if no more containers are attached to it
-		if (in(HAS_FIELD).count() == 0) {
-			// delete(null);
-			remove();
-		}
+		// TODO FIXME check whether this is the only field which makes use of the binary. In that case we should also remove the binary and its data.
+		remove();
 	}
 
 	@Override
@@ -260,8 +224,11 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			String mimeTypeB = binaryField.getMimeType();
 			boolean mimetype = Objects.equals(mimeTypeA, mimeTypeB);
 
-			String hashSumA = getSHA512Sum();
-			String hashSumB = binaryField.getSHA512Sum();
+			Binary binaryA = getBinary();
+			Binary binaryB = binaryField.getBinary();
+
+			String hashSumA = binaryA != null ? binaryA.getSHA512Sum() : null;
+			String hashSumB = binaryB != null ? binaryB.getSHA512Sum() : null;
 			boolean sha512sum = Objects.equals(hashSumA, hashSumB);
 			return filename && mimetype && sha512sum;
 		}
@@ -283,13 +250,18 @@ public class BinaryGraphFieldImpl extends MeshEdgeImpl implements BinaryGraphFie
 			}
 			boolean matchingSha512sum = true;
 			if (binaryField.getSha512sum() != null) {
-				String hashSumA = getSHA512Sum();
+				String hashSumA = getBinary() != null ? getBinary().getSHA512Sum() : null;
 				String hashSumB = binaryField.getSha512sum();
 				matchingSha512sum = Objects.equals(hashSumA, hashSumB);
 			}
 			return matchingFilename && matchingMimetype && matchingSha512sum;
 		}
 		return false;
+	}
+
+	@Override
+	public Binary getBinary() {
+		return outV().nextOrDefaultExplicit(BinaryImpl.class, null);
 	}
 
 }

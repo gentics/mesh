@@ -15,6 +15,7 @@ import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.node.field.BinaryGraphField;
 import com.gentics.mesh.core.image.spi.ImageManipulator;
 import com.gentics.mesh.http.MeshHeaders;
+import com.gentics.mesh.storage.BinaryStorage;
 import com.gentics.mesh.util.ETag;
 
 import io.vertx.core.file.AsyncFile;
@@ -30,9 +31,12 @@ public class BinaryFieldResponseHandler {
 
 	private ImageManipulator imageManipulator;
 
+	private BinaryStorage storage;
+
 	@Inject
-	public BinaryFieldResponseHandler(ImageManipulator imageManipulator) {
+	public BinaryFieldResponseHandler(ImageManipulator imageManipulator, BinaryStorage storage) {
 		this.imageManipulator = imageManipulator;
+		this.storage = storage;
 	}
 
 	/**
@@ -42,16 +46,15 @@ public class BinaryFieldResponseHandler {
 	 * @param binaryField
 	 */
 	public void handle(RoutingContext rc, BinaryGraphField binaryField) {
-		File binaryFile = binaryField.getFile();
-		if (!binaryFile.exists()) {
+		if (!storage.exists(binaryField)) {
 			rc.fail(error(NOT_FOUND, "node_error_binary_data_not_found"));
 			return;
 		} else {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
-			String contentLength = String.valueOf(binaryField.getFileSize());
+			String contentLength = String.valueOf(binaryField.getSize());
 			String fileName = binaryField.getFileName();
 			String contentType = binaryField.getMimeType();
-			String sha512sum = binaryField.getSHA512Sum();
+			String sha512sum = binaryField.getBinary()!= null ? binaryField.getBinary().getSHA512Sum() : null;
 
 			// Check the etag
 			String etagKey = sha512sum;
@@ -66,8 +69,7 @@ public class BinaryFieldResponseHandler {
 				rc.response().setStatusCode(NOT_MODIFIED.code()).end();
 			} else if (binaryField.hasImage() && ac.getImageParameters().isSet()) {
 				// Resize the image if needed
-				imageManipulator.handleResize(binaryField.getFile(), binaryField.getSHA512Sum(), ac.getImageParameters())
-				.subscribe(fileWithProps -> {
+				imageManipulator.handleResize(binaryField, ac.getImageParameters()).subscribe(fileWithProps -> {
 					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileWithProps.getProps().size()));
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, "image/jpeg");
 					rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
@@ -82,7 +84,7 @@ public class BinaryFieldResponseHandler {
 					Pump.pump(file, rc.response()).start();
 				}, rc::fail);
 			} else {
-				binaryField.getFileStream().subscribe(file -> {
+				binaryField.getBinary().getStream().subscribe(file -> {
 					rc.response().putHeader(HttpHeaders.CONTENT_LENGTH, contentLength);
 					rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
 					rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "must-revalidate");
