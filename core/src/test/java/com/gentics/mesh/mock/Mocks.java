@@ -320,6 +320,7 @@ public final class Mocks {
 		when(node.getCreator()).thenReturn(user);
 		when(node.getUuid()).thenReturn(randomUUID());
 		when(node.getRolesWithPerm(GraphPermission.READ_PERM)).thenReturn(Collections.emptyList());
+		when(node.getRolesWithPerm(GraphPermission.READ_PUBLISHED_PERM)).thenReturn(Collections.emptyList());
 
 		NodeGraphFieldContainer container = mockContainer(language, user);
 		when(container.getSchemaContainerVersion()).thenReturn(latestVersion);
