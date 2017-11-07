@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.schema.change;
 
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_ADD_RAW;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_OPTIONS;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -24,7 +24,10 @@ import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.IndexOptionHelper;
 import com.syncleus.ferma.tx.Tx;
+
+import io.vertx.core.json.JsonObject;
 
 /**
  * Test {@link UpdateSchemaChangeImpl} methods
@@ -67,13 +70,14 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			SchemaContainerVersion version = tx.getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 			SchemaModel schema = new SchemaModelImpl();
 			UpdateSchemaChange change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
+			change.setIndexOptions(new JsonObject().put("key", "value"));
 			change.setName("updated");
 			version.setSchema(schema);
 			version.setNextChange(change);
 
 			Schema updatedSchema = mutator.apply(version);
 			assertEquals("updated", updatedSchema.getName());
-
+			assertEquals("value", updatedSchema.getSearchIndex().getString("key"));
 			change = tx.getGraph().addFramedVertex(UpdateSchemaChangeImpl.class);
 			change.setDescription("text");
 			version.setNextChange(change);
@@ -163,7 +167,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			SchemaChangeModel model = new SchemaChangeModel();
 			model.setMigrationScript("custom");
 			model.setProperty(SchemaChangeModel.REQUIRED_KEY, true);
-			model.setProperty(SchemaChangeModel.INDEX_ADD_RAW, true);
+			model.setProperty(SchemaChangeModel.INDEX_OPTIONS, IndexOptionHelper.getRawFieldOption().encode());
 			model.setProperty(SchemaChangeModel.CONTAINER_FLAG_KEY, true);
 			model.setProperty(SchemaChangeModel.DESCRIPTION_KEY, "description");
 			model.setProperty(SchemaChangeModel.SEGMENT_FIELD_KEY, "segmentField");
@@ -179,7 +183,8 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			assertEquals("segmentField", change.getSegmentField());
 			assertEquals("displayField", change.getDisplayField());
 			assertEquals("newName", change.getName());
-			assertTrue("Indexer option has not been set correctly", change.getRestProperty(INDEX_ADD_RAW));
+			assertEquals("Indexer option has not been set correctly", IndexOptionHelper.getRawFieldOption().encode(), change.getRestProperty(
+					INDEX_OPTIONS));
 			assertTrue("Container flag should have been set.", change.getContainerFlag());
 			assertEquals(UpdateSchemaChange.OPERATION, change.getOperation());
 			assertArrayEquals(new String[] { "A", "B", "C" }, change.getOrder().toArray());
@@ -222,7 +227,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			model = change.transformToRest();
 			assertEquals("test", model.getProperty(SchemaChangeModel.DISPLAY_FIELD_NAME_KEY));
 			assertEquals("test2", model.getProperty(SchemaChangeModel.SEGMENT_FIELD_KEY));
-			assertThat((String[])model.getProperty(SchemaChangeModel.URLFIELDS_KEY)).containsExactly("fieldA", "fieldB");
+			assertThat((String[]) model.getProperty(SchemaChangeModel.URLFIELDS_KEY)).containsExactly("fieldA", "fieldB");
 			assertEquals("script", model.getMigrationScript());
 			assertEquals("someName", model.getProperty(SchemaChangeModel.NAME_KEY));
 			assertEquals("someDescription", model.getProperty(SchemaChangeModel.DESCRIPTION_KEY));

@@ -9,13 +9,15 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * Abstract class for update changes for schemas or microschemas.
  * 
  * @param <T>
  */
-public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSchemaContainer> extends AbstractSchemaChange<T>
-		implements FieldSchemaContainerUpdateChange<T> {
+public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSchemaContainer> extends AbstractSchemaChange<T> implements
+		FieldSchemaContainerUpdateChange<T> {
 
 	@Override
 	public String getName() {
@@ -55,16 +57,22 @@ public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSc
 	@Override
 	public <R extends FieldSchemaContainer> R apply(R container) {
 
-		// Update the name
+		// .name
 		String name = getName();
 		if (name != null) {
 			container.setName(name);
 		}
 
-		// Update the description
+		// .description
 		String description = getDescription();
 		if (description != null) {
 			container.setDescription(description);
+		}
+
+		// .searchIndex
+		JsonObject options = getIndexOptions();
+		if (options != null) {
+			container.setSearchIndex(options);
 		}
 
 		// Update the fields if the order changes

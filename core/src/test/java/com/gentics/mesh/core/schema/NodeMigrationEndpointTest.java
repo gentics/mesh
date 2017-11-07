@@ -56,7 +56,6 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.ListFieldSchema;
 import com.gentics.mesh.core.rest.schema.MicronodeFieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
-import com.gentics.mesh.core.rest.schema.impl.IndexOptions;
 import com.gentics.mesh.core.rest.schema.impl.ListFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.MicronodeFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -70,6 +69,7 @@ import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.util.TestUtils;
+import com.gentics.mesh.util.IndexOptionHelper;
 import com.gentics.mesh.util.Tuple;
 import com.syncleus.ferma.tx.Tx;
 
@@ -361,7 +361,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForJobs(() -> {
 			SchemaUpdateRequest request = tx(
 					() -> JsonUtil.readValue(node.getSchemaContainer().getLatestVersion().getJson(), SchemaUpdateRequest.class));
-			request.getField("teaser").setIndexOptions(new IndexOptions().setAddRaw(true));
+			request.getField("teaser").setSearchIndex(IndexOptionHelper.getRawFieldOption());
 			call(() -> client().updateSchema(schemaUuid, request));
 		}, COMPLETED, 1);
 
@@ -1072,7 +1072,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		schemaB.setVersion("2.0");
 		FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
 		if (setAddRaw) {
-			newField.setIndexOptions(new IndexOptions().setAddRaw(true));
+			newField.setSearchIndex(IndexOptionHelper.getRawFieldOption());
 		}
 		schemaB.addField(newField);
 		schemaB.addField(FieldUtil.createStringFieldSchema("name"));

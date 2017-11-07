@@ -10,6 +10,8 @@ import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 
+import io.vertx.core.json.JsonObject;
+
 public class SchemaResponse extends AbstractGenericRestResponse implements SchemaModel {
 
 	@JsonProperty(required = true)
@@ -39,6 +41,10 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the schema.")
 	private String name;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
+	private JsonObject searchIndex;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of schema fields")
@@ -143,6 +149,17 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 		reference.setVersion(getVersion());
 		reference.setName(getName());
 		return reference;
+	}
+
+	@Override
+	public JsonObject getSearchIndex() {
+		return searchIndex;
+	}
+
+	@Override
+	public SchemaResponse setSearchIndex(JsonObject searchIndex) {
+		this.searchIndex = searchIndex;
+		return this;
 	}
 
 	@Override

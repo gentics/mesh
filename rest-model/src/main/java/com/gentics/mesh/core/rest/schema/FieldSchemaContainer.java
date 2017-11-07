@@ -17,6 +17,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.gentics.mesh.core.rest.common.RestModel;
 import com.gentics.mesh.core.rest.node.FieldMap;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * A field schema container is a named container that contains field schemas. Typical containers are {@link Schema} or {@link Microschema}.
  */
@@ -148,6 +150,21 @@ public interface FieldSchemaContainer extends RestModel {
 
 		return this;
 	}
+
+	/**
+	 * Return the search index configuration.
+	 * 
+	 * @return
+	 */
+	JsonObject getSearchIndex();
+
+	/**
+	 * Set the search index configuration.
+	 * 
+	 * @param searchIndex
+	 * @return Fluent API
+	 */
+	FieldSchemaContainer setSearchIndex(JsonObject searchIndex);
 
 	/**
 	 * Set the list of schema fields.

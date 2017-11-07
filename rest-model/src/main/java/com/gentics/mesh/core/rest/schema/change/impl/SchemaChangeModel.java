@@ -23,7 +23,7 @@ public class SchemaChangeModel implements RestModel {
 
 	public static final String REQUIRED_KEY = "required";
 
-	public static final String INDEX_ADD_RAW = "searchIndexaddRaw";
+	public static final String INDEX_OPTIONS = "searchIndexOptions";
 
 	public static final String SEGMENT_FIELD_KEY = "segmentFieldname";
 

@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHANGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_OPTIONS;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,6 +15,8 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.util.Tuple;
+
+import io.vertx.core.json.JsonObject;
 
 /**
  * @see SchemaChange
@@ -113,6 +116,20 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	@Override
 	public <R> Map<String, R> getRestProperties() {
 		return getProperties(REST_PROPERTY_PREFIX_KEY);
+	}
+
+	@Override
+	public JsonObject getIndexOptions() {
+		String json = getRestProperty(INDEX_OPTIONS);
+		if (json != null) {
+			return new JsonObject(json);
+		}
+		return null;
+	}
+
+	@Override
+	public void setIndexOptions(JsonObject options) {
+		setRestProperty(INDEX_OPTIONS, options.encode());
 	}
 
 	@Override

@@ -9,6 +9,9 @@ import java.io.IOException;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
+
+import io.vertx.core.json.JsonObject;
+
 import com.gentics.mesh.core.data.container.impl.MicroschemaContainerVersionImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainerVersion;
 import com.gentics.mesh.core.data.schema.UpdateMicroschemaChange;
@@ -40,11 +43,13 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 
 			UpdateMicroschemaChange change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.setName("updated");
+			change.setIndexOptions(new JsonObject().put("key", "value"));
 			version.setSchema(schema);
 			version.setNextChange(change);
 
 			Microschema updatedSchema = mutator.apply(version);
 			assertEquals("updated", updatedSchema.getName());
+			assertEquals("value", updatedSchema.getSearchIndex().getString("key"));
 
 			change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.setDescription("text");

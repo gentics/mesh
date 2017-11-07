@@ -10,6 +10,8 @@ import com.gentics.mesh.core.rest.common.AbstractGenericRestResponse;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * POJO for a microschema response.
  */
@@ -26,6 +28,10 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the microschema")
 	private String name;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
+	private JsonObject searchIndex;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of microschema fields")
@@ -70,6 +76,17 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	@Override
 	public MicroschemaResponse setName(String name) {
 		this.name = name;
+		return this;
+	}
+
+	@Override
+	public JsonObject getSearchIndex() {
+		return searchIndex;
+	}
+
+	@Override
+	public MicroschemaResponse setSearchIndex(JsonObject searchIndex) {
+		this.searchIndex = searchIndex;
 		return this;
 	}
 

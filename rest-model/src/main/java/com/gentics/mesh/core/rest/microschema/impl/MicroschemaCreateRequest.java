@@ -4,21 +4,29 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Microschema;
 
+import io.vertx.core.json.JsonObject;
+
 public class MicroschemaCreateRequest implements Microschema {
 
+	@JsonProperty(required = false)
 	@JsonPropertyDescription("Description of the microschema")
 	private String description;
 
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the microschema")
 	private String name;
 
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
+	private JsonObject searchIndex;
+
 	@JsonPropertyDescription("List of microschema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
-
 
 	@Override
 	public String getDescription() {
@@ -39,6 +47,17 @@ public class MicroschemaCreateRequest implements Microschema {
 	@Override
 	public MicroschemaCreateRequest setName(String name) {
 		this.name = name;
+		return this;
+	}
+
+	@Override
+	public JsonObject getSearchIndex() {
+		return searchIndex;
+	}
+
+	@Override
+	public MicroschemaCreateRequest setSearchIndex(JsonObject searchIndex) {
+		this.searchIndex = searchIndex;
 		return this;
 	}
 

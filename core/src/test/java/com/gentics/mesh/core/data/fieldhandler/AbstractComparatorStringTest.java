@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.fieldhandler;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_ADD_RAW;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_OPTIONS;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -17,7 +17,7 @@ import com.gentics.mesh.core.rest.schema.NumberFieldSchema;
 import com.gentics.mesh.core.rest.schema.StringFieldSchema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
-import com.gentics.mesh.core.rest.schema.impl.IndexOptions;
+import com.gentics.mesh.util.IndexOptionHelper;
 
 public abstract class AbstractComparatorStringTest<C extends FieldSchemaContainer> extends AbstractSchemaComparatorTest<StringFieldSchema, C> {
 
@@ -81,20 +81,20 @@ public abstract class AbstractComparatorStringTest<C extends FieldSchemaContaine
 		assertThat(changes.get(0).getProperties()).hasSize(2);
 
 		// addRaw flag:
-		fieldB.setIndexOptions(new IndexOptions().setAddRaw(true));
+		fieldB.setSearchIndex(IndexOptionHelper.getRawFieldOption());
 		changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
-		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty(REQUIRED_KEY, true).hasProperty(INDEX_ADD_RAW, true);
+		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty(REQUIRED_KEY, true).hasProperty(INDEX_OPTIONS, IndexOptionHelper.getRawFieldOption());
 		assertThat(changes.get(0).getProperties()).hasSize(3);
 
 		// allow property:
 		fieldA.setRequired(true);
-		fieldA.setIndexOptions(new IndexOptions().setAddRaw(true));
+		fieldA.setSearchIndex(IndexOptionHelper.getRawFieldOption());
 		fieldA.setAllowedValues("blib");
 		fieldB.setAllowedValues("changed");
 		changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
-		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasNoProperty(INDEX_ADD_RAW).hasNoProperty(REQUIRED_KEY).hasProperty("allow",
+		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasNoProperty(INDEX_OPTIONS).hasNoProperty(REQUIRED_KEY).hasProperty("allow",
 				new String[] { "changed" });
 		assertThat(changes.get(0).getProperties()).hasSize(2);
 

@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.microschema.MicroschemaModel;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * Implementation of Microschema
  */
@@ -25,6 +27,10 @@ public class MicroschemaModelImpl implements MicroschemaModel {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the microschema")
 	private String name;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
+	private JsonObject searchIndex;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of microschema fields")
@@ -64,6 +70,17 @@ public class MicroschemaModelImpl implements MicroschemaModel {
 	}
 
 	@Override
+	public JsonObject getSearchIndex() {
+		return searchIndex;
+	}
+
+	@Override
+	public MicroschemaModel setSearchIndex(JsonObject searchIndex) {
+		this.searchIndex = searchIndex;
+		return this;
+	}
+
+	@Override
 	public List<FieldSchema> getFields() {
 		return fields;
 	}
@@ -80,5 +97,4 @@ public class MicroschemaModelImpl implements MicroschemaModel {
 		return getName() + " fields: {" + fields + "}";
 	}
 
-	
 }

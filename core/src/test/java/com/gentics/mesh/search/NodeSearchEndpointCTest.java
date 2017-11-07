@@ -21,7 +21,6 @@ import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.node.NodeUpdateRequest;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
-import com.gentics.mesh.core.rest.schema.impl.IndexOptions;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.LinkType;
@@ -29,6 +28,7 @@ import com.gentics.mesh.parameter.impl.NodeParametersImpl;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.parameter.impl.VersioningParametersImpl;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.IndexOptionHelper;
 import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
@@ -199,7 +199,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		String schemaUuid = tx(() -> content().getSchemaContainer().getUuid());
 		SchemaUpdateRequest request = tx(
 				() -> JsonUtil.readValue(content().getSchemaContainer().getLatestVersion().getJson(), SchemaUpdateRequest.class));
-		request.getField("teaser").setIndexOptions(new IndexOptions().setAddRaw(true));
+		request.getField("teaser").setSearchIndex(IndexOptionHelper.getRawFieldOption());
 
 		tx(() -> group().addRole(roles().get("admin")));
 		waitForJobs(() -> {
