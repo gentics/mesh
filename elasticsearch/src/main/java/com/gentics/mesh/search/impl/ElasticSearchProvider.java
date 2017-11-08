@@ -12,6 +12,7 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
@@ -52,6 +53,8 @@ import com.gentics.mesh.etc.config.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.SearchProvider;
 
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -73,19 +76,30 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private MeshOptions options;
 
-	public static final String DEFAULT_INDEX_SETTINGS_FILENAME = "default-es-index-settings.json";
-
-	public static String DEFAULT_INDEX_SETTINGS;
-
-	static {
-		try {
-			DEFAULT_INDEX_SETTINGS = IOUtils.toString(ElasticSearchProvider.class.getResourceAsStream("/" + DEFAULT_INDEX_SETTINGS_FILENAME));
-		} catch (IOException e) {
-			throw new RuntimeException("Could not load default index settings", e);
-		}
+	public ElasticSearchProvider() {
 	}
 
-	public ElasticSearchProvider() {
+	/**
+	 * Returns the default index settings.
+	 * 
+	 * @return
+	 */
+	private JsonObject getDefaultSettings() {
+
+		JsonObject tokenizer = new JsonObject();
+		tokenizer.put("type", "nGram");
+		tokenizer.put("min_gram", "3");
+		tokenizer.put("max_gram", "3");
+
+		JsonObject trigramsAnalyzer = new JsonObject();
+		trigramsAnalyzer.put("tokenizer", "my_ngram_tokenizer");
+		trigramsAnalyzer.put("filter", new JsonArray().add("lowercase"));
+
+		JsonObject analysis = new JsonObject();
+		analysis.put("analyzer", new JsonObject().put("trigrams", trigramsAnalyzer));
+		analysis.put("tokenizer", new JsonObject().put("my_ngram_tokenizer", tokenizer));
+		return new JsonObject().put("analysis", analysis);
+
 	}
 
 	@Override
@@ -211,7 +225,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable createIndex(String indexName) {
+	public Completable createIndex(String indexName, JsonObject settings, JsonObject mappings) {
 		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
 		return Completable.create(sub -> {
 			if (log.isDebugEnabled()) {
@@ -219,7 +233,14 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 			CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
 
-			createIndexRequestBuilder.setSettings(createDefaultIndexSettings().toString());
+			JsonObject fullSettings = getDefaultSettings();
+			fullSettings.put("mappings", mappings);
+
+			// Prepare the json for the request
+			JsonObject json = new JsonObject();
+			json.put("settings", fullSettings);
+			json.put("mappings", mappings);
+			createIndexRequestBuilder.setSource(json.encodePrettily());
 			createIndexRequestBuilder.execute(new ActionListener<CreateIndexResponse>() {
 
 				@Override
@@ -277,20 +298,6 @@ public class ElasticSearchProvider implements SearchProvider {
 				}
 			});
 		});
-	}
-
-	/**
-	 * Create the default index settings.
-	 * 
-	 * @return
-	 */
-	private JsonObject createDefaultIndexSettings() {
-		JsonObject settings = new JsonObject(DEFAULT_INDEX_SETTINGS);
-		if (log.isDebugEnabled()) {
-			log.debug("Using index settings: ");
-			log.debug(settings.encodePrettily());
-		}
-		return settings;
 	}
 
 	@Override
@@ -400,8 +407,8 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onResponse(BulkResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Finished bulk  store request on index {" + index + ":" + type + "}. Duration "
-								+ (System.currentTimeMillis() - start) + "[ms]");
+						log.debug("Finished bulk  store request on index {" + index + ":" + type + "}. Duration " + (System.currentTimeMillis()
+								- start) + "[ms]");
 					}
 					sub.onCompleted();
 				}

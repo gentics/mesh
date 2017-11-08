@@ -31,7 +31,6 @@ import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -61,6 +60,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 
 	@Inject
 	public NodeContainerTransformer transformer;
+
+	@Inject
+	public NodeContainerMappingProvider mappingProvider;
 
 	@Inject
 	public NodeIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -93,18 +95,13 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	public Completable init() {
-		return super.init().andThen(Completable.create(sub -> {
-			db.tx(() -> {
-				updateNodeIndexMappings();
-				sub.onCompleted();
-			});
-		}));
+	public NodeContainerTransformer getTransformer() {
+		return transformer;
 	}
 
 	@Override
-	public NodeContainerTransformer getTransformer() {
-		return transformer;
+	public NodeContainerMappingProvider getMappingProvider() {
+		return mappingProvider;
 	}
 
 	@Override
@@ -309,7 +306,10 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		Map<String, String> indexInfo = getIndices();
 		// Only create indices which should be existing
 		if (indexInfo.containsKey(indexName)) {
-			return searchProvider.createIndex(indexName).andThen(updateNodeIndexMapping(indexName, entry.getSchema()));
+			JsonObject mapping = getMappingProvider().getMapping(entry.getSchema(), entry.getIndexType());
+			// TODO merge default with custom settings
+			JsonObject indexSettings = entry.getSchema().getSearchIndex();
+			return searchProvider.createIndex(indexName, indexSettings, mapping);
 		} else {
 			if (log.isDebugEnabled()) {
 				log.debug("Only found indices:");
@@ -321,54 +321,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 	}
 
-	/**
-	 * Update the mapping for the schema. The schema information will be used to determine the correct index type.
-	 * 
-	 * @param schema
-	 *            schema
-	 * @return Completable
-	 */
-	public Completable updateNodeIndexMapping(Schema schema) {
-		Set<Completable> obs = new HashSet<>();
-		for (String indexName : getIndices().keySet()) {
-			obs.add(updateNodeIndexMapping(indexName, schema));
-		}
-		return Completable.merge(obs);
-	}
-
-	/**
-	 * Update the node mapping for the index which is identified using the provided elements.
-	 * 
-	 * @param project
-	 * @param release
-	 * @param schemaVersion
-	 * @param containerType
-	 * @param schema
-	 * @return
-	 */
-	public Completable updateNodeIndexMapping(Project project, Release release, SchemaContainerVersion schemaVersion, ContainerType containerType,
-			Schema schema) {
-		String indexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), schemaVersion.getUuid(), containerType);
-		return updateNodeIndexMapping(indexName, schema);
-	}
-
-	/**
-	 * Update the mapping for the given type in the given index for the schema.
-	 *
-	 * @param indexName
-	 *            index name
-	 * @param schema
-	 *            schema
-	 * @return
-	 */
-	public Completable updateNodeIndexMapping(String indexName, Schema schema) {
-		return Completable.defer(() -> {
-			String type = NodeGraphFieldContainer.composeIndexType();
-			JsonObject mappingJson = transformer.getMapping(schema, type);
-			return searchProvider.updateMapping(indexName, type, mappingJson);
-		});
-	}
-
 	@Override
 	public GraphPermission getReadPermission(InternalActionContext ac) {
 		switch (ContainerType.forVersion(ac.getVersioningParameters().getVersion())) {
@@ -376,22 +328,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			return GraphPermission.READ_PUBLISHED_PERM;
 		default:
 			return GraphPermission.READ_PERM;
-		}
-	}
-
-	/**
-	 * Update all node specific index mappings for all projects and all releases.
-	 */
-	public void updateNodeIndexMappings() {
-		for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
-			// Add the draft and published index names per release to the map
-			for (Release release : project.getReleaseRoot().findAllIt()) {
-				// Each release specific index has also document type specific mappings
-				for (SchemaContainerVersion containerVersion : release.findActiveSchemaVersions()) {
-					updateNodeIndexMapping(project, release, containerVersion, DRAFT, containerVersion.getSchema()).await();
-					updateNodeIndexMapping(project, release, containerVersion, PUBLISHED, containerVersion.getSchema()).await();
-				}
-			}
 		}
 	}
 
@@ -407,7 +343,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
 		} else {
 			Project project = node.getProject();
-			
 
 			Set<Observable<String>> obs = new HashSet<>();
 

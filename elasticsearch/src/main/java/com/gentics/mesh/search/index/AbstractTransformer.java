@@ -151,46 +151,5 @@ public abstract class AbstractTransformer<T> implements Transformer<T> {
 		}
 	}
 
-	@Override
-	public JsonObject getMapping(String type) {
-		JsonObject mapping = new JsonObject();
-
-		// Enhance mappings with generic/common field types
-		JsonObject mappingProperties = getMappingProperties();
-		mappingProperties.put(UUID_KEY, notAnalyzedType(STRING));
-		mappingProperties.put("created", notAnalyzedType(DATE));
-		mappingProperties.put("edited", notAnalyzedType(DATE));
-		mappingProperties.put("editor", getUserReferenceMapping());
-		mappingProperties.put("creator", getUserReferenceMapping());
-		mappingProperties.put("_roleUuids", notAnalyzedType(STRING));
-
-		JsonObject typeMapping = new JsonObject();
-		typeMapping.put("properties", mappingProperties);
-
-		mapping.put(type, typeMapping);
-		return mapping;
-	}
-
-	private JsonObject getRoleUuidsMapping() {
-		JsonObject rolesMapping = new JsonObject();
-		JsonObject rolesMappingProps = new JsonObject();
-		rolesMappingProps.put("_roleUuids", notAnalyzedType(STRING));
-		rolesMapping.put("properties", rolesMappingProps);
-		return rolesMapping;
-	}
-
-	/**
-	 * Return the user reference mapping.
-	 * 
-	 * @return
-	 */
-	private JsonObject getUserReferenceMapping() {
-		JsonObject mapping = new JsonObject();
-		mapping.put("type", "object");
-		JsonObject userProps = new JsonObject();
-		userProps.put("uuid", notAnalyzedType(STRING));
-		mapping.put("properties", userProps);
-		return mapping;
-	}
 
 }

@@ -101,7 +101,8 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 			setRequired(Boolean.valueOf(String.valueOf(fieldProperties.get(REQUIRED_KEY))));
 		}
 		if (fieldProperties.get(SchemaChangeModel.INDEX_OPTIONS) != null) {
-			JsonObject options = new JsonObject((String) fieldProperties.get(INDEX_OPTIONS));
+			Object value = fieldProperties.get(INDEX_OPTIONS);
+			JsonObject options = new JsonObject((String) value);
 			setSearchIndex(options);
 		}
 
@@ -170,7 +171,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 		Map<String, Object> map = new HashMap<>();
 		map.put(LABEL_KEY, getLabel());
 		map.put(REQUIRED_KEY, isRequired());
-		map.put(INDEX_OPTIONS, getSearchIndex() == null ? null : getSearchIndex());
+		map.put(INDEX_OPTIONS, getSearchIndex() == null ? null : getSearchIndex().encode());
 		return map;
 	}
 

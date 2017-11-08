@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 
 /**
@@ -25,6 +26,9 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	@Inject
 	MicroschemaTransformer transformer;
+
+	@Inject
+	MicroschemaMappingProvider mappingProvider;
 
 	@Inject
 	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -54,6 +58,11 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	@Override
 	public MicroschemaTransformer getTransformer() {
 		return transformer;
+	}
+
+	@Override
+	public MicroschemaMappingProvider getMappingProvider() {
+		return mappingProvider;
 	}
 
 	@Override

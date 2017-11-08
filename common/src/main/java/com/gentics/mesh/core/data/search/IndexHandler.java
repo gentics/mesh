@@ -47,14 +47,6 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	Class<?> getElementClass();
 
 	/**
-	 * Handle the search queue update mapping entry.
-	 * 
-	 * @param entry
-	 * @return
-	 */
-	Completable updateMapping(CreateIndexEntry entry);
-
-	/**
 	 * Delete the document with the given UUID and document type from the search index.
 	 * 
 	 * @param entry

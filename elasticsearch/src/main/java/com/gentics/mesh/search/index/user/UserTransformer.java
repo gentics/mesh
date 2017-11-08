@@ -75,24 +75,4 @@ public class UserTransformer extends AbstractTransformer<User> {
 		groupFields.put(NAME_KEY, groupNames);
 		document.put(GROUPS_KEY, groupFields);
 	}
-
-	@Override
-	public JsonObject getMappingProperties() {
-		JsonObject props = new JsonObject();
-		props.put(USERNAME_KEY, trigramStringType());
-		props.put(LASTNAME_KEY, trigramStringType());
-		props.put(FIRSTNAME_KEY, trigramStringType());
-		props.put(EMAIL_KEY, notAnalyzedType(STRING));
-		props.put(NODEREFERECE_KEY, notAnalyzedType(STRING));
-		props.put(GROUPS_KEY, new JsonObject()
-			.put("type", OBJECT)
-			.put("properties", new JsonObject()
-				.put(NAME_KEY, trigramStringType())
-				.put(UUID_KEY, notAnalyzedType(STRING))
-			)
-		);
-
-		return props;
-	}
-
 }

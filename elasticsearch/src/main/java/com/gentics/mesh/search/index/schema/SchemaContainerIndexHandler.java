@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 
 /**
@@ -25,6 +26,9 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 
 	@Inject
 	SchemaTransformer transformer;
+
+	@Inject
+	SchemaMappingProvider mappingProvider;
 
 	@Inject
 	public SchemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -54,6 +58,11 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	@Override
 	public SchemaTransformer getTransformer() {
 		return transformer;
+	}
+
+	@Override
+	public MappingProvider getMappingProvider() {
+		return mappingProvider;
 	}
 
 	@Override

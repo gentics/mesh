@@ -37,6 +37,9 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	TagTransformer transforer;
 
 	@Inject
+	TagMappingProvider mappingProvider;
+
+	@Inject
 	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
 		super(searchProvider, db, boot, searchQueue);
 	}
@@ -49,6 +52,11 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	@Override
 	protected TagTransformer getTransformer() {
 		return transforer;
+	}
+
+	@Override
+	public TagMappingProvider getMappingProvider() {
+		return mappingProvider;
 	}
 
 	@Override

@@ -1,10 +1,6 @@
 package com.gentics.mesh.search.index.tagfamily;
 
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
-import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
-import static com.gentics.mesh.search.index.MappingHelper.trigramStringType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -35,22 +31,4 @@ public class TagFamilyTransformer extends AbstractTransformer<TagFamily> {
 		return document;
 	}
 
-	@Override
-	public JsonObject getMappingProperties() {
-		JsonObject props = new JsonObject();
-		props.put(NAME_KEY, trigramStringType());
-
-		//TODO tags
-
-		// project
-		JsonObject projectMapping = new JsonObject();
-		projectMapping.put("type", OBJECT);
-		JsonObject projectMappingProps = new JsonObject();
-		projectMappingProps.put("name", trigramStringType());
-		projectMappingProps.put("uuid", notAnalyzedType(STRING));
-		projectMapping.put("properties", projectMappingProps);
-		props.put("project", projectMapping);
-
-		return props;
-	}
 }

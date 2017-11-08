@@ -27,6 +27,9 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	GroupTransformer transformer;
 
 	@Inject
+	GroupMappingProvider mappingProvider;
+
+	@Inject
 	public GroupIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
 		super(searchProvider, db, boot, searchQueue);
 	}
@@ -39,6 +42,11 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	@Override
 	public GroupTransformer getTransformer() {
 		return transformer;
+	}
+
+	@Override
+	public GroupMappingProvider getMappingProvider() {
+		return mappingProvider;
 	}
 
 	@Override

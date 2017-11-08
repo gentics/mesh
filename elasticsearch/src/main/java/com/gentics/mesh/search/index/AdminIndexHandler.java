@@ -67,18 +67,4 @@ public class AdminIndexHandler {
 		}).subscribe(message -> ac.send(message, OK), ac::fail);
 	}
 
-	public void createMappings(InternalActionContext ac) {
-		utils.operateTx(ac, () -> {
-			if (ac.getUser().hasAdminRole()) {
-				for (IndexHandler<?> handler : registry.getHandlers()) {
-					handler.init().await();
-				}
-				nodeIndexHandler.updateNodeIndexMappings();
-				return message(ac, "search_admin_createmappings_created");
-			} else {
-				throw error(FORBIDDEN, "error_admin_permission_required");
-			}
-		}, message -> ac.send(message, OK));
-	}
-
 }

@@ -27,6 +27,9 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	ProjectTransformer transformer;
 
 	@Inject
+	ProjectMappingProvider mappingProvider;
+
+	@Inject
 	public ProjectIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
 		super(searchProvider, db, boot, searchQueue);
 	}
@@ -54,6 +57,11 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	@Override
 	public ProjectTransformer getTransformer() {
 		return transformer;
+	}
+
+	@Override
+	public ProjectMappingProvider getMappingProvider() {
+		return mappingProvider;
 	}
 
 	@Override

@@ -26,8 +26,13 @@ public interface SearchProvider {
 	 * Create a search index with the given name.
 	 * 
 	 * @param indexName
+	 *            Index name
+	 * @param indexSettings
+	 *            Index settings (e.g.: tokenizer, analyzer)
+	 * @param mapping
+	 *            Index mapping
 	 */
-	Completable createIndex(String indexName);
+	Completable createIndex(String indexName, JsonObject indexSettings, JsonObject mapping);
 
 	// TODO add a good response instead of void. We need this in order to handle correct logging?
 	/**

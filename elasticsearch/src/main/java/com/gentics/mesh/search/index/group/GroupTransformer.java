@@ -1,7 +1,6 @@
 package com.gentics.mesh.search.index.group;
 
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.trigramStringType;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -28,13 +27,6 @@ public class GroupTransformer extends AbstractTransformer<Group> {
 		addBasicReferences(document, group);
 		addPermissionInfo(document, group);
 		return document;
-	}
-
-	@Override
-	public JsonObject getMappingProperties() {
-		JsonObject props = new JsonObject();
-		props.put(NAME_KEY, trigramStringType());
-		return props;
 	}
 
 }

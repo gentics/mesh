@@ -11,22 +11,13 @@ import io.vertx.core.json.JsonObject;
  */
 public interface Transformer<T> {
 
+	/**
+	 * Transform the given object into a JsonObject which can be used for storage.
+	 * 
+	 * @param object
+	 * @return
+	 */
 	JsonObject toDocument(T object);
-
-	/**
-	 * Return the index type specific the mapping properties as JSON.
-	 * 
-	 * @return
-	 */
-	JsonObject getMappingProperties();
-
-	/**
-	 * Return the type specific elastic search mapping for the given type.
-	 * 
-	 * @param type
-	 * @return
-	 */
-	JsonObject getMapping(String type);
 
 	/**
 	 * Create the json document for a permission update.

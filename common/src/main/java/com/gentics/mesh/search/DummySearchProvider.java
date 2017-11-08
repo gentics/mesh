@@ -35,7 +35,7 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable createIndex(String indexName) {
+	public Completable createIndex(String indexName, JsonObject settings, JsonObject mapping) {
 		createIndexEvents.add(indexName);
 		return Completable.complete();
 	}
