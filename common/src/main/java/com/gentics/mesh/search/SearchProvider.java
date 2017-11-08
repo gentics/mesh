@@ -246,4 +246,12 @@ public interface SearchProvider {
 		return createIndex(info.getIndexName(), info.getIndexSettings(), info.getIndexMappings());
 	}
 
+	/**
+	 * Validate the syntax of the provided information by creating a template.
+	 * 
+	 * @param info
+	 * @return
+	 */
+	Completable validateCreateViaTemplate(IndexInfo info);
+
 }

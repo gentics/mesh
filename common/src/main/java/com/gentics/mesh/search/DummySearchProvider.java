@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -161,7 +162,13 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
+	public Completable validateCreateViaTemplate(IndexInfo info) {
+		return Completable.complete();
+	}
+
+	@Override
 	public <T> T getClient() {
 		return null;
 	}
+
 }

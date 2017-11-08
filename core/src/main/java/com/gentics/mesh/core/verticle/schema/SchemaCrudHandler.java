@@ -39,19 +39,16 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
 import com.gentics.mesh.core.verticle.handler.AbstractCrudHandler;
 import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
+import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
 public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
-
-	private static final Logger log = LoggerFactory.getLogger(SchemaCrudHandler.class);
 
 	private SchemaComparator comparator;
 
@@ -83,6 +80,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			SchemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
 			requestModel.validate();
+
+			MeshInternal.get().nodeContainerIndexHandler().validate(requestModel);
 
 			// 2. Diff the schema with the latest version
 			SchemaChangesListModel model = new SchemaChangesListModel();
@@ -151,7 +150,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						}
 
 						// Assign the new version to the release
-						release.assignSchemaVersion(user,createdVersion);
+						release.assignSchemaVersion(user, createdVersion);
 					}
 				}
 				return Tuple.tuple(batch, createdVersion.getVersion());

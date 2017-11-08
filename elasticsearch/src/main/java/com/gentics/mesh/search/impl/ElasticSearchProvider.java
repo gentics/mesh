@@ -18,6 +18,8 @@ import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
 import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
+import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequestBuilder;
+import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -46,10 +48,12 @@ import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.UUIDUtil;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -256,7 +260,6 @@ public class ElasticSearchProvider implements SearchProvider {
 			});
 		}).observeOn(scheduler);
 	}
-
 
 	@Override
 	public Completable updateMapping(String indexName, String type, JsonObject mapping) {
@@ -549,6 +552,41 @@ public class ElasticSearchProvider implements SearchProvider {
 			});
 
 		});
+	}
+
+	@Override
+	public Completable validateCreateViaTemplate(IndexInfo info) {
+
+		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
+		return Completable.create(sub -> {
+			JsonObject json = createIndexSettings(info.getIndexSettings(), info.getIndexMappings());
+			if (log.isDebugEnabled()) {
+				log.debug("Validating index configuration {" + json.encodePrettily() + "}");
+			}
+
+			String randomName = info.getIndexName() + UUIDUtil.randomUUID();
+			String templateName = randomName.toLowerCase();
+			json.put("template", templateName);
+			PutIndexTemplateRequestBuilder builder = getSearchClient().admin().indices().preparePutTemplate(templateName).setSource(json
+					.encodePrettily());
+
+			builder.execute(new ActionListener<PutIndexTemplateResponse>() {
+				@Override
+				public void onResponse(PutIndexTemplateResponse response) {
+					if (log.isDebugEnabled()) {
+						log.debug("Created template {" + templateName + "} response: {" + response.toString() + "}");
+					}
+					getSearchClient().admin().indices().prepareDeleteTemplate(templateName).get();
+					sub.onCompleted();
+				}
+
+				@Override
+				public void onFailure(Throwable e) {
+					sub.onError(e);
+				}
+
+			});
+		}).observeOn(scheduler);
 	}
 
 	@Override

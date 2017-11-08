@@ -3,6 +3,7 @@ package com.gentics.mesh.search.index.node;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Arrays;
@@ -10,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -31,6 +33,7 @@ import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
 import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
@@ -358,6 +361,24 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 				}
 				searchProvider.refreshIndex(list.stream().toArray(String[]::new));
 			}).toCompletable();
+		}
+	}
+
+	/**
+	 * Validate the schema by creating an index template.
+	 * 
+	 * @param schema
+	 */
+	public void validate(Schema schema) {
+		String indexName = "validationDummy";
+		String documentType = NodeGraphFieldContainer.composeIndexType();
+		JsonObject mapping = getMappingProvider().getMapping(schema, documentType);
+		JsonObject settings = schema.getSearchIndex();
+		IndexInfo info = new IndexInfo(indexName, documentType, settings, mapping);
+		Throwable error = searchProvider.validateCreateViaTemplate(info).get(10, TimeUnit.SECONDS);
+		if (error != null) {
+			log.error("Validation of schema {" + schema.getName() + "} failed with error", error);
+			throw error(BAD_REQUEST, "schema_error_index_validation", error.getMessage());
 		}
 	}
 

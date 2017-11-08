@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * Schema which is used for nodes. Various fields can be added to the schema in order build data structures for nodes.
  */
