@@ -1,6 +1,6 @@
 package com.gentics.mesh.core.schema.change;
 
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_OPTIONS;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_OPTIONS_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -167,7 +167,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			SchemaChangeModel model = new SchemaChangeModel();
 			model.setMigrationScript("custom");
 			model.setProperty(SchemaChangeModel.REQUIRED_KEY, true);
-			model.setProperty(SchemaChangeModel.INDEX_OPTIONS, IndexOptionHelper.getRawFieldOption().encode());
+			model.setProperty(SchemaChangeModel.INDEX_OPTIONS_KEY, IndexOptionHelper.getRawFieldOption().encode());
 			model.setProperty(SchemaChangeModel.CONTAINER_FLAG_KEY, true);
 			model.setProperty(SchemaChangeModel.DESCRIPTION_KEY, "description");
 			model.setProperty(SchemaChangeModel.SEGMENT_FIELD_KEY, "segmentField");
@@ -184,7 +184,7 @@ public class UpdateSchemaChangeTest extends AbstractChangeTest {
 			assertEquals("displayField", change.getDisplayField());
 			assertEquals("newName", change.getName());
 			assertEquals("Indexer option has not been set correctly", IndexOptionHelper.getRawFieldOption().encode(), change.getRestProperty(
-					INDEX_OPTIONS));
+					INDEX_OPTIONS_KEY));
 			assertTrue("Container flag should have been set.", change.getContainerFlag());
 			assertEquals(UpdateSchemaChange.OPERATION, change.getOperation());
 			assertArrayEquals(new String[] { "A", "B", "C" }, change.getOrder().toArray());

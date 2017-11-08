@@ -73,7 +73,11 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 			schema.setContainer(containerFlag);
 		}
 
-
+		// .searchIndex
+		JsonObject options = getIndexOptions();
+		if (options != null) {
+			schema.setSearchIndex(options);
+		}
 
 		return (R) schema;
 	}

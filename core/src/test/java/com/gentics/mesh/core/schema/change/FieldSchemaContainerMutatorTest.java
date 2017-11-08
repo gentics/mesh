@@ -210,7 +210,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			UpdateFieldChange htmlFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			htmlFieldUpdate.setFieldName("htmlField");
 			htmlFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
-			htmlFieldUpdate.setRestProperty(SchemaChangeModel.INDEX_OPTIONS, IndexOptionHelper.getRawFieldOption().encode());
+			htmlFieldUpdate.setRestProperty(SchemaChangeModel.INDEX_OPTIONS_KEY, IndexOptionHelper.getRawFieldOption().encode());
 			stringFieldUpdate.setNextChange(htmlFieldUpdate);
 
 			UpdateFieldChange numberFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);

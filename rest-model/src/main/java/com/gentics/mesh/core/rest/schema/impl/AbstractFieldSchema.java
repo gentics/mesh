@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.rest.schema.impl;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_OPTIONS;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_OPTIONS_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LABEL_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.LIST_TYPE_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
@@ -100,8 +100,8 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 		if (fieldProperties.get(SchemaChangeModel.REQUIRED_KEY) != null) {
 			setRequired(Boolean.valueOf(String.valueOf(fieldProperties.get(REQUIRED_KEY))));
 		}
-		if (fieldProperties.get(SchemaChangeModel.INDEX_OPTIONS) != null) {
-			Object value = fieldProperties.get(INDEX_OPTIONS);
+		if (fieldProperties.get(SchemaChangeModel.INDEX_OPTIONS_KEY) != null) {
+			Object value = fieldProperties.get(INDEX_OPTIONS_KEY);
 			JsonObject options = new JsonObject((String) value);
 			setSearchIndex(options);
 		}
@@ -171,7 +171,7 @@ public abstract class AbstractFieldSchema implements FieldSchema {
 		Map<String, Object> map = new HashMap<>();
 		map.put(LABEL_KEY, getLabel());
 		map.put(REQUIRED_KEY, isRequired());
-		map.put(INDEX_OPTIONS, getSearchIndex() == null ? null : getSearchIndex().encode());
+		map.put(INDEX_OPTIONS_KEY, getSearchIndex() == null ? null : getSearchIndex().encode());
 		return map;
 	}
 
