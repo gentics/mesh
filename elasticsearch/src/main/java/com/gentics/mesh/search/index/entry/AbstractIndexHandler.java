@@ -15,6 +15,7 @@ import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
@@ -53,12 +54,17 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	}
 
 	/**
-	 * Return the index specific transformer which is used to generate the search document and mappings.
+	 * Return the index specific transformer which is used to generate the search documents.
 	 * 
 	 * @return
 	 */
 	abstract protected Transformer getTransformer();
 
+	/**
+	 * Return the index specific mapping provider.
+	 * 
+	 * @return
+	 */
 	abstract protected MappingProvider getMappingProvider();
 
 	/**
@@ -183,15 +189,19 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Completable createIndex(CreateIndexEntry entry) {
 		String indexName = entry.getIndexName();
-		Map<String, String> indexInfo = getIndices();
-		if (indexInfo.containsKey(indexName)) {
-			// Iterate over all document types of the found index and add
-			// completables which will create/update the mapping
-			String documentType = indexInfo.get(indexName);
-			JsonObject mapping = getMappingProvider().getMapping(documentType.toLowerCase());
-			JsonObject indexSettings = null;
-			return searchProvider.createIndex(indexName, indexSettings, mapping);
+		Map<String, IndexInfo> indexInfo = getIndices();
+		IndexInfo info = indexInfo.get(indexName);
+		// Only create indices which we know of
+		if (info != null) {
+			// Create the index - Note that dedicated index settings are only configurable for nodes, micronodes (via schema, microschema)
+			return searchProvider.createIndex(info);
 		} else {
+			if (log.isDebugEnabled()) {
+				log.debug("Only found indices:");
+				for (String idx : indexInfo.keySet()) {
+					log.debug("Index name {" + idx + "}");
+				}
+			}
 			throw error(INTERNAL_SERVER_ERROR, "error_index_unknown", indexName);
 		}
 	}
@@ -199,17 +209,14 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Completable init() {
 		// 1. Create the indices
-		Map<String, String> indexInfo = getIndices();
+		Map<String, IndexInfo> indexInfo = getIndices();
 		Set<Completable> obs = new HashSet<>();
 
-		for (String indexKey : indexInfo.keySet()) {
+		for (IndexInfo info : indexInfo.values()) {
 			if (log.isDebugEnabled()) {
-				log.debug("Creating index {" + indexKey + "}");
+				log.debug("Creating index {" + indexInfo + "}");
 			}
-			String documentType = indexInfo.get(indexKey);
-			JsonObject indexSettings = null;
-			JsonObject mapping = getMappingProvider().getMapping(documentType.toLowerCase());
-			obs.add(searchProvider.createIndex(indexKey, indexSettings, mapping));
+			obs.add(searchProvider.createIndex(info));
 		}
 		return Completable.merge(obs);
 	}

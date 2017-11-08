@@ -13,9 +13,9 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 
 /**
@@ -76,8 +76,9 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	public Map<String, String> getIndices() {
-		return Collections.singletonMap(MicroschemaContainer.TYPE, MicroschemaContainer.TYPE);
+	public Map<String, IndexInfo> getIndices() {
+		IndexInfo info = new IndexInfo(MicroschemaContainer.TYPE, MicroschemaContainer.TYPE, null, getMappingProvider().getMapping(MicroschemaContainer.TYPE));
+		return Collections.singletonMap(MicroschemaContainer.TYPE, info);
 	}
 
 }

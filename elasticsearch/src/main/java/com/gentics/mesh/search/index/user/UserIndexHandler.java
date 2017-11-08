@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
@@ -75,7 +76,9 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
-	public Map<String, String> getIndices() {
-		return Collections.singletonMap(User.TYPE, User.TYPE);
+	public Map<String, IndexInfo> getIndices() {
+		String type = User.TYPE;
+		IndexInfo info = new IndexInfo(type, type, null, getMappingProvider().getMapping(type));
+		return Collections.singletonMap(type, info);
 	}
 }

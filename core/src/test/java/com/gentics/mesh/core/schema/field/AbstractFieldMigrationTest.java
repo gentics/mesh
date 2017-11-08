@@ -93,8 +93,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	protected void removeField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher)
-			throws InterruptedException, ExecutionException, TimeoutException {
+	protected void removeField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) throws InterruptedException,
+			ExecutionException, TimeoutException {
 		try (Tx tx = tx()) {
 			if (getClass().isAnnotationPresent(MicroschemaTest.class)) {
 				removeMicroschemaField(creator, dataProvider, fetcher);
@@ -117,16 +117,16 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	private void removeSchemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher)
-			throws InterruptedException, ExecutionException, TimeoutException {
+	private void removeSchemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) throws InterruptedException,
+			ExecutionException, TimeoutException {
 		String removedFieldName = "toremove";
 		String persistentFieldName = "persistent";
 		String schemaName = "migratedSchema";
 
 		// create version 1 of the schema
 		SchemaContainer container = Tx.getActive().getGraph().addFramedVertex(SchemaContainerImpl.class);
-		SchemaContainerVersion versionA = createSchemaVersion(container, schemaName, "1.0", creator.create(persistentFieldName),
-				creator.create(removedFieldName));
+		SchemaContainerVersion versionA = createSchemaVersion(container, schemaName, "1.0", creator.create(persistentFieldName), creator.create(
+				removedFieldName));
 
 		// create version 2 of the schema (with one field removed)
 		SchemaContainerVersion versionB = createSchemaVersion(container, schemaName, "2.0", creator.create(persistentFieldName));
@@ -173,8 +173,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	private void removeMicroschemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher)
-			throws InterruptedException, ExecutionException, TimeoutException {
+	private void removeMicroschemaField(FieldSchemaCreator creator, DataProvider dataProvider, FieldFetcher fetcher) throws InterruptedException,
+			ExecutionException, TimeoutException {
 		String removedFieldName = "toremove";
 		String persistentFieldName = "persistent";
 		String microschemaName = UUIDUtil.randomUUID();
@@ -285,8 +285,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		AddFieldChangeImpl addFieldChange = Tx.getActive().getGraph().addFramedVertex(AddFieldChangeImpl.class);
 		addFieldChange.setFieldName(newFieldName);
 		addFieldChange.setType(newField.getType());
-		addFieldChange
-				.setCustomMigrationScript("function migrate(node, fieldname) {node.fields[fieldname] = node.fields[\"oldname\"]; return node;}");
+		addFieldChange.setCustomMigrationScript(
+				"function migrate(node, fieldname) {node.fields[fieldname] = node.fields[\"oldname\"]; return node;}");
 
 		RemoveFieldChange removeFieldChange = Tx.getActive().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		removeFieldChange.setFieldName(oldFieldName);
@@ -354,8 +354,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		AddFieldChangeImpl addFieldChange = Tx.getActive().getGraph().addFramedVertex(AddFieldChangeImpl.class);
 		addFieldChange.setFieldName(newFieldName);
 		addFieldChange.setType(newField.getType());
-		addFieldChange
-				.setCustomMigrationScript("function migrate(node, fieldname) {node.fields[fieldname] = node.fields[\"oldname\"]; return node;}");
+		addFieldChange.setCustomMigrationScript(
+				"function migrate(node, fieldname) {node.fields[fieldname] = node.fields[\"oldname\"]; return node;}");
 
 		RemoveFieldChange removeFieldChange = Tx.getActive().getGraph().addFramedVertex(RemoveFieldChangeImpl.class);
 		removeFieldChange.setFieldName(oldFieldName);
@@ -374,7 +374,11 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		// migrate the micronode
 		Job job = project().getLatestRelease().assignMicroschemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
-		triggerAndWaitForJob(job.getUuid());
+		if (job != null) {
+			triggerAndWaitForJob(job.getUuid());
+		} else {
+			micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
+		}
 
 		// old container must be unchanged
 		assertThat(oldContainer).as("Old container").hasVersion(oldVersion.toString());
@@ -484,8 +488,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		if (!StringUtils.equals(oldFieldSchema.getType(), newFieldSchema.getType())) {
 			assertThat(oldFieldFetcher.fetch(migratedContainer, fieldName)).as(OLDFIELD).isNull();
 		}
-		if ((oldFieldSchema instanceof ListFieldSchema) && (newFieldSchema instanceof ListFieldSchema)
-				&& !StringUtils.equals(((ListFieldSchema) oldFieldSchema).getListType(), ((ListFieldSchema) newFieldSchema).getListType())) {
+		if ((oldFieldSchema instanceof ListFieldSchema) && (newFieldSchema instanceof ListFieldSchema) && !StringUtils.equals(
+				((ListFieldSchema) oldFieldSchema).getListType(), ((ListFieldSchema) newFieldSchema).getListType())) {
 			assertThat(oldFieldFetcher.fetch(migratedContainer, fieldName)).as(OLDFIELD).isNull();
 		}
 		asserter.assertThat(migratedContainer, fieldName);
@@ -561,8 +565,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		if (!StringUtils.equals(oldFieldSchema.getType(), newFieldSchema.getType())) {
 			assertThat(oldFieldFetcher.fetch(newMicronodeField.getMicronode(), fieldName)).as(OLDFIELD).isNull();
 		}
-		if ((oldFieldSchema instanceof ListFieldSchema) && (newFieldSchema instanceof ListFieldSchema)
-				&& !StringUtils.equals(((ListFieldSchema) oldFieldSchema).getListType(), ((ListFieldSchema) newFieldSchema).getListType())) {
+		if ((oldFieldSchema instanceof ListFieldSchema) && (newFieldSchema instanceof ListFieldSchema) && !StringUtils.equals(
+				((ListFieldSchema) oldFieldSchema).getListType(), ((ListFieldSchema) newFieldSchema).getListType())) {
 			assertThat(oldFieldFetcher.fetch(newMicronodeField.getMicronode(), fieldName)).as(OLDFIELD).isNull();
 		}
 		asserter.assertThat(newMicronodeField.getMicronode(), fieldName);
@@ -707,7 +711,7 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 		VersionNumber oldVersion = oldContainer.getVersion();
 
 		// migrate the micronode
-		project().getLatestRelease().assignMicroschemaVersion(user(),versionB);
+		project().getLatestRelease().assignMicroschemaVersion(user(), versionB);
 		Tx.getActive().getGraph().commit();
 		micronodeMigrationHandler.migrateMicronodes(project().getLatestRelease(), versionA, versionB, null).await(10, TimeUnit.SECONDS);
 
@@ -767,8 +771,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	private void invalidSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script)
-			throws InterruptedException, ExecutionException, TimeoutException {
+	private void invalidSchemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException,
+			ExecutionException, TimeoutException {
 		String fieldName = "migratedField";
 		String schemaName = "migratedSchema";
 
@@ -818,8 +822,8 @@ public abstract class AbstractFieldMigrationTest extends AbstractMeshTest implem
 	 * @throws ExecutionException
 	 * @throws InterruptedException
 	 */
-	private void invalidMicroschemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script)
-			throws InterruptedException, ExecutionException, TimeoutException {
+	private void invalidMicroschemaMigrationScript(FieldSchemaCreator creator, DataProvider dataProvider, String script) throws InterruptedException,
+			ExecutionException, TimeoutException {
 		String fieldName = "migratedField";
 		String microschemaName = UUIDUtil.randomUUID();
 		String micronodeFieldName = "micronodefield";

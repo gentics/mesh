@@ -24,13 +24,14 @@ import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
-import com.gentics.mesh.core.data.search.CreateIndexEntry;
 import com.gentics.mesh.core.data.search.MoveDocumentEntry;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
 import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.data.search.context.MoveEntryContext;
 import com.gentics.mesh.core.data.search.context.impl.GenericEntryContextImpl;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
+import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -104,10 +105,20 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return mappingProvider;
 	}
 
+	// @Override
+	// public Completable init() {
+	// return super.init().andThen(Completable.create(sub -> {
+	// db.tx(() -> {
+	// updateNodeIndexMappings();
+	// sub.onCompleted();
+	// });
+	// }));
+	// }
+
 	@Override
-	public Map<String, String> getIndices() {
+	public Map<String, IndexInfo> getIndices() {
 		return db.tx(() -> {
-			Map<String, String> indexInfo = new HashMap<>();
+			Map<String, IndexInfo> indexInfo = new HashMap<>();
 
 			// Iterate over all projects and construct the index names
 			for (Project project : boot.meshRoot().getProjectRoot().findAllIt()) {
@@ -124,8 +135,12 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 							log.debug("Adding index to map of known idices {" + draftIndexName + "");
 							log.debug("Adding index to map of known idices {" + publishIndexName + "");
 						}
-						indexInfo.put(draftIndexName, documentType);
-						indexInfo.put(publishIndexName, documentType);
+						// Load the index mapping information for the index
+						SchemaModel schema = containerVersion.getSchema();
+						JsonObject mapping = getMappingProvider().getMapping(schema, documentType);
+						JsonObject settings = schema.getSearchIndex();
+						indexInfo.put(draftIndexName, new IndexInfo(draftIndexName, documentType, settings, mapping));
+						indexInfo.put(publishIndexName, new IndexInfo(publishIndexName, documentType, settings, mapping));
 					}
 				}
 			}
@@ -298,27 +313,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String languageTag = container.getLanguage().getLanguageTag();
 		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
 		return searchProvider.storeDocument(indexName, NodeGraphFieldContainer.composeIndexType(), documentId, doc).andThen(Single.just(indexName));
-	}
-
-	@Override
-	public Completable createIndex(CreateIndexEntry entry) {
-		String indexName = entry.getIndexName();
-		Map<String, String> indexInfo = getIndices();
-		// Only create indices which should be existing
-		if (indexInfo.containsKey(indexName)) {
-			JsonObject mapping = getMappingProvider().getMapping(entry.getSchema(), entry.getIndexType());
-			// TODO merge default with custom settings
-			JsonObject indexSettings = entry.getSchema().getSearchIndex();
-			return searchProvider.createIndex(indexName, indexSettings, mapping);
-		} else {
-			if (log.isDebugEnabled()) {
-				log.debug("Only found indices:");
-				for (String idx : indexInfo.keySet()) {
-					log.debug("Index name {" + idx + "}");
-				}
-			}
-			throw error(INTERNAL_SERVER_ERROR, "error_index_unknown", indexName);
-		}
 	}
 
 	@Override

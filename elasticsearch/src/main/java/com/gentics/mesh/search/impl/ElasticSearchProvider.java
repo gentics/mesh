@@ -11,8 +11,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.codehaus.jettison.json.JSONObject;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
@@ -53,7 +51,6 @@ import com.gentics.mesh.etc.config.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.SearchProvider;
 
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -84,7 +81,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	 * 
 	 * @return
 	 */
-	private JsonObject getDefaultSettings() {
+	@Override
+	public JsonObject getDefaultIndexSettings() {
 
 		JsonObject tokenizer = new JsonObject();
 		tokenizer.put("type", "nGram");
@@ -233,13 +231,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 			CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
 
-			JsonObject fullSettings = getDefaultSettings();
-			fullSettings.put("mappings", mappings);
-
-			// Prepare the json for the request
-			JsonObject json = new JsonObject();
-			json.put("settings", fullSettings);
-			json.put("mappings", mappings);
+			JsonObject json = createIndexSettings(settings, mappings);
 			createIndexRequestBuilder.setSource(json.encodePrettily());
 			createIndexRequestBuilder.execute(new ActionListener<CreateIndexResponse>() {
 
@@ -264,6 +256,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			});
 		}).observeOn(scheduler);
 	}
+
 
 	@Override
 	public Completable updateMapping(String indexName, String type, JsonObject mapping) {

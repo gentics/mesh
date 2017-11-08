@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -81,12 +82,15 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	public Map<String, String> getIndices() {
+	public Map<String, IndexInfo> getIndices() {
 		return db.tx(() -> {
-			Map<String, String> indexInfo = new HashMap<>();
+			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			ProjectRoot projectRoot = boot.meshRoot().getProjectRoot();
 			for (Project project : projectRoot.findAllIt()) {
-				indexInfo.put(Tag.composeIndexName(project.getUuid()), Tag.TYPE);
+				String indexName = Tag.composeIndexName(project.getUuid());
+				String type = Tag.TYPE;
+				IndexInfo info = new IndexInfo(indexName, type, null, getMappingProvider().getMapping(type));
+				indexInfo.put(indexName, info);
 			}
 			return indexInfo;
 		});

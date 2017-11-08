@@ -31,6 +31,11 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
+	public JsonObject getDefaultIndexSettings() {
+		return new JsonObject();
+	}
+
+	@Override
 	public void refreshIndex(String... indices) {
 	}
 

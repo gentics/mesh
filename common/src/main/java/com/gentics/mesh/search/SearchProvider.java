@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.codehaus.jettison.json.JSONObject;
 
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.MeshOptions;
 
 import io.vertx.core.json.JsonObject;
@@ -212,5 +213,37 @@ public interface SearchProvider {
 	 * @return
 	 */
 	<T> T getClient();
+
+	/**
+	 * Returns the default index settings.
+	 * 
+	 * @return
+	 */
+	JsonObject getDefaultIndexSettings();
+
+	/**
+	 * Create the index settings and use the given settings and mappings in order to extend the default settings.
+	 * 
+	 * @param settings
+	 * @param mappings
+	 * @return
+	 */
+	default JsonObject createIndexSettings(JsonObject settings, JsonObject mappings) {
+		// Prepare the json for the request
+		JsonObject json = new JsonObject();
+		json.put("settings", getDefaultIndexSettings());
+		json.put("mappings", mappings);
+		return json;
+	}
+
+	/**
+	 * Create the index using the provided information.
+	 * 
+	 * @param info
+	 * @return
+	 */
+	default Completable createIndex(IndexInfo info) {
+		return createIndex(info.getIndexName(), info.getIndexSettings(), info.getIndexMappings());
+	}
 
 }

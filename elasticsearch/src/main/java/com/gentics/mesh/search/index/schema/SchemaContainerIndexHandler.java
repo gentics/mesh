@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.MappingProvider;
@@ -71,8 +72,10 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
-	public Map<String, String> getIndices() {
-		return Collections.singletonMap(SchemaContainer.TYPE.toLowerCase(), SchemaContainer.TYPE.toLowerCase());
+	public Map<String, IndexInfo> getIndices() {
+		String type = SchemaContainer.TYPE.toLowerCase();
+		IndexInfo info = new IndexInfo(type, type, null, getMappingProvider().getMapping(type));
+		return Collections.singletonMap(type, info);
 	}
 
 	@Override
