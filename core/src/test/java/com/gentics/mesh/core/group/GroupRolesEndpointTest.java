@@ -72,7 +72,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 
 		searchProvider().clear();
 		GroupResponse restGroup = call(() -> client().addRoleToGroup(groupUuid(), roleUuid));
-		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), groupUuid());
+		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
 		// The role is not updated since it is not changing
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
 		// Check for idempotency
@@ -127,7 +127,7 @@ public class GroupRolesEndpointTest extends AbstractMeshTest {
 		}
 
 		call(() -> client().removeRoleFromGroup(groupUuid(), roleUuid));
-		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), Group.composeIndexType(), groupUuid());
+		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), groupUuid());
 		// The role is not updated since it is not changing
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
 

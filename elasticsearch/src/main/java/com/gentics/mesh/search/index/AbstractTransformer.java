@@ -1,10 +1,5 @@
 package com.gentics.mesh.search.index;
 
-import static com.gentics.mesh.search.index.MappingHelper.DATE;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
-import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

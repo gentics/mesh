@@ -47,15 +47,9 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable updateMapping(String indexName, String type, JsonObject mapping) {
-		updateMappingEvents.put(indexName + "-" + type, mapping);
-		return Completable.complete();
-	}
-
-	@Override
-	public Completable updateDocument(String index, String type, String uuid, JsonObject document, boolean ignoreMissingDocumentError) {
+	public Completable updateDocument(String index, String uuid, JsonObject document, boolean ignoreMissingDocumentError) {
 		return Completable.fromAction(() -> {
-			updateEvents.put(index + "-" + type + "-" + uuid, document);
+			updateEvents.put(index + "-" + uuid, document);
 		});
 	}
 
@@ -64,27 +58,27 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable deleteDocument(String index, String type, String uuid) {
+	public Completable deleteDocument(String index, String uuid) {
 		return Completable.fromAction(() -> {
-			deleteEvents.add(index + "-" + type + "-" + uuid);
+			deleteEvents.add(index + "-" + uuid);
 		});
 	}
 
 	@Override
-	public Single<Map<String, Object>> getDocument(String index, String type, String uuid) {
-		getEvents.add(index + "-" + type + "-" + uuid);
+	public Single<Map<String, Object>> getDocument(String index, String uuid) {
+		getEvents.add(index + "-" + uuid);
 		return Single.just(null);
 	}
 
 	@Override
-	public Completable storeDocumentBatch(String index, String type, Map<String, JsonObject> documents) {
+	public Completable storeDocumentBatch(String index, Map<String, JsonObject> documents) {
 		return Completable.complete();
 	}
 
 	@Override
-	public Completable storeDocument(String index, String type, String uuid, JsonObject document) {
+	public Completable storeDocument(String index, String uuid, JsonObject document) {
 		return Completable.fromAction(() -> {
-			storeEvents.put(index + "-" + type + "-" + uuid, document);
+			storeEvents.put(index + "-" + uuid, document);
 		});
 	}
 

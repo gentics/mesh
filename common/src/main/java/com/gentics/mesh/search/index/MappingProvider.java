@@ -15,10 +15,9 @@ public interface MappingProvider {
 	JsonObject getMappingProperties();
 
 	/**
-	 * Return the type specific elastic search mapping for the given type.
+	 * Return the type specific elastic search mapping.
 	 * 
-	 * @param type
 	 * @return
 	 */
-	JsonObject getMapping(String type);
+	JsonObject getMapping();
 }

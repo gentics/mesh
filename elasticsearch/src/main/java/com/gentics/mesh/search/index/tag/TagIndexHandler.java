@@ -71,11 +71,6 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
-		return Tag.composeTypeName();
-	}
-
-	@Override
 	public Completable store(Tag tag, UpdateDocumentEntry entry) {
 		entry.getContext().setProjectUuid(tag.getProject().getUuid());
 		return super.store(tag, entry);
@@ -88,8 +83,7 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 			ProjectRoot projectRoot = boot.meshRoot().getProjectRoot();
 			for (Project project : projectRoot.findAllIt()) {
 				String indexName = Tag.composeIndexName(project.getUuid());
-				String type = Tag.TYPE;
-				IndexInfo info = new IndexInfo(indexName, type, null, getMappingProvider().getMapping(type));
+				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
 				indexInfo.put(indexName, info);
 			}
 			return indexInfo;

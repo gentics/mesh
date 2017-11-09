@@ -5,12 +5,12 @@ import static com.gentics.mesh.core.data.relationship.GraphPermission.CREATE_PER
 import static com.gentics.mesh.core.data.relationship.GraphPermission.DELETE_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.READ_PERM;
 import static com.gentics.mesh.core.data.relationship.GraphPermission.UPDATE_PERM;
-import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
-import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.ClientHelper.expectException;
 import static com.gentics.mesh.test.ClientHelper.validateDeletion;
 import static com.gentics.mesh.test.ClientHelper.validateSet;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
+import static com.gentics.mesh.test.TestSize.FULL;
 import static com.gentics.mesh.test.context.MeshTestHelper.prepareBarrier;
 import static com.gentics.mesh.test.context.MeshTestHelper.validateCreation;
 import static com.gentics.mesh.test.util.MeshAssert.assertElement;
@@ -35,7 +35,6 @@ import java.util.stream.Collectors;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -58,6 +57,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.test.definition.BasicRestTestcases;
 import com.gentics.mesh.util.UUIDUtil;
+import com.syncleus.ferma.tx.Tx;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
 public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRestTestcases {
@@ -66,7 +66,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Override
 	public void testReadByUUID() throws UnknownHostException, InterruptedException {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
+			TagFamily tagFamily = project().getTagFamilyRoot().findAllIt().iterator().next();
 			assertNotNull(tagFamily);
 			TagFamilyResponse response = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, tagFamily.getUuid()));
 			assertNotNull(response);
@@ -78,11 +78,11 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 	@Override
 	public void testReadByUuidWithRolePerms() {
 		try (Tx tx = tx()) {
-			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
+			TagFamily tagFamily = project().getTagFamilyRoot().findAllIt().iterator().next();
 			String uuid = tagFamily.getUuid();
 
-			TagFamilyResponse response = call(
-					() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid, new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
+			TagFamilyResponse response = call(() -> client().findTagFamilyByUuid(PROJECT_NAME, uuid, new RolePermissionParametersImpl().setRoleUuid(
+					role().getUuid())));
 			assertNotNull("The response did not contain the expected role permission field value", response.getRolePerms());
 			assertThat(response.getRolePerms()).hasPerm(Permission.values());
 		}
@@ -95,7 +95,7 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 		String uuid;
 		try (Tx tx = tx()) {
 			Role role = role();
-			TagFamily tagFamily = project().getTagFamilyRoot().findAll().get(0);
+			TagFamily tagFamily = project().getTagFamilyRoot().findAllIt().iterator().next();
 			uuid = tagFamily.getUuid();
 			assertNotNull(tagFamily);
 			role.revokePermissions(tagFamily, READ_PERM);
@@ -146,8 +146,8 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 				}
 				assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
 				assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-				assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page,
-						restResponse.getMetainfo().getCurrentPage());
+				assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page, restResponse.getMetainfo()
+						.getCurrentPage());
 				assertEquals("The amount of total pages did not match the expected value. There are {" + totalTagFamilies + "} tags and {" + perPage
 						+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
 				assertEquals("The total tag count does not match.", totalTagFamilies, restResponse.getMetainfo().getTotalCount());
@@ -379,11 +379,9 @@ public class TagFamilyEndpointTest extends AbstractMeshTest implements BasicRest
 							for (NodeGraphFieldContainer fieldContainer : node.getGraphFieldContainers(release, containerType)) {
 								SchemaContainerVersion schema = node.getSchemaContainer().getLatestVersion();
 								storeCount++;
-								assertThat(dummySearchProvider()).hasStore(
-										NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), schema.getUuid(),
-												containerType),
-										NodeGraphFieldContainer.composeIndexType(),
-										NodeGraphFieldContainer.composeDocumentId(node.getUuid(), fieldContainer.getLanguage().getLanguageTag()));
+								assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(project.getUuid(), release
+										.getUuid(), schema.getUuid(), containerType), NodeGraphFieldContainer.composeDocumentId(node.getUuid(),
+												fieldContainer.getLanguage().getLanguageTag()));
 							}
 						}
 					}

@@ -51,15 +51,10 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
-		return Group.composeIndexType();
-	}
-
-	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String type = Group.TYPE;
-		IndexInfo info = new IndexInfo(type, type, null, getMappingProvider().getMapping(type));
-		return Collections.singletonMap(type, info);
+		String indexName = Group.composeIndexName();
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		return Collections.singletonMap(indexName, info);
 	}
 
 	@Override

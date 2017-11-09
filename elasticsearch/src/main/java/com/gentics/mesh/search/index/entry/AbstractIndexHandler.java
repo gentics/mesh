@@ -1,6 +1,7 @@
 package com.gentics.mesh.search.index.entry;
 
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.HashSet;
@@ -22,7 +23,6 @@ import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.Transformer;
 import com.syncleus.ferma.tx.Tx;
 
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import rx.Completable;
@@ -84,14 +84,6 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	abstract protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry);
 
 	/**
-	 * Compose the index type using the batch entry data.
-	 * 
-	 * @param entry
-	 * @return
-	 */
-	abstract protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry);
-
-	/**
 	 * Store the given object within the search index.
 	 * 
 	 * @param element
@@ -102,8 +94,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	public Completable store(T element, UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
-		String indexType = composeIndexTypeFromEntry(entry);
-		return searchProvider.storeDocument(indexName, indexType, documentId, getTransformer().toDocument(element)).doOnCompleted(() -> {
+		return searchProvider.storeDocument(indexName, documentId, getTransformer().toDocument(element)).doOnCompleted(() -> {
 			if (log.isDebugEnabled()) {
 				log.debug("Stored object in index.");
 			}
@@ -116,13 +107,11 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 		String uuid = entry.getElementUuid();
 		T element = getRootVertex().findByUuid(uuid);
 		if (element == null) {
-			String type = composeIndexTypeFromEntry(entry);
-			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
+			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
 		} else {
 			String indexName = composeIndexNameFromEntry(entry);
 			String documentId = composeDocumentIdFromEntry(entry);
-			String indexType = composeIndexTypeFromEntry(entry);
-			return searchProvider.updateDocument(indexName, indexType, documentId, getTransformer().toPermissionPartial(element), true).doOnCompleted(
+			return searchProvider.updateDocument(indexName, documentId, getTransformer().toPermissionPartial(element), true).doOnCompleted(
 					() -> {
 						if (log.isDebugEnabled()) {
 							log.debug("Updated object in index.");
@@ -135,10 +124,9 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 	@Override
 	public Completable delete(UpdateDocumentEntry entry) {
 		String indexName = composeIndexNameFromEntry(entry);
-		String typeId = composeIndexTypeFromEntry(entry);
 		String documentId = composeDocumentIdFromEntry(entry);
 		// We don't need to resolve the uuid and load the graph object in this case.
-		return searchProvider.deleteDocument(indexName, typeId, documentId);
+		return searchProvider.deleteDocument(indexName, documentId);
 	}
 
 	@Override
@@ -148,8 +136,7 @@ public abstract class AbstractIndexHandler<T extends MeshCoreVertex<?, T>> imple
 				String uuid = entry.getElementUuid();
 				T element = getRootVertex().findByUuid(uuid);
 				if (element == null) {
-					String type = composeIndexTypeFromEntry(entry);
-					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
+					throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
 				} else {
 					return store(element, entry);
 				}

@@ -81,8 +81,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0, 0);
 		SchemaResponse restSchema = call(() -> client().createSchema(createRequest));
 		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
-		assertThat(dummySearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeIndexType(), SchemaContainer
-				.composeDocumentId(restSchema.getUuid()));
+		assertThat(dummySearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
 			assertThat(createRequest).matches(restSchema);
 			assertThat(restSchema.getPermissions()).hasPerm(CREATE, READ, UPDATE, DELETE);

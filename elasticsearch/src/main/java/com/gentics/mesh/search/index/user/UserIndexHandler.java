@@ -51,11 +51,6 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
-		return User.composeIndexType();
-	}
-
-	@Override
 	public UserTransformer getTransformer() {
 		return transformer;
 	}
@@ -77,8 +72,8 @@ public class UserIndexHandler extends AbstractIndexHandler<User> {
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String type = User.TYPE;
-		IndexInfo info = new IndexInfo(type, type, null, getMappingProvider().getMapping(type));
-		return Collections.singletonMap(type, info);
+		String indexName = User.composeIndexName();
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		return Collections.singletonMap(indexName, info);
 	}
 }

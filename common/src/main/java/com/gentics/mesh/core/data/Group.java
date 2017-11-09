@@ -51,15 +51,6 @@ public interface Group extends MeshCoreVertex<GroupResponse, Group>, Referenceab
 	}
 
 	/**
-	 * Compose the index type for the group index.
-	 * 
-	 * @return
-	 */
-	static String composeIndexType() {
-		return Group.TYPE.toLowerCase();
-	}
-
-	/**
 	 * Assign the given user to this group.
 	 * 
 	 * @param user

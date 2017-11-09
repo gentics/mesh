@@ -41,11 +41,6 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
-		return MicroschemaContainer.composeTypeName();
-	}
-
-	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
 		return MicroschemaContainer.composeDocumentId(entry.getElementUuid());
 	}
@@ -77,8 +72,9 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		IndexInfo info = new IndexInfo(MicroschemaContainer.TYPE, MicroschemaContainer.TYPE, null, getMappingProvider().getMapping(MicroschemaContainer.TYPE));
-		return Collections.singletonMap(MicroschemaContainer.TYPE, info);
+		String indexName = MicroschemaContainer.composeIndexName();
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		return Collections.singletonMap(indexName, info);
 	}
 
 }

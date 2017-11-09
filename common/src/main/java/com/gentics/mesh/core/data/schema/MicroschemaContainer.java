@@ -39,15 +39,6 @@ public interface MicroschemaContainer extends
 	}
 
 	/**
-	 * Compose the index type for the microschema index.
-	 * 
-	 * @return
-	 */
-	static String composeTypeName() {
-		return TYPE.toLowerCase();
-	}
-
-	/**
 	 * Compose the document id for microschema index documents.
 	 * 
 	 * @param elementUuid

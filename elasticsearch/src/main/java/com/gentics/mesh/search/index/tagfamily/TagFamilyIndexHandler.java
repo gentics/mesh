@@ -63,11 +63,6 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
-		return TagFamily.composeTypeName();
-	}
-
-	@Override
 	public Completable store(TagFamily tagFamily, UpdateDocumentEntry entry) {
 		entry.getContext().setProjectUuid(tagFamily.getProject().getUuid());
 		return super.store(tagFamily, entry);
@@ -80,8 +75,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			for (Project project : root.findAllIt()) {
 				String indexName = TagFamily.composeIndexName(project.getUuid());
-				String type = TagFamily.TYPE;
-				IndexInfo info = new IndexInfo(indexName, type, null, getMappingProvider().getMapping(type));
+				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
 				indexInfo.put(indexName, info);
 			}
 			return indexInfo;

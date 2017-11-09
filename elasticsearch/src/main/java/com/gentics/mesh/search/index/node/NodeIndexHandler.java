@@ -3,6 +3,7 @@ package com.gentics.mesh.search.index.node;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
 import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
@@ -84,11 +85,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
-		return NodeGraphFieldContainer.composeIndexType();
-	}
-
-	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
 		GenericEntryContext context = entry.getContext();
 		String projectUuid = context.getProjectUuid();
@@ -133,17 +129,16 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 								.getUuid(), DRAFT);
 						String publishIndexName = NodeGraphFieldContainer.composeIndexName(project.getUuid(), release.getUuid(), containerVersion
 								.getUuid(), PUBLISHED);
-						String documentType = NodeGraphFieldContainer.composeIndexType();
 						if (log.isDebugEnabled()) {
 							log.debug("Adding index to map of known idices {" + draftIndexName + "");
 							log.debug("Adding index to map of known idices {" + publishIndexName + "");
 						}
 						// Load the index mapping information for the index
 						SchemaModel schema = containerVersion.getSchema();
-						JsonObject mapping = getMappingProvider().getMapping(schema, documentType);
+						JsonObject mapping = getMappingProvider().getMapping(schema);
 						JsonObject settings = schema.getSearchIndex();
-						indexInfo.put(draftIndexName, new IndexInfo(draftIndexName, documentType, settings, mapping));
-						indexInfo.put(publishIndexName, new IndexInfo(publishIndexName, documentType, settings, mapping));
+						indexInfo.put(draftIndexName, new IndexInfo(draftIndexName, settings, mapping));
+						indexInfo.put(publishIndexName, new IndexInfo(publishIndexName, settings, mapping));
 					}
 				}
 			}
@@ -294,7 +289,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	private Completable deleteContainer(NodeGraphFieldContainer container, String releaseUuid, ContainerType type) {
 		String projectUuid = container.getParentNode().getProject().getUuid();
-		return searchProvider.deleteDocument(container.getIndexName(projectUuid, releaseUuid, type), container.getIndexType(), container
+		return searchProvider.deleteDocument(container.getIndexName(projectUuid, releaseUuid, type), container
 				.getDocumentId());
 	}
 
@@ -315,7 +310,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		}
 		String languageTag = container.getLanguage().getLanguageTag();
 		String documentId = NodeGraphFieldContainer.composeDocumentId(container.getParentNode().getUuid(), languageTag);
-		return searchProvider.storeDocument(indexName, NodeGraphFieldContainer.composeIndexType(), documentId, doc).andThen(Single.just(indexName));
+		return searchProvider.storeDocument(indexName, documentId, doc).andThen(Single.just(indexName));
 	}
 
 	@Override
@@ -336,8 +331,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		String uuid = entry.getElementUuid();
 		Node node = getRootVertex().findByUuid(uuid);
 		if (node == null) {
-			String type = composeIndexTypeFromEntry(entry);
-			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, type);
+			throw error(INTERNAL_SERVER_ERROR, "error_element_for_document_type_not_found", uuid, DEFAULT_TYPE);
 		} else {
 			Project project = node.getProject();
 
@@ -350,8 +344,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 					for (NodeGraphFieldContainer container : node.getGraphFieldContainers(release, type)) {
 						String indexName = container.getIndexName(project.getUuid(), release.getUuid(), type);
 						String documentId = container.getDocumentId();
-						String indexType = container.getIndexType();
-						obs.add(searchProvider.updateDocument(indexName, indexType, documentId, json, true).andThen(Observable.just(indexName)));
+						obs.add(searchProvider.updateDocument(indexName, documentId, json, true).andThen(Observable.just(indexName)));
 					}
 				}
 			}
@@ -371,10 +364,9 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	 */
 	public void validate(Schema schema) {
 		String indexName = "validationDummy";
-		String documentType = NodeGraphFieldContainer.composeIndexType();
-		JsonObject mapping = getMappingProvider().getMapping(schema, documentType);
+		JsonObject mapping = getMappingProvider().getMapping(schema);
 		JsonObject settings = schema.getSearchIndex();
-		IndexInfo info = new IndexInfo(indexName, documentType, settings, mapping);
+		IndexInfo info = new IndexInfo(indexName, settings, mapping);
 		Throwable error = searchProvider.validateCreateViaTemplate(info).get(10, TimeUnit.SECONDS);
 		if (error != null) {
 			log.error("Validation of schema {" + schema.getName() + "} failed with error", error);

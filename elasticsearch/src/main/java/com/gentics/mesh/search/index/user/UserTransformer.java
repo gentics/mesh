@@ -1,11 +1,7 @@
 package com.gentics.mesh.search.index.user;
 
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
-import static com.gentics.mesh.search.index.MappingHelper.trigramStringType;
 
 import java.util.ArrayList;
 import java.util.HashMap;

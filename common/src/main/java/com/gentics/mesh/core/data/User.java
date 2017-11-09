@@ -59,15 +59,6 @@ public interface User extends MeshCoreVertex<UserResponse, User>, ReferenceableE
 	}
 
 	/**
-	 * Compose the index type for the user index.
-	 * 
-	 * @return
-	 */
-	static String composeIndexType() {
-		return TYPE.toLowerCase();
-	}
-
-	/**
 	 * Compose the index name for the user index.
 	 * 
 	 * @return

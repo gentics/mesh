@@ -87,9 +87,9 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNull(tagFamily.getDescription());
 			tagFamily.setDescription("description");
 			assertEquals("description", tagFamily.getDescription());
-			assertEquals(0, tagFamily.findAll().size());
+			assertEquals(0, tagFamily.computeCount());
 			assertNotNull(tagFamily.create(GERMAN_NAME, project(), user()));
-			assertEquals(1, tagFamily.findAll().size());
+			assertEquals(1, tagFamily.computeCount());
 		}
 	}
 
@@ -188,8 +188,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 5. Assert
 			assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release")
-					.usingElementComparatorOnFields("uuid").containsOnly(node);
+			assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release").usingElementComparatorOnFields(
+					"uuid").containsOnly(node);
 
 			assertThat(new ArrayList<Tag>(node.getTags(newRelease))).as("Tags in new Release").isEmpty();
 			assertThat(new ArrayList<Node>(tag.getNodes(newRelease))).as("Nodes with tag in new Release").isEmpty();
@@ -200,8 +200,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 7. Assert again
 			assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release")
-					.usingElementComparatorOnFields("uuid").containsOnly(node);
+			assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release").usingElementComparatorOnFields(
+					"uuid").containsOnly(node);
 
 			assertThat(new ArrayList<Tag>(node.getTags(newRelease))).as("Tags in new Release").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
@@ -234,8 +234,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			// 5. Assert
 			assertThat(new ArrayList<Tag>(node.getTags(initialRelease))).as("Tags in initial Release").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
-			assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release")
-					.usingElementComparatorOnFields("uuid").containsOnly(node);
+			assertThat(new ArrayList<Node>(tag.getNodes(initialRelease))).as("Nodes with tag in initial Release").usingElementComparatorOnFields(
+					"uuid").containsOnly(node);
 
 			assertThat(new ArrayList<Tag>(node.getTags(newRelease))).as("Tags in new Release").usingElementComparatorOnFields("uuid", "name")
 					.containsOnly(tag);
@@ -305,11 +305,11 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			// Don't grant permissions to the no perm tag. We want to make sure that this one will not be listed.
 			TagFamily basicTagFamily = tagFamily("basic");
-			int beforeCount = basicTagFamily.findAll().size();
+			long beforeCount = basicTagFamily.computeCount();
 			Tag noPermTag = basicTagFamily.create("noPermTag", project(), user());
 			basicTagFamily.addTag(noPermTag);
 			assertNotNull(noPermTag.getUuid());
-			assertEquals(beforeCount + 1, basicTagFamily.findAll().size());
+			assertEquals(beforeCount + 1, basicTagFamily.computeCount());
 
 			Page<? extends Tag> tagfamilyTagpage = basicTagFamily.findAll(mockActionContext(), new PagingParametersImpl(1, 20));
 			assertPage(tagfamilyTagpage, beforeCount);
@@ -320,7 +320,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 		}
 	}
 
-	private void assertPage(Page<? extends Tag> page, int expectedTagCount) {
+	private void assertPage(Page<? extends Tag> page, long expectedTagCount) {
 		assertNotNull(page);
 
 		int nTags = 0;
@@ -340,16 +340,16 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			TagRoot root = meshRoot().getTagRoot();
-			assertEquals(tags().size(), root.findAll().size());
+			assertEquals(tags().size(), root.computeCount());
 			Tag tag = tag("red");
 			root.removeTag(tag);
-			assertEquals(tags().size() - 1, root.findAll().size());
+			assertEquals(tags().size() - 1, root.computeCount());
 			root.removeTag(tag);
-			assertEquals(tags().size() - 1, root.findAll().size());
+			assertEquals(tags().size() - 1, root.computeCount());
 			root.addTag(tag);
-			assertEquals(tags().size(), root.findAll().size());
+			assertEquals(tags().size(), root.computeCount());
 			root.addTag(tag);
-			assertEquals(tags().size(), root.findAll().size());
+			assertEquals(tags().size(), root.computeCount());
 			root.delete(createBatch());
 		}
 	}
@@ -389,7 +389,7 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 			assertNotNull("The folder could not be found.", loadedTag);
 			String name = loadedTag.getName();
 			assertEquals("The loaded name of the folder did not match the expected one.", GERMAN_NAME, name);
-			assertEquals(10, tagFamily.findAll().size());
+			assertEquals(10, tagFamily.computeCount());
 			latch.countDown();
 			Tag projectTag = tagFamily.findByUuid(uuid);
 			assertNotNull("The tag should also be assigned to the project tag root", projectTag);
@@ -474,8 +474,8 @@ public class TagTest extends AbstractMeshTest implements BasicObjectTestcases {
 
 			// Deletion of a tag must remove the tag from the index and update the nodes which reference the tag
 			expectedEntries.put("tag", new ElementEntry(DELETE_ACTION, uuid));
-			expectedEntries.put("node-with-tag", new ElementEntry(STORE_ACTION, content("concorde").getUuid(), project().getUuid(),
-					project().getLatestRelease().getUuid(), ContainerType.DRAFT));
+			expectedEntries.put("node-with-tag", new ElementEntry(STORE_ACTION, content("concorde").getUuid(), project().getUuid(), project()
+					.getLatestRelease().getUuid(), ContainerType.DRAFT));
 			SearchQueueBatch batch = createBatch();
 			tag.delete(batch);
 			assertThat(batch).containsEntries(expectedEntries);

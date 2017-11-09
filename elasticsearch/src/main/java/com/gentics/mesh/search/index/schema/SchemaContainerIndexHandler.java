@@ -47,11 +47,6 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
-		return SchemaContainer.composeIndexType();
-	}
-
-	@Override
 	public Class<SchemaContainer> getElementClass() {
 		return SchemaContainer.class;
 	}
@@ -73,9 +68,9 @@ public class SchemaContainerIndexHandler extends AbstractIndexHandler<SchemaCont
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String type = SchemaContainer.TYPE.toLowerCase();
-		IndexInfo info = new IndexInfo(type, type, null, getMappingProvider().getMapping(type));
-		return Collections.singletonMap(type, info);
+		String indexName = SchemaContainer.composeIndexName();
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		return Collections.singletonMap(indexName, info);
 	}
 
 	@Override

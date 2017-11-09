@@ -13,6 +13,9 @@ import com.gentics.mesh.search.index.AbstractMappingProvider;
 
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Class which will generate the needed mapping for the tag family index.
+ */
 @Singleton
 public class TagFamilyMappingProvider extends AbstractMappingProvider {
 

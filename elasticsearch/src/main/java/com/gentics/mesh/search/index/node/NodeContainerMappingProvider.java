@@ -1,5 +1,6 @@
 package com.gentics.mesh.search.index.node;
 
+import static com.gentics.mesh.search.SearchProvider.DEFAULT_TYPE;
 import static com.gentics.mesh.search.index.MappingHelper.ANALYZED;
 import static com.gentics.mesh.search.index.MappingHelper.BOOLEAN;
 import static com.gentics.mesh.search.index.MappingHelper.DATE;
@@ -50,12 +51,12 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 * @param type
 	 * @return
 	 */
-	public JsonObject getMapping(Schema schema, String type) {
+	public JsonObject getMapping(Schema schema) {
 		// 1. Get the common type specific mapping
-		JsonObject mapping = getMapping(type);
+		JsonObject mapping = getMapping();
 
 		// 2. Enhance the type specific mapping
-		JsonObject typeMapping = mapping.getJsonObject(type);
+		JsonObject typeMapping = mapping.getJsonObject(DEFAULT_TYPE);
 		typeMapping.put("dynamic", "strict");
 		JsonObject typeProperties = typeMapping.getJsonObject("properties");
 
@@ -121,7 +122,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 		JsonObject fieldJson = new JsonObject();
 		fieldJson.put("properties", fieldProps);
 		typeProperties.put("fields", fieldJson);
-		mapping.put(type, typeMapping);
+		mapping.put(DEFAULT_TYPE, typeMapping);
 
 		for (FieldSchema field : schema.getFields()) {
 			JsonObject fieldInfo = getFieldMapping(field);

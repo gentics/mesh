@@ -3,6 +3,7 @@ package com.gentics.mesh.assertj.impl;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -28,8 +29,8 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	public DummySearchProviderAssert recordedStoreEvents(int count) {
 		isNotNull();
 		String info = actual.getStoreEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
-		assertEquals("The search provider did not record the correct amount of store events. Found events: {\n" + info + "\n}", count,
-				actual.getStoreEvents().size());
+		assertEquals("The search provider did not record the correct amount of store events. Found events: {\n" + info + "\n}", count, actual
+				.getStoreEvents().size());
 		return this;
 	}
 
@@ -56,15 +57,15 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param documentId
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert hasStore(String indexName, String indexType, String documentId) {
-		String key = indexName + "-" + indexType + "-" + documentId;
+	public DummySearchProviderAssert hasStore(String indexName, String documentId) {
+		String key = indexName + "-" + documentId;
 		boolean hasKey = actual.getStoreEvents().containsKey(key);
 		if (!hasKey) {
 			for (String event : actual.getStoreEvents().keySet()) {
 				System.out.println("Recorded store event: " + event);
 			}
 		}
-		assertTrue("The store event could not be found. {" + indexName + "} {" + indexType + "} {" + documentId + "}", hasKey);
+		assertTrue("The store event could not be found. {" + indexName + "} {" + documentId + "}", hasKey);
 		return this;
 	}
 
@@ -89,19 +90,18 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * Verify that the search provider recorded the given delete event.
 	 * 
 	 * @param indexName
-	 * @param indexType
 	 * @param documentId
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert hasDelete(String indexName, String indexType, String documentId) {
-		String key = indexName + "-" + indexType + "-" + documentId;
+	public DummySearchProviderAssert hasDelete(String indexName, String documentId) {
+		String key = indexName + "-" + documentId;
 		boolean hasKey = actual.getDeleteEvents().contains(key);
 		if (!hasKey) {
 			for (String event : actual.getDeleteEvents()) {
 				System.out.println("Recorded delete event: " + event);
 			}
 		}
-		assertTrue("The delete event could not be found. {" + indexName + "} - {" + indexType + "} - {" + documentId + "}", hasKey);
+		assertTrue("The delete event could not be found. {" + indexName + "} - {" + documentId + "}", hasKey);
 		return this;
 	}
 
@@ -190,7 +190,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 				String releaseUuid = release.getUuid();
 				String schemaVersionUuid = node.getSchemaContainer().getLatestVersion().getUuid();
 				assertThat(actual).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaVersionUuid, type),
-						NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), lang));
+						NodeGraphFieldContainer.composeDocumentId(node.getUuid(), lang));
 			}
 		}
 		return this;
@@ -203,7 +203,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @return Fluent API
 	 */
 	public DummySearchProviderAssert stored(Tag tag) {
-		assertThat(actual).hasStore(Tag.composeIndexName(tag.getProject().getUuid()), Tag.composeTypeName(), Tag.composeDocumentId(tag.getUuid()));
+		assertThat(actual).hasStore(Tag.composeIndexName(tag.getProject().getUuid()), Tag.composeDocumentId(tag.getUuid()));
 		return this;
 	}
 
@@ -214,8 +214,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @return Fluent API
 	 */
 	public DummySearchProviderAssert stored(TagFamily tagfamily) {
-		assertThat(actual).hasStore(TagFamily.composeIndexName(tagfamily.getProject().getUuid()), TagFamily.composeTypeName(),
-				TagFamily.composeDocumentId(tagfamily.getUuid()));
+		assertThat(actual).hasStore(TagFamily.composeIndexName(tagfamily.getProject().getUuid()), TagFamily.composeDocumentId(tagfamily.getUuid()));
 		return this;
 	}
 

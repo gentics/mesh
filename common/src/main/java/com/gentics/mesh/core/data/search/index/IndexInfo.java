@@ -6,20 +6,14 @@ import io.vertx.core.json.JsonObject;
  * Container for the index information.
  */
 public class IndexInfo {
-	private String indexType;
 	private String indexName;
 	private JsonObject indexSettings;
 	private JsonObject indexMappings;
 
-	public IndexInfo(String indexName, String indexType, JsonObject indexSettings, JsonObject indexMappings) {
-		this.indexType = indexType;
+	public IndexInfo(String indexName, JsonObject indexSettings, JsonObject indexMappings) {
 		this.indexName = indexName;
 		this.indexSettings = indexSettings;
 		this.indexMappings = indexMappings;
-	}
-
-	public String getIndexType() {
-		return indexType;
 	}
 
 	public String getIndexName() {
@@ -36,7 +30,7 @@ public class IndexInfo {
 
 	@Override
 	public String toString() {
-		return "Info for index: " + indexName + "/" + indexType;
+		return "Info for index: " + indexName;
 	}
 
 }

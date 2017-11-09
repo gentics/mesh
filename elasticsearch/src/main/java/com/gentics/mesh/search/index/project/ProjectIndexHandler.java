@@ -51,11 +51,6 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
-		return Project.composeIndexType();
-	}
-
-	@Override
 	public ProjectTransformer getTransformer() {
 		return transformer;
 	}
@@ -77,9 +72,9 @@ public class ProjectIndexHandler extends AbstractIndexHandler<Project> {
 
 	@Override
 	public Map<String, IndexInfo> getIndices() {
-		String type = Project.TYPE;
-		IndexInfo info = new IndexInfo(type, type, null, getMappingProvider().getMapping(type));
-		return Collections.singletonMap(type, info);
+		String indexName = Project.composeIndexName();
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		return Collections.singletonMap(indexName, info);
 	}
 
 }

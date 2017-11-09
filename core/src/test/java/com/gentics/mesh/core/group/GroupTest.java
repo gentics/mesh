@@ -8,11 +8,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.util.List;
-
 import org.junit.Test;
+import org.testcontainers.shaded.com.google.common.collect.Iterators;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.Group;
@@ -30,6 +28,7 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -80,7 +79,7 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 
 			page = boot().groupRoot().findAll(ac, new PagingParametersImpl(1, 3));
 			assertEquals(groupCount, page.getTotalElements());
-			assertEquals("We expected one page per group.",groupCount, page.getSize());
+			assertEquals("We expected one page per group.", groupCount, page.getSize());
 		}
 	}
 
@@ -88,8 +87,8 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	@Override
 	public void testFindAll() {
 		try (Tx tx = tx()) {
-			List<? extends Group> groups = boot().groupRoot().findAll();
-			assertEquals(groups().size(), groups.size());
+			long size = Iterators.size(boot().groupRoot().findAllIt().iterator());
+			assertEquals(groups().size(), size);
 		}
 	}
 
@@ -98,11 +97,11 @@ public class GroupTest extends AbstractMeshTest implements BasicObjectTestcases 
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			GroupRoot root = meshRoot().getGroupRoot();
-			int nGroupsBefore = root.findAll().size();
+			long nGroupsBefore = root.computeCount();
 			GroupRoot groupRoot = meshRoot().getGroupRoot();
 			assertNotNull(groupRoot.create("test group2", user()));
 
-			int nGroupsAfter = root.findAll().size();
+			long nGroupsAfter = root.computeCount();
 			assertEquals(nGroupsBefore + 1, nGroupsAfter);
 		}
 	}

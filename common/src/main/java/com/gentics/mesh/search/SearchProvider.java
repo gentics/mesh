@@ -16,6 +16,8 @@ import rx.Single;
  */
 public interface SearchProvider {
 
+	static String DEFAULT_TYPE = "default";
+
 	/**
 	 * Explicitly refresh one or more indices (making the content indexed since the last refresh searchable).
 	 * 
@@ -41,8 +43,6 @@ public interface SearchProvider {
 	 * 
 	 * @param indexName
 	 *            Index name of the document
-	 * @param type
-	 *            Index type of the document
 	 * @param uuid
 	 *            Uuid of the document
 	 * @param document
@@ -50,58 +50,50 @@ public interface SearchProvider {
 	 * @param ignoreMissingDocumentError
 	 *            Whether to ignore missing document errors
 	 */
-	Completable updateDocument(String indexName, String type, String uuid, JsonObject document, boolean ignoreMissingDocumentError);
+	Completable updateDocument(String indexName, String uuid, JsonObject document, boolean ignoreMissingDocumentError);
 
 	/**
 	 * Delete the given document.
 	 * 
 	 * @param indexName
 	 *            Index name of the document
-	 * @param type
-	 *            Index type of the document
 	 * @param uuid
 	 *            Uuid for the document
 	 */
-	Completable deleteDocument(String indexName, String type, String uuid);
+	Completable deleteDocument(String indexName, String uuid);
 
 	/**
 	 * Store the given document.
 	 * 
 	 * @param indexName
 	 *            Index name of the document
-	 * @param type
-	 *            Index type of the document
 	 * @param uuid
 	 *            Uuid for the document
 	 * @param document
 	 *            JSON Object which holds the document data
 	 */
-	Completable storeDocument(String indexName, String type, String uuid, JsonObject document);
+	Completable storeDocument(String indexName, String uuid, JsonObject document);
 
 	/**
 	 * Store a batch of document.
 	 * 
 	 * @param index
 	 *            Index name
-	 * @param type
-	 *            Index type
 	 * @param documents
 	 *            Map of documents in which the key represents the documentId to be used
 	 * @return
 	 */
-	Completable storeDocumentBatch(String index, String type, Map<String, JsonObject> documents);
+	Completable storeDocumentBatch(String index, Map<String, JsonObject> documents);
 
 	/**
 	 * Get the given document.
 	 * 
 	 * @param indexName
 	 *            Index name of the document
-	 * @param type
-	 *            Index type of the document
 	 * @param uuid
 	 *            Uuid for the document
 	 */
-	Single<Map<String, Object>> getDocument(String indexName, String type, String uuid);
+	Single<Map<String, Object>> getDocument(String indexName, String uuid);
 
 	/**
 	 * Start the search provider.
@@ -197,15 +189,14 @@ public interface SearchProvider {
 	 */
 	SearchProvider init(MeshOptions options);
 
-	/**
-	 * Update the mapping for the given index and type using the provided mapping json.
-	 * 
-	 * @param indexName
-	 * @param type
-	 * @param mapping
-	 * @return
-	 */
-	Completable updateMapping(String indexName, String type, JsonObject mapping);
+//	/**
+//	 * Update the mapping for the given index using the provided mapping json.
+//	 * 
+//	 * @param indexName
+//	 * @param mapping
+//	 * @return
+//	 */
+//	Completable updateMapping(String indexName, JsonObject mapping);
 
 	/**
 	 * Return the search provider client.

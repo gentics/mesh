@@ -19,12 +19,12 @@ public class NodeRootTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			FramedGraph graph = tx.getGraph();
 			NodeImpl node = graph.addFramedVertex(NodeImpl.class);
-			int start = boot().nodeRoot().findAll().size();
+			long start = boot().nodeRoot().computeCount();
 			boot().nodeRoot().addItem(node);
 			boot().nodeRoot().addItem(node);
 			boot().nodeRoot().addItem(node);
 			boot().nodeRoot().addItem(node);
-			assertEquals(start + 1, boot().nodeRoot().findAll().size());
+			assertEquals(start + 1, boot().nodeRoot().computeCount());
 		}
 	}
 
