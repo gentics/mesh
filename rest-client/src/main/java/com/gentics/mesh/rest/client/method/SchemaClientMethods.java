@@ -91,7 +91,7 @@ public interface SchemaClientMethods {
 	MeshRequest<GenericMessageResponse> applyChangesToSchema(String uuid, SchemaChangesListModel changes);
 
 	/**
-	 * Assign a schema to the project
+	 * Assign a schema to the project.
 	 *
 	 * @param projectName
 	 *            project name

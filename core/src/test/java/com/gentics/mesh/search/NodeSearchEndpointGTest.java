@@ -186,7 +186,7 @@ public class NodeSearchEndpointGTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		String query = getESQuery("tagFamilySearch.es");
+		String query = getESText("tagFamilySearch.es");
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query));
 		assertThat(response.getData()).isNotEmpty();

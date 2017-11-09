@@ -28,6 +28,7 @@ import com.gentics.mesh.parameter.client.PagingParametersImpl;
 import com.gentics.mesh.test.TestDataProvider;
 import com.syncleus.ferma.tx.Tx;
 
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
 import io.vertx.ext.web.RoutingContext;
@@ -80,8 +81,8 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 		try (Tx tx = tx()) {
 			assertTrue("The role {" + role().getName() + "} does not grant permission on element {" + element.getUuid()
 					+ "} although we granted those permissions.", role().hasPermission(perm, element));
-			assertTrue("The user has no {" + perm.getRestPerm().getName() + "} permission on node {" + element.getUuid() + "/"
-					+ element.getClass().getSimpleName() + "}", getRequestUser().hasPermission(element, perm));
+			assertTrue("The user has no {" + perm.getRestPerm().getName() + "} permission on node {" + element.getUuid() + "/" + element.getClass()
+					.getSimpleName() + "}", getRequestUser().hasPermission(element, perm));
 		}
 
 		try (Tx tx = tx()) {
@@ -92,8 +93,8 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 
 		try (Tx tx = tx()) {
 			boolean hasPerm = role().hasPermission(perm, element);
-			assertFalse("The user's role {" + role().getName() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {"
-					+ element.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
+			assertFalse("The user's role {" + role().getName() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {" + element
+					.getUuid() + "/" + element.getClass().getSimpleName() + "} although we revoked it.", hasPerm);
 
 			hasPerm = getRequestUser().hasPermission(element, perm);
 			assertFalse("The user {" + getRequestUser().getUsername() + "} still got {" + perm.getRestPerm().getName() + "} permission on node {"
@@ -113,14 +114,36 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	}
 
 	/**
-	 * Return the es query for the given name.
+	 * Return the es text for the given name.
 	 * 
 	 * @param name
 	 * @return
 	 * @throws IOException
 	 */
-	protected String getESQuery(String name) throws IOException {
+	protected String getESText(String name) throws IOException {
 		return IOUtils.toString(getClass().getResourceAsStream("/elasticsearch/" + name));
+	}
+
+	/**
+	 * Returns the text string of the resource with the given path.
+	 * 
+	 * @param path
+	 * @return
+	 * @throws IOException 
+	 */
+	protected String getText(String path) throws IOException {
+		return IOUtils.toString(getClass().getResourceAsStream(path));
+	}
+
+	/**
+	 * Returns the json for the given path.
+	 * 
+	 * @param path
+	 * @return
+	 * @throws IOException
+	 */
+	protected JsonObject getJson(String path) throws IOException {
+		return new JsonObject(IOUtils.toString(getClass().getResourceAsStream(path)));
 	}
 
 	/**

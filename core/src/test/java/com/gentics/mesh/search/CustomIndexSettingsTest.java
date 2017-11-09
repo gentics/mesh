@@ -1,16 +1,20 @@
 package com.gentics.mesh.search;
 
 import static com.gentics.mesh.test.ClientHelper.call;
+import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
+import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -97,6 +101,37 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		schema.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 		call(() -> client().validateSchema(schema), BAD_REQUEST, "schema_error_index_validation",
 				"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
+	}
+
+	@Test
+	public void testCustomAnalyzerAndQuery() throws IOException {
+
+		// 1. Create schema
+		SchemaCreateRequest schema = new SchemaCreateRequest();
+		schema.setName("customIndexTest");
+		JsonObject elasticsearchSettings = getJson("/elasticsearch/suggestionSettings.json");
+		schema.setElasticsearch(elasticsearchSettings);
+
+		JsonObject fieldSettings = new JsonObject();
+		fieldSettings.put("auto", new JsonObject().put("type", "string").put("analyzer", "autocomplete").put("search_analyzer", "standard"));
+		schema.addField(FieldUtil.createStringFieldSchema("content").setElasticsearch(fieldSettings));
+
+		SchemaResponse response = call(() -> client().createSchema(schema));
+		call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
+
+		// 2. Create node
+		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+		nodeCreateRequest.setParentNodeUuid(tx(() -> project().getBaseNode().getUuid()));
+		nodeCreateRequest.setLanguage("en");
+		nodeCreateRequest.setSchemaName("customIndexTest");
+		nodeCreateRequest.getFields().put("content", FieldUtil.createStringField("some text with more content you can poke a stick at"));
+		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+
+		// 3. Invoke search
+		String suggestionQuery = getText("/elasticsearch/suggestionQuery.es");
+		JsonObject searchResult = call(() -> client().searchNodesRaw(PROJECT_NAME, suggestionQuery));
+		System.out.println(searchResult.encodePrettily());
+
 	}
 
 	@Test

@@ -37,7 +37,7 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 			recreateIndices();
 		}
 
-		String json = getESQuery("userWildcard.es");
+		String json = getESText("userWildcard.es");
 
 		UserListResponse list = call(() -> client().searchUsers(json));
 		assertEquals("The user should not be found since the requestor has no permission to see it", 0, list.getData().size());
@@ -64,7 +64,7 @@ public class UserPermissionSearchTest extends AbstractMeshTest {
 		String username = "testuser42a";
 		UserResponse response = createUser(username);
 
-		String json = getESQuery("userWildcard.es");
+		String json = getESText("userWildcard.es");
 
 		UserListResponse list = call(() -> client().searchUsers(json));
 		assertEquals("The user should be found since the requestor has permission to see it", 1, list.getData().size());

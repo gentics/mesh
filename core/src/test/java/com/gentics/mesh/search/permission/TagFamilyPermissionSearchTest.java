@@ -38,7 +38,7 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 			recreateIndices();
 		}
 
-		String json = getESQuery("tagFamilyWildcard.es");
+		String json = getESText("tagFamilyWildcard.es");
 
 		TagFamilyListResponse list = call(() -> client().searchTagFamilies(json));
 		assertEquals("The tagFamily should not be found since the requestor has no permission to see it", 0, list.getData().size());
@@ -67,7 +67,7 @@ public class TagFamilyPermissionSearchTest extends AbstractMeshTest {
 		String tagfamilyName = "testtagfamily42a";
 		TagFamilyResponse response = createTagFamily(PROJECT_NAME, tagfamilyName);
 
-		String json = getESQuery("tagFamilyWildcard.es");
+		String json = getESText("tagFamilyWildcard.es");
 
 		TagFamilyListResponse list = call(() -> client().searchTagFamilies(json));
 		assertEquals("The tagFamily should be found since the requestor has permission to see it", 1, list.getData().size());

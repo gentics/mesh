@@ -39,7 +39,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			createUser(username);
 		}
 
-		String json = getESQuery("userWildcard.es");
+		String json = getESText("userWildcard.es");
 
 		UserListResponse list = call(() -> client().searchUsers(json));
 		assertEquals(1, list.getData().size());
@@ -54,7 +54,7 @@ public class UserSearchEndpointTest extends AbstractMeshTest implements BasicSea
 			createUser(username);
 		}
 
-		String json = getESQuery("userBogusName.es");
+		String json = getESText("userBogusName.es");
 
 		UserListResponse list = call(() -> client().searchUsers(json));
 		assertEquals(0, list.getData().size());

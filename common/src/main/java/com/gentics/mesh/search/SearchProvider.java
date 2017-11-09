@@ -189,15 +189,6 @@ public interface SearchProvider {
 	 */
 	SearchProvider init(MeshOptions options);
 
-//	/**
-//	 * Update the mapping for the given index using the provided mapping json.
-//	 * 
-//	 * @param indexName
-//	 * @param mapping
-//	 * @return
-//	 */
-//	Completable updateMapping(String indexName, JsonObject mapping);
-
 	/**
 	 * Return the search provider client.
 	 * 
@@ -222,7 +213,12 @@ public interface SearchProvider {
 	default JsonObject createIndexSettings(JsonObject settings, JsonObject mappings) {
 		// Prepare the json for the request
 		JsonObject json = new JsonObject();
-		json.put("settings", getDefaultIndexSettings());
+		JsonObject fullSettings = new JsonObject();
+		fullSettings.mergeIn(getDefaultIndexSettings(), true);
+		if (settings != null) {
+			fullSettings.mergeIn(settings, true);
+		}
+		json.put("settings", fullSettings);
 		json.put("mappings", mappings);
 		return json;
 	}

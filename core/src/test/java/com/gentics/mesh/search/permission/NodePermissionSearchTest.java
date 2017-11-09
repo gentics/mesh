@@ -25,7 +25,7 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 	public void testIndexPermUpdate() throws Exception {
 		NodeResponse response = createNode("slug", FieldUtil.createStringField("slugblub"));
 
-		String json = getESQuery("nodeWildcard.es");
+		String json = getESText("nodeWildcard.es");
 
 		NodeListResponse list = call(() -> client().searchNodes(PROJECT_NAME, json));
 		assertEquals("The node should be found since the requestor has permission to see it", 1, list.getData().size());
@@ -47,7 +47,7 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 		}
 		createNode("slug", FieldUtil.createStringField("slugblub"));
 
-		String json = getESQuery("nodeWildcard.es");
+		String json = getESText("nodeWildcard.es");
 
 		NodeListResponse list = call(() -> client().searchNodes(PROJECT_NAME, json));
 		assertEquals("The node should be found since the requestor has permission to see it", 1, list.getData().size());
@@ -68,7 +68,7 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 		NodeResponse response = createNode("slug", FieldUtil.createStringField("slugblub"));
 		call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 
-		String json = getESQuery("nodeWildcard.es");
+		String json = getESText("nodeWildcard.es");
 
 		NodeListResponse list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
 		assertEquals("The node should be found since the requestor has permission to see it", 1, list.getData().size());
@@ -102,7 +102,7 @@ public class NodePermissionSearchTest extends AbstractMeshTest {
 		NodeResponse response = createNode("slug", FieldUtil.createStringField("slugblub"));
 		call(() -> client().publishNode(PROJECT_NAME, response.getUuid()));
 
-		String json = getESQuery("nodeWildcard.es");
+		String json = getESText("nodeWildcard.es");
 		NodeListResponse list = call(() -> client().searchNodes(PROJECT_NAME, json, new VersioningParametersImpl().published()));
 		assertEquals("The node should be found since the requestor has permission to see it", 1, list.getData().size());
 
