@@ -25,7 +25,6 @@ import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.parameter.client.PagingParametersImpl;
-import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.test.TestDataProvider;
 import com.syncleus.ferma.tx.Tx;
 
@@ -58,12 +57,8 @@ public abstract class AbstractMeshTest implements TestHelperMethods {
 	protected void recreateIndices() throws Exception {
 		// We potentially modified existing data thus we need to drop all indices and create them and reindex all data
 		MeshInternal.get().searchProvider().clear();
-		// We need to call init() again in order create missing indices for the created test data
 		for (IndexHandler<?> handler : MeshInternal.get().indexHandlerRegistry().getHandlers()) {
 			handler.init().await();
-		}
-		IndexHandlerRegistry registry = MeshInternal.get().indexHandlerRegistry();
-		for (IndexHandler<?> handler : registry.getHandlers()) {
 			handler.reindexAll().await();
 		}
 	}
