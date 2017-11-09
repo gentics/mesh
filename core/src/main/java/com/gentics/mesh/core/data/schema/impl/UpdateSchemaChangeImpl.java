@@ -76,7 +76,7 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 		// .searchIndex
 		JsonObject options = getIndexOptions();
 		if (options != null) {
-			schema.setSearchIndex(options);
+			schema.setElasticsearch(options);
 		}
 
 		return (R) schema;

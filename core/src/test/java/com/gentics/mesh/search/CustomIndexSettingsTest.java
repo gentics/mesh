@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
@@ -29,33 +30,33 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	public void testValidationErrorOnCreate() {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("settingsTest");
-		request.setSearchIndex(new JsonObject().put("somebogus", "value"));
-		request.addField(FieldUtil.createStringFieldSchema("text").setSearchIndex(new JsonObject().put("bogus", "value")));
+		request.setElasticsearch(new JsonObject().put("somebogus", "value"));
+		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 		call(() -> client().createSchema(request), BAD_REQUEST, "schema_error_index_validation",
-				"Failed to parse mapping [node]: illegal field [bogus], only fields can be specified inside fields");
+				"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
 	}
 
 	@Test
 	public void testValidationErrorOnUpdate() {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("settingsTest");
-		request.setSearchIndex(new JsonObject().put("somebogus", "value"));
-		request.addField(FieldUtil.createStringFieldSchema("text").setSearchIndex(IndexOptionHelper.getRawFieldOption()));
+		request.setElasticsearch(new JsonObject().put("somebogus", "value"));
+		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(IndexOptionHelper.getRawFieldOption()));
 		SchemaResponse response = call(() -> client().createSchema(request));
 
 		SchemaUpdateRequest updateRequest = JsonUtil.readValue(request.toJson(), SchemaUpdateRequest.class);
 		updateRequest.removeField("text");
-		updateRequest.addField(FieldUtil.createStringFieldSchema("text").setSearchIndex(new JsonObject().put("bogus", "value")));
+		updateRequest.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
 		call(() -> client().updateSchema(response.getUuid(), updateRequest), BAD_REQUEST, "schema_error_index_validation",
-				"Failed to parse mapping [node]: illegal field [bogus], only fields can be specified inside fields");
+				"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
 	}
 
 	@Test
 	public void testSuccessfulValidation() {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("settingsTest");
-		request.setSearchIndex(new JsonObject().put("somebogus", "value"));
-		request.addField(FieldUtil.createStringFieldSchema("text").setSearchIndex(IndexOptionHelper.getRawFieldOption()));
+		request.setElasticsearch(new JsonObject().put("somebogus", "value"));
+		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(IndexOptionHelper.getRawFieldOption()));
 		call(() -> client().createSchema(request));
 	}
 
@@ -66,25 +67,56 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	public void testSchemaDiff() {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("settingsTest");
-		request.setSearchIndex(new JsonObject().put("somebogus", "value"));
-		request.addField(FieldUtil.createStringFieldSchema("text").setSearchIndex(IndexOptionHelper.getRawFieldOption()));
+		request.setElasticsearch(new JsonObject().put("somebogus", "value"));
+		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(IndexOptionHelper.getRawFieldOption()));
 		SchemaResponse response = call(() -> client().createSchema(request));
 
 		SchemaUpdateRequest updateRequest = JsonUtil.readValue(request.toJson(), SchemaUpdateRequest.class);
-		updateRequest.setSearchIndex(new JsonObject().put("somebogus", "value2"));
+		updateRequest.setElasticsearch(new JsonObject().put("somebogus", "value2"));
 		call(() -> client().updateSchema(response.getUuid(), updateRequest));
 
 		SchemaResponse response2 = call(() -> client().findSchemaByUuid(response.getUuid()));
-		assertEquals("value2", response2.getSearchIndex().getString("somebogus"));
+		assertEquals("value2", response2.getElasticsearch().getString("somebogus"));
 		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response.getVersion(), response2
 				.getVersion());
 
-		updateRequest.setSearchIndex(new JsonObject());
+		updateRequest.setElasticsearch(new JsonObject());
 		call(() -> client().updateSchema(response.getUuid(), updateRequest));
 
 		SchemaResponse response3 = call(() -> client().findSchemaByUuid(response.getUuid()));
-		assertTrue("The options should be empty", new JsonObject().equals(response3.getSearchIndex()));
+		assertTrue("The options should be empty", new JsonObject().equals(response3.getElasticsearch()));
 		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response2.getVersion(), response3
 				.getVersion());
+	}
+
+	@Test
+	public void testSchemaValidationError() {
+		SchemaCreateRequest schema = new SchemaCreateRequest();
+		schema.setName("settingsTest");
+		schema.setElasticsearch(new JsonObject().put("somebogus", "value"));
+		schema.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
+		call(() -> client().validateSchema(schema), BAD_REQUEST, "schema_error_index_validation",
+				"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
+	}
+
+	@Test
+	public void testSchemaValidationSuccess() {
+		SchemaCreateRequest schema = new SchemaCreateRequest();
+		schema.setName("settingsTest");
+		schema.setElasticsearch(new JsonObject().put("somebogus", "value"));
+		call(() -> client().validateSchema(schema));
+	}
+
+	@Test
+	public void testMicroschemaValidationError() {
+		MicroschemaCreateRequest microschema = new MicroschemaCreateRequest();
+		call(() -> client().validateMicroschema(microschema), BAD_REQUEST, "schema_error_no_name");
+	}
+
+	@Test
+	public void testMicroschemaValidationSucess() {
+		MicroschemaCreateRequest microschema = new MicroschemaCreateRequest();
+		microschema.setName("someName");
+		call(() -> client().validateMicroschema(microschema));
 	}
 }

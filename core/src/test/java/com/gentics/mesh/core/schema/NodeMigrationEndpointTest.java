@@ -358,7 +358,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		waitForJobs(() -> {
 			SchemaUpdateRequest request = tx(() -> JsonUtil.readValue(node.getSchemaContainer().getLatestVersion().getJson(),
 					SchemaUpdateRequest.class));
-			request.getField("teaser").setSearchIndex(IndexOptionHelper.getRawFieldOption());
+			request.getField("teaser").setElasticsearch(IndexOptionHelper.getRawFieldOption());
 			call(() -> client().updateSchema(schemaUuid, request));
 		}, COMPLETED, 1);
 
@@ -1068,7 +1068,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 		schemaB.setVersion("2.0");
 		FieldSchema newField = FieldUtil.createStringFieldSchema(fieldName);
 		if (setAddRaw) {
-			newField.setSearchIndex(IndexOptionHelper.getRawFieldOption());
+			newField.setElasticsearch(IndexOptionHelper.getRawFieldOption());
 		}
 		schemaB.addField(newField);
 		schemaB.addField(FieldUtil.createStringFieldSchema("name"));

@@ -259,7 +259,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 	@Test
 	public void testIndexOptionAddRaw() throws InterruptedException, ExecutionException, TimeoutException {
-		changeType(CREATEHTML, FILLLONGTEXT, FETCH, name -> FieldUtil.createHtmlFieldSchema(name).setSearchIndex(IndexOptionHelper.getRawFieldOption()),
+		changeType(CREATEHTML, FILLLONGTEXT, FETCH, name -> FieldUtil.createHtmlFieldSchema(name).setElasticsearch(IndexOptionHelper.getRawFieldOption()),
 				(container, name) -> {
 					HtmlGraphField htmlField = container.getHtml(name);
 					assertEquals("The html field should not be truncted.", 40_000, htmlField.getHTML().length());

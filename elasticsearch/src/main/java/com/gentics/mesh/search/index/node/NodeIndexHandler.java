@@ -136,7 +136,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 						// Load the index mapping information for the index
 						SchemaModel schema = containerVersion.getSchema();
 						JsonObject mapping = getMappingProvider().getMapping(schema);
-						JsonObject settings = schema.getSearchIndex();
+						JsonObject settings = schema.getElasticsearch();
 						indexInfo.put(draftIndexName, new IndexInfo(draftIndexName, settings, mapping));
 						indexInfo.put(publishIndexName, new IndexInfo(publishIndexName, settings, mapping));
 					}
@@ -365,7 +365,7 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 	public void validate(Schema schema) {
 		String indexName = "validationDummy";
 		JsonObject mapping = getMappingProvider().getMapping(schema);
-		JsonObject settings = schema.getSearchIndex();
+		JsonObject settings = schema.getElasticsearch();
 		IndexInfo info = new IndexInfo(indexName, settings, mapping);
 		Throwable error = searchProvider.validateCreateViaTemplate(info).get(10, TimeUnit.SECONDS);
 		if (error != null) {

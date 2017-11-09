@@ -3,7 +3,7 @@ package com.gentics.mesh.core.data.schema.impl;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHANGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
 import static com.gentics.mesh.core.rest.error.Errors.error;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_OPTIONS_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
@@ -125,7 +125,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public JsonObject getIndexOptions() {
-		Object obj = getRestProperty(INDEX_OPTIONS_KEY);
+		Object obj = getRestProperty(ELASTICSEARCH_KEY);
 		if (obj != null) {
 			if (obj instanceof String) {
 				return new JsonObject((String) obj);
@@ -140,7 +140,7 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 
 	@Override
 	public void setIndexOptions(JsonObject options) {
-		setRestProperty(INDEX_OPTIONS_KEY, options.encode());
+		setRestProperty(ELASTICSEARCH_KEY, options.encode());
 	}
 
 	@Override

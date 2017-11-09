@@ -16,18 +16,18 @@ public class SchemaModelTest {
 	@Test
 	public void testIndexConfig() {
 		SchemaModel model = new SchemaModelImpl();
-		model.setSearchIndex(new JsonObject().put("key", "value").put("array", new JsonArray().add("A").add("B")));
+		model.setElasticsearch(new JsonObject().put("key", "value").put("array", new JsonArray().add("A").add("B")));
 		StringFieldSchema stringField = new StringFieldSchemaImpl();
 		stringField.setName("someName");
 		stringField.setRequired(true);
 		stringField.setLabel("someLabel");
-		stringField.setSearchIndex(new JsonObject().put("key", "value"));
+		stringField.setElasticsearch(new JsonObject().put("key", "value"));
 		model.addField(stringField);
 		String json = JsonUtil.toJson(model);
 		System.out.println(json);
 
 		SchemaModel readModel = JsonUtil.readValue(json, SchemaModelImpl.class);
-		assertEquals("value", readModel.getSearchIndex().getString("key"));
+		assertEquals("value", readModel.getElasticsearch().getString("key"));
 
 	}
 }

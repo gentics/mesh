@@ -108,14 +108,14 @@ public interface FieldSchema {
 	 * 
 	 * @return
 	 */
-	JsonObject getSearchIndex();
+	JsonObject getElasticsearch();
 
 	/**
-	 * Set the search index fields configuration.
+	 * Set the elasticsearch index fields configuration.
 	 * 
-	 * @param searchIndex
+	 * @param elasticsearch
 	 * @return Fluent API
 	 */
-	FieldSchema setSearchIndex(JsonObject searchIndex);
+	FieldSchema setElasticsearch(JsonObject elasticsearch);
 
 }

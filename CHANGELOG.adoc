@@ -9,7 +9,7 @@ CAUTION: GraphQL: The root field `releases` has been removed. The root field `re
 CAUTION: Elasticsearch: Search queries will now automatically be wrapped in a boolean query in order to check permissions much more efficiently. 
 
 CAUTION: The schema field property `addRaw` has been removed. The property was replaced by a mapping definition which can be added to each field. 
-         All schemas will automatially be migrated to the new format. Please keep in mind to also update any existing schema files which 
+         All schemas will automatically be migrated to the new format. Please keep in mind to also update any existing schema files which 
          you may have stored externally.
 
 ```json
@@ -22,7 +22,7 @@ CAUTION: The schema field property `addRaw` has been removed. The property was r
       "label": "Name",
       "required": true,
       "type": "string",
-      "searchIndex": {
+      "elasticsearch": {
         "raw": {
           "index": "not_analyzed",
           "type": "string"
@@ -45,7 +45,7 @@ The specified field mapping will be added to the generated fields property of th
 {
   "name": "dummySchema",
   "displayField": "name",
-  "searchIndex": {
+  "elasticsearch": {
     "settings": {
       "number_of_shards" :   1,
       "number_of_replicas" : 0
@@ -57,7 +57,7 @@ The specified field mapping will be added to the generated fields property of th
       "label": "Name",
       "required": true,
       "type": "string",
-      "searchIndex": {
+      "elasticsearch": {
         "raw": {
           "index": "not_analyzed",
           "type": "string"
@@ -67,6 +67,8 @@ The specified field mapping will be added to the generated fields property of th
   ]
 }
 ```
+
+icon:plus[] REST: The `POST /api/v1/utilities/validateSchema` and `POST /api/v1/utilities/validateMicroschema` endpoints can now be used to validate a schema/microschema JSON without actually storing it.
 
 icon:plus[] GraphQL: Nodes can now be loaded in the context of a schema. This will return all nodes which use the schema.
 

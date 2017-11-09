@@ -72,8 +72,8 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	}
 
 	@Override
-	public void send(String body, HttpResponseStatus status) {
-		rc.response().putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_UTF8);
+	public void send(String body, HttpResponseStatus status, String contentType) {
+		rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
 		rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
 		rc.response().setStatusCode(status.code()).end(body);
 	}

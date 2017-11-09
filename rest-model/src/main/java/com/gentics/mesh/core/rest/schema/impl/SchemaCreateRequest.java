@@ -38,7 +38,7 @@ public class SchemaCreateRequest implements Schema {
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
-	private JsonObject searchIndex;
+	private JsonObject elasticsearch;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of schema fields")
@@ -122,13 +122,13 @@ public class SchemaCreateRequest implements Schema {
 	}
 
 	@Override
-	public JsonObject getSearchIndex() {
-		return searchIndex;
+	public JsonObject getElasticsearch() {
+		return elasticsearch;
 	}
 
 	@Override
-	public SchemaCreateRequest setSearchIndex(JsonObject searchIndex) {
-		this.searchIndex = searchIndex;
+	public SchemaCreateRequest setElasticsearch(JsonObject elasticsearch) {
+		this.elasticsearch = elasticsearch;
 		return this;
 	}
 

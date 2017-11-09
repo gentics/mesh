@@ -30,8 +30,8 @@ public class SchemaModelImpl implements SchemaModel {
 	private boolean container = false;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
-	private JsonObject searchIndex;
+	@JsonPropertyDescription("Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters.")
+	private JsonObject elasticsearch;
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Names of the fields which provide a compete url to the node. This property can be used to define custom urls for certain nodes. The webroot API will try to locate the node via it's segment field and via the specified url fields.")
@@ -154,13 +154,13 @@ public class SchemaModelImpl implements SchemaModel {
 	}
 
 	@Override
-	public JsonObject getSearchIndex() {
-		return searchIndex;
+	public JsonObject getElasticsearch() {
+		return elasticsearch;
 	}
 
 	@Override
-	public SchemaModelImpl setSearchIndex(JsonObject searchIndex) {
-		this.searchIndex = searchIndex;
+	public SchemaModelImpl setElasticsearch(JsonObject elasticsearch) {
+		this.elasticsearch = elasticsearch;
 		return this;
 	}
 

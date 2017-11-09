@@ -199,7 +199,7 @@ public class NodeSearchEndpointCTest extends AbstractNodeSearchEndpointTest {
 		String schemaUuid = tx(() -> content().getSchemaContainer().getUuid());
 		SchemaUpdateRequest request = tx(
 				() -> JsonUtil.readValue(content().getSchemaContainer().getLatestVersion().getJson(), SchemaUpdateRequest.class));
-		request.getField("teaser").setSearchIndex(IndexOptionHelper.getRawFieldOption());
+		request.getField("teaser").setElasticsearch(IndexOptionHelper.getRawFieldOption());
 
 		tx(() -> group().addRole(roles().get("admin")));
 		waitForJobs(() -> {

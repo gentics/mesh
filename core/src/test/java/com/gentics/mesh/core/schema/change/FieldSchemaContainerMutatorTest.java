@@ -210,7 +210,7 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			UpdateFieldChange htmlFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
 			htmlFieldUpdate.setFieldName("htmlField");
 			htmlFieldUpdate.setRestProperty(SchemaChangeModel.REQUIRED_KEY, false);
-			htmlFieldUpdate.setRestProperty(SchemaChangeModel.INDEX_OPTIONS_KEY, IndexOptionHelper.getRawFieldOption().encode());
+			htmlFieldUpdate.setRestProperty(SchemaChangeModel.ELASTICSEARCH_KEY, IndexOptionHelper.getRawFieldOption().encode());
 			stringFieldUpdate.setNextChange(htmlFieldUpdate);
 
 			UpdateFieldChange numberFieldUpdate = tx.getGraph().addFramedVertex(UpdateFieldChangeImpl.class);
@@ -248,58 +248,58 @@ public class FieldSchemaContainerMutatorTest extends AbstractMeshTest {
 			assertNotNull(binaryFieldSchema);
 			assertArrayEquals(new String[] { "newTypes" }, binaryFieldSchema.getAllowedMimeTypes());
 			assertFalse("The required flag should now be set to false.", binaryFieldSchema.isRequired());
-			assertNull("The index option was not set correctly.", binaryFieldSchema.getSearchIndex());
+			assertNull("The elasticsearch settings were not set correctly.", binaryFieldSchema.getElasticsearch());
 
 			// Node
 			NodeFieldSchema nodeFieldSchema = updatedSchema.getField("nodeField", NodeFieldSchemaImpl.class);
 			assertNotNull(nodeFieldSchema);
 			assertArrayEquals(new String[] { "schemaA", "schemaB" }, nodeFieldSchema.getAllowedSchemas());
 			assertFalse("The required flag should now be set to false.", nodeFieldSchema.isRequired());
-			assertNull("The index option was not set correctly.", nodeFieldSchema.getSearchIndex());
+			assertNull("The elasticsearch settings were not set correctly.", nodeFieldSchema.getElasticsearch());
 
 			// Microschema
 			MicronodeFieldSchema micronodeFieldSchema = updatedSchema.getField("micronodeField", MicronodeFieldSchemaImpl.class);
 			assertNotNull(micronodeFieldSchema);
 			assertArrayEquals(new String[] { "A", "B", "C" }, micronodeFieldSchema.getAllowedMicroSchemas());
 			assertFalse("The required flag should now be set to false.", micronodeFieldSchema.isRequired());
-			assertNull("The index option was not set correctly.", micronodeFieldSchema.getSearchIndex());
+			assertNull("The elasticsearch settings were not set correctly.", micronodeFieldSchema.getElasticsearch());
 
 			// String
 			StringFieldSchema stringFieldSchema = updatedSchema.getField("stringField", StringFieldSchemaImpl.class);
 			assertNotNull(stringFieldSchema);
 			assertArrayEquals(new String[] { "valueA", "valueB" }, stringFieldSchema.getAllowedValues());
 			assertFalse("The required flag should now be set to false.", stringFieldSchema.isRequired());
-			assertTrue("The index option did not contain the raw field. {" + stringFieldSchema.getSearchIndex().encodePrettily() + "}",
-					stringFieldSchema.getSearchIndex().containsKey("raw"));
+			assertTrue("The index option did not contain the raw field. {" + stringFieldSchema.getElasticsearch().encodePrettily() + "}",
+					stringFieldSchema.getElasticsearch().containsKey("raw"));
 
 			// Html
 			HtmlFieldSchema htmlFieldSchema = updatedSchema.getField("htmlField", HtmlFieldSchemaImpl.class);
 			assertNotNull(htmlFieldSchema);
 			assertFalse("The required flag should now be set to false.", htmlFieldSchema.isRequired());
-			assertTrue("The index option did not contain the raw field.{" + htmlFieldSchema.getSearchIndex().encodePrettily() + "}", htmlFieldSchema
-					.getSearchIndex().containsKey("raw"));
+			assertTrue("The elasticsearch settings did not contain the raw field. {" + htmlFieldSchema.getElasticsearch().encodePrettily() + "}", htmlFieldSchema
+					.getElasticsearch().containsKey("raw"));
 
 			// Boolean
 			BooleanFieldSchema booleanFieldSchema = updatedSchema.getField("booleanField", BooleanFieldSchemaImpl.class);
 			assertFalse("The required flag should now be set to false.", booleanFieldSchema.isRequired());
-			assertNull("The index option was not set correctly.", booleanFieldSchema.getSearchIndex());
+			assertNull("The elasticsearch settings were not set correctly.", booleanFieldSchema.getElasticsearch());
 
 			// Date
 			DateFieldSchema dateFieldSchema = updatedSchema.getField("dateField", DateFieldSchemaImpl.class);
 			assertFalse("The required flag should now be set to false.", dateFieldSchema.isRequired());
-			assertNull("The index option was not set correctly.", dateFieldSchema.getSearchIndex());
+			assertNull("The index option was not set correctly.", dateFieldSchema.getElasticsearch());
 
 			// Number
 			NumberFieldSchema numberFieldSchema = updatedSchema.getField("numberField", NumberFieldSchemaImpl.class);
 			assertFalse("The required flag should now be set to false.", numberFieldSchema.isRequired());
-			assertNull("The index option was not set correctly.", numberFieldSchema.getSearchIndex());
+			assertNull("The elasticsearch settings were not set correctly.", numberFieldSchema.getElasticsearch());
 
 			// List
 			ListFieldSchema listFieldSchema = updatedSchema.getField("listField", ListFieldSchemaImpl.class);
 			assertFalse("The required flag should now be set to false.", listFieldSchema.isRequired());
 			assertNotNull(listFieldSchema.getAllowedSchemas());
 			assertThat(listFieldSchema.getAllowedSchemas()).contains("A1", "B1", "C1");
-			assertNull("The index option was not set correctly.", listFieldSchema.getSearchIndex());
+			assertNull("The index option was not set correctly.", listFieldSchema.getElasticsearch());
 
 		}
 	}

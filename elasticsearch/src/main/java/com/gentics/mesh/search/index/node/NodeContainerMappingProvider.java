@@ -141,7 +141,7 @@ public class NodeContainerMappingProvider extends AbstractMappingProvider {
 	 */
 	public JsonObject getFieldMapping(FieldSchema fieldSchema) {
 		FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
-		JsonObject customIndexOptions = fieldSchema.getSearchIndex();
+		JsonObject customIndexOptions = fieldSchema.getElasticsearch();
 		JsonObject fieldInfo = new JsonObject();
 
 		switch (type) {

@@ -44,7 +44,7 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
-	private JsonObject searchIndex;
+	private JsonObject elasticsearch;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of schema fields")
@@ -152,13 +152,13 @@ public class SchemaResponse extends AbstractGenericRestResponse implements Schem
 	}
 
 	@Override
-	public JsonObject getSearchIndex() {
-		return searchIndex;
+	public JsonObject getElasticsearch() {
+		return elasticsearch;
 	}
 
 	@Override
-	public SchemaResponse setSearchIndex(JsonObject searchIndex) {
-		this.searchIndex = searchIndex;
+	public SchemaResponse setElasticsearch(JsonObject elasticsearch) {
+		this.elasticsearch = elasticsearch;
 		return this;
 	}
 

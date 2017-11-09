@@ -1378,4 +1378,14 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		return null;
 	}
 
+	@Override
+	public MeshRequest<GenericMessageResponse> validateSchema(Schema schema) {
+		return null;
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> validateMicroschema(Microschema microschema) {
+		return null;
+	}
+
 }

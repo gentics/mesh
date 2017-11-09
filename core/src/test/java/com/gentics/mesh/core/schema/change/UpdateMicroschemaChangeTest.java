@@ -49,7 +49,7 @@ public class UpdateMicroschemaChangeTest extends AbstractChangeTest {
 
 			Microschema updatedSchema = mutator.apply(version);
 			assertEquals("updated", updatedSchema.getName());
-			assertEquals("value", updatedSchema.getSearchIndex().getString("key"));
+			assertEquals("value", updatedSchema.getElasticsearch().getString("key"));
 
 			change = tx.getGraph().addFramedVertex(UpdateMicroschemaChangeImpl.class);
 			change.setDescription("text");

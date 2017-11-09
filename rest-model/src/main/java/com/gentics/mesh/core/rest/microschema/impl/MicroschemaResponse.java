@@ -31,7 +31,7 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
-	private JsonObject searchIndex;
+	private JsonObject elasticsearch;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of microschema fields")
@@ -80,13 +80,13 @@ public class MicroschemaResponse extends AbstractGenericRestResponse implements 
 	}
 
 	@Override
-	public JsonObject getSearchIndex() {
-		return searchIndex;
+	public JsonObject getElasticsearch() {
+		return elasticsearch;
 	}
 
 	@Override
-	public MicroschemaResponse setSearchIndex(JsonObject searchIndex) {
-		this.searchIndex = searchIndex;
+	public MicroschemaResponse setElasticsearch(JsonObject elasticsearch) {
+		this.elasticsearch = elasticsearch;
 		return this;
 	}
 

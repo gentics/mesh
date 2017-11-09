@@ -69,10 +69,10 @@ public abstract class AbstractFieldSchemaContainerUpdateChange<T extends FieldSc
 			container.setDescription(description);
 		}
 
-		// .searchIndex
+		// .elasticsearch
 		JsonObject options = getIndexOptions();
 		if (options != null) {
-			container.setSearchIndex(options);
+			container.setElasticsearch(options);
 		}
 
 		// Update the fields if the order changes

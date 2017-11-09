@@ -1,7 +1,7 @@
 package com.gentics.mesh.core.data.fieldhandler;
 
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
-import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.INDEX_OPTIONS_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.REQUIRED_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation.UPDATEFIELD;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -81,21 +81,21 @@ public abstract class AbstractComparatorStringTest<C extends FieldSchemaContaine
 		assertThat(changes.get(0).getProperties()).hasSize(2);
 
 		// index options:
-		fieldB.setSearchIndex(IndexOptionHelper.getRawFieldOption());
+		fieldB.setElasticsearch(IndexOptionHelper.getRawFieldOption());
 		changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
-		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty(REQUIRED_KEY, true).hasProperty(INDEX_OPTIONS_KEY, IndexOptionHelper
+		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty(REQUIRED_KEY, true).hasProperty(ELASTICSEARCH_KEY, IndexOptionHelper
 				.getRawFieldOption().encode());
 		assertThat(changes.get(0).getProperties()).hasSize(3);
 
 		// allow property:
 		fieldA.setRequired(true);
-		fieldA.setSearchIndex(IndexOptionHelper.getRawFieldOption());
+		fieldA.setElasticsearch(IndexOptionHelper.getRawFieldOption());
 		fieldA.setAllowedValues("blib");
 		fieldB.setAllowedValues("changed");
 		changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
-		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasNoProperty(INDEX_OPTIONS_KEY).hasNoProperty(REQUIRED_KEY).hasProperty("allow",
+		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasNoProperty(ELASTICSEARCH_KEY).hasNoProperty(REQUIRED_KEY).hasProperty("allow",
 				new String[] { "changed" });
 		assertThat(changes.get(0).getProperties()).hasSize(2);
 

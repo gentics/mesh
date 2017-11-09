@@ -156,15 +156,15 @@ public interface FieldSchemaContainer extends RestModel {
 	 * 
 	 * @return
 	 */
-	JsonObject getSearchIndex();
+	JsonObject getElasticsearch();
 
 	/**
 	 * Set the search index configuration.
 	 * 
-	 * @param searchIndex
+	 * @param elasticsearch
 	 * @return Fluent API
 	 */
-	FieldSchemaContainer setSearchIndex(JsonObject searchIndex);
+	FieldSchemaContainer setElasticsearch(JsonObject elasticsearch);
 
 	/**
 	 * Set the list of schema fields.

@@ -141,7 +141,7 @@ public class NodeContainerTransformer extends AbstractTransformer<NodeGraphField
 		for (FieldSchema fieldSchema : fields) {
 			String name = fieldSchema.getName();
 			FieldTypes type = FieldTypes.valueByName(fieldSchema.getType());
-			JsonObject customIndexOptions = fieldSchema.getSearchIndex();
+			JsonObject customIndexOptions = fieldSchema.getElasticsearch();
 			if (customIndexOptions == null) {
 				customIndexOptions = new JsonObject();
 			}

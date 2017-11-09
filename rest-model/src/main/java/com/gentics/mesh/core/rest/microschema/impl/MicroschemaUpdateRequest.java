@@ -26,8 +26,8 @@ public class MicroschemaUpdateRequest implements MicroschemaModel {
 	private String name;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
-	private JsonObject searchIndex;
+	@JsonPropertyDescription("Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters.")
+	private JsonObject elasticsearch;
 
 	@JsonPropertyDescription("List of microschema fields")
 	private List<FieldSchema> fields = new ArrayList<>();
@@ -66,13 +66,13 @@ public class MicroschemaUpdateRequest implements MicroschemaModel {
 	}
 
 	@Override
-	public JsonObject getSearchIndex() {
-		return searchIndex;
+	public JsonObject getElasticsearch() {
+		return elasticsearch;
 	}
 
 	@Override
-	public MicroschemaUpdateRequest setSearchIndex(JsonObject searchIndex) {
-		this.searchIndex = searchIndex;
+	public MicroschemaUpdateRequest setElasticsearch(JsonObject elasticsearch) {
+		this.elasticsearch = elasticsearch;
 		return this;
 	}
 

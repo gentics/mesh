@@ -42,8 +42,8 @@ public class SchemaUpdateRequest implements SchemaModel {
 	private String name;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
-	private JsonObject searchIndex;
+	@JsonPropertyDescription("Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters.")
+	private JsonObject elasticsearch;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of schema fields")
@@ -138,13 +138,13 @@ public class SchemaUpdateRequest implements SchemaModel {
 	}
 
 	@Override
-	public JsonObject getSearchIndex() {
-		return searchIndex;
+	public JsonObject getElasticsearch() {
+		return elasticsearch;
 	}
 
 	@Override
-	public SchemaUpdateRequest setSearchIndex(JsonObject searchIndex) {
-		this.searchIndex = searchIndex;
+	public SchemaUpdateRequest setElasticsearch(JsonObject elasticsearch) {
+		this.elasticsearch = elasticsearch;
 		return this;
 	}
 

@@ -73,7 +73,7 @@ public class MigrateSchemaRawInfo extends AbstractChange {
 				Boolean flag = options.getBoolean("addRaw");
 				field.remove("searchIndex");
 				if (flag != null && flag == true) {
-					field.put("searchIndex", new JsonObject().put("raw", new JsonObject().put("index", "not_analyzed").put("type", "string")));
+					field.put("elasticsearch", new JsonObject().put("raw", new JsonObject().put("index", "not_analyzed").put("type", "string")));
 				}
 			}
 		}

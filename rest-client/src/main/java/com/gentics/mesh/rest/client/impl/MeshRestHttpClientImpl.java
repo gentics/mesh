@@ -672,6 +672,16 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
+	public MeshRequest<GenericMessageResponse> validateSchema(Schema schema) {
+		return prepareRequest(POST, "/utilities/validateSchema", GenericMessageResponse.class, schema);
+	}
+
+	@Override
+	public MeshRequest<GenericMessageResponse> validateMicroschema(Microschema schema) {
+		return prepareRequest(POST, "/utilities/validateMicroschema", GenericMessageResponse.class, schema);
+	}
+
+	@Override
 	public MeshRequest<SchemaChangesListModel> diffSchema(String uuid, Schema request) {
 		Objects.requireNonNull(uuid, "uuid must not be null");
 		Objects.requireNonNull(request, "request must not be null");
