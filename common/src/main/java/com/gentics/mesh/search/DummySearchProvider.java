@@ -23,8 +23,7 @@ public class DummySearchProvider implements SearchProvider {
 	private Map<String, JsonObject> storeEvents = new HashMap<>();
 	private List<String> getEvents = new ArrayList<>();
 	private List<String> dropIndexEvents = new ArrayList<>();
-	private List<String> createIndexEvents = new ArrayList<>();
-	private Map<String, JsonObject> updateMappingEvents = new HashMap<>();
+	private Map<String, JsonObject> createIndexEvents = new HashMap<>();
 
 	@Override
 	public SearchProvider init(MeshOptions options) {
@@ -42,7 +41,10 @@ public class DummySearchProvider implements SearchProvider {
 
 	@Override
 	public Completable createIndex(String indexName, JsonObject settings, JsonObject mapping) {
-		createIndexEvents.add(indexName);
+		JsonObject json = new JsonObject();
+		json.put("mapping", mapping);
+		json.put("settings", settings);
+		createIndexEvents.put(indexName, json);
 		return Completable.complete();
 	}
 
@@ -113,7 +115,6 @@ public class DummySearchProvider implements SearchProvider {
 		storeEvents.clear();
 		dropIndexEvents.clear();
 		createIndexEvents.clear();
-		updateMappingEvents.clear();
 	}
 
 	@Override
@@ -143,16 +144,12 @@ public class DummySearchProvider implements SearchProvider {
 		return updateEvents;
 	}
 
-	public List<String> getCreateIndexEvents() {
+	public Map<String, JsonObject> getCreateIndexEvents() {
 		return createIndexEvents;
 	}
 
 	public List<String> getDropIndexEvents() {
 		return dropIndexEvents;
-	}
-
-	public Map<String, JsonObject> getUpdateMappingEvents() {
-		return updateMappingEvents;
 	}
 
 	@Override

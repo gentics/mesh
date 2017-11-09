@@ -247,7 +247,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			}
 			assertThat(dummySearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamily
 					.getUuid()));
-			assertThat(dummySearchProvider()).hasEvents(2 + (nodes.size() * 4), 0, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(2 + (nodes.size() * 4), 0, 0, 0);
 
 			// 4. read the tag again and verify that it was changed
 			TagResponse reloadedTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
@@ -343,7 +343,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 				assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid,
 						schemaContainerVersionUuid, ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
 			}
-			assertThat(dummySearchProvider()).hasEvents(4, 1, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(4, 1, 0, 0);
 
 			tag = boot().tagRoot().findByUuid(uuid);
 			assertNull("The tag should have been deleted", tag);
@@ -405,7 +405,7 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		TagResponse response = call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest));
 		assertEquals("SomeName", response.getName());
 		assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(response.getUuid()));
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 		try (Tx tx = tx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
 		}

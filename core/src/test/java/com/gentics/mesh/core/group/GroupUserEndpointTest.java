@@ -94,7 +94,7 @@ public class GroupUserEndpointTest extends AbstractMeshTest {
 			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), user().getUuid());
 			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), extraUser.getUuid());
 			assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), group().getUuid());
-			assertThat(dummySearchProvider()).hasEvents(3, 0, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(3, 0, 0, 0);
 			dummySearchProvider().clear();
 			assertTrue("User should be member of the group.", group().hasUser(extraUser));
 		}

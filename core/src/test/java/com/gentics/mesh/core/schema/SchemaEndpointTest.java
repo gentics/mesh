@@ -78,9 +78,9 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreate() throws GenericRestException, Exception {
 		SchemaCreateRequest createRequest = FieldUtil.createMinimalValidSchemaCreateRequest();
 
-		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
 		SchemaResponse restSchema = call(() -> client().createSchema(createRequest));
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 		assertThat(dummySearchProvider()).hasStore(SchemaContainer.composeIndexName(), SchemaContainer.composeDocumentId(restSchema.getUuid()));
 		try (Tx tx = tx()) {
 			assertThat(createRequest).matches(restSchema);
@@ -123,11 +123,11 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 	public void testCreateReadDelete() throws GenericRestException, Exception {
 
 		try (Tx tx = tx()) {
-			assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
 			SchemaCreateRequest schema = FieldUtil.createMinimalValidSchemaCreateRequest();
 
 			SchemaResponse restSchema = call(() -> client().createSchema(schema));
-			assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 			assertThat(schema).matches(restSchema);
 			assertElement(boot().meshRoot().getSchemaContainerRoot(), restSchema.getUuid(), true);
 			call(() -> client().findSchemaByUuid(restSchema.getUuid()));
@@ -135,7 +135,7 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 			dummySearchProvider().clear();
 			call(() -> client().deleteSchema(restSchema.getUuid()));
 			// Only schemas which are not in use can be delete and also removed from the index
-			assertThat(dummySearchProvider()).hasEvents(0, 1, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(0, 1, 0, 0);
 		}
 
 	}
@@ -479,7 +479,8 @@ public class SchemaEndpointTest extends AbstractMeshTest implements BasicRestTes
 		}
 		validateSet(set, barrier);
 		failingLatch(latch);
-		Thread.sleep(5000);
+		tx(() -> group().addRole(roles().get("admin")));
+		triggerAndWaitForAllJobs(COMPLETED);
 	}
 
 	@Test

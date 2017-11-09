@@ -330,7 +330,7 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 			// The old indices are dropped -> 2 Deleted
 			// The new indices are created -> 2 Creates
 			// The mappings of the new indices are created -> 2 Mappings
-			assertThat(dummySearchProvider()).hasEvents(2, 2, 2, 2, 2);
+			assertThat(dummySearchProvider()).hasEvents(2, 2, 2, 2);
 		}
 
 		JobListResponse status = call(() -> client().findJobs());
@@ -364,11 +364,11 @@ public class NodeMigrationEndpointTest extends AbstractMeshTest {
 
 		JobListResponse status = call(() -> client().findJobs());
 		assertThat(status).listsAll(COMPLETED).hasInfos(1);
-		assertThat(dummySearchProvider()).hasEvents(size + size + 1, size + size, 2, 2, 2);
-		for (JsonObject mapping : dummySearchProvider().getUpdateMappingEvents().values()) {
-			assertThat(mapping).has("$.node.properties.fields.properties.teaser.fields.raw.type", "string",
+		assertThat(dummySearchProvider()).hasEvents(size + size + 1, size + size, 2, 2);
+		for (JsonObject mapping : dummySearchProvider().getCreateIndexEvents().values()) {
+			assertThat(mapping).has("$.mapping.default.properties.fields.properties.teaser.fields.raw.type", "string",
 					"The mapping should include a raw field for the teaser field");
-			assertThat(mapping).hasNot("$.node.properties.fields.properties.title.fields.raw",
+			assertThat(mapping).hasNot("$.mapping.default.properties.fields.properties.title.fields.raw",
 					"The mapping should not include a raw field for the title field");
 		}
 

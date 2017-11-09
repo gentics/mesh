@@ -76,7 +76,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		assertThat(restGroup).matches(request);
 
 		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), restGroup.getUuid());
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 		dummySearchProvider().clear();
 
 		try (Tx tx = tx()) {
@@ -109,7 +109,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		request.setName(name);
 		GroupResponse restGroup = call(() -> client().updateGroup(uuid, request));
 		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), uuid);
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 
 		try (Tx tx = db().tx()) {
 			assertThat(restGroup).matches(request);
@@ -334,7 +334,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		GroupResponse restGroup = call(() -> client().updateGroup(groupUuid, request));
 		assertThat(dummySearchProvider()).hasStore(Group.composeIndexName(), groupUuid);
 		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), userUuid());
-		assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertThat(restGroup).matches(request);
@@ -446,7 +446,7 @@ public class GroupEndpointTest extends AbstractMeshTest implements BasicRestTest
 		call(() -> client().deleteGroup(groupUuid()));
 		assertThat(dummySearchProvider()).hasDelete(Group.composeIndexName(), groupUuid());
 		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), userUuid());
-		assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 1, 0, 0);
 
 		try (Tx tx = tx()) {
 			assertElement(boot().groupRoot(), groupUuid(), false);

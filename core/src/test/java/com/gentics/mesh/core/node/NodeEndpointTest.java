@@ -1580,7 +1580,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid,
 				ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "en"));
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 
 		// 4. Assert that new version 1.1 was created. (1.0 was the published 0.1 draft)
 		assertThat(restNode).as("update response").isNotNull().hasLanguage("en").hasVersion("1.1").hasStringField("slug", newSlug).hasStringField(
@@ -1637,7 +1637,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid,
 				ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(uuid, "de"));
 
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 	}
 
 	@Test
@@ -1787,7 +1787,7 @@ public class NodeEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 			assertElement(meshRoot().getNodeRoot(), uuid, false);
 			// Delete Events after node delete. We expect 4 since both languages have draft and publish version.
-			assertThat(dummySearchProvider()).hasEvents(0, 4, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(0, 4, 0, 0);
 		}
 	}
 

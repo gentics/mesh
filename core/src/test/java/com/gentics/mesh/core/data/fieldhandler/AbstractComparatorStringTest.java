@@ -80,11 +80,12 @@ public abstract class AbstractComparatorStringTest<C extends FieldSchemaContaine
 		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty(REQUIRED_KEY, true);
 		assertThat(changes.get(0).getProperties()).hasSize(2);
 
-		// addRaw flag:
+		// index options:
 		fieldB.setSearchIndex(IndexOptionHelper.getRawFieldOption());
 		changes = getComparator().diff(containerA, containerB);
 		assertThat(changes).hasSize(1);
-		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty(REQUIRED_KEY, true).hasProperty(INDEX_OPTIONS_KEY, IndexOptionHelper.getRawFieldOption());
+		assertThat(changes.get(0)).is(UPDATEFIELD).forField("test").hasProperty(REQUIRED_KEY, true).hasProperty(INDEX_OPTIONS_KEY, IndexOptionHelper
+				.getRawFieldOption().encode());
 		assertThat(changes.get(0).getProperties()).hasSize(3);
 
 		// allow property:
