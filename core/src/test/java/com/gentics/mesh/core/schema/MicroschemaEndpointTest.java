@@ -43,7 +43,6 @@ import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaResponse;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaUpdateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
-import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.Microschema;
 import com.gentics.mesh.core.rest.schema.impl.MicroschemaReferenceImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
@@ -343,7 +342,7 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 			nodeCreateRequest.getFields().put("vcardtest", micronodeField);
 			nodeCreateRequest.setSchema(new SchemaReferenceImpl().setName("test"));
 			nodeCreateRequest.setParentNodeUuid(project().getBaseNode().getUuid());
-			NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 
 			// 4. Try to delete the microschema
 			call(() -> client().deleteMicroschema(microschemaContainer.getUuid()), BAD_REQUEST, "microschema_delete_still_in_use",
@@ -351,14 +350,6 @@ public class MicroschemaEndpointTest extends AbstractMeshTest implements BasicRe
 
 			MicroschemaContainer reloaded = boot().microschemaContainerRoot().findByUuid(microschemaContainer.getUuid());
 			assertNotNull("The microschema should not have been deleted.", reloaded);
-			
-			// 5. Delete the newly created node
-			call(() -> client().deleteNode(PROJECT_NAME, nodeResponse.getUuid()));
-			
-			// 6. Attempt to delete the microschema now
-			call(() -> client().deleteMicroschema(microschemaContainer.getUuid()));
-			MicroschemaContainer searched = boot().microschemaContainerRoot().findByUuid(microschemaContainer.getUuid());
-			assertNull("The microschema should have been deleted.", searched);
 		}
 	}
 
