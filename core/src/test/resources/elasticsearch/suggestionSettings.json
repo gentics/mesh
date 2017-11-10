@@ -3,17 +3,31 @@
     "filter": {
       "autocomplete_filter": {
         "type": "edge_ngram",
-        "min_gram": 1,
-        "max_gram": 20
+        "min_gram": 3,
+        "max_gram": 3
+      }
+    },
+    "tokenizer": {
+      "my_edge_ngram_tokenizer": {
+        "type": "edgeNGram",
+        "min_gram": "3",
+        "max_gram": "3",
+        "token_chars": [
+          "letter",
+          "digit"
+        ]
       }
     },
     "analyzer": {
-      "autocomplete": {
+      "suggestor": {
         "type": "custom",
         "tokenizer": "standard",
+        "char_filter": [
+          "html_strip"
+        ],
         "filter": [
-          "lowercase",
-          "autocomplete_filter"
+          "autocomplete_filter",
+          "lowercase"
         ]
       }
     }

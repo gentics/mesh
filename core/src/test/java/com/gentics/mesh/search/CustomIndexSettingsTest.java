@@ -10,7 +10,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
 import org.junit.Test;
 
@@ -98,6 +100,30 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 				response3.getVersion());
 	}
 
+	/**
+	 * Verify that the schema gets updated if only the index settings of a field have been altered.
+	 */
+	@Test
+	public void testSchemaFieldDiff() {
+		SchemaCreateRequest request = new SchemaCreateRequest();
+		request.setName("settingsTest");
+		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(IndexOptionHelper.getRawFieldOption()));
+		SchemaResponse response = call(() -> client().createSchema(request));
+
+		// Update the schema again with no alteration
+		SchemaUpdateRequest updateRequest = JsonUtil.readValue(request.toJson(), SchemaUpdateRequest.class);
+		call(() -> client().updateSchema(response.getUuid(), updateRequest));
+		SchemaResponse response2 = call(() -> client().findSchemaByUuid(response.getUuid()));
+		assertEquals("No new version should have been created.", response.getVersion(), response2.getVersion());
+
+		// Update the schema again and remove the raw field
+		updateRequest.getField("text").setElasticsearch(new JsonObject());
+		call(() -> client().updateSchema(response.getUuid(), updateRequest));
+		SchemaResponse response3 = call(() -> client().findSchemaByUuid(response.getUuid()));
+		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response.getVersion(),
+				response3.getVersion());
+	}
+
 	@Test
 	public void testSchemaValidationError() {
 		SchemaCreateRequest schema = new SchemaCreateRequest();
@@ -126,21 +152,31 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		JsonObject elasticsearchSettings = getJson("/elasticsearch/suggestionSettings.json");
 		schema.setElasticsearch(elasticsearchSettings);
 
-		JsonObject fieldSettings = new JsonObject();
-		fieldSettings.put("auto", new JsonObject().put("type", "string").put("analyzer", "autocomplete").put("search_analyzer", "standard"));
+		JsonObject fieldSettings = getJson("/elasticsearch/suggestionFieldMapping.json");
 		schema.addField(FieldUtil.createStringFieldSchema("content").setElasticsearch(fieldSettings));
+
+		SchemaValidationResponse validationResponse = call(() -> client().validateSchema(schema));
+		System.out.println(validationResponse.toJson());
 
 		SchemaResponse response = call(() -> client().createSchema(schema));
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
 
-		// 2. Create node
-		NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
-		nodeCreateRequest.setParentNodeUuid(tx(() -> project().getBaseNode().getUuid()));
-		nodeCreateRequest.setLanguage("en");
-		nodeCreateRequest.setSchemaName("customIndexTest");
-		nodeCreateRequest.getFields().put("content", FieldUtil.createStringField("some text with more content you can poke a stick at"));
-		call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+		// 2. Create nodes
+		Set<String> contents = new HashSet<>();
+		String prefix = "This is<pre>another set of <strong>important</strong>content ";
+		contents.add(prefix + "s<b>om</b>e text with more content you can poke a stick at");
+		contents.add(prefix + "some <strong>more</strong> content you can poke a stick at too");
+		contents.add(prefix + "someth<strong>ing</strong> completely different");
+		contents.add(prefix + "some<strong>what</strong> strange content");
 
+		for (String content : contents) {
+			NodeCreateRequest nodeCreateRequest = new NodeCreateRequest();
+			nodeCreateRequest.setParentNodeUuid(tx(() -> project().getBaseNode().getUuid()));
+			nodeCreateRequest.setLanguage("en");
+			nodeCreateRequest.setSchemaName("customIndexTest");
+			nodeCreateRequest.getFields().put("content", FieldUtil.createStringField(content));
+			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
+		}
 		// 3. Invoke search
 		String suggestionQuery = getText("/elasticsearch/suggestionQuery.es");
 		JsonObject searchResult = call(() -> client().searchNodesRaw(PROJECT_NAME, suggestionQuery));

@@ -1,0 +1,6 @@
+{
+  "suggest" : {
+    "type" : "completion",
+    "analyzer": "suggestor"
+  }
+}

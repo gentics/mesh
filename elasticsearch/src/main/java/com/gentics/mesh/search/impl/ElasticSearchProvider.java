@@ -94,12 +94,12 @@ public class ElasticSearchProvider implements SearchProvider {
 		tokenizer.put("max_gram", "3");
 
 		JsonObject trigramsAnalyzer = new JsonObject();
-		trigramsAnalyzer.put("tokenizer", "my_ngram_tokenizer");
+		trigramsAnalyzer.put("tokenizer", "mesh_default_ngram_tokenizer");
 		trigramsAnalyzer.put("filter", new JsonArray().add("lowercase"));
 
 		JsonObject analysis = new JsonObject();
 		analysis.put("analyzer", new JsonObject().put("trigrams", trigramsAnalyzer));
-		analysis.put("tokenizer", new JsonObject().put("my_ngram_tokenizer", tokenizer));
+		analysis.put("tokenizer", new JsonObject().put("mesh_default_ngram_tokenizer", tokenizer));
 		return new JsonObject().put("analysis", analysis);
 
 	}
