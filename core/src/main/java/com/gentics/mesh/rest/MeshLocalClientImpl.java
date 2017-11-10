@@ -79,6 +79,7 @@ import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.core.verticle.admin.AdminHandler;
 import com.gentics.mesh.core.verticle.auth.AuthenticationRestHandler;
 import com.gentics.mesh.core.verticle.group.GroupCrudHandler;
@@ -1379,12 +1380,12 @@ public class MeshLocalClientImpl implements MeshRestClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> validateSchema(Schema schema) {
+	public MeshRequest<SchemaValidationResponse> validateSchema(Schema schema) {
 		return null;
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> validateMicroschema(Microschema microschema) {
+	public MeshRequest<SchemaValidationResponse> validateMicroschema(Microschema microschema) {
 		return null;
 	}
 

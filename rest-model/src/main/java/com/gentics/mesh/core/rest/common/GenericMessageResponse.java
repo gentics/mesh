@@ -51,11 +51,6 @@ public class GenericMessageResponse implements RestModel {
 		this.internalMessage = internalMessage;
 	}
 
-	public GenericMessageResponse(String message, String internalMessage, Map<String, Object> properties) {
-		this(message, internalMessage);
-		this.properties = properties;
-	}
-
 	/**
 	 * Return the message string.
 	 * 

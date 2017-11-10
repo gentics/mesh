@@ -26,16 +26,12 @@ public interface SearchProvider {
 	void refreshIndex(String... indices);
 
 	/**
-	 * Create a search index with the given name.
+	 * Create a search index with index information.
 	 * 
-	 * @param indexName
-	 *            Index name
-	 * @param indexSettings
-	 *            Index settings (e.g.: tokenizer, analyzer)
-	 * @param mapping
-	 *            Index mapping
+	 * @param info
+	 *            Index information which includes index name, mappings and settings.
 	 */
-	Completable createIndex(String indexName, JsonObject indexSettings, JsonObject mapping);
+	Completable createIndex(IndexInfo info);
 
 	// TODO add a good response instead of void. We need this in order to handle correct logging?
 	/**
@@ -204,13 +200,14 @@ public interface SearchProvider {
 	JsonObject getDefaultIndexSettings();
 
 	/**
-	 * Create the index settings and use the given settings and mappings in order to extend the default settings.
+	 * Create the index settings and use the given index information in order to extend the default settings.
 	 * 
-	 * @param settings
-	 * @param mappings
+	 * @param info
 	 * @return
 	 */
-	default JsonObject createIndexSettings(JsonObject settings, JsonObject mappings) {
+	default JsonObject createIndexSettings(IndexInfo info) {
+		JsonObject settings = info.getIndexSettings();
+		JsonObject mappings = info.getIndexMappings();
 		// Prepare the json for the request
 		JsonObject json = new JsonObject();
 		JsonObject fullSettings = new JsonObject();
@@ -221,16 +218,6 @@ public interface SearchProvider {
 		json.put("settings", fullSettings);
 		json.put("mappings", mappings);
 		return json;
-	}
-
-	/**
-	 * Create the index using the provided information.
-	 * 
-	 * @param info
-	 * @return
-	 */
-	default Completable createIndex(IndexInfo info) {
-		return createIndex(info.getIndexName(), info.getIndexSettings(), info.getIndexMappings());
 	}
 
 	/**

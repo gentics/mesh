@@ -124,8 +124,9 @@ public class FailureHandler implements Handler<RoutingContext> {
 	 * Try to translate the nested i18n message key.
 	 * 
 	 * @param error
+	 * @param rc
 	 */
-	private void translateMessage(AbstractRestException error, RoutingContext rc) {
+	private static void translateMessage(AbstractRestException error, RoutingContext rc) {
 		String i18nMsg = error.getI18nKey();
 		try {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);

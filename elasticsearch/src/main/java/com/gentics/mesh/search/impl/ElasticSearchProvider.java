@@ -1,5 +1,7 @@
 package com.gentics.mesh.search.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.elasticsearch.client.Requests.refreshRequest;
 
 import java.io.File;
@@ -225,7 +227,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable createIndex(String indexName, JsonObject settings, JsonObject mappings) {
+	public Completable createIndex(IndexInfo info) {
+		String indexName = info.getIndexName();
 		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
 		return Completable.create(sub -> {
 			if (log.isDebugEnabled()) {
@@ -233,7 +236,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 			CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
 
-			JsonObject json = createIndexSettings(settings, mappings);
+			JsonObject json = createIndexSettings(info);
 			createIndexRequestBuilder.setSource(json.encodePrettily());
 			createIndexRequestBuilder.execute(new ActionListener<CreateIndexResponse>() {
 
@@ -335,8 +338,8 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (ignoreMissingDocumentError && e instanceof DocumentMissingException) {
 						sub.onCompleted();
 					} else {
-						log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis()
-								- start) + "[ms]", e);
+						log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration "
+								+ (System.currentTimeMillis() - start) + "[ms]", e);
 						sub.onError(e);
 					}
 				}
@@ -367,16 +370,16 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onResponse(BulkResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration " + (System
-								.currentTimeMillis() - start) + "[ms]");
+						log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration "
+								+ (System.currentTimeMillis() - start) + "[ms]");
 					}
 					sub.onCompleted();
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis()
-							- start) + "[ms]", e);
+					log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration "
+							+ (System.currentTimeMillis() - start) + "[ms]", e);
 					sub.onError(e);
 				}
 
@@ -521,10 +524,9 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	@Override
 	public Completable validateCreateViaTemplate(IndexInfo info) {
-
 		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
 		return Completable.create(sub -> {
-			JsonObject json = createIndexSettings(info.getIndexSettings(), info.getIndexMappings());
+			JsonObject json = createIndexSettings(info);
 			if (log.isDebugEnabled()) {
 				log.debug("Validating index configuration {" + json.encodePrettily() + "}");
 			}
@@ -532,8 +534,8 @@ public class ElasticSearchProvider implements SearchProvider {
 			String randomName = info.getIndexName() + UUIDUtil.randomUUID();
 			String templateName = randomName.toLowerCase();
 			json.put("template", templateName);
-			PutIndexTemplateRequestBuilder builder = getSearchClient().admin().indices().preparePutTemplate(templateName).setSource(json
-					.encodePrettily());
+			PutIndexTemplateRequestBuilder builder = getSearchClient().admin().indices().preparePutTemplate(templateName)
+					.setSource(json.encodePrettily());
 
 			builder.execute(new ActionListener<PutIndexTemplateResponse>() {
 				@Override
@@ -547,7 +549,7 @@ public class ElasticSearchProvider implements SearchProvider {
 
 				@Override
 				public void onFailure(Throwable e) {
-					sub.onError(e);
+					sub.onError(error(BAD_REQUEST, "schema_error_index_validation", e.getMessage()));
 				}
 
 			});
@@ -566,6 +568,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T> T getClient() {
 		return (T) client;
 	}

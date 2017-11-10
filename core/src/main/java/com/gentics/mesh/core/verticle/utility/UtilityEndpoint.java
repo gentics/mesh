@@ -51,7 +51,7 @@ public class UtilityEndpoint extends AbstractEndpoint {
 		endpoint.method(POST);
 		endpoint.description("Validate the posted schema and report errors.");
 		endpoint.exampleRequest(schemaExamples.getSchemaUpdateRequest());
-		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "The validation message");
+		endpoint.exampleResponse(OK, utilityExamples.createValidationResponse(), "The validation message");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			utilityHandler.validateSchema(ac);
@@ -64,7 +64,7 @@ public class UtilityEndpoint extends AbstractEndpoint {
 		endpoint.method(POST);
 		endpoint.description("Validate the posted microschema and report errors.");
 		endpoint.exampleRequest(microschemaExamples.getGeolocationMicroschemaCreateRequest());
-		endpoint.exampleResponse(OK, miscExamples.createMessageResponse(), "The validation message");
+		endpoint.exampleResponse(OK, utilityExamples.createValidationResponse(), "The validation report");
 		endpoint.handler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			utilityHandler.validateMicroschema(ac);

@@ -10,6 +10,8 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.concurrent.TimeUnit;
+
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshAuthUser;
 import com.gentics.mesh.core.data.Project;
@@ -22,6 +24,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerImpl;
 import com.gentics.mesh.core.data.schema.impl.SchemaContainerVersionImpl;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.rest.schema.SchemaReference;
 import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
@@ -68,15 +71,14 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 	@Override
 	public SchemaContainer create(SchemaModel schema, User creator, String uuid) {
-		schema.validate();
+		validateSchema(schema);
+
 		SchemaContainerImpl container = getGraph().addFramedVertex(SchemaContainerImpl.class);
 		if (uuid != null) {
 			container.setUuid(uuid);
 		}
 		SchemaContainerVersion version = getGraph().addFramedVertex(SchemaContainerVersionImpl.class);
 		container.setLatestVersion(version);
-
-		MeshInternal.get().nodeContainerIndexHandler().validate(schema);
 
 		// set the initial version
 		schema.setVersion("1.0");
@@ -88,6 +90,17 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 		addSchemaContainer(creator, container);
 		return container;
+	}
+
+	public static void validateSchema(SchemaModel schema) {
+		Throwable error = MeshInternal.get().nodeContainerIndexHandler().validate(schema).get(10, TimeUnit.SECONDS);
+		if (error != null) {
+			if (error instanceof GenericRestException) {
+				throw (GenericRestException) error;
+			} else {
+				throw new RuntimeException(error);
+			}
+		}
 	}
 
 	@Override
@@ -151,16 +164,16 @@ public class SchemaContainerRootImpl extends AbstractRootVertex<SchemaContainer>
 
 		// Check whether a container was actually found
 		if (schemaContainer == null) {
-			throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
-					: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
+			throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName,
+					isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
 		}
 		if (schemaVersion == null) {
 			return schemaContainer.getLatestVersion();
 		} else {
 			SchemaContainerVersion foundVersion = schemaContainer.findVersionByRev(schemaVersion);
 			if (foundVersion == null) {
-				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName, isEmpty(schemaUuid) ? "-"
-						: schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
+				throw error(BAD_REQUEST, "error_schema_reference_not_found", isEmpty(schemaName) ? "-" : schemaName,
+						isEmpty(schemaUuid) ? "-" : schemaUuid, schemaVersion == null ? "-" : schemaVersion.toString());
 			} else {
 				return foundVersion;
 			}

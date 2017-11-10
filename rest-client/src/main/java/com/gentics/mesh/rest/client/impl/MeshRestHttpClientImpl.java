@@ -79,6 +79,7 @@ import com.gentics.mesh.core.rest.user.UserPermissionResponse;
 import com.gentics.mesh.core.rest.user.UserResetTokenResponse;
 import com.gentics.mesh.core.rest.user.UserResponse;
 import com.gentics.mesh.core.rest.user.UserUpdateRequest;
+import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.parameter.ImageManipulationParameters;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.ParameterProvider;
@@ -672,13 +673,13 @@ public class MeshRestHttpClientImpl extends AbstractMeshRestHttpClient {
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> validateSchema(Schema schema) {
-		return prepareRequest(POST, "/utilities/validateSchema", GenericMessageResponse.class, schema);
+	public MeshRequest<SchemaValidationResponse> validateSchema(Schema schema) {
+		return prepareRequest(POST, "/utilities/validateSchema", SchemaValidationResponse.class, schema);
 	}
 
 	@Override
-	public MeshRequest<GenericMessageResponse> validateMicroschema(Microschema schema) {
-		return prepareRequest(POST, "/utilities/validateMicroschema", GenericMessageResponse.class, schema);
+	public MeshRequest<SchemaValidationResponse> validateMicroschema(Microschema schema) {
+		return prepareRequest(POST, "/utilities/validateMicroschema", SchemaValidationResponse.class, schema);
 	}
 
 	@Override

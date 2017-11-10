@@ -6,18 +6,23 @@ import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
 import com.gentics.mesh.core.rest.schema.impl.SchemaUpdateRequest;
+import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
+import com.gentics.mesh.core.rest.validation.ValidationStatus;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
@@ -81,16 +86,16 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 
 		SchemaResponse response2 = call(() -> client().findSchemaByUuid(response.getUuid()));
 		assertEquals("value2", response2.getElasticsearch().getString("somebogus"));
-		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response.getVersion(), response2
-				.getVersion());
+		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response.getVersion(),
+				response2.getVersion());
 
 		updateRequest.setElasticsearch(new JsonObject());
 		call(() -> client().updateSchema(response.getUuid(), updateRequest));
 
 		SchemaResponse response3 = call(() -> client().findSchemaByUuid(response.getUuid()));
 		assertTrue("The options should be empty", new JsonObject().equals(response3.getElasticsearch()));
-		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response2.getVersion(), response3
-				.getVersion());
+		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response2.getVersion(),
+				response3.getVersion());
 	}
 
 	@Test
@@ -99,8 +104,17 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		schema.setName("settingsTest");
 		schema.setElasticsearch(new JsonObject().put("somebogus", "value"));
 		schema.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(new JsonObject().put("bogus", "value")));
-		call(() -> client().validateSchema(schema), BAD_REQUEST, "schema_error_index_validation",
+
+		SchemaValidationResponse response = call(() -> client().validateSchema(schema));
+
+		assertNotNull(response.getElasticsearch());
+		assertEquals(ValidationStatus.INVALID, response.getStatus());
+
+		String message = I18NUtil.get(Locale.ENGLISH, "schema_error_index_validation",
 				"Failed to parse mapping [default]: illegal field [bogus], only fields can be specified inside fields");
+		assertEquals(message, response.getMessage().getMessage());
+		assertEquals("schema_error_index_validation", response.getMessage().getInternalMessage());
+
 	}
 
 	@Test
@@ -139,7 +153,9 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		SchemaCreateRequest schema = new SchemaCreateRequest();
 		schema.setName("settingsTest");
 		schema.setElasticsearch(new JsonObject().put("somebogus", "value"));
-		call(() -> client().validateSchema(schema));
+		SchemaValidationResponse response = call(() -> client().validateSchema(schema));
+		assertNotNull(response.getElasticsearch());
+		assertEquals(ValidationStatus.VALID, response.getStatus());
 	}
 
 	@Test
