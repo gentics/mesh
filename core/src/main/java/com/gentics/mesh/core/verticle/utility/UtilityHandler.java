@@ -16,7 +16,6 @@ import com.gentics.mesh.core.rest.schema.impl.SchemaModelImpl;
 import com.gentics.mesh.core.rest.validation.SchemaValidationResponse;
 import com.gentics.mesh.core.rest.validation.ValidationStatus;
 import com.gentics.mesh.core.verticle.handler.AbstractHandler;
-import com.gentics.mesh.etc.FailureHandler;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.search.index.microschema.MicroschemaContainerIndexHandler;
