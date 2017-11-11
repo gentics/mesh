@@ -54,7 +54,7 @@ public class UtilityHandler extends AbstractHandler {
 	/**
 	 * Handle a link resolve request.
 	 * 
-	 * @param rc
+	 * @param ac
 	 */
 	public void handleResolveLinks(InternalActionContext ac) {
 		db.operateTx(() -> {
