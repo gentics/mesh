@@ -160,7 +160,7 @@ node("docker") {
 								
 								// server
 								sh "rm server/target/*sources.jar"
-								sh "cd server ; docker build -t server/mesh:latest -t gentics/mesh:" + version + " . "
+								sh "cd server ; docker build -t gentics/mesh:latest -t gentics/mesh:" + version + " . "
 							} else {
 								echo "Docker build skipped.."
 							}
