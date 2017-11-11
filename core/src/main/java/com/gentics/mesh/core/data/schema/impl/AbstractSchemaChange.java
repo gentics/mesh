@@ -2,6 +2,9 @@ package com.gentics.mesh.core.data.schema.impl;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_CHANGE;
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_SCHEMA_CONTAINER;
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
+import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,6 +17,8 @@ import com.gentics.mesh.core.rest.schema.FieldSchemaContainer;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.util.Tuple;
+
+import io.vertx.core.json.JsonObject;
 
 /**
  * @see SchemaChange
@@ -102,6 +107,9 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 		if (value instanceof List) {
 			value = ((List) value).toArray();
 		}
+		if (value instanceof JsonObject) {
+			value = ((JsonObject) value).encode();
+		}
 		setProperty(REST_PROPERTY_PREFIX_KEY + key, value);
 	}
 
@@ -113,6 +121,26 @@ public abstract class AbstractSchemaChange<T extends FieldSchemaContainer> exten
 	@Override
 	public <R> Map<String, R> getRestProperties() {
 		return getProperties(REST_PROPERTY_PREFIX_KEY);
+	}
+
+	@Override
+	public JsonObject getIndexOptions() {
+		Object obj = getRestProperty(ELASTICSEARCH_KEY);
+		if (obj != null) {
+			if (obj instanceof String) {
+				return new JsonObject((String) obj);
+			} else if (obj instanceof JsonObject) {
+				return (JsonObject) obj;
+			} else {
+				throw error(INTERNAL_SERVER_ERROR, "Type was not expected {" + obj.getClass().getName() + "}");
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public void setIndexOptions(JsonObject options) {
+		setRestProperty(ELASTICSEARCH_KEY, options.encode());
 	}
 
 	@Override

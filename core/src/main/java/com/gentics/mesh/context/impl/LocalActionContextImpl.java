@@ -130,7 +130,7 @@ public class LocalActionContextImpl<T> extends AbstractInternalActionContext imp
 	}
 
 	@Override
-	public void send(String body, HttpResponseStatus status) {
+	public void send(String body, HttpResponseStatus status, String contentType) {
 		this.responseBody = body;
 		this.responseStatus = status;
 		T model = JsonUtil.readValue(responseBody, classOfResponse);

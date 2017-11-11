@@ -1,6 +1,5 @@
 package com.gentics.mesh.context.impl;
 
-import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 
 import java.util.Locale;
@@ -28,7 +27,7 @@ import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.Session;
 
 /**
- * Vertx specific routing context based action context implementation.
+ * Vert.x specific routing context based action context implementation.
  */
 public class InternalRoutingActionContextImpl extends AbstractInternalActionContext {
 
@@ -72,8 +71,8 @@ public class InternalRoutingActionContextImpl extends AbstractInternalActionCont
 	}
 
 	@Override
-	public void send(String body, HttpResponseStatus status) {
-		rc.response().putHeader(HttpHeaders.CONTENT_TYPE, APPLICATION_JSON_UTF8);
+	public void send(String body, HttpResponseStatus status, String contentType) {
+		rc.response().putHeader(HttpHeaders.CONTENT_TYPE, contentType);
 		rc.response().putHeader(HttpHeaders.CACHE_CONTROL, "no-cache");
 		rc.response().setStatusCode(status.code()).end(body);
 	}

@@ -112,9 +112,6 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 		vcardListFieldSchema.setAllowedSchemas(new String[] { "vcard" });
 		schema.addField(vcardListFieldSchema);
 
-		// Set the mapping for the schema
-		meshDagger().nodeContainerIndexHandler().updateNodeIndexMapping(schema).await();
-
 		MicronodeGraphFieldList vcardListField = node.getLatestDraftFieldContainer(english()).createMicronodeFieldList("vcardlist");
 		for (Tuple<String, String> testdata : Arrays.asList(Tuple.tuple("Mickey", "Mouse"), Tuple.tuple("Donald", "Duck"))) {
 			Micronode micronode = vcardListField.createMicronode();
@@ -140,9 +137,6 @@ public abstract class AbstractNodeSearchEndpointTest extends AbstractMeshTest {
 		nodeListFieldSchema.setListType("node");
 		nodeListFieldSchema.setAllowedSchemas(schema.getName());
 		schema.addField(nodeListFieldSchema);
-
-		// Set the mapping for the schema
-		meshDagger().nodeContainerIndexHandler().updateNodeIndexMapping(schema).await();
 
 		// create a non-empty list for the english version
 		NodeGraphFieldList nodeListField = node.getLatestDraftFieldContainer(english()).createNodeList("nodelist");

@@ -30,5 +30,9 @@ public class ReleaseSchemaInfo extends AbstractReleaseSchemaInfo<SchemaReference
 		return this;
 	}
 
+	@Override
+	public String toString() {
+		return "Name:" + getName() + "@" + getVersion() + "#" + getUuid();
+	}
 
 }

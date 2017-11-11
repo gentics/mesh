@@ -2,6 +2,7 @@ package com.gentics.mesh.core.data.schema.handler;
 
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.CONTAINER_FLAG_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.DISPLAY_FIELD_NAME_KEY;
+import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.ELASTICSEARCH_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.SEGMENT_FIELD_KEY;
 import static com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel.URLFIELDS_KEY;
 
@@ -42,6 +43,9 @@ public class SchemaComparator extends AbstractFieldSchemaContainerComparator<Sch
 
 		// container flag
 		compareAndAddSchemaProperty(changes, CONTAINER_FLAG_KEY, schemaA.isContainer(), schemaB.isContainer(), Schema.class);
+
+		// indexOptions
+		compareAndAddSchemaProperty(changes, ELASTICSEARCH_KEY, schemaA.getElasticsearch(), schemaB.getElasticsearch(), Schema.class);
 
 		return changes;
 	}

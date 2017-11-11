@@ -77,8 +77,8 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	}
 
 	@Override
-	public SearchQueueBatch createIndex(String indexName, String indexType, Class<?> elementClass) {
-		CreateIndexEntry entry = new CreateIndexEntryImpl(registry.getForClass(elementClass), indexName, indexType);
+	public SearchQueueBatch createIndex(String indexName, Class<?> elementClass) {
+		CreateIndexEntry entry = new CreateIndexEntryImpl(registry.getForClass(elementClass), indexName);
 		addEntry(entry);
 		return this;
 	}
@@ -86,8 +86,7 @@ public class SearchQueueBatchImpl implements SearchQueueBatch {
 	@Override
 	public SearchQueueBatch createNodeIndex(String projectUuid, String releaseUuid, String versionUuid, ContainerType type, Schema schema) {
 		String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, versionUuid, type);
-		String indexType = NodeGraphFieldContainer.composeIndexType();
-		CreateIndexEntry entry = new CreateIndexEntryImpl(nodeContainerIndexHandler, indexName, indexType);
+		CreateIndexEntry entry = new CreateIndexEntryImpl(nodeContainerIndexHandler, indexName);
 		entry.setSchema(schema);
 		addEntry(entry);
 		return this;

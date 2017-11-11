@@ -10,6 +10,8 @@ import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * @see Schema
  */
@@ -24,12 +26,16 @@ public class SchemaModelImpl implements SchemaModel {
 	private String segmentField;
 
 	@JsonProperty(required = false)
-	@JsonPropertyDescription("Names of the fields which provide a compete url to the node. This property can be used to define custom urls for certain nodes. The webroot API will try to locate the node via it's segment field and via the specified url fields.")
-	private List<String> urlFields;
-
-	@JsonProperty(required = false)
 	@JsonPropertyDescription("Flag which indicates whether nodes which use this schema store additional child nodes.")
 	private boolean container = false;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters.")
+	private JsonObject elasticsearch;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Names of the fields which provide a compete url to the node. This property can be used to define custom urls for certain nodes. The webroot API will try to locate the node via it's segment field and via the specified url fields.")
+	private List<String> urlFields;
 
 	/**
 	 * Create a new schema with the given name.
@@ -144,6 +150,17 @@ public class SchemaModelImpl implements SchemaModel {
 	@Override
 	public SchemaModelImpl setDisplayField(String displayField) {
 		this.displayField = displayField;
+		return this;
+	}
+
+	@Override
+	public JsonObject getElasticsearch() {
+		return elasticsearch;
+	}
+
+	@Override
+	public SchemaModelImpl setElasticsearch(JsonObject elasticsearch) {
+		this.elasticsearch = elasticsearch;
 		return this;
 	}
 

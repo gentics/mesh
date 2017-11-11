@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.error.Errors;
 import com.gentics.mesh.core.rest.node.FieldMap;
-import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.path.Path;
 import com.gentics.mesh.util.Tuple;
 import com.gentics.mesh.util.VersionNumber;
@@ -94,29 +93,6 @@ public interface NodeGraphFieldContainer extends GraphFieldContainer, EditorTrac
 	 */
 	default String getIndexName(String projectUuid, String releaseUuid, ContainerType type) {
 		return composeIndexName(projectUuid, releaseUuid, getSchemaContainerVersion().getUuid(), type);
-	}
-
-	/**
-	 * Compose the index type
-	 * <p>
-	 * <ul>
-	 * <li>Index Type: node</li>
-	 * </ul>
-	 * <p>
-	 * 
-	 * @return
-	 */
-	static String composeIndexType() {
-		return Node.TYPE;
-	}
-
-	/**
-	 * Return the index type of the container.
-	 * 
-	 * @return
-	 */
-	default String getIndexType() {
-		return composeIndexType();
 	}
 
 	/**

@@ -477,11 +477,11 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 			for (Node node : project().getNodeRoot().findAllIt()) {
 				expectedCount += node.getGraphFieldContainerCount();
 			}
-			expectedCount += meshRoot().getTagRoot().findAll().size();
-			expectedCount += project.getTagFamilyRoot().findAll().size();
+			expectedCount += meshRoot().getTagRoot().computeCount();
+			expectedCount += project.getTagFamilyRoot().computeCount();
 
-			assertThat(dummySearchProvider()).hasStore(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
-			assertThat(dummySearchProvider()).hasEvents(expectedCount, 0, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasStore(Project.composeIndexName(), Project.composeDocumentId(uuid));
+			assertThat(dummySearchProvider()).hasEvents(expectedCount, 0, 0, 0);
 
 			Project reloadedProject = meshRoot().getProjectRoot().findByUuid(uuid);
 			assertEquals(newName, reloadedProject.getName());
@@ -547,13 +547,13 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		call(() -> client().deleteProject(uuid));
 
 		// 3. Assert that the indices have been dropped and the project has been deleted from the project index
-		assertThat(dummySearchProvider()).hasDelete(Project.composeIndexName(), Project.composeIndexType(), Project.composeDocumentId(uuid));
+		assertThat(dummySearchProvider()).hasDelete(Project.composeIndexName(), Project.composeDocumentId(uuid));
 		assertThat(dummySearchProvider()).hasDrop(TagFamily.composeIndexName(uuid));
 		assertThat(dummySearchProvider()).hasDrop(Tag.composeIndexName(uuid));
 		for (String index : indices) {
 			assertThat(dummySearchProvider()).hasDrop(index);
 		}
-		assertThat(dummySearchProvider()).hasEvents(0, 1, 2 + indices.size(), 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(0, 1, 2 + indices.size(), 0);
 
 		try (Tx tx = tx()) {
 			assertElement(meshRoot().getProjectRoot(), uuid, false);
@@ -572,7 +572,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		}
 
 		call(() -> client().deleteProject(uuid), FORBIDDEN, "error_missing_perm", uuid);
-		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasEvents(0, 0, 0, 0);
 
 		try (Tx tx = tx()) {
 			Project project = meshRoot().getProjectRoot().findByUuid(uuid);
@@ -633,7 +633,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 	@Override
 	public void testCreateMultithreaded() throws Exception {
 		int nJobs = 100;
-		int nProjectsBefore = meshRoot().getProjectRoot().findAll().size();
+		long nProjectsBefore = meshRoot().getProjectRoot().computeCount();
 
 		Set<MeshResponse<?>> set = new HashSet<>();
 		for (int i = 0; i < nJobs; i++) {
@@ -647,7 +647,7 @@ public class ProjectEndpointTest extends AbstractMeshTest implements BasicRestTe
 		try (Tx tx = tx()) {
 			long n = StreamSupport.stream(tx.getGraph().getVertices(PolymorphicTypeResolver.TYPE_RESOLUTION_KEY, ProjectImpl.class.getName())
 					.spliterator(), true).count();
-			int nProjectsAfter = meshRoot().getProjectRoot().findAll().size();
+			long nProjectsAfter = meshRoot().getProjectRoot().computeCount();
 			assertEquals(nProjectsBefore + nJobs, nProjectsAfter);
 			assertEquals(nProjectsBefore + nJobs, n);
 		}

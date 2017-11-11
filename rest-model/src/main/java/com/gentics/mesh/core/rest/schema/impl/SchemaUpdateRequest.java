@@ -9,6 +9,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 
+import io.vertx.core.json.JsonObject;
+
 public class SchemaUpdateRequest implements SchemaModel {
 
 	@JsonProperty(required = false)
@@ -38,6 +40,10 @@ public class SchemaUpdateRequest implements SchemaModel {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the schema.")
 	private String name;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Additional elasticsearch index configuration. This can be used to setup custom analyzers and filters.")
+	private JsonObject elasticsearch;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of schema fields")
@@ -128,6 +134,17 @@ public class SchemaUpdateRequest implements SchemaModel {
 	@Override
 	public SchemaUpdateRequest setDisplayField(String displayField) {
 		this.displayField = displayField;
+		return this;
+	}
+
+	@Override
+	public JsonObject getElasticsearch() {
+		return elasticsearch;
+	}
+
+	@Override
+	public SchemaUpdateRequest setElasticsearch(JsonObject elasticsearch) {
+		this.elasticsearch = elasticsearch;
 		return this;
 	}
 

@@ -14,6 +14,7 @@ public class NotModifiedException extends RuntimeException {
 
 	@Override
 	public synchronized Throwable fillInStackTrace() {
+		// Don't setup the stacktrace. We don't need it.
 		return this;
 	}
 }

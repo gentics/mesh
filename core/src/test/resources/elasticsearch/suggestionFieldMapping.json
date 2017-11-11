@@ -1,0 +1,6 @@
+{
+  "suggest" : {
+    "type" : "string",
+    "analyzer": "suggest"
+  }
+}

@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.Group;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -25,6 +26,9 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 
 	@Inject
 	GroupTransformer transformer;
+
+	@Inject
+	GroupMappingProvider mappingProvider;
 
 	@Inject
 	public GroupIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -42,13 +46,15 @@ public class GroupIndexHandler extends AbstractIndexHandler<Group> {
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
-		return Group.composeIndexType();
+	public GroupMappingProvider getMappingProvider() {
+		return mappingProvider;
 	}
 
 	@Override
-	public Map<String, String> getIndices() {
-		return Collections.singletonMap(Group.TYPE, Group.TYPE);
+	public Map<String, IndexInfo> getIndices() {
+		String indexName = Group.composeIndexName();
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		return Collections.singletonMap(indexName, info);
 	}
 
 	@Override

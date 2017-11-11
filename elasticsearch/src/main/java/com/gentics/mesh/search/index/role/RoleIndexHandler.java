@@ -13,8 +13,10 @@ import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.search.index.MappingProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
 
 /**
@@ -25,6 +27,9 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	@Inject
 	RoleTransformer transformer;
+
+	@Inject
+	RoleMappingProvider mappingProvider;
 
 	@Inject
 	public RoleIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
@@ -47,18 +52,20 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
-		return Role.composeIndexType();
-	}
-
-	@Override
 	public RoleTransformer getTransformer() {
 		return transformer;
 	}
 
 	@Override
-	public Map<String, String> getIndices() {
-		return Collections.singletonMap(Role.TYPE, Role.TYPE);
+	protected MappingProvider getMappingProvider() {
+		return mappingProvider;
+	}
+
+	@Override
+	public Map<String, IndexInfo> getIndices() {
+		String indexName = Role.composeIndexName();
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		return Collections.singletonMap(indexName, info);
 	}
 
 	@Override
@@ -68,8 +75,7 @@ public class RoleIndexHandler extends AbstractIndexHandler<Role> {
 
 	@Override
 	public RootVertex<Role> getRootVertex() {
-		return boot.meshRoot()
-				.getRoleRoot();
+		return boot.meshRoot().getRoleRoot();
 	}
 
 }

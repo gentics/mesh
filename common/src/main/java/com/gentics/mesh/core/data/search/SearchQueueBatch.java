@@ -29,13 +29,11 @@ public interface SearchQueueBatch {
 	 * 
 	 * @param indexName
 	 *            Name of the index which should be created
-	 * @param indexType
-	 *            Type of the index which should be created
 	 * @param elementClass
 	 *            Class of the elements that are stored in the index. This value is used to determine the correct index handler when creating the index
 	 * @return Fluent API
 	 */
-	SearchQueueBatch createIndex(String indexName, String indexType, Class<?> elementClass);
+	SearchQueueBatch createIndex(String indexName, Class<?> elementClass);
 
 	/**
 	 * Queue an drop index action.
@@ -79,7 +77,7 @@ public interface SearchQueueBatch {
 	 * @return Fluent API
 	 */
 	default SearchQueueBatch createTagFamilyIndex(String projectUuid) {
-		return createIndex(TagFamily.composeIndexName(projectUuid), TagFamily.composeTypeName(), TagFamily.class);
+		return createIndex(TagFamily.composeIndexName(projectUuid), TagFamily.class);
 	}
 
 	/**
@@ -89,7 +87,7 @@ public interface SearchQueueBatch {
 	 * @return Fluent API
 	 */
 	default SearchQueueBatch createTagIndex(String projectUuid) {
-		return createIndex(Tag.composeIndexName(projectUuid), Tag.composeTypeName(), Tag.class);
+		return createIndex(Tag.composeIndexName(projectUuid), Tag.class);
 	}
 
 	/**

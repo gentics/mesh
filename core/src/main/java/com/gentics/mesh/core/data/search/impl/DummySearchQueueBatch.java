@@ -24,7 +24,7 @@ import rx.Completable;
 public class DummySearchQueueBatch implements SearchQueueBatch {
 
 	@Override
-	public SearchQueueBatch createIndex(String indexName, String indexType, Class<?> elementClass) {
+	public SearchQueueBatch createIndex(String indexName, Class<?> elementClass) {
 		return this;
 	}
 

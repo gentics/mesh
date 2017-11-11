@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.etc.config.MeshOptions;
 
@@ -22,8 +23,7 @@ public class DummySearchProvider implements SearchProvider {
 	private Map<String, JsonObject> storeEvents = new HashMap<>();
 	private List<String> getEvents = new ArrayList<>();
 	private List<String> dropIndexEvents = new ArrayList<>();
-	private List<String> createIndexEvents = new ArrayList<>();
-	private Map<String, JsonObject> updateMappingEvents = new HashMap<>();
+	private Map<String, JsonObject> createIndexEvents = new HashMap<>();
 
 	@Override
 	public SearchProvider init(MeshOptions options) {
@@ -31,25 +31,27 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
+	public JsonObject getDefaultIndexSettings() {
+		return new JsonObject();
+	}
+
+	@Override
 	public void refreshIndex(String... indices) {
 	}
 
 	@Override
-	public Completable createIndex(String indexName) {
-		createIndexEvents.add(indexName);
+	public Completable createIndex(IndexInfo info) {
+		JsonObject json = new JsonObject();
+		json.put("mapping", info.getIndexMappings());
+		json.put("settings", info.getIndexSettings());
+		createIndexEvents.put(info.getIndexName(), json);
 		return Completable.complete();
 	}
 
 	@Override
-	public Completable updateMapping(String indexName, String type, JsonObject mapping) {
-		updateMappingEvents.put(indexName + "-" + type, mapping);
-		return Completable.complete();
-	}
-
-	@Override
-	public Completable updateDocument(String index, String type, String uuid, JsonObject document, boolean ignoreMissingDocumentError) {
+	public Completable updateDocument(String index, String uuid, JsonObject document, boolean ignoreMissingDocumentError) {
 		return Completable.fromAction(() -> {
-			updateEvents.put(index + "-" + type + "-" + uuid, document);
+			updateEvents.put(index + "-" + uuid, document);
 		});
 	}
 
@@ -58,27 +60,27 @@ public class DummySearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable deleteDocument(String index, String type, String uuid) {
+	public Completable deleteDocument(String index, String uuid) {
 		return Completable.fromAction(() -> {
-			deleteEvents.add(index + "-" + type + "-" + uuid);
+			deleteEvents.add(index + "-" + uuid);
 		});
 	}
 
 	@Override
-	public Single<Map<String, Object>> getDocument(String index, String type, String uuid) {
-		getEvents.add(index + "-" + type + "-" + uuid);
+	public Single<Map<String, Object>> getDocument(String index, String uuid) {
+		getEvents.add(index + "-" + uuid);
 		return Single.just(null);
 	}
 
 	@Override
-	public Completable storeDocumentBatch(String index, String type, Map<String, JsonObject> documents) {
+	public Completable storeDocumentBatch(String index, Map<String, JsonObject> documents) {
 		return Completable.complete();
 	}
 
 	@Override
-	public Completable storeDocument(String index, String type, String uuid, JsonObject document) {
+	public Completable storeDocument(String index, String uuid, JsonObject document) {
 		return Completable.fromAction(() -> {
-			storeEvents.put(index + "-" + type + "-" + uuid, document);
+			storeEvents.put(index + "-" + uuid, document);
 		});
 	}
 
@@ -113,7 +115,6 @@ public class DummySearchProvider implements SearchProvider {
 		storeEvents.clear();
 		dropIndexEvents.clear();
 		createIndexEvents.clear();
-		updateMappingEvents.clear();
 	}
 
 	@Override
@@ -143,7 +144,7 @@ public class DummySearchProvider implements SearchProvider {
 		return updateEvents;
 	}
 
-	public List<String> getCreateIndexEvents() {
+	public Map<String, JsonObject> getCreateIndexEvents() {
 		return createIndexEvents;
 	}
 
@@ -151,12 +152,14 @@ public class DummySearchProvider implements SearchProvider {
 		return dropIndexEvents;
 	}
 
-	public Map<String, JsonObject> getUpdateMappingEvents() {
-		return updateMappingEvents;
+	@Override
+	public Completable validateCreateViaTemplate(IndexInfo info) {
+		return Completable.complete();
 	}
 
 	@Override
 	public <T> T getClient() {
 		return null;
 	}
+
 }

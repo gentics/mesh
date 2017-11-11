@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.gentics.mesh.core.rest.schema.FieldSchema;
 import com.gentics.mesh.core.rest.schema.Schema;
 
+import io.vertx.core.json.JsonObject;
+
 public class SchemaCreateRequest implements Schema {
 
 	@JsonProperty(required = true)
@@ -17,7 +19,7 @@ public class SchemaCreateRequest implements Schema {
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Name of the segment field. This field is used to construct the webroot path to the node.")
 	private String segmentField;
-	
+
 	@JsonProperty(required = false)
 	@JsonPropertyDescription("Names of the fields which provide a compete url to the node. This property can be used to define custom urls for certain nodes. The webroot API will try to locate the node via it's segment field and via the specified url fields.")
 	private List<String> urlFields;
@@ -33,6 +35,10 @@ public class SchemaCreateRequest implements Schema {
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("Name of the schema")
 	private String name;
+
+	@JsonProperty(required = false)
+	@JsonPropertyDescription("Additional search index configuration. This can be used to setup custom analyzers and filters.")
+	private JsonObject elasticsearch;
 
 	@JsonProperty(required = true)
 	@JsonPropertyDescription("List of schema fields")
@@ -112,6 +118,17 @@ public class SchemaCreateRequest implements Schema {
 	@Override
 	public SchemaCreateRequest setDisplayField(String displayField) {
 		this.displayField = displayField;
+		return this;
+	}
+
+	@Override
+	public JsonObject getElasticsearch() {
+		return elasticsearch;
+	}
+
+	@Override
+	public SchemaCreateRequest setElasticsearch(JsonObject elasticsearch) {
+		this.elasticsearch = elasticsearch;
 		return this;
 	}
 

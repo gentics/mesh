@@ -23,7 +23,7 @@ public class UserRawSearchEndpointTest extends AbstractMeshTest {
 		String username = "testuser42a";
 		UserResponse userResponse = createUser(username);
 
-		String json = getESQuery("userWildcard.es");
+		String json = getESText("userWildcard.es");
 
 		JsonObject response = call(() -> client().searchUsersRaw(json));
 		assertNotNull(response);

@@ -57,7 +57,7 @@ public class DemoDumpGeneratorTest {
 	public void testSetup() throws Exception {
 		generator.dump();
 		try (Tx tx = db.tx()) {
-			assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").getNodeRoot().findAll().size() > 0);
+			assertTrue(boot.meshRoot().getProjectRoot().findByName("demo").getNodeRoot().computeCount() > 0);
 			User user = boot.meshRoot().getUserRoot().findByUsername("webclient");
 			assertNotNull("The webclient user should have been created but could not be found.", user);
 			assertFalse("The webclient user should also have at least one group assigned to it.", user.getGroups().isEmpty());
@@ -67,16 +67,16 @@ public class DemoDumpGeneratorTest {
 
 			assertTrue("The webclient role has not read permission on the user.", role.hasPermission(GraphPermission.READ_PERM, user));
 			assertTrue("The webclient user has no permission on itself.", user.hasPermission(user, GraphPermission.READ_PERM));
-			assertTrue("The webclient user has no read permission on the user root node..",
-					user.hasPermission(boot.meshRoot().getUserRoot(), GraphPermission.READ_PERM));
+			assertTrue("The webclient user has no read permission on the user root node..", user.hasPermission(boot.meshRoot().getUserRoot(),
+					GraphPermission.READ_PERM));
 
-			assertTrue("We expected to find at least 5 nodes.", boot.meshRoot().getNodeRoot().findAll().size() > 5);
+			assertTrue("We expected to find at least 5 nodes.", boot.meshRoot().getNodeRoot().computeCount() > 5);
 
 			// Verify that the uuids have been updated
 			assertNotNull(boot.meshRoot().getNodeRoot().findByUuid("df8beb3922c94ea28beb3922c94ea2f6"));
 
 			// Verify that all documents are stored in the index
-			for (Node node : boot.meshRoot().getNodeRoot().findAll()) {
+			for (Node node : boot.meshRoot().getNodeRoot().findAllIt()) {
 				NodeGraphFieldContainer container = node.getLatestDraftFieldContainer(boot.meshRoot().getLanguageRoot().findByLanguageTag("en"));
 				// HandleContext context = new HandleContext();
 				// context.setProjectUuid(node.getProject().getUuid());
@@ -90,11 +90,10 @@ public class DemoDumpGeneratorTest {
 				String schemaContainerVersionUuid = container.getSchemaContainerVersion().getUuid();
 				ContainerType type = PUBLISHED;
 				String indexName = NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type);
-				String documentType = NodeGraphFieldContainer.composeIndexType();
 				String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), languageTag);
-				if (searchProvider.getDocument(indexName, documentType, documentId).toBlocking() == null) {
+				if (searchProvider.getDocument(indexName, documentId).toBlocking() == null) {
 					String msg = "The search document for node {" + node.getUuid() + "} container {" + languageTag
-							+ "} could not be found within index {" + indexName + "} - {" + documentType + "} - {" + documentId + "}";
+							+ "} could not be found within index {" + indexName + "} - {" + documentId + "}";
 					fail(msg);
 				}
 			}

@@ -1,0 +1,16 @@
+{
+  "analysis": {
+    "analyzer": {
+      "suggest": {
+        "tokenizer": "mesh_default_ngram_tokenizer",
+        "char_filter": [
+          "html_strip"
+        ],
+        "stopwords": "_english_",
+        "filter": [
+          "lowercase"
+        ]
+      }
+    }
+  }
+}

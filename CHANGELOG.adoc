@@ -8,12 +8,74 @@ CAUTION: GraphQL: The root field `releases` has been removed. The root field `re
 
 CAUTION: Elasticsearch: Search queries will now automatically be wrapped in a boolean query in order to check permissions much more efficiently. 
 
+CAUTION: The schema field property `addRaw` has been removed. The property was replaced by a mapping definition which can be added to each field. 
+         All schemas will automatically be migrated to the new format. Please keep in mind to also update any existing schema files which 
+         you may have stored externally.
+
+```json
+{
+  "name": "dummySchema",
+  "displayField": "name",
+  "fields": [
+    {
+      "name": "name",
+      "label": "Name",
+      "required": true,
+      "type": "string",
+      "elasticsearch": {
+        "raw": {
+          "index": "not_analyzed",
+          "type": "string"
+        }
+      }
+    }
+  ]
+}
+```
+
+icon:plus[] Schema: It is now possible to configure index settings and custom search index field mappings within the schema. 
+
+The index settings can be used to define new link:https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-analyzers.html[analyzers] and link:https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-tokenizers.html[tokenizer] or other additional link:https://www.elastic.co/guide/en/elasticsearch/guide/current/_index_settings.html[index settings].
+The specified settings will automatically be merged with a default set of settings. 
+
+Once a new analyzer has been defined it can be referenced by custom field mappings which can now be added to each field.
+The specified field mapping will be added to the generated fields property of the mapping. You can read more about this topic in the link:https://www.elastic.co/guide/en/elasticsearch/reference/current/multi-fields.html[fields mapping documentation] of Elasticsearch.
+
+```json
+{
+  "name": "dummySchema",
+  "displayField": "name",
+  "elasticsearch": {
+    "settings": {
+      "number_of_shards" :   1,
+      "number_of_replicas" : 0
+    }
+  },
+  "fields": [
+    {
+      "name": "name",
+      "label": "Name",
+      "required": true,
+      "type": "string",
+      "elasticsearch": {
+        "raw": {
+          "index": "not_analyzed",
+          "type": "string"
+        }
+      }
+    }
+  ]
+}
+```
+
+icon:plus[] REST: The `POST /api/v1/utilities/validateSchema` and `POST /api/v1/utilities/validateMicroschema` endpoints can now be used to validate a schema/microschema JSON without actually storing it. The validation response will also contain the generated Elasticsearch index configuration.
+
 icon:plus[] GraphQL: Nodes can now be loaded in the context of a schema. This will return all nodes which use the schema.
 
-icon:plus[] Search: The `/api/v1/rawSearch/..` and `/api/v1/:projectName/rawSearch/..` endpoints have been added. These endpoint can be used to invoke search requests which will return the raw elasticsearch response JSON. 
+icon:plus[] Search: The `/api/v1/rawSearch/..` and `/api/v1/:projectName/rawSearch/..` endpoints have been added. These can be used to invoke search requests which will return the raw elasticsearch response JSON. 
             The needed indices will automatically be selected in order to only return the type specific documents. Read permissions on the document will also be automatically checked. 
 
-icon:plus[] Search: Error information for failed elasticsearch queries will now be added to the response.
+icon:plus[] Search: Error information for failed Elasticsearch queries will now be added to the response.
 
 icon:plus[] Webroot: The schema property `urlFields` can now used to specify fields which contain webroot paths.
                      The webroot endpoint in turn will first try to find a node which specified the requested path.

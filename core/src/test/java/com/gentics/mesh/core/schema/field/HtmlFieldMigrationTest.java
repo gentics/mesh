@@ -30,8 +30,8 @@ import org.junit.Test;
 import com.gentics.mesh.FieldUtil;
 import com.gentics.mesh.core.data.node.field.HtmlGraphField;
 import com.gentics.mesh.core.field.html.HtmlFieldTestHelper;
-import com.gentics.mesh.core.rest.schema.impl.IndexOptions;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.gentics.mesh.util.IndexOptionHelper;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = false)
 public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implements HtmlFieldTestHelper {
@@ -259,7 +259,7 @@ public class HtmlFieldMigrationTest extends AbstractFieldMigrationTest implement
 
 	@Test
 	public void testIndexOptionAddRaw() throws InterruptedException, ExecutionException, TimeoutException {
-		changeType(CREATEHTML, FILLLONGTEXT, FETCH, name -> FieldUtil.createHtmlFieldSchema(name).setIndexOptions(new IndexOptions().setAddRaw(true)),
+		changeType(CREATEHTML, FILLLONGTEXT, FETCH, name -> FieldUtil.createHtmlFieldSchema(name).setElasticsearch(IndexOptionHelper.getRawFieldOption()),
 				(container, name) -> {
 					HtmlGraphField htmlField = container.getHtml(name);
 					assertEquals("The html field should not be truncted.", 40_000, htmlField.getHTML().length());

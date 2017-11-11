@@ -54,9 +54,8 @@ public class SearchEndpointTest extends AbstractMeshTest {
 		}
 
 		// Make sure the document was added to the index.
-		Map<String, Object> map = searchProvider()
-				.getDocument(User.composeIndexName(), User.composeIndexType(), User.composeDocumentId(db().tx(() -> user().getUuid()))).toBlocking()
-				.value();
+		Map<String, Object> map = searchProvider().getDocument(User.composeIndexName(), User.composeDocumentId(db().tx(() -> user().getUuid())))
+				.toBlocking().value();
 		assertNotNull("The user document should be stored within the index since we invoked a full index but it could not be found.", map);
 		assertEquals(db().tx(() -> user().getUuid()), map.get("uuid"));
 
@@ -65,8 +64,7 @@ public class SearchEndpointTest extends AbstractMeshTest {
 		}
 
 		// Make sure the document is no longer stored within the search index.
-		map = searchProvider().getDocument(User.composeIndexName(), User.composeIndexType(), User.composeDocumentId(db().tx(() -> user().getUuid())))
-				.toBlocking().value();
+		map = searchProvider().getDocument(User.composeIndexName(), User.composeDocumentId(db().tx(() -> user().getUuid()))).toBlocking().value();
 		assertNull("The user document should no longer be part of the search index.", map);
 
 	}
@@ -84,13 +82,9 @@ public class SearchEndpointTest extends AbstractMeshTest {
 			}
 
 			String documentId = NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en");
-			String indexType = NodeGraphFieldContainer.composeIndexType();
 
-			searchProvider().deleteDocument(Node.TYPE, indexType, documentId).await();
-			assertNull(
-					"The document with uuid {" + uuid + "} could still be found within the search index. Used index type {" + indexType
-							+ "} document id {" + documentId + "}",
-					searchProvider().getDocument(Node.TYPE, indexType, documentId).toBlocking().value());
+			searchProvider().deleteDocument(Node.TYPE, documentId).await();
+			assertNull("The document with uuid {" + uuid + "} could still be found within the search index. Used document id {" + documentId + "}", searchProvider().getDocument(Node.TYPE, documentId).toBlocking().value());
 		}
 	}
 
