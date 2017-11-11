@@ -1,32 +1,13 @@
 {
   "analysis": {
-    "filter": {
-      "autocomplete_filter": {
-        "type": "edge_ngram",
-        "min_gram": 3,
-        "max_gram": 3
-      }
-    },
-    "tokenizer": {
-      "my_edge_ngram_tokenizer": {
-        "type": "edgeNGram",
-        "min_gram": "3",
-        "max_gram": "3",
-        "token_chars": [
-          "letter",
-          "digit"
-        ]
-      }
-    },
     "analyzer": {
-      "suggestor": {
-        "type": "custom",
-        "tokenizer": "standard",
+      "suggest": {
+        "tokenizer": "mesh_default_ngram_tokenizer",
         "char_filter": [
           "html_strip"
         ],
+        "stopwords": "_english_",
         "filter": [
-          "autocomplete_filter",
           "lowercase"
         ]
       }

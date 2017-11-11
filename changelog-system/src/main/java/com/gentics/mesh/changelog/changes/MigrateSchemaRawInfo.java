@@ -79,4 +79,9 @@ public class MigrateSchemaRawInfo extends AbstractChange {
 		}
 	}
 
+	@Override
+	public boolean requiresReindex() {
+		return true;
+	}
+
 }

@@ -29,6 +29,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
@@ -164,6 +165,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		// 2. Create nodes
 		Set<String> contents = new HashSet<>();
 		String prefix = "This is<pre>another set of <strong>important</strong>content ";
+		contents.add(prefix + "no text with more content you can poke a stick at");
 		contents.add(prefix + "s<b>om</b>e text with more content you can poke a stick at");
 		contents.add(prefix + "some <strong>more</strong> content you can poke a stick at too");
 		contents.add(prefix + "someth<strong>ing</strong> completely different");
