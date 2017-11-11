@@ -154,9 +154,13 @@ node("docker") {
 
 						stage("Docker Build") {
 							if (Boolean.valueOf(params.runDocker)) {
+								// demo
 								sh "rm demo/target/*sources.jar"
+								sh "cd demo ; docker build -t gentics/mesh-demo:latest -t gentics/mesh-demo:" + version + " . "
+								
+								// server
 								sh "rm server/target/*sources.jar"
-								sh "captain build"
+								sh "cd server ; docker build -t server/mesh:latest -t gentics/mesh:" + version + " . "
 							} else {
 								echo "Docker build skipped.."
 							}
@@ -189,7 +193,10 @@ node("docker") {
 								if (Boolean.valueOf(params.runDocker)) {
 									withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
 										sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD'
-										sh "captain push"
+										sh 'docker push gentics/mesh-demo:latest'
+										sh 'docker push gentics/mesh-demo:' + version
+										sh 'docker push gentics/mesh:latest'
+										sh 'docker push gentics/mesh:' + version
 									}
 								}
 							} else {
