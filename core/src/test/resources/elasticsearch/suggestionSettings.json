@@ -1,34 +1,31 @@
 {
   "analysis": {
     "filter": {
-      "content_filter": {
-        "type": "shingle",
-        "min_shingle_size": 2,
-        "max_shingle_size": 2,
-        "output_unigrams": false
-      }
+      "edge_ngram_filter": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 20
+       },
+       "ngram_filter": {
+         "type": "ngram",
+         "min_gram": 2,
+         "max_gram": 20
+       }
     },
     "tokenizer": {
-      "content_tokenizer": {
+      "ngram_tokenizer": {
         "type": "nGram",
         "min_gram": "2",
         "max_gram": "2",
-        "token_chars": [
-          "letter",
-          "digit"
-        ]
+        "token_chars": [ "letter", "digit" ]
       }
     },
     "analyzer": {
-      "suggest": {
+      "edge_ngram_analyzer": {
         "type": "custom",
-        "tokenizer": "content_tokenizer",
-        "char_filter": [
-          "html_strip"
-        ],
-        "filter": [
-          "lowercase"
-          ]
+        "tokenizer": "standard",
+        "char_filter": [ "html_strip" ],
+        "filter": [ "lowercase", "edge_ngram_filter" ]
       }
     }
   }

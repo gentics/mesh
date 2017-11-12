@@ -1,6 +1,6 @@
 {
   "suggest": {
-    "my-suggestion": {
+    "did-you-mean": {
       "text": "anoter set of importent",
       "phrase": {
         "field": "fields.content.suggest",

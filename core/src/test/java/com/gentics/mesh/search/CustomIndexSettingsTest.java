@@ -181,9 +181,13 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 		}
 		// 3. Invoke search
-		String suggestionQuery = getText("/elasticsearch/suggestionQuery.es");
-		JsonObject searchResult = call(() -> client().searchNodesRaw(PROJECT_NAME, suggestionQuery));
-		System.out.println(searchResult.encodePrettily());
+		String didYouMeanQuery = getText("/elasticsearch/didYouMeanQuery.es");
+		JsonObject didYouMeanResult = call(() -> client().searchNodesRaw(PROJECT_NAME, didYouMeanQuery));
+		//System.out.println(searchResult.encodePrettily());
+	
+		String autocompleteQuery = getText("/elasticsearch/autocompleteQuery.es");
+		JsonObject autocompleteResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery));
+		System.out.println(autocompleteResult.encodePrettily());
 
 	}
 

@@ -2,5 +2,11 @@
   "suggest": {
     "type": "string",
     "analyzer": "simple"
+  },
+  "trigram": {
+    "type": "string",
+    "term_vector": "yes",
+    "analyzer": "edge_ngram_analyzer",
+    "search_analyzer": "standard"
   }
 }
