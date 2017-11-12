@@ -9,8 +9,8 @@
       "fields.content.trigram": {
         "fragment_size": 150,
         "number_of_fragments": 3,
-        "pre_tags" : [ "<highlight>" ],
-        "post_tags" : [ "</highlight>" ]
+        "pre_tags" : [ "%hl%" ],
+        "post_tags" : [ "%hl%" ]
       }
     }
   },
