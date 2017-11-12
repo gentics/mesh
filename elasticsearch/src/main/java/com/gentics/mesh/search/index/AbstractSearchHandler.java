@@ -113,12 +113,12 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 				)
 			);
 
+		// Wrap the original query in a nested bool query in order check the role perms
 		JsonObject originalQuery = userJson.getJsonObject("query");
 		if (originalQuery != null) {
 			newQuery.getJsonObject("bool").put("must", originalQuery);
+			userJson.put("query", newQuery);
 		}
-
-		userJson.put("query", newQuery);
 
 		if (userJson.getLong("size") == null) {
 			userJson.put("size", Integer.MAX_VALUE);

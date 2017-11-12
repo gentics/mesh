@@ -1,26 +1,27 @@
 {
-  "query" : {
-    "match_phrase_prefix" : {
-      "fields.content.suggest": {
-         "query": "Some",
-         "slop":  10,
-         "max_expansions": 50
-       }
+  "suggest": {
+    "my-suggestion": {
+      "text": "anoter set of importent",
+      "phrase": {
+        "field": "fields.content.suggest",
+        "max_errors": 2,
+        "collate": {
+           "query": {
+             "inline": {
+               "match_phrase": {
+                 "{{field_name}}": {
+                   "query": "{{suggestion}}",
+                   "slop" : 1
+                 }
+               }
+             }
+           },
+           "params": {
+             "field_name": "fields.content.suggest"
+           },
+           "prune": true
+         }
+       } 
     }
-  },
-  "highlight" : {
-    "fields" : {
-      "fields.content.suggest" : {
-        "number_of_fragments" : 3,
-        "fragment_size" : 150,
-        "pre_tags" : [ "<highlight>" ],
-        "post_tags" : [ "</highlight>" ]
-      }
-    }
-  },
-  "_source": [
-    "fields.content",
-    "uuid",
-    "language"
-  ]
+  }
 }
