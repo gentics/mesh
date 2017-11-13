@@ -55,6 +55,7 @@ node("docker") {
 				serviceAccount: 'jenkins',
 				volumes: [
 					emptyDirVolume(memory: false, mountPath: '/var/run'),
+					hostPathVolume(hostPath: '/opt/jenkins-slave/maven-repo', mountPath: '/home/jenkins/.m2/repository'),
 					persistentVolumeClaim(claimName: 'jenkins-credentials', mountPath: '/home/jenkins/credentials', readOnly: true)
 				], 
 				workspaceVolume: emptyDirWorkspaceVolume(false)) {
