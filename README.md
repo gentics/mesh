@@ -1,5 +1,5 @@
 [![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
-[![Stack Overflow](http://img.shields.io/:stack%20overflow-genticsmesh-brightgreen.svg)](http://stackoverflow.com/questions/tagged/mesh-cms)
+[![Stack Overflow](http://img.shields.io/:stack%20overflow-gentics-mesh-brightgreen.svg)](http://stackoverflow.com/questions/tagged/gentics-mesh)
 
 # Gentics Mesh  
 
