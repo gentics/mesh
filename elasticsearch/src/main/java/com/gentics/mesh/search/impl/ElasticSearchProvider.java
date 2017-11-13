@@ -19,6 +19,7 @@ import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
+import org.elasticsearch.action.admin.indices.template.delete.DeleteIndexTemplateResponse;
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequestBuilder;
 import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
@@ -573,15 +574,31 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (log.isDebugEnabled()) {
 						log.debug("Created template {" + templateName + "} response: {" + response.toString() + "}");
 					}
-					getSearchClient().admin().indices().prepareDeleteTemplate(templateName).get();
-					sub.onCompleted();
+
+					Mesh.vertx().executeBlocking(bh -> {
+						getSearchClient().admin().indices().prepareDeleteTemplate(templateName).execute(
+								new ActionListener<DeleteIndexTemplateResponse>() {
+
+									@Override
+									public void onResponse(DeleteIndexTemplateResponse response) {
+										sub.onCompleted();
+									}
+
+									@Override
+									public void onFailure(Throwable e) {
+										sub.onError(e);
+									}
+
+								});
+					}, false, rh -> {
+
+					});
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
 					sub.onError(error(BAD_REQUEST, "schema_error_index_validation", e.getMessage()));
 				}
-
 			});
 		}).observeOn(scheduler);
 	}
