@@ -507,7 +507,7 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 					new ReleaseSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
 
-			// Generate version 4 which should not be auto assigned to the project release
+			// Generate version 3 which should not be auto assigned to the project release
 			updateSchema(schema.getUuid(), "anothernewschemaname", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(false).setReleaseNames(
 					INITIAL_RELEASE_NAME));
 
@@ -516,25 +516,25 @@ public class ReleaseEndpointTest extends AbstractMeshTest implements BasicRestTe
 			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
 					new ReleaseSchemaInfo().setName("newschemaname").setUuid(schema.getUuid()).setVersion("2.0"));
 
-			// Generate version 5
+			// Generate version 4
 			waitForJobs(() -> {
 				updateSchema(schema.getUuid(), "anothernewschemaname2", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true));
 			}, COMPLETED, 1);
 
-			// Assert that version 5 is assigned to the release
+			// Assert that version 4 is assigned to the release
 			infoList = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));
 
 			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-					new ReleaseSchemaInfo().setName("anothernewschemaname2").setUuid(schema.getUuid()).setVersion("5.0"));
+					new ReleaseSchemaInfo().setName("anothernewschemaname2").setUuid(schema.getUuid()).setVersion("4.0"));
 
-			// Generate version 6
+			// Generate version 5
 			updateSchema(schema.getUuid(), "anothernewschemaname3", new SchemaUpdateParametersImpl().setUpdateAssignedReleases(true).setReleaseNames(
 					"bla", "bogus", "moped"));
 
-			// Assert that version 5 is still assigned to the release since non of the names matches the project release
+			// Assert that version 4 is still assigned to the release since non of the names matches the project release
 			infoList = call(() -> client().getReleaseSchemaVersions(PROJECT_NAME, initialReleaseUuid()));
 			assertThat(infoList.getSchemas()).as("Initial schema versions").usingElementComparatorOnFields("name", "uuid", "version").contains(
-					new ReleaseSchemaInfo().setName("anothernewschemaname2").setUuid(schema.getUuid()).setVersion("5.0"));
+					new ReleaseSchemaInfo().setName("anothernewschemaname2").setUuid(schema.getUuid()).setVersion("4.0"));
 
 		}
 	}
