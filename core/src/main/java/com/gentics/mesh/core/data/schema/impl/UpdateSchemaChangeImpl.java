@@ -116,7 +116,7 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 	public List<String> getURLFields() {
 		Object[] value = getRestProperty(URLFIELDS_KEY);
 		if (value == null) {
-			return new ArrayList<>();
+			return null;
 		}
 		String[] stringArray = Arrays.copyOf(value, value.length, String[].class);
 		return Arrays.asList(stringArray);

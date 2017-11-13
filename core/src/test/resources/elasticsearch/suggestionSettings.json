@@ -16,16 +16,28 @@
       "ngram_tokenizer": {
         "type": "nGram",
         "min_gram": "2",
-        "max_gram": "2",
+        "max_gram": "8",
+        "token_chars": [ "letter", "digit" ]
+      },
+      "edge_ngram_tokenizer": {
+        "type": "edge_ngram",
+        "min_gram": 2,
+        "max_gram": 2,
         "token_chars": [ "letter", "digit" ]
       }
     },
     "analyzer": {
+      "ngram_analyzer": {
+        "type": "custom",
+        "tokenizer": "ngram_tokenizer",
+        "char_filter": [ "html_strip" ],
+        "filter": [ "lowercase" ]
+      },
       "edge_ngram_analyzer": {
         "type": "custom",
-        "tokenizer": "standard",
+        "tokenizer": "edge_ngram_tokenizer",
         "char_filter": [ "html_strip" ],
-        "filter": [ "lowercase", "edge_ngram_filter" ]
+        "filter": [ "lowercase" ]
       }
     }
   }

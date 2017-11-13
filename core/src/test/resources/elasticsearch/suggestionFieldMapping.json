@@ -8,5 +8,9 @@
     "term_vector": "yes",
     "analyzer": "edge_ngram_analyzer",
     "search_analyzer": "standard"
+  },
+  "auto": {
+    "type": "string",
+    "analyzer": "ngram_analyzer"
   }
 }

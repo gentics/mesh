@@ -4,9 +4,11 @@ import static com.gentics.mesh.test.ClientHelper.call;
 import static com.gentics.mesh.test.TestDataProvider.PROJECT_NAME;
 import static com.gentics.mesh.test.TestSize.FULL;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -29,7 +31,6 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
 
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
@@ -79,26 +80,36 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	public void testSchemaDiff() {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("settingsTest");
+		request.setUrlFields("text");
 		request.setElasticsearch(new JsonObject().put("somebogus", "value"));
 		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(IndexOptionHelper.getRawFieldOption()));
 		SchemaResponse response = call(() -> client().createSchema(request));
 
+		// Update settings and expect new version
 		SchemaUpdateRequest updateRequest = JsonUtil.readValue(request.toJson(), SchemaUpdateRequest.class);
 		updateRequest.setElasticsearch(new JsonObject().put("somebogus", "value2"));
 		call(() -> client().updateSchema(response.getUuid(), updateRequest));
-
 		SchemaResponse response2 = call(() -> client().findSchemaByUuid(response.getUuid()));
 		assertEquals("value2", response2.getElasticsearch().getString("somebogus"));
-		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response.getVersion(),
-				response2.getVersion());
+		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response.getVersion(), response2
+				.getVersion());
+		assertThat(response2.getUrlFields()).containsOnly("text");
 
+		// Set the settings to empty and update again
 		updateRequest.setElasticsearch(new JsonObject());
 		call(() -> client().updateSchema(response.getUuid(), updateRequest));
-
 		SchemaResponse response3 = call(() -> client().findSchemaByUuid(response.getUuid()));
 		assertTrue("The options should be empty", new JsonObject().equals(response3.getElasticsearch()));
-		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response2.getVersion(),
-				response3.getVersion());
+		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response2.getVersion(), response3
+				.getVersion());
+		assertThat(response3.getUrlFields()).containsOnly("text");
+
+		updateRequest.setElasticsearch(null);
+		call(() -> client().updateSchema(response.getUuid(), updateRequest));
+		SchemaResponse response4 = call(() -> client().findSchemaByUuid(response.getUuid()));
+		// TODO setting fields to null is not supported at this point of time. #196
+		//assertNull(response4.getElasticsearch());
+		assertThat(response4.getUrlFields()).containsOnly("text");
 	}
 
 	/**
@@ -108,6 +119,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 	public void testSchemaFieldDiff() {
 		SchemaCreateRequest request = new SchemaCreateRequest();
 		request.setName("settingsTest");
+		request.setUrlFields("text");
 		request.addField(FieldUtil.createStringFieldSchema("text").setElasticsearch(IndexOptionHelper.getRawFieldOption()));
 		SchemaResponse response = call(() -> client().createSchema(request));
 
@@ -121,8 +133,8 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		updateRequest.getField("text").setElasticsearch(new JsonObject());
 		call(() -> client().updateSchema(response.getUuid(), updateRequest));
 		SchemaResponse response3 = call(() -> client().findSchemaByUuid(response.getUuid()));
-		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response.getVersion(),
-				response3.getVersion());
+		assertNotEquals("The schema should have been updated by the introduced change but it was not.", response.getVersion(), response3
+				.getVersion());
 	}
 
 	@Test
@@ -181,13 +193,17 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 		}
 		// 3. Invoke search
-		String didYouMeanQuery = getText("/elasticsearch/didYouMeanQuery.es");
-		JsonObject didYouMeanResult = call(() -> client().searchNodesRaw(PROJECT_NAME, didYouMeanQuery));
-		//System.out.println(searchResult.encodePrettily());
-	
-		String autocompleteQuery = getText("/elasticsearch/autocompleteQuery.es");
-		JsonObject autocompleteResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery));
-		System.out.println(autocompleteResult.encodePrettily());
+		// String didYouMeanQuery = getText("/elasticsearch/didYouMeanQuery.es");
+		// JsonObject didYouMeanResult = call(() -> client().searchNodesRaw(PROJECT_NAME, didYouMeanQuery));
+		// System.out.println(searchResult.encodePrettily());
+
+		// String autocompleteQuery = getText("/elasticsearch/autocompleteQuery.es");
+		// JsonObject autocompleteResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery));
+		// System.out.println(autocompleteResult.encodePrettily());
+
+		String autocompleteSuggest = getText("/elasticsearch/autocompleteSuggest.es");
+		JsonObject autocompleteSuggestResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteSuggest));
+		System.out.println(autocompleteSuggestResult.encodePrettily());
 
 	}
 
