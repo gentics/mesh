@@ -10,6 +10,8 @@ icon:check[] Elasticsearch: In some cases the connection to Elasticsearch was no
 
 icon:check[] Schema: A bug within the schema update mechanism which removed the urlField property value has been fixed.
 
+icon:check[] Elasticsearch: A deadlock situation which could occur during schema validation was fixed.
+
 == 0.11.0 (11.11.2017)
 
 CAUTION: GraphQL: The root field `releases` has been removed. The root field `release` now takes no parameters and loads the active release.
