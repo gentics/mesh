@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
@@ -35,8 +36,10 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.settings.Settings.Builder;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.engine.DocumentMissingException;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -161,6 +164,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		node = new MeshNode(settings, classpathPlugins);
 		node.start();
 		client = node.client();
+		waitForCluster(client, 45);
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 		}
@@ -173,6 +177,32 @@ public class ElasticSearchProvider implements SearchProvider {
 		// } catch (UnknownHostException e) {
 		// e.printStackTrace();
 		// }
+
+	}
+
+	private void waitForCluster(Client client, long timeoutInSec) {
+		long start = System.currentTimeMillis();
+		// Wait until the cluster is ready
+		while (true) {
+			if ((System.currentTimeMillis() - start) / 1000 > timeoutInSec) {
+				log.debug("Timeout of {" + timeoutInSec + "} reached.");
+				break;
+			}
+			log.debug("Checking cluster status...");
+			ClusterHealthResponse response = client.admin().cluster().prepareHealth().get(TimeValue.timeValueSeconds(10));
+			log.debug("Elasticsearch cluster status is:" + response.getStatus());
+			if (response.getStatus() != ClusterHealthStatus.RED) {
+				log.info("Cluster status {" + response.getStatus() + "}. Releasing lock after " + (System.currentTimeMillis() - start) + " ms");
+				return;
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+		}
+		throw new RuntimeException("Elasticsearch cluster was not ready within set timeout of  {" + timeoutInSec + "} seconds");
 
 	}
 
@@ -338,8 +368,8 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (ignoreMissingDocumentError && e instanceof DocumentMissingException) {
 						sub.onCompleted();
 					} else {
-						log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration "
-								+ (System.currentTimeMillis() - start) + "[ms]", e);
+						log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis()
+								- start) + "[ms]", e);
 						sub.onError(e);
 					}
 				}
@@ -370,16 +400,16 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onResponse(BulkResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration "
-								+ (System.currentTimeMillis() - start) + "[ms]");
+						log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration " + (System
+								.currentTimeMillis() - start) + "[ms]");
 					}
 					sub.onCompleted();
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration "
-							+ (System.currentTimeMillis() - start) + "[ms]", e);
+					log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis()
+							- start) + "[ms]", e);
 					sub.onError(e);
 				}
 
@@ -534,8 +564,8 @@ public class ElasticSearchProvider implements SearchProvider {
 			String randomName = info.getIndexName() + UUIDUtil.randomUUID();
 			String templateName = randomName.toLowerCase();
 			json.put("template", templateName);
-			PutIndexTemplateRequestBuilder builder = getSearchClient().admin().indices().preparePutTemplate(templateName)
-					.setSource(json.encodePrettily());
+			PutIndexTemplateRequestBuilder builder = getSearchClient().admin().indices().preparePutTemplate(templateName).setSource(json
+					.encodePrettily());
 
 			builder.execute(new ActionListener<PutIndexTemplateResponse>() {
 				@Override
