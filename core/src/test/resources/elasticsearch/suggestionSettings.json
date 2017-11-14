@@ -3,8 +3,12 @@
     "filter": {
       "edge_ngram_filter": {
         "type": "edge_ngram",
-        "min_gram": 2,
+        "min_gram": 1,
         "max_gram": 20
+      },
+      "my_stop": {
+        "type":       "stop",
+        "stopwords":  "_english_"
       },
       "ngram_filter": {
         "type": "ngram",
@@ -38,11 +42,19 @@
       }
     },
     "analyzer": {
+      "autocomplete_query": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "filter": [
+          "lowercase"
+        ]
+      },
       "autocomplete": {
         "type": "custom",
         "tokenizer": "standard",
         "filter": [
           "lowercase",
+          "my_stop",
           "autocomplete_filter"
         ]
       },

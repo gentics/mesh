@@ -102,16 +102,6 @@ public class NodeIndexHandler extends AbstractIndexHandler<Node> {
 		return mappingProvider;
 	}
 
-	// @Override
-	// public Completable init() {
-	// return super.init().andThen(Completable.create(sub -> {
-	// db.tx(() -> {
-	// updateNodeIndexMappings();
-	// sub.onCompleted();
-	// });
-	// }));
-	// }
-
 	@Override
 	public Map<String, IndexInfo> getIndices() {
 		return db.tx(() -> {

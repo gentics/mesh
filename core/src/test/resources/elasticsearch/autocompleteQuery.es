@@ -1,14 +1,17 @@
 {
   "query": {
     "match": {
-      "fields.content.auto": "co"
+      "fields.content.auto": {
+        "query": "content co",
+        "analyzer": "standard"
       }
+    }
   },
   "highlight": {
     "fields": {
       "fields.content.auto": {
-        "fragment_size": 150,
-        "number_of_fragments": 3,
+        "fragment_size": 0,
+        "number_of_fragments": 10,
         "pre_tags" : [ "%ha%" ],
         "post_tags" : [ "%he%" ]
       }

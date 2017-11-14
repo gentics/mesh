@@ -11,17 +11,21 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
+import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
@@ -36,9 +40,13 @@ import com.gentics.mesh.util.IndexOptionHelper;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
 public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
+
+	private static final Logger log = LoggerFactory.getLogger(CustomIndexSettingsTest.class);
 
 	/**
 	 * Test the validation behaviour. Schema updates which include bogus json should fail early with a meaningful message.
@@ -181,11 +189,12 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 
 		// 2. Create nodes
 		Set<String> contents = new HashSet<>();
-		String prefix = "This is<pre>another set of <strong>important</strong>content ";
+		String prefix = "One this is<pre>another set of <strong>important</strong>content ";
 		contents.add(prefix + "no text with more content you can poke a stick at");
-		contents.add(prefix + "s<b>om</b>e text with more content you can poke a convert stick at");
-		contents.add(prefix + "some <strong>more</strong> content you can poke a connection stick at too");
-		contents.add(prefix + "someth<strong>ing</strong> context completely different");
+		contents.add(prefix + "s<b>om</b>e text with more content test you can poke content the a convert stick at");
+		contents.add(prefix
+				+ "some <strong>more</strong> content text you content this Content thAmbalaru can poke a content Telefon connection stick at too");
+		contents.add(prefix + "someth<strong>ing</strong> context completely conTent save different");
 		contents.add(prefix + "some<strong>what</strong> strange content");
 
 		for (String content : contents) {
@@ -201,9 +210,9 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		// JsonObject didYouMeanResult = call(() -> client().searchNodesRaw(PROJECT_NAME, didYouMeanQuery));
 		// System.out.println(didYouMeanResult.encodePrettily());
 
-		String query = "content yo";
+		String query = "Content t";
 		JsonObject autocompleteQuery = new JsonObject(getText("/elasticsearch/autocompleteQuery.es"));
-		autocompleteQuery.getJsonObject("query").getJsonObject("match").put("fields.content.auto", query);
+		autocompleteQuery.getJsonObject("query").getJsonObject("match").getJsonObject("fields.content.auto").put("query", query);
 		JsonObject autocompleteResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery.encodePrettily()));
 		System.out.println(autocompleteResult.encodePrettily());
 
@@ -216,29 +225,17 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 
 	}
 
-	@Test
-	public void regexText() {
-		String w = "This is<pre>another set of <strong>important</strong>%ha%content%he% no text with more %ha%content%he% you %ha%can%he% poke a stick at";
-		String regex = "%ha%(.*?)%he%";
-		final Pattern pattern = Pattern.compile(regex);
-		final Matcher matcher = pattern.matcher(w);
-		while (matcher.find()) {
-			System.out.println("Full match: " + matcher.group(0));
-			for (int i = 1; i <= matcher.groupCount(); i++) {
-				System.out.println("Group " + i + ": " + matcher.group(i));
-			}
-		}
-	}
-
 	final static String REGEX = "%ha%(.*?)%he%";
 	final static Pattern HL_PATTERN = Pattern.compile(REGEX);
 
 	private Map<String, Object> parseResult(JsonObject result, String query) {
+		List<String> partials = Arrays.asList(query.split(" "));
 		Map<String, Object> map = new HashMap<>();
 		JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
 		for (int i = 0; i < hits.size(); i++) {
 			JsonObject hit = hits.getJsonObject(i);
 			JsonArray highlights = hit.getJsonObject("highlight").getJsonArray("fields.content.auto");
+			Set<String> foundTokens = new HashSet<>();
 			for (int e = 0; e < highlights.size(); e++) {
 				String firstHighlight = highlights.getString(e);
 				// Remove all HTML
@@ -247,26 +244,64 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 				final Matcher matcher = HL_PATTERN.matcher(firstHighlight);
 				while (matcher.find()) {
 					String part = matcher.group(1);
-					int start = part.indexOf(query);
-					if (start == -1) {
-						// Word could not be found. Continue
-						continue;
-					}
-					int end = part.indexOf(" ", start);
-					String word = null;
-					if (end != -1) {
-						word = part.substring(start, end);
-					} else {
-						word = part.substring(start);
-					}
-					word = word.replaceAll("%ha%", "");
-					word = word.replaceAll("%he%", "");
-					// TODO remove all text before the highlighted area and two words after the hl area
-					map.put(word, part);
+					foundTokens.add(part);
+				}
+			}
+			if (log.isDebugEnabled()) {
+				log.debug("Found tokens: " + foundTokens);
+			}
+			constructOptions(map, foundTokens, partials);
+		}
+		return map;
+	}
+
+	/**
+	 * Construct autocompletion options from the found tokens and the initial set of partials.
+	 * 
+	 * @param map
+	 * @param foundTokens
+	 * @param partials
+	 */
+	private void constructOptions(Map<String, Object> map, Set<String> foundTokens, List<String> partials) {
+		StringBuffer baseBuffer = new StringBuffer();
+		// First buildup the base string which contains the completed tokens.
+		String lastUnknownPartial = null;
+		for (String partial : partials) {
+			if (log.isDebugEnabled()) {
+				log.debug("Checking found tokens against partial {" + partial + "}");
+			}
+			if (foundTokens.stream().map(e -> e.toLowerCase()).collect(Collectors.toSet()).contains(partial.toLowerCase())) {
+				baseBuffer.append(partial);
+				foundTokens.remove(partial);
+			} else {
+				lastUnknownPartial = partial;
+			}
+		}
+		if (log.isDebugEnabled()) {
+			log.debug("Using last partial {" + lastUnknownPartial + "}");
+		}
+
+		// Now iterate over the remaining tokens and construct the full option
+		String baseString = baseBuffer.toString();
+		for (String tokenOption : foundTokens) {
+			// Only generate auto complete options if the token matches the partial
+			if (tokenOption.toLowerCase().startsWith(lastUnknownPartial.toLowerCase())) {
+				if (log.isDebugEnabled()) {
+					log.debug("Found token {" + tokenOption + "} which starts with the given last partial {" + lastUnknownPartial + "}");
+				}
+				StringBuffer optionBuffer = new StringBuffer();
+				optionBuffer.append(baseString);
+				if (!baseString.isEmpty()) {
+					optionBuffer.append(" ");
+				}
+				optionBuffer.append(tokenOption);
+				map.put(optionBuffer.toString(), optionBuffer.toString());
+			} else {
+				if (log.isDebugEnabled()) {
+					log.debug("Rejecting token {" + tokenOption + "} since it does not match up with the last partial {" + lastUnknownPartial + "}");
 				}
 			}
 		}
-		return map;
 	}
 
 	@Test
