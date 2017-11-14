@@ -1,16 +1,16 @@
 {
   "query": {
     "match": {
-      "fields.content.trigram": "anoth"
-    }
+      "fields.content.auto": "co"
+      }
   },
   "highlight": {
     "fields": {
-      "fields.content.trigram": {
+      "fields.content.auto": {
         "fragment_size": 150,
         "number_of_fragments": 3,
-        "pre_tags" : [ "%hl%" ],
-        "post_tags" : [ "%hl%" ]
+        "pre_tags" : [ "%ha%" ],
+        "post_tags" : [ "%he%" ]
       }
     }
   },

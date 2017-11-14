@@ -11,6 +11,6 @@
   },
   "auto": {
     "type": "string",
-    "analyzer": "ngram_analyzer"
+    "analyzer": "autocomplete"
   }
 }

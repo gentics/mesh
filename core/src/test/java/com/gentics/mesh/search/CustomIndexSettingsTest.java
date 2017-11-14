@@ -11,9 +11,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.junit.Test;
 
@@ -30,6 +34,7 @@ import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.gentics.mesh.util.IndexOptionHelper;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 @MeshTestSetting(useElasticsearch = true, testSize = FULL, startServer = true)
@@ -107,7 +112,7 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		call(() -> client().updateSchema(response.getUuid(), updateRequest));
 		SchemaResponse response4 = call(() -> client().findSchemaByUuid(response.getUuid()));
 		// TODO setting fields to null is not supported at this point of time. #196
-		//assertNull(response4.getElasticsearch());
+		// assertNull(response4.getElasticsearch());
 		assertThat(response4.getUrlFields()).containsOnly("text");
 	}
 
@@ -178,9 +183,9 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		Set<String> contents = new HashSet<>();
 		String prefix = "This is<pre>another set of <strong>important</strong>content ";
 		contents.add(prefix + "no text with more content you can poke a stick at");
-		contents.add(prefix + "s<b>om</b>e text with more content you can poke a stick at");
-		contents.add(prefix + "some <strong>more</strong> content you can poke a stick at too");
-		contents.add(prefix + "someth<strong>ing</strong> completely different");
+		contents.add(prefix + "s<b>om</b>e text with more content you can poke a convert stick at");
+		contents.add(prefix + "some <strong>more</strong> content you can poke a connection stick at too");
+		contents.add(prefix + "someth<strong>ing</strong> context completely different");
 		contents.add(prefix + "some<strong>what</strong> strange content");
 
 		for (String content : contents) {
@@ -194,16 +199,74 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		// 3. Invoke search
 		// String didYouMeanQuery = getText("/elasticsearch/didYouMeanQuery.es");
 		// JsonObject didYouMeanResult = call(() -> client().searchNodesRaw(PROJECT_NAME, didYouMeanQuery));
-		// System.out.println(searchResult.encodePrettily());
+		// System.out.println(didYouMeanResult.encodePrettily());
 
-		// String autocompleteQuery = getText("/elasticsearch/autocompleteQuery.es");
-		// JsonObject autocompleteResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery));
-		// System.out.println(autocompleteResult.encodePrettily());
+		String query = "content yo";
+		JsonObject autocompleteQuery = new JsonObject(getText("/elasticsearch/autocompleteQuery.es"));
+		autocompleteQuery.getJsonObject("query").getJsonObject("match").put("fields.content.auto", query);
+		JsonObject autocompleteResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery.encodePrettily()));
+		System.out.println(autocompleteResult.encodePrettily());
 
-		String autocompleteSuggest = getText("/elasticsearch/autocompleteSuggest.es");
-		JsonObject autocompleteSuggestResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteSuggest));
-		System.out.println(autocompleteSuggestResult.encodePrettily());
+		System.out.println("------------------------------");
+		System.out.println(new JsonObject(parseResult(autocompleteResult, query)).encodePrettily());
 
+		// String autocompleteSuggest = getText("/elasticsearch/autocompleteSuggest.es");
+		// JsonObject autocompleteSuggestResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteSuggest));
+		// System.out.println(autocompleteSuggestResult.encodePrettily());
+
+	}
+
+	@Test
+	public void regexText() {
+		String w = "This is<pre>another set of <strong>important</strong>%ha%content%he% no text with more %ha%content%he% you %ha%can%he% poke a stick at";
+		String regex = "%ha%(.*?)%he%";
+		final Pattern pattern = Pattern.compile(regex);
+		final Matcher matcher = pattern.matcher(w);
+		while (matcher.find()) {
+			System.out.println("Full match: " + matcher.group(0));
+			for (int i = 1; i <= matcher.groupCount(); i++) {
+				System.out.println("Group " + i + ": " + matcher.group(i));
+			}
+		}
+	}
+
+	final static String REGEX = "%ha%(.*?)%he%";
+	final static Pattern HL_PATTERN = Pattern.compile(REGEX);
+
+	private Map<String, Object> parseResult(JsonObject result, String query) {
+		Map<String, Object> map = new HashMap<>();
+		JsonArray hits = result.getJsonObject("hits").getJsonArray("hits");
+		for (int i = 0; i < hits.size(); i++) {
+			JsonObject hit = hits.getJsonObject(i);
+			JsonArray highlights = hit.getJsonObject("highlight").getJsonArray("fields.content.auto");
+			for (int e = 0; e < highlights.size(); e++) {
+				String firstHighlight = highlights.getString(e);
+				// Remove all HTML
+				firstHighlight = firstHighlight.replaceAll("<[^>]+>", "");
+
+				final Matcher matcher = HL_PATTERN.matcher(firstHighlight);
+				while (matcher.find()) {
+					String part = matcher.group(1);
+					int start = part.indexOf(query);
+					if (start == -1) {
+						// Word could not be found. Continue
+						continue;
+					}
+					int end = part.indexOf(" ", start);
+					String word = null;
+					if (end != -1) {
+						word = part.substring(start, end);
+					} else {
+						word = part.substring(start);
+					}
+					word = word.replaceAll("%ha%", "");
+					word = word.replaceAll("%he%", "");
+					// TODO remove all text before the highlighted area and two words after the hl area
+					map.put(word, part);
+				}
+			}
+		}
+		return map;
 	}
 
 	@Test
