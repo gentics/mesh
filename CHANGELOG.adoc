@@ -2,6 +2,10 @@
 
 = Gentics Mesh Changelog
 
+== 0.11.2 (TBD)
+
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.30
+
 == 0.11.1 (13.11.2017)
 
 icon:plus[] Elasticsearch: Add support for inline queries.

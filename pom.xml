@@ -19,7 +19,7 @@
 		<ferma.version>2.4.0</ferma.version>
 		<ferma.orientdb.version>2.3.1</ferma.orientdb.version>
 		<elasticsearch.version>2.4.6</elasticsearch.version>
-		<orientdb.version>2.2.29</orientdb.version>
+		<orientdb.version>2.2.30</orientdb.version>
 		<dagger.version>2.11</dagger.version>
 		<hazelcast.version>3.8.4</hazelcast.version>
 		<rx.version>1.2.3</rx.version>
