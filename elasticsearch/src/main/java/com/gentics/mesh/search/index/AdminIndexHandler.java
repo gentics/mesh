@@ -11,11 +11,9 @@ import javax.inject.Singleton;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.search.IndexHandler;
 import com.gentics.mesh.core.rest.search.SearchStatusResponse;
-import com.gentics.mesh.core.verticle.handler.HandlerUtilities;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.IndexHandlerRegistry;
 import com.gentics.mesh.search.SearchProvider;
-import com.gentics.mesh.search.index.node.NodeIndexHandler;
 
 import rx.Observable;
 import rx.Single;
@@ -23,22 +21,17 @@ import rx.Single;
 @Singleton
 public class AdminIndexHandler {
 
-	private NodeIndexHandler nodeIndexHandler;
-
 	private IndexHandlerRegistry registry;
-
-	private HandlerUtilities utils;
 
 	private Database db;
 
 	private SearchProvider searchProvider;
 
 	@Inject
-	public AdminIndexHandler(Database db, SearchProvider searchProvider, IndexHandlerRegistry registry, NodeIndexHandler nodeIndexHandler) {
+	public AdminIndexHandler(Database db, SearchProvider searchProvider, IndexHandlerRegistry registry) {
 		this.db = db;
 		this.searchProvider = searchProvider;
 		this.registry = registry;
-		this.nodeIndexHandler = nodeIndexHandler;
 	}
 
 	public void handleStatus(InternalActionContext ac) {

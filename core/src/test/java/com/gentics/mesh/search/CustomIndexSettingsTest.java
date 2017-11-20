@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 import org.junit.Test;
 
 import com.gentics.mesh.FieldUtil;
-import com.gentics.mesh.core.data.node.impl.NodeImpl;
 import com.gentics.mesh.core.data.service.I18NUtil;
 import com.gentics.mesh.core.rest.microschema.impl.MicroschemaCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;

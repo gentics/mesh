@@ -68,7 +68,6 @@ The specified field mapping will be added to the generated fields property of th
         "suggest" : {
           "tokenizer" : "mesh_default_ngram_tokenizer",
           "char_filter" : [ "html_strip" ],
-          "stopwords" : "_english_",
           "filter" : [ "lowercase" ]
         }
       }
