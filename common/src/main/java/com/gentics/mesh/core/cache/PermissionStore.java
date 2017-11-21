@@ -63,12 +63,24 @@ public final class PermissionStore {
 	}
 
 	/**
+	 * Invalidate the LRU cache and optionally notify other instances in the cluster.
+	 * 
+	 * @param notify
+	 */
+	public static void invalidate(boolean notify) {
+		// Invalidate locally
+		PERM_CACHE.invalidateAll();
+		if (notify) {
+			// Send the event to inform other to purge the stored permissions
+			Mesh.vertx().eventBus().publish(EVENT_CLEAR_PERMISSION_STORE, null);
+		}
+	}
+
+	/**
 	 * Invalidate the LRU cache.
 	 */
 	public static void invalidate() {
-		// Invalidate locally and also send the event to inform other to purge the stored permissions
-		PERM_CACHE.invalidateAll();
-		Mesh.vertx().eventBus().publish(EVENT_CLEAR_PERMISSION_STORE, null);
+		invalidate(true);
 	}
 
 	/**

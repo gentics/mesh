@@ -66,7 +66,7 @@ public class DistributedEventManager {
 		// Register for events which are send whenever the permission store must be invalidated.
 		eb.consumer(EVENT_CLEAR_PERMISSION_STORE, handler -> {
 			log.debug("Received permissionstore clear event");
-			PermissionStore.invalidate();
+			PermissionStore.invalidate(false);
 		});
 
 		// React on project creates
