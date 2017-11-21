@@ -2,9 +2,11 @@
 
 = Gentics Mesh Changelog
 
-== 0.11.2 (TBD)
+== 0.11.2 (21.11.2017)
 
 icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.30
+
+icon:check[] Core: Fixed a bug which caused unusual high CPU usage. link:https://github.com/gentics/mesh/issues/201[#201]
 
 == 0.11.1 (13.11.2017)
 
