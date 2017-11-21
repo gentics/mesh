@@ -173,15 +173,15 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 		// 1. Create schema
 		SchemaCreateRequest schema = new SchemaCreateRequest();
 		schema.setName("customIndexTest");
-		JsonObject elasticsearchSettings = getJson("/elasticsearch/suggestionSettings.json");
+		JsonObject elasticsearchSettings = getJson("/elasticsearch/custom/suggestionSettings.json");
 		schema.setElasticsearch(elasticsearchSettings);
 
-		JsonObject fieldSettings = getJson("/elasticsearch/suggestionFieldMapping.json");
+		JsonObject fieldSettings = getJson("/elasticsearch/custom/suggestionFieldMapping.json");
 		schema.addField(FieldUtil.createStringFieldSchema("content").setElasticsearch(fieldSettings));
-		System.out.println(schema.toJson());
+		// System.out.println(schema.toJson());
 
 		SchemaValidationResponse validationResponse = call(() -> client().validateSchema(schema));
-		System.out.println(validationResponse.toJson());
+		// System.out.println(validationResponse.toJson());
 
 		SchemaResponse response = call(() -> client().createSchema(schema));
 		call(() -> client().assignSchemaToProject(PROJECT_NAME, response.getUuid()));
@@ -205,22 +205,17 @@ public class CustomIndexSettingsTest extends AbstractNodeSearchEndpointTest {
 			call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 		}
 		// 3. Invoke search
-		// String didYouMeanQuery = getText("/elasticsearch/didYouMeanQuery.es");
-		// JsonObject didYouMeanResult = call(() -> client().searchNodesRaw(PROJECT_NAME, didYouMeanQuery));
-		// System.out.println(didYouMeanResult.encodePrettily());
+		String searchQuery = getText("/elasticsearch/custom/customSearchQuery.es");
+		JsonObject searchResult = call(() -> client().searchNodesRaw(PROJECT_NAME, searchQuery));
+		System.out.println(searchResult.encodePrettily());
 
 		String query = "Content t";
-		JsonObject autocompleteQuery = new JsonObject(getText("/elasticsearch/autocompleteQuery.es"));
+		JsonObject autocompleteQuery = new JsonObject(getText("/elasticsearch/custom/autocompleteQuery.es"));
 		autocompleteQuery.getJsonObject("query").getJsonObject("match").getJsonObject("fields.content.auto").put("query", query);
 		JsonObject autocompleteResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteQuery.encodePrettily()));
 		System.out.println(autocompleteResult.encodePrettily());
-
 		System.out.println("------------------------------");
 		System.out.println(new JsonObject(parseResult(autocompleteResult, query)).encodePrettily());
-
-		// String autocompleteSuggest = getText("/elasticsearch/autocompleteSuggest.es");
-		// JsonObject autocompleteSuggestResult = call(() -> client().searchNodesRaw(PROJECT_NAME, autocompleteSuggest));
-		// System.out.println(autocompleteSuggestResult.encodePrettily());
 
 	}
 

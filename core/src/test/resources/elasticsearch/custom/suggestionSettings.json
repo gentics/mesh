@@ -1,0 +1,49 @@
+{
+  "analysis": {
+    "filter": {
+      "my_stop": {
+        "type": "stop",
+        "stopwords": "_english_"
+      },
+      "autocomplete_filter": {
+        "type": "edge_ngram",
+        "min_gram": 1,
+        "max_gram": 20
+      }
+    },
+    "tokenizer": {
+      "basicsearch": {
+        "type": "edge_ngram",
+        "min_gram": 1,
+        "max_gram": 10,
+        "token_chars": [
+          "letter"
+        ]
+      }
+    },
+    "analyzer": {
+      "autocomplete": {
+        "type": "custom",
+        "tokenizer": "standard",
+        "char_filter":  [ "html_strip" ],
+        "filter": [
+          "lowercase",
+          "my_stop",
+          "autocomplete_filter"
+        ]
+      },
+      "basicsearch": {
+        "tokenizer": "basicsearch",
+        "char_filter":  [ "html_strip" ],
+        "filter": [
+          "my_stop",
+          "lowercase"
+        ]
+      },
+      "basicsearch_search": {
+        "char_filter":  [ "html_strip" ],
+        "tokenizer": "lowercase"
+      }
+    }
+  }
+}

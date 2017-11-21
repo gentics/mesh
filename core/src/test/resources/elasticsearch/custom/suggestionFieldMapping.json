@@ -1,0 +1,15 @@
+{
+  "basicsearch": {
+    "type": "string",
+    "analyzer": "basicsearch",
+    "search_analyzer": "basicsearch_search"
+  },
+  "suggest": {
+    "type": "string",
+    "analyzer": "simple"
+  },
+  "auto": {
+    "type": "string",
+    "analyzer": "autocomplete"
+  }
+}

@@ -30,6 +30,7 @@ public class ServerRunner {
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
 		MissingOrientCredentialFixer.fix(options);
 
+		options.getSearchOptions().setHttpEnabled(true);
 		Mesh mesh = Mesh.mesh(options);
 		mesh.setCustomLoader((vertx) -> {
 			JsonObject config = new JsonObject();
