@@ -2,6 +2,10 @@
 
 = Gentics Mesh Changelog
 
+== 0.11.3 (TBD)
+
+icon:plus[] GraphQL: The underlying graphql-java library was updated to version 6.0
+
 == 0.11.2 (21.11.2017)
 
 icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.30
