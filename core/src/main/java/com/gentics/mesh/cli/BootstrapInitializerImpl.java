@@ -317,8 +317,8 @@ public class BootstrapInitializerImpl implements BootstrapInitializer {
 		VertxOptions vertxOptions = new VertxOptions();
 		vertxOptions.setClustered(options.getClusterOptions().isEnabled());
 		vertxOptions.setBlockedThreadCheckInterval(1000 * 60 * 60);
-		// TODO configure worker pool size
-		vertxOptions.setWorkerPoolSize(12);
+		vertxOptions.setWorkerPoolSize(options.getVertxOptions().getWorkerPoolSize());
+		vertxOptions.setEventLoopPoolSize(options.getVertxOptions().getEventPoolSize());
 		if (vertxOptions.isClustered()) {
 			log.info("Creating clustered Vert.x instance");
 			mesh.setVertx(createClusteredVertx(options, vertxOptions, (HazelcastInstance) db.getHazelcast()));

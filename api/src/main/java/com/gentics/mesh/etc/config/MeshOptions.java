@@ -32,6 +32,10 @@ public class MeshOptions {
 	private HttpServerConfig httpServerOptions = new HttpServerConfig();
 
 	@JsonProperty(required = true)
+	@JsonPropertyDescription("Vert.x specific options.")
+	private VertxOptions vertxOptions = new VertxOptions();
+
+	@JsonProperty(required = true)
 	@JsonPropertyDescription("Cluster options.")
 	private ClusterOptions clusterOptions = new ClusterOptions();
 
@@ -140,6 +144,10 @@ public class MeshOptions {
 	@JsonProperty("httpServer")
 	public HttpServerConfig getHttpServerOptions() {
 		return httpServerOptions;
+	}
+
+	public VertxOptions getVertxOptions() {
+		return vertxOptions;
 	}
 
 	@JsonProperty("cluster")
