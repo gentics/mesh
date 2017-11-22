@@ -12,6 +12,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.syncleus.ferma.tx.Tx;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.context.GraphQLContext;
@@ -76,9 +77,9 @@ public class GraphQLHandler {
 			}
 			if (result.getData() != null) {
 				Map<String, Object> data = (Map<String, Object>) result.getData();
-				response.put("data", new JsonObject(JsonUtil.toJson(data)));
+				response.put("data", new JsonObject(data));
 			}
-			gc.send(response.toString(), OK);
+			gc.send(response.encodePrettily(), OK);
 		}
 
 	}
