@@ -189,11 +189,11 @@ public class ElasticSearchProvider implements SearchProvider {
 				log.debug("Timeout of {" + timeoutInSec + "} reached.");
 				break;
 			}
-			log.debug("Checking cluster status...");
+			log.debug("Checking elasticsearch status...");
 			ClusterHealthResponse response = client.admin().cluster().prepareHealth().get(TimeValue.timeValueSeconds(10));
-			log.debug("Elasticsearch cluster status is:" + response.getStatus());
+			log.debug("Elasticsearch status is: " + response.getStatus());
 			if (response.getStatus() != ClusterHealthStatus.RED) {
-				log.info("Cluster status {" + response.getStatus() + "}. Releasing lock after " + (System.currentTimeMillis() - start) + " ms");
+				log.info("Elasticsearch status {" + response.getStatus() + "}. Releasing lock after " + (System.currentTimeMillis() - start) + " ms");
 				return;
 			}
 			try {
@@ -203,7 +203,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 
 		}
-		throw new RuntimeException("Elasticsearch cluster was not ready within set timeout of  {" + timeoutInSec + "} seconds");
+		throw new RuntimeException("Elasticsearch was not ready within set timeout of {" + timeoutInSec + "} seconds.");
 
 	}
 

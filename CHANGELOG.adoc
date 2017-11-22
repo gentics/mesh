@@ -4,6 +4,8 @@
 
 == 0.11.3 (TBD)
 
+icon:plus[] Logging: The logging verbosity was reduced.
+
 icon:plus[] GraphQL: It is now possible to load a list of all languages of a node via the added `.languages` field.
 
 icon:plus[] GraphQL: The underlying graphql-java library was updated to version 6.0

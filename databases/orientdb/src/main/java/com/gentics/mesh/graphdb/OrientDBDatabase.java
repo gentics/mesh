@@ -33,6 +33,7 @@ import com.gentics.mesh.Mesh;
 import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterInstanceInfo;
 import com.gentics.mesh.core.rest.admin.cluster.ClusterStatusResponse;
+import com.gentics.mesh.core.rest.error.GenericRestException;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.GraphStorageOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
@@ -852,6 +853,9 @@ public class OrientDBDatabase extends AbstractDatabase {
 			} catch (ORecordDuplicatedException e) {
 				log.error(e);
 				throw error(INTERNAL_SERVER_ERROR, "error_internal");
+			} catch (GenericRestException e) {
+				// Don't log. Just throw it along so that others can handle it
+				throw e;
 			} catch (RuntimeException e) {
 				log.error("Error handling transaction", e);
 				throw e;
