@@ -7,6 +7,7 @@ import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 
 import rx.Completable;
 
@@ -47,14 +48,6 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	Class<?> getElementClass();
 
 	/**
-	 * Handle the search queue update mapping entry.
-	 * 
-	 * @param entry
-	 * @return
-	 */
-	Completable updateMapping(CreateIndexEntry entry);
-
-	/**
 	 * Delete the document with the given UUID and document type from the search index.
 	 * 
 	 * @param entry
@@ -84,7 +77,7 @@ public interface IndexHandler<T extends MeshCoreVertex<?, T>> {
 	 * 
 	 * @return Map with index information
 	 */
-	Map<String, String> getIndices();
+	Map<String, IndexInfo> getIndices();
 
 	/**
 	 * Get the names of all selected indices. The action context will be examined to determine the project scope and the release scope. If possible even the

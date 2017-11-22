@@ -853,7 +853,7 @@ public class NodeMigrationActionContextImpl extends AbstractInternalActionContex
 	}
 
 	@Override
-	public void send(String body, HttpResponseStatus status) {
+	public void send(String body, HttpResponseStatus status, String contentType) {
 		// TODO Auto-generated method stub
 	}
 

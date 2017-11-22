@@ -3,8 +3,10 @@ package com.gentics.mesh.assertj.impl;
 import static com.gentics.mesh.assertj.MeshAssertions.assertThat;
 import static com.gentics.mesh.core.data.ContainerType.DRAFT;
 import static com.gentics.mesh.core.data.ContainerType.PUBLISHED;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Arrays;
 
@@ -19,6 +21,8 @@ import com.gentics.mesh.core.data.TagFamily;
 import com.gentics.mesh.core.data.node.Node;
 import com.gentics.mesh.search.DummySearchProvider;
 
+import io.vertx.core.json.JsonObject;
+
 public class DummySearchProviderAssert extends AbstractAssert<DummySearchProviderAssert, DummySearchProvider> {
 
 	public DummySearchProviderAssert(DummySearchProvider actual) {
@@ -28,8 +32,8 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	public DummySearchProviderAssert recordedStoreEvents(int count) {
 		isNotNull();
 		String info = actual.getStoreEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
-		assertEquals("The search provider did not record the correct amount of store events. Found events: {\n" + info + "\n}", count,
-				actual.getStoreEvents().size());
+		assertEquals("The search provider did not record the correct amount of store events. Found events: {\n" + info + "\n}", count, actual
+				.getStoreEvents().size());
 		return this;
 	}
 
@@ -56,15 +60,15 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @param documentId
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert hasStore(String indexName, String indexType, String documentId) {
-		String key = indexName + "-" + indexType + "-" + documentId;
+	public DummySearchProviderAssert hasStore(String indexName, String documentId) {
+		String key = indexName + "-" + documentId;
 		boolean hasKey = actual.getStoreEvents().containsKey(key);
 		if (!hasKey) {
 			for (String event : actual.getStoreEvents().keySet()) {
 				System.out.println("Recorded store event: " + event);
 			}
 		}
-		assertTrue("The store event could not be found. {" + indexName + "} {" + indexType + "} {" + documentId + "}", hasKey);
+		assertTrue("The store event could not be found. {" + indexName + "} {" + documentId + "}", hasKey);
 		return this;
 	}
 
@@ -75,13 +79,13 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @return Fluent API
 	 */
 	public DummySearchProviderAssert hasCreate(String indexName) {
-		boolean hasKey = actual.getCreateIndexEvents().contains(indexName);
-		if (!hasKey) {
-			for (String event : actual.getCreateIndexEvents()) {
+		JsonObject indexInfo = actual.getCreateIndexEvents().get(indexName);
+		if (indexInfo == null) {
+			for (String event : actual.getCreateIndexEvents().keySet()) {
 				System.out.println("Recorded create event: " + event);
 			}
+			fail("The create event could not be found. {" + indexName + "}");
 		}
-		assertTrue("The create event could not be found. {" + indexName + "}", hasKey);
 		return this;
 	}
 
@@ -89,19 +93,18 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * Verify that the search provider recorded the given delete event.
 	 * 
 	 * @param indexName
-	 * @param indexType
 	 * @param documentId
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert hasDelete(String indexName, String indexType, String documentId) {
-		String key = indexName + "-" + indexType + "-" + documentId;
+	public DummySearchProviderAssert hasDelete(String indexName, String documentId) {
+		String key = indexName + "-" + documentId;
 		boolean hasKey = actual.getDeleteEvents().contains(key);
 		if (!hasKey) {
 			for (String event : actual.getDeleteEvents()) {
 				System.out.println("Recorded delete event: " + event);
 			}
 		}
-		assertTrue("The delete event could not be found. {" + indexName + "} - {" + indexType + "} - {" + documentId + "}", hasKey);
+		assertTrue("The delete event could not be found. {" + indexName + "} - {" + documentId + "}", hasKey);
 		return this;
 	}
 
@@ -123,35 +126,15 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	}
 
 	/**
-	 * Verify that the search provider recorded the given update mapping event.
-	 * 
-	 * @param indexName
-	 * @param type
-	 * @return
-	 */
-	public DummySearchProviderAssert hasUpdateMapping(String indexName, String type) {
-		boolean hasDrop = actual.getUpdateMappingEvents().containsKey(indexName + "-" + type);
-		if (!hasDrop) {
-			for (String event : actual.getUpdateMappingEvents().keySet()) {
-				System.out.println("Recorded update mapping event: " + event);
-			}
-		}
-		assertTrue("The update mapping event could not be found. {" + indexName + "-" + type + "}", hasDrop);
-		return this;
-	}
-
-	/**
 	 * Assert that the correct count of events was registered.
 	 * 
 	 * @param storeEvents
 	 * @param deleteEvents
 	 * @param dropIndexEvents
 	 * @param createIndexEvents
-	 * @param updateMappingEvents
 	 * @return Fluent API
 	 */
-	public DummySearchProviderAssert hasEvents(int storeEvents, int deleteEvents, int dropIndexEvents, int createIndexEvents,
-			int updateMappingEvents) {
+	public DummySearchProviderAssert hasEvents(int storeEvents, int deleteEvents, int dropIndexEvents, int createIndexEvents) {
 		String storeInfo = actual.getStoreEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
 		assertEquals("The search provider did not record the correct amount of store events. Found events: {\n" + storeInfo + "\n}", storeEvents,
 				actual.getStoreEvents().size());
@@ -164,13 +147,9 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 		assertEquals("The search provider did not record the correct amount of drop index events. Found events: {\n" + dropInfo + "\n}",
 				dropIndexEvents, actual.getDropIndexEvents().size());
 
-		String createInfo = actual.getCreateIndexEvents().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
+		String createInfo = actual.getCreateIndexEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
 		assertEquals("The search provider did not record the correct amount of create index events. Found events: {\n" + createInfo + "\n}",
 				createIndexEvents, actual.getCreateIndexEvents().size());
-
-		String updateMappingInfo = actual.getUpdateMappingEvents().keySet().stream().map(Object::toString).reduce((t, u) -> t + "\n" + u).orElse("");
-		assertEquals("The search provider did not record the correct amount of update mapping events. Found events: {\n" + updateMappingInfo + "\n}",
-				updateMappingEvents, actual.getUpdateMappingEvents().size());
 
 		return this;
 	}
@@ -190,7 +169,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 				String releaseUuid = release.getUuid();
 				String schemaVersionUuid = node.getSchemaContainer().getLatestVersion().getUuid();
 				assertThat(actual).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaVersionUuid, type),
-						NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), lang));
+						NodeGraphFieldContainer.composeDocumentId(node.getUuid(), lang));
 			}
 		}
 		return this;
@@ -203,7 +182,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @return Fluent API
 	 */
 	public DummySearchProviderAssert stored(Tag tag) {
-		assertThat(actual).hasStore(Tag.composeIndexName(tag.getProject().getUuid()), Tag.composeTypeName(), Tag.composeDocumentId(tag.getUuid()));
+		assertThat(actual).hasStore(Tag.composeIndexName(tag.getProject().getUuid()), Tag.composeDocumentId(tag.getUuid()));
 		return this;
 	}
 
@@ -214,8 +193,7 @@ public class DummySearchProviderAssert extends AbstractAssert<DummySearchProvide
 	 * @return Fluent API
 	 */
 	public DummySearchProviderAssert stored(TagFamily tagfamily) {
-		assertThat(actual).hasStore(TagFamily.composeIndexName(tagfamily.getProject().getUuid()), TagFamily.composeTypeName(),
-				TagFamily.composeDocumentId(tagfamily.getUuid()));
+		assertThat(actual).hasStore(TagFamily.composeIndexName(tagfamily.getProject().getUuid()), TagFamily.composeDocumentId(tagfamily.getUuid()));
 		return this;
 	}
 

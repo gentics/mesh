@@ -13,7 +13,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -37,6 +36,7 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.google.common.collect.Iterators;
 
 import io.vertx.ext.web.RoutingContext;
 
@@ -81,8 +81,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 
 			// Meta vertices
 			batchEnttries.put("project.tagFamilyRoot", new ElementEntry(null, project().getTagFamilyRoot().getUuid()));
-			batchEnttries.put("project.schemaContainerRoot",
-					new ElementEntry(null, project().getSchemaContainerRoot().getUuid()));
+			batchEnttries.put("project.schemaContainerRoot", new ElementEntry(null, project().getSchemaContainerRoot().getUuid()));
 			batchEnttries.put("project.nodeRoot", new ElementEntry(null, project().getNodeRoot().getUuid()));
 			batchEnttries.put("project.baseNode", new ElementEntry(null, project().getBaseNode().getUuid()));
 
@@ -93,8 +92,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 
 			// Project tagFamilies
 			for (TagFamily tagFamily : project().getTagFamilyRoot().findAllIt()) {
-				batchEnttries.put("project tagfamily " + tagFamily.getName(),
-						new ElementEntry(DROP_INDEX, tagFamily.getUuid()));
+				batchEnttries.put("project tagfamily " + tagFamily.getName(), new ElementEntry(DROP_INDEX, tagFamily.getUuid()));
 
 				// tags
 				for (Tag tag : tagFamily.findAllIt()) {
@@ -115,9 +113,9 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			ProjectRoot projectRoot = meshRoot().getProjectRoot();
-			int nProjectsBefore = projectRoot.findAll().size();
+			long nProjectsBefore = projectRoot.computeCount();
 			assertNotNull(projectRoot.create("test1234556", user(), schemaContainer("folder").getLatestVersion()));
-			int nProjectsAfter = projectRoot.findAll().size();
+			long nProjectsAfter = projectRoot.computeCount();
 			assertEquals(nProjectsBefore + 1, nProjectsAfter);
 		}
 	}
@@ -126,8 +124,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindAllVisible() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			Page<? extends Project> page = meshRoot().getProjectRoot().findAll(mockActionContext(),
-					new PagingParametersImpl(1, 25));
+			Page<? extends Project> page = meshRoot().getProjectRoot().findAll(mockActionContext(), new PagingParametersImpl(1, 25));
 			assertNotNull(page);
 		}
 	}
@@ -136,9 +133,8 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testFindAll() {
 		try (Tx tx = tx()) {
-			List<? extends Project> projects = meshRoot().getProjectRoot().findAll();
-			assertNotNull(projects);
-			assertEquals(1, projects.size());
+			long size = Iterators.size(meshRoot().getProjectRoot().findAllIt().iterator());
+			assertEquals(1, size);
 		}
 	}
 
@@ -180,8 +176,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreateDelete() throws Exception {
 		try (Tx tx = tx()) {
-			Project project = meshRoot().getProjectRoot().create("newProject", user(),
-					schemaContainer("folder").getLatestVersion());
+			Project project = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			assertNotNull(project);
 			String uuid = project.getUuid();
 			SearchQueueBatch batch = createBatch();
@@ -203,15 +198,13 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			// 1. Give the user create on the project root
 			role().grantPermissions(meshRoot().getProjectRoot(), CREATE_PERM);
 			// 2. Create the project
-			Project project = root.getProjectRoot().create("TestProject", user(),
-					schemaContainer("folder").getLatestVersion());
-			assertFalse("The user should not have create permissions on the project.",
-					user().hasPermission(project, CREATE_PERM));
+			Project project = root.getProjectRoot().create("TestProject", user(), schemaContainer("folder").getLatestVersion());
+			assertFalse("The user should not have create permissions on the project.", user().hasPermission(project, CREATE_PERM));
 			user().addCRUDPermissionOnRole(root.getProjectRoot(), CREATE_PERM, project);
 			// 3. Assert that the crud permissions (eg. CREATE) was inherited
 			ac.data().clear();
-			assertTrue("The users role should have inherited the initial permission on the project root.",
-					user().hasPermission(project, CREATE_PERM));
+			assertTrue("The users role should have inherited the initial permission on the project root.", user().hasPermission(project,
+					CREATE_PERM));
 		}
 	}
 
@@ -225,7 +218,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 			assertNotNull(project.getBaseNode());
 			assertNotNull(project.getLanguages());
 			assertEquals(2, project.getLanguages().size());
-			assertEquals(3, project.getSchemaContainerRoot().findAll().size());
+			assertEquals(3, project.getSchemaContainerRoot().computeCount());
 		}
 	}
 
@@ -247,8 +240,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testReadPermission() {
 		try (Tx tx = tx()) {
 			Project newProject;
-			newProject = meshRoot().getProjectRoot().create("newProject", user(),
-					schemaContainer("folder").getLatestVersion());
+			newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.READ_PERM, newProject);
 		}
 	}
@@ -258,8 +250,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	public void testDeletePermission() {
 		try (Tx tx = tx()) {
 			Project newProject;
-			newProject = meshRoot().getProjectRoot().create("newProject", user(),
-					schemaContainer("folder").getLatestVersion());
+			newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.DELETE_PERM, newProject);
 		}
 	}
@@ -268,8 +259,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testUpdatePermission() {
 		try (Tx tx = tx()) {
-			Project newProject = meshRoot().getProjectRoot().create("newProject", user(),
-					schemaContainer("folder").getLatestVersion());
+			Project newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.UPDATE_PERM, newProject);
 		}
 	}
@@ -278,8 +268,7 @@ public class ProjectTest extends AbstractMeshTest implements BasicObjectTestcase
 	@Override
 	public void testCreatePermission() {
 		try (Tx tx = tx()) {
-			Project newProject = meshRoot().getProjectRoot().create("newProject", user(),
-					schemaContainer("folder").getLatestVersion());
+			Project newProject = meshRoot().getProjectRoot().create("newProject", user(), schemaContainer("folder").getLatestVersion());
 			testPermission(GraphPermission.CREATE_PERM, newProject);
 		}
 	}

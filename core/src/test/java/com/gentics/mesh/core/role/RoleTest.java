@@ -13,12 +13,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.context.impl.InternalRoutingActionContextImpl;
 import com.gentics.mesh.core.data.MeshAuthUser;
@@ -40,6 +38,8 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.parameter.impl.PagingParametersImpl;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.google.common.collect.Iterators;
+import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Direction;
 import com.tinkerpop.blueprints.Edge;
 
@@ -109,8 +109,8 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			role.grantPermissions(extraNode, READ_PERM);
 			assertEquals(1, countEdges(role, READ_PERM.label(), Direction.OUT));
 			role.grantPermissions(extraNode, READ_PERM);
-			assertEquals("We already got a permission edge. No additional edge should have been created.", 1,
-					countEdges(role, READ_PERM.label(), Direction.OUT));
+			assertEquals("We already got a permission edge. No additional edge should have been created.", 1, countEdges(role, READ_PERM.label(),
+					Direction.OUT));
 		}
 	}
 
@@ -183,8 +183,8 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 		try (Tx tx = tx()) {
 			role().revokePermissions(meshRoot().getGroupRoot(), CREATE_PERM);
 			User user = user();
-			assertFalse("The create permission to the groups root node should have been revoked.",
-					user.hasPermission(meshRoot().getGroupRoot(), CREATE_PERM));
+			assertFalse("The create permission to the groups root node should have been revoked.", user.hasPermission(meshRoot().getGroupRoot(),
+					CREATE_PERM));
 		}
 	}
 
@@ -193,12 +193,12 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			RoleRoot root = meshRoot().getRoleRoot();
-			int nRolesBefore = root.findAll().size();
+			long nRolesBefore = root.computeCount();
 
 			final String roleName = "test2";
 			Role role = root.create(roleName, user());
 			assertNotNull(role);
-			int nRolesAfter = root.findAll().size();
+			long nRolesAfter = root.computeCount();
 			assertEquals(nRolesBefore + 1, nRolesAfter);
 		}
 	}
@@ -229,10 +229,9 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 			try (Tx tx2 = tx()) {
 				for (Role role : roles().values()) {
 					for (GraphPermission permission : GraphPermission.values()) {
-						assertTrue(
-								"The role {" + role.getName() + "} does not grant perm {" + permission.getRestPerm().getName() + "} to the node {"
-										+ node.getUuid() + "} but it should since the parent object got this role permission.",
-								role.hasPermission(permission, node));
+						assertTrue("The role {" + role.getName() + "} does not grant perm {" + permission.getRestPerm().getName() + "} to the node {"
+								+ node.getUuid() + "} but it should since the parent object got this role permission.", role.hasPermission(permission,
+										node));
 					}
 				}
 			}
@@ -355,9 +354,8 @@ public class RoleTest extends AbstractMeshTest implements BasicObjectTestcases {
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			List<? extends Role> roles = boot().roleRoot().findAll();
-			assertNotNull(roles);
-			assertEquals(roles().size(), roles.size());
+			long size = Iterators.size(boot().roleRoot().findAllIt().iterator());
+			assertEquals(roles().size(), size);
 		}
 	}
 

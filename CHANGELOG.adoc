@@ -2,18 +2,117 @@
 
 = Gentics Mesh Changelog
 
-== 0.10.5 (TBD)
+== 0.11.3 (TBD)
+
+icon:plus[] Config: The eventloop and worker pool size can now be configured within the `mesh.yml` file.
+
+icon:plus[] Logging: The logging verbosity was reduced.
+
+icon:plus[] GraphQL: It is now possible to load a list of all languages of a node via the added `.languages` field.
+
+icon:plus[] GraphQL: The underlying graphql-java library was updated to version 6.0
+
+== 0.11.2 (21.11.2017)
+
+icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.30
+
+icon:check[] Core: Fixed a bug which caused unusual high CPU usage. link:https://github.com/gentics/mesh/issues/201[#201]
+
+== 0.11.1 (13.11.2017)
+
+icon:plus[] Elasticsearch: Add support for inline queries.
+
+icon:check[] Elasticsearch: In some cases the connection to Elasticsearch was not directly ready during startup. This caused various issues. A startup check has been added in order to prevent this.
+
+icon:check[] Schema: A bug within the schema update mechanism which removed the urlField property value has been fixed.
+
+icon:check[] Elasticsearch: A deadlock situation which could occur during schema validation was fixed.
+
+== 0.11.0 (11.11.2017)
 
 CAUTION: GraphQL: The root field `releases` has been removed. The root field `release` now takes no parameters and loads the active release.
 
 CAUTION: Elasticsearch: Search queries will now automatically be wrapped in a boolean query in order to check permissions much more efficiently. 
 
+CAUTION: The schema field property `searchIndex` / `searchIndex.addRaw` has been removed. The property was replaced by a mapping definition which can be added to each field. 
+         All schemas will automatically be migrated to the new format. Please keep in mind to also update any existing schema files which you may have stored externally.
+
+```json
+{
+  "name": "dummySchema",
+  "displayField": "name",
+  "fields": [
+    {
+      "name": "name",
+      "label": "Name",
+      "required": true,
+      "type": "string",
+      "elasticsearch": {
+        "raw": {
+          "index": "not_analyzed",
+          "type": "string"
+        }
+      }
+    }
+  ]
+}
+```
+
+icon:plus[] Schema: It is now possible to configure index settings and custom search index field mappings within the schema. 
+
+The index settings can be used to define new link:https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-analyzers.html[analyzers] and link:https://www.elastic.co/guide/en/elasticsearch/reference/current/analysis-tokenizers.html[tokenizer] or other additional link:https://www.elastic.co/guide/en/elasticsearch/guide/current/_index_settings.html[index settings].
+The specified settings will automatically be merged with a default set of settings. 
+
+Once a new analyzer has been defined it can be referenced by custom field mappings which can now be added to each field.
+The specified field mapping will be added to the generated fields property of the mapping. You can read more about this topic in the link:https://www.elastic.co/guide/en/elasticsearch/reference/current/multi-fields.html[fields mapping documentation] of Elasticsearch.
+
+```json
+{
+  "name": "dummySchema",
+  "displayField": "name",
+  "elasticsearch": {
+    "settings": {
+      "number_of_shards" :   1,
+      "number_of_replicas" : 0
+    },
+    "analysis" : {
+      "analyzer" : {
+        "suggest" : {
+          "tokenizer" : "mesh_default_ngram_tokenizer",
+          "char_filter" : [ "html_strip" ],
+          "filter" : [ "lowercase" ]
+        }
+      }
+    }
+  },
+  "fields": [
+    {
+      "name": "name",
+      "label": "Name",
+      "required": true,
+      "type": "string",
+      "elasticsearch": {
+        "suggest": {
+          "analyzer": "suggest",
+          "type": "string"
+        }
+      }
+    }
+  ]
+}
+```
+
+You can use the `POST /api/v1/utilities/validateSchema` endpoint to validate and inspect the effective index configuration.
+
+icon:plus[] REST: The `POST /api/v1/utilities/validateSchema` and `POST /api/v1/utilities/validateMicroschema` endpoints can now be used to validate a schema/microschema JSON without actually storing it.
+                     The validation response will also contain the generated Elasticsearch index configuration.
+
 icon:plus[] GraphQL: Nodes can now be loaded in the context of a schema. This will return all nodes which use the schema.
 
-icon:plus[] Search: The `/api/v1/rawSearch/..` and `/api/v1/:projectName/rawSearch/..` endpoints have been added. These endpoint can be used to invoke search requests which will return the raw elasticsearch response JSON. 
-            The needed indices will automatically be selected in order to only return the type specific documents. Read permissions on the document will also be automatically checked. 
+icon:plus[] Search: The `/api/v1/rawSearch/..` and `/api/v1/:projectName/rawSearch/..` endpoints have been added. These can be used to invoke search requests which will return the raw elasticsearch response JSON. 
+                       The needed indices will automatically be selected in order to only return the type specific documents. Read permissions on the document will also be automatically checked.
 
-icon:plus[] Search: Error information for failed elasticsearch queries will now be added to the response.
+icon:plus[] Search: Error information for failed Elasticsearch queries will now be added to the response.
 
 icon:plus[] Webroot: The schema property `urlFields` can now used to specify fields which contain webroot paths.
                      The webroot endpoint in turn will first try to find a node which specified the requested path.
@@ -23,7 +122,6 @@ icon:plus[] Webroot: The schema property `urlFields` can now used to specify fie
 icon:check[] Performance: Optimized binary download memory usage.
 
 icon:check[] REST: Fixed a bug which prevented pages with more then 2000 items from being loaded.
-
 
 == 0.10.4 (10.10.2017)
 

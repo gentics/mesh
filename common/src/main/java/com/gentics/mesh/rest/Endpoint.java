@@ -14,6 +14,7 @@ import com.gentics.mesh.example.SchemaExamples;
 import com.gentics.mesh.example.TagExamples;
 import com.gentics.mesh.example.TagFamilyExamples;
 import com.gentics.mesh.example.UserExamples;
+import com.gentics.mesh.example.UtilityExamples;
 import com.gentics.mesh.example.VersioningExamples;
 
 /**
@@ -46,5 +47,6 @@ public interface Endpoint {
 	static AdminExamples adminExamples = new AdminExamples();
 	static JobExamples jobExamples = new JobExamples();
 	static ReleaseExamples releaseExamples = new ReleaseExamples();
+	static UtilityExamples utilityExamples = new UtilityExamples();
 
 }

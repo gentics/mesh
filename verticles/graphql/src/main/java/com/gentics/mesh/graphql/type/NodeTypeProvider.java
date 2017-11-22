@@ -138,6 +138,20 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 		}).collect(Collectors.toList());
 	}
 
+	public Object languagesFetcher(DataFetchingEnvironment env) {
+		NodeContent content = env.getSource();
+		if (content == null) {
+			return null;
+		}
+		GraphQLContext gc = env.getContext();
+		Release release = gc.getRelease();
+		ContainerType type = ContainerType.forVersion(gc.getVersioningParameters().getVersion());
+
+		return content.getNode().getGraphFieldContainers(release, type).stream().map(item -> {
+			return new NodeContent(content.getNode(), item);
+		}).collect(Collectors.toList());
+	}
+
 	/**
 	 * Handle the language fallback within graphql queries when dealing with nodes. This method loads the container which best matches the current query
 	 * situation. A list of languages is constructed in order to apply the fallback and load the matching container from the given node.
@@ -188,7 +202,7 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 
 		// .availableLanguages
 		nodeType.field(newFieldDefinition().name("availableLanguages").description("List all available languages for the node").type(new GraphQLList(
-				GraphQLString)).dataFetcher((env) -> {
+				GraphQLString)).dataFetcher(env -> {
 					NodeContent content = env.getSource();
 					if (content == null) {
 						return null;
@@ -197,9 +211,13 @@ public class NodeTypeProvider extends AbstractTypeProvider {
 					return content.getNode().getAvailableLanguageNames();
 				}));
 
+		// .languages
+		nodeType.field(newFieldDefinition().name("languages").description("Load all languages of the node").type(new GraphQLList(
+				new GraphQLTypeReference(NODE_TYPE_NAME))).dataFetcher(this::languagesFetcher));
+
 		// .child
 		nodeType.field(newFieldDefinition().name("child").description("Resolve a webroot path to a specific child node.").argument(createPathArg())
-				.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher((env) -> {
+				.type(new GraphQLTypeReference(NODE_TYPE_NAME)).dataFetcher(env -> {
 					String nodePath = env.getArgument("path");
 					if (nodePath != null) {
 						GraphQLContext gc = env.getContext();

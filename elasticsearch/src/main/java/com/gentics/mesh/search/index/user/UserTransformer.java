@@ -1,11 +1,7 @@
 package com.gentics.mesh.search.index.user;
 
 import static com.gentics.mesh.search.index.MappingHelper.NAME_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.OBJECT;
-import static com.gentics.mesh.search.index.MappingHelper.STRING;
 import static com.gentics.mesh.search.index.MappingHelper.UUID_KEY;
-import static com.gentics.mesh.search.index.MappingHelper.notAnalyzedType;
-import static com.gentics.mesh.search.index.MappingHelper.trigramStringType;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -75,24 +71,4 @@ public class UserTransformer extends AbstractTransformer<User> {
 		groupFields.put(NAME_KEY, groupNames);
 		document.put(GROUPS_KEY, groupFields);
 	}
-
-	@Override
-	public JsonObject getMappingProperties() {
-		JsonObject props = new JsonObject();
-		props.put(USERNAME_KEY, trigramStringType());
-		props.put(LASTNAME_KEY, trigramStringType());
-		props.put(FIRSTNAME_KEY, trigramStringType());
-		props.put(EMAIL_KEY, notAnalyzedType(STRING));
-		props.put(NODEREFERECE_KEY, notAnalyzedType(STRING));
-		props.put(GROUPS_KEY, new JsonObject()
-			.put("type", OBJECT)
-			.put("properties", new JsonObject()
-				.put(NAME_KEY, trigramStringType())
-				.put(UUID_KEY, notAnalyzedType(STRING))
-			)
-		);
-
-		return props;
-	}
-
 }

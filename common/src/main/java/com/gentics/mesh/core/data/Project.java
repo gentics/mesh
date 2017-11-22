@@ -51,15 +51,6 @@ public interface Project
 	}
 
 	/**
-	 * Compose the index type for the project index.
-	 * 
-	 * @return
-	 */
-	static String composeIndexType() {
-		return TYPE.toLowerCase();
-	}
-
-	/**
 	 * Compose the document id for project index documents.
 	 * 
 	 * @param projectUuid

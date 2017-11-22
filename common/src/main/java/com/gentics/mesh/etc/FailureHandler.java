@@ -69,7 +69,7 @@ public class FailureHandler implements Handler<RoutingContext> {
 		} else {
 			Throwable failure = rc.failure();
 
-			//TODO instead of unwrapping we should return all the exceptions we can and use ExceptionResponse to nest those exceptions
+			// TODO instead of unwrapping we should return all the exceptions we can and use ExceptionResponse to nest those exceptions
 			// Unwrap wrapped exceptions
 			while (failure != null && failure.getCause() != null) {
 				if (failure instanceof AbstractRestException || failure instanceof JsonMappingException) {
@@ -85,9 +85,14 @@ public class FailureHandler implements Handler<RoutingContext> {
 			}
 
 			int code = getResponseStatusCode(failure);
-			if (code == 404) {
+			switch (code) {
+			case 404:
 				log.error("Could not find resource for path {" + rc.normalisedPath() + "?" + rc.request().query() + "}");
-			} else {
+				break;
+			case 403:
+				log.error("Request for request in path: " + rc.normalisedPath() + "?" + rc.request().query() + " is not authorized.");
+				break;
+			default:
 				log.error("Error for request in path: " + rc.normalisedPath() + "?" + rc.request().query());
 				if (failure != null) {
 					log.error("Error:", failure);
@@ -124,8 +129,9 @@ public class FailureHandler implements Handler<RoutingContext> {
 	 * Try to translate the nested i18n message key.
 	 * 
 	 * @param error
+	 * @param rc
 	 */
-	private void translateMessage(AbstractRestException error, RoutingContext rc) {
+	private static void translateMessage(AbstractRestException error, RoutingContext rc) {
 		String i18nMsg = error.getI18nKey();
 		try {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);

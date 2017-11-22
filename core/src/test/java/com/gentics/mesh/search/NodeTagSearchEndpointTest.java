@@ -26,7 +26,7 @@ public class NodeTagSearchEndpointTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		String query = getESQuery("tag.es");
+		String query = getESText("tag.es");
 
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query));
 		assertThat(response.getData()).isNotEmpty();
@@ -39,7 +39,7 @@ public class NodeTagSearchEndpointTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		String query = getESQuery("failing-query.es");
+		String query = getESText("failing-query.es");
 		MeshRestClientMessageException error = call(() -> client().searchNodes(PROJECT_NAME, query), BAD_REQUEST, "search_error_query");
 		GenericMessageResponse message = error.getResponseMessage();
 		assertNotNull("Detailed info not found", message.getProperties().get("cause-0"));
@@ -53,7 +53,7 @@ public class NodeTagSearchEndpointTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		String query = getESQuery("tags.es");
+		String query = getESText("tags.es");
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query, new PagingParametersImpl().setPerPage(0)));
 		assertThat(response.getData()).isEmpty();
 		assertEquals(1, response.getMetainfo().getPageCount());
@@ -65,7 +65,7 @@ public class NodeTagSearchEndpointTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		String query = getESQuery("tags.es");
+		String query = getESText("tags.es");
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query));
 		assertThat(response.getData()).isNotEmpty().hasSize(1);
 		String title = response.getData().get(0).getFields().getStringField("title").getString();

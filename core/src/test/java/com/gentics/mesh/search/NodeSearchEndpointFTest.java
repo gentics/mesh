@@ -32,7 +32,7 @@ public class NodeSearchEndpointFTest extends AbstractNodeSearchEndpointTest {
 			recreateIndices();
 		}
 
-		String query = getESQuery("contentSchemaTermQuery.es");
+		String query = getESText("contentSchemaTermQuery.es");
 		NodeListResponse response = call(() -> client().searchNodes(PROJECT_NAME, query, new VersioningParametersImpl().draft()));
 		assertNotNull(response);
 		assertFalse(response.getData().isEmpty());

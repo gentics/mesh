@@ -134,7 +134,7 @@ public class JobEndpointTest extends AbstractMeshTest {
 			return job.getUuid();
 		});
 
-		String job2Uuid = tx(() -> {
+		tx(() -> {
 			SchemaContainer schema = schemaContainer("content");
 			Job job = boot().jobRoot().enqueueSchemaMigration(user(), initialRelease(), schema.getLatestVersion(), schema.getLatestVersion());
 			return job.getUuid();

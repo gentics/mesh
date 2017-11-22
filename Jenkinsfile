@@ -55,7 +55,7 @@ node("docker") {
 				serviceAccount: 'jenkins',
 				volumes: [
 					emptyDirVolume(memory: false, mountPath: '/var/run'),
-					persistentVolumeClaim(claimName: 'jenkins-maven-repository', mountPath: '/home/jenkins/.m2/repository', readOnly: false),
+					hostPathVolume(hostPath: '/opt/jenkins-slave/maven-repo', mountPath: '/home/jenkins/.m2/repository'),
 					persistentVolumeClaim(claimName: 'jenkins-credentials', mountPath: '/home/jenkins/credentials', readOnly: true)
 				], 
 				workspaceVolume: emptyDirWorkspaceVolume(false)) {
@@ -106,7 +106,7 @@ node("docker") {
 											sh "mv includes-${postfix} inclusions.txt"
 											sshagent(["git"]) {
 												try {
-													sh "mvn -fae -Dmaven.javadoc.skip=true -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!distributed,!performance-tests' clean package"
+													sh "mvn -fae -Dmaven.javadoc.skip=true -Dskip.cluster.tests=true -Dmaven.test.failure.ignore=true -B -U -e -P inclusions -pl '!demo,!doc,!performance-tests' clean package"
 												} finally {
 													step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
 												}
@@ -154,9 +154,13 @@ node("docker") {
 
 						stage("Docker Build") {
 							if (Boolean.valueOf(params.runDocker)) {
+								// demo
 								sh "rm demo/target/*sources.jar"
+								sh "cd demo ; docker build -t gentics/mesh-demo:latest -t gentics/mesh-demo:" + version + " . "
+								
+								// server
 								sh "rm server/target/*sources.jar"
-								sh "captain build"
+								sh "cd server ; docker build -t gentics/mesh:latest -t gentics/mesh:" + version + " . "
 							} else {
 								echo "Docker build skipped.."
 							}
@@ -189,7 +193,10 @@ node("docker") {
 								if (Boolean.valueOf(params.runDocker)) {
 									withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'dockerhub_login', passwordVariable: 'DOCKER_HUB_PASSWORD', usernameVariable: 'DOCKER_HUB_USERNAME']]) {
 										sh 'docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD'
-										sh "captain push"
+										sh 'docker push gentics/mesh-demo:latest'
+										sh 'docker push gentics/mesh-demo:' + version
+										sh 'docker push gentics/mesh:latest'
+										sh 'docker push gentics/mesh:' + version
 									}
 								}
 							} else {

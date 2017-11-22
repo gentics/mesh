@@ -1,7 +1,7 @@
 [![License](http://img.shields.io/:license-apache-brightgreen.svg)](http://www.apache.org/licenses/LICENSE-2.0.html)
-[![Stack Overflow](http://img.shields.io/:stack%20overflow-genticsmesh-brightgreen.svg)](http://stackoverflow.com/questions/tagged/mesh-cms)
+[![Stack Overflow](http://img.shields.io/:stack%20overflow-genticsmesh-brightgreen.svg)](http://stackoverflow.com/questions/tagged/gentics-mesh)
 
-# Gentics Mesh
+# Gentics Mesh  
 
 Gentics Mesh is an Open Source API-first CMS for developers. All contents can be stored/updated and retrieved using the [REST API](https://getmesh.io/docs/beta/raml/).
 

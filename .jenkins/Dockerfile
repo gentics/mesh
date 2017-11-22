@@ -82,10 +82,6 @@ RUN chown jenkins: /home/jenkins/.gitconfig
 
 RUN chown jenkins: /opt -R
 
-# Setup docker captain
-RUN curl -L https://github.com/harbur/captain/releases/download/v1.0.0/captain_linux_amd64 > /usr/local/bin/captain
-RUN chmod +x /usr/local/bin/captain
-
 # Fix docker socket permission issue
 RUN groupadd -g 117 docker && usermod -aG docker jenkins
 

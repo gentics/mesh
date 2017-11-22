@@ -17,6 +17,6 @@ public class SearchQueueBatchTest extends AbstractMeshTest {
 		System.out.println(batch);
 		batch = meshDagger().searchQueue().create();
 		System.out.println(batch);
-		batch.createIndex(null, null, User.class);
+		batch.createIndex(null, User.class);
 	}
 }

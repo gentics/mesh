@@ -3,7 +3,9 @@ package com.gentics.mesh.util;
 import static com.gentics.mesh.core.rest.common.Permission.READ;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -35,6 +37,24 @@ public class JsonUtilTest {
 	@Test(expected = GenericRestException.class)
 	public void testToJson() {
 		JsonUtil.toJson(new Loop());
+	}
+
+	@Test
+	public void testCompareJson() {
+		JsonObject a = new JsonObject();
+		a.put("a", "b");
+		JsonObject b = new JsonObject();
+		b.put("a", "b");
+		assertTrue(a.equals(b));
+
+		b.put("a", "c");
+		assertFalse(a.equals(b));
+
+		b.put("a", "b");
+		assertTrue(a.equals(b));
+
+		a.put("another", "value");
+		assertFalse(a.equals(b));
 	}
 
 	@Test

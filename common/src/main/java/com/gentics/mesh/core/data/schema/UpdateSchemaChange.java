@@ -5,6 +5,8 @@ import java.util.List;
 import com.gentics.mesh.core.rest.schema.Schema;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * Change entry that contains information on how to change schema specific attributes.
  */
@@ -67,5 +69,19 @@ public interface UpdateSchemaChange extends FieldSchemaContainerUpdateChange<Sch
 	 * @return
 	 */
 	List<String> getURLFields();
+
+	/**
+	 * Return the index options which were stored with this change.
+	 * 
+	 * @return
+	 */
+	JsonObject getIndexOptions();
+
+	/**
+	 * Set the index options.
+	 * 
+	 * @param indexOptions
+	 */
+	void setIndexOptions(JsonObject indexOptions);
 
 }

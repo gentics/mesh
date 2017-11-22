@@ -1,5 +1,7 @@
 package com.gentics.mesh.handler;
 
+import static com.gentics.mesh.http.HttpConstants.APPLICATION_JSON_UTF8;
+
 import java.util.Locale;
 import java.util.Map;
 
@@ -7,6 +9,7 @@ import com.gentics.mesh.core.rest.error.GenericRestException;
 
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.MultiMap;
+import io.vertx.core.http.HttpHeaders;
 
 /**
  * Abstraction of the vertx-web routing context.
@@ -72,7 +75,9 @@ public interface ActionContext {
 	 * @param statusCode
 	 *            the status code to send
 	 */
-	void send(String body, HttpResponseStatus statusCode);
+	default void send(String body, HttpResponseStatus statusCode) {
+		send(body, statusCode, APPLICATION_JSON_UTF8);
+	}
 
 	/**
 	 * Send the body string and complete the action with a status code of 200 OK.
@@ -83,6 +88,15 @@ public interface ActionContext {
 	default void send(String body) {
 		this.send(body, HttpResponseStatus.OK);
 	}
+
+	/**
+	 * Send the body string with the given status code and contentType.
+	 * 
+	 * @param body
+	 * @param status
+	 * @param contentType
+	 */
+	void send(String body, HttpResponseStatus status, String contentType);
 
 	/**
 	 * Return the i18n string for the given i18n key and the parameters. This method is a wrapper that will lookup the defined locale and return a matching i18n

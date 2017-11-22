@@ -5,7 +5,6 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -15,7 +14,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.ActionListener;
 import org.elasticsearch.action.search.SearchRequestBuilder;
@@ -115,12 +113,12 @@ public abstract class AbstractSearchHandler<T extends MeshCoreVertex<RM, T>, RM 
 				)
 			);
 
+		// Wrap the original query in a nested bool query in order check the role perms
 		JsonObject originalQuery = userJson.getJsonObject("query");
 		if (originalQuery != null) {
 			newQuery.getJsonObject("bool").put("must", originalQuery);
+			userJson.put("query", newQuery);
 		}
-
-		userJson.put("query", newQuery);
 
 		if (userJson.getLong("size") == null) {
 			userJson.put("size", Integer.MAX_VALUE);

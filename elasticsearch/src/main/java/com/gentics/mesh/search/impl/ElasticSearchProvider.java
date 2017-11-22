@@ -1,5 +1,7 @@
 package com.gentics.mesh.search.impl;
 
+import static com.gentics.mesh.core.rest.error.Errors.error;
+import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static org.elasticsearch.client.Requests.refreshRequest;
 
 import java.io.File;
@@ -11,14 +13,15 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.elasticsearch.action.ActionListener;
+import org.elasticsearch.action.admin.cluster.health.ClusterHealthResponse;
 import org.elasticsearch.action.admin.cluster.node.info.NodesInfoResponse;
 import org.elasticsearch.action.admin.indices.create.CreateIndexRequestBuilder;
 import org.elasticsearch.action.admin.indices.create.CreateIndexResponse;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexResponse;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequestBuilder;
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingResponse;
+import org.elasticsearch.action.admin.indices.template.delete.DeleteIndexTemplateResponse;
+import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateRequestBuilder;
+import org.elasticsearch.action.admin.indices.template.put.PutIndexTemplateResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.delete.DeleteResponse;
@@ -34,8 +37,10 @@ import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.action.update.UpdateRequestBuilder;
 import org.elasticsearch.action.update.UpdateResponse;
 import org.elasticsearch.client.Client;
+import org.elasticsearch.cluster.health.ClusterHealthStatus;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.settings.Settings.Builder;
+import org.elasticsearch.common.unit.TimeValue;
 import org.elasticsearch.index.IndexNotFoundException;
 import org.elasticsearch.index.engine.DocumentMissingException;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -47,11 +52,14 @@ import org.elasticsearch.plugins.Plugin;
 import org.elasticsearch.search.SearchHit;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.etc.config.ClusterOptions;
 import com.gentics.mesh.etc.config.ElasticSearchOptions;
 import com.gentics.mesh.etc.config.MeshOptions;
 import com.gentics.mesh.search.SearchProvider;
+import com.gentics.mesh.util.UUIDUtil;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -73,19 +81,31 @@ public class ElasticSearchProvider implements SearchProvider {
 
 	private MeshOptions options;
 
-	public static final String DEFAULT_INDEX_SETTINGS_FILENAME = "default-es-index-settings.json";
-
-	public static String DEFAULT_INDEX_SETTINGS;
-
-	static {
-		try {
-			DEFAULT_INDEX_SETTINGS = IOUtils.toString(ElasticSearchProvider.class.getResourceAsStream("/" + DEFAULT_INDEX_SETTINGS_FILENAME));
-		} catch (IOException e) {
-			throw new RuntimeException("Could not load default index settings", e);
-		}
+	public ElasticSearchProvider() {
 	}
 
-	public ElasticSearchProvider() {
+	/**
+	 * Returns the default index settings.
+	 * 
+	 * @return
+	 */
+	@Override
+	public JsonObject getDefaultIndexSettings() {
+
+		JsonObject tokenizer = new JsonObject();
+		tokenizer.put("type", "nGram");
+		tokenizer.put("min_gram", "3");
+		tokenizer.put("max_gram", "3");
+
+		JsonObject trigramsAnalyzer = new JsonObject();
+		trigramsAnalyzer.put("tokenizer", "mesh_default_ngram_tokenizer");
+		trigramsAnalyzer.put("filter", new JsonArray().add("lowercase"));
+
+		JsonObject analysis = new JsonObject();
+		analysis.put("analyzer", new JsonObject().put("trigrams", trigramsAnalyzer));
+		analysis.put("tokenizer", new JsonObject().put("mesh_default_ngram_tokenizer", tokenizer));
+		return new JsonObject().put("analysis", analysis);
+
 	}
 
 	@Override
@@ -145,6 +165,7 @@ public class ElasticSearchProvider implements SearchProvider {
 		node = new MeshNode(settings, classpathPlugins);
 		node.start();
 		client = node.client();
+		waitForCluster(client, 45);
 		if (log.isDebugEnabled()) {
 			log.debug("Waited for elasticsearch shard: " + (System.currentTimeMillis() - start) + "[ms]");
 		}
@@ -157,6 +178,32 @@ public class ElasticSearchProvider implements SearchProvider {
 		// } catch (UnknownHostException e) {
 		// e.printStackTrace();
 		// }
+
+	}
+
+	private void waitForCluster(Client client, long timeoutInSec) {
+		long start = System.currentTimeMillis();
+		// Wait until the cluster is ready
+		while (true) {
+			if ((System.currentTimeMillis() - start) / 1000 > timeoutInSec) {
+				log.debug("Timeout of {" + timeoutInSec + "} reached.");
+				break;
+			}
+			log.debug("Checking elasticsearch status...");
+			ClusterHealthResponse response = client.admin().cluster().prepareHealth().get(TimeValue.timeValueSeconds(10));
+			log.debug("Elasticsearch status is: " + response.getStatus());
+			if (response.getStatus() != ClusterHealthStatus.RED) {
+				log.info("Elasticsearch status {" + response.getStatus() + "}. Releasing lock after " + (System.currentTimeMillis() - start) + " ms");
+				return;
+			}
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+		}
+		throw new RuntimeException("Elasticsearch was not ready within set timeout of {" + timeoutInSec + "} seconds.");
 
 	}
 
@@ -211,7 +258,8 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable createIndex(String indexName) {
+	public Completable createIndex(IndexInfo info) {
+		String indexName = info.getIndexName();
 		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
 		return Completable.create(sub -> {
 			if (log.isDebugEnabled()) {
@@ -219,7 +267,8 @@ public class ElasticSearchProvider implements SearchProvider {
 			}
 			CreateIndexRequestBuilder createIndexRequestBuilder = getSearchClient().admin().indices().prepareCreate(indexName);
 
-			createIndexRequestBuilder.setSettings(createDefaultIndexSettings().toString());
+			JsonObject json = createIndexSettings(info);
+			createIndexRequestBuilder.setSource(json.encodePrettily());
 			createIndexRequestBuilder.execute(new ActionListener<CreateIndexResponse>() {
 
 				@Override
@@ -245,70 +294,21 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable updateMapping(String indexName, String type, JsonObject mapping) {
-		return Completable.create(sub -> {
-			// Check whether the search provider is a dummy provider or not
-			if (client == null) {
-				sub.onCompleted();
-				return;
-			}
-			if (log.isDebugEnabled()) {
-				log.debug("Creating mapping for index {" + indexName + "} and type {" + type + "}");
-			}
-			if (log.isTraceEnabled()) {
-				log.trace("Using mapping:\n" + mapping.encodePrettily());
-			}
-
-			PutMappingRequestBuilder mappingRequestBuilder = client.admin().indices().preparePutMapping(indexName);
-			mappingRequestBuilder.setType(type);
-
-			mappingRequestBuilder.setSource(mapping.toString());
-			mappingRequestBuilder.execute(new ActionListener<PutMappingResponse>() {
-
-				@Override
-				public void onResponse(PutMappingResponse response) {
-					sub.onCompleted();
-				}
-
-				@Override
-				public void onFailure(Throwable e) {
-					log.error("Error while updating mapping for index {" + indexName + "} and type {" + type + "}", e);
-					sub.onError(e);
-				}
-			});
-		});
-	}
-
-	/**
-	 * Create the default index settings.
-	 * 
-	 * @return
-	 */
-	private JsonObject createDefaultIndexSettings() {
-		JsonObject settings = new JsonObject(DEFAULT_INDEX_SETTINGS);
-		if (log.isDebugEnabled()) {
-			log.debug("Using index settings: ");
-			log.debug(settings.encodePrettily());
-		}
-		return settings;
-	}
-
-	@Override
-	public Single<Map<String, Object>> getDocument(String index, String type, String uuid) {
+	public Single<Map<String, Object>> getDocument(String index, String uuid) {
 		return Single.create(sub -> {
-			getSearchClient().prepareGet(index, type, uuid).execute().addListener(new ActionListener<GetResponse>() {
+			getSearchClient().prepareGet(index, DEFAULT_TYPE, uuid).execute().addListener(new ActionListener<GetResponse>() {
 
 				@Override
 				public void onResponse(GetResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Get object {" + uuid + ":" + type + "} from index {" + index + "}");
+						log.debug("Get object {" + uuid + "} from index {" + index + "}");
 					}
 					sub.onSuccess(response.getSourceAsMap());
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error("Could not get object {" + uuid + ":" + type + "} from index {" + index + "}");
+					log.error("Could not get object {" + uuid + "} from index {" + index + "}");
 					sub.onError(e);
 				}
 			});
@@ -316,16 +316,16 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable deleteDocument(String index, String type, String uuid) {
+	public Completable deleteDocument(String index, String uuid) {
 		return Completable.create(sub -> {
 			if (log.isDebugEnabled()) {
-				log.debug("Deleting document {" + uuid + ":" + type + "} from index {" + index + "}.");
+				log.debug("Deleting document {" + uuid + "} from index {" + index + "}.");
 			}
-			getSearchClient().prepareDelete(index, type, uuid).execute().addListener(new ActionListener<DeleteResponse>() {
+			getSearchClient().prepareDelete(index, DEFAULT_TYPE, uuid).execute().addListener(new ActionListener<DeleteResponse>() {
 				@Override
 				public void onResponse(DeleteResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Deleted object {" + uuid + ":" + type + "} from index {" + index + "}");
+						log.debug("Deleted object {" + uuid + "} from index {" + index + "}");
 					}
 					sub.onCompleted();
 				}
@@ -335,7 +335,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (e instanceof DocumentMissingException) {
 						sub.onCompleted();
 					} else {
-						log.error("Could not delete object {" + uuid + ":" + type + "} from index {" + index + "}");
+						log.error("Could not delete object {" + uuid + "} from index {" + index + "}");
 						sub.onError(e);
 					}
 				}
@@ -344,21 +344,22 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable updateDocument(String index, String type, String uuid, JsonObject document, boolean ignoreMissingDocumentError) {
+	public Completable updateDocument(String index, String uuid, JsonObject document, boolean ignoreMissingDocumentError) {
 		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
-				log.debug("Updating object {" + uuid + ":" + type + "} to index.");
+				log.debug("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index.");
 			}
-			UpdateRequestBuilder builder = getSearchClient().prepareUpdate(index, type, uuid);
+			UpdateRequestBuilder builder = getSearchClient().prepareUpdate(index, DEFAULT_TYPE, uuid);
 			builder.setDoc(document.toString());
 			builder.execute().addListener(new ActionListener<UpdateResponse>() {
 
 				@Override
 				public void onResponse(UpdateResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Update object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+						log.debug("Update object {" + uuid + ":" + DEFAULT_TYPE + "} to index. Duration " + (System.currentTimeMillis() - start)
+								+ "[ms]");
 					}
 					sub.onCompleted();
 				}
@@ -368,8 +369,8 @@ public class ElasticSearchProvider implements SearchProvider {
 					if (ignoreMissingDocumentError && e instanceof DocumentMissingException) {
 						sub.onCompleted();
 					} else {
-						log.error("Updating object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start)
-								+ "[ms]", e);
+						log.error("Updating object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis()
+								- start) + "[ms]", e);
 						sub.onError(e);
 					}
 				}
@@ -378,7 +379,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable storeDocumentBatch(String index, String type, Map<String, JsonObject> documents) {
+	public Completable storeDocumentBatch(String index, Map<String, JsonObject> documents) {
 		if (documents.isEmpty()) {
 			return Completable.complete();
 		}
@@ -391,7 +392,7 @@ public class ElasticSearchProvider implements SearchProvider {
 			for (Map.Entry<String, JsonObject> entry : documents.entrySet()) {
 				String documentId = entry.getKey();
 				JsonObject document = entry.getValue();
-				IndexRequestBuilder indexRequestBuilder = getSearchClient().prepareIndex(index, type, documentId);
+				IndexRequestBuilder indexRequestBuilder = getSearchClient().prepareIndex(index, DEFAULT_TYPE, documentId);
 				indexRequestBuilder.setSource(document.toString());
 				bulk.add(indexRequestBuilder);
 			}
@@ -400,16 +401,16 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onResponse(BulkResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Finished bulk  store request on index {" + index + ":" + type + "}. Duration "
-								+ (System.currentTimeMillis() - start) + "[ms]");
+						log.debug("Finished bulk  store request on index {" + index + ":" + DEFAULT_TYPE + "}. Duration " + (System
+								.currentTimeMillis() - start) + "[ms]");
 					}
 					sub.onCompleted();
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error("Bulk store on index {" + index + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start)
-							+ "[ms]", e);
+					log.error("Bulk store on index {" + index + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis()
+							- start) + "[ms]", e);
 					sub.onError(e);
 				}
 
@@ -418,13 +419,13 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
-	public Completable storeDocument(String index, String type, String uuid, JsonObject document) {
+	public Completable storeDocument(String index, String uuid, JsonObject document) {
 		return Completable.create(sub -> {
 			long start = System.currentTimeMillis();
 			if (log.isDebugEnabled()) {
-				log.debug("Adding object {" + uuid + ":" + type + "} to index {" + index + "}");
+				log.debug("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index {" + index + "}");
 			}
-			IndexRequestBuilder builder = getSearchClient().prepareIndex(index, type, uuid);
+			IndexRequestBuilder builder = getSearchClient().prepareIndex(index, DEFAULT_TYPE, uuid);
 
 			builder.setSource(document.toString());
 			builder.execute().addListener(new ActionListener<IndexResponse>() {
@@ -432,15 +433,16 @@ public class ElasticSearchProvider implements SearchProvider {
 				@Override
 				public void onResponse(IndexResponse response) {
 					if (log.isDebugEnabled()) {
-						log.debug("Added object {" + uuid + ":" + type + "} to index. Duration " + (System.currentTimeMillis() - start) + "[ms]");
+						log.debug("Added object {" + uuid + ":" + DEFAULT_TYPE + "} to index. Duration " + (System.currentTimeMillis() - start)
+								+ "[ms]");
 					}
 					sub.onCompleted();
 				}
 
 				@Override
 				public void onFailure(Throwable e) {
-					log.error("Adding object {" + uuid + ":" + type + "} to index failed. Duration " + (System.currentTimeMillis() - start) + "[ms]",
-							e);
+					log.error("Adding object {" + uuid + ":" + DEFAULT_TYPE + "} to index failed. Duration " + (System.currentTimeMillis() - start)
+							+ "[ms]", e);
 					sub.onError(e);
 				}
 			});
@@ -530,7 +532,7 @@ public class ElasticSearchProvider implements SearchProvider {
 					}
 					// Invoke the deletion for each found document
 					for (SearchHit hit : response.getHits()) {
-						obs.add(deleteDocument(hit.getIndex(), hit.getType(), hit.getId()));
+						obs.add(deleteDocument(hit.getIndex(), hit.getId()));
 					}
 					Completable.merge(obs).await();
 
@@ -552,6 +554,56 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
+	public Completable validateCreateViaTemplate(IndexInfo info) {
+		Scheduler scheduler = RxHelper.blockingScheduler(Mesh.vertx());
+		return Completable.create(sub -> {
+			JsonObject json = createIndexSettings(info);
+			if (log.isDebugEnabled()) {
+				log.debug("Validating index configuration {" + json.encodePrettily() + "}");
+			}
+
+			String randomName = info.getIndexName() + UUIDUtil.randomUUID();
+			String templateName = randomName.toLowerCase();
+			json.put("template", templateName);
+			PutIndexTemplateRequestBuilder builder = getSearchClient().admin().indices().preparePutTemplate(templateName).setSource(json
+					.encodePrettily());
+
+			builder.execute(new ActionListener<PutIndexTemplateResponse>() {
+				@Override
+				public void onResponse(PutIndexTemplateResponse response) {
+					if (log.isDebugEnabled()) {
+						log.debug("Created template {" + templateName + "} response: {" + response.toString() + "}");
+					}
+
+					Mesh.vertx().executeBlocking(bh -> {
+						getSearchClient().admin().indices().prepareDeleteTemplate(templateName).execute(
+								new ActionListener<DeleteIndexTemplateResponse>() {
+
+									@Override
+									public void onResponse(DeleteIndexTemplateResponse response) {
+										sub.onCompleted();
+									}
+
+									@Override
+									public void onFailure(Throwable e) {
+										sub.onError(e);
+									}
+
+								});
+					}, false, rh -> {
+
+					});
+				}
+
+				@Override
+				public void onFailure(Throwable e) {
+					sub.onError(error(BAD_REQUEST, "schema_error_index_validation", e.getMessage()));
+				}
+			});
+		}).observeOn(scheduler);
+	}
+
+	@Override
 	public String getVendorName() {
 		return "elasticsearch";
 	}
@@ -563,6 +615,7 @@ public class ElasticSearchProvider implements SearchProvider {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public <T> T getClient() {
 		return (T) client;
 	}

@@ -37,7 +37,7 @@ public class GroupPermissionSearchTest extends AbstractMeshTest {
 			recreateIndices();
 		}
 
-		String json = getESQuery("groupWildcard.es");
+		String json = getESText("groupWildcard.es");
 
 		GroupListResponse list = call(() -> client().searchGroups(json));
 		assertEquals("The group should not be found since the requestor has no permission to see it", 0, list.getData().size());
@@ -64,7 +64,7 @@ public class GroupPermissionSearchTest extends AbstractMeshTest {
 		String groupname = "testgroup42a";
 		GroupResponse response = createGroup(groupname);
 
-		String json = getESQuery("groupWildcard.es");
+		String json = getESText("groupWildcard.es");
 
 		GroupListResponse list = call(() -> client().searchGroups(json));
 		assertEquals("The group should be found since the requestor has permission to see it", 1, list.getData().size());

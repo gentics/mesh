@@ -89,8 +89,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 			assertNotNull(projectTagFamily);
 
 			assertNotNull(projectTagFamilyRoot.create("bogus", user()));
-			assertEquals(3, projectTagFamilyRoot.findAll().size());
-			assertEquals(3, root.findAll().size());
+			assertEquals(3, projectTagFamilyRoot.computeCount());
+			assertEquals(3, root.computeCount());
 		}
 	}
 
@@ -99,9 +99,9 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicObjectTest
 	public void testRootNode() {
 		try (Tx tx = tx()) {
 			TagFamilyRoot root = project().getTagFamilyRoot();
-			int nProjectsBefore = root.findAll().size();
+			long nProjectsBefore = root.computeCount();
 			assertNotNull(root.create("test1234556", user()));
-			int nProjectsAfter = root.findAll().size();
+			long nProjectsAfter = root.computeCount();
 			assertEquals(nProjectsBefore + 1, nProjectsAfter);
 		}
 	}

@@ -20,6 +20,8 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.graphdb.spi.Database;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * @see UpdateSchemaChange
  */
@@ -42,6 +44,7 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 
 		Schema schema = (Schema) super.apply(container);
 
+		// .displayField
 		String displayFieldname = getDisplayField();
 		if (displayFieldname != null) {
 			schema.setDisplayField(displayFieldname);
@@ -52,19 +55,28 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 			schema.setSegmentField(segmentFieldname);
 		}
 
+		// .urlFields
 		List<String> urlFields = getURLFields();
 		if (urlFields != null) {
 			schema.setUrlFields(urlFields);
 		}
 
+		// .segmentField
 		// We handle empty string as null
 		if (segmentFieldname != null && isEmpty(segmentFieldname)) {
 			schema.setSegmentField(null);
 		}
 
+		// .container
 		Boolean containerFlag = getContainerFlag();
 		if (containerFlag != null) {
 			schema.setContainer(containerFlag);
+		}
+
+		// .searchIndex
+		JsonObject options = getIndexOptions();
+		if (options != null) {
+			schema.setElasticsearch(options);
 		}
 
 		return (R) schema;
@@ -104,7 +116,7 @@ public class UpdateSchemaChangeImpl extends AbstractFieldSchemaContainerUpdateCh
 	public List<String> getURLFields() {
 		Object[] value = getRestProperty(URLFIELDS_KEY);
 		if (value == null) {
-			return new ArrayList<>();
+			return null;
 		}
 		String[] stringArray = Arrays.copyOf(value, value.length, String[].class);
 		return Arrays.asList(stringArray);

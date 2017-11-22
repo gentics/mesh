@@ -25,6 +25,7 @@ import com.gentics.mesh.core.data.User;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.root.SchemaContainerRoot;
+import com.gentics.mesh.core.data.root.impl.SchemaContainerRootImpl;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainer;
 import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
@@ -45,13 +46,9 @@ import com.gentics.mesh.parameter.SchemaUpdateParameters;
 import com.gentics.mesh.util.Tuple;
 
 import dagger.Lazy;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import rx.Single;
 
 public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, SchemaResponse> {
-
-	private static final Logger log = LoggerFactory.getLogger(SchemaCrudHandler.class);
 
 	private SchemaComparator comparator;
 
@@ -82,7 +79,8 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 			RootVertex<SchemaContainer> root = getRootVertex(ac);
 			SchemaContainer schemaContainer = root.loadObjectByUuid(ac, uuid, UPDATE_PERM);
 			SchemaUpdateRequest requestModel = JsonUtil.readValue(ac.getBodyAsString(), SchemaUpdateRequest.class);
-			requestModel.validate();
+
+			SchemaContainerRootImpl.validateSchema(requestModel);
 
 			// 2. Diff the schema with the latest version
 			SchemaChangesListModel model = new SchemaChangesListModel();
@@ -151,7 +149,7 @@ public class SchemaCrudHandler extends AbstractCrudHandler<SchemaContainer, Sche
 						}
 
 						// Assign the new version to the release
-						release.assignSchemaVersion(user,createdVersion);
+						release.assignSchemaVersion(user, createdVersion);
 					}
 				}
 				return Tuple.tuple(batch, createdVersion.getVersion());

@@ -48,6 +48,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	protected void init() {
 		super.init();
 		setProperty("uuid", UUIDUtil.randomUUID());
+		// TODO don't load the db here. Instead only load it when needed
 		this.db = MeshInternal.get().database();
 	}
 
@@ -55,6 +56,7 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	protected void init(FramedGraph graph, Element element) {
 		super.init(graph, element);
 		this.id = element.getId();
+		// TODO don't load the db here. Instead only load it when needed
 		this.db = MeshInternal.get().database();
 	}
 

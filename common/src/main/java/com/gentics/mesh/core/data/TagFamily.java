@@ -46,15 +46,6 @@ public interface TagFamily extends MeshCoreVertex<TagFamilyResponse, TagFamily>,
 		return indexName.toString();
 	}
 
-	/**
-	 * Construct the type name for tag family indices.
-	 * 
-	 * @return
-	 */
-	static String composeTypeName() {
-		return TYPE.toLowerCase();
-	}
-
 	@Override
 	default TypeInfo getTypeInfo() {
 		return TYPE_INFO;

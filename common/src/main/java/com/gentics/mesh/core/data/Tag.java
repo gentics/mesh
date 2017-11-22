@@ -47,19 +47,6 @@ public interface Tag extends MeshCoreVertex<TagResponse, Tag>, ReferenceableElem
 		return elementUuid;
 	}
 
-	static String composeIndexType() {
-		return TYPE.toLowerCase();
-	}
-
-	/**
-	 * Compose the type name for tags.
-	 * 
-	 * @return
-	 */
-	static String composeTypeName() {
-		return Tag.TYPE.toLowerCase();
-	}
-
 	@Override
 	default TypeInfo getTypeInfo() {
 		return TYPE_INFO;

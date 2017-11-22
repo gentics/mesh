@@ -37,15 +37,6 @@ public interface SchemaContainer
 	}
 
 	/**
-	 * Compose the index type for the schema index.
-	 * 
-	 * @return
-	 */
-	static String composeIndexType() {
-		return TYPE.toLowerCase();
-	}
-
-	/**
 	 * Compose the documentId for schema index documents.
 	 * 
 	 * @param schemaContainerUuid

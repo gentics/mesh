@@ -92,8 +92,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			List<TagResponse> allTags = new ArrayList<>();
 			for (int page = 1; page <= totalPages; page++) {
 				final int currentPage = page;
-				TagListResponse tagPage = call(
-						() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(currentPage, perPage)));
+				TagListResponse tagPage = call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(currentPage,
+						perPage)));
 				restResponse = tagPage;
 				int expectedItemsCount = perPage;
 				// The last page should only list 5 items
@@ -102,8 +102,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 				}
 				assertEquals("The expected item count for page {" + page + "} does not match", expectedItemsCount, restResponse.getData().size());
 				assertEquals(perPage, restResponse.getMetainfo().getPerPage());
-				assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page,
-						restResponse.getMetainfo().getCurrentPage());
+				assertEquals("We requested page {" + page + "} but got a metainfo with a different page back.", page, restResponse.getMetainfo()
+						.getCurrentPage());
 				assertEquals("The amount of total pages did not match the expected value. There are {" + totalTags + "} tags and {" + perPage
 						+ "} tags per page", totalPages, restResponse.getMetainfo().getPageCount());
 				assertEquals("The total tag count does not match.", totalTags, restResponse.getMetainfo().getTotalCount());
@@ -113,8 +113,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			assertEquals("Somehow not all users were loaded when loading all pages.", totalTags, allTags.size());
 
 			// Verify that the no_perm_tag is not part of the response
-			List<TagResponse> filteredUserList = allTags.parallelStream().filter(restTag -> restTag.getUuid().equals(noPermTagUUID))
-					.collect(Collectors.toList());
+			List<TagResponse> filteredUserList = allTags.parallelStream().filter(restTag -> restTag.getUuid().equals(noPermTagUUID)).collect(
+					Collectors.toList());
 			assertTrue("The no perm tag should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
 			call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(-1, perPage)), BAD_REQUEST,
@@ -128,8 +128,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 
 			int currentPerPage = 25;
 			totalPages = (int) Math.ceil(totalTags / (double) currentPerPage);
-			TagListResponse tagList = call(
-					() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(4242, currentPerPage)));
+			TagListResponse tagList = call(() -> client().findTags(PROJECT_NAME, basicTagFamily.getUuid(), new PagingParametersImpl(4242,
+					currentPerPage)));
 			assertEquals(0, tagList.getData().size());
 			assertEquals(4242, tagList.getMetainfo().getCurrentPage());
 			assertEquals(25, tagList.getMetainfo().getPerPage());
@@ -172,8 +172,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			String uuid = tag.getUuid();
 			TagFamily parentTagFamily = tagFamily("colors");
 
-			TagResponse response = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid,
-					new RolePermissionParametersImpl().setRoleUuid(role().getUuid())));
+			TagResponse response = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), uuid, new RolePermissionParametersImpl()
+					.setRoleUuid(role().getUuid())));
 			assertThat(response.getRolePerms()).as("Role perms").hasPerm(CREATE, READ, UPDATE, DELETE);
 		}
 	}
@@ -232,25 +232,22 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		TagResponse tag2 = call(() -> client().updateTag(PROJECT_NAME, parentTagFamilyUuid, tagUuid, tagUpdateRequest));
 		try (Tx tx = tx()) {
 			assertThat(tag2).matches(tag);
-			assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(project().getUuid()), Tag.composeIndexType(),
-					Tag.composeDocumentId(tag2.getUuid()));
+			assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(project().getUuid()), Tag.composeDocumentId(tag2.getUuid()));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			String projectUuid = project().getUuid();
 			String releaseUuid = project().getLatestRelease().getUuid();
 			for (Node node : nodes) {
 				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
 				for (ContainerType type : Arrays.asList(ContainerType.DRAFT, ContainerType.PUBLISHED)) {
-					assertThat(dummySearchProvider()).hasStore(
-							NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type),
-							NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
-					assertThat(dummySearchProvider()).hasStore(
-							NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, type),
-							NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "de"));
+					assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid,
+							schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
+					assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid,
+							schemaContainerVersionUuid, type), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "de"));
 				}
 			}
-			assertThat(dummySearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeTypeName(),
-					TagFamily.composeDocumentId(parentTagFamily.getUuid()));
-			assertThat(dummySearchProvider()).hasEvents(2 + (nodes.size() * 4), 0, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasStore(TagFamily.composeIndexName(projectUuid), TagFamily.composeDocumentId(parentTagFamily
+					.getUuid()));
+			assertThat(dummySearchProvider()).hasEvents(2 + (nodes.size() * 4), 0, 0, 0);
 
 			// 4. read the tag again and verify that it was changed
 			TagResponse reloadedTag = call(() -> client().findTagByUuid(PROJECT_NAME, parentTagFamily.getUuid(), tagUuid));
@@ -339,15 +336,14 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 			String uuid = tag.getUuid();
 			call(() -> client().deleteTag(PROJECT_NAME, parentTagFamily.getUuid(), uuid));
 
-			assertThat(dummySearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeIndexType(), Tag.composeDocumentId(uuid));
+			assertThat(dummySearchProvider()).hasDelete(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(uuid));
 			// Assert that all nodes which previously referenced the tag were updated in the index
 			for (Node node : nodes) {
 				String schemaContainerVersionUuid = node.getLatestDraftFieldContainer(english()).getSchemaContainerVersion().getUuid();
-				assertThat(dummySearchProvider()).hasStore(
-						NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid, schemaContainerVersionUuid, ContainerType.DRAFT),
-						NodeGraphFieldContainer.composeIndexType(), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
+				assertThat(dummySearchProvider()).hasStore(NodeGraphFieldContainer.composeIndexName(projectUuid, releaseUuid,
+						schemaContainerVersionUuid, ContainerType.DRAFT), NodeGraphFieldContainer.composeDocumentId(node.getUuid(), "en"));
 			}
-			assertThat(dummySearchProvider()).hasEvents(4, 1, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasEvents(4, 1, 0, 0);
 
 			tag = boot().tagRoot().findByUuid(uuid);
 			assertNull("The tag should have been deleted", tag);
@@ -408,9 +404,8 @@ public class TagEndpointTest extends AbstractMeshTest implements BasicRestTestca
 		dummySearchProvider().clear();
 		TagResponse response = call(() -> client().createTag(PROJECT_NAME, parentTagFamilyUuid, tagCreateRequest));
 		assertEquals("SomeName", response.getName());
-		assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(projectUuid), Tag.composeIndexType(),
-				Tag.composeDocumentId(response.getUuid()));
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasStore(Tag.composeIndexName(projectUuid), Tag.composeDocumentId(response.getUuid()));
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 		try (Tx tx = tx()) {
 			assertNotNull("The tag could not be found within the meshRoot.tagRoot node.", meshRoot().getTagRoot().findByUuid(response.getUuid()));
 		}

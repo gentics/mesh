@@ -1,0 +1,19 @@
+{
+	node(path:"/Neuigkeiten/2015/News_2015.en.html") {
+		# [$.data.node.availableLanguages[0]=en]
+		# [$.data.node.availableLanguages[1]=de]
+		availableLanguages
+		languages {
+			# [$.data.node.languages[0].language=en]
+			# [$.data.node.languages[1].language=de]
+			language
+			# [$.data.node.languages[0].uuid=<is-uuid>]
+			# [$.data.node.languages[1].uuid=<is-uuid>]
+			uuid
+			# [$.data.node.languages[0].path=/News/2015/News_2015.en.html]
+			# [$.data.node.languages[1].path=/Neuigkeiten/2015/News_2015.de.html]
+			path
+		}
+	}
+}
+# [$.errors=<is-undefined>]

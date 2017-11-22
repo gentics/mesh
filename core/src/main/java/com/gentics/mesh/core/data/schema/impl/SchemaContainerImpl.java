@@ -31,9 +31,9 @@ import com.gentics.mesh.graphdb.spi.Database;
 /**
  * @see SchemaContainer
  */
-public class SchemaContainerImpl
-		extends AbstractGraphFieldSchemaContainer<SchemaResponse, SchemaModel, SchemaReference, SchemaContainer, SchemaContainerVersion>
-		implements SchemaContainer {
+public class SchemaContainerImpl extends
+		AbstractGraphFieldSchemaContainer<SchemaResponse, SchemaModel, SchemaReference, SchemaContainer, SchemaContainerVersion> implements
+		SchemaContainer {
 
 	@Override
 	protected Class<? extends SchemaContainer> getContainerClass() {

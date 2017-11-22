@@ -42,15 +42,6 @@ public interface Role extends MeshCoreVertex<RoleResponse, Role>, ReferenceableE
 	}
 
 	/**
-	 * Compose the index type for the role index.
-	 * 
-	 * @return
-	 */
-	static String composeIndexType() {
-		return TYPE.toLowerCase();
-	}
-
-	/**
 	 * Compose the document id for role index documents.
 	 * 
 	 * @param roleUuid

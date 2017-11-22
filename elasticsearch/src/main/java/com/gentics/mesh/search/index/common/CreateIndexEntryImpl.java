@@ -21,26 +21,19 @@ public class CreateIndexEntryImpl extends AbstractEntry<GenericEntryContext> imp
 
 	private String indexName;
 	private Schema schema;
-	private String indexType;
 	private IndexHandler<?> indexHandler;
 	private GenericEntryContextImpl context = new GenericEntryContextImpl();
 
 	@Inject
-	public CreateIndexEntryImpl(IndexHandler<?> indexHandler, String indexName, String indexType) {
+	public CreateIndexEntryImpl(IndexHandler<?> indexHandler, String indexName) {
 		super(CREATE_INDEX);
 		this.indexName = indexName;
-		this.indexType = indexType;
 		this.indexHandler = indexHandler;
 	}
 
 	@Override
 	public String getIndexName() {
 		return this.indexName;
-	}
-
-	@Override
-	public String getIndexType() {
-		return this.indexType;
 	}
 
 	@Override
@@ -71,8 +64,7 @@ public class CreateIndexEntryImpl extends AbstractEntry<GenericEntryContext> imp
 
 	@Override
 	public String toString() {
-		return "Create Index Entry - indexName: " + getIndexName() + " type: " + getIndexType() + " handler: "
-				+ indexHandler.getClass().getSimpleName();
+		return "Create Index Entry - indexName: " + getIndexName() + " handler: " + indexHandler.getClass().getSimpleName();
 	}
 
 }

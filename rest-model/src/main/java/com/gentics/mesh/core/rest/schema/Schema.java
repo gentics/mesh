@@ -128,4 +128,5 @@ public interface Schema extends FieldSchemaContainer {
 		this.setUrlFields(Arrays.asList(fieldNames));
 		return this;
 	}
+
 }

@@ -378,7 +378,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		final int intialUserCount = users().size();
 		final int nUsers = 20;
 
-		int foundUsers;
+		long foundUsers;
 		try (Tx tx = tx()) {
 			UserRoot root = meshRoot().getUserRoot();
 			for (int i = 0; i < nUsers; i++) {
@@ -395,7 +395,7 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			invisibleUser.setFirstname("should_not_be_listed");
 			invisibleUser.setEmailAddress("should_not_be_listed");
 			invisibleUser.addGroup(group());
-			foundUsers = root.findAll().size();
+			foundUsers = root.computeCount();
 			tx.success();
 		}
 
@@ -417,9 +417,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		assertEquals("The page did not contain the expected amount of items", perPage, restResponse.getData().size());
 		assertEquals("We did not find the expected page in the list response.", 3, restResponse.getMetainfo().getCurrentPage());
-		assertEquals(
-				"The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + currentPerPage + "}",
-				totalPages, restResponse.getMetainfo().getPageCount());
+		assertEquals("The amount of pages did not match. We have {" + totalUsers + "} users in the system and use a paging of {" + currentPerPage
+				+ "}", totalPages, restResponse.getMetainfo().getPageCount());
 		assertEquals(currentPerPage, restResponse.getMetainfo().getPerPage());
 		assertEquals("The total amount of items does not match the expected one", totalUsers, restResponse.getMetainfo().getTotalCount());
 
@@ -437,8 +436,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		// Verify that the invisible is not part of the response
 		final String extra3Username = "should_not_be_listed";
-		List<UserResponse> filteredUserList = allUsers.parallelStream().filter(restUser -> restUser.getUsername().equals(extra3Username))
-				.collect(Collectors.toList());
+		List<UserResponse> filteredUserList = allUsers.parallelStream().filter(restUser -> restUser.getUsername().equals(extra3Username)).collect(
+				Collectors.toList());
 		assertTrue("User 3 should not be part of the list since no permissions were added.", filteredUserList.size() == 0);
 
 		call(() -> client().findUsers(new PagingParametersImpl(1, -1)), BAD_REQUEST, "error_pagesize_parameter", "-1");
@@ -448,8 +447,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		assertEquals("The result list should not contain any item since the page parameter is out of bounds", 0, listResponse.getData().size());
 		assertEquals("The requested page should be set in the response but it was not", 4242, listResponse.getMetainfo().getCurrentPage());
 		assertEquals("The page count value was not correct.", 1, listResponse.getMetainfo().getPageCount());
-		assertEquals("We did not find the correct total count value in the response", nUsers + intialUserCount,
-				listResponse.getMetainfo().getTotalCount());
+		assertEquals("We did not find the correct total count value in the response", nUsers + intialUserCount, listResponse.getMetainfo()
+				.getTotalCount());
 		assertEquals(25, listResponse.getMetainfo().getPerPage());
 
 	}
@@ -502,8 +501,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		updateRequest.setUsername("dummy_user_changed");
 		UserResponse restUser = call(() -> client().updateUser(uuid, updateRequest));
 
-		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), uuid);
-		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0, 0);
+		assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), uuid);
+		assertThat(dummySearchProvider()).hasEvents(1, 0, 0, 0);
 		dummySearchProvider().clear();
 
 		try (Tx tx = tx()) {
@@ -641,8 +640,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 
 		try (Tx tx = tx()) {
 			Node node = folder("news");
-			UserListResponse userResponse = call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100),
-					new NodeParametersImpl().setExpandedFieldNames("nodeReference").setLanguages("en")));
+			UserListResponse userResponse = call(() -> client().findUsers(new PagingParametersImpl().setPerPage(100), new NodeParametersImpl()
+					.setExpandedFieldNames("nodeReference").setLanguages("en")));
 			assertNotNull(userResponse);
 
 			UserResponse foundUser = userResponse.getData().stream().filter(u -> u.getUuid().equals(userCreateResponse.getUuid())).findFirst().get();
@@ -674,8 +673,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 		}
 
 		UserResponse userResponse = call(() -> client().createUser(newUser));
-		UserResponse userResponse2 = call(() -> client().findUserByUuid(userResponse.getUuid(),
-				new NodeParametersImpl().setExpandedFieldNames("nodeReference").setLanguages("en")));
+		UserResponse userResponse2 = call(() -> client().findUserByUuid(userResponse.getUuid(), new NodeParametersImpl().setExpandedFieldNames(
+				"nodeReference").setLanguages("en")));
 		assertNotNull(userResponse2);
 		assertNotNull(userResponse2.getNodeReference());
 		assertEquals(folderUuid, userResponse2.getNodeReference().getUuid());
@@ -1172,8 +1171,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			newUser.setGroupUuid(group().getUuid());
 
 			UserResponse restUser = call(() -> client().createUser(newUser));
-			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), User.composeIndexType(), restUser.getUuid());
-			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasStore(User.composeIndexName(), restUser.getUuid());
+			assertThat(dummySearchProvider()).hasEvents(2, 0, 0, 0);
 			dummySearchProvider().clear();
 
 			assertTrue(restUser.getEnabled());
@@ -1191,8 +1190,8 @@ public class UserEndpointTest extends AbstractMeshTest implements BasicRestTestc
 			// Load the user again and check whether it is disabled
 			call(() -> client().findUserByUuid(uuid), NOT_FOUND, "object_not_found_for_uuid", uuid);
 
-			assertThat(dummySearchProvider()).hasDelete(User.composeIndexName(), User.composeIndexType(), uuid);
-			assertThat(dummySearchProvider()).hasEvents(0, 1, 0, 0, 0);
+			assertThat(dummySearchProvider()).hasDelete(User.composeIndexName(), uuid);
+			assertThat(dummySearchProvider()).hasEvents(0, 1, 0, 0);
 		}
 
 	}

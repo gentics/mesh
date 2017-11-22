@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -29,6 +30,9 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 	TagFamilyTransformer transformer;
 
 	@Inject
+	TagFamilyMappingProvider mappingProvider;
+
+	@Inject
 	public TagFamilyIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
 		super(searchProvider, db, boot, searchQueue);
 	}
@@ -38,8 +42,14 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 		return TagFamily.class;
 	}
 
+	@Override
 	public TagFamilyTransformer getTransformer() {
 		return transformer;
+	}
+
+	@Override
+	public TagFamilyMappingProvider getMappingProvider() {
+		return mappingProvider;
 	}
 
 	@Override
@@ -49,31 +59,24 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
-		return TagFamily.composeIndexName(entry.getContext()
-				.getProjectUuid());
-	}
-
-	@Override
-	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
-		return TagFamily.composeTypeName();
+		return TagFamily.composeIndexName(entry.getContext().getProjectUuid());
 	}
 
 	@Override
 	public Completable store(TagFamily tagFamily, UpdateDocumentEntry entry) {
-		entry.getContext()
-				.setProjectUuid(tagFamily.getProject()
-						.getUuid());
+		entry.getContext().setProjectUuid(tagFamily.getProject().getUuid());
 		return super.store(tagFamily, entry);
 	}
 
 	@Override
-	public Map<String, String> getIndices() {
+	public Map<String, IndexInfo> getIndices() {
 		return db.tx(() -> {
-			ProjectRoot root = boot.meshRoot()
-					.getProjectRoot();
-			Map<String, String> indexInfo = new HashMap<>();
+			ProjectRoot root = boot.meshRoot().getProjectRoot();
+			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			for (Project project : root.findAllIt()) {
-				indexInfo.put(TagFamily.composeIndexName(project.getUuid()), TagFamily.TYPE);
+				String indexName = TagFamily.composeIndexName(project.getUuid());
+				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+				indexInfo.put(indexName, info);
 			}
 			return indexInfo;
 		});
@@ -93,8 +96,7 @@ public class TagFamilyIndexHandler extends AbstractIndexHandler<TagFamily> {
 
 	@Override
 	public RootVertex<TagFamily> getRootVertex() {
-		return boot.meshRoot()
-				.getTagFamilyRoot();
+		return boot.meshRoot().getTagFamilyRoot();
 	}
 
 }

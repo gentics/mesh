@@ -4,8 +4,7 @@ import com.gentics.mesh.core.data.search.context.GenericEntryContext;
 import com.gentics.mesh.core.rest.schema.Schema;
 
 /**
- * Entry which instructs the index handler to create the index using the
- * provided information.
+ * Entry which instructs the index handler to create the index using the provided information.
  */
 public interface CreateIndexEntry extends SearchQueueEntry<GenericEntryContext> {
 
@@ -30,12 +29,5 @@ public interface CreateIndexEntry extends SearchQueueEntry<GenericEntryContext> 
 	 * @return
 	 */
 	String getIndexName();
-
-	/**
-	 * Type of the index which should be created.
-	 * 
-	 * @return
-	 */
-	String getIndexType();
 
 }

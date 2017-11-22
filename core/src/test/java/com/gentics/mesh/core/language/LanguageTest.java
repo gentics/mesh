@@ -7,12 +7,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.util.List;
-
 import org.junit.Ignore;
 import org.junit.Test;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.impl.LanguageImpl;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
@@ -22,6 +19,8 @@ import com.gentics.mesh.error.InvalidArgumentException;
 import com.gentics.mesh.test.TestSize;
 import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
+import com.google.common.collect.Iterators;
+import com.syncleus.ferma.tx.Tx;
 import com.tinkerpop.blueprints.Vertex;
 
 @MeshTestSetting(useElasticsearch = false, testSize = TestSize.PROJECT, startServer = false)
@@ -38,13 +37,13 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 		try (Tx tx = tx()) {
 			LanguageRoot languageRoot = meshRoot().getLanguageRoot();
 
-			int nLanguagesBefore = languageRoot.findAll().size();
+			long nLanguagesBefore = languageRoot.computeCount();
 
 			final String languageName = "klingon";
 			final String languageTag = "tlh";
 			assertNotNull(languageRoot.create(languageName, languageTag));
 
-			int nLanguagesAfter = languageRoot.findAll().size();
+			long nLanguagesAfter = languageRoot.computeCount();
 			assertEquals(nLanguagesBefore + 1, nLanguagesAfter);
 		}
 	}
@@ -76,8 +75,8 @@ public class LanguageTest extends AbstractMeshTest implements BasicObjectTestcas
 	@Override
 	public void testFindAll() throws InvalidArgumentException {
 		try (Tx tx = tx()) {
-			List<? extends Language> languages = meshRoot().getLanguageRoot().findAll();
-			assertEquals(4, languages.size());
+			long size = Iterators.size(meshRoot().getLanguageRoot().findAllIt().iterator());
+			assertEquals(4, size);
 		}
 	}
 

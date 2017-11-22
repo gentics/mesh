@@ -9,7 +9,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.10.5-SNAPSHOT</version>
+		<version>0.11.3-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -17,7 +17,6 @@
 		<mesh.build.timestamp>${maven.build.timestamp}</mesh.build.timestamp>
 		<projectRoot>${project.basedir}/..</projectRoot>
 		<netty.version>4.1.11.Final</netty.version>
-
 	</properties>
 
 	<dependencies>
@@ -48,6 +47,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
+					<skip>${skip.cluster.tests}</skip>
 					<jvm>${JAVA_1_8_HOME}/bin/java${surefire.jvm.postfix}</jvm>
 					<argLine>-Xmx256m -XX:MaxDirectMemorySize=1524m</argLine>
 				</configuration>

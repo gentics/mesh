@@ -13,6 +13,7 @@ import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.schema.MicroschemaContainer;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -27,6 +28,9 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	MicroschemaTransformer transformer;
 
 	@Inject
+	MicroschemaMappingProvider mappingProvider;
+
+	@Inject
 	public MicroschemaContainerIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
 		super(searchProvider, db, boot, searchQueue);
 	}
@@ -34,11 +38,6 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	@Override
 	protected String composeIndexNameFromEntry(UpdateDocumentEntry entry) {
 		return MicroschemaContainer.composeIndexName();
-	}
-
-	@Override
-	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
-		return MicroschemaContainer.composeTypeName();
 	}
 
 	@Override
@@ -57,6 +56,11 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
+	public MicroschemaMappingProvider getMappingProvider() {
+		return mappingProvider;
+	}
+
+	@Override
 	public Set<String> getSelectedIndices(InternalActionContext ac) {
 		return Collections.singleton(MicroschemaContainer.TYPE);
 	}
@@ -67,8 +71,10 @@ public class MicroschemaContainerIndexHandler extends AbstractIndexHandler<Micro
 	}
 
 	@Override
-	public Map<String, String> getIndices() {
-		return Collections.singletonMap(MicroschemaContainer.TYPE, MicroschemaContainer.TYPE);
+	public Map<String, IndexInfo> getIndices() {
+		String indexName = MicroschemaContainer.composeIndexName();
+		IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+		return Collections.singletonMap(indexName, info);
 	}
 
 }

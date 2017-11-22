@@ -10,7 +10,7 @@
 	<parent>
 		<groupId>com.gentics.mesh</groupId>
 		<artifactId>mesh</artifactId>
-		<version>0.10.5-SNAPSHOT</version>
+		<version>0.11.3-SNAPSHOT</version>
 	</parent>
 
 	<properties>
@@ -40,6 +40,11 @@
 			<groupId>org.elasticsearch.plugin</groupId>
 			<artifactId>discovery-multicast</artifactId>
 			<version>${elasticsearch.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.spullara.mustache.java</groupId>
+			<artifactId>compiler</artifactId>
+			<version>0.8.13</version>
 		</dependency>
 
 		<dependency>

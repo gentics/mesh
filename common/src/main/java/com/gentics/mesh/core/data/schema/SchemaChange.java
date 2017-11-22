@@ -12,6 +12,8 @@ import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeModel;
 import com.gentics.mesh.core.rest.schema.change.impl.SchemaChangeOperation;
 import com.gentics.mesh.util.Tuple;
 
+import io.vertx.core.json.JsonObject;
+
 /**
  * A schema change represents a single manipulation of a field container (e.g.: {@link Schema}, {@link Microschema}).
  * 
@@ -172,5 +174,19 @@ public interface SchemaChange<T extends FieldSchemaContainer> extends MeshVertex
 	 * @return
 	 */
 	<R> Map<String, R> getRestProperties();
+
+	/**
+	 * Return the index options for this change. This can either hold index or field specific options.
+	 * 
+	 * @return
+	 */
+	JsonObject getIndexOptions();
+
+	/**
+	 * Set the index options for the schema / field.
+	 * 
+	 * @param options
+	 */
+	void setIndexOptions(JsonObject options);
 
 }

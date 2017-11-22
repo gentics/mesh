@@ -16,6 +16,7 @@ import com.gentics.mesh.core.data.root.ProjectRoot;
 import com.gentics.mesh.core.data.root.RootVertex;
 import com.gentics.mesh.core.data.search.SearchQueue;
 import com.gentics.mesh.core.data.search.UpdateDocumentEntry;
+import com.gentics.mesh.core.data.search.index.IndexInfo;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.search.SearchProvider;
 import com.gentics.mesh.search.index.entry.AbstractIndexHandler;
@@ -37,6 +38,9 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	TagTransformer transforer;
 
 	@Inject
+	TagMappingProvider mappingProvider;
+
+	@Inject
 	public TagIndexHandler(SearchProvider searchProvider, Database db, BootstrapInitializer boot, SearchQueue searchQueue) {
 		super(searchProvider, db, boot, searchQueue);
 	}
@@ -52,6 +56,11 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
+	public TagMappingProvider getMappingProvider() {
+		return mappingProvider;
+	}
+
+	@Override
 	protected String composeDocumentIdFromEntry(UpdateDocumentEntry entry) {
 		return Tag.composeDocumentId(entry.getElementUuid());
 	}
@@ -62,23 +71,20 @@ public class TagIndexHandler extends AbstractIndexHandler<Tag> {
 	}
 
 	@Override
-	protected String composeIndexTypeFromEntry(UpdateDocumentEntry entry) {
-		return Tag.composeTypeName();
-	}
-
-	@Override
 	public Completable store(Tag tag, UpdateDocumentEntry entry) {
 		entry.getContext().setProjectUuid(tag.getProject().getUuid());
 		return super.store(tag, entry);
 	}
 
 	@Override
-	public Map<String, String> getIndices() {
+	public Map<String, IndexInfo> getIndices() {
 		return db.tx(() -> {
-			Map<String, String> indexInfo = new HashMap<>();
+			Map<String, IndexInfo> indexInfo = new HashMap<>();
 			ProjectRoot projectRoot = boot.meshRoot().getProjectRoot();
 			for (Project project : projectRoot.findAllIt()) {
-				indexInfo.put(Tag.composeIndexName(project.getUuid()), Tag.TYPE);
+				String indexName = Tag.composeIndexName(project.getUuid());
+				IndexInfo info = new IndexInfo(indexName, null, getMappingProvider().getMapping());
+				indexInfo.put(indexName, info);
 			}
 			return indexInfo;
 		});
