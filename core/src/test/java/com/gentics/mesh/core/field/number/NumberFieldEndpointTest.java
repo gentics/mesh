@@ -104,6 +104,16 @@ public class NumberFieldEndpointTest extends AbstractFieldEndpointTest {
 	}
 
 	@Test
+	public void testPreciseFloatValue() {
+		try (Tx tx = tx()) {
+			double value = 0.123456f;
+			NodeResponse firstResponse = updateNode(FIELD_NAME, new NumberFieldImpl().setNumber(value));
+			Number storedNumber = firstResponse.getFields().getNumberField(FIELD_NAME).getNumber();
+			assertEquals(value, storedNumber);
+		}
+	}
+
+	@Test
 	@Override
 	public void testUpdateSameValue() {
 		try (Tx tx = tx()) {
