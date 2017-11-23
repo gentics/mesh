@@ -10,8 +10,8 @@ import com.gentics.mesh.core.AbstractEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.rest.EndpointRoute;
 
+import io.vertx.ext.bridge.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
-import io.vertx.ext.web.handler.sockjs.PermittedOptions;
 import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 
@@ -47,7 +47,6 @@ public class EventbusEndpoint extends AbstractEndpoint {
 			BridgeOptions bridgeOptions = new BridgeOptions();
 			bridgeOptions.addInboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION));
 			bridgeOptions.addOutboundPermitted(new PermittedOptions().setAddress(MESH_MIGRATION));
-			// handler.bridge(bridgeOptions);
 			handler.bridge(bridgeOptions, event -> {
 				// if (event.type() == BridgeEventType.SOCKET_CREATED) {
 				// log.info("A socket was created");

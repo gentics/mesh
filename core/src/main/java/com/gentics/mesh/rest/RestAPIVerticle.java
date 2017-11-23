@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +31,8 @@ import com.gentics.mesh.core.verticle.utility.UtilityEndpoint;
 import com.gentics.mesh.core.verticle.webroot.WebRootEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
 import com.gentics.mesh.graphql.GraphQLEndpoint;
-import com.gentics.mesh.search.ProjectSearchEndpointImpl;
 import com.gentics.mesh.search.ProjectRawSearchEndpointImpl;
+import com.gentics.mesh.search.ProjectSearchEndpointImpl;
 import com.gentics.mesh.search.RawSearchEndpointImpl;
 import com.gentics.mesh.search.SearchEndpointImpl;
 
@@ -43,6 +44,7 @@ import io.vertx.core.http.HttpServerOptions;
 /**
  * Central REST API Verticle which will provide all core REST API Endpoints
  */
+@Singleton
 public class RestAPIVerticle extends AbstractVerticle {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractEndpoint.class);
@@ -162,6 +164,7 @@ public class RestAPIVerticle extends AbstractVerticle {
 		log.info("Starting http server in verticle {" + getClass().getName() + "} on port {" + options.getPort() + "}");
 		server = vertx.createHttpServer(options);
 		server.requestHandler(routerStorage.getRootRouter()::accept);
+
 		server.listen(rh -> {
 			if (rh.failed()) {
 				startFuture.fail(rh.cause());
