@@ -206,4 +206,9 @@ public abstract class AbstractMeshRestHttpClient implements MeshRestClient {
 		return baseUri;
 	}
 
+	@Override
+	public Vertx vertx() {
+		return vertx;
+	}
+
 }

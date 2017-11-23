@@ -1389,4 +1389,9 @@ public class MeshLocalClientImpl implements MeshRestClient {
 		return null;
 	}
 
+	@Override
+	public Vertx vertx() {
+		return Mesh.vertx();
+	}
+
 }

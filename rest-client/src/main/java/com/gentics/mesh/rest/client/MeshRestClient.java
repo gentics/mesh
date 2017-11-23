@@ -125,4 +125,10 @@ public interface MeshRestClient extends NodeClientMethods, TagClientMethods, Pro
 	 * @return the base URI
 	 */
 	String getBaseUri();
+
+	/**
+	 * Returns the used vertx instance.
+	 * @return
+	 */
+	Vertx vertx();
 }
