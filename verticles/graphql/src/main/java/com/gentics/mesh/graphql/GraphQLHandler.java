@@ -11,13 +11,11 @@ import java.util.stream.Collectors;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
-import com.syncleus.ferma.tx.Tx;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.gentics.mesh.core.rest.error.PermissionException;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphql.context.GraphQLContext;
 import com.gentics.mesh.graphql.type.QueryTypeProvider;
-import com.gentics.mesh.json.JsonUtil;
+import com.syncleus.ferma.tx.Tx;
 
 import graphql.ExceptionWhileDataFetching;
 import graphql.ExecutionInput;
@@ -49,6 +47,7 @@ public class GraphQLHandler {
 	 * Handle the GraphQL query.
 	 *
 	 * @param gc
+	 *            Context
 	 * @param body
 	 *            GraphQL query
 	 */
@@ -62,8 +61,8 @@ public class GraphQLHandler {
 			ExecutionResult result = graphQL.execute(executionInput);
 			List<GraphQLError> errors = result.getErrors();
 			JsonObject response = new JsonObject();
-			addErrors(errors, response);
 			if (!errors.isEmpty()) {
+				addErrors(errors, response);
 				log.warn("Encountered {" + errors.size() + "} errors while executing query {" + query + "}");
 				if (log.isDebugEnabled()) {
 					for (GraphQLError error : errors) {
@@ -107,42 +106,40 @@ public class GraphQLHandler {
 	 * @param response
 	 */
 	private void addErrors(List<GraphQLError> errors, JsonObject response) {
-		if (!errors.isEmpty()) {
-			JsonArray jsonErrors = new JsonArray();
-			response.put("errors", jsonErrors);
-			for (GraphQLError error : errors) {
-				JsonObject jsonError = new JsonObject();
-				if (error instanceof ExceptionWhileDataFetching) {
-					ExceptionWhileDataFetching dataError = (ExceptionWhileDataFetching) error;
-					if (dataError.getException() instanceof PermissionException) {
-						PermissionException restException = (PermissionException) dataError.getException();
-						// TODO translate error
-						// TODO add i18n parameters
-						jsonError.put("message", restException.getI18nKey());
-						jsonError.put("type", restException.getType());
-						jsonError.put("elementId", restException.getElementId());
-						jsonError.put("elementType", restException.getElementType());
-					} else {
-						log.error("Error while fetching data.", dataError.getException());
-						jsonError.put("message", dataError.getMessage());
-						jsonError.put("type", dataError.getErrorType());
-					}
+		JsonArray jsonErrors = new JsonArray();
+		response.put("errors", jsonErrors);
+		for (GraphQLError error : errors) {
+			JsonObject jsonError = new JsonObject();
+			if (error instanceof ExceptionWhileDataFetching) {
+				ExceptionWhileDataFetching dataError = (ExceptionWhileDataFetching) error;
+				if (dataError.getException() instanceof PermissionException) {
+					PermissionException restException = (PermissionException) dataError.getException();
+					// TODO translate error
+					// TODO add i18n parameters
+					jsonError.put("message", restException.getI18nKey());
+					jsonError.put("type", restException.getType());
+					jsonError.put("elementId", restException.getElementId());
+					jsonError.put("elementType", restException.getElementType());
 				} else {
-					jsonError.put("message", error.getMessage());
-					jsonError.put("type", error.getErrorType());
-					if (error.getLocations() != null && !error.getLocations().isEmpty()) {
-						JsonArray errorLocations = new JsonArray();
-						jsonError.put("locations", errorLocations);
-						for (SourceLocation location : error.getLocations()) {
-							JsonObject errorLocation = new JsonObject();
-							errorLocation.put("line", location.getLine());
-							errorLocation.put("column", location.getColumn());
-							errorLocations.add(errorLocation);
-						}
+					log.error("Error while fetching data.", dataError.getException());
+					jsonError.put("message", dataError.getMessage());
+					jsonError.put("type", dataError.getErrorType());
+				}
+			} else {
+				jsonError.put("message", error.getMessage());
+				jsonError.put("type", error.getErrorType());
+				if (error.getLocations() != null && !error.getLocations().isEmpty()) {
+					JsonArray errorLocations = new JsonArray();
+					jsonError.put("locations", errorLocations);
+					for (SourceLocation location : error.getLocations()) {
+						JsonObject errorLocation = new JsonObject();
+						errorLocation.put("line", location.getLine());
+						errorLocation.put("column", location.getColumn());
+						errorLocations.add(errorLocation);
 					}
 				}
-				jsonErrors.add(jsonError);
 			}
+			jsonErrors.add(jsonError);
 		}
 	}
 }
