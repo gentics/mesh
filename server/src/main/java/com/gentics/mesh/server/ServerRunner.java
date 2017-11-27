@@ -28,6 +28,8 @@ public class ServerRunner {
 	public static void main(String[] args) throws Exception {
 		LoggingConfigurator.init();
 		MeshOptions options = OptionsLoader.createOrloadOptions(args);
+		options.getVertxOptions().setWorkerPoolSize(40);
+		options.getVertxOptions().setEventPoolSize(40);
 		MissingOrientCredentialFixer.fix(options);
 
 		Mesh mesh = Mesh.mesh(options);

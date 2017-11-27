@@ -5,6 +5,9 @@ import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
 import static io.netty.handler.codec.http.HttpResponseStatus.INTERNAL_SERVER_ERROR;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.gentics.mesh.core.data.Project;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.rest.common.RestModel;
@@ -34,32 +37,39 @@ public abstract class AbstractInternalActionContext extends AbstractActionContex
 		return handler;
 	}
 
+	/**
+	 * Cache for project specific releases.
+	 */
+	private Map<Project, Release> releaseCache = new HashMap<>();
+
 	@Override
 	public Release getRelease(Project project) {
-		if (project == null) {
-			project = getProject();
-		}
-		if (project == null) {
-			// TODO i18n
-			throw error(INTERNAL_SERVER_ERROR, "Cannot get release without a project");
-		}
-
-		Release release = null;
-
-		String releaseNameOrUuid = getVersioningParameters().getRelease();
-		if (!isEmpty(releaseNameOrUuid)) {
-			release = project.getReleaseRoot().findByUuid(releaseNameOrUuid);
-			if (release == null) {
-				release = project.getReleaseRoot().findByName(releaseNameOrUuid);
+		return releaseCache.computeIfAbsent(project, p -> {
+			if (p == null) {
+				p = getProject();
 			}
-			if (release == null) {
-				throw error(BAD_REQUEST, "release_error_not_found", releaseNameOrUuid);
+			if (p == null) {
+				// TODO i18n
+				throw error(INTERNAL_SERVER_ERROR, "Cannot get release without a project");
 			}
-		} else {
-			release = project.getLatestRelease();
-		}
 
-		return release;
+			Release release = null;
+
+			String releaseNameOrUuid = getVersioningParameters().getRelease();
+			if (!isEmpty(releaseNameOrUuid)) {
+				release = p.getReleaseRoot().findByUuid(releaseNameOrUuid);
+				if (release == null) {
+					release = p.getReleaseRoot().findByName(releaseNameOrUuid);
+				}
+				if (release == null) {
+					throw error(BAD_REQUEST, "release_error_not_found", releaseNameOrUuid);
+				}
+			} else {
+				release = p.getLatestRelease();
+			}
+
+			return release;
+		});
 	}
 
 }

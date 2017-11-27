@@ -44,7 +44,7 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 		queryEndpoint.exampleResponse(OK, graphqlExamples.createResponse(), "Basic GraphQL response.");
 		queryEndpoint.description("Endpoint which accepts GraphQL queries.");
 		queryEndpoint.path("/");
-		queryEndpoint.handler(rc -> {
+		queryEndpoint.blockingHandler(rc -> {
 			GraphQLContext gc = new GraphQLContextImpl(rc);
 			String body = gc.getBodyAsString();
 			queryHandler.handleQuery(gc, body);

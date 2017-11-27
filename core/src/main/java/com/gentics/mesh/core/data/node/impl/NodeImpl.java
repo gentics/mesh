@@ -166,49 +166,50 @@ public class NodeImpl extends AbstractGenericFieldContainerVertex<NodeResponse, 
 
 	@Override
 	public String getPath(String releaseUuid, ContainerType type, String... languageTag) {
-		List<String> segments = new ArrayList<>();
-		String segment = getPathSegment(releaseUuid, type, languageTag);
-		if (segment == null) {
-			return null;
-		}
-		segments.add(segment);
-
-		// For the path segments of the container, we add all (additional)
-		// project languages to the list of languages for the fallback.
-		List<String> langList = new ArrayList<>();
-		langList.addAll(Arrays.asList(languageTag));
-
-		// TODO maybe we only want to get the project languages?
-		langList.addAll(MeshInternal.get().boot().getAllLanguageTags());
-		String[] projectLanguages = langList.toArray(new String[langList.size()]);
-		Node current = this;
-		while (current != null) {
-			current = current.getParentNode(releaseUuid);
-			if (current == null || current.getParentNode(releaseUuid) == null) {
-				break;
-			}
-			// For the path segments of the container, we allow ANY language (of the project)
-			segment = current.getPathSegment(releaseUuid, type, projectLanguages);
-
-			// Abort early if one of the path segments could not be resolved. We
-			// need to return a 404 in those cases.
-			if (segment == null) {
-				return null;
-			}
-			segments.add(segment);
-		}
-
-		Collections.reverse(segments);
-
-		// Finally construct the path from all segments
-		StringBuilder builder = new StringBuilder();
-		Iterator<String> it = segments.iterator();
-		while (it.hasNext()) {
-			String fragment = it.next();
-			builder.append("/").append(URIUtils.encodeFragment(fragment));
-		}
-		return builder.toString();
-
+		return "";
+//		List<String> segments = new ArrayList<>();
+//		String segment = getPathSegment(releaseUuid, type, languageTag);
+//		if (segment == null) {
+//			return null;
+//		}
+//		segments.add(segment);
+//
+//		// For the path segments of the container, we add all (additional)
+//		// project languages to the list of languages for the fallback.
+//		List<String> langList = new ArrayList<>();
+//		langList.addAll(Arrays.asList(languageTag));
+//
+//		// TODO maybe we only want to get the project languages?
+//		langList.addAll(MeshInternal.get().boot().getAllLanguageTags());
+//		String[] projectLanguages = langList.toArray(new String[langList.size()]);
+//		Node current = this;
+//		while (current != null) {
+//			current = current.getParentNode(releaseUuid);
+//			if (current == null || current.getParentNode(releaseUuid) == null) {
+//				break;
+//			}
+//			// For the path segments of the container, we allow ANY language (of the project)
+//			segment = current.getPathSegment(releaseUuid, type, projectLanguages);
+//
+//			// Abort early if one of the path segments could not be resolved. We
+//			// need to return a 404 in those cases.
+//			if (segment == null) {
+//				return null;
+//			}
+//			segments.add(segment);
+//		}
+//
+//		Collections.reverse(segments);
+//
+//		// Finally construct the path from all segments
+//		StringBuilder builder = new StringBuilder();
+//		Iterator<String> it = segments.iterator();
+//		while (it.hasNext()) {
+//			String fragment = it.next();
+//			builder.append("/").append(URIUtils.encodeFragment(fragment));
+//		}
+//		return builder.toString();
+//
 	}
 
 	@Override
