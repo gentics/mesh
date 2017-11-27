@@ -11,14 +11,12 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.function.Consumer;
 
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
-import com.gentics.mesh.rest.client.MeshRestClient;
 import com.gentics.mesh.util.FileUtils;
 import io.vertx.core.buffer.Buffer;
 import org.apache.commons.io.IOUtils;
@@ -148,13 +146,12 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			.doOnSubscribe(() -> System.out.println("Requesting " + fieldName));
 
 		Observable<String> imageFields = Observable.just("image1", "image2");
+
 		// Upload 2 images at once
 		// This should work since we can update the same node at the same time if it affects different fields
 		imageFields
 			.flatMap(uploadBinary)
 			.toCompletable().await();
-//		uploadBinary.call("image1").toCompletable().await();
-//		uploadBinary.call("image2").toCompletable().await();
 
 		// Download them again and make sure they are the same image
 		Func1<String, Observable<NodeDownloadResponse>> downloadBinary = (fieldName) ->

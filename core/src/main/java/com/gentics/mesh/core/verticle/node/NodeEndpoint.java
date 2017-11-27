@@ -142,7 +142,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 			MultiMap attributes = rc.request().formAttributes();
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			binaryFieldHandler.handleUpdateBinaryField(ac, uuid, fieldName, attributes);
-		});
+		}, false);
 
 		EndpointRoute imageTransform = createEndpoint();
 		imageTransform.path("/:nodeUuid/binaryTransform/:fieldName");

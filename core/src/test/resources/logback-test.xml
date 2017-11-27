@@ -10,7 +10,7 @@
 			</pattern>
 		</encoder>
 		<filter class="ch.qos.logback.classic.filter.LevelFilter">
-			<level>ERROR</level>
+			<level>INFO</level>
 			<onMatch>ACCEPT</onMatch>
 			<onMismatch>DENY</onMismatch>
 		</filter>
@@ -22,7 +22,7 @@
 			</pattern>
 		</encoder>
 	</appender>
-	<!-- <logger name="io.vertx" level="INFO"/> <logger name="com.gentics.mesh" level="INFO"/> <logger name="org.elasticsearch" level="INFO"/> <logger name="com.gentics.mesh.rest.MeshResponseHandler" 
+	<!-- <logger name="io.vertx" level="INFO"/> <logger name="com.gentics.mesh" level="INFO"/> <logger name="org.elasticsearch" level="INFO"/> <logger name="com.gentics.mesh.rest.MeshResponseHandler"
 		level="TRACE"/> -->
 	<!-- <logger name="com.gentics" level="ERROR" additivity="false"> <appender-ref ref="STDERR"/> </logger> -->
 <!-- 
