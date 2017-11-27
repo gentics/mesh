@@ -11,12 +11,15 @@ import static org.junit.Assert.assertEquals;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.function.Consumer;
 
 import com.gentics.mesh.core.rest.node.NodeCreateRequest;
 import com.gentics.mesh.core.rest.node.NodeResponse;
 import com.gentics.mesh.core.rest.schema.impl.BinaryFieldSchemaImpl;
 import com.gentics.mesh.core.rest.schema.impl.SchemaCreateRequest;
 import com.gentics.mesh.core.rest.schema.impl.SchemaResponse;
+import com.gentics.mesh.rest.client.MeshRestClient;
+import com.gentics.mesh.util.FileUtils;
 import io.vertx.core.buffer.Buffer;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -28,6 +31,7 @@ import com.gentics.mesh.test.context.AbstractMeshTest;
 import com.gentics.mesh.test.context.MeshTestSetting;
 import com.syncleus.ferma.tx.Tx;
 import rx.Observable;
+import rx.functions.Action1;
 import rx.functions.Func1;
 
 @MeshTestSetting(useElasticsearch = false, testSize = FULL, startServer = true)
@@ -130,22 +134,41 @@ public class NodeEndpointBinaryFieldTest extends AbstractMeshTest {
 			.setParentNodeUuid(parentUuid)
 			.setLanguage("en");
 
-
 		NodeResponse nodeResponse = call(() -> client().createNode(PROJECT_NAME, nodeCreateRequest));
 
 		// Load the image from the file system
 		InputStream ins = getClass().getResourceAsStream("/pictures/blume.jpg");
 		byte[] bytes = IOUtils.toByteArray(ins);
 		Buffer buffer = Buffer.buffer(bytes);
+		String blumeSum = "0b8f63eaa9893d994572a14a012c886d4b6b7b32f79df820f7aed201b374c89cf9d40f79345d5d76662ea733b23ed46dbaa243368627cbfe91a26c6452b88a29";
 
 		Func1<String, Observable<NodeResponse>> uploadBinary = (fieldName) ->
 			client().updateNodeBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(),
-            nodeResponse.getVersion(), fieldName, buffer, "blume.jpg", "image/jpeg").toObservable();
+            nodeResponse.getVersion(), fieldName, buffer, "blume.jpg", "image/jpeg").toObservable()
+			.doOnSubscribe(() -> System.out.println("Requesting " + fieldName));
 
+		Observable<String> imageFields = Observable.just("image1", "image2");
 		// Upload 2 images at once
 		// This should work since we can update the same node at the same time if it affects different fields
-		Observable.just("image1", "image2")
+		imageFields
 			.flatMap(uploadBinary)
+			.toCompletable().await();
+//		uploadBinary.call("image1").toCompletable().await();
+//		uploadBinary.call("image2").toCompletable().await();
+
+		// Download them again and make sure they are the same image
+		Func1<String, Observable<NodeDownloadResponse>> downloadBinary = (fieldName) ->
+			client().downloadBinaryField(PROJECT_NAME, nodeResponse.getUuid(), nodeResponse.getLanguage(),
+				fieldName).toObservable();
+
+		Action1<String> assertSum = (sum) -> assertEquals("Checksum did not match", blumeSum, sum);
+
+		System.out.println(client().findNodeByUuid(PROJECT_NAME, nodeResponse.getUuid()).toSingle().toBlocking().value().toJson());
+		imageFields
+			.flatMap(downloadBinary)
+			.map(NodeDownloadResponse::getBuffer)
+			.map(FileUtils::generateSha512Sum)
+			.doOnNext(assertSum)
 			.toCompletable().await();
 	}
 

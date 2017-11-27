@@ -18,6 +18,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -129,6 +131,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 *            Additional form data attributes
 	 */
 	public void handleUpdateBinaryField(InternalActionContext ac, String uuid, String fieldName, MultiMap attributes) {
+		System.out.println("BINARY UPLOAD");
 		validateParameter(uuid, "uuid");
 		validateParameter(fieldName, "fieldName");
 
@@ -167,7 +170,10 @@ public class BinaryFieldHandler extends AbstractHandler {
 		String contentType = ul.contentType();
 		String fileName = ul.fileName();
 
-		db.operateTx(() -> {
+
+		AtomicReference<String> savedSum = new AtomicReference<>();
+		AtomicReference<ImageInfo> savedImageInfo = new AtomicReference<>();
+		db.tx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -227,57 +233,63 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
 
-			return db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				// Create a new node version field container to store the upload
-				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
-				BinaryGraphField field = newDraftVersion.createBinary(fieldName);
-				String fieldUuid = field.getUuid();
+			System.out.println("HANDLING " + fieldName + ": " + savedSum.get() + ", " + savedImageInfo.get());
+			SearchQueueBatch batch = searchQueue.create();
+			// Create a new node version field container to store the upload
+			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
+			BinaryGraphField field = newDraftVersion.createBinary(fieldName);
+			String fieldUuid = field.getUuid();
 
-				Single<ImageInfo> obsImage;
+			Single<ImageInfo> obsImage;
 
-				// 3. Only gather image info for actual images. Otherwise return an empty image info object.
-				if (contentType.startsWith("image/")) {
-					try {
+			// 3. Only gather image info for actual images. Otherwise return an empty image info object.
+			if (contentType.startsWith("image/")) {
+				try {
+					ImageInfo imageInfo = savedImageInfo.get();
+					if (imageInfo != null) {
+						obsImage = Single.just(savedImageInfo.get());
+					} else {
 						obsImage = imageManipulator.readImageInfo(() -> {
-							try {
-								return new FileInputStream(ul.uploadedFileName());
-							} catch (Exception e) {
-								log.error("Could not load schema for node {" + node.getUuid() + "}");
-								throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
-							}
-						});
-					} catch (Exception e) {
-						log.error("Could not load schema for node {" + node.getUuid() + "}");
-						throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
+						try {
+							return new FileInputStream(ul.uploadedFileName());
+						} catch (Exception e) {
+							log.error("Could not load schema for node {" + node.getUuid() + "}");
+							throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
+						}
+						}).doOnSuccess(savedImageInfo::set);
 					}
-
-				} else {
-					obsImage = Single.just(new ImageInfo());
+				} catch (Exception e) {
+					log.error("Could not load schema for node {" + node.getUuid() + "}");
+					throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
 				}
 
-				// 4. Hash and store the file and update the field properties
-				Single<TransformationResult> resultObs = obsImage.map((imageInfo) -> {
-					String sha512sum = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
-					return new TransformationResult(sha512sum, 0, imageInfo);
-				});
+			} else {
+				obsImage = Single.just(new ImageInfo());
+			}
 
-				TransformationResult info = resultObs.toBlocking().value();
-				field.setFileName(fileName);
-				field.setFileSize(ul.size());
-				field.setMimeType(contentType);
-				field.setSHA512Sum(info.getHash());
-				field.setImageDominantColor(info.getImageInfo().getDominantColor());
-				field.setImageHeight(info.getImageInfo().getHeight());
-				field.setImageWidth(info.getImageInfo().getWidth());
-
-				// If the binary field is the segment field, we need to update the webroot info in the node
-				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-					newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
+			// 4. Hash and store the file and update the field properties
+			Single<TransformationResult> resultObs = obsImage.map((imageInfo) -> {
+				if (savedSum.get() == null) {
+					savedSum.set(hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath()));
 				}
+				return new TransformationResult(savedSum.get(), 0, imageInfo);
+			});
 
-				return batch.store(node, release.getUuid(), DRAFT, false);
-			}).processAsync().andThen(node.transformToRest(ac, 0));
+			TransformationResult info = resultObs.toBlocking().value();
+			field.setFileName(fileName);
+			field.setFileSize(ul.size());
+			field.setMimeType(contentType);
+			field.setSHA512Sum(info.getHash());
+			field.setImageDominantColor(info.getImageInfo().getDominantColor());
+			field.setImageHeight(info.getImageInfo().getHeight());
+			field.setImageWidth(info.getImageInfo().getWidth());
+
+			// If the binary field is the segment field, we need to update the webroot info in the node
+			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+				newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
+			}
+
+			return batch.store(node, release.getUuid(), DRAFT, false).processAsync().andThen(node.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
@@ -460,7 +472,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @return sha512 checksum
 	 */
 	protected String hashBuffer(Buffer buffer) {
-		return FileUtils.generateSha512Sum(buffer);
+			return FileUtils.generateSha512Sum(buffer);
 	}
 
 	/**

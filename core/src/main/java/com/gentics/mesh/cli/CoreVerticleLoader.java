@@ -48,7 +48,9 @@ public class CoreVerticleLoader {
 				if (log.isInfoEnabled()) {
 					log.info("Loading mandatory verticle {" + verticle.getClass().getName() + "}.");
 				}
-				deployAndWait(Mesh.vertx(), defaultConfig, verticle, false);
+				for (int i = 0; i < 10; i++) {
+					deployAndWait(Mesh.vertx(), defaultConfig, verticle, false);
+				}
 			} catch (Exception e) {
 				log.error("Could not load mandatory verticle {" + verticle.getClass().getSimpleName() + "}.", e);
 			}
