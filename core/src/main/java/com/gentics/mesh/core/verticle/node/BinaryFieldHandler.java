@@ -167,7 +167,13 @@ public class BinaryFieldHandler extends AbstractHandler {
 		String contentType = ul.contentType();
 		String fileName = ul.fileName();
 
-		db.operateTx(() -> {
+		// This the name and path of the file to be moved to a new location.
+		// This will be changed because it is possible that the file has to be moved multiple times
+		// (if the transaction failed and has to be repeated).
+		ac.put("sourceFile", ul.uploadedFileName());
+		String hashSum = FileUtils.generateSha512Sum(ul.uploadedFileName());
+
+		db.tx(() -> {
 			Project project = ac.getProject();
 			Release release = ac.getRelease();
 			Node node = project.getNodeRoot().loadObjectByUuid(ac, uuid, UPDATE_PERM);
@@ -227,57 +233,62 @@ public class BinaryFieldHandler extends AbstractHandler {
 				throw error(BAD_REQUEST, "error_found_field_is_not_binary", fieldName);
 			}
 
-			return db.tx(() -> {
-				SearchQueueBatch batch = searchQueue.create();
-				// Create a new node version field container to store the upload
-				NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
-				BinaryGraphField field = newDraftVersion.createBinary(fieldName);
-				String fieldUuid = field.getUuid();
+			SearchQueueBatch batch = searchQueue.create();
+			// Create a new node version field container to store the upload
+			NodeGraphFieldContainer newDraftVersion = node.createGraphFieldContainer(language, release, ac.getUser(), latestDraftVersion, true);
+			BinaryGraphField field = newDraftVersion.createBinary(fieldName);
+			String fieldUuid = field.getUuid();
 
-				Single<ImageInfo> obsImage;
+			Single<ImageInfo> obsImage;
 
-				// 3. Only gather image info for actual images. Otherwise return an empty image info object.
-				if (contentType.startsWith("image/")) {
-					try {
+			// 3. Only gather image info for actual images. Otherwise return an empty image info object.
+			if (contentType.startsWith("image/")) {
+				try {
+					// Caches the image info in the action context so that it does not need to be
+					// calculated again if the transaction failed
+					ImageInfo imageInfo = ac.get("imageInfo");
+					if (imageInfo != null) {
+						obsImage = Single.just(imageInfo);
+					} else {
 						obsImage = imageManipulator.readImageInfo(() -> {
-							try {
-								return new FileInputStream(ul.uploadedFileName());
-							} catch (Exception e) {
-								log.error("Could not load schema for node {" + node.getUuid() + "}");
-								throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
-							}
-						});
-					} catch (Exception e) {
-						log.error("Could not load schema for node {" + node.getUuid() + "}");
-						throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
+						try {
+							return new FileInputStream(ul.uploadedFileName());
+						} catch (Exception e) {
+							log.error("Could not load schema for node {" + node.getUuid() + "}");
+							throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
+						}
+						}).doOnSuccess(ii -> ac.put("imageInfo", ii));
 					}
-
-				} else {
-					obsImage = Single.just(new ImageInfo());
+				} catch (Exception e) {
+					log.error("Could not load schema for node {" + node.getUuid() + "}");
+					throw error(INTERNAL_SERVER_ERROR, "could not find upload file", e);
 				}
 
-				// 4. Hash and store the file and update the field properties
-				Single<TransformationResult> resultObs = obsImage.map((imageInfo) -> {
-					String sha512sum = hashAndMoveBinaryFile(ul, fieldUuid, field.getSegmentedPath());
-					return new TransformationResult(sha512sum, 0, imageInfo);
-				});
+			} else {
+				obsImage = Single.just(new ImageInfo());
+			}
 
-				TransformationResult info = resultObs.toBlocking().value();
-				field.setFileName(fileName);
-				field.setFileSize(ul.size());
-				field.setMimeType(contentType);
-				field.setSHA512Sum(info.getHash());
-				field.setImageDominantColor(info.getImageInfo().getDominantColor());
-				field.setImageHeight(info.getImageInfo().getHeight());
-				field.setImageWidth(info.getImageInfo().getWidth());
+			// 4. Hash and store the file and update the field properties
+			Single<TransformationResult> resultObs = obsImage.map((imageInfo) -> {
+				moveBinaryFile(ac, fieldUuid, field.getSegmentedPath());
+				return new TransformationResult(hashSum, 0, imageInfo);
+			});
 
-				// If the binary field is the segment field, we need to update the webroot info in the node
-				if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
-					newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
-				}
+			TransformationResult info = resultObs.toBlocking().value();
+			field.setFileName(fileName);
+			field.setFileSize(ul.size());
+			field.setMimeType(contentType);
+			field.setSHA512Sum(info.getHash());
+			field.setImageDominantColor(info.getImageInfo().getDominantColor());
+			field.setImageHeight(info.getImageInfo().getHeight());
+			field.setImageWidth(info.getImageInfo().getWidth());
 
-				return batch.store(node, release.getUuid(), DRAFT, false);
-			}).processAsync().andThen(node.transformToRest(ac, 0));
+			// If the binary field is the segment field, we need to update the webroot info in the node
+			if (field.getFieldKey().equals(newDraftVersion.getSchemaContainerVersion().getSchema().getSegmentField())) {
+				newDraftVersion.updateWebrootPathInfo(release.getUuid(), "node_conflicting_segmentfield_upload");
+			}
+
+			return batch.store(node, release.getUuid(), DRAFT, false).processAsync().andThen(node.transformToRest(ac, 0));
 		}).subscribe(model -> ac.send(model, CREATED), ac::fail);
 	}
 
@@ -396,26 +407,23 @@ public class BinaryFieldHandler extends AbstractHandler {
 	/**
 	 * Hash the file upload data and move the temporary uploaded file to its final destination.
 	 * 
-	 * @param fileUpload
-	 *            Upload which will be handled
+	 * @param ac Action context
 	 * @param uuid
 	 * @param segmentedPath
 	 * @return calculated SHA 512 sum
 	 */
-	public String hashAndMoveBinaryFile(FileUpload fileUpload, String uuid, String segmentedPath) {
+	public void moveBinaryFile(InternalActionContext ac, String uuid, String segmentedPath) {
 		MeshUploadOptions uploadOptions = Mesh.mesh().getOptions().getUploadOptions();
 		File uploadFolder = new File(uploadOptions.getDirectory(), segmentedPath);
 		File targetFile = new File(uploadFolder, uuid + ".bin");
 		String targetPath = targetFile.getAbsolutePath();
 
-		String sha512sum = hashFileupload(fileUpload);
 		checkUploadFolderExists(uploadFolder);
 		deletePotentialUpload(targetPath);
-		moveUploadIntoPlace(fileUpload, targetPath);
-		return sha512sum;
-		// log.error("Failed to handle upload file from {" + fileUpload.uploadedFileName() + "} / {" + targetPath + "}", error);
-		// throw error(INTERNAL_SERVER_ERROR, "node_error_upload_failed", error);
-
+		moveUploadIntoPlace(ac.get("sourceFile"), targetPath);
+		// Since this function can be called multiple times (if a transaction fails), we have to
+		// update the path so that moving the file works again.
+		ac.put("sourceFile", targetPath);
 	}
 
 	/**
@@ -440,16 +448,6 @@ public class BinaryFieldHandler extends AbstractHandler {
 		deletePotentialUpload(targetPath);
 		storeBuffer(buffer, targetPath);
 		return sha512sum;
-	}
-
-	/**
-	 * Hash the given fileupload and return a sha512 checksum.
-	 * 
-	 * @param fileUpload
-	 * @return SHA 512 hashsum
-	 */
-	protected String hashFileupload(FileUpload fileUpload) {
-		return FileUtils.generateSha512Sum(fileUpload.uploadedFileName());
 	}
 
 	/**
@@ -485,11 +483,11 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @param fileUpload
 	 * @param targetPath
 	 */
-	protected void moveUploadIntoPlace(FileUpload fileUpload, String targetPath) {
+	protected void moveUploadIntoPlace(String fileUpload, String targetPath) {
 		FileSystem fileSystem = Mesh.vertx().fileSystem();
-		fileSystem.moveBlocking(fileUpload.uploadedFileName(), targetPath);
+		fileSystem.moveBlocking(fileUpload, targetPath);
 		if (log.isDebugEnabled()) {
-			log.debug("Moved upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}");
+			log.debug("Moved upload file from {" + fileUpload + "} to {" + targetPath + "}");
 		}
 		// log.error("Failed to move upload file from {" + fileUpload.uploadedFileName() + "} to {" + targetPath + "}", error);
 	}
