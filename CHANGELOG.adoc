@@ -4,6 +4,8 @@
 
 == 0.11.3 (TBD)
 
+icon:check[] Memory: The memory usage for micronode migrations has been improved.
+
 icon:plus[] Config: The eventloop and worker pool size can now be configured within the `mesh.yml` file.
 
 icon:plus[] Logging: The logging verbosity was reduced.
