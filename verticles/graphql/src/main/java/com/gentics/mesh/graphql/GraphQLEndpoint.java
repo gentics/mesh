@@ -48,7 +48,7 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 			GraphQLContext gc = new GraphQLContextImpl(rc);
 			String body = gc.getBodyAsString();
 			queryHandler.handleQuery(gc, body);
-		});
+		}, false);
 
 		log.info("GraphiQL is owned and developed by Facebook, Inc. - Copyright (c) 2015, Facebook, Inc. All rights reserved.");
 		StaticHandler staticHandler = StaticHandler.create("graphiql");
