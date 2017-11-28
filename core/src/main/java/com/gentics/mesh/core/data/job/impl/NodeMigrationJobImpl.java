@@ -18,6 +18,7 @@ import com.gentics.mesh.core.rest.admin.migration.MigrationType;
 import com.gentics.mesh.core.rest.schema.SchemaModel;
 import com.gentics.mesh.core.verticle.migration.MigrationStatusHandler;
 import com.gentics.mesh.core.verticle.migration.impl.MigrationStatusHandlerImpl;
+import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.syncleus.ferma.tx.Tx;
@@ -54,7 +55,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 		MigrationStatusHandler status = new MigrationStatusHandlerImpl(this, Mesh.vertx(), MigrationType.schema);
 		try {
 
-			try (Tx tx = db.tx()) {
+			try (Tx tx = DB.get().tx()) {
 				Release release = getRelease();
 				if (release == null) {
 					throw error(BAD_REQUEST, "Release for job {" + getUuid() + "} not found");
@@ -115,7 +116,7 @@ public class NodeMigrationJobImpl extends JobImpl {
 
 	private void finalizeMigration(Project project, Release release, SchemaContainerVersion fromContainerVersion) {
 		// Deactivate edge
-		try (Tx tx = db.tx()) {
+		try (Tx tx = DB.get().tx()) {
 			ReleaseSchemaEdge edge = release.findReleaseSchemaEdge(fromContainerVersion);
 			if (edge != null) {
 				edge.setActive(false);

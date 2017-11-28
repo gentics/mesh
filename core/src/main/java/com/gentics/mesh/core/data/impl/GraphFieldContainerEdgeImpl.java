@@ -23,16 +23,11 @@ import com.syncleus.ferma.traversals.VertexTraversal;
 @GraphElement
 public class GraphFieldContainerEdgeImpl extends AbstractEdgeFrame implements GraphFieldContainerEdge {
 
-	public static final String LANGUAGE_TAG_KEY = "languageTag";
-
-	public static final String RELEASE_UUID_KEY = "releaseUuid";
-
-	public static final String EDGE_TYPE_KEY = "edgeType";
-
 	public static void init(Database db) {
 		db.addEdgeType(GraphFieldContainerEdgeImpl.class.getSimpleName());
 		db.addEdgeType(HAS_FIELD_CONTAINER, GraphFieldContainerEdgeImpl.class);
-//		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, "lang", "out", LANGUAGE_TAG_KEY);
+		db.addCustomEdgeIndex(HAS_FIELD_CONTAINER, "release_type_lang", "out", GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY,
+				GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY);
 	}
 
 	/**

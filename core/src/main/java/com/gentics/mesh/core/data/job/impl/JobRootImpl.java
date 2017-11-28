@@ -31,6 +31,7 @@ import com.gentics.mesh.core.data.schema.SchemaContainerVersion;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
 import com.gentics.mesh.core.rest.admin.migration.MigrationStatus;
 import com.gentics.mesh.core.rest.admin.migration.MigrationType;
+import com.gentics.mesh.dagger.DB;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.syncleus.ferma.FramedGraph;
@@ -210,7 +211,7 @@ public class JobRootImpl extends AbstractRootVertex<Job> implements JobRoot {
 				if (job.hasFailed() || (jobStatus == COMPLETED || jobStatus == FAILED || jobStatus == UNKNOWN)) {
 					continue;
 				}
-				try (Tx tx = db.tx()) {
+				try (Tx tx = DB.get().tx()) {
 					job.process();
 					tx.success();
 				}

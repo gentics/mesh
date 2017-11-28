@@ -11,7 +11,6 @@ import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import com.syncleus.ferma.tx.Tx;
 import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.context.InternalActionContext;
@@ -20,6 +19,7 @@ import com.gentics.mesh.core.rest.auth.TokenResponse;
 import com.gentics.mesh.etc.config.AuthenticationOptions;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
+import com.syncleus.ferma.tx.Tx;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -70,8 +70,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 
 		String keyStorePath = options.getKeystorePath();
 		String type = "jceks";
-		JsonObject config = new JsonObject().put("keyStore",
-				new JsonObject().put("path", keyStorePath).put("type", type).put("password", keystorePassword));
+		JsonObject config = new JsonObject().put("keyStore", new JsonObject().put("path", keyStorePath).put("type", type).put("password",
+				keystorePassword));
 		jwtProvider = JWTAuth.create(Mesh.vertx(), config);
 
 	}
@@ -140,13 +140,13 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 				User user = rh.result().getUser();
 				String uuid = null;
 				if (user instanceof MeshAuthUser) {
-					uuid = ((MeshAuthUser) user).getUuid();
+					uuid = db.tx(() -> ((MeshAuthUser) user).getUuid());
 				} else {
 					uuid = user.principal().getString("uuid");
 				}
 				JsonObject tokenData = new JsonObject().put(USERID_FIELD_NAME, uuid);
-				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData,
-						new JWTOptions().setExpiresInSeconds(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
+				resultHandler.handle(Future.succeededFuture(jwtProvider.generateToken(tokenData, new JWTOptions().setExpiresInSeconds(Mesh.mesh()
+						.getOptions().getAuthenticationOptions().getTokenExpirationTime()))));
 			}
 		});
 	}
@@ -162,36 +162,38 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 	 *            Handler which will be invoked which will return the authenticated user or fail if the credentials do not match or the user could not be found
 	 */
 	private void authenticate(String username, String password, Handler<AsyncResult<AuthenticationResult>> resultHandler) {
-		try (Tx tx = db.tx()) {
-			MeshAuthUser user = boot.userRoot().findMeshAuthUserByUsername(username);
-			if (user != null) {
-				String accountPasswordHash = user.getPasswordHash();
-				// TODO check if user is enabled
-				boolean hashMatches = false;
-				if (StringUtils.isEmpty(accountPasswordHash) && password != null) {
-					if (log.isDebugEnabled()) {
-						log.debug("The account password hash or token password string are invalid.");
+		Mesh.vertx().executeBlocking(bh -> {
+			try (Tx tx = db.tx()) {
+				MeshAuthUser user = boot.userRoot().findMeshAuthUserByUsername(username);
+				if (user != null) {
+					String accountPasswordHash = user.getPasswordHash();
+					// TODO check if user is enabled
+					boolean hashMatches = false;
+					if (StringUtils.isEmpty(accountPasswordHash) && password != null) {
+						if (log.isDebugEnabled()) {
+							log.debug("The account password hash or token password string are invalid.");
+						}
+						bh.fail("Invalid credentials!");
+					} else {
+						if (log.isDebugEnabled()) {
+							log.debug("Validating password using the bcrypt password encoder");
+						}
+						hashMatches = passwordEncoder.matches(password, accountPasswordHash);
 					}
-					resultHandler.handle(Future.failedFuture("Invalid credentials!"));
+					if (hashMatches) {
+						bh.complete(new AuthenticationResult(user));
+					} else {
+						bh.fail("Invalid credentials!");
+					}
 				} else {
 					if (log.isDebugEnabled()) {
-						log.debug("Validating password using the bcrypt password encoder");
+						log.debug("Could not load user with username {" + username + "}.");
 					}
-					hashMatches = passwordEncoder.matches(password, accountPasswordHash);
+					// TODO Don't let the user know that we know that he did not exist?
+					bh.fail("Invalid credentials!");
 				}
-				if (hashMatches) {
-					resultHandler.handle(Future.succeededFuture(new AuthenticationResult(user)));
-				} else {
-					resultHandler.handle(Future.failedFuture("Invalid credentials!"));
-				}
-			} else {
-				if (log.isDebugEnabled()) {
-					log.debug("Could not load user with username {" + username + "}.");
-				}
-				// TODO Don't let the user know that we know that he did not exist?
-				resultHandler.handle(Future.failedFuture("Invalid credentials!"));
 			}
-		}
+		}, resultHandler);
 
 	}
 
@@ -283,8 +285,8 @@ public class MeshAuthProvider implements AuthProvider, JWTAuth {
 			if (rh.failed()) {
 				throw error(UNAUTHORIZED, "auth_login_failed", rh.cause());
 			} else {
-				ac.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, rh.result())
-						.setMaxAge(Mesh.mesh().getOptions().getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
+				ac.addCookie(Cookie.cookie(MeshAuthProvider.TOKEN_COOKIE_KEY, rh.result()).setMaxAge(Mesh.mesh().getOptions()
+						.getAuthenticationOptions().getTokenExpirationTime()).setPath("/"));
 				ac.send(JsonUtil.toJson(new TokenResponse(rh.result())));
 			}
 		});

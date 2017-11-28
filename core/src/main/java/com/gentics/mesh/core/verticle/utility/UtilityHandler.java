@@ -62,7 +62,7 @@ public class UtilityHandler extends AbstractHandler {
 				projectName = "project";
 			}
 
-			return Single.just(linkReplacer.replace(null, null, ac.getBodyAsString(), ac.getNodeParameters().getResolveLinks(), projectName,
+			return Single.just(linkReplacer.replace(ac, null, null, ac.getBodyAsString(), ac.getNodeParameters().getResolveLinks(), projectName,
 					ac.getNodeParameters().getLanguageList()));
 		}).subscribe(body -> ac.send(body, OK, "text/plain"), ac::fail);
 	}

@@ -147,13 +147,13 @@ public class NodeGraphFieldImpl extends MeshEdgeImpl implements NodeGraphField {
 
 				// Set the webroot path for the currently active language
 				nodeField.setPath(
-						linkReplacer.resolve(release.getUuid(), containerType, node, type, languageTags.toArray(new String[languageTags.size()])));
+						linkReplacer.resolve(ac, release.getUuid(), containerType, node, type, languageTags.toArray(new String[languageTags.size()])));
 
 				// Set the languagePaths for all field containers
 				Map<String, String> languagePaths = new HashMap<>();
 				for (GraphFieldContainer currentFieldContainer : node.getGraphFieldContainers(release, containerType)) {
 					Language currLanguage = currentFieldContainer.getLanguage();
-					String languagePath = linkReplacer.resolve(release.getUuid(), containerType, node, type, currLanguage.getLanguageTag());
+					String languagePath = linkReplacer.resolve(ac, release.getUuid(), containerType, node, type, currLanguage.getLanguageTag());
 					languagePaths.put(currLanguage.getLanguageTag(), languagePath);
 				}
 				nodeField.setLanguagePaths(languagePaths);

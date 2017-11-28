@@ -1,6 +1,9 @@
 package com.gentics.mesh.core.data.generic;
 
 import static com.gentics.mesh.core.data.relationship.GraphRelationships.HAS_FIELD_CONTAINER;
+import static com.tinkerpop.blueprints.Direction.IN;
+
+import java.util.Iterator;
 
 import com.gentics.mesh.core.data.BasicFieldContainer;
 import com.gentics.mesh.core.data.ContainerType;
@@ -10,16 +13,20 @@ import com.gentics.mesh.core.data.MeshCoreVertex;
 import com.gentics.mesh.core.data.Release;
 import com.gentics.mesh.core.data.impl.GraphFieldContainerEdgeImpl;
 import com.gentics.mesh.core.rest.common.AbstractResponse;
+import com.gentics.mesh.dagger.MeshInternal;
+import com.gentics.mesh.graphdb.spi.Database;
+import com.syncleus.ferma.FramedGraph;
 import com.syncleus.ferma.traversals.EdgeTraversal;
+import com.syncleus.ferma.tx.Tx;
+import com.tinkerpop.blueprints.Edge;
+import com.tinkerpop.blueprints.Vertex;
 
-public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResponse, R extends MeshCoreVertex<T, R>>
-		extends AbstractMeshCoreVertex<T, R> {
+public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResponse, R extends MeshCoreVertex<T, R>> extends
+		AbstractMeshCoreVertex<T, R> {
 
 	protected <U extends BasicFieldContainer> U getGraphFieldContainer(Language language, Release release, ContainerType type, Class<U> classOfU) {
 		return getGraphFieldContainer(language.getLanguageTag(), release != null ? release.getUuid() : null, type, classOfU);
 	}
-
-//	 static Map<String, BasicFieldContainer> map = new HashMap<>();
 
 	/**
 	 * Locate the field container using the provided information.
@@ -35,33 +42,19 @@ public abstract class AbstractGenericFieldContainerVertex<T extends AbstractResp
 	 */
 	protected <U extends BasicFieldContainer> U getGraphFieldContainer(String languageTag, String releaseUuid, ContainerType type,
 			Class<U> classOfU) {
-//		Objects.requireNonNull(languageTag);
-//		Objects.requireNonNull(classOfU);
 
-		// String key = "l:" + languageTag + "r:" + releaseUuid + "t:" + type + "i:" + getId();
-		// System.out.println(key);
-		// if(map.containsKey(key)) {
-		// return (U) map.get(key);
-		// }
-
-		// System.out.println("not found");
-		// TODO Add index usage!
-		// (nodeId, languageTag)
-		EdgeTraversal<?, ?, ?> traversal = outE(HAS_FIELD_CONTAINER).has(GraphFieldContainerEdgeImpl.LANGUAGE_TAG_KEY, languageTag);
-
-		// + releaseUuid)
-		if (releaseUuid != null) {
-			traversal = traversal.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid);
+		Database db = MeshInternal.get().database();
+		FramedGraph graph = Tx.getActive().getGraph();
+		Iterable<Edge> edges = graph.getEdges("e." + HAS_FIELD_CONTAINER.toLowerCase() + "_release_type_lang", db.createComposedIndexKey(getId(),
+				releaseUuid, type.getCode(), languageTag));
+		Iterator<Edge> it = edges.iterator();
+		if (it.hasNext()) {
+			Vertex in = it.next().getVertex(IN);
+			return graph.frameElementExplicit(in, classOfU);
+		} else {
+			return null;
 		}
-		// + edgetype)
-		if (type != null) {
-			traversal = traversal.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, type.getCode());
-		}
-		U container = traversal.inV().nextOrDefault(classOfU, null);
 
-		// map.put(key, container);
-
-		return container;
 	}
 
 	/**

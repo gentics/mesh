@@ -21,6 +21,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 import com.gentics.mesh.Mesh;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.GraphFieldContainer;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
 import com.gentics.mesh.core.data.Project;
@@ -149,10 +150,10 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					GraphFieldContainer container = env.getSource();
 					HtmlGraphField htmlField = container.getHtml(schema.getName());
 					if (htmlField != null) {
-						GraphQLContext context = env.getContext();
+						GraphQLContext gc = env.getContext();
 						LinkType type = getLinkType(env);
 						String content = htmlField.getHTML();
-						return linkReplacer.replace(null, null, content, type, context.getProject().getName(), Arrays.asList());
+						return linkReplacer.replace(gc, null, null, content, type, gc.getProject().getName(), Arrays.asList());
 					}
 					return null;
 				}).build();
@@ -164,10 +165,10 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 					GraphFieldContainer container = env.getSource();
 					StringGraphField field = container.getString(schema.getName());
 					if (field != null) {
-						GraphQLContext context = env.getContext();
+						GraphQLContext gc = env.getContext();
 						LinkType type = getLinkType(env);
 						String content = field.getString();
-						return linkReplacer.replace(null, null, content, type, context.getProject().getName(), Arrays.asList());
+						return linkReplacer.replace(gc, null, null, content, type, gc.getProject().getName(), Arrays.asList());
 					}
 					return null;
 				}).build();
@@ -223,7 +224,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return htmlList.getList().stream().map(item -> {
 					String content = item.getHTML();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(null, null, content, linkType, gc.getProject().getName(), Arrays.asList());
+					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList());
 				}).collect(Collectors.toList());
 			case "string":
 				StringGraphFieldList stringList = container.getStringList(schema.getName());
@@ -233,7 +234,7 @@ public class FieldDefinitionProvider extends AbstractTypeProvider {
 				return stringList.getList().stream().map(item -> {
 					String content = item.getString();
 					LinkType linkType = getLinkType(env);
-					return linkReplacer.replace(null, null, content, linkType, gc.getProject().getName(), Arrays.asList());
+					return linkReplacer.replace(gc, null, null, content, linkType, gc.getProject().getName(), Arrays.asList());
 				}).collect(Collectors.toList());
 			case "number":
 				NumberGraphFieldList numberList = container.getNumberList(schema.getName());

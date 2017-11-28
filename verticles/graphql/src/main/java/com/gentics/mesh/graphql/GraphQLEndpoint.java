@@ -7,6 +7,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
@@ -44,11 +45,11 @@ public class GraphQLEndpoint extends AbstractProjectEndpoint {
 		queryEndpoint.exampleResponse(OK, graphqlExamples.createResponse(), "Basic GraphQL response.");
 		queryEndpoint.description("Endpoint which accepts GraphQL queries.");
 		queryEndpoint.path("/");
-		queryEndpoint.handler(rc -> {
+		queryEndpoint.blockingHandler(rc -> {
 			GraphQLContext gc = new GraphQLContextImpl(rc);
 			String body = gc.getBodyAsString();
 			queryHandler.handleQuery(gc, body);
-		});
+		}, false);
 
 		log.info("GraphiQL is owned and developed by Facebook, Inc. - Copyright (c) 2015, Facebook, Inc. All rights reserved.");
 		StaticHandler staticHandler = StaticHandler.create("graphiql");

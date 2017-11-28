@@ -304,7 +304,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readOne.addQueryParameters(VersioningParametersImpl.class);
 		readOne.addQueryParameters(RolePermissionParametersImpl.class);
 		readOne.addQueryParameters(NodeParametersImpl.class);
-		readOne.handler(rc -> {
+		readOne.blockingHandler(rc -> {
 			String uuid = rc.request().getParam("nodeUuid");
 			if (StringUtils.isEmpty(uuid)) {
 				rc.next();
@@ -324,7 +324,7 @@ public class NodeEndpoint extends AbstractProjectEndpoint {
 		readAll.addQueryParameters(RolePermissionParametersImpl.class);
 		readAll.addQueryParameters(NodeParametersImpl.class);
 		readAll.addQueryParameters(PagingParametersImpl.class);
-		readAll.handler(rc -> {
+		readAll.blockingHandler(rc -> {
 			InternalActionContext ac = new InternalRoutingActionContextImpl(rc);
 			crudHandler.handleReadList(ac);
 		});
