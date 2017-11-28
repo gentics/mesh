@@ -32,6 +32,7 @@ import com.gentics.mesh.core.rest.node.PublishStatusModel;
 import com.gentics.mesh.core.rest.node.PublishStatusResponse;
 import com.gentics.mesh.core.rest.node.field.NodeFieldListItem;
 import com.gentics.mesh.core.rest.user.NodeReference;
+import com.gentics.mesh.handler.ActionContext;
 import com.gentics.mesh.parameter.LinkType;
 import com.gentics.mesh.parameter.PagingParameters;
 import com.gentics.mesh.parameter.PublishParameters;
@@ -516,6 +517,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * Return the webroot path to the node in the given language. If more than one language is given, the path will lead to the first available language of the
 	 * node.
 	 * 
+	 * @param ac
 	 * @param releaseUuid
 	 *            release Uuid
 	 * @param type
@@ -524,7 +526,7 @@ public interface Node extends MeshCoreVertex<NodeResponse, Node>, CreatorTrackin
 	 * 
 	 * @return
 	 */
-	String getPath(String releaseUuid, ContainerType type, String... languageTag);
+	String getPath(ActionContext ac, String releaseUuid, ContainerType type, String... languageTag);
 
 	/**
 	 * Return the path segment value of this node in the given language. If more than one language is given, the path will lead to the first available language

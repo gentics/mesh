@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.syncleus.ferma.tx.Tx;
+import com.gentics.mesh.context.InternalActionContext;
 import com.gentics.mesh.core.data.ContainerType;
 import com.gentics.mesh.core.data.Language;
 import com.gentics.mesh.core.data.NodeGraphFieldContainer;
@@ -41,8 +42,9 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.OFF, null, null);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.OFF, null,
+					null);
 
 			assertEquals("Check rendered content", content, replacedContent);
 		}
@@ -54,8 +56,9 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.SHORT, null, null);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.SHORT, null,
+					null);
 
 			assertEquals("Check rendered content", "/News/News%20Overview.en.html", replacedContent);
 		}
@@ -67,8 +70,9 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.MEDIUM, null, null);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.MEDIUM, null,
+					null);
 
 			assertEquals("Check rendered content", "/dummy/News/News%20Overview.en.html", replacedContent);
 		}
@@ -80,11 +84,11 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.FULL, null, null);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+					null);
 
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html",
-					replacedContent);
+			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 
@@ -94,11 +98,11 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}} postfix";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.FULL, null, null);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+					null);
 
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html postfix",
-					replacedContent);
+			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html postfix", replacedContent);
 		}
 	}
 
@@ -108,11 +112,11 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "prefix {{mesh.link('" + uuid + "')}}";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.FULL, null, null);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+					null);
 
-			assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html",
-					replacedContent);
+			assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 
@@ -122,11 +126,11 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "prefix {{mesh.link('" + uuid + "')}} postfix";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.FULL, null, null);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+					null);
 
-			assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html postfix",
-					replacedContent);
+			assertEquals("Check rendered content", "prefix /api/v1/dummy/webroot/News/News%20Overview.en.html postfix", replacedContent);
 		}
 	}
 
@@ -136,12 +140,12 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}}{{mesh.link('" + uuid + "')}}";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.FULL, null, null);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+					null);
 
 			assertEquals("Check rendered content",
-					"/api/v1/dummy/webroot/News/News%20Overview.en.html/api/v1/dummy/webroot/News/News%20Overview.en.html",
-					replacedContent);
+					"/api/v1/dummy/webroot/News/News%20Overview.en.html/api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 
@@ -151,8 +155,9 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}} in between {{mesh.link('" + uuid + "')}}";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.FULL, null, null);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+					null);
 
 			assertEquals("Check rendered content",
 					"/api/v1/dummy/webroot/News/News%20Overview.en.html in between /api/v1/dummy/webroot/News/News%20Overview.en.html",
@@ -166,8 +171,9 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link('" + uuid + "')}";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.FULL, null, null);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+					null);
 
 			assertEquals("Check rendered content", content, replacedContent);
 		}
@@ -179,11 +185,11 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "'\"{{mesh.link(" + uuid + ")}}\"'";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.FULL, null, null);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+					null);
 
-			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'",
-					replacedContent);
+			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
 		}
 	}
 
@@ -193,11 +199,12 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "'\"{{mesh.link(" + uuid + ", de)}}\"'";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.FULL, null, null);
 
-			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html\"'",
-					replacedContent);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+					null);
+
+			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html\"'", replacedContent);
 		}
 	}
 
@@ -207,11 +214,12 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "'\"{{mesh.link('" + uuid + "')}}\"'";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.FULL, null, null);
 
-			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'",
-					replacedContent);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+					null);
+
+			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
 		}
 	}
 
@@ -221,11 +229,12 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "'\"{{mesh.link(\"" + uuid + "\")}}\"'";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.FULL, null, null);
 
-			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'",
-					replacedContent);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+					null);
+
+			assertEquals("Check rendered content", "'\"/api/v1/dummy/webroot/News/News%20Overview.en.html\"'", replacedContent);
 		}
 	}
 
@@ -235,11 +244,12 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link(\"" + uuid + "\", \"de\")}}";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.FULL, null, null);
 
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html",
-					replacedContent);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+					null);
+
+			assertEquals("Check rendered content", "/api/v1/dummy/webroot/Neuigkeiten/News%20Overview.de.html", replacedContent);
 		}
 	}
 
@@ -249,11 +259,11 @@ public class LinkRendererTest extends AbstractMeshTest {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
 			final String content = "{{mesh.link(\"" + uuid + "\", \"en\")}}";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					content, LinkType.FULL, null, null);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, LinkType.FULL, null,
+					null);
 
-			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html",
-					replacedContent);
+			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/News%20Overview.en.html", replacedContent);
 		}
 	}
 
@@ -267,18 +277,17 @@ public class LinkRendererTest extends AbstractMeshTest {
 			SchemaContainerVersion schemaVersion = schemaContainer("content").getLatestVersion();
 			// Create some dummy content
 			Node content = parentNode.create(user(), schemaVersion, project());
-			NodeGraphFieldContainer germanContainer = content.createGraphFieldContainer(german,
-					content.getProject().getLatestRelease(), user());
+			NodeGraphFieldContainer germanContainer = content.createGraphFieldContainer(german, content.getProject().getLatestRelease(), user());
 			germanContainer.createString("displayName").setString("german name");
 			germanContainer.createString("name").setString("german.html");
 
 			Node content2 = parentNode.create(user(), schemaContainer("content").getLatestVersion(), project());
-			NodeGraphFieldContainer englishContainer = content2.createGraphFieldContainer(english,
-					content2.getProject().getLatestRelease(), user());
+			NodeGraphFieldContainer englishContainer = content2.createGraphFieldContainer(english, content2.getProject().getLatestRelease(), user());
 			englishContainer.createString("displayName").setString("content 2 english");
 			englishContainer.createString("name").setString("english.html");
 
-			replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, "dgasd", null, null, null);
+			InternalActionContext ac = mockActionContext();
+			replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, "dgasd", null, null, null);
 		}
 	}
 
@@ -298,8 +307,9 @@ public class LinkRendererTest extends AbstractMeshTest {
 
 			// Render the link
 			final String meshLink = "{{mesh.link(\"" + uuid + "\", \"en\")}}";
-			String replacedContent = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT,
-					meshLink, LinkType.FULL, null, null);
+			InternalActionContext ac = mockActionContext();
+			String replacedContent = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, meshLink, LinkType.FULL, null,
+					null);
 			assertEquals("Check rendered content", "/api/v1/dummy/webroot/News/somefile.dat", replacedContent);
 		}
 	}
@@ -309,11 +319,11 @@ public class LinkRendererTest extends AbstractMeshTest {
 		try (Tx tx = tx()) {
 			Node newsNode = content("news overview");
 			String uuid = newsNode.getUuid();
-			final String content = "some bla START<a href=\"{{mesh.link('" + uuid
-					+ "','en')}}\">Test</a>   dasasdg <a href=\"{{mesh.link(\"" + uuid + "\")}}\">Test</a>DEN";
+			final String content = "some bla START<a href=\"{{mesh.link('" + uuid + "','en')}}\">Test</a>   dasasdg <a href=\"{{mesh.link(\"" + uuid
+					+ "\")}}\">Test</a>DEN";
 			System.out.println("From: " + content);
-			String output = replacer.replace(project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, null,
-					null, null);
+			InternalActionContext ac = mockActionContext();
+			String output = replacer.replace(ac, project().getLatestRelease().getUuid(), ContainerType.DRAFT, content, null, null, null);
 			System.out.println("To:   " + output);
 		}
 	}
@@ -322,8 +332,8 @@ public class LinkRendererTest extends AbstractMeshTest {
 	public void testRendering() throws IOException {
 		try (Tx tx = tx()) {
 			String uuid = UUIDUtil.randomUUID();
-			final String content = "some bla START<a href=\"{{mesh.link(\"" + uuid
-					+ "\")}}\">Test</a>   dasasdg <a href=\"{{mesh.link(\"" + uuid + "\")}}\">Test</a>DEN";
+			final String content = "some bla START<a href=\"{{mesh.link(\"" + uuid + "\")}}\">Test</a>   dasasdg <a href=\"{{mesh.link(\"" + uuid
+					+ "\")}}\">Test</a>DEN";
 			System.out.println(content);
 			int start = content.indexOf("{{mesh.link(");
 			int stop = content.lastIndexOf(")}}") + 3;

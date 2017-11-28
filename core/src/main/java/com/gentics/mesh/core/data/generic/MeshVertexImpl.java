@@ -14,7 +14,6 @@ import com.gentics.mesh.core.data.MeshVertex;
 import com.gentics.mesh.core.data.Role;
 import com.gentics.mesh.core.data.relationship.GraphPermission;
 import com.gentics.mesh.core.data.search.SearchQueueBatch;
-import com.gentics.mesh.dagger.MeshInternal;
 import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.graphdb.spi.FieldType;
 import com.gentics.mesh.util.UUIDUtil;
@@ -36,8 +35,7 @@ import com.tinkerpop.blueprints.util.wrappers.wrapped.WrappedVertex;
 public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 
 	private Object id;
-
-	protected Database db;
+	private String uuid;
 
 	public static void init(Database database) {
 		database.addVertexType(MeshVertexImpl.class, null);
@@ -48,16 +46,12 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	protected void init() {
 		super.init();
 		setProperty("uuid", UUIDUtil.randomUUID());
-		// TODO don't load the db here. Instead only load it when needed
-		this.db = MeshInternal.get().database();
 	}
 
 	@Override
 	protected void init(FramedGraph graph, Element element) {
 		super.init(graph, element);
 		this.id = element.getId();
-		// TODO don't load the db here. Instead only load it when needed
-		this.db = MeshInternal.get().database();
 	}
 
 	/**
@@ -140,11 +134,16 @@ public class MeshVertexImpl extends AbstractVertexFrame implements MeshVertex {
 	}
 
 	public String getUuid() {
-		return getProperty("uuid");
+		// Return the locally stored uuid if possible. Otherwise load it from the graph.
+		if (uuid == null) {
+			this.uuid = getProperty("uuid");
+		}
+		return uuid;
 	}
 
 	public void setUuid(String uuid) {
 		setProperty("uuid", uuid);
+		this.uuid = uuid;
 	}
 
 	public Vertex getVertex() {

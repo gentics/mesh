@@ -7,6 +7,7 @@ import static io.vertx.core.http.HttpMethod.POST;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import com.gentics.mesh.Mesh;
 import com.gentics.mesh.cli.BootstrapInitializer;
 import com.gentics.mesh.core.AbstractProjectEndpoint;
 import com.gentics.mesh.etc.RouterStorage;
