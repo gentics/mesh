@@ -12,6 +12,8 @@ icon:plus[] GraphQL: It is now possible to load a list of all languages of a nod
 
 icon:plus[] GraphQL: The underlying graphql-java library was updated to version 6.0
 
+icon:check[] Core: Fixed a bug which prevented uploading multiple binaries to the same node.
+
 == 0.11.2 (21.11.2017)
 
 icon:plus[] Core: The OrientDB graph database version was updated to version 2.2.30
