@@ -166,6 +166,10 @@ public class BinaryFieldHandler extends AbstractHandler {
 
 		String contentType = ul.contentType();
 		String fileName = ul.fileName();
+
+		// This the name and path of the file to be moved to a new location.
+		// This will be changed because it is possible that the file has to be moved multiple times
+		// (if the transaction failed and has to be repeated).
 		ac.put("sourceFile", ul.uploadedFileName());
 		String hashSum = FileUtils.generateSha512Sum(ul.uploadedFileName());
 
@@ -240,6 +244,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 			// 3. Only gather image info for actual images. Otherwise return an empty image info object.
 			if (contentType.startsWith("image/")) {
 				try {
+					// Caches the image info in the action context so that it does not need to be
+					// calculated again if the transaction failed
 					ImageInfo imageInfo = ac.get("imageInfo");
 					if (imageInfo != null) {
 						obsImage = Single.just(imageInfo);
@@ -415,6 +421,8 @@ public class BinaryFieldHandler extends AbstractHandler {
 		checkUploadFolderExists(uploadFolder);
 		deletePotentialUpload(targetPath);
 		moveUploadIntoPlace(ac.get("sourceFile"), targetPath);
+		// Since this function can be called multiple times (if a transaction fails), we have to
+		// update the path so that moving the file works again.
 		ac.put("sourceFile", targetPath);
 	}
 
@@ -450,7 +458,7 @@ public class BinaryFieldHandler extends AbstractHandler {
 	 * @return sha512 checksum
 	 */
 	protected String hashBuffer(Buffer buffer) {
-			return FileUtils.generateSha512Sum(buffer);
+		return FileUtils.generateSha512Sum(buffer);
 	}
 
 	/**
