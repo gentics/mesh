@@ -32,6 +32,7 @@ import com.gentics.mesh.graphdb.spi.Database;
 import com.gentics.mesh.json.JsonUtil;
 import com.gentics.mesh.util.ETag;
 
+import com.syncleus.ferma.VertexFrame;
 import rx.Single;
 
 public class MicroschemaContainerVersionImpl extends
@@ -63,7 +64,14 @@ public class MicroschemaContainerVersionImpl extends
 						(a) -> a.in(HAS_ITEM).in(HAS_LIST).mark().inE(HAS_FIELD_CONTAINER)
 								.has(GraphFieldContainerEdgeImpl.EDGE_TYPE_KEY, ContainerType.DRAFT.getCode())
 								.has(GraphFieldContainerEdgeImpl.RELEASE_UUID_KEY, releaseUuid).back())
-				.fairMerge().dedup().transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class)).iterator();
+				.fairMerge()
+				// To circumvent a bug in the ferma library we have to transform the VertexFrame object to itself
+				// before calling dedup(). This forces the actual conversion to VertexFrame inside of the pipeline.
+				.transform(v -> v)
+				// when calling dedup we use the the id of the vertex instead of the whole object to save memory
+				.dedup(VertexFrame::getId)
+				.transform(v -> v.reframeExplicit(NodeGraphFieldContainerImpl.class))
+				.iterator();
 		return it;
 	}
 
